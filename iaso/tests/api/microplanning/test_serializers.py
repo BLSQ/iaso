@@ -41,7 +41,7 @@ class PlanningSerializersTestCase(PlanningSerializersTestBase):
                     "id": self.team_1.id,
                     "name": self.team_1.name,
                     "deleted_at": None,
-                    "color": COLOR_CHOICES[0][0],
+                    "color": COLOR_CHOICES[0][0].upper(),
                 },
                 "org_unit_details": {
                     "id": self.org_unit_parent.id,
@@ -53,10 +53,12 @@ class PlanningSerializersTestCase(PlanningSerializersTestBase):
                     "name": self.project_1.name,
                     "color": DEFAULT_COLOR,
                 },
-                "target_org_unit_type_details": {
-                    "id": self.org_unit_type_child.id,
-                    "name": self.org_unit_type_child.name,
-                },
+                "target_org_unit_type_details": [
+                    {
+                        "id": self.org_unit_type_child.id,
+                        "name": self.org_unit_type_child.name,
+                    },
+                ],
             },
         )
 
@@ -69,7 +71,7 @@ class PlanningSerializersTestCase(PlanningSerializersTestBase):
             "ended_at": "2025-02-10",
             "team": self.team_1.id,
             "org_unit": self.org_unit_parent.id,
-            "target_org_unit_type": self.org_unit_type_child.id,
+            "target_org_unit_types": [self.org_unit_type_child.id],
             "project": self.project_1.id,
             "selected_sampling_result": self.planning_sampling_result.id,
             "pipeline_uuids": ["333e4567-e89b-12d3-a456-426614174000", "444e4567-e89b-12d3-a456-426614174000"],

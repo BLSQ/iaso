@@ -39,8 +39,7 @@ def sentry_config(request: HttpRequest) -> Dict[str, Any]:
 
 
 def available_languages(request: HttpRequest) -> Dict[str, Any]:
-    languages = settings.AVAILABLE_LANGUAGES.split(",")
-    return {"AVAILABLE_LANGUAGES": json.dumps(languages)}
+    return {"AVAILABLE_LANGUAGES": json.dumps(settings.AVAILABLE_LANGUAGES)}
 
 
 def product_fruits_config(request: HttpRequest) -> Dict[str, Any]:

@@ -7,6 +7,8 @@
   <title>{{ app_title }}</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  {# OSM tile policy requires valid Referer; avoid restrictive Referrer-Policy #}
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="description" content="">
   <meta name="keywords" content="">
   {# favicon #}

@@ -1,9 +1,9 @@
-import { UseQueryResult } from 'react-query';
-import { useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
-import { getRequest } from '../../../libs/Api';
-import { useSnackQuery } from '../../../libs/apiHooks';
-import { DropdownOptions } from '../../../types/utils';
+import { useSafeIntl } from 'bluesquare-components';
+import { UseQueryResult } from 'react-query';
+import { getRequest } from 'Iaso/libs/Api';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { DropdownOptions } from 'Iaso/types/utils';
 import MESSAGES from '../messages';
 
 export const useGetAlgorithmsOptions = () => {
@@ -63,24 +63,6 @@ export const useStatusOptions = (): DropdownOptions<'true' | 'false'>[] => {
     }, [formatMessage]);
 };
 
-export const useGetProfilesOptions = (): UseQueryResult<
-    DropdownOptions<number>[]
-> => {
-    return useSnackQuery({
-        queryKey: ['profiles', 'dropdown'],
-        queryFn: () => getRequest('/api/profiles/'),
-        options: {
-            keepPreviousData: true,
-            cacheTime: 600000,
-            staleTime: 600000,
-            select: data =>
-                (data?.profiles ?? []).map(user => ({
-                    label: user.user_name,
-                    value: user.user_id,
-                })),
-        },
-    });
-};
 export const useGetDataSources = (): UseQueryResult<any> => {
     return useSnackQuery({
         queryKey: ['sources'],
@@ -112,7 +94,7 @@ export const useSourceVersionOptions = ({ sources, source }) => {
     const versionsList = currentSource?.versions ?? [];
     const disabled = Boolean(
         !currentSource ||
-            (currentSource && currentSource.versions.length === 0),
+        (currentSource && currentSource.versions.length === 0),
     );
     const options = versionsList.map(v => ({
         label: `${formatMessage(MESSAGES.version)} ${v.number}`,

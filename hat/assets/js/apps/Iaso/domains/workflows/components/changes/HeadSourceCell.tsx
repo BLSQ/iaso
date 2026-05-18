@@ -1,11 +1,9 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { Box, Grid } from '@mui/material';
-
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { DropdownOptions } from '../../../../types/utils';
 import MESSAGES from '../../messages';
-
 import { Change } from '../../types';
 
 type Props = {

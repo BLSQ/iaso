@@ -1,12 +1,14 @@
 import json
 import os
 
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 
 from iaso.models import DataSource
 
 
+@extend_schema(tags=["Data sources"])
 class HesabuDescriptorsViewSet(viewsets.ViewSet):
     """Hesabu descriptors API
 

@@ -1,32 +1,15 @@
-import React, { FunctionComponent, useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
+import Box from '@mui/material/Box';
 import { isEqual } from 'lodash';
 import ConfirmCancelDialogComponent from 'Iaso/components/dialogs/ConfirmCancelDialogComponent';
+import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import InputComponent from 'Iaso/components/forms/InputComponent';
+import { TeamType } from 'Iaso/domains/teams/constants';
+import { useGetTeamsDropdown } from 'Iaso/domains/teams/hooks/requests/useGetTeams';
 import { useFormState } from 'Iaso/hooks/form';
 import { commaSeparatedIdsToArray } from 'Iaso/utils/forms';
-import { TeamType } from '../../../../../../../hat/assets/js/apps/Iaso/domains/teams/constants';
-import { useGetTeamsDropdown } from '../../../../../../../hat/assets/js/apps/Iaso/domains/teams/hooks/requests/useGetTeams';
 import MESSAGES from '../../../constants/messages';
 import { usePutCountryMutation } from './requests';
-import { User } from 'Iaso/utils/usersUtils';
-
-const makeDropDownListItem = user => {
-    const userName =
-        user.first_name && user.last_name
-            ? `${user.first_name} ${user.last_name}`
-            : user.user_name;
-    return {
-        value: user.user_id,
-        label: `${userName} - ${user.email}`,
-    };
-};
-
-const makeDropDownList = allUsers => {
-    return allUsers
-        .filter(user => Boolean(user.email))
-        .map(makeDropDownListItem)
-        .sort((a, b) => a.label >= b.label);
-};
 
 const initialState = (language, users, teams) => ({
     language: language ?? '',
@@ -45,20 +28,18 @@ type Props = {
     allLanguages: Record<string, any>[];
     countryName: string;
     language?: string;
-    allUsers?: User[];
     teams?: Record<string, any>[];
 };
 
-export const CountryNotificationsConfigModal: FunctionComponent<Props> = ({
+export const CountryNotificationsConfigModal = ({
     renderTrigger,
     countryId,
     countryName,
     language = '',
     users,
-    allUsers = [],
     allLanguages,
     teams = [],
-}) => {
+}: Props) => {
     const [config, setConfig] = useFormState(
         initialState(language, users, teams),
     );
@@ -121,18 +102,15 @@ export const CountryNotificationsConfigModal: FunctionComponent<Props> = ({
             }}
             allowConfirm={allowConfirm}
         >
-            <div>
-                <InputComponent
-                    type="select"
-                    keyValue="users"
-                    label={MESSAGES.selectUsers}
-                    errors={config.users.errors}
-                    value={config.users.value}
-                    onChange={(_, value) =>
+            <Box sx={{ pt: 2 }}>
+                <UserAsyncSelect
+                    filterUsers={config.users.value?.join(',')}
+                    handleChange={(_, value) =>
                         setConfig('users', commaSeparatedIdsToArray(value))
                     }
-                    options={makeDropDownList(allUsers)}
-                    multi
+                    additionalFilters={{ has_email: true }}
+                    errors={config.users.errors}
+                    label={MESSAGES.selectUsers}
                 />
                 <InputComponent
                     type="select"
@@ -158,7 +136,7 @@ export const CountryNotificationsConfigModal: FunctionComponent<Props> = ({
                     loading={isFetchingTeams}
                     multi
                 />
-            </div>
+            </Box>
         </ConfirmCancelDialogComponent>
     );
 };

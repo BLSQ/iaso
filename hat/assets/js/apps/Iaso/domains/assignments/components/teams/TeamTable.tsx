@@ -14,7 +14,7 @@ import MESSAGES from 'Iaso/domains/assignments/messages';
 import { useSaveTeam } from 'Iaso/domains/teams/hooks/requests/useSaveTeam';
 import { SubTeam, Team } from 'Iaso/domains/teams/types/team';
 import { User } from 'Iaso/domains/teams/types/team';
-import { useSaveProfileColor } from 'Iaso/domains/users/hooks/useSaveProfile';
+import { useSaveProfile } from 'Iaso/domains/users/hooks/useSaveProfile';
 import { SxStyles } from 'Iaso/types/general';
 import getDisplayName from 'Iaso/utils/usersUtils';
 import { AssignmentsResult } from '../../hooks/requests/useGetAssignments';
@@ -61,7 +61,10 @@ export const TeamTable: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
 
     const { mutate: updateTeam } = useSaveTeam('edit', false);
-    const { mutate: updateUser } = useSaveProfileColor(false);
+    const { mutate: updateUser } = useSaveProfile({
+        showSuccessSnackBar: false,
+        extraInvalidateQueryKeys: ['planningChildrenOrgUnitsPaginated'],
+    });
 
     const countTeams = useCallback(
         (subTeam: SubTeam) => {
@@ -83,6 +86,7 @@ export const TeamTable: FunctionComponent<Props> = ({
         },
         [assignments],
     );
+    const assigneeRadioGroupName = `assignee-${planningId}`;
     return (
         <>
             <Paper sx={styles.paper}>
@@ -128,13 +132,15 @@ export const TeamTable: FunctionComponent<Props> = ({
                                         subTeam => (
                                             <AssigneeRow
                                                 key={subTeam.id}
+                                                radioGroupName={assigneeRadioGroupName}
                                                 isActive={
                                                     selectedTeam?.id ===
                                                     subTeam.id
                                                 }
-                                                setSelectedRow={() =>
-                                                    setSelectedTeam(subTeam)
-                                                }
+                                                setSelectedRow={() => {
+                                                    setSelectedTeam(subTeam);
+                                                    setSelectedUser(undefined);
+                                                }}
                                                 currentColor={subTeam?.color}
                                                 displayName={subTeam?.name}
                                                 count={countTeams(subTeam)}
@@ -158,12 +164,14 @@ export const TeamTable: FunctionComponent<Props> = ({
                                         .map(user => (
                                             <AssigneeRow
                                                 key={user.id}
+                                                radioGroupName={assigneeRadioGroupName}
                                                 isActive={
                                                     selectedUser?.id === user.id
                                                 }
-                                                setSelectedRow={() =>
-                                                    setSelectedUser(user)
-                                                }
+                                                setSelectedRow={() => {
+                                                    setSelectedUser(user);
+                                                    setSelectedTeam(undefined);
+                                                }}
                                                 currentColor={user?.color}
                                                 count={assignmentsCountForUser(
                                                     user,

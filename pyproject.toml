@@ -190,6 +190,12 @@ ignore = [
     "S106",  # hardcoded-password-func-arg
     "S311",  # suspicious-non-cryptographic-random-usage
 ]
+"**/test.py" = [
+    "S101",  # assert
+    "S105",  # hardcoded-password-string
+    "S106",  # hardcoded-password-func-arg
+    "S311",  # suspicious-non-cryptographic-random-usage
+]
 
 "**/email_templates.py" = [
     "S105",  # hardcoded-password-string

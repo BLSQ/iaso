@@ -1,4 +1,5 @@
 from django.contrib.auth.password_validation import validate_password
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.response import Response
 
@@ -17,6 +18,7 @@ class ExportMobileSetupSerializer(serializers.Serializer):
         validate_password(password)
 
 
+@extend_schema(tags=["Export mobile setup", "Tasks"])
 class ExportMobileSetupViewSet(viewsets.ViewSet):
     """Export mobile app setup"""
 

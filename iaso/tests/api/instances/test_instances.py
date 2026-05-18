@@ -444,6 +444,62 @@ class InstancesAPITestCase(TaskAPITestCase):
         last_instance = m.Instance.objects.get(uuid=instance_uuid)
         self.assertEqual(Decimal("12.35"), last_instance.accuracy)
 
+    def test_instance_create_with_accuracy_coerced(self):
+        """POST /api/instances/ with accuracy having more than 2 decimal places should be rounded"""
+
+        instance_uuid = str(uuid4())
+        body = [
+            {
+                "id": instance_uuid,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153709,
+                "orgUnitId": self.jedi_council_corruscant.id,
+                "formId": self.form_1.id,
+                "period": "202002",
+                "latitude": 50.2,
+                "longitude": 4.4,
+                "accuracy": 126264.07,
+                "altitude": 100,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/test_accuracy_rounded\/test.xml",
+                "name": "test_accuracy_rounded",
+            }
+        ]
+        response = self.client.post(
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        last_instance = m.Instance.objects.get(uuid=instance_uuid)
+        self.assertEqual(Decimal("99999.00"), last_instance.accuracy)
+
+    def test_instance_create_with_accuracy_coerced_and_rounded(self):
+        """POST /api/instances/ with accuracy having more than 2 decimal places should be rounded"""
+
+        instance_uuid = str(uuid4())
+        body = [
+            {
+                "id": instance_uuid,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153709,
+                "orgUnitId": self.jedi_council_corruscant.id,
+                "formId": self.form_1.id,
+                "period": "202002",
+                "latitude": 50.2,
+                "longitude": 4.4,
+                "accuracy": 126264.345,
+                "altitude": 100,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/test_accuracy_rounded\/test.xml",
+                "name": "test_accuracy_rounded",
+            }
+        ]
+        response = self.client.post(
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        last_instance = m.Instance.objects.get(uuid=instance_uuid)
+        self.assertEqual(Decimal("99999.00"), last_instance.accuracy)
+
     def test_instance_create_with_accuracy_rounded_with_long_number(self):
         """POST /api/instances/ with accuracy having more than 2 decimal places should be rounded"""
 
@@ -694,6 +750,35 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertJSONResponse(response, 200)
 
         self.assertValidInstanceListData(response.json(), 4)
+
+    def test_instance_list_filter_by_reference_instances(self):
+        """GET /instances/?referenceInstances=… filters like Instance.is_reference_instance."""
+        self.client.force_authenticate(self.yoda)
+        self.jedi_council.reference_forms.add(self.form_1)
+        self.jedi_council_corruscant.org_unit_type = self.jedi_council
+        self.jedi_council_corruscant.save()
+        self.instance_1.flag_reference_instance(self.jedi_council_corruscant)
+
+        base = f"/api/instances/?form_id={self.form_1.pk}&limit=100"
+        response = self.client.get(f"{base}&{query.REFERENCE_INSTANCES}=reference")
+        j = self.assertJSONResponse(response, 200)
+        self.assertEqual({i["id"] for i in j["instances"]}, {self.instance_1.id})
+        self.assertTrue(j["instances"][0]["is_reference_instance"])
+
+        response = self.client.get(f"{base}&{query.REFERENCE_INSTANCES}=not_reference")
+        j = self.assertJSONResponse(response, 200)
+        self.assertEqual(
+            {i["id"] for i in j["instances"]},
+            {self.instance_2.id, self.instance_3.id, self.instance_4.id},
+        )
+
+        response = self.client.get(base)
+        j = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(j["instances"]), 4)
+
+        response = self.client.get(f"{base}&{query.REFERENCE_INSTANCES}=all")
+        j = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(j["instances"]), 4)
 
     def test_instance_filter_by_org_unit_status(self):
         """GET /instances/?org_unit_status={status}"""
@@ -1250,6 +1335,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             ","
             "202001,"
             f"{self.instance_1.source_created_at.strftime('%Y-%m-%d %H:%M:%S')},"
+            f"{self.instance_1.created_at.strftime('%Y-%m-%d %H:%M:%S')},"
             f"{self.instance_1.source_updated_at.strftime('%Y-%m-%d %H:%M:%S')},"
             "yoda (Yo Da),"
             f"{self.instance_1.created_by_id},"
@@ -1309,6 +1395,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             ","
             ","
             f"{period},"
+            f"{sourceless_instance.created_at.strftime('%Y-%m-%d %H:%M:%S')},"
             f"{sourceless_instance.created_at.strftime('%Y-%m-%d %H:%M:%S')},"
             f"{sourceless_instance.updated_at.strftime('%Y-%m-%d %H:%M:%S')},"
             "yoda (Yo Da),"

@@ -5,6 +5,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from drf_spectacular.utils import extend_schema
 from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
 from rest_framework import status
@@ -12,6 +13,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
+from iaso.api.openhexa.permission import HasPipelineManagementPermission
 from iaso.api.openhexa.serializers import (
     PipelineLaunchSerializer,
     TaskResponseSerializer,
@@ -27,6 +29,7 @@ from iaso.utils.tokens import get_user_token
 logger = logging.getLogger(__name__)
 
 
+@extend_schema(tags=["OpenHexa Pipelines"])
 class OpenHexaPipelinesViewSet(ViewSet):
     """
     OpenHexa Pipelines API
@@ -40,6 +43,8 @@ class OpenHexaPipelinesViewSet(ViewSet):
     GET /api/openhexa/config/                       - Check if OpenHexa config exists
     """
 
+    permission_classes = [HasPipelineManagementPermission]
+
     @require_openhexa_config
     def list(self, request, openhexa_config=None):
         """
@@ -48,6 +53,8 @@ class OpenHexaPipelinesViewSet(ViewSet):
         Returns:
             Response: List of pipelines with id, name, and currentVersion
         """
+        if openhexa_config is None:  # injected by @require_openhexa_config
+            raise ValueError
         openhexa_url, openhexa_token, workspace_slug, workspace = openhexa_config
 
         try:
@@ -98,6 +105,8 @@ class OpenHexaPipelinesViewSet(ViewSet):
         Returns:
             Response: Pipeline details including parameters
         """
+        if openhexa_config is None:  # injected by @require_openhexa_config
+            raise ValueError
         openhexa_url, openhexa_token, workspace_slug, workspace = openhexa_config
 
         try:
@@ -184,6 +193,8 @@ class OpenHexaPipelinesViewSet(ViewSet):
                 {"error": _("Failed to generate authentication token")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+        if openhexa_config is None:  # injected by @require_openhexa_config
+            raise ValueError
         openhexa_url, openhexa_token, workspace_slug, workspace = openhexa_config
 
         try:
@@ -325,10 +336,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
 
             # If we reach here, config is valid
             response_data = {"configured": True}
-
-            # Get optional lqas_pipeline_code parameter from workspace config if configured
-            if workspace.config and workspace.config.get("lqas_pipeline_code"):
-                response_data["lqas_pipeline_code"] = workspace.config["lqas_pipeline_code"]
+            response_data["config"] = workspace.config or {}
 
             return Response(response_data)
 

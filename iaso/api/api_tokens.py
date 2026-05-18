@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers, viewsets
 from rest_framework.response import Response
 
@@ -8,6 +9,7 @@ class APITokenSerializer(serializers.Serializer):
     token = serializers.CharField()
 
 
+@extend_schema(tags=["API token"])
 class APITokenViewSet(viewsets.ViewSet):
     """
     Used to obtain a token usable for the API.

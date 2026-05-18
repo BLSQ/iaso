@@ -1,22 +1,31 @@
 import React, { useContext, FunctionComponent } from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import MenuIcon from '@mui/icons-material/Menu';
-import { Box, Grid, IconButton, useMediaQuery, useTheme } from '@mui/material';
+import {
+    Box,
+    Grid,
+    IconButton,
+    SxProps,
+    Theme,
+    useMediaQuery,
+    useTheme,
+} from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
-import { useSidebar } from '../../domains/app/contexts/SideBarContext';
-import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext';
-import { LangSwitch } from '../../domains/home/components/LangSwitch';
-import { useFindCustomComponent } from '../../plugins/hooks/customComponents';
-import { useCurrentUser } from '../../utils/usersUtils.ts';
-import { CurrentUserInfos } from './CurrentUser/index.tsx';
-import { HomePageButton } from './HomePageButton.tsx';
-import { LogoutButton } from './LogoutButton.tsx';
+import { CurrentUserInfos } from 'Iaso/components/nav/CurrentUser';
 import { DjangoAdminPanelButton } from 'Iaso/components/nav/DjangoAdminPanelButton';
+import { HomePageButton } from 'Iaso/components/nav/HomePageButton';
+import { LogoutButton } from 'Iaso/components/nav/LogoutButton';
+import { NotificationBadge } from 'Iaso/components/nav/NotificationBadge';
+import { useSidebar } from 'Iaso/domains/app/contexts/SideBarContext';
+import { ThemeConfigContext } from 'Iaso/domains/app/contexts/ThemeConfigContext';
+import { LangSwitch } from 'Iaso/domains/home/components/LangSwitch';
+import { useFindCustomComponent } from 'Iaso/plugins/hooks/customComponents';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 
-const styles = theme => ({
+const styles = (theme: Theme) => ({
     menuButton: {
         [theme.breakpoints.up('md')]: {
             marginRight: `${theme.spacing(2)} !important`,
@@ -48,6 +57,7 @@ type Props = {
     goBack?: () => void;
     displayMenuButton?: boolean;
     disableShadow?: boolean;
+    sx?: SxProps;
 };
 
 const TopBar: FunctionComponent<Props> = ({
@@ -57,6 +67,7 @@ const TopBar: FunctionComponent<Props> = ({
     goBack = () => null,
     displayMenuButton = true,
     disableShadow = false,
+    sx = {},
 }) => {
     const classes = useStyles();
 
@@ -71,13 +82,14 @@ const TopBar: FunctionComponent<Props> = ({
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
     const Disclaimer = useFindCustomComponent('topbar.disclaimer');
+
     return (
         <AppBar
             position="relative"
             color="primary"
             id="top-bar"
-            sx={{ zIndex: 10 }}
             elevation={disableShadow ? 0 : 4}
+            sx={{ zIndex: 10, ...sx }}
         >
             <Toolbar className={classes.root}>
                 {Disclaimer && (
@@ -148,9 +160,16 @@ const TopBar: FunctionComponent<Props> = ({
                                 alignItems="center"
                                 justifyContent="flex-end"
                             >
+                                <NotificationBadge />
+                            </Box>
+                            <Box
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="flex-end"
+                            >
                                 <CurrentUserInfos
                                     currentUser={currentUser}
-                                    version={window.IASO_VERSION}
+                                    version={window.IASO_VERSION ?? ''}
                                 />
                             </Box>
 
@@ -158,11 +177,16 @@ const TopBar: FunctionComponent<Props> = ({
                                 <HomePageButton />
                             </Box>
 
-                            {(currentUser.is_staff === true && currentUser.is_superuser === true) && (
-                                <Box display="flex" justifyContent="center" pl={1}>
-                                    <DjangoAdminPanelButton />
-                                </Box>
-                            )}
+                            {currentUser.is_staff === true &&
+                                currentUser.is_superuser === true && (
+                                    <Box
+                                        display="flex"
+                                        justifyContent="center"
+                                        pl={1}
+                                    >
+                                        <DjangoAdminPanelButton />
+                                    </Box>
+                                )}
 
                             <Box display="flex" justifyContent="center" pl={1}>
                                 <LogoutButton />

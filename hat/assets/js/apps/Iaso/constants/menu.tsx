@@ -4,6 +4,7 @@ import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import BookIcon from '@mui/icons-material/Book';
 import CategoryIcon from '@mui/icons-material/Category';
 import CompareArrows from '@mui/icons-material/CompareArrows';
@@ -17,7 +18,6 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import GroupWork from '@mui/icons-material/GroupWork';
 import HistoryIcon from '@mui/icons-material/History';
 import ImportantDevicesRoundedIcon from '@mui/icons-material/ImportantDevicesRounded';
-import Input from '@mui/icons-material/Input';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import Link from '@mui/icons-material/Link';
 import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
@@ -29,6 +29,9 @@ import PriceCheckIcon from '@mui/icons-material/PriceCheck';
 import PublishedWithChangesIcon from '@mui/icons-material/PublishedWithChanges';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import RuleIcon from '@mui/icons-material/Rule';
+import SchemaIcon from '@mui/icons-material/Schema';
+import ScienceIcon from '@mui/icons-material/Science';
+import SearchIcon from '@mui/icons-material/Search';
 import Settings from '@mui/icons-material/Settings';
 import StorageIcon from '@mui/icons-material/Storage';
 import SupervisorAccount from '@mui/icons-material/SupervisorAccount';
@@ -57,16 +60,18 @@ import {
     SHOW_DEV_FEATURES,
     SHOW_DHIS2_LINK,
     SHOW_PAGES,
+    SUBMISSION_VALIDATION_WORKFLOW,
 } from '../utils/featureFlags';
-import { useCurrentUser } from '../utils/usersUtils';
+import { useCurrentUser, User } from '../utils/usersUtils';
 import MESSAGES from './messages';
 import * as paths from './routes';
 import { CHANGE_REQUEST, CHANGE_REQUEST_CONFIG } from './urls';
+
 // !! remove permission property if the menu has a subMenu !!
 const menuItems = (
     entityTypes: Array<DropdownOptions<number>>,
     formatMessage: IntlFormatMessage,
-    currentUser,
+    currentUser: User,
     orgUnitExtraPath?: string,
 ): MenuItems => {
     const entitiesListEntry: MenuItem = {
@@ -84,7 +89,7 @@ const menuItems = (
                 pathname?.includes(`/entityTypeIds/${entityType.value}/`) &&
                 pathname?.includes(`entities/list/`),
             extraPath:
-                `/entityTypeIds/${entityType.value}/locationLimit/1000/order/-last_saved_instance/pageSize/20/page/1` +
+                `/entityTypeIds/${entityType.value}/locationLimit/1000/order/-id/pageSize/20/page/1` +
                 `/isSearchActive/true`,
         }));
     }
@@ -177,6 +182,18 @@ const menuItems = (
             permissions: paths.devicesPath.permissions,
             icon: props => <ImportantDevicesRoundedIcon {...props} />,
         },
+        {
+            label: formatMessage(MESSAGES.apiImport),
+            key: 'apiImports',
+            permissions: paths.adminApiImportPath.permissions,
+            icon: props => <InventoryIcon {...props} />,
+        },
+        {
+            label: formatMessage(MESSAGES.pipelines),
+            key: 'pipelines',
+            permissions: paths.pipelineListPath.permissions,
+            icon: props => <ScienceIcon {...props} />,
+        },
     ];
     if (currentUser.is_staff || currentUser.is_superuser) {
         settingsSubMenu.push({
@@ -199,11 +216,17 @@ const menuItems = (
                     icon: props => <FormatListBulleted {...props} />,
                 },
                 {
+                    label: formatMessage(MESSAGES.formAI),
+                    permissions: paths.formAIPath.permissions,
+                    key: 'ai',
+                    icon: props => <AutoFixHighIcon {...props} />,
+                },
+                {
                     label: formatMessage(MESSAGES.submissionsTitle),
-                    extraPath: `/tab/list/mapResults/${locationLimitMax}`,
+                    key: 'submissions/list',
+                    icon: props => <FormatListBulleted {...props} />,
                     permissions: paths.instancesPath.permissions,
-                    key: 'submissions',
-                    icon: props => <Input {...props} />,
+                    extraPath: `/tab/list/mapResults/${locationLimitMax}`,
                 },
 
                 {
@@ -449,7 +472,41 @@ export const useMenuItems = (): MenuItems => {
         );
     }
 
+    // Hide Form AI in the main menu, under Forms when FORM_AI module is not activated
+    const hasFormAIModule = userHasAccessToModule('FORM_AI', currentUser);
+    if (!hasFormAIModule && basicItems?.length > 0) {
+        basicItems[0].subMenu = basicItems[0]?.subMenu?.filter(
+            item => item.key !== 'ai',
+        );
+    }
+
     // add feature flags
+    if (
+        hasFeatureFlag(currentUser, SUBMISSION_VALIDATION_WORKFLOW) &&
+        !basicItems.find(item => item.key === 'validation-workflows')
+    ) {
+        basicItems.push({
+            label: formatMessage(MESSAGES.validationWorkflow),
+            icon: props => <SchemaIcon {...props} />,
+            key: 'validation-workflows',
+            subMenu: [
+                {
+                    label: formatMessage(MESSAGES.configuration),
+                    key: 'configuration',
+                    permissions:
+                        paths.validationWorkflowConfigurationPath.permissions,
+                    icon: props => <Settings {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.submissionsTitle),
+                    key: 'submissions',
+                    permissions: paths.instancesPath.permissions,
+                    icon: props => <SearchIcon {...props} />,
+                },
+            ],
+        });
+    }
+
     if (
         hasFeatureFlag(currentUser, SHOW_PAGES) &&
         !basicItems.find(item => item.key === 'pages')
@@ -461,6 +518,7 @@ export const useMenuItems = (): MenuItems => {
             permissions: paths.pagesPath.permissions,
         });
     }
+
     if (
         hasFeatureFlag(currentUser, SHOW_DHIS2_LINK) &&
         currentUser?.account?.default_version?.data_source.url
@@ -483,6 +541,10 @@ export const useMenuItems = (): MenuItems => {
         }
         const authorizedItems = menuItemsTemp.filter(menuItem => {
             const permissionsList = listMenuPermission(menuItem);
+            // If not permission set on the menuItem, we consider that everyone has access to it
+            if (permissionsList.length === 0) {
+                return true;
+            }
             return userHasOneOfPermissions(permissionsList, currentUser);
         });
         if (hasFeatureFlag(currentUser, SHOW_DEV_FEATURES)) {

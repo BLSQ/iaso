@@ -382,7 +382,9 @@ class FormAttachmentsAPITestCase(APITestCase):
         return response.content
 
     @override_settings(
-        MIDDLEWARE=[mw for mw in settings.MIDDLEWARE if "querycount.middleware.QueryCountMiddleware" not in mw],
+        MIDDLEWARE=[
+            mw for mw in settings.MIDDLEWARE if "iaso.middlewares.query_count.SafeQueryCountMiddleware" not in mw
+        ],
         DEBUG=True,
     )
     def test_manifest_anonymous_app_id(self):

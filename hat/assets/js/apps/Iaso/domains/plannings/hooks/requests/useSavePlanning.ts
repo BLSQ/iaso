@@ -6,7 +6,7 @@ import {
     dateRangePickerToDateApi,
     getApiParamDateTimeString,
 } from '../../../../utils/dates';
-import { endpoint } from '../../constants';
+import { PLANNINGS_API_URL } from '../../constants';
 import { Planning } from '../../types';
 
 export type SavePlanningQuery = {
@@ -21,7 +21,7 @@ export type SavePlanningQuery = {
     project: number;
     publishingStatus: 'published' | 'draft';
     pipelineUuids: string[];
-    targetOrgUnitType: number;
+    targetOrgUnitTypes: number[];
     selected_sampling_result_id?: number | null;
 };
 
@@ -33,7 +33,7 @@ const convertToApi = data => {
         startDate,
         publishingStatus,
         pipelineUuids,
-        targetOrgUnitType,
+        targetOrgUnitTypes,
         ...converted
     } = data;
     if (selectedTeam !== undefined) {
@@ -57,8 +57,8 @@ const convertToApi = data => {
     if (pipelineUuids !== undefined) {
         converted.pipeline_uuids = pipelineUuids;
     }
-    if (targetOrgUnitType !== undefined) {
-        converted.target_org_unit_type = targetOrgUnitType;
+    if (targetOrgUnitTypes !== undefined) {
+        converted.target_org_unit_types = targetOrgUnitTypes;
     }
 
     if (converted.selected_sampling_result_id !== undefined) {
@@ -76,6 +76,7 @@ export const convertAPIErrorsToState = data => {
         started_at,
         published_at,
         pipeline_uuids,
+        target_org_unit_types,
         ...converted
     } = data;
     if (team !== undefined) {
@@ -97,18 +98,21 @@ export const convertAPIErrorsToState = data => {
     if (pipeline_uuids !== undefined) {
         converted.pipelineUuids = pipeline_uuids;
     }
+    if (target_org_unit_types !== undefined) {
+        converted.targetOrgUnitTypes = target_org_unit_types;
+    }
 
     return converted;
 };
 
 const patchPlanning = async (body: Partial<SavePlanningQuery>) => {
-    const url = `${endpoint}${body.id}/`;
+    const url = `${PLANNINGS_API_URL}${body.id}/`;
     return patchRequest(url, convertToApi(body));
 };
 
 const postPlanning = async (body: SavePlanningQuery) => {
     return postRequest({
-        url: endpoint,
+        url: PLANNINGS_API_URL,
         data: convertToApi(body),
     });
 };
@@ -131,7 +135,6 @@ export const useSavePlanning = ({
     onSuccess,
     showSuccessSnackBar,
 }: UseSavePlanningArgs): UseMutationResult => {
-    const ignoreErrorCodes = [400];
     const editPlanning = useSnackMutation({
         mutationFn: (data: Partial<SavePlanningQuery>) => patchPlanning(data),
         invalidateQueryKey: [
@@ -142,7 +145,6 @@ export const useSavePlanning = ({
             'planningRootOrgUnit',
             'planningChildrenOrgUnits',
         ],
-        ignoreErrorCodes,
         options: { onSuccess },
         showSuccessSnackBar,
     });
@@ -151,13 +153,11 @@ export const useSavePlanning = ({
             return postPlanning(data);
         },
         invalidateQueryKey: ['planningsList', 'planningDetails'],
-        ignoreErrorCodes,
         options: { onSuccess },
     });
     const copyPlanning = useSnackMutation({
         mutationFn: (data: SavePlanningQuery) => duplicatePlanning(data),
         invalidateQueryKey: ['planningsList', 'planningDetails'],
-        ignoreErrorCodes,
         options: { onSuccess },
     });
 

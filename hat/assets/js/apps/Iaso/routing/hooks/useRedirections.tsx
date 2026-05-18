@@ -83,7 +83,7 @@ export const useRedirections: RedirectionsMethod = ({
             {
                 path: `/${baseUrls.entities}`,
                 to: `/${baseUrls.entities}${getPaginationParams(
-                    'last_saved_instance',
+                    '-id',
                 )}/isSearchActive/true`,
             },
             {
@@ -145,7 +145,7 @@ export const useRedirections: RedirectionsMethod = ({
             {
                 path: '/instances/formId/:formId/*',
                 conversions: { formId: 'formIds' },
-                to: '/forms/submissions/formIds/:formId/',
+                to: '/forms/submissions/list/formIds/:formId/',
             },
             // legacy
             // {
@@ -211,7 +211,10 @@ export const useRedirections: RedirectionsMethod = ({
                 path={`${redirection.path}`}
                 key={`${redirection.path}${redirection.to}`}
                 element={
-                    <Redirect to={redirection.to} path={redirection.path} />
+                    <Redirect
+                        to={redirection.to as string}
+                        path={redirection.path}
+                    />
                 }
             />
         );

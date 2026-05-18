@@ -12,15 +12,19 @@ import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { CountLabel } from './components/CountLabel';
+import { CursorPagination } from './components/CursorPagination';
 import { Filters } from './components/Filters';
 import { ListMap } from './components/ListMap';
 import { useColumns, baseUrl, defaultSorted } from './config';
 import {
     useGetEntitiesLocations,
     useGetEntitiesPaginated,
+    useGetEntitiesCount,
     useGetEntityTypesDropdown,
 } from './hooks/requests';
 import MESSAGES from './messages';
+import type { Params } from './types/filters';
 import { DisplayedLocation } from './types/locations';
 
 const useStyles = makeStyles(theme => ({
@@ -34,22 +38,8 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-type Params = {
-    pageSize: string;
-    order: string;
-    page: string;
-    tab?: string;
-    search?: string;
-    entityTypes?: string;
-    entityTypeIds?: string;
-    locationLimit?: string;
-    groups?: string;
-    fieldsSearch?: string;
-    isSearchActive?: string;
-};
-
 export const Entities: FunctionComponent = () => {
-    const params = useParamsObject(baseUrls.entities) as Params;
+    const params = useParamsObject(baseUrls.entities) as unknown as Params;
     const classes: Record<string, string> = useStyles();
     const [displayedLocation, setDisplayedLocation] =
         useState<DisplayedLocation>('submissions');
@@ -61,6 +51,7 @@ export const Entities: FunctionComponent = () => {
         params,
         isSearchActive,
     );
+
     const [tab, setTab] = useState(params.tab ?? 'list');
 
     const isLoading = isFetching;
@@ -79,20 +70,49 @@ export const Entities: FunctionComponent = () => {
 
     const {
         result,
-        pages,
-        count,
+        next,
+        previous,
         columns: extraColumns,
     } = useMemo(() => {
         if (!data) {
             return {
                 result: [],
-                pages: 0,
-                count: 0,
+                next: null,
+                previous: null,
                 columns: [],
             };
         }
         return data;
     }, [data]);
+
+    const hasCursor = !!(next || previous);
+    const { data: countData, isFetching: isFetchingCount } =
+        useGetEntitiesCount(params, hasCursor);
+
+    const lengthResults = data?.result?.length ?? 0;
+    const totalCount = countData?.count ?? lengthResults;
+
+    const handleNextPage = () => {
+        if (next) {
+            redirectTo(baseUrl, { ...params, cursor: next });
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (previous) {
+            redirectTo(baseUrl, { ...params, cursor: previous });
+        }
+    };
+    const handlePageSizeChange = (newPageSize: number) => {
+        redirectTo(baseUrl, {
+            ...params,
+            pageSize: newPageSize.toString(),
+            cursor: 'null',
+        });
+    };
+
+    const { cursor: _cursor, ...tableParams } = params;
+
     const columns = useColumns(entityTypeIds, extraColumns || []);
 
     const { data: types } = useGetEntityTypesDropdown();
@@ -155,15 +175,21 @@ export const Entities: FunctionComponent = () => {
                     </Box>
                     {tab === 'list' && (
                         <Box>
+                            <CountLabel
+                                count={totalCount}
+                                isFetching={isFetchingCount}
+                            />
                             <TableWithDeepLink
                                 marginTop={false}
                                 data={result ?? []}
-                                pages={pages ?? 1}
+                                pages={1}
                                 defaultSorted={defaultSorted}
                                 columns={columns}
-                                count={count ?? 0}
+                                count={0}
+                                countOnTop={false}
                                 baseUrl={baseUrl}
-                                params={params}
+                                params={tableParams}
+                                showPagination={false}
                                 extraProps={{ loading: isFetching }}
                                 noDataMessage={
                                     !isSearchActive
@@ -171,6 +197,16 @@ export const Entities: FunctionComponent = () => {
                                         : undefined
                                 }
                             />
+                            {result?.length > 0 && (
+                                <CursorPagination
+                                    hasNext={!!next}
+                                    hasPrev={!!previous}
+                                    onNext={handleNextPage}
+                                    onPrev={handlePrevPage}
+                                    pageSize={Number(params.pageSize) || 20}
+                                    onPageSizeChange={handlePageSizeChange}
+                                />
+                            )}
                         </Box>
                     )}
                 </Box>

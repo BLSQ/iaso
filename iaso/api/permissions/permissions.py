@@ -3,6 +3,7 @@ from operator import itemgetter
 
 from django.contrib.auth.models import Permission
 from django.utils.translation import gettext as _
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -16,6 +17,7 @@ from iaso.permissions.core_permissions import (
 from iaso.permissions.utils import fetch_django_permissions_from_iaso_permissions
 
 
+@extend_schema(tags=["Permissions"])
 class PermissionsViewSet(viewsets.ViewSet):
     f"""Permissions API
 

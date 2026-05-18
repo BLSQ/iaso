@@ -21,9 +21,10 @@ class IasoClient:
     def authenticate_with_token(self, token):
         self.headers["Authorization"] = "Bearer %s" % token
 
-    def post(self, url, json=None, data=None, files=None):
+    def post(self, url, json=None, params=None, data=None, files=None):
         self.log(url, json)
-        r = requests.post(self.server_url + url, json=json, data=data, headers=self.headers, files=files)
+        full_url = self.server_url.rstrip("/") + "/" + url.lstrip("/")
+        r = requests.post(full_url, json=json, params=params, data=data, headers=self.headers, files=files)
         resp = None
         try:
             resp = r.json()
@@ -34,10 +35,11 @@ class IasoClient:
         self.log(resp)
         return resp
 
-    def patch(self, url, json=None, data=None, files=None):
+    def patch(self, url, json=None, params=None, data=None, files=None):
         self.log(url, json)
         print(url, json)
-        r = requests.patch(self.server_url + url, json=json, data=data, headers=self.headers, files=files)
+        full_url = self.server_url.rstrip("/") + "/" + url.lstrip("/")
+        r = requests.patch(full_url, json=json, params=params, data=data, headers=self.headers, files=files)
         resp = None
         try:
             resp = r.json()

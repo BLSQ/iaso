@@ -246,7 +246,7 @@ class TokenAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(m.OrgUnit.objects.filter(uuid=uuid).first() is not None)
-        self.assertAPIImport("orgUnit", request_body=unit_body, has_problems=False, check_auth_header=True)
+        self.assertAPIImport("orgUnit", request_body=unit_body, has_problems=False)
 
     def test_unauthenticated_post_org_unit(self):
         """Test upload to a project that requires authentication without token"""

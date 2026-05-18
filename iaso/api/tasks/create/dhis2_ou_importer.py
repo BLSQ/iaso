@@ -1,5 +1,6 @@
 import logging
 
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers, viewsets
 from rest_framework.response import Response
 
@@ -52,6 +53,7 @@ class Dhis2OuImporterSerializer(serializers.Serializer):
 
 
 # noinspection PyMethodMayBeStatic
+@extend_schema(tags=["DHIS2 Org unit importer"])
 class Dhis2OuImporterViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_SOURCE_PERMISSION)]  # type: ignore
     serializer_class = Dhis2OuImporterSerializer

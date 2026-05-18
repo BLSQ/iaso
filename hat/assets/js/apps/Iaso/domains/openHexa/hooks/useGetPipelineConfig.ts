@@ -6,7 +6,7 @@ export const useGetPipelineConfig = () => {
     return useSnackQuery<
         {
             configured: boolean;
-            lqas_pipeline_code?: string;
+            config: Record<string, any>;
         },
         DjangoError
     >({

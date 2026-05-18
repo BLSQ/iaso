@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status as http_status, viewsets
 from rest_framework.response import Response
 
@@ -8,6 +9,7 @@ from iaso.permissions.core_permissions import CORE_PAYMENTS_PERMISSION
 from iaso.tasks.payments_bulk_update import payments_bulk_update
 
 
+@extend_schema(tags=["Payments", "Tasks"])
 class PaymentsBulkUpdate(viewsets.ViewSet):
     """Bulk update Payments
 

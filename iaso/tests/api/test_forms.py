@@ -10,7 +10,7 @@ from rest_framework.test import APIRequestFactory
 
 from iaso import models as m
 from iaso.api.common import CONTENT_TYPE_XLSX
-from iaso.api.forms import FormSerializer
+from iaso.api.forms.serializers import FormSerializer
 from iaso.api.query_params import APP_ID
 from iaso.models import (
     AGGREGATE,
@@ -232,12 +232,67 @@ class FormsAPITestCase(APITestCase):
         form_to_delete.delete()
 
         response = self.client.get(
-            "/api/forms/?&order=instance_updated_at&page=1&showDeleted=true&searchActive=true&all=true&limit=50&undefined=true",
-            headers={"Content-Type": "application/json"},
+            "/api/forms/",
+            data={
+                "order": "instance_updated_at",
+                "page": 1,
+                "only_deleted": "1",
+                "searchActive": "true",
+                "all": "true",
+                "limit": 50,
+                "undefined": "true",
+            },
+        )
+        res_json = self.assertJSONResponse(response, 200)
+        self.assertEqual(res_json["count"], 1)
+
+    def test_forms_list_excludes_deleted_by_default(self):
+        """GET /forms/ should return only non-deleted forms by default."""
+        self.client.force_authenticate(self.yoda)
+
+        self.form_1.delete()
+
+        response = self.client.get(
+            "/api/forms/",
+            data={"limit": 50},
         )
 
-        self.assertJSONResponse(response, 200)
-        self.assertEqual(response.json()["count"], 1)
+        resp_json = self.assertJSONResponse(response, 200)
+        self.assertEqual(resp_json["count"], 1)
+
+        self.assertEqual(resp_json["forms"][0]["id"], self.form_2.id)
+
+    def test_forms_list_only_deleted(self):
+        """GET /forms/?only_deleted=1 should return only deleted forms."""
+        self.client.force_authenticate(self.yoda)
+
+        self.form_1.delete()
+
+        response = self.client.get(
+            "/api/forms/",
+            data={"only_deleted": "1", "limit": 50},
+        )
+
+        resp_json = self.assertJSONResponse(response, 200)
+        self.assertEqual(resp_json["count"], 1)
+        self.assertEqual(resp_json["forms"][0]["id"], self.form_1.id)
+
+    def test_forms_list_show_deleted(self):
+        """GET /forms/?show_deleted=1 should return both deleted and non-deleted forms."""
+        self.client.force_authenticate(self.yoda)
+
+        self.form_1.delete()
+
+        response = self.client.get(
+            "/api/forms/",
+            data={"show_deleted": "1", "limit": 50},
+        )
+
+        resp_json = self.assertJSONResponse(response, 200)
+        self.assertEqual(resp_json["count"], 2)
+
+        returned_ids = {form["id"] for form in resp_json["forms"]}
+        self.assertEqual(returned_ids, {self.form_1.id, self.form_2.id})
 
     def test_forms_list_ok_hide_derived_forms(self):
         """GET /forms/ web app happy path: we expect 1 results if one of the form is marked as derived"""
@@ -768,7 +823,11 @@ class FormsAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         # Test with specific fields that don't include instances_count or :all
-        response = self.client.get("/api/forms/?fields=id,name,form_id", headers={"Content-Type": "application/json"})
+        response = self.client.get(
+            "/api/forms/",
+            data={"fields": ",".join(["id", "name", "form_id"])},
+            headers={"Content-Type": "application/json"},
+        )
         self.assertJSONResponse(response, 200)
 
         # The response should not include instances_count field when not requested
@@ -777,7 +836,9 @@ class FormsAPITestCase(APITestCase):
 
         # Test that instances_count is included when explicitly requested
         response = self.client.get(
-            "/api/forms/?fields=id,name,instances_count", headers={"Content-Type": "application/json"}
+            "/api/forms/",
+            data={"fields": ",".join(["id", "name", "instances_count"])},
+            headers={"Content-Type": "application/json"},
         )
         self.assertJSONResponse(response, 200)
 
@@ -820,13 +881,17 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
 
-        response = self.client.get("/api/forms/?fields=id,name", headers={"Content-Type": "application/json"})
+        response = self.client.get(
+            "/api/forms/", data={"fields": ",".join(["id", "name"])}, headers={"Content-Type": "application/json"}
+        )
         self.assertJSONResponse(response, 200)
         for form_data in response.json()["forms"]:
             self.assertNotIn("has_attachments", form_data)
 
         response = self.client.get(
-            "/api/forms/?fields=id,name,has_attachments", headers={"Content-Type": "application/json"}
+            "/api/forms/",
+            data={"fields": ",".join(["id", "name", "has_attachments"])},
+            headers={"Content-Type": "application/json"},
         )
         self.assertJSONResponse(response, 200)
         self.assertTrue(self.find_forms_data_for(response, self.form_1)["has_attachments"])
@@ -850,7 +915,9 @@ class FormsAPITestCase(APITestCase):
             .get()
         )
 
-        api_request = Request(APIRequestFactory().get("/api/forms/?fields=id,has_attachments"))
+        api_request = Request(
+            APIRequestFactory().get("/api/forms/", data={"fields": ",".join(["id", "has_attachments"])})
+        )
         api_request.user = self.yoda
 
         with self.assertNumQueries(0):
@@ -876,7 +943,7 @@ class FormsAPITestCase(APITestCase):
             self.assertNotIn(MAX_QUERY_INSTANCE_UPDATED_AT, sql, f"Found unexpected query: {sql}")
             self.assertNotIn(COUNT_QUERY_INSTANCE, sql, f"Found unexpected query: {sql}")
 
-        self.assertEqual(len(ctx.captured_queries), 10)
+        self.assertEqual(len(ctx.captured_queries), 9)
 
     def test_form_details_full_details(self):
         self.client.force_authenticate(self.yoda)
@@ -896,4 +963,4 @@ class FormsAPITestCase(APITestCase):
                 at_least_one_query_with_max_and_count = True
 
         self.assertTrue(at_least_one_query_with_max_and_count)
-        self.assertEqual(len(ctx.captured_queries), 11)
+        self.assertEqual(len(ctx.captured_queries), 10)

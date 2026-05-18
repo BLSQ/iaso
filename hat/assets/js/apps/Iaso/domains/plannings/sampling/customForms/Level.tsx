@@ -10,7 +10,7 @@ import {
     OrgUnitTypeHierarchyDropdownValues,
     useGetOrgUnitTypesHierarchy,
 } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
-import { flattenHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { flattenOrgUnitTypeHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/utils';
 import { Planning } from 'Iaso/domains/plannings/types';
 import { SxStyles } from 'Iaso/types/general';
 import { DropdownOptionsWithOriginal } from 'Iaso/types/utils';
@@ -42,7 +42,7 @@ type Props = {
     handleOrgUnitTypeChange: (value: any, index: number) => void;
     handleOrgUnitTypeQuantityChange: (value: any, index: number) => void;
     handleRemoveLevel: (index: number) => void;
-    orgUnitTypeId: number;
+    orgUnitTypeId?: number;
     handleParameterChange: (parameterName: string, value: any) => void;
     planning: Planning;
     handleCriteriaChange: (value: any, index: number) => void;
@@ -103,7 +103,7 @@ export const Level: FunctionComponent<Props> = ({
 
         if (!orgUnitTypeHierarchy?.sub_unit_types) return options;
 
-        options = flattenHierarchy(
+        options = flattenOrgUnitTypeHierarchy(
             orgUnitTypeHierarchy.sub_unit_types,
             orgUnitTypeId,
             parameterValues?.org_unit_type_sequence_identifiers,

@@ -9,12 +9,11 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin, auth
 from django.shortcuts import render
-from django.urls import include, path, re_path
+from django.urls import include, path
 from django.views.generic import RedirectView, TemplateView
-from drf_yasg import openapi
-from drf_yasg.views import get_schema_view
-from rest_framework import permissions
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
+from iaso.auth.views import IasoPasswordResetView
 from iaso.views import ModelDataView, health, health_clamav, page, robots_txt
 
 
@@ -43,10 +42,20 @@ else:
             path("login/", TemplateView.as_view(template_name=login_template), name="login"),
         ]
     else:
+        from iaso.auth.forms import AxesAuthenticationForm
+
         login_template = "iaso/login.html"
         urlpatterns = [
-            path("admin/login/", auth.views.LoginView.as_view(template_name=login_template), name="admin-login"),
-            path("login/", auth.views.LoginView.as_view(template_name=login_template), name="login"),
+            path(
+                "admin/login/",
+                auth.views.LoginView.as_view(template_name=login_template, authentication_form=AxesAuthenticationForm),
+                name="admin-login",
+            ),
+            path(
+                "login/",
+                auth.views.LoginView.as_view(template_name=login_template, authentication_form=AxesAuthenticationForm),
+                name="login",
+            ),
         ]
 
     if settings.ACTIVATE_SOCIAL_ACCOUNT:
@@ -72,7 +81,11 @@ else:
 
     urlpatterns += [
         path("robots.txt", robots_txt),
-        path("", RedirectView.as_view(pattern_name="dashboard:home_iaso", permanent=False), name="index"),
+        path(
+            "",
+            RedirectView.as_view(pattern_name=settings.ROOT_REDIRECT_PATTERN_NAME, permanent=False),
+            name="index",
+        ),
         path("_health/", health),
         path("_health", health),  # same without slash otherwise AWS complain about redirect
         path("health/", health),  # alias since current apache config hide _health/
@@ -84,9 +97,10 @@ else:
         path("logout-iaso", auth.views.LogoutView.as_view(next_page="/login/"), name="logout-iaso"),
         path(
             "forgot-password/",
-            auth.views.PasswordResetView.as_view(
+            IasoPasswordResetView.as_view(
                 template_name="iaso/forgot_password.html",
-                email_template_name="iaso/reset_password_email.html",
+                email_template_name="iaso/reset_password_email.txt",
+                html_email_template_name="iaso/reset_password_email.html",
                 subject_template_name="iaso/reset_password_subject.txt",
                 success_url="/forgot-password-confirmation/",
             ),
@@ -124,22 +138,12 @@ else:
         else:
             print(f"URL module not found for plugin: {plugin_name}")
 
-    # Swagger config
-    schema_view = get_schema_view(
-        openapi.Info(
-            title="Iaso",
-            default_version="v1",
-            description="Iaso Swagger",
-        ),
-        public=False,
-        urlconf="hat.urls",
-        permission_classes=(permissions.IsAdminUser,),
-    )
-
-    urlpatterns = urlpatterns + [
-        re_path(r"^swagger(?P<format>\.json|\.yaml)$", schema_view.without_ui(cache_timeout=0), name="schema-json"),
-        path("swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
-        path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
+    # swagger
+    urlpatterns += [
+        path("swagger/", SpectacularAPIView.as_view(), name="swagger-schema"),
+        # Optional UI:
+        path("swagger-ui/", SpectacularSwaggerView.as_view(url_name="swagger-schema"), name="swagger-ui"),
+        path("redoc/", SpectacularRedocView.as_view(url_name="swagger-schema"), name="redoc"),
     ]
 
     if settings.BEANSTALK_WORKER or settings.DEBUG or settings.IN_TESTS:

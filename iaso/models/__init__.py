@@ -1,11 +1,13 @@
+from .account import Account, AccountFeatureFlag
 from .base import *
-from .bulk_create_user_csv_file import BulkCreateUserCsvFile
+from .bulk_create_user_csv_file import BulkCreateUserFile
 from .comment import CommentIaso
 from .data_source import DataSource, DataSourceVersionsSynchronization, SourceVersion
 from .deduplication import EntityDuplicate, EntityDuplicateAnalyzis
 from .device import Device, DeviceOwnership, DevicePosition
 from .entity import Entity, EntityType
 from .feature_flags import FeatureFlag, ProjectFeatureFlags
+from .form_ai import TemporaryForm
 from .forms import Form, FormAttachment, FormPredefinedFilter, FormVersion
 from .import_gpkg import ImportGPKG
 from .instances import Instance, InstanceFile, InstanceLock, InstanceQuerySet
@@ -32,6 +34,7 @@ from .storage import StorageDevice, StorageLogEntry, StoragePassword
 from .task import Task, TaskLog
 from .team import Team
 from .tenant_users import TenantUser
+from .validation_workflow import ValidationNode, ValidationNodeTemplate, ValidationWorkflow
 from .workflow import Workflow, WorkflowChange, WorkflowFollowup, WorkflowVersion
 
 
@@ -42,7 +45,8 @@ __all__ = [
     "SUPERSET",
     "TEXT",
     "Account",
-    "BulkCreateUserCsvFile",
+    "AccountFeatureFlag",
+    "BulkCreateUserFile",
     "CommentIaso",
     "DataSource",
     "DataSourceVersionsSynchronization",
@@ -59,6 +63,7 @@ __all__ = [
     "FormAttachment",
     "FormPredefinedFilter",
     "FormVersion",
+    "TemporaryForm",
     "ImportGPKG",
     "Instance",
     "InstanceLock",
@@ -107,6 +112,9 @@ __all__ = [
     "TaskLog",
     "Team",
     "TenantUser",
+    "ValidationWorkflow",
+    "ValidationNodeTemplate",
+    "ValidationNode",
     "Workflow",
     "WorkflowChange",
     "WorkflowFollowup",

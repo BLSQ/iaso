@@ -17,6 +17,7 @@ import iaso.management.commands.unique_indexes as unique_indexes
 
 from hat.audit.models import DJANGO_ADMIN
 from iaso.models.json_config import Config  # type: ignore
+from iaso.plugins import is_wfp_plugin_active
 from iaso.utils.admin.custom_filters import (
     DuplicateUUIDFilter,
     EntityEmptyAttributesFilter,
@@ -29,7 +30,7 @@ from ..models import (
     Account,
     AccountFeatureFlag,
     AlgorithmRun,
-    BulkCreateUserCsvFile,
+    BulkCreateUserFile,
     DataSource,
     DataSourceVersionsSynchronization,
     Device,
@@ -91,8 +92,10 @@ from ..models import (
     WorkflowVersion,
 )
 from ..models.data_store import JsonDataStore
+from ..models.form_ai import TemporaryForm
 from ..models.microplanning import Assignment, Planning, PlanningSamplingResult
 from ..models.team import Team
+from ..models.validation_workflow import ValidationNode
 from ..utils.gis import convert_2d_point_to_3d
 
 
@@ -374,6 +377,7 @@ class InstanceAdmin(admin.GeoModelAdmin):
                     "created_by",
                     "form_version",
                     "planning",
+                    "general_validation_status",
                 )
             },
         ),
@@ -638,8 +642,8 @@ class EntityAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         # In the <select> for the entity type, we also want to indicate the account name
         form = super().get_form(request, obj, **kwargs)
-        form.base_fields["entity_type"].label_from_instance = (
-            lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        form.base_fields["entity_type"].label_from_instance = lambda entity: (
+            f"{entity.name} (Account: {entity.account.name})"
         )
         return form
 
@@ -738,6 +742,7 @@ class PlanningAdmin(admin.ModelAdmin):
                     "ended_at",
                     "pipeline_uuids",
                     "selected_sampling_result",
+                    "target_org_unit_types",
                 ),
             },
         ),
@@ -940,8 +945,8 @@ class WorkflowAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         # In the <select> for the entity type, we also want to indicate the account name
         form = super().get_form(request, obj, **kwargs)
-        form.base_fields["entity_type"].label_from_instance = (
-            lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        form.base_fields["entity_type"].label_from_instance = lambda entity: (
+            f"{entity.name} (Account: {entity.account.name})"
         )
         return form
 
@@ -1212,10 +1217,14 @@ def create_indexes_action(modeladmin, request, queryset):
 @admin.register(Account)
 class AccountAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
-    actions = [create_indexes_action]
     search_fields = ["name", "id"]
     list_display = ["name", "created_at", "updated_at"]
     autocomplete_fields = ["default_version"]
+    actions = [create_indexes_action]
+    if is_wfp_plugin_active():
+        from plugins.wfp.admin import create_indexes_celery_action
+
+        actions.append(create_indexes_celery_action)
 
 
 @admin.register(UserRole)
@@ -1226,6 +1235,11 @@ class UserRoleAdmin(admin.ModelAdmin):
 @admin.register(OrgUnitChangeRequestConfiguration)
 class OrgUnitChangeRequestConfigurationAdmin(admin.ModelAdmin):
     autocomplete_fields = ["project"]
+
+
+@admin.register(ValidationNode)
+class ValidationNode(admin.ModelAdmin):
+    autocomplete_fields = ["instance"]
 
 
 @admin.register(GroupSet)
@@ -1330,12 +1344,21 @@ class DataSourceVersionsSynchronizationAdmin(admin.ModelAdmin):
         )
 
 
+class TemporaryFormAdmin(admin.ModelAdmin):
+    list_display = ("uuid", "user", "account", "created_at")
+    list_filter = ("account",)
+    search_fields = ("uuid", "user__username", "user__email")
+    raw_id_fields = ("user", "account")
+    readonly_fields = ("uuid", "created_at")
+
+
+admin.site.register(TemporaryForm, TemporaryFormAdmin)
 admin.site.register(AccountFeatureFlag)
 admin.site.register(Device)
 admin.site.register(DeviceOwnership)
 admin.site.register(MatchingAlgorithm)
 admin.site.register(ExternalCredentials)
 admin.site.register(DevicePosition)
-admin.site.register(BulkCreateUserCsvFile)
+admin.site.register(BulkCreateUserFile)
 admin.site.register(Report)
 admin.site.register(ReportVersion)

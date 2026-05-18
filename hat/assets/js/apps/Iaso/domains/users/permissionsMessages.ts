@@ -4,6 +4,23 @@ import { defineMessages } from 'react-intl';
 // List of translations for Iaso permissions used all along the project
 
 const PERMISSIONS_MESSAGES = defineMessages({
+    iaso_pipeline_management: {
+        id: 'iaso.permissions.iaso_pipeline_management',
+        defaultMessage: 'Pipeline management',
+    },
+    iaso_pipeline_management_tooltip: {
+        id: 'iaso.permissions.iaso_pipeline_management_tooltip',
+        defaultMessage: 'Allows to manage openhexa pipelines',
+    },
+    iaso_account_management: {
+        id: 'iaso.permissions.iaso_account_management',
+        defaultMessage: 'Account management',
+    },
+    iaso_account_management_tooltip: {
+        id: 'iaso.permissions.iaso_account_management_tooltip',
+        defaultMessage:
+            'Allows to manage things related to your account (not to be confused with user management)',
+    },
     iaso_completeness: {
         id: 'iaso.permissions.completeness',
         defaultMessage: 'Export completeness',
@@ -823,7 +840,8 @@ const PERMISSIONS_MESSAGES = defineMessages({
     },
     iaso_snt_scenario_permissions_tooltip: {
         id: 'iaso.permissions.iaso_snt_scenario_permissions_tooltip',
-        defaultMessage: 'Allows to create and update Scenarios. Basic = can edit only your own scenarios, Full = can edit all scenarios.',
+        defaultMessage:
+            'Allows to create and update Scenarios. Basic = can edit only your own scenarios, Full = can edit all scenarios.',
     },
     basic: {
         id: 'iaso.permissions.readEdit.basic',
@@ -839,8 +857,25 @@ const PERMISSIONS_MESSAGES = defineMessages({
     },
     iaso_snt_settings_permissions_tooltip: {
         id: 'iaso.permissions.iaso_snt_settings_permissions_tooltip',
+        defaultMessage: 'Allows to view and edit global settings',
+    },
+    iaso_metric_types: {
+        id: 'iaso.permissions.iaso_metric_types',
+        defaultMessage: 'Metric types management',
+    },
+    iaso_metric_types_tooltip: {
+        id: 'iaso.permissions.iaso_metric_types_tooltip',
         defaultMessage:
-            'Allows to view and edit global settings',
+            'Manage metric types: create, update and delete metric types',
+    },
+    iaso_validation_workflows: {
+        id: 'iaso.permissions.iaso_validation_workflows',
+        defaultMessage: 'Validation workflows',
+    },
+    iaso_validation_workflows_tooltip: {
+        id: 'iaso.permissions.iaso_validation_workflows_tooltip',
+        defaultMessage:
+            'Manage validation workflows: create, update and delete validation workflows',
     },
 });
 

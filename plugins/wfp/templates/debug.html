@@ -47,94 +47,112 @@
 </body>
 <h2>Beneficiary {{beneficiary.id}}</h2>
 {% for journey in beneficiary.journey_set.all %}
-<h3>Journey {{ journey.id }}</h3>
-<table>
-    <tr>
-        <th>admission_criteria</th>
-        <td>{{journey.admission_criteria}}</td>
-    </tr>
-    <tr>
-        <th>admission_type</th>
-        <td>{{journey.admission_type}}</td>
-    </tr>
-    <tr>
-        <th>nutrition_programme</th>
-        <td>{{journey.nutrition_programme}}</td>
-    </tr>
-    <tr>
-        <th>programme_type</th>
-        <td>{{journey.programme_type}}</td>
-    </tr>
-    <tr>
-        <th>exit_type</th>
-        <td>{{journey.exit_type}}</td>
-    </tr>
-    <tr>
-        <th>initial_weight</th>
-        <td>{{journey.initial_weight}}</td>
-    </tr>
-    <tr>
-        <th>discharge_weight</th>
-        <td>{{journey.discharge_weight}}</td>
-    </tr>
-    <tr>
-        <th>Start date</th>
-        <td>{{journey.start_date | date}}</td>
-    </tr>
-    <tr>
-        <th>Number of days</th>
-        <td>{{journey.duration}}</td>
-    </tr>
-    <tr>
-        <th>End date</th>
-        <td>{{journey.end_date | date}}</td>
-    </tr>
-    <tr>
-        <th>weight_gain</th>
-        <td>{{journey.weight_gain}}</td>
-    </tr>
-    <tr>
-        <th>weight_loss</th>
-        <td>{{journey.weight_loss}}</td>
-    </tr>
-
-</table>
-
-{% for visit in journey.visit_set.all %}
-<div style="padding-left:30px">
-    <h4>Visit {{ visit.id }} <a href="/dashboard/forms/submission/instanceId/{{visit.instance_id}}">View submission</a></h4>
+<h3>Journey {{ journey.id }} <a href="/dashboard/forms/submission/instanceId/{{journey.instance_id}}">View
+        submission</a></h4>
     <table>
         <tr>
-            <th>date</th>
-            <td>{{visit.date | date}}</td>
+            <th>admission_criteria</th>
+            <td>{{journey.admission_criteria}}</td>
         </tr>
         <tr>
-            <th>number</th>
-            <td>{{visit.number}}</td>
+            <th>admission_type</th>
+            <td>{{journey.admission_type}}</td>
         </tr>
         <tr>
-            <th>org_unit</th>
-            <td>{{visit.org_unit.name}}</td>
+            <th>nutrition_programme</th>
+            <td>{{journey.nutrition_programme}}</td>
         </tr>
+        {% if journey.physiology_status is not None %}
+        <tr>
+            <th>physiology_status</th>
+            <td>{{journey.physiology_status}}</td>
+        </tr>
+        {% endif %}
+
+        <tr>
+            <th>programme_type</th>
+            <td>{{journey.programme_type}}</td>
+        </tr>
+        <tr>
+            <th>exit_type</th>
+            <td>{{journey.exit_type}}</td>
+        </tr>
+        <tr>
+            <th>initial_weight</th>
+            <td>{{journey.initial_weight}}</td>
+        </tr>
+        <tr>
+            <th>discharge_weight</th>
+            <td>{{journey.discharge_weight}}</td>
+        </tr>
+        <tr>
+            <th>Start date</th>
+            <td>{{journey.start_date | date}}</td>
+        </tr>
+        <tr>
+            <th>Number of days</th>
+            <td>{{journey.duration}}</td>
+        </tr>
+        <tr>
+            <th>End date</th>
+            <td>{{journey.end_date | date}}</td>
+        </tr>
+        <tr>
+            <th>weight_gain</th>
+            <td>{{journey.weight_gain}}</td>
+        </tr>
+        <tr>
+            <th>weight_loss</th>
+            <td>{{journey.weight_loss}}</td>
+        </tr>
+
     </table>
-</div>
-{% for step in visit.step_set.all %}
-<div style="padding-left:60px">
-    <h5>Step {{ step.id }} <a href="/dashboard/forms/submission/instanceId/{{step.instance_id}}">View submission</a>
-    </h5>
-    <table>
-        <tr>
-            <th>assistance_type</th>
-            <td>{{step.assistance_type}}</td>
-        </tr>
-        <tr>
-            <th>quantity_given</th>
-            <td>{{step.quantity_given}}</td>
-        </tr>
-    </table>
-</div>
-{% endfor %}
-{% endfor %}
-{% endfor %}
+
+    {% for visit in journey.visit_set.all %}
+    <div style="padding-left:30px">
+        <h4>Visit {{ visit.id }} <a href="/dashboard/forms/submission/instanceId/{{visit.instance_id}}">View
+                submission</a></h4>
+        <table>
+            <tr>
+                <th>date</th>
+                <td>{{visit.date | date}}</td>
+            </tr>
+            <tr>
+                <th>number</th>
+                <td>{{visit.number}}</td>
+            </tr>
+            <tr>
+                <th>org_unit</th>
+                <td>{{visit.org_unit.name}}</td>
+            </tr>
+        </table>
+    </div>
+    {% for step in visit.step_set.all %}
+    <div style="padding-left:60px">
+        <h5>Step {{ step.id }} <a href="/dashboard/forms/submission/instanceId/{{step.instance_id}}">View submission</a>
+        </h5>
+        <table>
+            <tr>
+                <th>assistance_type</th>
+                <td>{{step.assistance_type}}</td>
+            </tr>
+            <tr>
+                <th>quantity_given</th>
+                <td>{{step.quantity_given}}</td>
+            </tr>
+
+            {% if step.ration_size is not None %}
+            <tr>
+                <th>ration_size</th>
+                <td>{{step.ration_size}}</td>
+            </tr>
+            {% endif %}
+
+
+        </table>
+    </div>
+    {% endfor %}
+    {% endfor %}
+    {% endfor %}
 
 </html>

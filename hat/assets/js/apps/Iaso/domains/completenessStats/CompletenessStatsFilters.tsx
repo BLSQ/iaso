@@ -16,13 +16,11 @@ import {
 import intersection from 'lodash/intersection';
 import isEqual from 'lodash/isEqual';
 import uniq from 'lodash/uniq';
-import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useFilterState } from 'Iaso/hooks/useFilterState';
 import { DropdownOptionsWithOriginal } from 'Iaso/types/utils';
-import { PLANNING_READ, PLANNING_WRITE } from 'Iaso/utils/permissions';
 import InputComponent from '../../components/forms/InputComponent';
 import { OrgUnitTreeviewModal } from '../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../orgUnits/components/TreeView/requests';
@@ -30,7 +28,7 @@ import { useGetGroupDropdown } from '../orgUnits/hooks/requests/useGetGroups';
 import { useGetOrgUnitValidationStatus } from '../orgUnits/hooks/utils/useGetOrgUnitValidationStatus';
 import PeriodPicker from '../periods/components/PeriodPicker';
 import { NO_PERIOD, PERIOD_TYPE_PLACEHOLDER } from '../periods/constants';
-import { useGetPlanningsOptions } from '../plannings/hooks/requests/useGetPlannings';
+import { PlanningsDropdown } from '../plannings/components/PlanningsDropdown';
 import { useGetProjectsDropdownOptions } from '../projects/hooks/requests';
 import { useGetTeamsDropdown } from '../teams/hooks/requests/useGetTeams';
 import { useGetOrgUnitTypesOptions } from './hooks/api/useGetOrgUnitTypesOptions';
@@ -73,8 +71,6 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
 
     const { data: orgUnitTypes, isFetching: fetchingTypes } =
         useGetOrgUnitTypesOptions(filters.parentId);
-    const { data: availablePlannings, isFetching: fetchingPlannings } =
-        useGetPlanningsOptions(filters.formId);
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
         useGetTeamsDropdown({});
     useSkipEffectOnMount(() => {
@@ -216,19 +212,12 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         loading={fetchingTypes}
                         options={orgUnitTypes ?? []}
                     />
-                    <DisplayIfUserHasPerm
-                        permissions={[PLANNING_READ, PLANNING_WRITE]}
-                    >
-                        <InputComponent
-                            type="select"
-                            onChange={handleChange}
-                            keyValue="planningId"
-                            label={MESSAGES.planning}
-                            value={filters.planningId}
-                            loading={fetchingPlannings}
-                            options={availablePlannings ?? []}
-                        />
-                    </DisplayIfUserHasPerm>
+                    <PlanningsDropdown
+                        handleChange={handleChange}
+                        value={filters.planningId}
+                        formIds={filters.formId}
+                        keyValue="planningId"
+                    />
                 </Grid>
 
                 <Grid item xs={12} md={3}>

@@ -176,3 +176,13 @@ export const findCampaignRound = (
 ): Round | undefined => {
     return campaign.rounds.find(rnd => rnd.number === round);
 };
+
+export const createSearchParamsWithArray = (params: Record<string, string | Array<any>>) => {
+    return new URLSearchParams(
+        Object.entries(params).flatMap(([key, values]) =>
+            Array.isArray(values)
+                ? values.map(value => [key, value])
+                : [[key, values]],
+        ),
+    );
+};

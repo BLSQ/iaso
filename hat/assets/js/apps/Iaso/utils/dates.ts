@@ -88,7 +88,7 @@ export const longDateFormats = mapObject(LANGUAGE_CONFIGS, 'dateFormats');
  * Configure the local for time displayed to the user.
  * @param {"LT"|"LTS"|"L"|"LL"|"LLL"|"LLLL"} longType - Language code string
  */
-export const getLocaleDateFormat = longType => {
+export const getLocaleDateFormat = (longType: string) => {
     const locale = moment.locale();
     return (
         LANGUAGE_CONFIGS[locale]?.dateFormats?.[longType] ||

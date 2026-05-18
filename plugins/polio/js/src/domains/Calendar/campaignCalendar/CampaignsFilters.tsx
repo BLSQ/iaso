@@ -115,7 +115,11 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                     undefined,
                 page: undefined,
                 campaignType,
-                campaignCategory,
+                campaignCategory: campaignCategory ?? 'all',
+                on_hold:
+                    campaignCategory === 'all' || campaignCategory === 'on_hold'
+                        ? 'true'
+                        : 'false',
                 showOnlyDeleted: showOnlyDeleted ? 'true' : undefined,
                 show_test: hideTest ? 'false' : 'true',
                 campaignGroups,
@@ -124,6 +128,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                 periodType: params?.periodType,
                 showIntegrated: showIntegrated ? 'true' : 'false',
             };
+
             redirectToReplace(redirectUrl, urlParams);
         }
     }, [

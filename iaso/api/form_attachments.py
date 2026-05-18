@@ -1,6 +1,7 @@
 import typing
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from drf_spectacular.utils import extend_schema
 from rest_framework import parsers, serializers, status
 from rest_framework.exceptions import NotFound
 from rest_framework.fields import Field
@@ -13,7 +14,7 @@ from iaso.utils.encryption import calculate_md5
 from iaso.utils.virus_scan.clamav import scan_uploaded_file_for_virus
 
 from .common import ModelViewSet, TimestampField
-from .forms import HasFormPermission
+from .forms.permissions import HasFormPermission
 from .query_params import APP_ID
 
 
@@ -88,6 +89,7 @@ class HasFormAttachmentPermission(HasFormPermission):
         return ok_forms.filter(id=obj.form_id).exists()
 
 
+@extend_schema(tags=["Form attachments"])
 class FormAttachmentsViewSet(ModelViewSet):
     f"""Form Attachments API
 

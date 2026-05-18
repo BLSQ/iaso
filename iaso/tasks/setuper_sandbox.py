@@ -148,6 +148,17 @@ def run_setuper(account_name: str, password: str):
         return False
 
 
+def update_main_user_password(name: str):
+    try:
+        user = User.objects.get(username=name)
+        user.set_password(settings.SETUPER_SANDBOX_PASSWORD)
+        user.save()
+        logger.info("Successfully updated main user password")
+    except User.DoesNotExist:
+        logger.warning(f"Main user {name} not found, skipping password update.")
+        return
+
+
 @task_decorator(task_name="setuper_sandbox")
 def setuper_sandbox(name="admin", task=Task):
     if settings.ENABLE_SETUPER_SANDBOX:
@@ -162,5 +173,6 @@ def setuper_sandbox(name="admin", task=Task):
             task.report_progress_and_stop_if_killed(progress_value=50, progress_message=message, end_value=100)
 
         recreate_account(account_name, task)
+        update_main_user_password(account_name)
     else:
         logger.info("No setuper sandbox task")

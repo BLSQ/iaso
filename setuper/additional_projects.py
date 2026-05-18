@@ -73,7 +73,7 @@ def get_project_ids(created_or_updated_projects, iaso_client):
 
 
 def update_org_unit_types_with_new_projects(iaso_client, project_ids):
-    org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
+    org_unit_types = iaso_client.get("/api/v2/orgunittypes/?fields=id,projects")["orgUnitTypes"]
     updated_types = []
     for org_unit_type in org_unit_types:
         linked_project_ids = [project["id"] for project in org_unit_type["projects"]]
@@ -129,7 +129,11 @@ def link_forms_to_new_projects(projects, forms, iaso_client):
                 "name": current_form["name"],
                 "org_unit_type_ids": current_form["org_unit_type_ids"],
             }
-            iaso_client.patch(f"/api/forms/{current_form['id']}/", json=form_to_update)
+            iaso_client.patch(
+                f"/api/forms/{current_form['id']}/",
+                json=form_to_update,
+                params={"fields": "project_ids,name,org_unit_type_ids"},
+            )
 
 
 def forms_mapper(projects, iaso_client, account_name):

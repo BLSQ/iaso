@@ -507,3 +507,33 @@ class OutgoingStockMovementVirusScanAPITestCase(VaccineStockManagementAPITestBas
         self.assertEqual(outgoing_stock_movement_clean.file_scan_status, VirusScanStatus.ERROR)
         self.assertIsNone(outgoing_stock_movement_clean.file_last_scan)
         self.assertEqual(outgoing_stock_movement_clean.usable_vials_used, 15)
+
+    @override_settings(CLAMAV_ACTIVE=True)
+    @patch("clamav_client.get_scanner")
+    def test_create_temporary_outgoing_stock_movement_with_file_is_rejected_before_scan(self, mock_get_scanner):
+        self.client.force_authenticate(self.user_rw_perms)
+
+        with open(self.SAFE_FILE_PATH, "rb") as safe_file:
+            safe_file_content = safe_file.read()
+            data = {
+                "vaccine_stock": self.vaccine_stock.pk,
+                "campaign": self.campaign.obr_name,
+                "status": "temporary",
+                "report_date": "2024-01-01",
+                "usable_vials_used": 10,
+                "file": SimpleUploadedFile(
+                    "safe_file.pdf",
+                    safe_file_content,
+                    content_type="application/pdf",
+                ),
+                "doses_per_vial": 20,
+            }
+            response = self.client.post(
+                f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/",
+                data=data,
+                format="multipart",
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("file", response.data)
+        mock_get_scanner.assert_not_called()

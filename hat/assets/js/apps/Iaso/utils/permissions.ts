@@ -1,3 +1,4 @@
+const ACCOUNT_MANAGEMENT = 'iaso_account_management';
 const COMPLETENESS = 'iaso_completeness';
 const COMPLETENESS_STATS = 'iaso_completeness_stats';
 const DATA_DEVICES = 'iaso_data_devices';
@@ -62,8 +63,12 @@ const MODULES = 'iaso_modules';
 const POLIO_NOTIFICATIONS = 'iaso_polio_notifications';
 const PAYMENTS = 'iaso_payments';
 const STOCK_MANAGEMENT = 'iaso_stock_management';
+const METRIC_TYPES = 'iaso_metric_types';
+const VALIDATION_WORKFLOWS = 'iaso_validation_workflows';
+const PIPELINE_MANAGEMENT = 'iaso_pipeline_management';
 
 export {
+    ACCOUNT_MANAGEMENT,
     COMPLETENESS,
     COMPLETENESS_STATS,
     DATA_DEVICES,
@@ -76,6 +81,7 @@ export {
     FORMS_STATS,
     LINKS,
     MAPPINGS,
+    METRIC_TYPES,
     MOBILE_APP_OFFLINE_SETUP,
     MODULES,
     ORG_UNITS,
@@ -90,6 +96,7 @@ export {
     PAYMENTS,
     PLANNING_READ,
     PLANNING_WRITE,
+    PIPELINE_MANAGEMENT,
     POLIO,
     POLIO_CHRONOGRAM,
     POLIO_CHRONOGRAM_RESTRICTED_WRITE,
@@ -118,5 +125,6 @@ export {
     USERS_ADMIN,
     USERS_MANAGEMENT,
     USER_ROLES,
+    VALIDATION_WORKFLOWS,
     WORKFLOWS,
 };

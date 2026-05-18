@@ -1,6 +1,6 @@
 from django.utils.datastructures import MultiValueDictKeyError
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
@@ -21,6 +21,7 @@ class MobileStoragePasswordSerializer(serializers.ModelSerializer):
     updated_at = TimestampField()
 
 
+@extend_schema(tags=["Storages", "Storage passwords", "Mobile"])
 class MobileStoragePasswordViewSet(ModelViewSet):
     """
     Storage passwords API used by the mobile application
@@ -38,21 +39,21 @@ class MobileStoragePasswordViewSet(ModelViewSet):
     serializer_class = MobileStoragePasswordSerializer
     lookup_url_kwarg = APP_ID
 
-    app_id_param = openapi.Parameter(
+    app_id_param = OpenApiParameter(
         name=APP_ID,
-        in_=openapi.IN_QUERY,
+        location=OpenApiParameter.QUERY,
         required=True,
         description="Application id",
-        type=openapi.TYPE_STRING,
+        type=OpenApiTypes.STR,
     )
 
-    @swagger_auto_schema(
+    @extend_schema(
         responses={
             200: "version provided for given app id is valid",
             400: f"parameters '{APP_ID}' was not provided",
             404: "project for given app id doesn't exist",
         },
-        manual_parameters=[app_id_param],
+        parameters=[app_id_param],
     )
     def get_queryset(self):
         try:

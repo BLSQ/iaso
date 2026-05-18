@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import django_filters
 
 from django.db.models import Q, QuerySet
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
 from rest_framework.exceptions import ValidationError
 
@@ -69,6 +70,7 @@ class LqasImCountryOptionsFilter(django_filters.rest_framework.FilterSet):
         return queryset.filter(id__in=countries_with_lqas).distinct("id")
 
 
+@extend_schema(tags=["Polio - Lqas IM countries"])
 class LqasImCountriesOptionsViewset(PolioOrgunitViewSet):
     http_method_names = ["get"]
     permission_classes = [ReadOnlyOrHasPermission(POLIO_PERMISSION, POLIO_CONFIG_PERMISSION)]
@@ -128,6 +130,7 @@ class CampaignDropDownSerializer(serializers.ModelSerializer):
         fields = ["value", "label"]
 
 
+@extend_schema(tags=["Polio - Lqas IM campaigns"])
 class LqasImCampaignOptionsViewset(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [ReadOnlyOrHasPermission(POLIO_PERMISSION, POLIO_CONFIG_PERMISSION)]
@@ -186,6 +189,7 @@ class LqasImRoundOptionsFilter(django_filters.rest_framework.FilterSet):
         return queryset.filter(with_lqas_end_date | without_lqas_end_date).filter(on_hold=False)
 
 
+@extend_schema(tags=["Polio - Lqas IM rounds"])
 class LqasImRoundOptionsViewset(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [ReadOnlyOrHasPermission(POLIO_PERMISSION, POLIO_CONFIG_PERMISSION)]
@@ -263,6 +267,7 @@ class LqasImCountryBlockOptionsFilter(django_filters.rest_framework.FilterSet):
         return queryset.filter(org_units__id__in=countries_with_lqas).distinct("id")
 
 
+@extend_schema(tags=["Polio - Lqas IM countries blocks"])
 class LqasImCountryBlockOptionsViewSet(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [HasPolioPermission | HasPolioAdminPermission]

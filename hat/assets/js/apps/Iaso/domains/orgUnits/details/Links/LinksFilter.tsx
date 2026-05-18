@@ -1,15 +1,15 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
+import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
+import { SearchButton } from 'Iaso/components/SearchButton';
 import { DataSource } from 'Iaso/domains/dataSources/types/dataSources';
+import { useFilterState } from 'Iaso/hooks/useFilterState';
 import InputComponent from '../../../../components/forms/InputComponent';
-import { SearchButton } from '../../../../components/SearchButton';
 import FullStarsSvg from '../../../../components/stars/FullStarsSvgComponent';
-import { useFilterState } from '../../../../hooks/useFilterState';
 import { scoreOptions } from '../../../links/components/LinksFilters';
 import {
     useGetAlgorithmRunsOptions,
     useGetAlgorithmsOptions,
-    useGetProfilesOptions,
     useSourceOptions,
     useStatusOptions,
 } from '../../../links/hooks/filters';
@@ -36,9 +36,6 @@ export const LinksFilter: FunctionComponent<Props> = ({
     const { data: runs, isLoading: isLoadingRuns } =
         useGetAlgorithmRunsOptions();
     const statuses = useStatusOptions();
-    const { data: validators, isLoading: isLoadingValidators } =
-        useGetProfilesOptions();
-    // const { data: sources, isLoading: isLoadingSources } = useGetDataSources();
     const sourceOptions = useSourceOptions(sources);
 
     return (
@@ -92,17 +89,15 @@ export const LinksFilter: FunctionComponent<Props> = ({
                     options={statuses}
                 />
                 {/* validator */}
-                <InputComponent
-                    keyValue="linksParamsValidatorId"
-                    label={MESSAGES.validator}
-                    type="select"
-                    multi={false}
-                    onChange={handleChange}
-                    value={filters.linksParamsValidatorId}
-                    dataTestId="links-validator-filter"
-                    options={validators}
-                    loading={isLoadingValidators}
-                />
+                <Box mt={2}>
+                    <UserAsyncSelect
+                        keyValue="linksParamsValidatorId"
+                        handleChange={handleChange}
+                        filterUsers={filters.linksParamsValidatorId}
+                        label={MESSAGES.validator}
+                        multi={false}
+                    />
+                </Box>
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
                 {/* origin source */}

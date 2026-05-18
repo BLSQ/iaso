@@ -89,7 +89,7 @@ const DocumentUploadWithPreview: React.FC<DocumentUploadWithPreviewProps> = ({
                             />
                         )}
                         <PdfPreview
-                            pdfUrl={pdfUrl}
+                            pdf={pdfUrl}
                             scanResult={scanResult}
                             scanTimestamp={scanTimestamp}
                             coloredScanResultIcon={coloredScanResultIcon}

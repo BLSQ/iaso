@@ -63,7 +63,7 @@ def create_default_reference_submission(account_name, iaso_client, org_unit_id, 
         "reference_instance_id": random.choice(reference_submission),
         "reference_instance_action": "flag",
     }
-    iaso_client.patch(f"/api/orgunits/{org_unit_id}/", json=org_unit_reference_submission)
+    iaso_client.patch(f"/api/orgunits/{org_unit_id}/?fields=id", json=org_unit_reference_submission)
 
 
 def instance_by_LLIN_campaign_form(form, instance_id, orgunit=None):

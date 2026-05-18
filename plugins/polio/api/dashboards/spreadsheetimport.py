@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
 
 from iaso.api.common import ModelViewSet
@@ -11,6 +12,7 @@ class SpreadSheetImportDashboardSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+@extend_schema(tags=["Polio - Dashboards - Preparedness sheet snapshots"])
 class SpreadSheetImportViewSet(ModelViewSet):
     """
     GET /api/polio/dashboards/preparedness_sheets/

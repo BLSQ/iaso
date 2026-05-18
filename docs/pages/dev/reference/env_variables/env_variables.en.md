@@ -188,3 +188,15 @@ For detailed setup instructions, see [Plausible Analytics Setup](../analytics/pl
 | name | optional | default value | description |
 |------|----------|---------------|-------------|
 | AVAILABLE_LANGUAGES | true | `en,fr` | Comma-separated list of supported languages |
+
+## Form AI
+
+| name | optional | default value | description |
+|------|----------|---------------|-------------|
+| FORM_AI_MODEL | true | `claude-opus-4-7` | Anthropic model used by the Form AI to generate XLSForms |
+
+## Root url override
+
+| name | optional | default value | description |
+|------|----------|---------------|-------------|
+| ROOT_REDIRECT_PATTERN_NAME | true | `dashboard:home_iaso` | Django reverse route of the main application |

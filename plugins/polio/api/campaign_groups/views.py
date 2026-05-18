@@ -1,4 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions
 
 from iaso.api.common import DeletionFilterBackend, ModelViewSet
@@ -7,6 +8,7 @@ from plugins.polio.api.campaign_groups.serializers import CampaignGroupSerialize
 from plugins.polio.models import CampaignGroup
 
 
+@extend_schema(tags=["Polio - Campaign groups"])
 class CampaignGroupViewSet(ModelViewSet):
     results_key = "results"
     queryset = CampaignGroup.objects.all()

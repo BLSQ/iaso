@@ -6,7 +6,7 @@ from rest_framework import serializers
 
 from hat.audit.audit_logger import AuditLogger
 from hat.audit.models import ORG_UNIT_CHANGE_REQUEST_CONFIGURATION_API
-from iaso.api.common import TimestampField
+from iaso.api.common import ModelSerializer, TimestampField
 from iaso.api.org_unit_change_request_configurations.validation import (
     validate_forms,
     validate_group_sets,
@@ -25,7 +25,7 @@ class UserNestedSerializer(serializers.ModelSerializer):
         ref_name = "UserNestedSerializerForChangeRequestConfiguration"
 
 
-class ProjectNestedSerializer(serializers.ModelSerializer):
+class ProjectNestedSerializer(ModelSerializer):
     class Meta:
         model = Project
         fields = ["id", "name", "color"]

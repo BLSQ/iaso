@@ -3,27 +3,30 @@ from typing import List, Union
 from django.conf import settings
 from django.contrib import auth
 from django.urls import URLPattern, URLResolver, include, path
-from rest_framework import routers
+from rest_framework_extensions.routers import ExtendedDefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView  # type: ignore
 
 from hat.api.token_authentication import token_auth
 from iaso.api.config import ConfigViewSet
 from iaso.api.data_store import DataStoreViewSet
 from iaso.api.mobile.metadata.last_updates import LastUpdatesViewSet
-from iaso.api.profiles.profile_logs import ProfileLogsViewset
+from iaso.api.profile_logs.views import ProfileLogsViewSet
 from iaso.api.tasks.create.copy_version import CopyVersionViewSet
 from iaso.api.tasks.create.dhis2_ou_importer import Dhis2OuImporterViewSet
 from iaso.api.tasks.create.instance_reference_bulk_link import InstanceReferenceBulkLinkViewSet
 from iaso.api.tasks.create.org_units_bulk_update import OrgUnitsBulkUpdate
 from iaso.api.tasks.create.payments_bulk_update import PaymentsBulkUpdate
 from iaso.api.tasks.create.profiles_bulk_update import ProfilesBulkUpdate
+from iaso.api.validation_workflows.views_mobile import ValidationWorkflowMobileViewSet
 from plugins.router import router as plugins_router
 
 from .api.accounts import AccountViewSet
 from .api.algorithms import AlgorithmsViewSet
 from .api.algorithms_runs import AlgorithmsRunsViewSet
+from .api.api_import.views import APIImportViewSet
 from .api.api_tokens import APITokenViewSet
 from .api.apps import AppsViewSet
+from .api.bulk_create_users.views import BulkCreateUserFromCsvViewSet
 from .api.check_version import CheckVersionViewSet
 from .api.colors import colors_list
 from .api.comment import CommentViewSet
@@ -49,14 +52,21 @@ from .api.enketo import (
     enketo_public_create_url,
     enketo_public_launch,
 )
-from .api.entity import EntityViewSet
+from .api.entities.views import EntityViewSet
 from .api.entity_types import EntityTypeViewSet
 from .api.export_requests import ExportRequestsViewSet
 from .api.feature_flags import FeatureFlagViewSet
+from .api.form_ai.views import (
+    form_ai_chat,
+    form_ai_download,
+    form_ai_load_form,
+    form_ai_save,
+)
 from .api.form_attachments import FormAttachmentsViewSet
 from .api.form_predefined_filters.views import FormPredefinedFiltersViewSet
 from .api.form_versions.views import FormVersionsViewSet
-from .api.forms import FormsViewSet, MobileFormViewSet
+from .api.forms.views import FormsViewSet
+from .api.forms.views_mobile import MobileFormViewSet
 from .api.group_sets.views import GroupSetsViewSet
 from .api.groups.views import GroupsViewSet
 from .api.hesabu_descriptors import HesabuDescriptorsViewSet
@@ -82,6 +92,7 @@ from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.mobile.storage import MobileStoragePasswordViewSet
 from .api.modules import ModulesViewSet
+from .api.notifications.views import NotificationViewSet
 from .api.openhexa.views import OpenHexaPipelinesViewSet
 from .api.org_unit_change_request_configurations.views import OrgUnitChangeRequestConfigurationViewSet
 from .api.org_unit_change_request_configurations.views_mobile import MobileOrgUnitChangeRequestConfigurationViewSet
@@ -96,8 +107,7 @@ from .api.pages import PagesViewSet
 from .api.payments.views import PaymentLotsViewSet, PaymentOptionsViewSet, PaymentsViewSet, PotentialPaymentsViewSet
 from .api.periods import PeriodsViewSet
 from .api.permissions.permissions import PermissionsViewSet
-from .api.profiles.bulk_create_users import BulkCreateUserFromCsvViewSet
-from .api.profiles.profiles import ProfilesViewSet
+from .api.profiles.views import ProfilesViewSet
 from .api.projects import ProjectsViewSet
 from .api.reports import ReportsViewSet
 from .api.setup_account import SetupAccountViewSet
@@ -123,6 +133,10 @@ from .api.tasks.create.org_unit_bulk_location_set import OrgUnitsBulkLocationSet
 from .api.tasks.views import TaskSourceViewSet
 from .api.teams.views import TeamViewSet
 from .api.user_roles import UserRolesViewSet
+from .api.validation_workflow_instances.views import ValidationWorkflowInstanceViewSet
+from .api.validation_workflows.views import ValidationWorkflowViewSet
+from .api.validation_workflows_node_templates.views import ValidationNodeTemplatesView
+from .api.validation_workflows_nodes.views import ValidationNodeViewSet
 from .api.workflows.changes import WorkflowChangeViewSet
 from .api.workflows.followups import WorkflowFollowupViewSet
 from .api.workflows.import_export import export_workflow, import_workflow
@@ -134,7 +148,7 @@ from .dhis2.authentication import dhis2_callback  # type: ignore
 URL = Union[URLPattern, URLResolver]
 URLList = List[URL]
 
-router = routers.DefaultRouter()
+router = ExtendedDefaultRouter()
 router.register(
     r"mobile/orgunits/changes/configs",
     MobileOrgUnitChangeRequestConfigurationViewSet,
@@ -215,10 +229,14 @@ router.register(r"entityduplicates", EntityDuplicateViewSet, basename="entitydup
 router.register(r"entityduplicates_analyzes", EntityDuplicateAnalyzisViewSet, basename="entityduplicates_analyzes")
 router.register(r"bulkcreateuser", BulkCreateUserFromCsvViewSet, basename="bulkcreateuser")
 router.register(r"teams", TeamViewSet, basename="teams")
-router.register(r"microplanning/plannings", PlanningViewSet, basename="planning")
+router.register(r"microplanning/plannings", PlanningViewSet, basename="planning").register(
+    r"orgunits",
+    PlanningOrgunitsViewSet,
+    basename="planning-orgunits",
+    parents_query_lookups=["pk"],
+)
 router.register(r"microplanning/assignments", AssignmentViewSet, basename="assignments")
 router.register(r"microplanning/samplings", PlanningSamplingResultViewSet, basename="planning-sampling-results")
-router.register(r"microplanning/orgunits", PlanningOrgunitsViewSet, basename="planning-orgunits")
 router.register(r"mobile/plannings", MobilePlanningViewSet, basename="mobileplanning")
 router.register(r"storages", StorageViewSet, basename="storage")
 router.register(r"mobile/storages?/logs", StorageLogViewSet, basename="storagelogs")
@@ -233,7 +251,7 @@ router.register(r"mobile/workflows", MobileWorkflowViewSet, basename="mobilework
 router.register(r"reports", ReportsViewSet, basename="report")
 router.register(r"mobile/reports", MobileReportsViewSet, basename="report")
 router.register(r"userroles", UserRolesViewSet, basename="userroles")
-router.register(r"userlogs", ProfileLogsViewset, basename="userlogs")
+router.register(r"userlogs", ProfileLogsViewSet, basename="userlogs")
 
 router.register(r"datastore", DataStoreViewSet, basename="datastore")
 router.register(r"validationstatus", ValidationStatusViewSet, basename="validationstatus")
@@ -256,6 +274,26 @@ router.register(r"stockrulesversions", StockRulesVersionViewSet, basename="stock
 router.register(r"mobile/stockkeepingunits", StockKeepingUnitMobileViewSet, basename="mobilestockkeepingunits")
 router.register(r"mobile/stockledgeritems", StockLedgerItemMobileViewSet, basename="mobilestocklegeritems")
 router.register(r"mobile/stockrulesversions", StockRulesVersionMobileViewSet, basename="mobilestockrulesversions")
+router.register(r"api_import", APIImportViewSet, basename="api_import")
+router.register(r"notifications", NotificationViewSet, basename="notifications")
+
+router.register(
+    r"validation-workflows/instance", ValidationWorkflowInstanceViewSet, basename="validation_workflow_instances"
+)
+
+router.register(r"validation-workflows", ValidationWorkflowViewSet, basename="validation_workflows").register(
+    r"node-templates",
+    ValidationNodeTemplatesView,
+    basename="validation_node_templates",
+    parents_query_lookups=["workflow__slug"],
+)
+router.register(
+    r"validation-workflows/instance/(?P<instance_id>\d+)/nodes",
+    ValidationNodeViewSet,
+    basename="validation_workflow_nodes",
+)
+router.register(r"mobile/validation-workflows", ValidationWorkflowMobileViewSet, basename="mobile_validation_workflows")
+
 router.registry.extend(plugins_router.registry)
 
 urlpatterns: URLList = [
@@ -274,6 +312,7 @@ urlpatterns: URLList = [
         "enketo/instance_files/<instance_file_id>/<file_name>", view=enketo_instance_files, name="enketo-instance-files"
     ),
     path("logout-iaso", auth.views.LogoutView.as_view(next_page="login"), name="logout-iaso"),
+    path("captcha/", include("captcha.urls")),
 ]
 
 
@@ -305,6 +344,10 @@ urlpatterns = urlpatterns + [
     path("workflows/export/<workflow_id>/", export_workflow, name="export_workflow"),
     path("workflows/import/", import_workflow, name="import_workflow"),
     path("colors/", colors_list, name="colors"),
+    path("form_ai/", form_ai_chat, name="form_ai_chat"),
+    path("form_ai/load/<int:form_id>/", form_ai_load_form, name="form_ai_load_form"),
+    path("form_ai/download/<str:form_uuid>/", form_ai_download, name="form_ai_download"),
+    path("form_ai/save/", form_ai_save, name="form_ai_save"),
     path("", include(router.urls)),
 ]
 # External Auth

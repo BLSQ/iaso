@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions
 
 from iaso.api.common import ModelViewSet
@@ -5,6 +6,7 @@ from iaso.models import OrgUnit
 from plugins.polio.api.shared_serializers import OrgUnitSerializer
 
 
+@extend_schema(tags=["Polio - Org units", "Org units"])
 class PolioOrgunitViewSet(ModelViewSet):
     """Org units API for Polio
 

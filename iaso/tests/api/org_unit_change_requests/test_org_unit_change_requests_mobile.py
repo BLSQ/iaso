@@ -80,7 +80,7 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
 
-        with self.assertNumQueries(8):
+        with self.assertNumQueries(7):
             # filter_for_user_and_app_id
             #   1. SELECT OrgUnit
             #   2. SELECT Project

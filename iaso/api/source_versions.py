@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -82,6 +83,7 @@ class SourceVersionsDropdownSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "data_source", "number", "data_source_name"]
 
 
+@extend_schema(tags=["Source versions"])
 class SourceVersionViewSet(ModelViewSet):
     f"""Data source API
 

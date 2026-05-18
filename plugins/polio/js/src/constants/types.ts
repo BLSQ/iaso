@@ -1,5 +1,5 @@
+import { PaginationType } from 'bluesquare-components';
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
-import { Pagination } from 'Iaso/types/general';
 import {
     DropdownOptionsWithOriginal,
     Nullable,
@@ -17,7 +17,7 @@ export type GroupedCampaign = {
     updated_at: string;
 };
 
-export type GroupedCampaigns = Pagination & {
+export type GroupedCampaigns = PaginationType & {
     results: GroupedCampaign[];
 };
 
@@ -43,7 +43,7 @@ export type CampaignLogDetail = {
     user: Record<string, any>;
 };
 
-export type CampaignLogsDetail = Pagination & {
+export type CampaignLogsDetail = PaginationType & {
     list: CampaignLogDetail[];
 };
 
@@ -232,6 +232,7 @@ type CalendarRound = {
     target_population: Nullable<number>;
     vaccine_names: string;
     is_planned: boolean;
+    on_hold: boolean;
 };
 
 export type CalendarSubActivity = {
@@ -395,7 +396,7 @@ export type GeoJson = {
 export type Shape = {
     altitude: Nullable<number>;
     data?: Record<string, any>;
-    geo_json;
+    geo_json: GeoJson;
     has_geo_json: boolean;
     id: number;
     latitude: Nullable<number>;

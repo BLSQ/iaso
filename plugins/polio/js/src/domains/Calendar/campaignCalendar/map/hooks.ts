@@ -6,6 +6,7 @@ import MESSAGES from '../../../../constants/messages';
 import { MergedShapes } from '../../../../constants/types';
 import { useGetMergedCampaignShapes } from '../../hooks/useGetMergedCampaignShapes';
 import {
+    CalendarParams,
     MappedCampaign,
     MergedShapeWithCacheDate,
     Query,
@@ -72,6 +73,7 @@ type UseMergedShapesArgs = {
     campaigns: MappedCampaign[];
     roundsDict: Record<string, string>;
     selection: string;
+    params: CalendarParams;
 };
 
 type UseMergedShapesResult = {
@@ -85,12 +87,22 @@ type UseGetMergedShapesResult = {
 };
 
 export const useMergedShapes = ({
+    params,
     campaigns,
     roundsDict,
     selection,
 }: UseMergedShapesArgs): UseMergedShapesResult => {
+    const mergedShapesOptions = useMemo(() => {
+        const { accountId: _accountId, ...rest } = params;
+        if (rest.campaignCategory === 'on_hold') {
+            rest.on_hold = 'true';
+        }
+        return rest;
+    }, [params]);
     const { data: mergedShapes, isFetching: isLoadingMergedShapes } =
-        useGetMergedCampaignShapes() as UseGetMergedShapesResult;
+        useGetMergedCampaignShapes(
+            mergedShapesOptions,
+        ) as UseGetMergedShapesResult;
 
     const firstAndLastRounds = useMemo(() => {
         return findFirstAndLastRounds(campaigns);

@@ -1,8 +1,10 @@
 from django.contrib.auth.models import User
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from iaso.api.common import (
     DateTimestampField,
+    ModelSerializer,
     TimestampField,
 )
 from iaso.api.teams.serializers import NestedTeamSerializer
@@ -12,7 +14,7 @@ from iaso.models.org_unit import OrgUnitQuerySet
 from iaso.models.team import Team
 
 
-class NestedProjectSerializer(serializers.ModelSerializer):
+class NestedProjectSerializer(ModelSerializer):
     class Meta:
         model = Project
         fields = ["id", "name", "color"]
@@ -63,7 +65,9 @@ class PlanningWriteSerializer(serializers.ModelSerializer):
         self.fields["team"].queryset = Team.objects.filter_for_user(user)
         self.fields["org_unit"].queryset = OrgUnit.objects.filter_for_user_and_app_id(user, None)
         self.fields["forms"].child_relation.queryset = Form.objects.filter_for_user_and_app_id(user).distinct()
-        self.fields["target_org_unit_type"].queryset = OrgUnitType.objects.filter(projects__account=account).distinct()
+        self.fields["target_org_unit_types"].child_relation.queryset = OrgUnitType.objects.filter(
+            projects__account=account
+        ).distinct()
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)
@@ -101,17 +105,20 @@ class PlanningWriteSerializer(serializers.ModelSerializer):
             if project not in org_unit_projects:
                 validation_errors["org_unit"] = "planningAndOrgUnit"
 
-        target_org_unit_type = validated_data.get(
-            "target_org_unit_type", self.instance.target_org_unit_type if self.instance else None
+        target_org_unit_types = validated_data.get(
+            "target_org_unit_types",
+            list(self.instance.target_org_unit_types.all()) if self.instance else None,
         )
-        if target_org_unit_type:
-            target_type_projects = target_org_unit_type.projects.all()
-            if project not in target_type_projects:
-                validation_errors["target_org_unit_type"] = "planningAndTargetOrgUnitType"
-            else:
-                descendant_org_units = OrgUnit.objects.descendants(org_unit).filter(org_unit_type=target_org_unit_type)
+        if target_org_unit_types:
+            for target_type in target_org_unit_types:
+                target_type_projects = target_type.projects.all()
+                if project not in target_type_projects:
+                    validation_errors["target_org_unit_types"] = "planningAndTargetOrgUnitType"
+                    break
+                descendant_org_units = OrgUnit.objects.descendants(org_unit).filter(org_unit_type=target_type)
                 if not descendant_org_units.exists():
-                    validation_errors["target_org_unit_type"] = "noOrgUnitsOfTypeInHierarchy"
+                    validation_errors["target_org_unit_types"] = "noOrgUnitsOfTypeInHierarchy"
+                    break
 
         selected_sampling_result = validated_data.get("selected_sampling_result")
         if selected_sampling_result:
@@ -155,7 +162,9 @@ class PlanningReadSerializer(serializers.ModelSerializer):
     team_details = NestedTeamSerializer(source="team", read_only=True)
     org_unit_details = NestedOrgUnitSerializer(source="org_unit", read_only=True)
     project_details = NestedProjectSerializer(source="project", read_only=True)
-    target_org_unit_type_details = NestedOrgUnitTypeSerializer(source="target_org_unit_type", read_only=True)
+    target_org_unit_type_details = NestedOrgUnitTypeSerializer(
+        source="target_org_unit_types", many=True, read_only=True
+    )
 
 
 class SamplingGroupSerializer(serializers.ModelSerializer):
@@ -221,17 +230,6 @@ class PlanningSamplingResultListSerializer(serializers.Serializer):
         user = getattr(request, "user", None)
         if user and user.is_authenticated:
             self.fields["planning_id"].queryset = Planning.objects.filter_for_user(user)
-
-
-class PlanningOrgUnitListSerializer(serializers.Serializer):
-    planning = serializers.PrimaryKeyRelatedField(queryset=Planning.objects.none())
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        request = self.context.get("request")
-        user = getattr(request, "user", None)
-        if user and user.is_authenticated:
-            self.fields["planning"].queryset = Planning.objects.filter_for_user(user)
 
 
 class PlanningSamplingResultWriteSerializer(serializers.ModelSerializer):
@@ -467,3 +465,66 @@ class PlanningOrgUnitSerializer(serializers.ModelSerializer):
 
     def get_has_geo_json(self, org_unit: OrgUnit) -> bool:
         return hasattr(org_unit, "geo_json") and org_unit.geo_json is not None
+
+
+class PlanningOrgUnitTableAssignmentTeamSerializer(ModelSerializer):
+    class Meta:
+        model = Team
+        fields = ["id", "name", "color"]
+
+
+class PlanningOrgUnitTableAssignmentUserSerializer(ModelSerializer):
+    color = serializers.CharField(source="iaso_profile.color", read_only=True)
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "first_name", "last_name", "color"]
+
+
+class PlanningOrgUnitTableAssignmentSerializer(ModelSerializer):
+    """Assignment row for planning org unit table: both ``team`` and ``user`` are exposed; ``assignment_type`` indicates which is set."""
+
+    team = PlanningOrgUnitTableAssignmentTeamSerializer(allow_null=True, read_only=True)
+    user = PlanningOrgUnitTableAssignmentUserSerializer(allow_null=True, read_only=True)
+    assignment_type = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Assignment
+        fields = ("id", "team", "user", "assignment_type")
+
+    @extend_schema_field(serializers.ChoiceField(allow_null=True, choices=["team", "user"], required=False))
+    def get_assignment_type(self, obj: Assignment):
+        if obj.team_id and obj.team:
+            return "team"
+        if obj.user_id and obj.user:
+            return "user"
+        return None
+
+
+class PlanningOrgUnitTableSerializer(ModelSerializer):
+    """Paginated planning org units for tables (minimal columns + assignment for this planning)."""
+
+    assignment = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrgUnit
+        fields = ["id", "name", "assignment"]
+        read_only_fields = fields
+
+    @extend_schema_field(PlanningOrgUnitTableAssignmentSerializer)
+    def get_assignment(self, org_unit: OrgUnit):
+        assignment = self._assignment_for_org_unit(org_unit)
+        return PlanningOrgUnitTableAssignmentSerializer(instance=assignment).data
+
+    def _assignment_for_org_unit(self, org_unit: OrgUnit):
+        prefetched = getattr(org_unit, "_planning_assignments_prefetched", None)
+        if prefetched is not None:
+            return prefetched[0] if prefetched else None
+        planning = self.context.get("planning")
+        if planning is None:
+            return None
+        return (
+            Assignment.objects.filter(planning=planning, org_unit=org_unit, deleted_at__isnull=True)
+            .select_related("user__iaso_profile", "team")
+            .first()
+        )

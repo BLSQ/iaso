@@ -1,4 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions
 
 from iaso.api.common import ModelViewSet
@@ -9,6 +10,7 @@ from plugins.polio.api.subactivities.serializers import (
 from plugins.polio.models import SubActivity
 
 
+@extend_schema(tags=["Polio: - Sub activities"])
 class SubActivityViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     http_method_names = ["get", "head", "options", "post", "delete", "put"]

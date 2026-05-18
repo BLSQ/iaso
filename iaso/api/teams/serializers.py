@@ -1,43 +1,42 @@
 from django.contrib.auth.models import User
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.fields import Field
 
+from dynamic_fields.serializer import DynamicFieldsModelSerializerBackwardCompatible
+from iaso.api.common import ModelSerializer
 from iaso.models import Project
 from iaso.models.team import Team, TeamType
-from iaso.utils.colors import COLOR_FORMAT_ERROR, validate_hex_color
+from iaso.utils.serializer.color import ColorFieldSerializer
 
 
-class NestedProjectSerializer(serializers.ModelSerializer):
+class NestedProjectSerializer(ModelSerializer):
     class Meta:
         model = Project
         fields = ["id", "name", "color"]
         ref_name = "TeamsNestedProject"
 
 
-class NestedTeamSerializer(serializers.ModelSerializer):
+class NestedTeamSerializer(ModelSerializer):
     class Meta:
         model = Team
         fields = ["id", "name", "deleted_at", "color"]
 
 
-class NestedUserSerializer(serializers.ModelSerializer):
-    color = serializers.SerializerMethodField()
+class NestedUserSerializer(ModelSerializer):
+    color = ColorFieldSerializer(source="iaso_profile.color", read_only=True, default=None)
     iaso_profile_id = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ["id", "username", "first_name", "last_name", "color", "iaso_profile_id"]
 
-    def get_color(self, obj):
-        profile = getattr(obj, "iaso_profile", None)
-        return getattr(profile, "color", None) if profile else None
-
     def get_iaso_profile_id(self, obj):
         profile = getattr(obj, "iaso_profile", None)
         return getattr(profile, "id", None) if profile else None
 
 
-class AuditTeamSerializer(serializers.ModelSerializer):
+class AuditTeamSerializer(ModelSerializer):
     sub_teams: Field = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
 
     class Meta:
@@ -45,7 +44,7 @@ class AuditTeamSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class TeamDropdownSerializer(serializers.ModelSerializer):
+class TeamDropdownSerializer(ModelSerializer):
     """Lightweight serializer for team dropdown lists"""
 
     class Meta:
@@ -54,17 +53,20 @@ class TeamDropdownSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "name", "color", "type", "project"]
 
 
-class TeamSerializer(serializers.ModelSerializer):
+class TeamSerializer(ModelSerializer, DynamicFieldsModelSerializerBackwardCompatible):
+    members_count = serializers.SerializerMethodField()
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         user = self.context["request"].user
         account = user.iaso_profile.account
+        teams = Team.objects.filter_for_user(user)
         users_in_account = User.objects.filter(iaso_profile__account=account)
         self.fields["project"].queryset = account.project_set.all()
         self.fields["manager"].queryset = users_in_account
         self.fields["users"].child_relation.queryset = users_in_account
-        self.fields["sub_teams"].child_relation.queryset = Team.objects.filter_for_user(user)
-        self.fields["parent"].queryset = Team.objects.filter_for_user(user)
+        self.fields["sub_teams"].child_relation.queryset = teams
+        self.fields["parent"].queryset = teams
 
     class Meta:
         model = Team
@@ -84,18 +86,39 @@ class TeamSerializer(serializers.ModelSerializer):
             "parent",
             "sub_teams",
             "sub_teams_details",
+            "members_count",
         ]
-        read_only_fields = ["created_at"]
+        default_fields = [
+            "id",
+            "project",
+            "project_details",
+            "name",
+            "description",
+            "created_at",
+            "deleted_at",
+            "type",
+            "color",
+            "users",
+            "users_details",
+            "manager",
+            "parent",
+            "sub_teams",
+            "sub_teams_details",
+        ]
+        read_only_fields = ["created_at", "members_count"]
 
     users_details = NestedUserSerializer(many=True, read_only=True, source="users")
     sub_teams_details = NestedTeamSerializer(many=True, read_only=True, source="sub_teams")
     project_details = NestedProjectSerializer(many=False, read_only=True, source="project")
 
-    def validate_color(self, value: str) -> str:
-        try:
-            return validate_hex_color(value)
-        except ValueError:
-            raise serializers.ValidationError(COLOR_FORMAT_ERROR)
+    @extend_schema_field(serializers.IntegerField)
+    def get_members_count(self, team):
+        if team.type == TeamType.TEAM_OF_TEAMS:
+            return getattr(team, "annotated_sub_teams_count", None) or team.sub_teams.count()
+
+        if team.type == TeamType.TEAM_OF_USERS:
+            return getattr(team, "annotated_users_count", None) or team.users.count()
+        return 0
 
     def validate_parent(self, value: Team):
         if value is not None and value.type not in (None, TeamType.TEAM_OF_TEAMS):
@@ -126,11 +149,17 @@ class TeamSerializer(serializers.ModelSerializer):
             old_sub_teams_ids = list(self.instance.sub_teams.all().values_list("id", flat=True))
         r = super().save(**kwargs)
         new_sub_teams_ids = list(self.instance.sub_teams.all().values_list("id", flat=True))
-        team_changed_qs = Team.objects.filter(id__in=new_sub_teams_ids + old_sub_teams_ids)
-        teams_to_update = []
-        for team in team_changed_qs:
-            teams_to_update += team.calculate_paths(force_recalculate=True)
-        Team.objects.bulk_update(teams_to_update, ["path"])
+
+        if set(old_sub_teams_ids) != set(new_sub_teams_ids):
+            team_changed_qs = Team.objects.filter(id__in=new_sub_teams_ids + old_sub_teams_ids)
+            teams_to_update = []
+            for team in team_changed_qs:
+                teams_to_update += team.calculate_paths(force_recalculate=True)
+
+            if teams_to_update:
+                unique_teams = {t.pk: t for t in teams_to_update}.values()
+                Team.objects.bulk_update(unique_teams, ["path"])
+
         return r
 
     def validate(self, attrs):

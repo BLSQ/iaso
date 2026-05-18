@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import MESSAGES from '../messages';
 
 type Props = {
     handleChange: (value: any[]) => void;
@@ -17,6 +17,7 @@ const UsersLocations: FunctionComponent<Props> = ({
         }
         handleChange(orgUnitsList);
     };
+
     return (
         <OrgUnitTreeviewModal
             toggleOnLabelClick={false}

@@ -1,0 +1,6 @@
+{
+    "extends": "../../pyrightconfig.json",
+    "extraPaths": [
+        "../.."
+    ]
+}

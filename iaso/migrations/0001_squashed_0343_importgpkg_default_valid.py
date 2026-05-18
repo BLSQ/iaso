@@ -12,8 +12,9 @@ from django.conf import settings
 from django.contrib.postgres.operations import CITextExtension, CreateExtension, TrigramExtension
 from django.db import migrations, models
 
-import iaso.models.base
 import iaso.utils.dhis2
+
+from iaso.utils.models.choice_array_field import ChoiceArrayField
 
 
 def create_account_feature_flag(apps, schema_editor):
@@ -813,7 +814,7 @@ class Migration(migrations.Migration):
                 ("user_manual_path", models.TextField(blank=True, null=True)),
                 (
                     "modules",
-                    iaso.models.base.ChoiceArrayField(
+                    ChoiceArrayField(
                         base_field=models.CharField(
                             choices=[
                                 ("DATA_COLLECTION_FORMS", "Data collection - Forms"),
@@ -3135,9 +3136,7 @@ class Migration(migrations.Migration):
                 ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 (
                     "file",
-                    models.FileField(
-                        upload_to=iaso.models.bulk_create_user_csv_file.bulk_create_user_csv_file_upload_to
-                    ),
+                    models.FileField(upload_to=iaso.models.bulk_create_user_csv_file.bulk_create_user_file_upload_to),
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 (

@@ -13,10 +13,12 @@ class APIImportAdmin(admin.GeoModelAdmin):
         "import_type",
         "has_problem",
         "user",
+        "app_id",
     )
     list_filter = (
         "has_problem",
         "import_type",
+        "app_id",
     )
 
     def get_queryset(self, request):

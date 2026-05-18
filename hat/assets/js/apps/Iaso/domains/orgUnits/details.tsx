@@ -32,6 +32,7 @@ import {
 } from '../../utils/usersUtils';
 import { FormsTable } from '../forms/components/FormsTable';
 import { FormsParams } from '../forms/types/forms';
+import { useGetOrgunitsExtraPath } from '../home/hooks/useGetOrgunitsExtraPath';
 import { userHasPermission } from '../users/utils';
 import { OrgUnitBreadcrumbs } from './components/breadcrumbs/OrgUnitBreadcrumbs';
 import { OrgUnitForm } from './components/OrgUnitForm';
@@ -118,7 +119,8 @@ const tabs = [
 const OrgUnitDetail: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
     const params = useParamsObject(baseUrl);
-    const goBack = useGoBack(baseUrls.orgUnits);
+    const orgUnitExtrapath = useGetOrgunitsExtraPath();
+    const goBack = useGoBack(`${baseUrls.orgUnits}/${orgUnitExtrapath}`);
     const { mutateAsync: saveOu, isLoading: savingOu } = useSaveOrgUnit();
     const queryClient = useQueryClient();
     const { formatMessage } = useSafeIntl();

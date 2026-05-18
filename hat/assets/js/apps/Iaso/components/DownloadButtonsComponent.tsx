@@ -36,7 +36,7 @@ const DownloadButtonsComponent: FunctionComponent<Props> = ({
     const classes = useDownloadButtonStyles();
     return (
         <div data-test="download-buttons">
-            {csvUrl && typeof csvUrl === 'string' && (
+            {csvUrl && (
                 <Button
                     data-test="csv-export-button"
                     variant={variant}
@@ -44,12 +44,13 @@ const DownloadButtonsComponent: FunctionComponent<Props> = ({
                     color="primary"
                     href={csvUrl}
                     disabled={disabled}
+                    download={true}
                 >
                     <CsvSvg />
                     CSV
                 </Button>
             )}
-            {xlsxUrl && typeof xlsxUrl === 'string' && (
+            {xlsxUrl && (
                 <Button
                     data-test="xlsx-export-button"
                     variant={variant}
@@ -57,12 +58,13 @@ const DownloadButtonsComponent: FunctionComponent<Props> = ({
                     color="primary"
                     href={xlsxUrl}
                     disabled={disabled}
+                    download={true}
                 >
                     <ExcellSvg className={classes.icon} />
                     XLSX
                 </Button>
             )}
-            {gpkgUrl && typeof gpkgUrl === 'string' && (
+            {gpkgUrl && (
                 <Button
                     data-test="gpkg-export-button"
                     variant={variant}
@@ -70,6 +72,7 @@ const DownloadButtonsComponent: FunctionComponent<Props> = ({
                     color="primary"
                     href={gpkgUrl}
                     disabled={disabled}
+                    download={true}
                 >
                     <PublicIcon className={classes.icon} />
                     GPKG

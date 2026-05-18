@@ -1,4 +1,4 @@
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
 
 from iaso.api.common import ModelViewSet
@@ -14,7 +14,7 @@ class ConfigSerializer(serializers.ModelSerializer):
     key = serializers.CharField(source="slug")
 
 
-@swagger_auto_schema(tags=["polio-configs"])
+@extend_schema(tags=["Polio - Configs"])
 class ConfigViewSet(ModelViewSet):
     http_method_names = ["get"]
     serializer_class = ConfigSerializer

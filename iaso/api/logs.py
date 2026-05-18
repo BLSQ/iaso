@@ -6,6 +6,7 @@ from django.core.paginator import Paginator
 from django.db import models
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext as _
+from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
@@ -66,6 +67,7 @@ def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
     return False
 
 
+@extend_schema(tags=["Log modifications"])
 class LogsViewSet(viewsets.ViewSet):
     """
     Modification API to retrieve log modifications. Read only

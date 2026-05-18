@@ -1,3 +1,5 @@
+import datetime
+
 import time_machine
 
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
@@ -162,23 +164,22 @@ class MobileOrgUnitAPITestCase(APITestCase):
 
     def test_org_unit_have_correct_parent_id_without_limit(self):
         self.client.force_authenticate(self.user)
-        with self.assertNumQueries(16):
-            # 1. SELECT  FROM "iaso_project"
-            # 2. SELECT FROM "iaso_account"
-            # 3. SELECT FROM "iaso_orgunit"
-            # 4. SELECT FROM "django_cache_table"
-            # 5. SELECT FROM "iaso_project"
-            # 6. SELECT FROM "iaso_account"
-            # 7. SELECT "iaso_featureflag"
-            # 8. SELECT FROM "iaso_sourceversion"
-            # 9. SELECT FROM "iaso_orgunit"
-            # 10. SELECT FROM "iaso_project" INNER JOIN "iaso_orgunittype_projects"
-            # 11. SELECT FROM "iaso_group"
-            # 12. SELECT COUNT(*) FROM "django_cache_table"
-            # 13. SAVEPOINT "s128932915669888_x20"
-            # 14. SELECT FROM "django_cache_table"
-            # 15. INSERT INTO "django_cache_table"
-            # 16. RELEASE SAVEPOINT "s128932915669888_x20"
+        with self.assertNumQueries(14):
+            # 1. SELECT "iaso_project" (permission / app lookup by app_id)
+            # 2. SELECT "iaso_account"
+            # 3. SELECT "iaso_orgunit" … profile roots (org_units M2M)
+            # 4. SELECT "django_cache_table" (cache get)
+            # 5. SELECT "iaso_project" LEFT JOIN "iaso_account" + "iaso_sourceversion"
+            #    (Project.get_for_user_and_app_id — select_related avoids extra account/version queries)
+            # 6. SELECT EXISTS "iaso_featureflag" (LIMIT_OU_DOWNLOAD_TO_ROOTS)
+            # 7. SELECT "iaso_orgunit" … (main list + parent + org unit type)
+            # 8. Prefetch org unit types → projects (M2M)
+            # 9. Prefetch org units → groups
+            # 10. SELECT COUNT(*) FROM "django_cache_table"
+            # 11. SAVEPOINT (atomic cache write)
+            # 12. SELECT "django_cache_table" (cache key)
+            # 13. INSERT "django_cache_table"
+            # 14. RELEASE SAVEPOINT
             response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
         self.assertJSONResponse(response, 200)
         self.assertEqual([self.raditz.id, self.goku.id], response.json()["roots"])
@@ -204,23 +205,22 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.goku.validation_status = OrgUnit.VALIDATION_VALID
         self.goku.save()
         self.client.force_authenticate(self.user)
-        with self.assertNumQueries(16):
-            # 1. SELECT  FROM "iaso_project"
-            # 2. SELECT FROM "iaso_account"
-            # 3. SELECT FROM "iaso_orgunit"
-            # 4. SELECT FROM "django_cache_table"
-            # 5. SELECT FROM "iaso_project"
-            # 6. SELECT FROM "iaso_account"
-            # 7. SELECT "iaso_featureflag"
-            # 8. SELECT FROM "iaso_sourceversion"
-            # 9. SELECT FROM "iaso_orgunit"
-            # 10. SELECT FROM "iaso_project" INNER JOIN "iaso_orgunittype_projects"
-            # 11. SELECT FROM "iaso_group"
-            # 12. SELECT COUNT(*) FROM "django_cache_table"
-            # 13. SAVEPOINT "s128932915669888_x20"
-            # 14. SELECT FROM "django_cache_table"
-            # 15. INSERT INTO "django_cache_table"
-            # 16. RELEASE SAVEPOINT "s128932915669888_x20"
+        with self.assertNumQueries(14):
+            # 1. SELECT "iaso_project" (permission / app lookup by app_id)
+            # 2. SELECT "iaso_account"
+            # 3. SELECT "iaso_orgunit" … profile roots (org_units M2M)
+            # 4. SELECT "django_cache_table" (cache get)
+            # 5. SELECT "iaso_project" LEFT JOIN "iaso_account" + "iaso_sourceversion"
+            #    (Project.get_for_user_and_app_id — select_related avoids extra account/version queries)
+            # 6. SELECT EXISTS "iaso_featureflag" (LIMIT_OU_DOWNLOAD_TO_ROOTS)
+            # 7. SELECT "iaso_orgunit" … (main list + parent + org unit type)
+            # 8. Prefetch org unit types → projects (M2M)
+            # 9. Prefetch org units → groups
+            # 10. SELECT COUNT(*) FROM "django_cache_table"
+            # 11. SAVEPOINT (atomic cache write)
+            # 12. SELECT "django_cache_table" (cache key)
+            # 13. INSERT "django_cache_table"
+            # 14. RELEASE SAVEPOINT
             response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
         self.assertJSONResponse(response, 200)
         self.assertEqual([self.raditz.id, self.goku.id], response.json()["roots"])
@@ -250,23 +250,22 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.goku.org_unit_type = self.nameks
         self.goku.save()
         self.client.force_authenticate(self.user)
-        with self.assertNumQueries(16):
-            # 1. SELECT  FROM "iaso_project"
-            # 2. SELECT FROM "iaso_account"
-            # 3. SELECT FROM "iaso_orgunit"
-            # 4. SELECT FROM "django_cache_table"
-            # 5. SELECT FROM "iaso_project"
-            # 6. SELECT FROM "iaso_account"
-            # 7. SELECT "iaso_featureflag"
-            # 8. SELECT FROM "iaso_sourceversion"
-            # 9. SELECT FROM "iaso_orgunit"
-            # 10. SELECT FROM "iaso_project" INNER JOIN "iaso_orgunittype_projects"
-            # 11. SELECT FROM "iaso_group"
-            # 12. SELECT COUNT(*) FROM "django_cache_table"
-            # 13. SAVEPOINT "s128932915669888_x20"
-            # 14. SELECT FROM "django_cache_table"
-            # 15. INSERT INTO "django_cache_table"
-            # 16. RELEASE SAVEPOINT "s128932915669888_x20"
+        with self.assertNumQueries(14):
+            # 1. SELECT "iaso_project" (permission / app lookup by app_id)
+            # 2. SELECT "iaso_account"
+            # 3. SELECT "iaso_orgunit" … profile roots (org_units M2M)
+            # 4. SELECT "django_cache_table" (cache get)
+            # 5. SELECT "iaso_project" LEFT JOIN "iaso_account" + "iaso_sourceversion"
+            #    (Project.get_for_user_and_app_id — select_related avoids extra account/version queries)
+            # 6. SELECT EXISTS "iaso_featureflag" (LIMIT_OU_DOWNLOAD_TO_ROOTS)
+            # 7. SELECT "iaso_orgunit" … (main list + parent + org unit type)
+            # 8. Prefetch org unit types → projects (M2M)
+            # 9. Prefetch org units → groups
+            # 10. SELECT COUNT(*) FROM "django_cache_table"
+            # 11. SAVEPOINT (atomic cache write)
+            # 12. SELECT "django_cache_table" (cache key)
+            # 13. INSERT "django_cache_table"
+            # 14. RELEASE SAVEPOINT
             response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
         self.assertJSONResponse(response, 200)
         self.assertEqual([self.raditz.id, self.goku.id], response.json()["roots"])
@@ -412,9 +411,16 @@ class MobileOrgUnitAPITestCase(APITestCase):
             form=form2, org_unit=self.raditz, json={"key": "bar"}, form_version=form_version2
         )
         instance_file1 = InstanceFile.objects.create(instance=instance2, file="test1.jpg")
+        # Instance 3. Form is soft-deleted
+        form3 = Form.objects.create(name="Form 3", deleted_at=datetime.datetime.now())
+        form_version3 = FormVersion.objects.create(form=form3, version_id=9)
+        instance3 = Instance.objects.create(
+            form=form3, org_unit=self.raditz, json={"key": "foobar"}, form_version=form_version3
+        )
         # Mark instances as reference instances.
         OrgUnitReferenceInstance.objects.create(org_unit=self.raditz, instance=instance1, form=form1)
         OrgUnitReferenceInstance.objects.create(org_unit=self.raditz, instance=instance2, form=form2)
+        OrgUnitReferenceInstance.objects.create(org_unit=self.raditz, instance=instance3, form=form3)
 
         self.client.force_authenticate(self.user)
 

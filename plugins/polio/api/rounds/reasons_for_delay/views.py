@@ -1,4 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -14,6 +15,7 @@ from plugins.polio.models import ReasonForDelay
 from plugins.polio.permissions import POLIO_CONFIG_PERMISSION, POLIO_PERMISSION
 
 
+@extend_schema(tags=["Polio - Reason for delays"])
 class ReasonForDelayViewSet(AuditMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch"]
     permission_classes = [HasPermission(POLIO_CONFIG_PERMISSION)]

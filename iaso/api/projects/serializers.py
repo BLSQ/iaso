@@ -6,7 +6,7 @@ from rest_framework import serializers
 
 from iaso.models import FeatureFlag, Project, ProjectFeatureFlags
 
-from ..common import TimestampField
+from ..common import ModelSerializer, TimestampField
 
 
 class ProjectFeatureFlagSerializer(serializers.ModelSerializer):
@@ -51,7 +51,7 @@ class FeatureFlagSerializer(serializers.Serializer):
         raise serializers.ValidationError("Unknown feature flag code")
 
 
-class ProjectSerializer(serializers.ModelSerializer):
+class ProjectSerializer(ModelSerializer):
     class Meta:
         model = Project
         fields = [

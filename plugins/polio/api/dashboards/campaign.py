@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
 
 from iaso.api.common import EtlModelViewset
@@ -10,6 +11,7 @@ class CampaignDashboardSerializer(serializers.ModelSerializer):
         exclude = ["geojson"]
 
 
+@extend_schema(tags=["Polio - Dashboards - Campaigns"])
 class CampaignDashboardViewSet(EtlModelViewset):
     """
     GET /api/polio/dashboards/campaigns/

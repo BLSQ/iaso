@@ -1,6 +1,6 @@
+import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { PdfPreview } from '../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/PdfPreview';
 import { SxStyles } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
@@ -45,7 +45,7 @@ export const VrfDocumentCell: FunctionComponent<Props> = ({
     return (
         <Box sx={defaultStyles.withPdf}>
             <PdfPreview
-                pdfUrl={file}
+                pdf={file}
                 OpenButtonComponent={OpenButtonComponent}
                 buttonProps={{
                     date,

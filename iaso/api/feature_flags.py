@@ -1,5 +1,6 @@
 from itertools import chain
 
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -31,6 +32,7 @@ class FeatureFlagsSerializer(serializers.ModelSerializer):
     updated_at = TimestampField(read_only=True)
 
 
+@extend_schema(tags=["Feature flags"])
 class FeatureFlagViewSet(ModelViewSet):
     """Feature flag API
 

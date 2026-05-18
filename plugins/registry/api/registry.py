@@ -1,6 +1,6 @@
 from django.http import JsonResponse
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.request import Request
@@ -139,13 +139,13 @@ class PublicRegistryConfigSerializer(serializers.ModelSerializer):
 class PublicRegistryViewSet(ViewSet):
     permission_classes = []
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
                 "registry_slug",
-                openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="Slug of the public registry configuration",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
                 required=True,
             ),
         ]
@@ -164,13 +164,13 @@ class PublicRegistryViewSet(ViewSet):
         return JsonResponse(serializer.data)
 
     # http://127.0.0.1:8000/api/public/registry/instances/7/
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
                 "instance_id",
-                openapi.IN_PATH,
+                location=OpenApiParameter.PATH,
                 description="ID of the instance",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
                 required=True,
             ),
         ]
@@ -204,27 +204,27 @@ class PublicRegistryViewSet(ViewSet):
 
         return JsonResponse(instance_data)
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
                 "registry_slug",
-                openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="Slug of the public registry configuration",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
                 required=False,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 "page",
-                openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="Page number",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
                 required=False,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 "limit",
-                openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="Number of items per page",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
                 required=False,
             ),
         ]

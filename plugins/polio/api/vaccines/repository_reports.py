@@ -1,8 +1,8 @@
 """API endpoints and serializers for vaccine repository reports."""
 
-from django.db.models import Q
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from django.db.models import Exists, OuterRef
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import filters, permissions, serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -10,7 +10,7 @@ from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
 
 from iaso.api.common import Paginator
-from plugins.polio.models import VaccineStock
+from plugins.polio.models import DestructionReport, IncidentReport, VaccineStock
 
 
 class VaccineReportingFilterBackend(filters.BaseFilterBackend):
@@ -22,12 +22,12 @@ class VaccineReportingFilterBackend(filters.BaseFilterBackend):
         if vaccine_name:
             queryset = queryset.filter(vaccine=vaccine_name)
 
-        # Filter by country block
+        # Filter by country block — .distinct() is scoped here because the M2M join can duplicate rows
         country_block = request.query_params.get("country_block", None)
         if country_block:
             try:
                 country_block_ids = [int(id) for id in country_block.split(",")]
-                queryset = queryset.filter(country__groups__in=country_block_ids)
+                queryset = queryset.filter(country__groups__in=country_block_ids).distinct()
             except ValueError:
                 raise ValidationError("country_block must be a comma-separated list of integers")
 
@@ -40,7 +40,7 @@ class VaccineReportingFilterBackend(filters.BaseFilterBackend):
             except ValueError:
                 raise ValidationError("countries must be a comma-separated list of integers")
 
-        # Filter by file type
+        # Filter by file type — use Exists() to avoid row multiplication and DISTINCT
         file_type = request.query_params.get("file_type", None)
         if file_type:
             try:
@@ -50,19 +50,20 @@ class VaccineReportingFilterBackend(filters.BaseFilterBackend):
                 has_destruction = "DESTRUCTION" in filetypes
 
                 if has_incident and has_destruction:
-                    # Both types specified - must have both
-                    queryset = queryset.filter(incidentreport__isnull=False, destructionreport__isnull=False)
+                    queryset = queryset.filter(
+                        Exists(IncidentReport.objects.filter(vaccine_stock_id=OuterRef("pk"))),
+                        Exists(DestructionReport.objects.filter(vaccine_stock_id=OuterRef("pk"))),
+                    )
                 elif has_incident:
-                    # Only incident reports
-                    queryset = queryset.filter(incidentreport__isnull=False)
+                    queryset = queryset.filter(Exists(IncidentReport.objects.filter(vaccine_stock_id=OuterRef("pk"))))
                 elif has_destruction:
-                    # Only destruction reports
-                    queryset = queryset.filter(destructionreport__isnull=False)
-                # If no types specified, show all (no filtering needed)
+                    queryset = queryset.filter(
+                        Exists(DestructionReport.objects.filter(vaccine_stock_id=OuterRef("pk")))
+                    )
             except ValueError:
                 raise ValidationError("file_type must be a comma-separated list of strings")
 
-        return queryset.distinct()
+        return queryset
 
 
 class VaccineRepositoryReportSerializer(serializers.Serializer):
@@ -95,6 +96,7 @@ class VaccineRepositoryReportSerializer(serializers.Serializer):
         return data
 
 
+@extend_schema(tags=["Polio - Vaccine repository reports"])
 class VaccineRepositoryReportsViewSet(GenericViewSet, ListModelMixin):
     """ViewSet for retrieving vaccine repository reports data."""
 
@@ -110,43 +112,55 @@ class VaccineRepositoryReportsViewSet(GenericViewSet, ListModelMixin):
     def get_queryset(self):
         """Get the queryset for VaccineStock objects."""
 
-        base_qs = VaccineStock.objects.select_related(
-            "country",
-        ).prefetch_related(
-            "incidentreport_set",
-            "destructionreport_set",
+        base_qs = (
+            VaccineStock.objects.select_related(
+                "country",
+            )
+            .defer(
+                "country__geom",
+                "country__simplified_geom",
+                "country__catchment",
+                "country__location",
+            )
+            .prefetch_related(
+                "incidentreport_set",
+                "destructionreport_set",
+            )
         )
 
         if self.request.user and self.request.user.is_authenticated:
             base_qs = base_qs.filter(account=self.request.user.iaso_profile.account)
 
-        return base_qs.filter(Q(destructionreport__isnull=False) | Q(incidentreport__isnull=False))
+        return base_qs.filter(
+            Exists(DestructionReport.objects.filter(vaccine_stock_id=OuterRef("pk")))
+            | Exists(IncidentReport.objects.filter(vaccine_stock_id=OuterRef("pk")))
+        )
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
                 "file_type",
-                openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="Filter by file type (IR, DR)",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 "country_block",
-                openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="Filter by country block (comma separated list of org unit group ids)",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 "countries",
-                openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="Filter by countries (comma separated list of country ids)",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 "vaccine_name",
-                openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="Filter by vaccine name",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
             ),
         ]
     )

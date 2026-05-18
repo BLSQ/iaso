@@ -1,12 +1,14 @@
 from time import process_time
 
 from dhis2 import Api
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 
 from iaso.models import DataSource
 
 
+@extend_schema(tags=["DHIS2", "Data sources"])
 class Dhis2ViewSet(viewsets.ViewSet):
     """DHIS2 datasources API
 

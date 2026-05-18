@@ -291,6 +291,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Approve',
         id: 'iaso.label.approve',
     },
+    reject: {
+        defaultMessage: 'Reject',
+        id: 'iaso.label.reject',
+    },
     launch: {
         id: 'iaso.label.launch',
         defaultMessage: 'Launch',
@@ -338,6 +342,22 @@ const MESSAGES = defineMessages({
     exportStatus: {
         defaultMessage: 'Status',
         id: 'iaso.exportRequest.Status',
+    },
+    referenceInstancesFilter: {
+        defaultMessage: 'Reference submission',
+        id: 'iaso.label.orgunitreferenceinstance',
+    },
+    referenceInstancesAll: {
+        defaultMessage: 'All submissions',
+        id: 'iaso.instances.referenceInstancesAll',
+    },
+    referenceInstancesOnlyReference: {
+        defaultMessage: 'Only reference submissions',
+        id: 'iaso.instances.referenceInstancesOnlyReference',
+    },
+    referenceInstancesNotReference: {
+        defaultMessage: 'Only non-reference submissions',
+        id: 'iaso.instances.referenceInstancesNotReference',
     },
     lastExportSuccessAt: {
         defaultMessage: 'Last export success at',
@@ -492,19 +512,19 @@ const MESSAGES = defineMessages({
     },
     modificationDateFrom: {
         id: 'iaso.instances.modificationDateFrom',
-        defineMessage: 'Modification date from',
+        defaultMessage: 'Modification date from',
     },
     modificationDateTo: {
         id: 'iaso.instances.modificationDateTo',
-        defineMessage: 'Modification date to',
+        defaultMessage: 'Modification date to',
     },
     sentDateFrom: {
         id: 'iaso.instances.sentDateFrom',
-        defineMessage: 'Sent date from',
+        defaultMessage: 'Sent date from',
     },
     sentDateTo: {
         id: 'iaso.instances.sentDateTo',
-        defineMessage: 'Sent date to',
+        defaultMessage: 'Sent date to',
     },
     clear: {
         id: 'iaso.label.clear',
@@ -632,7 +652,7 @@ const MESSAGES = defineMessages({
     },
     onlyOneExistingVersion: {
         id: 'iaso.label.onlyOneExisitingVersion',
-        defaultMessagbe: 'Only one existing version',
+        defaultMessage: 'Only one existing version',
     },
     seeAllVersions: {
         id: 'iaso.label.seeAllVersions',
@@ -769,6 +789,100 @@ const MESSAGES = defineMessages({
     searchToSeeSubmissions: {
         id: 'iaso.forms.searchToSeeSubmissions',
         defaultMessage: 'Click "Search" button to see submissions',
+    },
+    name: {
+        defaultMessage: 'Name',
+        id: 'iaso.label.name',
+    },
+    updated_by: {
+        id: 'iaso.label.updated_by',
+        defaultMessage: 'Updated by',
+    },
+    edit: {
+        defaultMessage: 'Edit',
+        id: 'iaso.label.edit',
+    },
+    color: {
+        defaultMessage: 'Color',
+        id: 'iaso.label.color',
+    },
+    description: {
+        id: 'iaso.form.label.description',
+        defaultMessage: 'Description',
+    },
+    save: {
+        id: 'iaso.label.save',
+        defaultMessage: 'Save',
+    },
+    create: {
+        defaultMessage: 'Create',
+        id: 'iaso.label.create',
+    },
+    requiredField: {
+        id: 'iaso.forms.error.fieldRequired',
+        defaultMessage: 'This field is required',
+    },
+    validateSubmission: {
+        id: 'iaso.submissions.title.validateSubmission',
+        defaultMessage: 'Validate submission',
+    },
+    validate: {
+        id: 'iaso.label.validate',
+        defaultMessage: 'Validate',
+    },
+    comment: {
+        id: 'iaso.label.comment',
+        defaultMessage: 'Comment',
+    },
+    validation: {
+        defaultMessage: 'Validation',
+        id: 'iaso.label.validation',
+    },
+    validationNodeStatusNewVersion: {
+        defaultMessage: 'New version',
+        id: 'iaso.validationNode.status.newVersion',
+    },
+    validationNodeStatusSubmission: {
+        defaultMessage: 'Submission',
+        id: 'iaso.validationNode.status.submission',
+    },
+    featureDisabled: {
+        defaultMessage: 'This feature is disabled for your account',
+        id: 'iaso.label.featureDisabled',
+    },
+    missingPermissions: {
+        defaultMessage:
+            'Missing one of the following permission(s): {permissions}',
+        id: 'iaso.label.missingPermissions',
+    },
+    pending: {
+        defaultMessage: 'Pending',
+        id: 'iaso.label.pending',
+    },
+    skipped: {
+        defaultMessage: 'Skipped',
+        id: 'iaso.label.skipped',
+    },
+    validationTimelineByOn: {
+        defaultMessage: 'by {user} on {date}',
+        id: 'iaso.validationTimeline.byOn',
+    },
+    validationTimelineComment: {
+        defaultMessage:
+            '<firstTag>Comment</firstTag>: <secondTag>{comment}</secondTag>',
+        id: 'iaso.validationTimeline.comment',
+    },
+    submissionOrder: {
+        defaultMessage: 'Submission {number}',
+        id: 'iaso.validationTimeline.submissionOrder',
+    },
+    progress: {
+        defaultMessage: 'Progress',
+        id: 'iaso.label.progress',
+    },
+    noData: {
+        defaultMessage: 'No data found.',
+        id: 'iaso.label.noData',
     },
 });
 

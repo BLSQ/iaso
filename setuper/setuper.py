@@ -49,7 +49,7 @@ def admin_login(server_url, username, password):
     return iaso_admin_client
 
 
-def setup_account(account_name, server_url, username, password):
+def setup_account(account_name, server_url, username, password, create_main_org_unit, create_demo_form):
     data = {
         "account_name": account_name,
         "user_username": account_name,
@@ -73,8 +73,9 @@ def setup_account(account_name, server_url, username, password):
             "SHOW_LINK_INSTANCE_REFERENCE",
             "ALLOW_CATCHMENT_EDITION",
         ],
-        "create_main_org_unit": True,
-        "create_demo_form": True,
+        "create_main_org_unit": create_main_org_unit,
+        "create_demo_form": create_demo_form,
+        "enforce_password_validation": False,
     }
     iaso_admin_client = admin_login(server_url, username, password)
     iaso_admin_client.post("/api/setupaccount/", json=data)
@@ -113,10 +114,12 @@ def create_account(
     password: str,
     optional_account_name: str,
     additional_projects: bool,
+    create_main_org_unit: bool,
+    create_demo_form: bool,
 ):
     account_name = validate_account_name(optional_account_name)
     print("Creating account:", account_name)
-    iaso_client = setup_account(account_name, server_url, username, password)
+    iaso_client = setup_account(account_name, server_url, username, password, create_main_org_unit, create_demo_form)
     setup_orgunits(iaso_client=iaso_client)
     create_user_role(iaso_client)
 
@@ -158,6 +161,13 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--server_url", type=str, help="Server URL")
     parser.add_argument("-n", "--name", help="Account name (max 147 characters; a-z, A-Z, 0-9)")
     parser.add_argument("-a", "--additional_projects", action="store_true")
+    # Added a new flag to control the creation of the main org unit
+    parser.add_argument(
+        "--create_main_org_unit",
+        action="store_true",
+        help="Flag to create the main organizational unit (default: False)",
+    )
+    parser.add_argument("--create_demo_form", action="store_true", help="Flag to create a demo form (default: False")
 
     args = parser.parse_args()
     server_url = args.server_url
@@ -165,6 +175,8 @@ if __name__ == "__main__":
     password = args.password
     account_name = args.name
     additional_projects = args.additional_projects
+    create_main_org_unit = args.create_main_org_unit
+    create_demo_form = args.create_demo_form
 
     if server_url is None or username is None or password is None:
         from credentials import *
@@ -185,4 +197,6 @@ if __name__ == "__main__":
     if not server_url or not username or not password:
         sys.exit("ERROR: Values for server url, user name and password are all required")
 
-    create_account(server_url, username, password, account_name, additional_projects)
+    create_account(
+        server_url, username, password, account_name, additional_projects, create_main_org_unit, create_demo_form
+    )

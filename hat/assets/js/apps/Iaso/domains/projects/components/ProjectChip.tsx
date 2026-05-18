@@ -4,7 +4,7 @@ import Color from 'color';
 import { Project } from 'Iaso/domains/projects/types/project';
 
 type Props = {
-    project: Project;
+    project: Pick<Project, "name" | "color">;
 };
 
 export const ProjectChip: FunctionComponent<Props> = ({ project }) => {

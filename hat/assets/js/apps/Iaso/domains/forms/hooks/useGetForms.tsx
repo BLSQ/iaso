@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { UseQueryResult } from 'react-query';
+import { createSearchParamsWithArray } from 'Iaso/libs/utils';
 import { useApiParams } from '../../../hooks/useApiParams';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
@@ -38,15 +39,18 @@ const getForms = (params: FormsParams) => {
     const fields = `${
         params.fields ? params.fields : DEFAULT_VISIBLE_COLUMNS.join(',')
     },${FIELDS_PARAMS}`;
-    const queryString = new URLSearchParams({
-        ...params,
+    const { showDeleted, onlyDeleted, ...restParams } = params;
+    const queryString = createSearchParamsWithArray({
+        ...restParams,
+        show_deleted: showDeleted,
+        only_deleted: onlyDeleted,
         fields,
     }).toString();
     return getRequest(`/api/forms/?${queryString}`);
 };
 
 export const tableDefaults = {
-    order: 'instance_updated_at',
+    order: 'name',
     limit: 50,
     page: 1,
 };

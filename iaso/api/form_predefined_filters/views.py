@@ -1,5 +1,5 @@
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import exceptions
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
@@ -13,6 +13,7 @@ from iaso.models import Form, FormPredefinedFilter, Project
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 
 
+@extend_schema(tags=["Form predefined filters"])
 class FormPredefinedFiltersViewSet(ModelViewSet):
     f"""Form Predefined Filters API
 
@@ -62,19 +63,19 @@ class FormPredefinedFiltersViewSet(ModelViewSet):
             queryset = queryset.filter(form=form)
         return queryset.order_by(*orders).distinct()
 
-    form_id_param = openapi.Parameter(
+    form_id_param = OpenApiParameter(
         name=FORM_ID,
-        in_=openapi.IN_QUERY,
+        location=OpenApiParameter.QUERY,
         description="Form id",
-        type=openapi.TYPE_NUMBER,
+        type=OpenApiTypes.NUMBER,
     )
 
-    @swagger_auto_schema(
+    @extend_schema(
         responses={
             200: "provides the latest updated dates",
             404: "Form for given form id doesn't exist",
         },
-        manual_parameters=[form_id_param],
+        parameters=[form_id_param],
     )
     def list(self, request: Request):
         return super().list(request)

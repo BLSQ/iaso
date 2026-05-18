@@ -10,6 +10,7 @@ export type ApiParams = {
     searches: string;
     asLocation?: string;
     locationLimit: string;
+    fields?: string;
 };
 
 type Result = {
@@ -33,6 +34,8 @@ export const useGetApiParams = (
             getFromDateString(activeSearches[i].dateFrom) || undefined;
         tempSearches[i].dateTo =
             getToDateString(activeSearches[i].dateTo) || undefined;
+        tempSearches[i].validation_status =
+            tempSearches[i].validation_status ?? 'VALID';
     });
 
     const apiParams: ApiParams = {
@@ -41,6 +44,7 @@ export const useGetApiParams = (
         page: params.page ? params.page : '1',
         searches: JSON.stringify(tempSearches),
         locationLimit: params.locationLimit,
+        fields: params.fields,
     };
 
     if (asLocation) {

@@ -1,4 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, serializers
 from rest_framework.decorators import action
 from rest_framework.exceptions import AuthenticationFailed, NotFound, ParseError
@@ -56,6 +57,7 @@ class MobileEntityTypeSerializer(serializers.ModelSerializer):
         return obj.fields_duplicate_search or []
 
 
+@extend_schema(tags=["Entity types", "Mobile"])
 class MobileEntityTypesViewSet(ModelViewSet):
     """
     Mobile API to Serve Entity Types.

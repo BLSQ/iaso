@@ -1,5 +1,6 @@
 import django_filters
 
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters
 
 from hat.audit.audit_mixin import AuditMixin
@@ -14,6 +15,7 @@ from plugins.polio.api.performance_thresholds.serializers import (
 from plugins.polio.models.performance_thresholds import PerformanceThresholds
 
 
+@extend_schema(tags=["Polio - Performance thresholds"])
 class PerformanceThresholdsViewSet(AuditMixin, ModelViewSet):
     """
     API endpoint for Performance thresholds.

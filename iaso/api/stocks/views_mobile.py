@@ -1,6 +1,7 @@
 import django_filters
 
 from django.db.models import Prefetch
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -29,6 +30,7 @@ from iaso.models import (
 )
 
 
+@extend_schema(tags=["Stock keeping units", "Mobile"])
 class StockKeepingUnitMobileViewSet(viewsets.ModelViewSet):
     """StockKeepingUnitMobileView API
 
@@ -48,13 +50,14 @@ class StockKeepingUnitMobileViewSet(viewsets.ModelViewSet):
             StockKeepingUnit.objects.filter_for_project(project)
             .filter(deleted_at=None)
             .prefetch_related(
-                Prefetch("org_unit_types", OrgUnitType.objects.filter_for_project(project).only("id")),
-                Prefetch("forms", Form.objects.filter_for_project(project).only("id")),
+                Prefetch("org_unit_types", OrgUnitType.objects.filter_for_project(project).only("id").order_by("id")),
+                Prefetch("forms", Form.objects.filter_for_project(project).only("id").order_by("id")),
             )
             .order_by("id")
         )
 
 
+@extend_schema(tags=["Stock ledger items", "Mobile"])
 class StockLedgerItemMobileViewSet(viewsets.ModelViewSet):
     """StockLedgerItemMobileView API
 
@@ -94,6 +97,7 @@ class StockLedgerItemMobileViewSet(viewsets.ModelViewSet):
         return Response(request.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
+@extend_schema(tags=["Stock rule versions", "Mobile"])
 class StockRulesVersionMobileViewSet(viewsets.ModelViewSet):
     """StockRulesVersionMobileView API
 

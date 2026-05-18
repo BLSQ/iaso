@@ -215,9 +215,21 @@ const MESSAGES = defineMessages({
         id: 'iaso.plannings.label.seeSamplingResults',
         defaultMessage: 'See sampling results',
     },
+    viewSamplingResultDetails: {
+        id: 'iaso.plannings.label.viewSamplingResultDetails',
+        defaultMessage: 'View sampling result details',
+    },
     samplingName: {
         id: 'iaso.plannings.label.samplingName',
         defaultMessage: 'Sampling name',
+    },
+    samplingResultCreatedBy: {
+        id: 'iaso.forms.created_by',
+        defaultMessage: 'Created by',
+    },
+    samplingResultParameters: {
+        id: 'iaso.plannings.label.samplingResultParameters',
+        defaultMessage: 'Parameters',
     },
     selectSamplingResult: {
         id: 'iaso.plannings.label.selectSamplingResult',
@@ -287,6 +299,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.close',
         defaultMessage: 'Close',
     },
+    criteria: {
+        id: 'iaso.plannings.label.criteria',
+        defaultMessage: 'Criteria',
+    },
     quantity: {
         defaultMessage: 'Qty',
         id: 'iaso.label.quantityShort',
@@ -346,6 +362,23 @@ const MESSAGES = defineMessages({
     planningAlreadyPublished: {
         id: 'iaso.planning.label.planningAlreadyPublished',
         defaultMessage: 'Planning is already published',
+    },
+    confirm: {
+        defaultMessage: 'Confirm',
+        id: 'iaso.label.confirm',
+    },
+    planningWarningTitle: {
+        defaultMessage: 'Planning edition warning',
+        id: 'iaso.planning.label.planningWarningTitle',
+    },
+    planningWarningMessage: {
+        defaultMessage:
+            'Planning seems to be active, editing information might impact the actual data collection',
+        id: 'iaso.planning.label.planningWarningMessage',
+    },
+    planning: {
+        defaultMessage: 'Planning',
+        id: 'iaso.label.planning',
     },
 });
 

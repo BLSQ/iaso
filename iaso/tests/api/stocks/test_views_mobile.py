@@ -78,21 +78,22 @@ class StockKeepingUnitMobileAPITestCase(APITestCase):
 
     def test_list_authenticated_with_app_id(self):
         self.client.force_authenticate(self.user_without_rights)
-        with self.assertNumQueries(6):
-            # 1. SELECT project
-            # 2. SELECT account
-            # 3. SELECT COUNT(*)
-            # 4. SELECT stockkeepingunit
-            # 5. SELECT stockkeepingunit_org_unit_types
-            # 6. SELECT stockkeepingunit_forms
+        with self.assertNumQueries(5):
+            # 1. SELECT project (+ account + default_version via select_related)
+            # 2. SELECT COUNT(*)
+            # 3. SELECT stockkeepingunit
+            # 4. SELECT stockkeepingunit_org_unit_types
+            # 5. SELECT stockkeepingunit_forms
             response = self.client.get(SKU_URL, data={"app_id": self.project_1.app_id})
         self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
         self.assertEqual(1, len(response.data["results"]))
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(5):
             response = self.client.get(SKU_URL, data={"app_id": self.project_2.app_id})
         self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
         self.assertEqual(2, len(response.data["results"]))
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(2):
+            # 1. SELECT project (+ account + default_version via select_related)
+            # 2. SELECT COUNT(*) — no SKUs for project_3 / other account, so no page SELECT or prefetches
             response = self.client.get(SKU_URL, data={"app_id": self.project_3.app_id})
         self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
         self.assertEqual(0, len(response.data["results"]))
@@ -204,36 +205,33 @@ class StockRulesVersionMobileAPITestCase(APITestCase):
 
     def test_authenticated_without_rights_list(self):
         self.client.force_authenticate(self.user_without_rights)
-        with self.assertNumQueries(3):
-            # 1. SELECT Project
-            # 2. SELECT Account
-            # 3. SELECT COUNT(*)
+        with self.assertNumQueries(2):
+            # 1. SELECT project (+ account + default_version via select_related)
+            # 2. SELECT StockRulesVersion (none published → 204)
             response = self.client.get(RULES_VERSION_URL, data={"app_id": self.project_1.app_id})
             self.assertJSONResponse(response, rest_framework.status.HTTP_204_NO_CONTENT)
 
         self.version_1.status = m.StockRulesVersionsStatus.PUBLISHED
         self.version_1.save()
 
-        with self.assertNumQueries(6):
-            # 1. SELECT Project
-            # 2. SELECT Account
-            # 3. SELECT StockRulesVersion
-            # 4. SELECT StockItemRules
-            # 5. SELECT StockKeepingUnit
-            # 6. SELECT Form
+        with self.assertNumQueries(5):
+            # 1. SELECT project (+ account + default_version via select_related)
+            # 2. SELECT StockRulesVersion
+            # 3. SELECT StockItemRules
+            # 4. SELECT StockKeepingUnit
+            # 5. SELECT Form
             response = self.client.get(RULES_VERSION_URL, data={"app_id": self.project_1.app_id})
             self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
         self.assertEqual("version_1", response.data["name"])
         self.assertEqual(m.StockRulesVersionsStatus.PUBLISHED, response.data["status"])
         self.assertEqual(2, len(response.data["rules"]))
 
-        with self.assertNumQueries(6):
-            # 1. SELECT Project
-            # 2. SELECT Account
-            # 3. SELECT StockRulesVersion
-            # 4. SELECT StockItemRules
-            # 5. SELECT StockKeepingUnit
-            # 6. SELECT Form
+        with self.assertNumQueries(5):
+            # 1. SELECT project (+ account + default_version via select_related)
+            # 2. SELECT StockRulesVersion
+            # 3. SELECT StockItemRules
+            # 4. SELECT StockKeepingUnit
+            # 5. SELECT Form
             response = self.client.get(RULES_VERSION_URL, data={"app_id": self.project_2.app_id})
             self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
         self.assertEqual("version_1", response.data["name"])
@@ -363,11 +361,10 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
 
     def test_authenticated_without_rights_list(self):
         self.client.force_authenticate(self.user_without_rights)
-        with self.assertNumQueries(4):
-            # 1. SELECT Project
-            # 2. SELECT Account
-            # 3. SELECT COUNT(*)
-            # 4. SELECT StockLedgerItem
+        with self.assertNumQueries(3):
+            # 1. SELECT project (+ account + default_version via select_related)
+            # 2. SELECT COUNT(*)
+            # 3. SELECT StockLedgerItem
             response = self.client.get(LEDGER_ITEM_URL, data={"app_id": self.project_1.app_id})
             self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
         self.assertEqual(2, response.data["count"])

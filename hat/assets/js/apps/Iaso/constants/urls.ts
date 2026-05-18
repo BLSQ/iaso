@@ -59,6 +59,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'accountId',
             'search',
             'showDeleted',
+            'onlyDeleted',
             'planning',
             'orgUnitTypeIds',
             'projectsIds',
@@ -66,12 +67,16 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParams,
         ],
     },
+    formAI: {
+        url: 'forms/ai',
+        params: ['accountId'],
+    },
     pipelineList: {
-        url: 'pipelines/',
+        url: 'settings/pipelines/',
         params: ['accountId'],
     },
     pipelineDetails: {
-        url: 'pipelines/details',
+        url: 'settings/pipelines/details',
         params: ['accountId', 'pipelineId'],
     },
     formDetail: {
@@ -87,7 +92,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     formsStats: { url: 'forms/stats', params: ['accountId', 'projectIds'] },
     instances: {
-        url: 'forms/submissions',
+        url: 'forms/submissions/list',
         params: [
             'accountId',
             'formIds',
@@ -119,6 +124,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'sentDateTo',
             'projectIds',
             'isSearchActive',
+            'referenceInstances',
         ],
     },
     instanceDetail: {
@@ -157,9 +163,9 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParams,
             'tab',
             'searchTabIndex',
-            'searchActive',
             'searches',
             'isClusterActive',
+            'fields',
         ],
     },
     orgUnitDetails: {
@@ -322,6 +328,14 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParams,
         ],
     },
+    usersBulkCreate: {
+        url: 'settings/users/management/bulk-create',
+        params: ['accountId'],
+    },
+    userDetails: {
+        url: 'settings/users/management/details',
+        params: ['accountId', 'userId'],
+    },
     usersHistory: {
         url: 'settings/users/history',
         params: [
@@ -411,8 +425,11 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'locationLimit',
             'groups',
             'fieldsSearch',
-            ...paginationPathParams,
             'isSearchActive',
+            // pagination params
+            'order',
+            'pageSize',
+            'cursor',
         ],
     },
     entityDetails: {
@@ -488,7 +505,13 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     assignments: {
         url: 'planning/assignments',
-        params: ['accountId', 'planningId'],
+        params: [
+            'accountId',
+            'planningId',
+            'tab',
+            'search',
+            ...paginationPathParams,
+        ],
     },
     teams: {
         url: 'settings/users/teams',
@@ -498,6 +521,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'managers',
             'types',
             'projects',
+            'fields',
             ...paginationPathParams,
         ],
     },
@@ -607,6 +631,38 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'value_to',
         ],
     },
+
+    validationWorkflowsConfiguration: {
+        url: 'validation-workflows/configuration',
+        params: ['accountId', 'forms', 'name', ...paginationPathParams],
+    },
+    validationWorkflowsConfigurationDetail: {
+        url: 'validation-workflows/configuration/detail',
+        params: ['accountId', 'slug'],
+    },
+    validationWorkflowInstances: {
+        url: 'validation-workflows/submissions',
+        params: [
+            'accountId',
+            'forms',
+            'status',
+            'requires_user_action',
+            'validation_workflows',
+            ...paginationPathParams,
+        ],
+    },
+    adminApiImport: {
+        url: 'settings/apiImports',
+        params: [
+            'accountId',
+            ...paginationPathParams,
+            'createdBy',
+            'importType',
+            'hasProblem',
+            'appId',
+            'appVersion',
+        ],
+    },
     hidden: { url: 'secret', params: [] },
     error401: { url: '401', params: [] },
     error403: { url: '403', params: [] },
@@ -620,7 +676,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
 export const extractUrls = (
     config: Record<string, RouteConfig>,
 ): Record<string, string> => {
-    const result = {};
+    const result: Record<string, string> = {};
     Object.entries(config).forEach(([key, value]) => {
         result[key] = value.url;
     });
@@ -631,7 +687,7 @@ export const extractUrls = (
 export const extractParams = (
     config: Record<string, RouteConfig>,
 ): Record<string, string[]> => {
-    const result = {};
+    const result: Record<string, string[]> = {};
     Object.entries(config).forEach(([key, value]) => {
         result[key] = value.params;
     });
@@ -642,7 +698,7 @@ export const extractParams = (
 export const extractParamsConfig = (
     config: Record<string, RouteConfig>,
 ): Record<string, string[]> => {
-    const result = {};
+    const result: Record<string, string[]> = {};
     Object.values(config).forEach(value => {
         result[value.url] = value.params;
     });
@@ -655,6 +711,7 @@ type IasoBaseUrls = {
     setupAccountSettings: string;
     home: string;
     forms: string;
+    formAI: string;
     formDetail: string;
     pipelineDetails: string;
     pipelineList: string;
@@ -678,6 +735,8 @@ type IasoBaseUrls = {
     completenessStats: string;
     modules: string;
     users: string;
+    userDetails: string;
+    usersBulkCreate: string;
     usersHistory: string;
     userRoles: string;
     projects: string;
@@ -716,6 +775,11 @@ type IasoBaseUrls = {
     error500: string;
     login: string;
     apiLogs: string;
+    adminApiImport: string;
+    pipelines: string;
+    validationWorkflowsConfiguration: string;
+    validationWorkflowsConfigurationDetail: string;
+    validationWorkflowInstances: string;
 };
 
 export const baseUrls = extractUrls(baseRouteConfigs) as IasoBaseUrls;

@@ -1,19 +1,22 @@
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Count, Prefetch, Q
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.viewsets import ViewSet
+from rest_framework.viewsets import GenericViewSet
 
 from hat.audit.audit_mixin import AuditMixin
 from hat.audit.models import Modification
 from iaso.api.common import (
     DeletionFilterBackend,
+    HasPermission,
     ModelViewSet,
     ReadOnlyOrHasPermission,
 )
@@ -26,14 +29,15 @@ from .filters import (
     PlanningSearchFilterBackend,
     PublishingStatusFilterBackend,
 )
+from .pagination import PlanningOrgUnitChildrenPagination
 from .serializers import (
     AssignmentSerializer,
     AuditAssignmentSerializer,
     AuditPlanningSerializer,
     BulkAssignmentSerializer,
     BulkDeleteAssignmentSerializer,
-    PlanningOrgUnitListSerializer,
     PlanningOrgUnitSerializer,
+    PlanningOrgUnitTableSerializer,
     PlanningReadSerializer,
     PlanningSamplingResult,
     PlanningSamplingResultListSerializer,
@@ -43,53 +47,113 @@ from .serializers import (
 )
 
 
-class PlanningOrgunitsViewSet(AuditMixin, ViewSet):
-    """List orgunits for a planning."""
+@extend_schema(tags=["Micro plannings", "Org units", "Plannings"])
+class PlanningOrgunitsViewSet(GenericViewSet):
+    """Org units scoped to a planning (nested under ``/microplanning/plannings/{pk}/orgunits/``)."""
 
+    queryset = OrgUnit.objects.none()
+    serializer_class = PlanningOrgUnitTableSerializer
     http_method_names = ["get", "head", "options"]
     permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]
+    search_fields = ["name"]
+    ordering_fields = ["id", "name"]
+    ordering = ["id"]
+    pagination_class = PlanningOrgUnitChildrenPagination
+    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
 
-    @action(detail=False, methods=["get"])
-    def children(self, request, *args, **kwargs):
-        planning = self._get_planning(request)
+    def get_serializer_class(self):
+        if self.action == "children":
+            return PlanningOrgUnitSerializer
+        if self.action in ("children_paginated",):
+            return PlanningOrgUnitTableSerializer
+        if self.action == "root":
+            return PlanningOrgUnitSerializer
+        return self.serializer_class
 
-        user = request.user
-        base_queryset = (
-            OrgUnit.objects.with_geo_json().filter_for_user(user).filter(validation_status=OrgUnit.VALIDATION_VALID)
+    def get_planning(self) -> Planning:
+        cached = getattr(self, "_planning_for_orgunits", None)
+        if cached is not None:
+            return cached
+        pk = self.kwargs.get("parent_lookup_pk")
+        user = self.request.user
+        self._planning_for_orgunits = get_object_or_404(
+            Planning.objects.filter_for_user(user)
+            .select_related("org_unit", "selected_sampling_result__group")
+            .prefetch_related("target_org_unit_types"),
+            pk=pk,
         )
+        return self._planning_for_orgunits
+
+    def get_queryset(self):
+        planning = self.get_planning()
+        action = self.action
+        user = self.request.user
+
+        if action == "root":
+            return OrgUnit.objects.with_geo_json().filter(pk=planning.org_unit_id)
+
+        qs = OrgUnit.objects
+        if action == "children":
+            qs = qs.with_geo_json()
+        base_queryset = qs.filter_for_user(user).filter(validation_status=OrgUnit.VALIDATION_VALID)
         sampling = planning.selected_sampling_result
         root_org_unit = planning.org_unit
 
         if sampling and sampling.group_id:
             queryset = base_queryset.filter(pk__in=sampling.group.org_units.values_list("pk", flat=True))
-        elif root_org_unit and planning.target_org_unit_type:
-            queryset = base_queryset.descendants(root_org_unit).filter(org_unit_type=planning.target_org_unit_type)
+        elif root_org_unit:
+            target_type_ids = [t.id for t in planning.target_org_unit_types.all()]
+            if not target_type_ids:
+                raise ValidationError({"planning": [_("Planning is missing sampling group or target org unit scope")]})
+            queryset = base_queryset.descendants(root_org_unit).filter(org_unit_type_id__in=target_type_ids)
         else:
             raise ValidationError({"planning": [_("Planning is missing sampling group or target org unit scope")]})
 
-        children_queryset = queryset.order_by("id")
-        serializer_children = PlanningOrgUnitSerializer(children_queryset, many=True)
+        queryset = queryset.filter(validation_status=OrgUnit.VALIDATION_VALID).order_by("id")
+        if action == "children_paginated":
+            queryset = queryset.prefetch_related(
+                Prefetch(
+                    "assignment_set",
+                    queryset=Assignment.objects.filter(planning=planning, deleted_at__isnull=True).select_related(
+                        "user__iaso_profile", "team"
+                    ),
+                    to_attr="_planning_assignments_prefetched",
+                )
+            )
+        return queryset
 
-        return Response(serializer_children.data, status=status.HTTP_200_OK)
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        if getattr(self, "action", None) == "children_paginated":
+            ctx["planning"] = self.get_planning()
+        return ctx
+
+    @action(detail=False, methods=["get"])
+    def children(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["get"], url_path="children-paginated")
+    def children_paginated(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(page if page is not None else queryset, many=True)
+        if page is not None:
+            return self.get_paginated_response(serializer.data)
+        return Response(serializer.data)
 
     @action(detail=False, methods=["get"])
     def root(self, request, *args, **kwargs):
-        planning = self._get_planning(request)
-        root_queryset = OrgUnit.objects.with_geo_json().filter(pk=planning.org_unit_id).first()
-        root_serializer = PlanningOrgUnitSerializer(root_queryset)
-        return Response(root_serializer.data, status=status.HTTP_200_OK)
-
-    def _get_planning(self, request):
-        query_serializer = PlanningOrgUnitListSerializer(data=request.query_params, context={"request": request})
-        query_serializer.is_valid(raise_exception=True)
-        return Planning.objects.select_related(
-            "org_unit", "target_org_unit_type", "selected_sampling_result__group"
-        ).get(pk=query_serializer.validated_data["planning"].id)
+        instance = self.get_queryset().first()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+@extend_schema(tags=["Micro plannings", "Plannings"])
 class PlanningViewSet(AuditMixin, ModelViewSet):
     remove_results_key_if_paginated = True
-    permission_classes = [AuthenticationEnforcedPermission, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]  # type: ignore
+    permission_classes = [AuthenticationEnforcedPermission, HasPermission(CORE_PLANNING_WRITE_PERMISSION)]  # type: ignore
     queryset = Planning.objects.all()
     filter_backends = [
         filters.OrderingFilter,
@@ -116,7 +180,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         return (
             self.queryset.filter_for_user(user)
             .select_related("project", "org_unit", "team", "selected_sampling_result")
-            .prefetch_related("forms")
+            .prefetch_related("forms", "target_org_unit_types")
             .annotate(assignments_count=Count("assignment", filter=Q(assignment__deleted_at__isnull=True)))
         )
 
@@ -138,6 +202,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         return self._read_response(instance)
 
 
+@extend_schema(tags=["Micro plannings", "Planning samplings", "Plannings"])
 class PlanningSamplingResultViewSet(AuditMixin, ModelViewSet):
     """List/create sampling results scoped by planning."""
 
@@ -193,6 +258,7 @@ class PlanningSamplingResultViewSet(AuditMixin, ModelViewSet):
         return Response(read_serializer.data, status=status.HTTP_201_CREATED)
 
 
+@extend_schema(tags=["Micro plannings", "Assignments"])
 class AssignmentViewSet(AuditMixin, ModelViewSet):
     """Use the same permission as planning. Multi tenancy is done via the planning. An assignment don't make much
     sense outside of it's planning."""

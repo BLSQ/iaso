@@ -36,7 +36,7 @@ case "$1" in
   "start_gunicorn")
     ./scripts/wait_for_dbs.sh
     ./manage.py migrate --noinput
-    gunicorn hat.wsgi --workers 5 --threads=10 --bind=0.0.0.0:8081 --timeout 600
+    gunicorn hat.wsgi --workers 2 --threads=4 --bind=0.0.0.0:8081
   ;;
   "test" )
     export TESTING=true
@@ -47,7 +47,7 @@ case "$1" in
     ./scripts/wait_for_dbs.sh
     # Run python tests and pass on any args to e.g. run individual tests
     ./manage.py test --exclude-tag selenium "${@:2}"
-    npm run mocha
+    npm run test
   ;;
   "test_lint" )
     export TESTING=true
@@ -57,8 +57,11 @@ case "$1" in
   "test_js" )
     npm run test
   ;;
-  "mocha" )
-    npm run mocha
+  "vitest" )
+    npm run test
+  ;;
+  "vitest_watch" )
+    npm run test:watch
   ;;
   "gen_docs" )
     ./scripts/gen_docs.sh
@@ -100,8 +103,8 @@ case "$1" in
     python "${@:2}"
   ;;
   * )
-    if [[ $2 == /opt/.pycharm_helpers/* ]]; then
-      ${@}
+    if [[ $2 == /opt/.pycharm_helpers/* || $2 == /opt/project/manage.py ]]; then
+      "${@}"
     else
       show_help
     fi

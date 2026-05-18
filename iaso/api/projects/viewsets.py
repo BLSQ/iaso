@@ -1,5 +1,6 @@
 from django.db.models import Prefetch, QuerySet
 from django.http import HttpResponse
+from drf_spectacular.utils import extend_schema
 from qr_code.qrcode.maker import make_qr_code_image
 from qr_code.qrcode.utils import QRCodeOptions
 from rest_framework import filters, permissions, serializers, status
@@ -17,6 +18,7 @@ class ProjectsQuerystringSerializer(serializers.Serializer):
     bypass_restrictions = serializers.BooleanField(default=False)
 
 
+@extend_schema(tags=["Projects"])
 class ProjectsViewSet(ModelViewSet):
     """Projects API
 
@@ -29,6 +31,7 @@ class ProjectsViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["app_id", "name"]
+    ordering = ["id"]
     serializer_class = ProjectSerializer
     results_key = "projects"
     http_method_names = ["get", "head", "options", "trace"]

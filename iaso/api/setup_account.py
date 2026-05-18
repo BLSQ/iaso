@@ -1,10 +1,14 @@
 import logging
 
+import django.core.exceptions as django_exceptions
+
 from django.conf import settings
 from django.contrib.auth.models import Permission, User
+from django.contrib.auth.password_validation import validate_password
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.utils.translation import gettext as _
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
@@ -12,6 +16,7 @@ from rest_framework.viewsets import GenericViewSet
 from hat.audit.models import SETUP_ACCOUNT_API, Modification
 from hat.menupermissions.constants import DEFAULT_ACCOUNT_FEATURE_FLAGS
 from iaso.api.common import IsAdminOrSuperUser
+from iaso.api.profiles.views import ProfilesViewSet
 from iaso.models import (
     Account,
     AccountFeatureFlag,
@@ -65,6 +70,11 @@ class SetupAccountSerializer(serializers.Serializer):
         required=False,
         default=True,
         help_text="Whether to create a demo form during account setup",
+    )
+    enforce_password_validation = serializers.BooleanField(
+        required=False,
+        default=True,
+        help_text="Whether to validate passwords with default Django validation for all new users",
     )
     created_account_id = serializers.IntegerField(read_only=True)
 
@@ -167,8 +177,16 @@ class SetupAccountSerializer(serializers.Serializer):
             default_version=source_version,
             user_manual_path=validated_data.get("user_manual_path"),
             modules=account_modules,
+            enforce_password_validation=validated_data.get("enforce_password_validation", True),
         )
         account.feature_flags.set(validated_data.get("feature_flags"))
+
+        if account.enforce_password_validation and password:
+            try:
+                if account.enforce_password_validation:
+                    validate_password(password=password, user=user)
+            except django_exceptions.ValidationError as e:
+                raise serializers.ValidationError({"password": e.messages})
 
         # Create a setup_account project with an app_id represented by the account name
         app_id = validated_data["account_name"].replace(" ", ".").replace("-", ".")
@@ -232,7 +250,7 @@ class SetupAccountSerializer(serializers.Serializer):
             demo_form.projects.add(initial_project)
 
             # Create the first version of the form using the demo form file
-            with open("setuper/data/demo_form.xlsx", "rb") as demo_form_file:
+            with open("iaso/fixtures/demo_form.xlsx", "rb") as demo_form_file:
                 survey = parsing.parse_xls_form(demo_form_file)
                 demo_form_file.seek(0)  # Reset file pointer to beginning
                 FormVersion.objects.create_for_form_and_survey(
@@ -251,8 +269,6 @@ class SetupAccountSerializer(serializers.Serializer):
 
         # Send email invitation if requested
         if email_invitation and user.email:
-            from iaso.api.profiles.profiles import ProfilesViewSet
-
             profile_viewset = ProfilesViewSet()
             profile_viewset.request = self.context.get("request")
 
@@ -260,17 +276,13 @@ class SetupAccountSerializer(serializers.Serializer):
             profile = Profile.objects.get(user=user, account=account)
 
             # Send email invitation using existing logic with profile language
-            profile_viewset.send_email_invitation(
-                profile=profile,
-                email_subject=profile_viewset.get_subject_by_language(profile_viewset, profile.language),
-                email_message=profile_viewset.get_message_by_language(profile_viewset, profile.language),
-                email_html_message=profile_viewset.get_html_message_by_language(profile_viewset, profile.language),
-            )
+            profile_viewset.send_email_invitation(profile=profile, language=profile.language)
 
         validated_data["created_account_id"] = account.id
         return validated_data
 
 
+@extend_schema(tags=["Setup account"])
 class SetupAccountViewSet(CreateModelMixin, GenericViewSet):
     permission_classes = [permissions.IsAuthenticated, IsAdminOrSuperUser]
     serializer_class = SetupAccountSerializer

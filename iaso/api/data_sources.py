@@ -6,6 +6,7 @@ import requests
 
 from django.conf import settings
 from django.db.models import Count, Prefetch
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -266,6 +267,7 @@ class DataSourceDropdownSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "name", "projects"]
 
 
+@extend_schema(tags=["Data sources"])
 class DataSourceViewSet(ModelViewSet):
     f"""Data source API
 

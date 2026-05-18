@@ -1,12 +1,19 @@
+import decimal
+
 from rest_framework import serializers
 
 
 class RoundedDecimalField(serializers.DecimalField):
     """
     Some devices send accuracy with more than 2 decimals (IA-4159).
+    Some devices send accuracy with more than 5 numbers before the decimal (IA-4933).
 
     This field will round the value to the number specified in `decimal_places`.
     """
+
+    def __init__(self, coerce_max_value=None, **kwargs):
+        super().__init__(**kwargs)
+        self.coerce_max_value = coerce_max_value
 
     def validate_precision(self, value):
         """
@@ -40,3 +47,12 @@ class RoundedDecimalField(serializers.DecimalField):
             self.fail("max_digits", max_digits=self.max_digits)
 
         return value
+
+    def quantize(self, value):
+        """
+        Quantize the decimal value to the configured precision.
+        """
+        if self.coerce_max_value and value > self.coerce_max_value:
+            return decimal.Decimal(self.coerce_max_value)
+
+        return super().quantize(value)

@@ -140,6 +140,12 @@ class EntitiesDuplicationAPITestCase(APITestCase):
                 cls.default_form.form_versions.create(
                     file=UploadedFile(xml_file), xls_file=UploadedFile(xls_file), version_id=form_version_id
                 )
+        form_version_id2 = "2020022402"
+        with open("iaso/tests/fixtures/test.xml", "rb") as xml_file:
+            with open("iaso/tests/fixtures/test_form_deduplication2.xlsx", "rb") as xls_file:
+                cls.default_form.form_versions.create(
+                    file=UploadedFile(xml_file), xls_file=UploadedFile(xls_file), version_id=form_version_id2
+                )
 
         cls.default_form.update_possible_fields()
         cls.default_form.save()
@@ -180,6 +186,8 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             },
             form_version_id,
         )
+        # "same_entity_1" and "close_entity" are merged in a test.
+        # The second version of the form adds an underscore in front of `heigh...` to trigger an error we had before.
         create_instance_and_entity(
             cls,
             "close_entity",
@@ -187,12 +195,12 @@ class EntitiesDuplicationAPITestCase(APITestCase):
                 "Prenom": "same_instancX",
                 "Nom": "iasX",
                 "age__int__": "21",
-                "height_cm__decimal__": "143.5",
+                "_height_cm__decimal__": "143.5",
                 "weight_kgs__double__": "61.0",
                 "transfer_from_tsfp__bool__": "false",
                 "something_else": "Something Else without type",
             },
-            form_version_id,
+            form_version_id2,
         )
         create_instance_and_entity(
             cls,
@@ -596,7 +604,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         entity1 = duplicate.entity1
         entity2 = duplicate.entity2
 
-        merged_data = {i: entity1.id for i in duplicate.analyze.metadata["fields"]}
+        merged_data = {i: entity1.id for i in ["Nom", "Prenom", "height_cm__decimal__", "_height_cm__decimal__"]}
 
         response = self.client.post(
             "/api/entityduplicates/",

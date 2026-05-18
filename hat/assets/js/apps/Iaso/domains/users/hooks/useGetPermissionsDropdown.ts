@@ -1,11 +1,18 @@
-import { UseQueryResult } from 'react-query';
 import { useSafeIntl } from 'bluesquare-components';
-import { getRequest } from '../../../libs/Api';
-import { useSnackQuery } from '../../../libs/apiHooks';
+import { get } from 'lodash';
+import { UseQueryResult } from 'react-query';
+import { getRequest } from 'Iaso/libs/Api';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import MESSAGES from '../messages';
 import PERMISSIONS_MESSAGES from '../permissionsMessages';
 
-export const useGetPermissionsDropDown = (): UseQueryResult => {
+type UseGetPermissionsDropDownParams = {
+    outputValueField?: 'codename' | 'id';
+};
+
+export const useGetPermissionsDropDown = ({
+    outputValueField = 'codename',
+}: UseGetPermissionsDropDownParams = {}): UseQueryResult => {
     const { formatMessage } = useSafeIntl();
     return useSnackQuery({
         queryKey: ['permissions'],
@@ -16,7 +23,7 @@ export const useGetPermissionsDropDown = (): UseQueryResult => {
                 if (!data) return [];
                 return data.permissions.map(permission => {
                     return {
-                        value: permission.codename,
+                        value: get(permission, outputValueField),
                         label: PERMISSIONS_MESSAGES[permission.codename]
                             ? formatMessage(
                                   PERMISSIONS_MESSAGES[permission.codename],

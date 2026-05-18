@@ -27,7 +27,7 @@ jobs:
                   cache: npm
             - name: upgrade npm
               run: |
-                  npm install --global npm@10.9.3
+                  npm install --global npm@11.13.0
             - name: Environment info
               run: |
                   node --version
@@ -149,9 +149,9 @@ jobs:
               run: |
                   . ./venv/bin/activate &&  python manage.py migrate
                   . ./venv/bin/activate &&  python manage.py createcachetable
-                  . ./venv/bin/activate &&  python -W "ignore" manage.py test
                   # check we don't have missing migration
                   . ./venv/bin/activate &&  python manage.py makemigrations --check
+                  . ./venv/bin/activate &&  python -W "ignore" manage.py test
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

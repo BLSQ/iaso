@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 
@@ -8,6 +9,7 @@ from iaso.api.tasks.utils.link_unlink_allowed_actions import AllowedActions
 from iaso.tasks.instance_reference_bulk_link import instance_reference_bulk_link
 
 
+@extend_schema(tags=["Org units", "Instances", "Tasks"])
 class InstanceReferenceBulkLinkViewSet(viewsets.ViewSet):
     """Bulk link or unlink reference Instances to/from their related OrgUnit."""
 

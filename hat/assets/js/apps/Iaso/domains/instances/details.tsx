@@ -12,6 +12,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
+import { InstanceValidationWidgetPaper } from 'Iaso/domains/instances/components/ValidationWorkflow/InstanceValidationWidgetPaper';
 import TopBar from '../../components/nav/TopBarComponent';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 
@@ -99,7 +100,6 @@ const InstanceDetails: FunctionComponent = () => {
         useGetInstance(instanceId);
     const { isLoading: isLoadingEntityFields, fields: entityFields } =
         useGetEntityFields(currentInstance?.entity);
-
     const isLoading =
         isReassigning ||
         isLoadingInstance ||
@@ -223,6 +223,11 @@ const InstanceDetails: FunctionComponent = () => {
                                     currentInstance={currentInstance}
                                 />
                             </WidgetPaper>
+                            {currentInstance && (
+                                <InstanceValidationWidgetPaper
+                                    currentInstanceId={currentInstance.id}
+                                />
+                            )}
                             {currentInstance.change_requests.length > 0 && (
                                 <WidgetPaper
                                     title={formatMessage(

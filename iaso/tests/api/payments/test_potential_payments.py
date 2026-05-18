@@ -77,11 +77,12 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user_with_perm)
 
-        with self.assertNumQueries(17):
+        with self.assertNumQueries(18):
             response = self.client.get("/api/potential_payments/")
             self.assertJSONResponse(response, 200)
 
         response = self.client.get("/api/potential_payments/")
+        self.assertIn("count", response.data)
         self.assertJSONResponse(response, 200)
 
         # Check that the correct number of PotentialPayment objects were created

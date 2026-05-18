@@ -1,6 +1,7 @@
 from django.db.models import OuterRef, Subquery
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
 
 from iaso.api.common import ModelViewSet
@@ -134,6 +135,7 @@ class VaccineRequestFormDashboardSerializer(serializers.ModelSerializer):
         return latest_destruction_report.rrt_destruction_report_reception_date if latest_destruction_report else None
 
 
+@extend_schema(tags=["Polio - Dashboards - Vaccine request form"])
 class VaccineRequestFormDashboardViewSet(ModelViewSet):
     """
     GET /api/polio/dashboards/vaccine_request_forms/
@@ -176,6 +178,7 @@ class VaccinePreAlertDashboardSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+@extend_schema(tags=["Polio - Dashboards - Pre-Alerts"])
 class PreAlertDashboardViewSet(ModelViewSet):
     """
     GET /api/polio/dashboards/pre_alerts/
@@ -204,6 +207,7 @@ class VaccineArrivalReportDashboardSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+@extend_schema(tags=["Polio - Dashboards - Vaccine arrival report"])
 class VaccineArrivalReportDashboardViewSet(ModelViewSet):
     """
     GET /api/polio/dashboards/arrival_reports/

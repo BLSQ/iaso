@@ -68,7 +68,7 @@ export const useGetOrgUnitsTableColumns = (searches: [Search]): Column[] => {
             {
                 Header: formatMessage(MESSAGES.type),
                 accessor: 'org_unit_type_name',
-                id: 'org_unit_type__name',
+                id: 'org_unit_type_name',
             },
             {
                 Header: formatMessage(MESSAGES.source),

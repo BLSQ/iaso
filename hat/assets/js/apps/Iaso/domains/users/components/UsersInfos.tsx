@@ -1,16 +1,22 @@
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import { Alert, Box, Grid } from '@mui/material';
 import { useSafeIntl, InputWithInfos } from 'bluesquare-components';
 import isEmpty from 'lodash/isEmpty';
+import { SxStyles } from 'Iaso/types/general';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import InputComponent from '../../../components/forms/InputComponent';
-import { SxStyles } from '../../../types/general';
-import { useCurrentUser } from '../../../utils/usersUtils';
 import { useAppLocales } from '../../app/constants';
 
-import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
+import { useSavePassword } from '../hooks/useSavePassword';
 import MESSAGES from '../messages';
-import { InitialUserData, UserDialogData } from '../types';
+import {
+    InitialUserData,
+    ProfileRetrieveResponseItem,
+    UserDialogData,
+} from '../types';
 import { userHasAccessToModule } from '../utils';
+import { EditPasswordUserWithButtonDialog } from './EditPasswordUserDialog';
+import { UsersInfosExtraFields } from './UsersInfosExtraFields';
 
 const styles: SxStyles = {
     passwordDisabled: {
@@ -24,11 +30,12 @@ const styles: SxStyles = {
 type Props = {
     setFieldValue: (key: string, value: string) => void;
     currentUser: UserDialogData;
-    initialData: InitialUserData;
+    initialData: InitialUserData | ProfileRetrieveResponseItem;
     allowSendEmailInvitation: boolean;
     canBypassProjectRestrictions: boolean;
     setPhoneNumber: (phoneNumber: string, countryCode: string) => void;
     setEmail: (email: string) => void;
+    mode: 'create' | 'edit';
 };
 
 export const UsersInfos: FunctionComponent<Props> = ({
@@ -39,6 +46,7 @@ export const UsersInfos: FunctionComponent<Props> = ({
     canBypassProjectRestrictions,
     setPhoneNumber,
     setEmail,
+    mode,
 }) => {
     const loggedUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
@@ -51,28 +59,14 @@ export const UsersInfos: FunctionComponent<Props> = ({
     const isMultiAccountUser = currentUser.has_multiple_accounts.value;
     const passwordDisabled = currentUser.send_email_invitation.value;
 
-    const { data: allProjects, isFetching: isFetchingProjects } =
-        useGetProjectsDropdownOptions(true, canBypassProjectRestrictions);
-
-    const availableProjects = useMemo(() => {
-        if (!loggedUser || !loggedUser.projects) {
-            return [];
-        }
-        return allProjects?.map(project => {
-            return {
-                value: project.value,
-                label: project.label,
-                color: project.color,
-            };
-        });
-    }, [allProjects, loggedUser]);
+    const { mutate: savePassword } = useSavePassword(initialData?.id);
 
     const isInitialDataEmpty = isEmpty(initialData)
         ? MESSAGES.password
         : MESSAGES.newPassword;
 
     const handlePhoneNumberChange = useCallback(
-        (_, phoneNumber, country) => {
+        (_: any, phoneNumber: string, country: any) => {
             setPhoneNumber(phoneNumber, country.countryCode);
         },
         [setPhoneNumber],
@@ -133,34 +127,61 @@ export const UsersInfos: FunctionComponent<Props> = ({
                         disabled={isMultiAccountUser}
                     />
 
-                    {allowSendEmailInvitation && (
-                        <InputComponent
-                            keyValue="send_email_invitation"
-                            onChange={(key, value) => setFieldValue(key, value)}
-                            value={currentUser.send_email_invitation.value}
-                            type="checkbox"
-                            disabled={sendUserEmailInvitation}
-                            label={sendUserIEmailnvitationLabel}
+                    {mode === 'edit' && (
+                        <UsersInfosExtraFields
+                            setFieldValue={setFieldValue}
+                            currentUser={currentUser}
+                            loggedUser={loggedUser}
+                            canBypassProjectRestrictions={
+                                canBypassProjectRestrictions
+                            }
                         />
                     )}
-                    <Box sx={passwordDisabled ? styles.passwordDisabled : {}}>
-                        <InputComponent
-                            keyValue="password"
-                            onChange={(key, value) =>
-                                setFieldValue(key, value.trim())
-                            }
-                            value={currentUser.password.value}
-                            errors={currentUser.password.errors}
-                            type="password"
-                            label={
-                                initialData
-                                    ? isInitialDataEmpty
-                                    : MESSAGES.password
-                            }
-                            required={!initialData}
-                            disabled={passwordDisabled}
-                        />
-                    </Box>
+                    {mode === 'create' && (
+                        <>
+                            {allowSendEmailInvitation && (
+                                <Box sx={{ mb: 3 }}>
+                                    <InputComponent
+                                        keyValue="send_email_invitation"
+                                        onChange={(key, value) =>
+                                            setFieldValue(key, value)
+                                        }
+                                        value={
+                                            currentUser.send_email_invitation
+                                                .value
+                                        }
+                                        type="checkbox"
+                                        disabled={sendUserEmailInvitation}
+                                        label={sendUserIEmailnvitationLabel}
+                                    />
+                                </Box>
+                            )}
+                            <Box
+                                sx={
+                                    passwordDisabled
+                                        ? styles.passwordDisabled
+                                        : {}
+                                }
+                            >
+                                <InputComponent
+                                    keyValue="password"
+                                    onChange={(key, value) =>
+                                        setFieldValue(key, value.trim())
+                                    }
+                                    value={currentUser.password.value}
+                                    errors={currentUser.password.errors}
+                                    type="password"
+                                    label={
+                                        initialData
+                                            ? isInitialDataEmpty
+                                            : MESSAGES.password
+                                    }
+                                    required={!initialData}
+                                    disabled={passwordDisabled}
+                                />
+                            </Box>
+                        </>
+                    )}
                 </Grid>
                 <Grid item sm={12} md={6}>
                     <InputComponent
@@ -171,6 +192,7 @@ export const UsersInfos: FunctionComponent<Props> = ({
                         phoneInputOptions={{
                             country:
                                 currentUser.country_code?.value ?? undefined,
+                            countryCodeEditable: true,
                         }}
                         label={MESSAGES.phoneNumber}
                     />
@@ -206,24 +228,6 @@ export const UsersInfos: FunctionComponent<Props> = ({
                         />
                     </InputWithInfos>
                     <InputComponent
-                        keyValue="projects"
-                        onChange={(key, value) =>
-                            setFieldValue(
-                                key,
-                                value
-                                    ?.split(',')
-                                    .map(projectId => parseInt(projectId, 10)),
-                            )
-                        }
-                        value={currentUser.projects.value}
-                        errors={currentUser.projects.errors}
-                        type="select"
-                        multi
-                        label={MESSAGES.projects}
-                        options={availableProjects}
-                        loading={isFetchingProjects}
-                    />
-                    <InputComponent
                         keyValue="language"
                         onChange={(key, value) => setFieldValue(key, value)}
                         value={currentUser.language.value}
@@ -238,6 +242,25 @@ export const UsersInfos: FunctionComponent<Props> = ({
                             };
                         })}
                     />
+
+                    {mode === 'edit' && (
+                        <Box pt={3} display="flex" justifyContent="flex-end">
+                            <EditPasswordUserWithButtonDialog
+                                titleMessage={MESSAGES.updateUserPassword}
+                                savePassword={savePassword}
+                            />
+                        </Box>
+                    )}
+                    {mode === 'create' && (
+                        <UsersInfosExtraFields
+                            setFieldValue={setFieldValue}
+                            currentUser={currentUser}
+                            loggedUser={loggedUser}
+                            canBypassProjectRestrictions={
+                                canBypassProjectRestrictions
+                            }
+                        />
+                    )}
                 </Grid>
             </Grid>
         </form>

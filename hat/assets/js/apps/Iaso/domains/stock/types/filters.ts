@@ -9,5 +9,4 @@ export type Params = Filters & {
     order: string;
     page: string;
     pageSize: string;
-    tab: string;
 };

@@ -1,18 +1,18 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Grid, useMediaQuery, useTheme } from '@mui/material';
 import { useQueryClient } from 'react-query';
+import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
+import { RefreshButton } from '../../components/Buttons/RefreshButton';
+import InputComponent from '../../components/forms/InputComponent';
+import { SearchButton } from '../../components/SearchButton';
 import { useFilterState } from '../../hooks/useFilterState';
 import {
     useGetAlgorithmsOptions,
     useGetDataSources,
-    useGetProfilesOptions,
     useSourceOptions,
     useSourceVersionOptions,
 } from '../links/hooks/filters';
-import InputComponent from '../../components/forms/InputComponent';
-import { SearchButton } from '../../components/SearchButton';
 import { MESSAGES } from './messages';
-import { RefreshButton } from '../../components/Buttons/RefreshButton';
 
 type Props = {
     baseUrl: string;
@@ -38,9 +38,6 @@ export const AlgoRunsFilters: FunctionComponent<Props> = ({
     const { data: algorithmOptions, isLoading: isLoadingAlgos } =
         useGetAlgorithmsOptions();
 
-    const { data: launchers, isFetching: isLoadingLaunchers } =
-        useGetProfilesOptions();
-
     const { data: sources, isFetching: isLoadingSources } = useGetDataSources();
 
     const sourceOptions = useSourceOptions(sources);
@@ -56,7 +53,7 @@ export const AlgoRunsFilters: FunctionComponent<Props> = ({
     });
 
     const handleSourceUpdate = useCallback(
-        (keyValue, value) => {
+        (keyValue: string, value: any) => {
             if (keyValue === 'origin') {
                 const newFilters = {
                     ...filters,
@@ -104,17 +101,13 @@ export const AlgoRunsFilters: FunctionComponent<Props> = ({
                     </Box>
                 </Grid>
                 <Grid item xs={12}>
-                    <Box mr={isXs ? 0 : 2}>
-                        <InputComponent
+                    <Box mr={isXs ? 0 : 2} mt={2}>
+                        <UserAsyncSelect
                             keyValue="launcher"
                             label={MESSAGES.launcher}
-                            type="select"
+                            handleChange={handleChange}
+                            filterUsers={filters.launcher}
                             multi={false}
-                            onChange={handleChange}
-                            value={filters.launcher}
-                            dataTestId="links-validator-filter"
-                            options={launchers}
-                            loading={isLoadingLaunchers}
                         />
                     </Box>
                 </Grid>

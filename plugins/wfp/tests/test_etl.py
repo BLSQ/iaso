@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from django.test import TestCase
 
 from iaso import models as m
+from plugins.wfp.common import ETL
 from plugins.wfp.models import *
 
 
@@ -497,20 +498,19 @@ class ETLTestCase(TestCase):
         ]
         created_visits = Visit.objects.bulk_create(visits)
         self.assertEqual(len(created_visits), 7)
-        aggregate_journeys = load_fixture("monthly_etl_data.json")
-        monthly_statistics = list(
-            map(
-                lambda journey: MonthlyStatistics(
-                    **journey, org_unit=orgUnit, dhis2_id=orgUnit.source_ref, account=self.account
-                ),
-                aggregate_journeys,
-            )
-        )
-        created_monthlyStatistics = MonthlyStatistics.objects.bulk_create(monthly_statistics)
+        u5_journeys = load_fixture("monthly_U5_data.json")
 
-        self.assertEqual(len(created_monthlyStatistics), 3)
-        self.assertEqual(created_monthlyStatistics[0].period, "202508")
-        self.assertEqual(created_monthlyStatistics[0].dhis2_id, orgUnit.source_ref)
-        self.assertEqual(created_monthlyStatistics[0].account, self.account)
-        self.assertEqual(created_monthlyStatistics[1].period, "202509")
-        self.assertEqual(created_monthlyStatistics[2].period, "202508")
+        created_U5_monthlyStatistics = ETL._process_monthly_data("U5", u5_journeys, self.account)
+
+        self.assertEqual(len(created_U5_monthlyStatistics), 6)
+        self.assertEqual(created_U5_monthlyStatistics[0].period, "202508")
+        self.assertEqual(created_U5_monthlyStatistics[0].dhis2_id, orgUnit.source_ref)
+        self.assertEqual(created_U5_monthlyStatistics[0].account, self.account)
+        self.assertEqual(created_U5_monthlyStatistics[1].period, "202509")
+        self.assertEqual(created_U5_monthlyStatistics[2].period, "202509")
+
+        pbwg_journeys = load_fixture("monthly_PBWG_data.json")
+        created_PBWG_monthlyStatistics = ETL._process_monthly_data("PLW", pbwg_journeys, self.account)
+        self.assertEqual(len(created_PBWG_monthlyStatistics), 2)
+        self.assertEqual(created_PBWG_monthlyStatistics[1].physiology_status, "Breastfeeding")
+        self.assertEqual(created_PBWG_monthlyStatistics[1].period, "202508")

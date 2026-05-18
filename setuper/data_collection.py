@@ -15,7 +15,9 @@ from submissions import (
 def setup_instances(account_name, iaso_client):
     print("-- Setting up a form")
     project_id = iaso_client.get("/api/projects/")["projects"][0]["id"]
-    org_unit_types = iaso_client.get("/api/v2/orgunittypes/?with_units_count=true")["orgUnitTypes"]
+    org_unit_types = iaso_client.get("/api/v2/orgunittypes/?with_units_count=true&fields=id,name,units_count")[
+        "orgUnitTypes"
+    ]
     org_unit_type_ids = [out["id"] for out in org_unit_types]
 
     # create a form
@@ -48,7 +50,9 @@ def setup_instances(account_name, iaso_client):
     print("-- Downloading org units")
 
     for org_unit_type_id in org_unit_type_ids:
-        org_unit_type = iaso_client.get(f"/api/v2/orgunittypes/{org_unit_type_id}")
+        org_unit_type = iaso_client.get(
+            f"/api/v2/orgunittypes/{org_unit_type_id}/?fields=id,reference_forms_ids,sub_unit_types,allow_creating_sub_unit_types,projects,units_count"
+        )
         org_unit_type["reference_forms_ids"] = [form_id]
         org_unit_type["project_ids"] = [project["id"] for project in org_unit_type["projects"]]
         org_unit_type["sub_unit_type_ids"] = [sub_unit["id"] for sub_unit in org_unit_type["sub_unit_types"]]
@@ -56,12 +60,17 @@ def setup_instances(account_name, iaso_client):
             sub_unit_type["id"] for sub_unit_type in org_unit_type["allow_creating_sub_unit_types"]
         ]
         # Update the org unit type with reference form
-        iaso_client.put(f"/api/v2/orgunittypes/{org_unit_type_id}/", json=org_unit_type)
+        iaso_client.patch(f"/api/v2/orgunittypes/{org_unit_type_id}/", json=org_unit_type)
 
         limit = org_unit_type["units_count"]
-        orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": org_unit_type_id})[
-            "orgunits"
-        ]
+        orgunits = iaso_client.get(
+            "/api/orgunits/",
+            params={
+                "limit": limit,
+                "orgUnitTypeId": org_unit_type_id,
+                "fields": "id,longitude,latitude,altitude,org_unit_type_name",
+            },
+        )["orgunits"]
         print("-- Submitting %d submissions" % limit)
         count = 0
         for orgunit in orgunits:

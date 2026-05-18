@@ -259,6 +259,7 @@ export const Calendar: FunctionComponent = () => {
                         </Grid>
                         <Grid item xs={12} lg={!isPdf ? 4 : 12}>
                             <CalendarMap
+                                params={params}
                                 campaigns={filteredCampaigns}
                                 loadingCampaigns={isFetching}
                                 isPdf={isPdf}

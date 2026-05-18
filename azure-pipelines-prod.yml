@@ -31,11 +31,11 @@ steps:
   displayName: 'Install Node.js'
 
 - script: |
-    npm install -g npm@10.9.3
+    npm install -g npm@11.13.0
     node -v
     npm -v
     npm ci
-    npm test -- --reporter xunit --reporter-option output=npm-test.xml
+    npm test -- --reporter=junit --outputFile=npm-test.xml
   displayName: 'npm install and run test'
 
 - task: PublishTestResults@2

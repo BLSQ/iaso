@@ -30,6 +30,7 @@ import { useGetLogs } from 'Iaso/domains/tasks/hooks/api';
 import { TaskStatus } from 'Iaso/domains/tasks/types';
 import { SxStyles } from 'Iaso/types/general';
 import { Planning } from '../../plannings/types';
+import { useGetPipelineAccountConfig } from '../hooks/useGetPipelineAccountConfig';
 import MESSAGES from '../messages';
 import { PipelineInfos } from './components/PipelineInfos';
 import { PipelineSelect } from './components/PipelineSelect';
@@ -99,8 +100,16 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
 
     const { formatMessage } = useSafeIntl();
 
+    const accountConfig = useGetPipelineAccountConfig(selectedPipelineId);
+    const pipelineParameters = accountConfig?.parameters;
+    const pipelineParametersKeys = pipelineParameters
+        ? Object.keys(pipelineParameters)
+        : [];
     const { data: pipeline, isFetching: isFetchingPipeline } =
-        useGetPipelineDetails(selectedPipelineId, parametersToRemove);
+        useGetPipelineDetails(selectedPipelineId, [
+            ...pipelineParametersKeys,
+            ...parametersToRemove,
+        ]);
     const {
         mutate: launchTask,
         data: launchResult,
@@ -133,9 +142,16 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
             ...parameterValues,
             planning_id: planning.id,
             pipeline_id: selectedPipelineId,
+            ...pipelineParameters,
         };
         launchTask(parameters);
-    }, [launchTask, parameterValues, planning.id, selectedPipelineId]);
+    }, [
+        launchTask,
+        parameterValues,
+        planning.id,
+        selectedPipelineId,
+        pipelineParameters,
+    ]);
     const handleChangePipeline = (_, value) => {
         setSelectedPipelineId(value);
         setParameterValues(undefined);

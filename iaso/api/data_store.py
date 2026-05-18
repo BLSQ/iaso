@@ -1,5 +1,5 @@
 from django.utils.text import slugify
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
 
 from iaso.api.common import ModelViewSet
@@ -69,7 +69,7 @@ class DataStorePermission(permissions.BasePermission):
         return False
 
 
-@swagger_auto_schema(tags=["datastore"])
+@extend_schema(tags=["Data store"])
 class DataStoreViewSet(ModelViewSet):
     http_method_names = ["get", "post", "put", "delete"]
     permission_classes = [DataStorePermission]

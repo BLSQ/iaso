@@ -1,4 +1,5 @@
 from django.contrib.gis.geos import Point
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 
@@ -64,6 +65,7 @@ class GetAndListRequiresAuth(BasePermission):
         return request.method in SAFE_METHODS
 
 
+@extend_schema(tags=["Device positions"])
 class DevicesPositionViewSet(ModelViewSet):
     """Iaso Devices position API
 

@@ -25,14 +25,14 @@ class ProjectQuerySet(models.QuerySet):
 
         if app_id is not None:
             try:
-                project = self.get(app_id=app_id)
+                project = self.select_related("account", "account__default_version").get(app_id=app_id)
                 if (
                     user is None
                     or not project.needs_authentication
                     or (
                         user.is_authenticated
                         and user.iaso_profile is not None
-                        and project.account.id == user.iaso_profile.account.id
+                        and project.account_id == user.iaso_profile.account_id
                     )
                 ):
                     return project
@@ -78,6 +78,9 @@ class Project(models.Model):
     color = ColorField(null=True, blank=True, default=DEFAULT_COLOR)
 
     objects = ProjectManager()
+
+    class Meta:
+        ordering = ["id"]
 
     def __str__(self):
         return "%s " % (self.name,)

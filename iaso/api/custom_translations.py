@@ -1,4 +1,5 @@
 from django.utils.translation import gettext_lazy as _
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers, status
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
@@ -17,6 +18,7 @@ class CustomTranslationsSerializer(serializers.Serializer):
     )
 
 
+@extend_schema(tags=["Custom translations"])
 class CustomTranslationsViewSet(ViewSet):
     permission_classes = [IsAuthenticated, HasAccountPermission]
     http_method_names = ["get"]

@@ -61,12 +61,15 @@ export type UseGetFormsDropdownParams = {
  *   params: { projectId: 456 },
  * });
  */
+
+export type FormsDropdownOptions = DropdownOptionsWithOriginal<
+    number,
+    Partial<Form>
+>[];
+
 export const useGetFormsDropdownOptions = (
     options: UseGetFormsDropdownParams = {},
-): UseQueryResult<
-    DropdownOptionsWithOriginal<number, Partial<Form>>[],
-    Error
-> => {
+): UseQueryResult<FormsDropdownOptions, Error> => {
     const { extraFields = [], params = {}, enabled = true } = options;
     const allFields = useMemo(
         () => [...DEFAULT_FIELDS, ...extraFields],

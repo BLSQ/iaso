@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 
@@ -14,6 +15,7 @@ class HasBulkUpdatePermission(permissions.BasePermission):
         )
 
 
+@extend_schema(tags=["Profiles", "Users", "Tasks"])
 class ProfilesBulkUpdate(viewsets.ViewSet):
     """Bulk update Profiles"""
 

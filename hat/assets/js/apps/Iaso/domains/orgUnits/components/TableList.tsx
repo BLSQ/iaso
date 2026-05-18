@@ -14,6 +14,7 @@ import {
 
 import { UseMutateAsyncFunction } from 'react-query';
 
+import { ColumnsSelectDrawer } from '../../../components/tables/ColumnSelectDrawer';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../../constants/urls';
 
@@ -26,6 +27,7 @@ import {
 import { userHasPermission } from '../../users/utils';
 import { Result as OrgUnitResult } from '../hooks/requests/useGetOrgUnits';
 import { useGetOrgUnitsTableColumns } from '../hooks/useGetOrgUnitsTableColumns';
+import { useOrgUnitsColumnSelectDrawer } from '../hooks/useOrgUnitsColumnSelectDrawer';
 import MESSAGES from '../messages';
 import { OrgUnit, OrgUnitParams } from '../types/orgUnit';
 import { Search } from '../types/search';
@@ -37,6 +39,7 @@ type Props = {
     params: OrgUnitParams;
     orgUnitsData?: OrgUnitResult;
     saveMulti: UseMutateAsyncFunction<unknown, unknown, unknown, unknown>;
+    isFetching: boolean;
 };
 
 const baseUrl = baseUrls.orgUnits;
@@ -44,6 +47,7 @@ export const TableList: FunctionComponent<Props> = ({
     params,
     orgUnitsData,
     saveMulti,
+    isFetching,
 }) => {
     const { formatMessage } = useSafeIntl();
 
@@ -60,7 +64,15 @@ export const TableList: FunctionComponent<Props> = ({
         [params.searches],
     );
 
-    const columns = useGetOrgUnitsTableColumns(searches);
+    const allColumns = useGetOrgUnitsTableColumns(searches);
+
+    const {
+        options,
+        setOptions,
+        visibleColumns,
+        handleApplyOptions,
+        isDisabled,
+    } = useOrgUnitsColumnSelectDrawer(allColumns, params, baseUrl);
 
     const multiEditDisabled =
         !userHasPermission(ORG_UNITS, currentUser) ||
@@ -113,17 +125,27 @@ export const TableList: FunctionComponent<Props> = ({
                 selection={selection}
                 saveMulti={saveMulti}
             />
-            <Box mt={-4} pb={2}>
+            <Box display="flex" justifyContent="flex-end" mb={2} mt={-4}>
+                <ColumnsSelectDrawer
+                    options={options}
+                    setOptions={setOptions}
+                    minColumns={2}
+                    handleApplyOptions={handleApplyOptions}
+                    disabled={isFetching}
+                    isDisabled={isDisabled}
+                />
+            </Box>
+            <Box pb={2}>
                 <TableWithDeepLink
                     data={orgUnitsData?.orgunits || []}
                     count={orgUnitsData?.count}
                     pages={orgUnitsData?.pages}
                     params={params}
-                    columns={columns}
+                    columns={visibleColumns}
                     baseUrl={baseUrl}
                     marginTop={false}
                     extraProps={{
-                        columns,
+                        columns: visibleColumns,
                         data: orgUnitsData?.orgunits || [],
                         count: orgUnitsData?.count,
                     }}

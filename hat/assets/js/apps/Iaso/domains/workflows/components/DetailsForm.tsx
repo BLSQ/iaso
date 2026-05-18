@@ -1,14 +1,11 @@
 import React, { FunctionComponent, useState, useCallback } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
 import { Box, Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-
+import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
-import { WorkflowVersionDetail } from '../types';
-
 import { useUpdateWorkflowVersion } from '../hooks/requests/useUpdateWorkflowVersion';
-
 import MESSAGES from '../messages';
+import { WorkflowVersionDetail } from '../types';
 
 type Props = {
     workflowVersion: WorkflowVersionDetail;
@@ -28,7 +25,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 export const DetailsForm: FunctionComponent<Props> = ({ workflowVersion }) => {
-    const classes = useStyles();
+    const classes: Record<string, string> = useStyles();
     const [name, setName] = useState<string>(workflowVersion.name);
     const { formatMessage } = useSafeIntl();
     const { mutate: updateWorkflowVersion } = useUpdateWorkflowVersion(

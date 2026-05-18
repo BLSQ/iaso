@@ -1,4 +1,5 @@
 from django.http import Http404
+from drf_spectacular.utils import extend_schema
 from rest_framework.exceptions import ValidationError
 
 from iaso.api.common import ModelViewSet, ReadOnlyOrHasPermission
@@ -9,6 +10,7 @@ from plugins.polio.permissions import POLIO_CONFIG_PERMISSION, POLIO_PERMISSION
 
 
 # Extending DataStore Viewset to give users with polio and polio config permissions access to lqas endpoints in datastore
+@extend_schema(tags=["Polio - Lqas IM countries"])
 class LQASIMCountryViewset(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [ReadOnlyOrHasPermission(POLIO_PERMISSION, POLIO_CONFIG_PERMISSION)]

@@ -4,6 +4,7 @@ import typing
 from datetime import timedelta
 
 from django.utils.timezone import now
+from drf_spectacular.utils import extend_schema
 
 
 logger = logging.getLogger(__name__)
@@ -76,6 +77,7 @@ class ExportRequestSerializer(serializers.ModelSerializer):
         raise res
 
 
+@extend_schema(tags=["Export requests"])
 class ExportRequestsViewSet(ModelViewSet):
     """Export requests API
 

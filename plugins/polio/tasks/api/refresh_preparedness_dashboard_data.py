@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
 
 from iaso.api.tasks.serializers import TaskSerializer
@@ -12,6 +13,7 @@ PREPAREDNESS_TASK_NAME = "Refresh Preparedness dashboard data"
 PREPAREDNESS_CONFIG_SLUG = "preparedness-pipeline-config"
 
 
+@extend_schema(tags=["Polio - Refresh preparedness data"])
 class RefreshPreparednessDataViewset(ExternalTaskModelViewSet):
     http_method_names = ["get", "patch"]
     model = Task

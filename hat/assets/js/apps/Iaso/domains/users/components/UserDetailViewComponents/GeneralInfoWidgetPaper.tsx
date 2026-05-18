@@ -1,0 +1,115 @@
+import React from 'react';
+import { Table, TableBody } from '@mui/material';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import moment from 'moment';
+import { ColorBadge } from 'Iaso/components/ColorBadge';
+import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
+import { WidgetPaperRow as Row } from 'Iaso/components/papers/WidgetPaperRow';
+import MESSAGES from 'Iaso/domains/users/messages';
+import { ProfileRetrieveResponseItem } from 'Iaso/domains/users/types';
+import { getLocaleDateFormat } from 'Iaso/utils/dates';
+
+type Props = {
+    savingProfile?: boolean;
+    profile?: ProfileRetrieveResponseItem;
+};
+
+export const GeneralInfoWidgetPaper = ({
+    savingProfile = false,
+    profile,
+}: Props) => {
+    const { formatMessage } = useSafeIntl();
+
+    return (
+        <WidgetPaper
+            title={formatMessage(MESSAGES.generalInfo)}
+            data-testid={'general-info-box'}
+            sx={{ position: 'relative' }}
+        >
+            {savingProfile && <LoadingSpinner absolute fixed={false} />}
+
+            <Table size="small">
+                <TableBody>
+                    <Row
+                        field={{
+                            label: formatMessage(MESSAGES.userName),
+                            value: profile?.user_name,
+                        }}
+                    />
+                    <Row
+                        field={{
+                            label: formatMessage(MESSAGES.firstName),
+                            value: profile?.first_name,
+                        }}
+                    />
+                    <Row
+                        field={{
+                            label: formatMessage(MESSAGES.lastName),
+                            value: profile?.last_name,
+                        }}
+                    />
+                    <Row
+                        field={{
+                            label: formatMessage(MESSAGES.email),
+                            value: profile?.email && (
+                                <a href={`mailto:${profile?.email}`}>
+                                    {profile?.email}
+                                </a>
+                            ),
+                        }}
+                    />
+                    <Row
+                        field={{
+                            label: formatMessage(MESSAGES.date_joined),
+                            value: profile?.date_joined
+                                ? moment(profile.date_joined).format(
+                                      getLocaleDateFormat('LTS'),
+                                  )
+                                : undefined,
+                        }}
+                    />
+                    <Row
+                        field={{
+                            label: formatMessage(MESSAGES.language),
+                            value: profile?.language,
+                        }}
+                    />
+                    <Row
+                        field={{
+                            label: formatMessage(MESSAGES.organization),
+                            value: profile?.organization,
+                        }}
+                    />
+                    <Row
+                        field={{
+                            label: formatMessage(MESSAGES.phoneNumber),
+                            value: profile?.phone_number && (
+                                <a href={`tel:${profile?.phone_number}`}>
+                                    {profile?.phone_number}
+                                </a>
+                            ),
+                        }}
+                    />
+                    <Row
+                        field={{
+                            label: formatMessage(MESSAGES.homePage),
+                            value: profile?.home_page,
+                        }}
+                    />
+                    <Row
+                        field={{
+                            label: formatMessage(MESSAGES.color),
+                            value: profile?.color && (
+                                <ColorBadge
+                                    data-testid={'user-color-badge'}
+                                    backgroundColor={profile?.color}
+                                    tabIndex={0}
+                                />
+                            ),
+                        }}
+                    />
+                </TableBody>
+            </Table>
+        </WidgetPaper>
+    );
+};

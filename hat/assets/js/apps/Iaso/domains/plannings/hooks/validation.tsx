@@ -58,7 +58,10 @@ export const usePlanningValidation = (
                     .oneOf(['draft', 'published'])
                     .required('requiredField'),
                 pipelineUuids: array().nullable(),
-                targetOrgUnitType: number().nullable(),
+                targetOrgUnitTypes: array()
+                    .of(number())
+                    .min(1, 'requiredField')
+                    .test(apiValidator('targetOrgUnitTypes')),
             }),
         [apiValidator],
     );

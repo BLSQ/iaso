@@ -1,4 +1,4 @@
-import { Box, Divider, Grid, Paper } from '@mui/material';
+import { Alert, Box, Divider, Grid, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl, useGoBack } from 'bluesquare-components';
 import classnames from 'classnames';
@@ -105,9 +105,10 @@ export const DuplicateDetails: FunctionComponent = () => {
     const [onlyShowUnmatched, setOnlyShowUnmatched] = useState<boolean>(false);
     const classes: Record<string, string> = useStyles();
     const goBack = useGoBack(baseUrls.entityDuplicates);
-    const { data: duplicatesInfos } = useGetDuplicates({
-        params: { entities: params.entities },
-    }) as { data: { results: DuplicateData[] } };
+    const { data: duplicatesInfos, isFetching: isFetchingInfos } =
+        useGetDuplicates({
+            params: { entities: params.entities },
+        }) as { data: { results: DuplicateData[] }; isFetching: boolean };
 
     const [entityIdA, entityIdB] = params.entities.split(',');
 
@@ -131,7 +132,17 @@ export const DuplicateDetails: FunctionComponent = () => {
         similarityScore,
         isLoading: isLoadingInfos,
         entityIds,
-    } = useDuplicateInfos({ tableState, duplicatesInfos, params });
+    } = useDuplicateInfos({
+        tableState,
+        duplicatesInfos,
+        params,
+        isFetching: isFetchingInfos,
+    });
+
+    const hasNoData =
+        !isFetching &&
+        !isFetchingInfos &&
+        (!duplicatesInfos?.results || duplicatesInfos.results.length === 0);
 
     const updateCellState = useCallback(
         (index, newValues) => {
@@ -280,84 +291,97 @@ export const DuplicateDetails: FunctionComponent = () => {
                     classes.containerFullHeightNoTabPadded,
                 )}
             >
-                <Grid container>
-                    <Grid item xs={12}>
-                        <Box pb={4}>
-                            <DuplicateInfos
-                                unmatchedRemaining={unmatchedRemaining}
-                                formName={formName}
-                                algorithmRuns={algorithmRuns}
-                                algorithmsUsed={algorithmsUsed}
-                                similarityScore={similarityScore}
-                                isLoading={isLoadingInfos}
-                                entityIds={entityIds}
-                                query={query}
-                                disableMerge={disableMerge}
-                            />
+                {hasNoData && (
+                    <Box mt={2}>
+                        <Alert severity="warning">
+                            {formatMessage(MESSAGES.duplicateNotFound)}
+                        </Alert>
+                    </Box>
+                )}
+                {!hasNoData && (
+                    <>
+                        <Grid container>
+                            <Grid item xs={12}>
+                                <Box pb={4}>
+                                    <DuplicateInfos
+                                        unmatchedRemaining={unmatchedRemaining}
+                                        formName={formName}
+                                        algorithmRuns={algorithmRuns}
+                                        algorithmsUsed={algorithmsUsed}
+                                        similarityScore={similarityScore}
+                                        isLoading={isLoadingInfos}
+                                        entityIds={entityIds}
+                                        query={query}
+                                        disableMerge={disableMerge}
+                                    />
+                                </Box>
+                            </Grid>
+                        </Grid>
+                        <Box data-test="duplicate-table">
+                            <Paper elevation={2} className={classes.fullWidth}>
+                                <DuplicateDetailsTableButtons
+                                    onlyShowUnmatched={onlyShowUnmatched}
+                                    setOnlyShowUnmatched={
+                                        toggleUnmatchedDisplay
+                                    }
+                                    fillValues={takeAllValuesFromEntity}
+                                    resetSelection={resetSelection}
+                                />
+                                <Divider />
+                                <TableWithDeepLink
+                                    showPagination={false}
+                                    baseUrl={baseUrls.entityDuplicateDetails}
+                                    columns={columns}
+                                    marginTop={false}
+                                    countOnTop={false}
+                                    elevation={0}
+                                    data={tableState}
+                                    rowProps={getRowProps}
+                                    cellProps={getCellProps}
+                                    params={params}
+                                    extraProps={{
+                                        loading: isFetching,
+                                        onlyShowUnmatched,
+                                        entities,
+                                        getRowProps,
+                                    }}
+                                />
+                            </Paper>
                         </Box>
-                    </Grid>
-                </Grid>
-                <Box data-test="duplicate-table">
-                    <Paper elevation={2} className={classes.fullWidth}>
-                        <DuplicateDetailsTableButtons
-                            onlyShowUnmatched={onlyShowUnmatched}
-                            setOnlyShowUnmatched={toggleUnmatchedDisplay}
-                            fillValues={takeAllValuesFromEntity}
-                            resetSelection={resetSelection}
-                        />
-                        <Divider />
-                        <TableWithDeepLink
-                            showPagination={false}
-                            baseUrl={baseUrls.entityDuplicateDetails}
-                            columns={columns}
-                            marginTop={false}
-                            countOnTop={false}
-                            elevation={0}
-                            data={tableState}
-                            rowProps={getRowProps}
-                            cellProps={getCellProps}
-                            params={params}
-                            extraProps={{
-                                loading: isFetching,
-                                onlyShowUnmatched,
-                                entities,
-                                getRowProps,
-                            }}
-                        />
-                    </Paper>
-                </Box>
-                <Box>
-                    <Grid container item spacing={2}>
-                        <Grid
-                            item
-                            xs={12}
-                            sm={6}
-                            data-test="duplicate-submissions-a"
-                        >
-                            <SubmissionsForEntity
-                                entityId={entityIdA}
-                                title={formatMessage(
-                                    MESSAGES.submissionsForEntity,
-                                    { entity: 'A' },
-                                )}
-                            />
-                        </Grid>
-                        <Grid
-                            item
-                            xs={12}
-                            sm={6}
-                            data-test="duplicate-submissions-b"
-                        >
-                            <SubmissionsForEntity
-                                entityId={entityIdB}
-                                title={formatMessage(
-                                    MESSAGES.submissionsForEntity,
-                                    { entity: 'B' },
-                                )}
-                            />
-                        </Grid>
-                    </Grid>
-                </Box>
+                        <Box>
+                            <Grid container item spacing={2}>
+                                <Grid
+                                    item
+                                    xs={12}
+                                    sm={6}
+                                    data-test="duplicate-submissions-a"
+                                >
+                                    <SubmissionsForEntity
+                                        entityId={entityIdA}
+                                        title={formatMessage(
+                                            MESSAGES.submissionsForEntity,
+                                            { entity: 'A' },
+                                        )}
+                                    />
+                                </Grid>
+                                <Grid
+                                    item
+                                    xs={12}
+                                    sm={6}
+                                    data-test="duplicate-submissions-b"
+                                >
+                                    <SubmissionsForEntity
+                                        entityId={entityIdB}
+                                        title={formatMessage(
+                                            MESSAGES.submissionsForEntity,
+                                            { entity: 'B' },
+                                        )}
+                                    />
+                                </Grid>
+                            </Grid>
+                        </Box>
+                    </>
+                )}
             </Box>
         </>
     );

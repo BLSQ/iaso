@@ -1,6 +1,8 @@
 from datetime import timedelta
+from unittest import mock
 
 from django.utils import timezone
+from rest_framework.status import HTTP_200_OK
 from rest_framework.test import APIClient
 
 from iaso import models as m
@@ -11,7 +13,11 @@ from plugins.polio.models import CampaignType
 from plugins.polio.models.base import SpreadSheetImport
 from plugins.polio.preparedness.spreadsheet_manager import *
 from plugins.polio.preparedness.summary import find_snapshot_for_date
+from plugins.polio.tests.api.campaigns.setupData import CampaignFiltersTestBase
 from plugins.polio.tests.api.test import PolioTestCaseMixin
+
+
+CAMPAIGNS_URL = "/api/polio/campaigns/"
 
 
 class PreparednessAPITestCase(APITestCase, PolioTestCaseMixin):
@@ -50,7 +56,7 @@ class PreparednessAPITestCase(APITestCase, PolioTestCaseMixin):
         Campaign.objects.create(obr_name="campaign B", account=self.account)
         Campaign.objects.create(obr_name="campaign c", account=self.account)
 
-        response = self.client.get(f"/api/polio/campaigns/{campaign_a.id}/", format="json")
+        response = self.client.get(f"{CAMPAIGNS_URL}{campaign_a.id}/", format="json")
 
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r["rounds"]), 2)
@@ -69,7 +75,7 @@ class PreparednessAPITestCase(APITestCase, PolioTestCaseMixin):
         campaign_c = Campaign.objects.create(obr_name="campaign c", account=self.account)
         campaign_b.campaign_types.add(type)
         campaign_c.campaign_types.add(type)
-        response = self.client.get(f"/api/polio/campaigns/{campaign_a.id}/", format="json")
+        response = self.client.get(f"{CAMPAIGNS_URL}{campaign_a.id}/", format="json")
 
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r["rounds"]), 2)
@@ -226,3 +232,37 @@ class PreparednessAPITestCase(APITestCase, PolioTestCaseMixin):
         ssi_for_campaign = SpreadSheetImport.objects.filter(spread_id=self.campaign.obr_name)
         snapshot = find_snapshot_for_date(ssi_for_campaign, self.round_1.started_at, 14, self.campaign.obr_name, 1)
         self.assertIsNone(snapshot)
+
+
+class CampaignPreparednessListFiltersAPITestCase(CampaignFiltersTestBase):
+    """Preparedness detail must resolve campaigns excluded from the default list filters."""
+
+    @mock.patch("plugins.polio.api.campaigns.views.campaigns.get_current_preparedness")
+    def test_preparedness_accessible_for_test_campaign_excluded_from_list(self, mock_get_preparedness):
+        mock_get_preparedness.return_value = {}
+        self.client.force_authenticate(self.user)
+
+        round_number = self.test_campaign.rounds.first().number
+        url = f"{CAMPAIGNS_URL}{self.test_campaign.id}/preparedness/?round={round_number}"
+        self.assertJSONResponse(self.client.get(url), HTTP_200_OK)
+        mock_get_preparedness.assert_called_once()
+
+    @mock.patch("plugins.polio.api.campaigns.views.campaigns.get_current_preparedness")
+    def test_preparedness_accessible_for_on_hold_campaign_excluded_from_list(self, mock_get_preparedness):
+        mock_get_preparedness.return_value = {}
+        self.client.force_authenticate(self.user)
+
+        round_number = self.on_hold_campaign.rounds.first().number
+        url = f"{CAMPAIGNS_URL}{self.on_hold_campaign.id}/preparedness/?round={round_number}"
+        self.assertJSONResponse(self.client.get(url), HTTP_200_OK)
+        mock_get_preparedness.assert_called_once()
+
+    @mock.patch("plugins.polio.api.campaigns.views.campaigns.get_current_preparedness")
+    def test_preparedness_accessible_when_round_on_hold_excluded_from_list(self, mock_get_preparedness):
+        mock_get_preparedness.return_value = {}
+        self.client.force_authenticate(self.user)
+
+        round_number = self.campaign_with_on_hold_rnd1.number
+        url = f"{CAMPAIGNS_URL}{self.campaign_with_on_hold_round.id}/preparedness/?round={round_number}"
+        self.assertJSONResponse(self.client.get(url), HTTP_200_OK)
+        mock_get_preparedness.assert_called_once()

@@ -17,6 +17,17 @@ import { OdkWebForm } from '@getodk/web-forms';
 const formXml = ref(null);
 const loading = ref(false);
 const error = ref(null);
+const submitTooltip = ref(
+    'Form submission from the preview is not available yet. This feature is under development.',
+);
+
+const setSubmitTooltip = message => {
+    submitTooltip.value = message;
+    document.documentElement.style.setProperty(
+        '--preview-submit-tooltip',
+        `"${message.replace(/"/g, '\\"')}"`,
+    );
+};
 
 const fetchAttachment = async url => {
     const response = await fetch(url);
@@ -44,22 +55,25 @@ const loadFormFromUrl = async url => {
     }
 };
 
-const loadFormFromXml = xml => {
+const loadFormFromXml = (xml, tooltipMessage) => {
+    if (tooltipMessage) {
+        setSubmitTooltip(tooltipMessage);
+    }
     formXml.value = xml;
     loading.value = false;
     error.value = null;
 };
 
-// Listen for messages from parent iframe
 const handleMessage = event => {
     if (event.data?.type === 'load-form-url') {
         loadFormFromUrl(event.data.url);
     } else if (event.data?.type === 'load-form-xml') {
-        loadFormFromXml(event.data.xml);
+        loadFormFromXml(event.data.xml, event.data.submitDisabledMessage);
     }
 };
 
 onMounted(() => {
+    setSubmitTooltip(submitTooltip.value);
     window.addEventListener('message', handleMessage);
 
     // Check URL params for initial form load
@@ -76,10 +90,35 @@ onUnmounted(() => {
 </script>
 
 <style>
-/* Remove this to show built-in Send button */
+/* Always disabled; tooltip on hover (message via --preview-submit-tooltip from FormPreview) */
 .odk-form .form-wrapper .footer {
-    display: none !important;
+    position: relative;
+    cursor: not-allowed;
 }
+
+.odk-form .form-wrapper .footer button {
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+.odk-form .form-wrapper .footer:hover::after {
+    content: var(--preview-submit-tooltip);
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 6px);
+    z-index: 1000;
+    max-width: 280px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    background: #333;
+    color: #fff;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    text-align: center;
+    white-space: normal;
+    pointer-events: none;
+}
+
 .powered-by-wrapper {
     display: none !important;
 }

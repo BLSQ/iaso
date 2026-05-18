@@ -259,7 +259,9 @@ class ValidationWorkflowInstanceRetrieveSerializer(ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance:
-            self.context["node_dumps"] = self.instance.form.validation_workflow.dump_nodes()
+            vw = getattr(self.instance.form, "validation_workflow", None)
+            if vw:
+                self.context["node_dumps"] = vw.dump_nodes()
         request = self.context["request"]
         if request:
             user = request.user

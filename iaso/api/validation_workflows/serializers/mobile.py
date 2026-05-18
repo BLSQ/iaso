@@ -2,17 +2,17 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer, TimestampField
+from iaso.api.validation_workflows.constants import DEFAULT_COLOR, MOBILE_STATUS_TO_COLOR
 from iaso.api.validation_workflows.serializers.common import UserDisplayNameField
 from iaso.models import Instance, ValidationNode
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
-from iaso.utils.serializer.color import ColorFieldSerializer
 
 
 class NestedHistorySerializer(ModelSerializer):
     updated_at = TimestampField()
     created_at = TimestampField()
-    color = ColorFieldSerializer(source="node.color", read_only=True)
+    color = serializers.SerializerMethodField(read_only=True)
     level = serializers.CharField(read_only=True, source="node.name")
     created_by = UserDisplayNameField()
     updated_by = UserDisplayNameField()
@@ -29,6 +29,10 @@ class NestedHistorySerializer(ModelSerializer):
             "updated_by",
             "created_by",
         ]
+
+    @extend_schema_field(serializers.ChoiceField(choices=list(MOBILE_STATUS_TO_COLOR.values()) + [DEFAULT_COLOR]))
+    def get_color(self, obj):
+        return MOBILE_STATUS_TO_COLOR.get(obj.status, DEFAULT_COLOR)
 
 
 class MobileValidationWorkflowListSerializer(ModelSerializer):

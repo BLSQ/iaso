@@ -89,12 +89,11 @@ class ValidationNodeTemplateBulkUpdateSerializer(ModelSerializer):
     class Meta:
         list_serializer_class = ValidationNodeTemplateBulkUpdateListSerializer
         model = ValidationNodeTemplate
-        fields = ["slug", "name", "description", "color", "roles_required", "can_skip_previous_nodes"]
+        fields = ["slug", "name", "description", "roles_required", "can_skip_previous_nodes"]
         extra_kwargs = {
             "slug": {"required": True},
             "name": {"write_only": True},
             "description": {"write_only": True},
-            "color": {"write_only": True},
             "can_skip_previous_nodes": {"write_only": True},
         }
 

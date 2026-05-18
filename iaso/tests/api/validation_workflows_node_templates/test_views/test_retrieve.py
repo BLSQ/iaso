@@ -35,7 +35,6 @@ class ValidationNodeTemplateAPIRetrieveTestCase(BaseApiTestCase):
         self.second_node = ValidationNodeTemplate.objects.create(
             name="Second node",
             workflow=self.validation_workflow,
-            color="#ffffff",
             description="some description",
             can_skip_previous_nodes=True,
         )
@@ -145,7 +144,7 @@ class ValidationNodeTemplateAPIRetrieveTestCase(BaseApiTestCase):
                     )
                 )
                 res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
-                fields = ["slug", "name", "description", "color", "roles_required", "can_skip_previous_nodes"]
+                fields = ["slug", "name", "description", "roles_required", "can_skip_previous_nodes"]
 
                 for field in fields:
                     self.assertIn(field, res_data)
@@ -153,6 +152,5 @@ class ValidationNodeTemplateAPIRetrieveTestCase(BaseApiTestCase):
                 self.assertEqual(res_data["slug"], "second-node")
                 self.assertEqual(res_data["name"], "Second node")
                 self.assertEqual(res_data["description"], "some description")
-                self.assertEqual(res_data["color"], "#FFFFFF")
                 self.assertEqual(res_data["roles_required"], [{"id": self.user_role.pk, "name": "Group"}])
                 self.assertTrue(res_data["can_skip_previous_nodes"])

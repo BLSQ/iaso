@@ -9,7 +9,6 @@ import {
 import { Field, FormikProvider, useFormik } from 'formik';
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import { BooleanInput } from 'Iaso/components/forms/BooleanInput';
-import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
 import { MultiSelect } from 'Iaso/domains/pages/components/MultiSelect';
 import TextInput from 'Iaso/domains/pages/components/TextInput';
 import { useGetUserRolesDropDown } from 'Iaso/domains/userRoles/hooks/requests/useGetUserRoles';
@@ -51,7 +50,6 @@ export const CreateEditNode: FunctionComponent<Props> = ({
         initialValues: {
             name: node?.name,
             slug: node?.slug,
-            color: node?.color,
             description: node?.description,
             can_skip_previous_nodes: node?.can_skip_previous_nodes,
             roles_required: node?.roles_required?.map(r => r.id),
@@ -91,27 +89,15 @@ export const CreateEditNode: FunctionComponent<Props> = ({
                 confirmMessage={MESSAGES.save}
                 cancelMessage={MESSAGES.cancel}
             >
-                <>
-                    <Box mb={2} mt={2}>
-                        <Field
-                            label={formatMessage(MESSAGES.name)}
-                            name="name"
-                            component={TextInput}
-                            required
-                            withMarginTop
-                        />
-                    </Box>
-                    <Box mb={2}>
-                        <ColorPicker
-                            currentColor={formik.values.color}
-                            onChangeColor={value => {
-                                formik.setFieldTouched('color', true);
-                                formik.setFieldValue('color', value);
-                            }}
-                        />
-                    </Box>
-                </>
-
+                <Box mb={2} mt={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.name)}
+                        name="name"
+                        component={TextInput}
+                        required
+                        withMarginTop
+                    />
+                </Box>
                 <Field
                     label={formatMessage(MESSAGES.description)}
                     name="description"

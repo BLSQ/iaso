@@ -48,18 +48,14 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(SwaggerTestCaseMixin, APITes
         )
         self.validation_workflow.form_set.add(self.form)
 
-        self.first_node = ValidationNodeTemplate.objects.create(
-            name="First node", workflow=self.validation_workflow, color="#ffffff"
-        )
+        self.first_node = ValidationNodeTemplate.objects.create(name="First node", workflow=self.validation_workflow)
         self.first_node.roles_required.add(self.user_role)
 
-        self.second_node = ValidationNodeTemplate.objects.create(
-            name="Second node", workflow=self.validation_workflow, color="#12fa4b"
-        )
+        self.second_node = ValidationNodeTemplate.objects.create(name="Second node", workflow=self.validation_workflow)
         self.second_node.previous_node_templates.add(self.first_node)
 
         self.third_node = ValidationNodeTemplate.objects.create(
-            name="Third node", workflow=self.validation_workflow, color="#6e6593", can_skip_previous_nodes=True
+            name="Third node", workflow=self.validation_workflow, can_skip_previous_nodes=True
         )
         self.third_node.previous_node_templates.add(self.second_node)
         self.third_node.roles_required.add(self.user_role)
@@ -386,24 +382,20 @@ class ValidationWorkflowInstanceAPIRetrieveTestCaseResubmissionWithNextByPass(Sw
         )
         self.validation_workflow.form_set.add(self.form)
 
-        self.first_node = ValidationNodeTemplate.objects.create(
-            name="First node", workflow=self.validation_workflow, color="#ffffff"
-        )
+        self.first_node = ValidationNodeTemplate.objects.create(name="First node", workflow=self.validation_workflow)
         self.first_node.roles_required.add(self.user_role)
 
-        self.second_node = ValidationNodeTemplate.objects.create(
-            name="Second node", workflow=self.validation_workflow, color="#12fa4b"
-        )
+        self.second_node = ValidationNodeTemplate.objects.create(name="Second node", workflow=self.validation_workflow)
         self.second_node.previous_node_templates.add(self.first_node)
 
         self.third_node = ValidationNodeTemplate.objects.create(
-            name="Third node", workflow=self.validation_workflow, color="#6e6593", can_skip_previous_nodes=True
+            name="Third node", workflow=self.validation_workflow, can_skip_previous_nodes=True
         )
         self.third_node.previous_node_templates.add(self.second_node)
         self.third_node.roles_required.add(self.user_role)
 
         self.fourth_node = ValidationNodeTemplate.objects.create(
-            name="Fourth node", workflow=self.validation_workflow, color="#6e6593", can_skip_previous_nodes=True
+            name="Fourth node", workflow=self.validation_workflow, can_skip_previous_nodes=True
         )
         self.fourth_node.previous_node_templates.add(self.third_node)
         self.fourth_node.roles_required.add(self.user_role)

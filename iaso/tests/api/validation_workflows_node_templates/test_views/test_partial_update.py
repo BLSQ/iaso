@@ -48,7 +48,6 @@ class ValidationTemplateAPIPartialUpdateTestCase(BaseApiTestCase):
             name="First node",
             workflow=self.validation_workflow,
             description="some node",
-            color="#ffffff",
             can_skip_previous_nodes=True,
         )
 
@@ -90,7 +89,6 @@ class ValidationTemplateAPIPartialUpdateTestCase(BaseApiTestCase):
         self.assertEqual(self.node.slug, "first-node")
         self.assertEqual(self.node.name, "test")
         self.assertEqual(self.node.description, "some node")
-        self.assertEqual(self.node.color, "#FFFFFF")
         self.assertTrue(self.node.can_skip_previous_nodes)
         self.assertEqual(list(self.node.roles_required.all()), [self.user_role])
 

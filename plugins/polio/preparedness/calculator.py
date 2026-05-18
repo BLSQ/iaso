@@ -6,7 +6,8 @@ _BASE_GSHEET_DATE = datetime.date(1899, 12, 30)
 
 def convert_date_from_gsheet(num_days: int) -> datetime.date:
     # Ref: https://stackoverflow.com/a/66738817/
-    assert isinstance(num_days, int)
+    if not isinstance(num_days, int):
+        raise ValueError("Parameter num_days must be an integer")
     return _BASE_GSHEET_DATE + datetime.timedelta(num_days)
 
 

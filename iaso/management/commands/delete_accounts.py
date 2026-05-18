@@ -363,19 +363,28 @@ class Command(BaseCommand):
         # and keep the last as "last measure" to be sure
         instance_content_type = ContentType.objects.get_by_natural_key(app_label="iaso", model="instance")
         pages = 2000
-        sql = "".join(
-            [
-                "WITH cte AS ( ",
-                'SELECT "id" FROM "audit_modification" WHERE "content_type_id" =' + str(instance_content_type.id) + "",
-                ' AND NOT ("object_id" IN (SELECT CAST(U0."id" AS text) AS "id_as_str" FROM "iaso_instance" U0)) ORDER BY "id" LIMIT 20000 ) ',
-                ' DELETE FROM "audit_modification" WHERE "id" IN (SELECT "id" FROM cte)',
-            ]
-        )
+
+        sql = """
+              WITH cte AS (SELECT id 
+                           FROM audit_modification 
+                           WHERE content_type_id = %s 
+                             AND NOT ( 
+                               object_id IN (SELECT CAST(id AS text) 
+                                             FROM iaso_instance) 
+                               ) 
+                           ORDER BY id
+                  LIMIT 20000
+                  )
+              DELETE 
+              FROM audit_modification
+              WHERE id IN (SELECT id FROM cte) 
+        """
+
         # speedup the delete by setting the work_mem to a much higher value
         # the 20000 limit looks a good thread of between speed and seing progress
         cursor.execute("SET work_mem = '1GB'")
         for i in range(pages):
-            cursor.execute(sql)
+            cursor.execute(sql, [instance_content_type.id])
             print(i, cursor.rowcount, datetime.datetime.now())
             if cursor.rowcount == 0:
                 break
@@ -562,15 +571,16 @@ class Command(BaseCommand):
 
         # This table is so big and the content too, that django is fetching all the deleted models (not only the id)
         # that I had to delete it with this strange construct deleting by x records and via sql instead of django queryset .delete()
-        has_more_export_logs = True
-        while has_more_export_logs:
-            export_logs_ids = ExportLog.objects.filter(exportstatus=None).values_list("id", flat=True)[0:500]
-            if len(export_logs_ids) > 0:
-                cursor.execute(
-                    "delete from iaso_exportlog where id in (" + ",".join([str(id) for id in export_logs_ids]) + " )"
-                )
-                print("deleted", export_logs_ids)
-            has_more_export_logs = len(export_logs_ids) > 0
+        while True:
+            export_logs_ids = ExportLog.objects.filter(exportstatus=None).values_list("id", flat=True)[:500]
+            if not export_logs_ids:
+                break
+
+            placeholders = ", ".join(["%s"] * len(export_logs_ids))
+            sql = f"DELETE FROM iaso_exportlog WHERE id IN ({placeholders})"  # noqa: S608
+
+            cursor.execute(sql, export_logs_ids)
+            print("deleted", export_logs_ids)
 
         # raise err
         counts_after = dump_counts()

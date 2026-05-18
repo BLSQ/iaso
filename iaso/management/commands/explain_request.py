@@ -114,7 +114,7 @@ def consume_response(response, output_dir):
             body = f"binary in {filename}"
         if fullpath_name.endswith(".parquet"):
             print("to visualize the content :")
-            print(f"    duckdb -c 'select * from \"{fullpath_name}\"'")
+            print(f"    duckdb -c 'select * from \"{fullpath_name}\"'")  # noqa: S608
         size_mb = float(response.get("Content-Length")) / 1024 / 1024
     elif isinstance(response, StreamingHttpResponse):
         body = "".join(

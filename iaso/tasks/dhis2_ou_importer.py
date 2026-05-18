@@ -415,7 +415,7 @@ def import_orgunits_and_groups(
             if update_mode:
                 skip_count += 1
                 continue
-            assert False, "not here"
+            raise ValueError("not here")
 
         try:
             org_unit = orgunit_from_row(

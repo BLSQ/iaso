@@ -82,7 +82,13 @@ def get_url_from_enketo(url, data):
     try:
         settings = enketo_settings()
 
-        response = requests.post(url, data=data, auth=(settings["ENKETO_API_TOKEN"], ""), verify=True)
+        response = requests.post(
+            url,
+            data=data,
+            auth=(settings["ENKETO_API_TOKEN"], ""),
+            verify=True,
+            timeout=django_settings.REQUEST_TIMEOUT.ENKETO.value,
+        )
         resp_content = response.content
 
         resp_content = resp_content.decode("utf-8") if hasattr(resp_content, "decode") else resp_content

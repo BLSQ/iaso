@@ -110,11 +110,13 @@ class Period:
         return f"<{self.__class__.__name__} {self.value}>"
 
     def __le__(self, other):
-        assert type(self) == type(other)
+        if type(self) != type(other):
+            raise TypeError(f"Cannot compare {type(self).__name__} with {type(other).__name__}")
         return self.value <= other.value
 
     def __lt__(self, other):
-        assert type(self) == type(other)
+        if type(self) != type(other):
+            raise TypeError(f"Cannot compare {type(self).__name__} with {type(other).__name__}")
         return self.value < other.value
 
     @property

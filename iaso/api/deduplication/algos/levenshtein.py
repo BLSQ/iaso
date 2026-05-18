@@ -197,7 +197,7 @@ def _build_query(params, start_id, end_id):
     SELECT *
     FROM scored_pairs
     WHERE score > %s;
-    """,
+    """,  # noqa : S608
     )
 
 

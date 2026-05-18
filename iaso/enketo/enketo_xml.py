@@ -60,7 +60,14 @@ def build_substitutions(instance):
 
 
 def inject_instance_id_in_form(xml_str, instance_id):
-    root = etree.fromstring(xml_str)
+    secure_parser = etree.XMLParser(
+        recover=True,
+        resolve_entities=False,  # prevents XXE
+        no_network=True,
+        load_dtd=False,
+        huge_tree=False,
+    )
+    root = etree.fromstring(xml_str, parser=secure_parser)  # noqa: S320
     root.set("iasoInstance", str(instance_id))
 
     head = root[0]
@@ -148,10 +155,10 @@ def to_xforms_xml(form, download_url, manifest_url, version, md5checksum, new_fo
 
 
 def extract_xml_instance_from_form_xml(form_version_xml, instance_uuid):
-    lxml_parser = XMLParser(huge_tree=True, recover=True)
+    lxml_parser = XMLParser(recover=True, resolve_entities=False, no_network=True, load_dtd=False, huge_tree=True)
     xml_str = form_version_xml.decode("utf-8")
 
-    root = etree.fromstring(fix_emoji(xml_str), parser=lxml_parser)
+    root = etree.fromstring(fix_emoji(xml_str), parser=lxml_parser)  # noqa: S320
     # Get the default namespace URI
     default_ns_uri = root.nsmap.get(None)
 
@@ -193,11 +200,11 @@ def inject_xml_find_uuid(instance_xml, instance_id, version_id, user_id, instanc
     Return the uuid found in the xml
     """
     # use custom parser to match the recover flag as in beautifulsoup while flattening
-    lxml_parser = XMLParser(huge_tree=True, recover=True)
+    lxml_parser = XMLParser(recover=True, resolve_entities=False, no_network=True, load_dtd=False, huge_tree=True)
     xml_str = instance_xml.decode("utf-8")
     #  Get the instanceID (uuid) from the //meta/instanceID
     #  We have an uuid on instance. but it seems not always filled?
-    root = etree.fromstring(fix_emoji(xml_str), parser=lxml_parser)
+    root = etree.fromstring(fix_emoji(xml_str), parser=lxml_parser)  # noqa: S320
     instance_id_tag = root.find(".//meta/instanceID")
 
     instance_uuid = instance_id_tag.text.replace("uuid:", "")  # type: ignore
@@ -223,9 +230,9 @@ def inject_xml_find_uuid(instance_xml, instance_id, version_id, user_id, instanc
 
 
 def parse_to_structured_dict(instance_xml):
-    lxml_parser = XMLParser(huge_tree=True, recover=True)
+    lxml_parser = XMLParser(recover=True, resolve_entities=False, no_network=True, load_dtd=False, huge_tree=True)
     xml_str = instance_xml.decode("utf-8")
-    root = etree.fromstring(fix_emoji(xml_str), parser=lxml_parser)
+    root = etree.fromstring(fix_emoji(xml_str), parser=lxml_parser)  # noqa: S320
 
     def strip_ns(tag):
         return tag.split("}", 1)[-1] if "}" in tag else tag

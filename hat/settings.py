@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
+import enum
 import importlib
 import os
 import sys
@@ -904,7 +905,8 @@ for plugin_name in PLUGINS:
         )
         INSTALLED_APPS.append(f"plugins.{plugin_name}")
 
-XLSFORM_VALIDATOR_TEMP_DIR = "/tmp"
+# todo : FIX THIS !
+XLSFORM_VALIDATOR_TEMP_DIR = "/tmp"  # noqa
 INSTALLED_APPS.append("dynamic_fields")
 
 # Making sure that files are not stored on disk while running tests
@@ -928,3 +930,37 @@ SETUPER_SANDBOX_PASSWORD = env.str("SETUPER_SANDBOX_PASSSWORD", default="distric
 
 # Form AI
 FORM_AI_MODEL = env.str("FORM_AI_MODEL", default="claude-opus-4-7")
+
+
+# REQUESTS TIMEOUT
+def env_timeout(connect_key, read_key, default):
+    try:
+        connect = float(os.environ.get(connect_key, default[0]))
+    except ValueError:
+        connect = default[0]
+
+    try:
+        read = float(os.environ.get(read_key, default[1]))
+    except ValueError:
+        read = default[1]
+
+    return connect, read
+
+
+DEFAULT_TIMEOUT = (3.05, 30)
+
+
+class RequestTimeOut(enum.Enum):
+    DEFAULT = DEFAULT_TIMEOUT
+    SUPERSET = env_timeout("REQUESTS_TIMEOUT_SUPERSET_CT_SEC", "REQUESTS_TIMEOUT_SUPERSET_RT_SEC", DEFAULT_TIMEOUT)
+    ENKETO = env_timeout("REQUESTS_TIMEOUT_ENKETO_CT_SEC", "REQUESTS_TIMEOUT_ENKETO_RT_SEC", DEFAULT_TIMEOUT)
+    DHIS2_SSO_AND_SYSTEM = env_timeout(
+        "REQUESTS_TIMEOUT_DHIS2_SSO_AND_SYSTEM_CT_SEC", "REQUESTS_TIMEOUT_DHIS2_SSO_AND_SYSTEM_RT_SEC", DEFAULT_TIMEOUT
+    )
+    POLIO = env_timeout("REQUESTS_TIMEOUT_POLIO_CT_SEC", "REQUESTS_TIMEOUT_POLIO_RT_SEC", DEFAULT_TIMEOUT)
+    S3 = env_timeout("REQUESTS_TIMEOUT_S3_CT_SEC", "REQUESTS_TIMEOUT_S3_RT_SEC", DEFAULT_TIMEOUT)
+    POWER_BI = env_timeout("REQUESTS_TIMEOUT_POWER_BI_CT_SEC", "REQUESTS_TIMEOUT_POWER_BI_RT_SEC", DEFAULT_TIMEOUT)
+    WFP_AUTH = env_timeout("REQUESTS_TIMEOUT_WFP_AUTH_CT_SEC", "REQUESTS_TIMEOUT_WFP_AUTH_RT_SEC", DEFAULT_TIMEOUT)
+
+
+REQUEST_TIMEOUT = RequestTimeOut

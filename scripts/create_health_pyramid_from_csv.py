@@ -21,7 +21,7 @@ groups_url = SERVER_BASE_URL + "/api/groups/"
 create_org_unit_url = SERVER_BASE_URL + "/api/orgunits/create_org_unit/"
 org_unit_types_url = SERVER_BASE_URL + "/api/v2/orgunittypes/"
 
-AUTH_TOKEN = "XXX"
+AUTH_TOKEN = "XXX"  # noqa: S105
 headers = {"Authorization": "Bearer %s" % AUTH_TOKEN}
 
 SOURCE_ID = 1  # ID of the default source

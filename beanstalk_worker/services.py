@@ -35,18 +35,21 @@ def json_dump(obj):
         return {"__type__": "datetime", "value": obj.isoformat()}
     if isinstance(obj, decimal.Decimal):
         return {"__type__": "decimal", "value": str(obj)}
-    assert False, type(obj)
+    raise RuntimeError(f"Unexpected type: {type(obj)!r}")
 
 
 def json_load(obj):
-    if "__type__" in obj:
-        if obj["__type__"] == "datetime":
-            return dateparser.parse(obj["value"])
-        if obj["__type__"] == "decimal":
-            return decimal.Decimal(obj["value"])
-        assert False
-    else:
+    if "__type__" not in obj:
         return obj
+
+    obj_type = obj["__type__"]
+
+    if obj_type == "datetime":
+        return dateparser.parse(obj["value"])
+    if obj_type == "decimal":
+        return decimal.Decimal(obj["value"])
+
+    raise ValueError(f"Unsupported __type__: {obj_type!r}")
 
 
 class _TaskServiceBase:
@@ -70,7 +73,8 @@ class _TaskServiceBase:
             task.save()
             module = importlib.import_module(module_name)
             method = getattr(module, method_name)
-            assert method._is_task
+            if not method._is_task:
+                raise RuntimeError
 
             method(*args, task=task, **kwargs)
 

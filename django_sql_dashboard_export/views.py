@@ -49,7 +49,9 @@ def export_sql_results_for_dashboard(request, slug):
 
     format = request.GET.get("format", "csv")
     sql_index = request.GET.get("index", 1)
-    assert format in ("csv", "tsv")  # TODO put nicer message
+
+    if format not in ("csv", "tsv"):
+        raise ValueError(f"Unexpected format {format} received")
 
     dashboard_query = get_object_or_404(dashboard.queries, _order=sql_index)
     sql = dashboard_query.sql

@@ -3,6 +3,8 @@
 from typing import Any, Dict, Iterable, List, Optional
 
 from bs4 import BeautifulSoup as Soup  # type: ignore
+from django.db.models import F, Func, JSONField
+from django.db.models.functions import Cast
 from django.utils.text import slugify
 
 
@@ -116,8 +118,8 @@ def geojson_queryset(queryset, geometry_field, pk_field="id", fields=[]):
     if sql_injection_geom_regex.match(geometry_field):
         raise ValueError("invalid geom field name")
 
-    features_queryset = queryset.extra(
-        select={"geojson_queryset_result": f"ST_AsGeoJSON({geometry_field})::json"}
+    features_queryset = queryset.annotate(
+        geojson_queryset_result=Cast(Func(F(geometry_field), function="ST_AsGeoJSON"), output_field=JSONField())
     ).values(*all_fields)
 
     features = []

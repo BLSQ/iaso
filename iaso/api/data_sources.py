@@ -4,6 +4,7 @@ import logging
 import dhis2
 import requests
 
+from django.conf import settings
 from django.db.models import Count, Prefetch
 from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
@@ -216,7 +217,11 @@ class TestCredentialSerializer(serializers.Serializer):
 
         # check the url authenticity throught the dhis2 api
         try:
-            response = requests.get(dhis2_system_info_api, auth=(dhis2_login, password)).json()
+            response = requests.get(
+                dhis2_system_info_api,
+                auth=(dhis2_login, password),
+                timeout=settings.REQUEST_TIMEOUT.DHIS2_SSO_AND_SYSTEM.value,
+            ).json()
             # dependending on the version the field url is not always the same
             if "contextPath" in response:
                 if response["contextPath"] != dhis2_url:

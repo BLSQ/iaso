@@ -99,13 +99,14 @@ def build_level_annotations(qs: QuerySet[m.OrgUnit]):
         index = level  # 0-based index
         for field in ancestor_fields:
             field_alias = f"level_{level + 1}_{field}"
+            # todo : properly sanitize this
             sql = f"""
                 (SELECT {field}
                 FROM iaso_orgunit a
                 WHERE a.id = (string_to_array(iaso_orgunit.path::text, '.')::int[])[{index + 1}]
                 LIMIT 1)
-            """
-            level_annotations[field_alias] = RawSQL(sql, [])
+            """  # noqa: S608
+            level_annotations[field_alias] = RawSQL(sql, [])  # noqa: S611
 
     return level_annotations
 

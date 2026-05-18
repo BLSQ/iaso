@@ -13,7 +13,7 @@ def calculate_md5(file_obj: File, chunk_size: int = 8192) -> str:
     if not file_obj:
         return ""
 
-    hasher = hashlib.md5()
+    hasher = hashlib.md5()  # noqa: S324
 
     file_original_position = file_obj.tell()
 

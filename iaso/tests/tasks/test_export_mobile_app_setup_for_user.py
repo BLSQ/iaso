@@ -81,7 +81,7 @@ class ExportMobileAppSetupForUserTest(TestCase):
         # check zip file contents
         zip_name = self.task.result["data"].replace("file:export-files/", "")
         folder_name = zip_name.replace(".zip", "")
-        zip_path = os.path.join("/tmp", folder_name)
+        zip_path = os.path.join("/tmp", folder_name)  # noqa: S108
         # breakpoint()
         created_files = _get_files_in_zipfile(zip_path, zip_name)
         self.assertIn("app.json", created_files)

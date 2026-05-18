@@ -188,4 +188,4 @@ pydantic==2.11.3  # https://github.com/pydantic/pydantic/tags
 
 # Testing.
 # ------------------------------------------------------------------------------
-django-test-migrations==1.5.0 # https://github.com/wemake-services/django-test-migrations
+django-test-migrations==1.4.0 # https://github.com/wemake-services/django-test-migrations

@@ -29,11 +29,12 @@ import MESSAGES from './messages';
 import {
     fetchFormDetailsForInstance,
     fetchInstancesAsDict,
-    fetchInstancesAsSmallDict,
+    fetchInstancesAsLocation,
 } from './requests';
 import {
     getEndpointUrl,
     getExportUrl,
+    getLocationEndpointUrl,
     useGetFilters,
     useSelectionActions,
 } from './utils/index';
@@ -89,18 +90,10 @@ const Instances = () => {
     // Data for the map
     const { data: instancesSmall, isLoading: loadingMap } = useSnackQuery(
         ['instances', 'small', apiParams],
-        // Ugly fix to limit results displayed on map, IA-904
-        () =>
-            fetchInstancesAsSmallDict(
-                `${getEndpointUrl(apiParams, false, '', true)}&limit=${
-                    params.mapResults || 3000
-                }`,
-            ),
+        () => fetchInstancesAsLocation(getLocationEndpointUrl(apiParams)),
         snackMessages.fetchInstanceLocationError,
-
         {
             enabled: params.tab === 'map',
-            select: result => result.instances,
         },
     );
     const { data, isFetching: fetchingList } = useSnackQuery({

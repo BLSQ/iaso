@@ -118,8 +118,4 @@ onUnmounted(() => {
     white-space: normal;
     pointer-events: none;
 }
-
-.powered-by-wrapper {
-    display: none !important;
-}
 </style>

@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 8009",
-    "build": "NODE_ENV=production vite build",
-    "preview": "vite preview --host 0.0.0.0 --port 8009"
+    "build": "NODE_ENV=production vite build"
   },
   "dependencies": {
     "@getodk/web-forms": "latest",

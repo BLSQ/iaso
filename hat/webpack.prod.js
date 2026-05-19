@@ -71,10 +71,11 @@ module.exports = {
                 NODE_ENV: JSON.stringify('production'),
             },
             __LOCALE: JSON.stringify(LOCALE),
+            __ODK_PREVIEW_DEV__: JSON.stringify(false),
+            __ODK_PREVIEW_DEV_MOUNT__: JSON.stringify(''),
             __ODK_PREVIEW_REMOTE_ENTRY__: JSON.stringify(
                 ODK_PREVIEW_REMOTE_ENTRY,
             ),
-            __ODK_PREVIEW_DEV__: JSON.stringify(false),
         }),
         // Minification
         new webpack.LoaderOptionsPlugin({ minimize: true }),

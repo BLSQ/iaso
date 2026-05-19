@@ -16,16 +16,11 @@ export function mountOdkPreview(
     const app: VueApp = createApp(OdkPreview, props);
     app.use(webFormsPlugin);
     app.mount(el);
-    return () => {
-        app.unmount();
-    };
+    return () => app.unmount();
 }
 
 if (import.meta.hot) {
-    import.meta.hot.accept(
-        ['./OdkPreview.vue', './previewStyles.css'],
-        () => {
-            window.dispatchEvent(new CustomEvent('odk-preview-updated'));
-        },
-    );
+    import.meta.hot.accept(['./OdkPreview.vue', './previewStyles.css'], () => {
+        window.dispatchEvent(new CustomEvent('odk-preview-updated'));
+    });
 }

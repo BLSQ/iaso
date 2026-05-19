@@ -7,17 +7,23 @@ const isProd = process.env.NODE_ENV === 'production';
 export default defineConfig({
     plugins: [
         vue(),
-        // Federation remoteEntry is generated on `npm run build` only (not in Vite dev).
         federation({
             name: 'odkPreview',
             filename: 'remoteEntry.js',
-            exposes: {
-                './mount': './src/mount.ts',
-            },
+            exposes: { './mount': './src/mount.ts' },
             shared: {},
         }),
     ],
     base: isProd ? '/static/odk-preview/' : '/',
+    esbuild: {
+        // @getodk/web-forms uses top-level await
+        target: 'esnext',
+    },
+    optimizeDeps: {
+        esbuildOptions: {
+            target: 'esnext',
+        },
+    },
     build: {
         target: 'esnext',
         minify: isProd,
@@ -26,19 +32,9 @@ export default defineConfig({
         emptyOutDir: true,
         modulePreload: false,
     },
-    optimizeDeps: {
-        esbuildOptions: {
-            target: 'esnext',
-        },
-    },
     server: {
         host: '0.0.0.0',
         port: 8009,
         cors: true,
-        origin: 'http://localhost:8009',
-        fs: {
-            allow: ['/'],
-            strict: false,
-        },
     },
 });

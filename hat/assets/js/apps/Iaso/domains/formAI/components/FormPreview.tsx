@@ -22,25 +22,8 @@ export const FormPreview: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const containerRef = useRef<HTMLDivElement>(null);
-    const [isLoadingRemote, setIsLoadingRemote] = useState(false);
-    const [remoteError, setRemoteError] = useState<string | null>(null);
-    const [previewRevision, setPreviewRevision] = useState(0);
-
-    useEffect(() => {
-        if (!__ODK_PREVIEW_DEV__) {
-            return undefined;
-        }
-        const onOdkPreviewUpdated = () => {
-            setPreviewRevision(revision => revision + 1);
-        };
-        window.addEventListener('odk-preview-updated', onOdkPreviewUpdated);
-        return () => {
-            window.removeEventListener(
-                'odk-preview-updated',
-                onOdkPreviewUpdated,
-            );
-        };
-    }, []);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const container = containerRef.current;
@@ -51,43 +34,59 @@ export const FormPreview: FunctionComponent<Props> = ({
         let unmount: (() => void) | undefined;
         let cancelled = false;
 
-        setIsLoadingRemote(true);
-        setRemoteError(null);
+        const mount = () => {
+            setIsLoading(true);
+            setError(null);
 
-        loadOdkPreviewMount()
-            .then(({ mountOdkPreview }) => {
-                if (cancelled) {
-                    return;
-                }
-                unmount = mountOdkPreview(container, {
-                    formXml: xformXml,
-                    submitDisabledMessage: formatMessage(
-                        MESSAGES.previewSubmitUnavailable,
-                    ),
+            loadOdkPreviewMount()
+                .then(({ mountOdkPreview }) => {
+                    if (cancelled) {
+                        return;
+                    }
+                    unmount?.();
+                    unmount = mountOdkPreview(container, {
+                        formXml: xformXml,
+                        submitDisabledMessage: formatMessage(
+                            MESSAGES.previewSubmitUnavailable,
+                        ),
+                    });
+                })
+                .catch((err: unknown) => {
+                    if (!cancelled) {
+                        setError(
+                            err instanceof Error
+                                ? err.message
+                                : 'Failed to load ODK preview',
+                        );
+                    }
+                })
+                .finally(() => {
+                    if (!cancelled) {
+                        setIsLoading(false);
+                    }
                 });
-            })
-            .catch((error: unknown) => {
-                if (!cancelled) {
-                    setRemoteError(
-                        error instanceof Error
-                            ? error.message
-                            : 'Failed to load ODK preview',
-                    );
-                }
-            })
-            .finally(() => {
-                if (!cancelled) {
-                    setIsLoadingRemote(false);
-                }
-            });
+        };
+
+        mount();
+
+        const onHotUpdate = () => {
+            if (!cancelled) {
+                mount();
+            }
+        };
+
+        if (__ODK_PREVIEW_DEV__) {
+            window.addEventListener('odk-preview-updated', onHotUpdate);
+        }
 
         return () => {
             cancelled = true;
             unmount?.();
+            if (__ODK_PREVIEW_DEV__) {
+                window.removeEventListener('odk-preview-updated', onHotUpdate);
+            }
         };
-    }, [xformXml, formatMessage, previewRevision]);
-
-    const showPreview = Boolean(xformXml);
+    }, [xformXml, formatMessage]);
 
     return (
         <Paper
@@ -120,9 +119,9 @@ export const FormPreview: FunctionComponent<Props> = ({
                 </Box>
             )}
             <Box sx={{ flex: 1, position: 'relative', minHeight: 0 }}>
-                {showPreview ? (
+                {xformXml ? (
                     <>
-                        {isLoadingRemote && (
+                        {isLoading && (
                             <Box
                                 sx={{
                                     position: 'absolute',
@@ -137,7 +136,7 @@ export const FormPreview: FunctionComponent<Props> = ({
                                 <CircularProgress size={32} />
                             </Box>
                         )}
-                        {remoteError && (
+                        {error && (
                             <Box
                                 sx={{
                                     position: 'absolute',
@@ -150,7 +149,7 @@ export const FormPreview: FunctionComponent<Props> = ({
                                 }}
                             >
                                 <Typography color="error" align="center">
-                                    {remoteError}
+                                    {error}
                                 </Typography>
                             </Box>
                         )}

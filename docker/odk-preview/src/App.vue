@@ -1,41 +1,28 @@
 <template>
     <div v-if="loading" class="loading">Loading form...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
-    <OdkWebForm
+    <OdkPreview
         v-else-if="formXml"
         :form-xml="formXml"
-        :fetch-form-attachment="fetchAttachment"
-        @submit="handleSubmit"
+        :submit-disabled-message="submitDisabledMessage"
+        :on-submit="handleSubmit"
     />
     <div v-else class="loading">Waiting for form data...</div>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import { OdkWebForm } from '@getodk/web-forms';
+import OdkPreview from './OdkPreview.vue';
+import './previewStyles.css';
 
 const formXml = ref(null);
 const loading = ref(false);
 const error = ref(null);
-const submitTooltip = ref(
+const submitDisabledMessage = ref(
     'Form submission from the preview is not available yet. This feature is under development.',
 );
 
-const setSubmitTooltip = message => {
-    submitTooltip.value = message;
-    document.documentElement.style.setProperty(
-        '--preview-submit-tooltip',
-        JSON.stringify(message),
-    );
-};
-
-const fetchAttachment = async url => {
-    const response = await fetch(url);
-    return new Blob([await response.arrayBuffer()]);
-};
-
 const handleSubmit = data => {
-    // Send submission data back to parent via postMessage
     window.parent.postMessage({ type: 'odk-submit', data }, '*');
 };
 
@@ -57,7 +44,7 @@ const loadFormFromUrl = async url => {
 
 const loadFormFromXml = (xml, tooltipMessage) => {
     if (tooltipMessage) {
-        setSubmitTooltip(tooltipMessage);
+        submitDisabledMessage.value = tooltipMessage;
     }
     formXml.value = xml;
     loading.value = false;
@@ -73,12 +60,8 @@ const handleMessage = event => {
 };
 
 onMounted(() => {
-    setSubmitTooltip(submitTooltip.value);
     window.addEventListener('message', handleMessage);
-
-    // Check URL params for initial form load
-    const params = new URLSearchParams(window.location.search);
-    const url = params.get('url');
+    const url = new URLSearchParams(window.location.search).get('url');
     if (url) {
         loadFormFromUrl(url);
     }

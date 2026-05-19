@@ -35,17 +35,10 @@ const WEBPACK_URL =
 const WEBPACK_PATH =
     process.env.WEBPACK_PATH || path.resolve(__dirname, './assets/webpack/');
 
-// ODK preview Vue remote — dev always uses the Vite server (hot reload), never built /static files.
-// Run: cd docker/odk-preview && npm run dev
-// ODK_PREVIEW_REMOTE_URL is for production builds only (see webpack.prod.js).
-const ODK_PREVIEW_DEV_HOST =
+const odkPreviewHost =
     process.env.ODK_PREVIEW_DEV_HOST || process.env.WEBPACK_HOST || 'localhost';
-const ODK_PREVIEW_DEV_PORT = process.env.ODK_PREVIEW_DEV_PORT || '8009';
-// Dev: import mount.ts from Vite directly (HMR). Prod: federation remoteEntry (see webpack.prod.js).
-const ODK_PREVIEW_DEV_MOUNT = `http://${ODK_PREVIEW_DEV_HOST}:${ODK_PREVIEW_DEV_PORT}/src/mount.ts`;
-
-// eslint-disable-next-line no-console
-console.log(`[odk-preview] dev mount module → ${ODK_PREVIEW_DEV_MOUNT}`);
+const odkPreviewPort = process.env.ODK_PREVIEW_DEV_PORT || '8009';
+const ODK_PREVIEW_DEV_MOUNT = `http://${odkPreviewHost}:${odkPreviewPort}/src/mount.ts`;
 
 // Generate the combined translations file
 const combinedTranslationsPath = generateCombinedTranslations(__dirname);
@@ -140,9 +133,9 @@ module.exports = {
         }),
         new webpack.DefinePlugin({
             __LOCALE: JSON.stringify(LOCALE),
+            __ODK_PREVIEW_DEV__: JSON.stringify(true),
             __ODK_PREVIEW_DEV_MOUNT__: JSON.stringify(ODK_PREVIEW_DEV_MOUNT),
             __ODK_PREVIEW_REMOTE_ENTRY__: JSON.stringify(''),
-            __ODK_PREVIEW_DEV__: JSON.stringify(true),
         }),
         // XLSX
         new webpack.IgnorePlugin({ resourceRegExp: /cptable/ }),

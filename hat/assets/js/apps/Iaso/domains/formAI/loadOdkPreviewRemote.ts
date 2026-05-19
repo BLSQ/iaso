@@ -1,10 +1,5 @@
 import type { OdkPreviewMountProps } from '../../types/odkPreview';
 
-type ViteFederationRemote = {
-    init: (shareScope: Record<string, unknown>) => Promise<void>;
-    get: (module: string) => Promise<() => Record<string, unknown>>;
-};
-
 type OdkPreviewMountModule = {
     mountOdkPreview: (
         el: HTMLElement,
@@ -12,12 +7,14 @@ type OdkPreviewMountModule = {
     ) => () => void;
 };
 
-let mountModulePromise: Promise<OdkPreviewMountModule> | null = null;
+type FederationRemote = {
+    init: (shareScope: Record<string, unknown>) => Promise<void>;
+    get: (module: string) => Promise<unknown>;
+};
 
-const ODK_PREVIEW_DEV_HINT =
-    'Start odk-preview: cd docker/odk-preview && npm run dev';
+let prodMountPromise: Promise<OdkPreviewMountModule> | null = null;
 
-function assertMountModule(module: unknown): OdkPreviewMountModule {
+function parseMountModule(module: unknown): OdkPreviewMountModule {
     if (
         module &&
         typeof module === 'object' &&
@@ -29,40 +26,40 @@ function assertMountModule(module: unknown): OdkPreviewMountModule {
     throw new Error('ODK preview did not expose mountOdkPreview');
 }
 
-/** Dev: Vite serves src/mount.ts with HMR (no federation / no build). */
+async function unwrapFederationModule(module: unknown): Promise<unknown> {
+    let current = module;
+    for (let i = 0; i < 3 && typeof current === 'function'; i += 1) {
+        current = await (current as () => unknown)();
+    }
+    return current;
+}
+
 async function loadDevMount(): Promise<OdkPreviewMountModule> {
-    const baseUrl = __ODK_PREVIEW_DEV_MOUNT__;
-    const url = `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}t=${Date.now()}`;
+    const url = `${__ODK_PREVIEW_DEV_MOUNT__}?t=${Date.now()}`;
     try {
-        const module = await import(/* webpackIgnore: true */ url);
-        return assertMountModule(module);
+        return parseMountModule(await import(/* webpackIgnore: true */ url));
     } catch (error) {
-        throw new Error(`${ODK_PREVIEW_DEV_HINT} (${baseUrl})`, {
-            cause: error,
-        });
+        throw new Error(
+            'Start odk-preview: cd docker/odk-preview && npm run dev',
+            { cause: error },
+        );
     }
 }
 
-/** Prod: load federation remoteEntry.js from static files or ODK_PREVIEW_REMOTE_URL. */
-async function loadFederationRemote(): Promise<OdkPreviewMountModule> {
-    const entryUrl = __ODK_PREVIEW_REMOTE_ENTRY__;
+async function loadProdMount(): Promise<OdkPreviewMountModule> {
     const remote = (await import(
         /* webpackIgnore: true */
-        entryUrl
-    )) as ViteFederationRemote;
+        __ODK_PREVIEW_REMOTE_ENTRY__
+    )) as FederationRemote;
 
     if (typeof remote?.init !== 'function' || typeof remote?.get !== 'function') {
-        throw new Error(`Invalid ODK preview remoteEntry (${entryUrl})`);
+        throw new Error(
+            `Invalid ODK preview remoteEntry (${__ODK_PREVIEW_REMOTE_ENTRY__})`,
+        );
     }
 
     await remote.init({});
-
-    let module: unknown = await remote.get('./mount');
-    for (let i = 0; i < 3 && typeof module === 'function'; i += 1) {
-        module = await (module as () => unknown)();
-    }
-
-    return assertMountModule(module);
+    return parseMountModule(await unwrapFederationModule(await remote.get('./mount')));
 }
 
 export function loadOdkPreviewMount(): Promise<OdkPreviewMountModule> {
@@ -70,9 +67,8 @@ export function loadOdkPreviewMount(): Promise<OdkPreviewMountModule> {
         return loadDevMount();
     }
 
-    if (!mountModulePromise) {
-        mountModulePromise = loadFederationRemote();
+    if (!prodMountPromise) {
+        prodMountPromise = loadProdMount();
     }
-
-    return mountModulePromise;
+    return prodMountPromise;
 }

@@ -3083,6 +3083,43 @@ class InstancesAPITestCase(TaskAPITestCase):
             response_json["warning_no_location"], [self.instance_6.org_unit_id, self.instance_8.org_unit_id]
         )
 
+    def test_map_location_list_is_constant_queries(self):
+        """GET /instances/?withLocation=true must return minimal {id, lat, lng} in O(1) queries
+        regardless of how many instances are returned — no per-instance FK traversal."""
+        self.client.force_authenticate(self.yoda)
+        self.yoda.iaso_profile.projects.add(self.project)
+
+        instances_with_location = [
+            self.create_form_instance(
+                form=self.form_1,
+                org_unit=self.jedi_council_corruscant,
+                project=self.project,
+                created_by=self.yoda,
+                location=Point(1.0 + i * 0.01, 7.0 + i * 0.01, 10),
+            )
+            for i in range(5)
+        ]
+
+        with self.assertNumQueries(5) as ctx:
+            response = self.client.get("/api/instances/", {"withLocation": "true"})
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIsInstance(data, list)
+
+        returned_ids = {item["id"] for item in data}
+        for instance in instances_with_location:
+            self.assertIn(instance.id, returned_ids)
+
+        for item in data:
+            self.assertIn("id", item)
+            self.assertIn("latitude", item)
+            self.assertIn("longitude", item)
+            self.assertNotIn("org_unit", item)
+            self.assertNotIn("file_content", item)
+            self.assertIsNotNone(item["latitude"])
+            self.assertIsNotNone(item["longitude"])
+
     def assertInstanceListContainsStrictly(self, api_response, expected_instances):
         try:
             self.assertEqual(api_response.status_code, 200)

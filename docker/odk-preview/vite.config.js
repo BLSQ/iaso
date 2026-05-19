@@ -7,6 +7,7 @@ const isProd = process.env.NODE_ENV === 'production';
 export default defineConfig({
     plugins: [
         vue(),
+        // Federation remoteEntry is generated on `npm run build` only (not in Vite dev).
         federation({
             name: 'odkPreview',
             filename: 'remoteEntry.js',

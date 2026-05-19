@@ -88,38 +88,3 @@ onUnmounted(() => {
     window.removeEventListener('message', handleMessage);
 });
 </script>
-
-<style>
-/* Always disabled; tooltip on hover (message via --preview-submit-tooltip from FormPreview) */
-.odk-form .form-wrapper .footer {
-    position: relative;
-    cursor: not-allowed;
-}
-
-.odk-form .form-wrapper .footer button {
-    opacity: 0.45;
-    pointer-events: none;
-}
-
-.odk-form .form-wrapper .footer:hover::after {
-    content: var(--preview-submit-tooltip);
-    position: absolute;
-    right: 0;
-    bottom: calc(100% + 6px);
-    z-index: 1000;
-    max-width: 280px;
-    padding: 6px 10px;
-    border-radius: 4px;
-    background: #333;
-    color: #fff;
-    font-size: 0.75rem;
-    line-height: 1.4;
-    text-align: center;
-    white-space: normal;
-    pointer-events: none;
-}
-
-.powered-by-wrapper {
-    display: none !important;
-}
-</style>

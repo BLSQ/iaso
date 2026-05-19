@@ -35,10 +35,17 @@ const WEBPACK_URL =
 const WEBPACK_PATH =
     process.env.WEBPACK_PATH || path.resolve(__dirname, './assets/webpack/');
 
-// ODK preview Vue remote (docker/odk-preview). Dev: run `npm run dev` in docker/odk-preview on port 8009.
-const ODK_PREVIEW_REMOTE_ENTRY =
-    process.env.ODK_PREVIEW_REMOTE_URL ||
-    'http://localhost:8009/assets/remoteEntry.js';
+// ODK preview Vue remote — dev always uses the Vite server (hot reload), never built /static files.
+// Run: cd docker/odk-preview && npm run dev
+// ODK_PREVIEW_REMOTE_URL is for production builds only (see webpack.prod.js).
+const ODK_PREVIEW_DEV_HOST =
+    process.env.ODK_PREVIEW_DEV_HOST || process.env.WEBPACK_HOST || 'localhost';
+const ODK_PREVIEW_DEV_PORT = process.env.ODK_PREVIEW_DEV_PORT || '8009';
+// Dev: import mount.ts from Vite directly (HMR). Prod: federation remoteEntry (see webpack.prod.js).
+const ODK_PREVIEW_DEV_MOUNT = `http://${ODK_PREVIEW_DEV_HOST}:${ODK_PREVIEW_DEV_PORT}/src/mount.ts`;
+
+// eslint-disable-next-line no-console
+console.log(`[odk-preview] dev mount module → ${ODK_PREVIEW_DEV_MOUNT}`);
 
 // Generate the combined translations file
 const combinedTranslationsPath = generateCombinedTranslations(__dirname);
@@ -122,16 +129,6 @@ module.exports = {
                 usePolling: true,
             },
         },
-        // Serve /static/odk-preview/* from odk-preview dev server (port 8009) when using
-        // ODK_PREVIEW_REMOTE_URL=/static/odk-preview/assets/remoteEntry.js on webpack :3000.
-        proxy: [
-            {
-                context: ['/static/odk-preview'],
-                target: 'http://localhost:8009',
-                pathRewrite: { '^/static/odk-preview': '' },
-                changeOrigin: true,
-            },
-        ],
     },
 
     plugins: [
@@ -143,9 +140,9 @@ module.exports = {
         }),
         new webpack.DefinePlugin({
             __LOCALE: JSON.stringify(LOCALE),
-            __ODK_PREVIEW_REMOTE_ENTRY__: JSON.stringify(
-                ODK_PREVIEW_REMOTE_ENTRY,
-            ),
+            __ODK_PREVIEW_DEV_MOUNT__: JSON.stringify(ODK_PREVIEW_DEV_MOUNT),
+            __ODK_PREVIEW_REMOTE_ENTRY__: JSON.stringify(''),
+            __ODK_PREVIEW_DEV__: JSON.stringify(true),
         }),
         // XLSX
         new webpack.IgnorePlugin({ resourceRegExp: /cptable/ }),

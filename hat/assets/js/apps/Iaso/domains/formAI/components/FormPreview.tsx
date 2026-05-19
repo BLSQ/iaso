@@ -24,6 +24,23 @@ export const FormPreview: FunctionComponent<Props> = ({
     const containerRef = useRef<HTMLDivElement>(null);
     const [isLoadingRemote, setIsLoadingRemote] = useState(false);
     const [remoteError, setRemoteError] = useState<string | null>(null);
+    const [previewRevision, setPreviewRevision] = useState(0);
+
+    useEffect(() => {
+        if (!__ODK_PREVIEW_DEV__) {
+            return undefined;
+        }
+        const onOdkPreviewUpdated = () => {
+            setPreviewRevision(revision => revision + 1);
+        };
+        window.addEventListener('odk-preview-updated', onOdkPreviewUpdated);
+        return () => {
+            window.removeEventListener(
+                'odk-preview-updated',
+                onOdkPreviewUpdated,
+            );
+        };
+    }, []);
 
     useEffect(() => {
         const container = containerRef.current;
@@ -68,7 +85,7 @@ export const FormPreview: FunctionComponent<Props> = ({
             cancelled = true;
             unmount?.();
         };
-    }, [xformXml, formatMessage]);
+    }, [xformXml, formatMessage, previewRevision]);
 
     const showPreview = Boolean(xformXml);
 

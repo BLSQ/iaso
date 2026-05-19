@@ -20,3 +20,12 @@ export function mountOdkPreview(
         app.unmount();
     };
 }
+
+if (import.meta.hot) {
+    import.meta.hot.accept(
+        ['./OdkPreview.vue', './previewStyles.css'],
+        () => {
+            window.dispatchEvent(new CustomEvent('odk-preview-updated'));
+        },
+    );
+}

@@ -74,6 +74,7 @@ module.exports = {
             __ODK_PREVIEW_REMOTE_ENTRY__: JSON.stringify(
                 ODK_PREVIEW_REMOTE_ENTRY,
             ),
+            __ODK_PREVIEW_DEV__: JSON.stringify(false),
         }),
         // Minification
         new webpack.LoaderOptionsPlugin({ minimize: true }),

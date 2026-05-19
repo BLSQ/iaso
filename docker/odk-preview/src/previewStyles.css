@@ -27,10 +27,6 @@
     pointer-events: none;
 }
 
-.powered-by-wrapper {
-    display: none !important;
-}
-
 .odk-preview-root {
     width: 100%;
     height: 100%;

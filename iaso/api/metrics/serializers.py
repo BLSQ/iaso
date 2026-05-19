@@ -2,6 +2,8 @@ import csv
 
 import pandas as pd
 
+from django.db import transaction
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
@@ -136,6 +138,7 @@ class MetricValueSerializer(serializers.ModelSerializer):
 
 class ImportMetricValuesSerializer(serializers.Serializer):
     file = serializers.FileField(required=True)
+    year = serializers.IntegerField(required=True, allow_null=False)
 
     def validate_file(self, value):
         if not value.name.endswith(".csv"):
@@ -144,7 +147,7 @@ class ImportMetricValuesSerializer(serializers.Serializer):
         dialect = csv.Sniffer().sniff(value.read(1024).decode("utf-8", errors="ignore"))
         value.seek(0)  # Reset file pointer after reading for dialect inference
         df = pd.read_csv(value, sep=dialect.delimiter)
-
+        self.context["metric_values_df"] = df  # Store the DataFrame for use in the save method
         header_errors = get_missing_headers(df, REQUIRED_METRIC_VALUES_HEADERS)
         if header_errors:
             message = _("The CSV must contain '{missing_headers}' columns.").format(
@@ -161,15 +164,13 @@ class ImportMetricValuesSerializer(serializers.Serializer):
         user = self.context.get("request").user
         account = user.iaso_profile.account
         existing_metric_types = MetricType.objects.filter(account=account, code__in=metric_type_codes).values_list(
-            "code", "id", "legend_config"
+            "code", "id", "metric_kind"
         )
         missing_metric_types = metric_type_codes - set(mt[0] for mt in existing_metric_types)
         if missing_metric_types:
             raise serializers.ValidationError(
                 _("The following metric types do not exist: ") + ", ".join(missing_metric_types)
             )
-
-        existing_metric_types_map = {mt[0]: mt[1] for mt in existing_metric_types}
 
         if df.shape[0] == 0:
             raise serializers.ValidationError(_("The CSV must contain at least one value row."))
@@ -184,29 +185,50 @@ class ImportMetricValuesSerializer(serializers.Serializer):
                 _("The following org unit IDs do not exist: ") + ", ".join(str(ou_id) for ou_id in missing_org_unit_ids)
             )
 
-        # Prepare metric values but don't save yet
+        self.context["existing_metric_types_map"] = {
+            mt[0]: {"id": mt[1], "metric_kind": mt[2]} for mt in existing_metric_types
+        }
+
+        return value
+
+    def validate_year(self, value):
+        if value < 1900 or value > 2100:
+            raise serializers.ValidationError(_("Year must be between 1900 and 2100."))
+        return value
+
+    def save(self, **kwargs):
+        df = self.context["metric_values_df"]
+        existing_metric_types_map = self.context["existing_metric_types_map"]
+        year = self.validated_data["year"]
         metric_values = []
         for index, row in df.iterrows():
             org_unit_id = row["ADM2_ID"]
-            for code in metric_type_codes:
+            for code in existing_metric_types_map.keys():
                 value = row.get(code)
                 if pd.isna(value):
                     continue
-                metric_type_id = existing_metric_types_map[code]
-                mv = MetricValue(org_unit_id=org_unit_id, metric_type_id=metric_type_id)
+                metric_type_info = existing_metric_types_map[code]
+                mv = MetricValue(org_unit_id=org_unit_id, metric_type_id=metric_type_info["id"])
                 try:
                     # Parse the value as a float
                     mv.value = float(value)
                 except ValueError:
                     mv.value = None
                     mv.string_value = value
+
+                if metric_type_info["metric_kind"] == MetricType.MetricKind.POPULATION:
+                    mv.year = year
                 metric_values.append(mv)
 
-        self.context["metric_values"] = metric_values
+        with transaction.atomic():
+            # Clear existing metric values to avoid duplicates
+            metric_type_ids = set(mv.metric_type_id for mv in metric_values)
+            org_unit_ids = set(mv.org_unit_id for mv in metric_values)
+            MetricValue.objects.filter(
+                Q(metric_type_id__in=metric_type_ids, org_unit_id__in=org_unit_ids), Q(year=year) | Q(year__isnull=True)
+            ).delete()
 
-        # Do we want to validate all values already here?
-
-        return value
+            return MetricValue.objects.bulk_create(metric_values)
 
 
 class OrgUnitIdSerializer(serializers.Serializer):

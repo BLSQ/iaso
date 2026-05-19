@@ -39,6 +39,10 @@ const odkPreviewHost =
     process.env.ODK_PREVIEW_DEV_HOST || process.env.WEBPACK_HOST || 'localhost';
 const odkPreviewPort = process.env.ODK_PREVIEW_DEV_PORT || '8009';
 const ODK_PREVIEW_DEV_MOUNT = `http://${odkPreviewHost}:${odkPreviewPort}/src/mount.ts`;
+const odkPreviewLoaderPath = path.resolve(
+    __dirname,
+    'assets/js/apps/Iaso/domains/formAI/loadOdkPreviewRemote.dev.ts',
+);
 
 // Generate the combined translations file
 const combinedTranslationsPath = generateCombinedTranslations(__dirname);
@@ -133,9 +137,7 @@ module.exports = {
         }),
         new webpack.DefinePlugin({
             __LOCALE: JSON.stringify(LOCALE),
-            __ODK_PREVIEW_DEV__: JSON.stringify(true),
             __ODK_PREVIEW_DEV_MOUNT__: JSON.stringify(ODK_PREVIEW_DEV_MOUNT),
-            __ODK_PREVIEW_REMOTE_ENTRY__: JSON.stringify(''),
         }),
         // XLSX
         new webpack.IgnorePlugin({ resourceRegExp: /cptable/ }),
@@ -239,6 +241,7 @@ module.exports = {
 
     resolve: {
         alias: {
+            '@odk-preview/loader': odkPreviewLoaderPath,
             'react/jsx-runtime.js': 'react/jsx-runtime',
             // Add alias for the combined config
             'IasoModules/plugins/configs': combinedConfigPath,

@@ -19,6 +19,10 @@ const LOCALE = 'fr';
 const ODK_PREVIEW_REMOTE_ENTRY =
     process.env.ODK_PREVIEW_REMOTE_URL ||
     '/static/odk-preview/assets/remoteEntry.js';
+const odkPreviewLoaderPath = path.resolve(
+    __dirname,
+    'assets/js/apps/Iaso/domains/formAI/loadOdkPreviewRemote.prod.ts',
+);
 
 // Generate the combined config file
 const combinedConfigPath = generateCombinedConfig(__dirname);
@@ -71,8 +75,6 @@ module.exports = {
                 NODE_ENV: JSON.stringify('production'),
             },
             __LOCALE: JSON.stringify(LOCALE),
-            __ODK_PREVIEW_DEV__: JSON.stringify(false),
-            __ODK_PREVIEW_DEV_MOUNT__: JSON.stringify(''),
             __ODK_PREVIEW_REMOTE_ENTRY__: JSON.stringify(
                 ODK_PREVIEW_REMOTE_ENTRY,
             ),
@@ -281,6 +283,7 @@ module.exports = {
 
     resolve: {
         alias: {
+            '@odk-preview/loader': odkPreviewLoaderPath,
             'react/jsx-runtime.js': 'react/jsx-runtime',
             // Add alias for the combined config
             'IasoModules/plugins/configs': combinedConfigPath,

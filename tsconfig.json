@@ -18,7 +18,10 @@
         "lib": ["ES2023", "DOM"], // prevent some linter errors
         "resolveJsonModule": true, // enable import from json
         "paths": {
-            "Iaso/*": ["hat/assets/js/apps/Iaso/*"]
+            "Iaso/*": ["hat/assets/js/apps/Iaso/*"],
+            "@odk-preview/loader": [
+                "hat/assets/js/apps/Iaso/domains/formAI/loadOdkPreviewRemote.dev.ts"
+            ]
         },
         "types": ["vitest/globals", "@testing-library/jest-dom", "playwright", "node"]
     },

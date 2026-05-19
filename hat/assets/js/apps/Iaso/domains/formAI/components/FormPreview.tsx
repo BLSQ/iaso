@@ -7,8 +7,9 @@ import {
     Paper,
     Typography,
 } from '@mui/material';
+// eslint-disable-next-line import/no-unresolved -- webpack alias (dev vs prod loader)
+import { loadOdkPreviewMount } from '@odk-preview/loader';
 import { useSafeIntl } from 'bluesquare-components';
-import { loadOdkPreviewMount } from '../loadOdkPreviewRemote';
 import MESSAGES from '../messages';
 
 type Props = {
@@ -75,14 +76,14 @@ export const FormPreview: FunctionComponent<Props> = ({
             }
         };
 
-        if (__ODK_PREVIEW_DEV__) {
+        if (process.env.NODE_ENV === 'development') {
             window.addEventListener('odk-preview-updated', onHotUpdate);
         }
 
         return () => {
             cancelled = true;
             unmount?.();
-            if (__ODK_PREVIEW_DEV__) {
+            if (process.env.NODE_ENV === 'development') {
                 window.removeEventListener('odk-preview-updated', onHotUpdate);
             }
         };

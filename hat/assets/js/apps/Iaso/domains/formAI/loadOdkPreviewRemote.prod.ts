@@ -12,7 +12,9 @@ type FederationRemote = {
     get: (module: string) => Promise<unknown>;
 };
 
-let prodMountPromise: Promise<OdkPreviewMountModule> | null = null;
+declare const __ODK_PREVIEW_REMOTE_ENTRY__: string;
+
+let mountPromise: Promise<OdkPreviewMountModule> | null = null;
 
 function parseMountModule(module: unknown): OdkPreviewMountModule {
     if (
@@ -34,19 +36,7 @@ async function unwrapFederationModule(module: unknown): Promise<unknown> {
     return current;
 }
 
-async function loadDevMount(): Promise<OdkPreviewMountModule> {
-    const url = `${__ODK_PREVIEW_DEV_MOUNT__}?t=${Date.now()}`;
-    try {
-        return parseMountModule(await import(/* webpackIgnore: true */ url));
-    } catch (error) {
-        throw new Error(
-            'Start odk-preview: cd docker/odk-preview && npm run dev',
-            { cause: error },
-        );
-    }
-}
-
-async function loadProdMount(): Promise<OdkPreviewMountModule> {
+async function loadFromRemoteEntry(): Promise<OdkPreviewMountModule> {
     const remote = (await import(
         /* webpackIgnore: true */
         __ODK_PREVIEW_REMOTE_ENTRY__
@@ -59,16 +49,14 @@ async function loadProdMount(): Promise<OdkPreviewMountModule> {
     }
 
     await remote.init({});
-    return parseMountModule(await unwrapFederationModule(await remote.get('./mount')));
+    return parseMountModule(
+        await unwrapFederationModule(await remote.get('./mount')),
+    );
 }
 
 export function loadOdkPreviewMount(): Promise<OdkPreviewMountModule> {
-    if (__ODK_PREVIEW_DEV__) {
-        return loadDevMount();
+    if (!mountPromise) {
+        mountPromise = loadFromRemoteEntry();
     }
-
-    if (!prodMountPromise) {
-        prodMountPromise = loadProdMount();
-    }
-    return prodMountPromise;
+    return mountPromise;
 }

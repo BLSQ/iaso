@@ -120,6 +120,12 @@ export interface PaginatedInstances extends PaginationType {
     instances: Instance[];
 }
 
+export type InstanceLocation = {
+    id: number;
+    latitude: number;
+    longitude: number;
+};
+
 export type CheckBulkGpsPushResult = {
     result: string;
     warning_no_location?: number[];

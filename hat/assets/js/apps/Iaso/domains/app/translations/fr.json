@@ -336,6 +336,7 @@
     "iaso.formAI.newForm": "Nouveau formulaire",
     "iaso.formAI.placeholder": "Décrivez le formulaire que vous souhaitez créer...",
     "iaso.formAI.previewPlaceholder": "L'aperçu du formulaire apparaîtra ici une fois généré",
+    "iaso.formAI.previewSubmitUnavailable": "L'envoi de formulaire à partir de l'aperçu n'est pas disponible pour le moment. Cette fonctionnalité est en cours de développement.",
     "iaso.formAI.projects": "Projets",
     "iaso.formAI.save": "Enregistrer",
     "iaso.formAI.saveAsNewForm": "Enregistrer comme nouveau formulaire",

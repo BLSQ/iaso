@@ -334,6 +334,7 @@
     "iaso.formAI.newForm": "New form",
     "iaso.formAI.placeholder": "Describe the form you want to create...",
     "iaso.formAI.previewPlaceholder": "Form preview will appear here once generated",
+    "iaso.formAI.previewSubmitUnavailable": "Form submission from the preview is not available yet. This feature is under development.",
     "iaso.formAI.projects": "Projects",
     "iaso.formAI.save": "Save",
     "iaso.formAI.saveAsNewForm": "Save as new form",

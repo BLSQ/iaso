@@ -8,14 +8,16 @@ import {
     useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
-
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';
 import { PlanningsDropdown } from 'Iaso/domains/plannings/components/PlanningsDropdown';
+import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
 import { useQueryString } from 'Iaso/hooks/useApiParams';
 import { useFilterState } from 'Iaso/hooks/useFilterState';
+import { PLANNING_READ, PLANNING_WRITE } from 'Iaso/utils/permissions';
 import * as Permission from 'Iaso/utils/permissions';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
@@ -46,6 +48,11 @@ const Filters = ({ params, forms, isLoadingForms }: Props) => {
         searchAlwaysEnabled: true,
     });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
+    const currentUser = useCurrentUser();
+    const hasPlanningPermission = userHasOneOfPermissions(
+        [PLANNING_READ, PLANNING_WRITE],
+        currentUser,
+    );
     const handleOnlyDeleted = useCallback(
         (key, value) => {
             const valueForParam = value ? '1' : undefined;
@@ -123,17 +130,28 @@ const Filters = ({ params, forms, isLoadingForms }: Props) => {
                         keyValue="planning"
                         multi
                     />
+                    {!hasPlanningPermission && (
+                        <InputComponent
+                            keyValue="onlyDeleted"
+                            onChange={handleOnlyDeleted}
+                            value={filters.onlyDeleted === '1'}
+                            type="checkbox"
+                            label={MESSAGES.onlyDeleted}
+                        />
+                    )}
                 </Grid>
             </Grid>
             <Grid container item xs={12} spacing={2}>
                 <Grid item xs={12} md={3}>
-                    <InputComponent
-                        keyValue="onlyDeleted"
-                        onChange={handleOnlyDeleted}
-                        value={filters.onlyDeleted === '1'}
-                        type="checkbox"
-                        label={MESSAGES.onlyDeleted}
-                    />
+                    {hasPlanningPermission && (
+                        <InputComponent
+                            keyValue="onlyDeleted"
+                            onChange={handleOnlyDeleted}
+                            value={filters.onlyDeleted === '1'}
+                            type="checkbox"
+                            label={MESSAGES.onlyDeleted}
+                        />
+                    )}
                 </Grid>
                 <Grid item xs={12} md={9}>
                     <Box

@@ -1,0 +1,1 @@
+import{N as t,O as m}from"./index-BYKrQSL_-DLLvMwoY.js";import{_ as e}from"./previewStyles-cx6PHg-b.js";function s(n,r){const o=t(e,r);return o.use(m),o.mount(n),()=>o.unmount()}export{s as mountOdkPreview};

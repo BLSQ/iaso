@@ -12,7 +12,6 @@ from django.db.models import Q
 from iaso.models import Instance
 from iaso.models.base import UserRole
 from iaso.models.common import BulkAutoSlugField, CreatedAndUpdatedModel
-from iaso.utils.models.color import ColorField
 from iaso.utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel
 
 
@@ -279,7 +278,6 @@ class ValidationNodeTemplate(CreatedAndUpdatedModel):
     name = models.CharField(max_length=256)
     slug = BulkAutoSlugField(populate_from="name", unique=True, unique_with="workflow_id")
     description = models.CharField(max_length=1024, blank=True)
-    color = ColorField(blank=True, null=True)
     next_node_templates = models.ManyToManyField(
         "self", symmetrical=False, related_name="previous_node_templates", blank=True
     )

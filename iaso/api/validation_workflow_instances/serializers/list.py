@@ -13,7 +13,7 @@ class ProjectNestedSerializer(ModelSerializer):
 class NodeTemplateNestedSerializer(ModelSerializer):
     class Meta:
         model = ValidationNodeTemplate
-        fields = ["name", "color"]
+        fields = ["name"]
 
 
 class FormNestedSerializer(serializers.ModelSerializer):

@@ -77,7 +77,6 @@ class ValidationNodeTemplateAPIUpdateTestCase(BaseApiTestCase):
             data={
                 "name": "test",
                 "description": "desc",
-                "color": "#ffffff",
                 "can_skip_previous_nodes": True,
                 "roles_required": [self.user_role.pk],
             },
@@ -92,7 +91,6 @@ class ValidationNodeTemplateAPIUpdateTestCase(BaseApiTestCase):
         self.assertEqual(self.node.name, "test")
         self.assertEqual(self.node.slug, "first-node")
         self.assertEqual(self.node.description, "desc")
-        self.assertEqual(self.node.color, "#FFFFFF")
         self.assertTrue(self.node.can_skip_previous_nodes)
         self.assertEqual(list(self.node.roles_required.all()), [self.user_role])
 

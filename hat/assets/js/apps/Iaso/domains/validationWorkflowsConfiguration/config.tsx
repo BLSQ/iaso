@@ -10,7 +10,6 @@ import {
 import { BreakWordCell } from 'Iaso/components/Cells/BreakWordCell';
 import { DateCell } from 'Iaso/components/Cells/DateTimeCell';
 import { NumberCell } from 'Iaso/components/Cells/NumberCell';
-import { ColorBadge } from 'Iaso/components/ColorBadge';
 import { DeleteModal } from 'Iaso/components/DeleteRestoreModals/DeleteModal';
 import { baseUrls } from 'Iaso/constants/urls';
 import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
@@ -110,19 +109,6 @@ export const useWorkflowNodesColumns = (workFlowSlug?: string) => {
     return useMemo(() => {
         const cols = [
             { Header: 'Order', id: 'order', accessor: 'order' },
-            {
-                Header: formatMessage(MESSAGES.color),
-                id: 'color',
-                accessor: 'color',
-                Cell: value => {
-                    return (
-                        <ColorBadge
-                            data-testid={'node-color'}
-                            backgroundColor={value.value}
-                        />
-                    );
-                },
-            },
             {
                 Header: formatMessage(MESSAGES.name),
                 id: 'name',

@@ -30,7 +30,7 @@ from .common import (
     UserSerializer,
     safe_api_import,
 )
-from .instances.instances import FileFormatEnum, find_entity
+from .instances.views import FileFormatEnum, find_entity
 
 
 class EntityNestedSerializer(EntitySerializer):

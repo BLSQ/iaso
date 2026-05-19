@@ -90,7 +90,7 @@ class NestedHistorySerializer(ModelSerializer):
 
 class ETLInstanceListSerializer(ModelSerializer):
     file_content = serializers.SerializerMethodField()
-    file_url = serializers.URLField(source="file.url", read_only=True)
+    file_url = serializers.SerializerMethodField()
     org_unit = NestedOrgUnitSerializer(read_only=True)
     history = serializers.SerializerMethodField()
 
@@ -106,6 +106,12 @@ class ETLInstanceListSerializer(ModelSerializer):
     @extend_schema_field(serializers.JSONField)
     def get_file_content(self, obj):
         return obj.get_and_save_json_of_xml()
+
+    @extend_schema_field(serializers.URLField(allow_null=True, allow_blank=True))
+    def get_file_url(self, obj):
+        if obj.file:
+            return obj.file.url
+        return None
 
     @extend_schema_field(NestedHistorySerializer(many=True))
     def get_history(self, obj):

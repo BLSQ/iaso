@@ -1,4 +1,4 @@
-import React, { useState, FunctionComponent, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 
 import Add from '@mui/icons-material/Add';
 import { Grid, Button, Box, useMediaQuery, useTheme } from '@mui/material';
@@ -9,18 +9,15 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
+import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';
 import { PlanningsDropdown } from 'Iaso/domains/plannings/components/PlanningsDropdown';
-import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
 import { useQueryString } from 'Iaso/hooks/useApiParams';
+import { useFilterState } from 'Iaso/hooks/useFilterState';
 import * as Permission from 'Iaso/utils/permissions';
-import { PLANNING_READ, PLANNING_WRITE } from 'Iaso/utils/permissions';
-import { useCurrentUser } from 'Iaso/utils/usersUtils';
-import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import InputComponent from '../../../components/forms/InputComponent';
-import { useFilterState } from '../../../hooks/useFilterState';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { baseUrl } from '../config';
@@ -38,11 +35,7 @@ type Props = {
     isLoadingForms: boolean;
 };
 
-const Filters: FunctionComponent<Props> = ({
-    params,
-    forms,
-    isLoadingForms,
-}) => {
+const Filters = ({ params, forms, isLoadingForms }: Props) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const redirectTo = useRedirectTo();
@@ -81,11 +74,6 @@ const Filters: FunctionComponent<Props> = ({
     const csvUrl = `${dwnldBaseUrl}/?${downloadQueryString}&csv=true`;
     const xlsxUrl = `${dwnldBaseUrl}/?${downloadQueryString}&xlsx=true`;
 
-    const currentUser = useCurrentUser();
-    const hasPlanningPermission = userHasOneOfPermissions(
-        [PLANNING_READ, PLANNING_WRITE],
-        currentUser,
-    );
     return (
         <Grid container>
             <Grid container item xs={12} spacing={2}>
@@ -135,29 +123,17 @@ const Filters: FunctionComponent<Props> = ({
                         keyValue="planning"
                         multi
                     />
-                    {!hasPlanningPermission && (
-                        <InputComponent
-                            keyValue="showDeleted"
-                            onChange={handleShowDeleted}
-                            value={filters.showDeleted === 'true'}
-                            type="checkbox"
-                            label={MESSAGES.showDeleted}
-                        />
-                    )}
                 </Grid>
             </Grid>
             <Grid container item xs={12} spacing={2}>
                 <Grid item xs={12} md={3}>
-                  {hasPlanningPermission && (
-                      <InputComponent
+                    <InputComponent
                         keyValue="onlyDeleted"
                         onChange={handleOnlyDeleted}
                         value={filters.onlyDeleted === '1'}
                         type="checkbox"
                         label={MESSAGES.onlyDeleted}
-                      />
-                   )}
-
+                    />
                 </Grid>
                 <Grid item xs={12} md={9}>
                     <Box

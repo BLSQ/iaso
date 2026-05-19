@@ -715,6 +715,16 @@ export const getEndpointUrl = (
     );
 };
 
+export const getLocationEndpointUrl = (
+    params: Record<string, string | undefined>,
+): string => {
+    const urlParams = {
+        withLocation: params.withLocation ?? 'true',
+        ...getFilters({ ...params, withLocation: undefined }),
+    };
+    return getTableUrl('instances', urlParams, false, 'csv', false, false);
+};
+
 type FileType = 'image_only' | 'video_only' | 'document_only' | 'other_only';
 
 export const getFileUrl = (

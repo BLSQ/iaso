@@ -498,6 +498,7 @@ class InstancesViewSet(viewsets.ViewSet):
         # 1. Get data out of the request
         limit = request.GET.get("limit", None)
         as_small_dict = request.GET.get("asSmallDict", None)
+        with_location = request.GET.get("withLocation", None)
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "updated_at").split(",")
         csv_format = request.GET.get("csv", None)
@@ -538,6 +539,22 @@ class InstancesViewSet(viewsets.ViewSet):
             return self.anwser_with_parquet_file(request, filters, queryset)
 
         if not file_export:
+            if with_location is not None and not limit:
+                if with_location == "false":
+                    return Response([], status=status.HTTP_200_OK)
+                location_queryset = (
+                    Instance.objects.filter(pk__in=queryset).filter(location__isnull=False).only("id", "location")
+                )
+                return Response(
+                    [
+                        {
+                            "id": i.id,
+                            "latitude": i.location.y,
+                            "longitude": i.location.x,
+                        }
+                        for i in location_queryset
+                    ]
+                )
             if limit:
                 limit = int(limit)
                 page_offset = int(page_offset)

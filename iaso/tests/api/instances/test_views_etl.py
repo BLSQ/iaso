@@ -187,3 +187,12 @@ class ETLInstanceTestCase(SwaggerTestCaseMixin, APITestCase):
 
         self.assertEqual(history, [])
         self.assertEqual(len(history), 0)
+
+    def test_instance_without_file(self):
+        self.client.force_authenticate(self.john_wick)
+
+        self.instance_1.file = None
+        self.instance_1.save()
+
+        res = self.client.get(reverse("api-etl:instances-list"))
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)

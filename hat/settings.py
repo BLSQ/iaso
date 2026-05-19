@@ -460,6 +460,8 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/login/"
+# Extra paths IasoLogoutView accepts as ?next=... (in addition to the default).
+LOGOUT_NEXT_ALLOWED_PATHS = env.list("LOGOUT_NEXT_ALLOWED_PATHS", default=[], delimiter=",")
 
 AUTH_CLASSES = [
     "rest_framework_simplejwt.authentication.JWTAuthentication",

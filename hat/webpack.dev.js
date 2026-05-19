@@ -35,6 +35,11 @@ const WEBPACK_URL =
 const WEBPACK_PATH =
     process.env.WEBPACK_PATH || path.resolve(__dirname, './assets/webpack/');
 
+// ODK preview Vue remote (docker/odk-preview). Dev: run `npm run dev` in docker/odk-preview on port 8009.
+const ODK_PREVIEW_REMOTE_ENTRY =
+    process.env.ODK_PREVIEW_REMOTE_URL ||
+    'http://localhost:8009/assets/remoteEntry.js';
+
 // Generate the combined translations file
 const combinedTranslationsPath = generateCombinedTranslations(__dirname);
 
@@ -117,6 +122,16 @@ module.exports = {
                 usePolling: true,
             },
         },
+        // Serve /static/odk-preview/* from odk-preview dev server (port 8009) when using
+        // ODK_PREVIEW_REMOTE_URL=/static/odk-preview/assets/remoteEntry.js on webpack :3000.
+        proxy: [
+            {
+                context: ['/static/odk-preview'],
+                target: 'http://localhost:8009',
+                pathRewrite: { '^/static/odk-preview': '' },
+                changeOrigin: true,
+            },
+        ],
     },
 
     plugins: [
@@ -128,6 +143,9 @@ module.exports = {
         }),
         new webpack.DefinePlugin({
             __LOCALE: JSON.stringify(LOCALE),
+            __ODK_PREVIEW_REMOTE_ENTRY__: JSON.stringify(
+                ODK_PREVIEW_REMOTE_ENTRY,
+            ),
         }),
         // XLSX
         new webpack.IgnorePlugin({ resourceRegExp: /cptable/ }),

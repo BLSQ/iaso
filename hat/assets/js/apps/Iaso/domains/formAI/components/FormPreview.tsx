@@ -1,13 +1,14 @@
-import React, {
-    FunctionComponent,
-    useCallback,
-    useEffect,
-    useRef,
-    useState,
-} from 'react';
+import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import DownloadIcon from '@mui/icons-material/Download';
-import { Box, Button, Paper, Typography } from '@mui/material';
+import {
+    Box,
+    Button,
+    CircularProgress,
+    Paper,
+    Typography,
+} from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import { loadOdkPreviewMount } from '../loadOdkPreviewRemote';
 import MESSAGES from '../messages';
 
 type Props = {
@@ -20,38 +21,56 @@ export const FormPreview: FunctionComponent<Props> = ({
     xformXml,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const iframeRef = useRef<HTMLIFrameElement>(null);
-    // Increment key to force iframe remount when XML changes
-    const [iframeKey, setIframeKey] = useState(0);
-    const latestXml = useRef<string | null>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [isLoadingRemote, setIsLoadingRemote] = useState(false);
+    const [remoteError, setRemoteError] = useState<string | null>(null);
 
-    // Track XML changes and force iframe reload
     useEffect(() => {
-        if (xformXml && xformXml !== latestXml.current) {
-            latestXml.current = xformXml;
-            setIframeKey(prev => prev + 1);
+        const container = containerRef.current;
+        if (!container || !xformXml) {
+            return undefined;
         }
-    }, [xformXml]);
 
-    const handleIframeLoad = useCallback(() => {
-        if (latestXml.current && iframeRef.current?.contentWindow) {
-            // Small delay to let the Vue app initialize
-            setTimeout(() => {
-                iframeRef.current?.contentWindow?.postMessage(
-                    {
-                        type: 'load-form-xml',
-                        xml: latestXml.current,
-                        submitDisabledMessage: formatMessage(
-                            MESSAGES.previewSubmitUnavailable,
-                        ),
-                    },
-                    '*',
-                );
-            }, 500);
-        }
-    }, [formatMessage]);
+        let unmount: (() => void) | undefined;
+        let cancelled = false;
 
-    const showIframe = Boolean(xformXml);
+        setIsLoadingRemote(true);
+        setRemoteError(null);
+
+        loadOdkPreviewMount()
+            .then(({ mountOdkPreview }) => {
+                if (cancelled) {
+                    return;
+                }
+                unmount = mountOdkPreview(container, {
+                    formXml: xformXml,
+                    submitDisabledMessage: formatMessage(
+                        MESSAGES.previewSubmitUnavailable,
+                    ),
+                });
+            })
+            .catch((error: unknown) => {
+                if (!cancelled) {
+                    setRemoteError(
+                        error instanceof Error
+                            ? error.message
+                            : 'Failed to load ODK preview',
+                    );
+                }
+            })
+            .finally(() => {
+                if (!cancelled) {
+                    setIsLoadingRemote(false);
+                }
+            });
+
+        return () => {
+            cancelled = true;
+            unmount?.();
+        };
+    }, [xformXml, formatMessage]);
+
+    const showPreview = Boolean(xformXml);
 
     return (
         <Paper
@@ -83,20 +102,50 @@ export const FormPreview: FunctionComponent<Props> = ({
                     </Button>
                 </Box>
             )}
-            <Box sx={{ flex: 1, position: 'relative' }}>
-                {showIframe ? (
-                    <iframe
-                        key={iframeKey}
-                        ref={iframeRef}
-                        src={`${window.STATIC_URL ?? '/static/'}odk-preview/index.html`}
-                        title="ODK Form Preview"
-                        onLoad={handleIframeLoad}
-                        style={{
-                            width: '100%',
-                            height: '100%',
-                            border: 'none',
-                        }}
-                    />
+            <Box sx={{ flex: 1, position: 'relative', minHeight: 0 }}>
+                {showPreview ? (
+                    <>
+                        {isLoadingRemote && (
+                            <Box
+                                sx={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    zIndex: 1,
+                                    bgcolor: 'background.paper',
+                                }}
+                            >
+                                <CircularProgress size={32} />
+                            </Box>
+                        )}
+                        {remoteError && (
+                            <Box
+                                sx={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    p: 2,
+                                    zIndex: 1,
+                                }}
+                            >
+                                <Typography color="error" align="center">
+                                    {remoteError}
+                                </Typography>
+                            </Box>
+                        )}
+                        <Box
+                            ref={containerRef}
+                            sx={{
+                                width: '100%',
+                                height: '100%',
+                                overflow: 'auto',
+                            }}
+                        />
+                    </>
                 ) : (
                     <Box
                         sx={{

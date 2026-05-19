@@ -224,6 +224,7 @@ export default defineConfig([
                 mount: 'readonly',
                 shallow: 'readonly',
                 sinon: 'readonly',
+                __ODK_PREVIEW_REMOTE_ENTRY__: 'readonly',
             },
 
             parser: tsParser,

@@ -1,8 +1,8 @@
 # Building the ODK Web Forms preview
 
-The Form AI uses a small standalone Vue 3 application to render live ODK form previews. It is built with Vite and its compiled output is committed to `iaso/static/odk-preview/` so it is served directly by Django as static files — no separate service is required.
+The Form AI uses a Vue 3 application (`docker/odk-preview`) built with Vite and **Module Federation**. The React app loads `remoteEntry.js` at runtime (Vite `init` / `get` API) — no iframe. Webpack does not use `remotes:` because Vite and Webpack federation formats differ.
 
-You only need to rebuild it when updating `@getodk/web-forms` or making changes to the Vue app source in `docker/odk-preview/`.
+You only need to rebuild when updating `@getodk/web-forms` or changing the Vue app in `docker/odk-preview/`.
 
 ## Prerequisites
 
@@ -17,16 +17,16 @@ npm ci
 npm run build
 ```
 
-The build writes its output to `iaso/static/odk-preview/` (configured in `vite.config.js`). Commit the result:
+Output is written to `iaso/static/odk-preview/` (including `assets/remoteEntry.js`). Commit the result:
 
 ```bash
 git add iaso/static/odk-preview/
 git commit -m "rebuild odk-preview bundle"
 ```
 
-## Run locally (dev server)
+## Local development
 
-During development of the Vue app itself you can run the Vite dev server instead of rebuilding on every change:
+### ODK preview remote (Vue)
 
 ```bash
 cd docker/odk-preview
@@ -34,17 +34,29 @@ npm ci
 npm run dev
 ```
 
-The dev server starts on port 8009. To point the Form AI iframe at it instead of the committed static bundle, temporarily change `ODK_PREVIEW_BASE` in `hat/assets/js/apps/Iaso/domains/formAI/components/FormPreview.tsx`:
+Serves the federation remote at `http://localhost:8009/assets/remoteEntry.js`.
 
-```ts
-const ODK_PREVIEW_BASE = 'http://localhost:8009/';
+### IASO frontend (React host)
+
+The webpack dev server loads the remote from port 8009 by default. Start both:
+
+```bash
+# terminal 1
+cd docker/odk-preview && npm run dev
+
+# terminal 2 (repo root)
+npm run dev
 ```
 
-Remember to revert this change before committing.
+Optional: use a path URL (webpack proxies `/static/odk-preview` to port 8009 while odk-preview dev is running):
+
+```bash
+ODK_PREVIEW_REMOTE_URL=/static/odk-preview/assets/remoteEntry.js npm run dev
+```
+
+Do **not** set `ODK_PREVIEW_REMOTE_URL` unless you need the path form above — the default `http://localhost:8009/assets/remoteEntry.js` is simplest.
 
 ## Updating `@getodk/web-forms`
-
-`package.json` currently pins `@getodk/web-forms` to `latest`. To update:
 
 ```bash
 cd docker/odk-preview

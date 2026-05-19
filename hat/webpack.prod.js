@@ -16,6 +16,10 @@ const {
 // django settings as well
 const LOCALE = 'fr';
 
+const ODK_PREVIEW_REMOTE_ENTRY =
+    process.env.ODK_PREVIEW_REMOTE_URL ||
+    '/static/odk-preview/assets/remoteEntry.js';
+
 // Generate the combined config file
 const combinedConfigPath = generateCombinedConfig(__dirname);
 
@@ -67,6 +71,9 @@ module.exports = {
                 NODE_ENV: JSON.stringify('production'),
             },
             __LOCALE: JSON.stringify(LOCALE),
+            __ODK_PREVIEW_REMOTE_ENTRY__: JSON.stringify(
+                ODK_PREVIEW_REMOTE_ENTRY,
+            ),
         }),
         // Minification
         new webpack.LoaderOptionsPlugin({ minimize: true }),

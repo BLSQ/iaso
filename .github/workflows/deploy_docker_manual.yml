@@ -15,6 +15,10 @@ on:
         description: playground, staging, demo or prod for worker and web or exact Env name like iaso-stg-worker. Using `upgrade` for now to test
         required: true
         default: upgrade
+      tag:
+        description: Tag to deploy
+        required: false
+        default: latest
       slack_channel:
         description: Slack Channel for notification (iasops by default)
         required: false
@@ -98,12 +102,12 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v7
         with:
-          file: ./docker/prod/Dockerfile
+          file: Dockerfile
           push: true
-          tags: blsq/iaso:latest
+          tags: blsq/iaso:${{ github.event.inputs.tag }}
           # https://docs.docker.com/build/cache/backends/
-          cache-from: type=registry,ref=blsq/iaso:buildcache
-          cache-to: type=registry,ref=blsq/iaso:buildcache,mode=max
+          cache-from: type=registry,ref=blsq/iaso:buildcache-${{ github.event.inputs.tag }}
+          cache-to: type=registry,ref=blsq/iaso:buildcache-${{ github.event.inputs.tag }},mode=max
 
       - name: Set up Python 3.14
         uses: actions/setup-python@v5

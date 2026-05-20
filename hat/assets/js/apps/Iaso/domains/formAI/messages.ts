@@ -21,6 +21,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Form preview will appear here once generated',
         id: 'iaso.formAI.previewPlaceholder',
     },
+    previewSubmitUnavailable: {
+        defaultMessage:
+            'Form submission from the preview is not available yet. This feature is under development.',
+        id: 'iaso.formAI.previewSubmitUnavailable',
+    },
     errorGenerating: {
         defaultMessage: 'Error generating form. Please try again.',
         id: 'iaso.formAI.errorGenerating',

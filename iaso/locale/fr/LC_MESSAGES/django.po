@@ -184,6 +184,10 @@ msgstr "Le CSV doit avoir au moins une ligne avec des valeurs."
 msgid "The following org unit IDs do not exist: "
 msgstr "Ces IDs d'org unit n'existent pas:"
 
+#: iaso/api/metrics/serializers.py
+msgid "Year must be between 1900 and 2100."
+msgstr "L'année doit être entre 1900 et 2100,"
+
 #: iaso/api/microplanning/views.py
 msgid "Planning is missing sampling group or target org unit scope"
 msgstr ""

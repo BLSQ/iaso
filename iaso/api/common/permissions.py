@@ -92,6 +92,34 @@ class GenericReadWritePerm(permissions.BasePermission):
         return False
 
 
+class HasAccountFeatureFlag:
+    def __init__(self, *feature_flags):
+        class PermissionClass(permissions.BasePermission):
+            message = _("This feature is disabled for your account.")
+
+            def has_permission(self, request, view):
+                if not request.user or not request.user.is_authenticated:
+                    return False
+
+                if request.user.is_superuser:
+                    return True
+
+                if not getattr(request.user, "iaso_profile", None):
+                    return False
+
+                if feature_flags:
+                    flags = request.user.iaso_profile.account.feature_flags.filter(code__in=feature_flags).values_list(
+                        "code", flat=True
+                    )
+                    return set(feature_flags).issubset(flags)
+                return True
+
+        self._permission_class = PermissionClass
+
+    def __call__(self, *args, **kwargs):
+        return self._permission_class()
+
+
 class HasModulePermission:
     def __init__(self, *modules):
         class PermissionClass(permissions.BasePermission):

@@ -2,7 +2,6 @@ import django.core.exceptions as django_exceptions
 
 from django.contrib.auth.models import Permission
 from django.contrib.auth.password_validation import validate_password
-from django.utils.crypto import get_random_string
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
@@ -108,15 +107,6 @@ class ProfileCreateSerializer(ModelSerializer):
         if data.get("send_email_invitation") and not data.get("email"):
             raise serializers.ValidationError({"email": _("This field is required.")})
 
-    def set_user_password(self, user, password, send_email_invitation, email):
-        if password:
-            user.set_password(password)
-            user.save()
-        elif send_email_invitation:
-            random_password = get_random_string(32)
-            user.set_password(random_password)
-            user.save()
-
     def create(self, validated_data):
         account = self._get_account()
 
@@ -160,7 +150,7 @@ class ProfileCreateSerializer(ModelSerializer):
         )
 
         try:
-            if account.enforce_password_validation:
+            if account.enforce_password_validation and "password" in validated_data:
                 validate_password(password=validated_data["password"], user=user)
         except django_exceptions.ValidationError as e:
             raise serializers.ValidationError({"password": e.messages})

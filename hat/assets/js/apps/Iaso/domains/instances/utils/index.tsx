@@ -42,7 +42,7 @@ import ExportInstancesDialogComponent from '../components/ExportInstancesDialogC
 
 import { LinkReferenceInstancesModalComponent } from '../components/InstanceReferenceSubmission/LinkReferenceInstancesComponent';
 import { PushGpsModalComponent } from '../components/PushInstanceGps/PushGpsDialogComponent';
-import instancesTableColumns from '../config';
+import { useInstancesTableColumns } from '../config';
 import { INSTANCE_METAS_FIELDS } from '../constants';
 import MESSAGES from '../messages';
 import { Instance, ShortFile } from '../types/instance';
@@ -140,10 +140,12 @@ const labelLocales: Locales = {
     ],
 };
 
+export type LocaleCode = 'en' | 'fr' | 'es' | 'pt';
+
 const localizeLabel = (field: Field): string => {
     // Localize a label. Sometimes a label may be a string, that is somewhat json but not totally
     // sometime it's already a Mapping.
-    const locale: string = getCookie('django_language') ?? 'en';
+    const locale: LocaleCode = getCookie('django_language') ?? 'en';
     let localeOptions: Record<string, string> = { [field.name]: field.name };
 
     if (typeof field === 'object') {
@@ -176,7 +178,9 @@ const localizeLabel = (field: Field): string => {
         localeOptions = field;
     }
 
-    const localeKey = labelLocales[locale].find(key => localeOptions[key]);
+    const localeKey = labelLocales[locale].find(
+        (key: string) => localeOptions[key],
+    );
     return localeKey ? localeOptions[localeKey] : field.name;
 };
 /**
@@ -239,10 +243,7 @@ export const useInstancesColumns = (
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
-    const metasColumns = useMemo(
-        () => [...instancesTableColumns(formatMessage)],
-        [formatMessage],
-    );
+    const metasColumns = useInstancesTableColumns();
     const InstancesColumns = useMemo(() => {
         let tableColumns: Column[] = [];
         metasColumns.forEach(c => {
@@ -331,19 +332,17 @@ export const useGetInstancesVisibleColumns = ({
     columns?: string,
     possibleFields?: PossibleField[],
 ) => VisibleColumn[]) => {
-    const { formatMessage } = useSafeIntl();
     const activeOrders: string[] = useMemo(
         () => (order || defaultOrder).split(','),
         [defaultOrder, order],
     );
+    const instancesTableColumns = useInstancesTableColumns();
     const getInstancesVisibleColumns = useCallback(
         (columns?: string, possibleFields?: PossibleField[]) => {
             const columnsNames: string[] = columns ? columns.split(',') : [];
             const metasColumns: PossibleColumn[] = [
-                ...instancesTableColumns(formatMessage).filter(
-                    c => c.accessor !== 'actions',
-                ),
-            ];
+                ...instancesTableColumns.filter(c => c.accessor !== 'actions'),
+            ] as PossibleColumn[];
             const newColumns: VisibleColumn[] = metasColumns.map(c => ({
                 key: c.accessor,
                 label: c.Header,
@@ -367,7 +366,7 @@ export const useGetInstancesVisibleColumns = ({
             }
             return newColumns;
         },
-        [activeOrders, formatMessage],
+        [activeOrders, instancesTableColumns],
     );
     return getInstancesVisibleColumns;
 };

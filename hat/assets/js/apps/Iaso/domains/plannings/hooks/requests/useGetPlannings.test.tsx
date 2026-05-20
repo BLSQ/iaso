@@ -3,7 +3,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { IntlProvider } from 'react-intl';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { endpoint } from '../../constants';
+import { PLANNINGS_API_URL } from '../../constants';
 import { PlanningParams } from '../../types';
 import { useGetPlannings, useGetPlanningsOptions } from './useGetPlannings';
 
@@ -85,7 +85,7 @@ describe('useGetPlanningsOptions', () => {
                 },
             },
         ]);
-        expect(mockGetRequest).toHaveBeenCalledWith(`${endpoint}?`);
+        expect(mockGetRequest).toHaveBeenCalledWith(`${PLANNINGS_API_URL}?`);
     });
 
     it('requests form_ids when formIds is provided', async () => {
@@ -97,7 +97,7 @@ describe('useGetPlanningsOptions', () => {
 
         await waitFor(() => {
             expect(mockGetRequest).toHaveBeenCalledWith(
-                `${endpoint}?form_ids=12%2C34`,
+                `${PLANNINGS_API_URL}?form_ids=12%2C34`,
             );
         });
     });
@@ -156,7 +156,7 @@ describe('useGetPlannings', () => {
         });
 
         const calledUrl = mockGetRequest.mock.calls[0][0] as string;
-        expect(calledUrl).toContain(`${endpoint}?`);
+        expect(calledUrl).toContain(`${PLANNINGS_API_URL}?`);
         expect(calledUrl).toContain('publishing_status=all');
         expect(calledUrl).toContain('limit=20');
         expect(calledUrl).toContain('started_at__gte=api%3A01-01-2024');

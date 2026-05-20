@@ -175,6 +175,12 @@ const getRandomUserRole = () => {
 };
 
 describe('UsersDetailView unit tests', () => {
+    beforeAll(() => {
+        faker.seed(1);
+    });
+    afterAll(() => {
+        faker.seed(Date.now());
+    });
     beforeEach(() => {
         vi.clearAllMocks();
         mockIsSavePasswordLoading.mockReturnValue(false);

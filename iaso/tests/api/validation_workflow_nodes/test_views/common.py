@@ -1,7 +1,7 @@
 import uuid
 
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
-from iaso.models import Account, Form, Project, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import Account, AccountFeatureFlag, Form, Project, ValidationNodeTemplate, ValidationWorkflow
 from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION
 from iaso.test import APITestCase
 
@@ -25,17 +25,13 @@ class BaseAPITestCase(APITestCase):
             name="Validation workflow", account=self.account, description="Description"
         )
 
-        self.first_node = ValidationNodeTemplate.objects.create(
-            name="First node", workflow=self.validation_workflow, color="#ffffff"
-        )
+        self.first_node = ValidationNodeTemplate.objects.create(name="First node", workflow=self.validation_workflow)
 
-        self.second_node = ValidationNodeTemplate.objects.create(
-            name="Second node", workflow=self.validation_workflow, color="#12fa4b"
-        )
+        self.second_node = ValidationNodeTemplate.objects.create(name="Second node", workflow=self.validation_workflow)
         self.second_node.previous_node_templates.add(self.first_node)
 
         self.third_node = ValidationNodeTemplate.objects.create(
-            name="Third node", workflow=self.validation_workflow, color="#6e6593", can_skip_previous_nodes=True
+            name="Third node", workflow=self.validation_workflow, can_skip_previous_nodes=True
         )
         self.third_node.previous_node_templates.add(self.second_node)
         self.form = Form.objects.create(name="Form")
@@ -51,7 +47,15 @@ class BaseAPITestCase(APITestCase):
             uuid=str(uuid.uuid4()),
         )
 
+        self.enable_validation_workflow_feature_flag(self.account)
+
         self.setup_start()
 
     def setup_start(self):
         ValidationWorkflowEngine.start(self.validation_workflow, self.john_wick, self.instance)
+
+    @staticmethod
+    def enable_validation_workflow_feature_flag(*accounts):
+        feature_flag = AccountFeatureFlag.objects.get(code="SUBMISSION_VALIDATION_WORKFLOW")
+        for account in accounts:
+            account.feature_flags.add(feature_flag)

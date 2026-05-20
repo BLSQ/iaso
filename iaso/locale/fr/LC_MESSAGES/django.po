@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-28 09:32+0000\n"
+"POT-Creation-Date: 2026-05-11 12:19+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -179,6 +179,10 @@ msgstr "Le CSV doit avoir au moins une ligne avec des valeurs."
 #: iaso/api/metrics/serializers.py
 msgid "The following org unit IDs do not exist: "
 msgstr "Ces IDs d'org unit n'existent pas:"
+
+#: iaso/api/metrics/serializers.py
+msgid "Year must be between 1900 and 2100."
+msgstr "L'année doit être entre 1900 et 2100,"
 
 #: iaso/api/microplanning/views.py
 msgid "Planning is missing sampling group or target org unit scope"
@@ -1146,6 +1150,10 @@ msgstr "Circuit de validation"
 msgid "Account management"
 msgstr "Gestion du compte"
 
+#: iaso/permissions/core_permissions.py
+msgid "Pipeline management"
+msgstr "Gestion des pipelines"
+
 #: iaso/tasks/copy_version.py iaso/tasks/export_mobile_app_setup_for_user.py
 #: iaso/tasks/process_mobile_bulk_upload.py
 msgid "Starting"
@@ -1289,6 +1297,9 @@ msgstr "Virus détecté"
 #: iaso/utils/virus_scan/model.py
 msgid "Error"
 msgstr "Erreur lors de l'analyse"
+
+#~ msgid "Planning id is required in the URL path."
+#~ msgstr "L'ID du planning est requis dans le chemin de l'URL."
 
 #, python-format
 #~ msgid "There are %(count)d failing imports needing your attention."

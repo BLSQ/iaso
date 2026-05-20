@@ -103,6 +103,7 @@ ASSISTANCE_FORMS = frozenset(
         "ethiopia_child_assistance_follow_up",
     ]
 )
+# Program to exclude in the data to push to dhis2
 EXCLUDED_PROGRAMMES = [None, "", "Not Eligible", "OTP - Under 6"]
 
 
@@ -115,6 +116,8 @@ NEW_GUIDE_LINES_FORMS = [
     "Anthropometric visit child_2",
     "child_antropometric_followUp_otp_2",
     "child_antropometric_followUp_tsfp_2",
+    "Anthropometric visit child_U6",
+    "antropometric_followUp_otp_u6",
 ]
 
 ACCOUNT_WITH_GUIDELINE = "South Sudan"

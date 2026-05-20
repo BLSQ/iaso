@@ -79,6 +79,9 @@ class Project(models.Model):
 
     objects = ProjectManager()
 
+    class Meta:
+        ordering = ["id"]
+
     def __str__(self):
         return "%s " % (self.name,)
 

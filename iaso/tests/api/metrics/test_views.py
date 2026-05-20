@@ -169,6 +169,25 @@ class MetricTypeAPITestCase(APITestCase):
         utility_metric = next(item for item in data if item["code"] == "POP001")
         self.assertEqual(utility_metric["metric_kind"], "population")
 
+    def test_metric_type_list_filter_by_metric_kind(self):
+        MetricType.objects.create(
+            account=self.account,
+            code="POP001",
+            name="Population Metric",
+            description="Utility metric",
+            category="Population",
+            is_utility=False,
+            metric_kind="population",
+            origin=MetricType.MetricTypeOrigin.OPENHEXA.value,
+        )
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"{self.BASE_URL}?metric_kind=population")
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]["code"], "POP001")
+
     def test_metric_type_update_unauthenticated(self):
         payload = {
             "code": "MT001",

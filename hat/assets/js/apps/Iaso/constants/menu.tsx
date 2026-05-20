@@ -18,7 +18,6 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import GroupWork from '@mui/icons-material/GroupWork';
 import HistoryIcon from '@mui/icons-material/History';
 import ImportantDevicesRoundedIcon from '@mui/icons-material/ImportantDevicesRounded';
-import Input from '@mui/icons-material/Input';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import Link from '@mui/icons-material/Link';
 import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
@@ -30,6 +29,9 @@ import PriceCheckIcon from '@mui/icons-material/PriceCheck';
 import PublishedWithChangesIcon from '@mui/icons-material/PublishedWithChanges';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import RuleIcon from '@mui/icons-material/Rule';
+import SchemaIcon from '@mui/icons-material/Schema';
+import ScienceIcon from '@mui/icons-material/Science';
+import SearchIcon from '@mui/icons-material/Search';
 import Settings from '@mui/icons-material/Settings';
 import StorageIcon from '@mui/icons-material/Storage';
 import SupervisorAccount from '@mui/icons-material/SupervisorAccount';
@@ -180,6 +182,18 @@ const menuItems = (
             permissions: paths.devicesPath.permissions,
             icon: props => <ImportantDevicesRoundedIcon {...props} />,
         },
+        {
+            label: formatMessage(MESSAGES.apiImport),
+            key: 'apiImports',
+            permissions: paths.adminApiImportPath.permissions,
+            icon: props => <InventoryIcon {...props} />,
+        },
+        {
+            label: formatMessage(MESSAGES.pipelines),
+            key: 'pipelines',
+            permissions: paths.pipelineListPath.permissions,
+            icon: props => <ScienceIcon {...props} />,
+        },
     ];
     if (currentUser.is_staff || currentUser.is_superuser) {
         settingsSubMenu.push({
@@ -189,12 +203,6 @@ const menuItems = (
             icon: props => <ManageAccountsIcon {...props} />,
         });
     }
-    settingsSubMenu.push({
-        label: formatMessage(MESSAGES.apiImport),
-        key: 'apiImports',
-        permissions: paths.adminApiImportPath.permissions,
-        icon: props => <InventoryIcon {...props} />,
-    });
     return [
         {
             label: formatMessage(MESSAGES.formsTitle),
@@ -318,7 +326,6 @@ const menuItems = (
                     key: `${CHANGE_REQUEST_CONFIG}`,
                     icon: props => <CategoryIcon {...props} />,
                 },
-                
             ],
         },
         {
@@ -474,23 +481,32 @@ export const useMenuItems = (): MenuItems => {
     }
 
     // add feature flags
-    if (hasFeatureFlag(currentUser, SUBMISSION_VALIDATION_WORKFLOW)){
-        const validationMenuEntry = basicItems.find(
-            item => item.key === 'validation',
-        );
-        if (
-            !validationMenuEntry?.subMenu?.find(
-                entry => entry.key === 'submissions',
-            )
-        ) {
-            validationMenuEntry?.subMenu?.push({
-                label: formatMessage(MESSAGES.submissions),
-                permissions: paths.instancesValidationPath.permissions,
-                key: 'submissions',
-                icon: props => <RuleIcon {...props} />,
-            });
-        }
+    if (
+        hasFeatureFlag(currentUser, SUBMISSION_VALIDATION_WORKFLOW) &&
+        !basicItems.find(item => item.key === 'validation-workflows')
+    ) {
+        basicItems.push({
+            label: formatMessage(MESSAGES.validationWorkflow),
+            icon: props => <SchemaIcon {...props} />,
+            key: 'validation-workflows',
+            subMenu: [
+                {
+                    label: formatMessage(MESSAGES.configuration),
+                    key: 'configuration',
+                    permissions:
+                        paths.validationWorkflowConfigurationPath.permissions,
+                    icon: props => <Settings {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.submissionsTitle),
+                    key: 'submissions',
+                    permissions: paths.instancesPath.permissions,
+                    icon: props => <SearchIcon {...props} />,
+                },
+            ],
+        });
     }
+
     if (
         hasFeatureFlag(currentUser, SHOW_PAGES) &&
         !basicItems.find(item => item.key === 'pages')

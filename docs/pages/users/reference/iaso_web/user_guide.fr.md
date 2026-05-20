@@ -11,9 +11,7 @@ Les administrateurs peuvent ainsi utiliser la plateforme web pour planifier, sur
 
 ## Connexion
 
-Pour vous connecter à l'interface web, rendez-vous sur
-[<u>https://iaso.bluesquare.org/login/</u>](https://iaso.bluesquare.org/login/)
-et connectez-vous avec votre nom d'utilisateur et votre mot de passe.
+Pour vous connecter à l'interface web, rendez-vous sur l'url de votre serveur et connectez-vous avec votre nom d'utilisateur et votre mot de passe.
 
 ![alt text](attachments/Loginiasofr.png)
 

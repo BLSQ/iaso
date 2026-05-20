@@ -1,0 +1,21 @@
+meta {
+  name: generate_and_visualize_captcha_2x_size
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{HOST}}/api/captcha/image/{{captcha_key}}@2/
+  body: none
+  auth: none
+}
+
+script:pre-request {
+  const response = await bru.runRequest("captcha/generate_captcha");
+  bru.setVar("captcha_key", response.data.key);
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

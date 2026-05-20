@@ -358,6 +358,12 @@ CORE_ACCOUNT_MANAGEMENT_PERMISSION = CorePermission(
     module=MODULE_DEFAULT,
     ui_group=PERMISSION_GROUP_ADMIN,
 )
+CORE_PIPELINE_MANAGEMENT_PERMISSION = CorePermission(
+    codename="iaso_pipeline_management",
+    label=_("Pipeline management"),
+    module=MODULE_DEFAULT,
+    ui_group=PERMISSION_GROUP_ADMIN,
+)
 
 
 permissions = {

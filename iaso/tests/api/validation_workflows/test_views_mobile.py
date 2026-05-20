@@ -5,6 +5,7 @@ from datetime import datetime
 from django.urls import reverse
 from rest_framework import status
 
+from iaso.api.validation_workflows.constants import DEFAULT_COLOR, MOBILE_STATUS_TO_COLOR
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
 from iaso.models import Account, AccountFeatureFlag, Form, Project, ValidationNodeTemplate, ValidationWorkflow
 from iaso.models.common import ValidationWorkflowArtefactStatus
@@ -38,18 +39,12 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
             name="Validation workflow", account=self.account, description="Description"
         )
 
-        self.first_node = ValidationNodeTemplate.objects.create(
-            name="First node", workflow=self.validation_workflow, color="#ffffff"
-        )
+        self.first_node = ValidationNodeTemplate.objects.create(name="First node", workflow=self.validation_workflow)
 
-        self.second_node = ValidationNodeTemplate.objects.create(
-            name="Second node", workflow=self.validation_workflow, color="#12fa4b"
-        )
+        self.second_node = ValidationNodeTemplate.objects.create(name="Second node", workflow=self.validation_workflow)
         self.second_node.previous_node_templates.add(self.first_node)
 
-        self.third_node = ValidationNodeTemplate.objects.create(
-            name="Third node", workflow=self.validation_workflow, color="#6e6593"
-        )
+        self.third_node = ValidationNodeTemplate.objects.create(name="Third node", workflow=self.validation_workflow)
         self.third_node.previous_node_templates.add(self.second_node)
         self.form = Form.objects.create(name="Form")
         self.other_form = Form.objects.create(name="Form 2")
@@ -76,9 +71,8 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
 
     @staticmethod
     def enable_validation_workflow_feature_flag(*accounts):
-        feature_flag, _ = AccountFeatureFlag.objects.get_or_create(
+        feature_flag = AccountFeatureFlag.objects.get(
             code="SUBMISSION_VALIDATION_WORKFLOW",
-            defaults={"name": "Web: Enable validation workflow"},
         )
         for account in accounts:
             account.feature_flags.add(feature_flag)
@@ -316,7 +310,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.assertEqual(history_item["comment"], "")
         self.assertIsNone(history_item["updated_by"])
         self.assertEqual(history_item["created_by"], self.john_wick.username)
-        self.assertEqual(history_item["color"], "#FFFFFF")
+        self.assertEqual(history_item["color"], MOBILE_STATUS_TO_COLOR[ValidationNodeStatus.UNKNOWN])
         self.assertEqual(history_item["level"], "First node")
 
         history_item = instance_data["history"][1]
@@ -325,7 +319,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.assertEqual(history_item["comment"], "")
         self.assertIsNone(history_item["updated_by"])
         self.assertEqual(history_item["created_by"], self.john_wick.username)
-        self.assertEqual(history_item["color"], "#FFFFFF")
+        self.assertEqual(history_item["color"], DEFAULT_COLOR)
         self.assertEqual(history_item["level"], "First node")
 
     def test_as_superuser(self):
@@ -361,7 +355,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         first_item = instance_data["history"][0]
         self.assertEqual(first_item["status"], ValidationNodeStatus.ACCEPTED)
         self.assertEqual(first_item["level"], "Third node")
-        self.assertEqual(first_item["color"], "#6E6593")
+        self.assertEqual(first_item["color"], MOBILE_STATUS_TO_COLOR[ValidationNodeStatus.ACCEPTED])
         self.assertEqual(first_item["comment"], "LGTM 2")
         self.assertEqual(first_item["created_by"], self.john_wick.username)
         self.assertEqual(first_item["updated_by"], self.john_wick.username)
@@ -369,7 +363,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         second_item = instance_data["history"][1]
         self.assertEqual(second_item["status"], ValidationNodeStatus.ACCEPTED)
         self.assertEqual(second_item["level"], "Second node")
-        self.assertEqual(second_item["color"], "#12FA4B")
+        self.assertEqual(second_item["color"], MOBILE_STATUS_TO_COLOR[ValidationNodeStatus.ACCEPTED])
         self.assertEqual(second_item["comment"], "LGTM 1")
         self.assertEqual(second_item["created_by"], self.john_wick.username)
         self.assertEqual(second_item["updated_by"], self.john_wick.username)
@@ -377,7 +371,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         third_item = instance_data["history"][2]
         self.assertEqual(third_item["status"], ValidationNodeStatus.ACCEPTED)
         self.assertEqual(third_item["level"], "First node")
-        self.assertEqual(third_item["color"], "#FFFFFF")
+        self.assertEqual(third_item["color"], MOBILE_STATUS_TO_COLOR[ValidationNodeStatus.ACCEPTED])
         self.assertEqual(third_item["comment"], "LGTM 0")
         self.assertEqual(third_item["created_by"], self.john_wick.username)
         self.assertEqual(third_item["updated_by"], self.john_wick.username)
@@ -385,7 +379,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         last_item = instance_data["history"][-1]
         self.assertEqual(last_item["status"], ValidationNodeStatus.SUBMISSION)
         self.assertEqual(last_item["level"], "First node")
-        self.assertEqual(last_item["color"], "#FFFFFF")
+        self.assertEqual(last_item["color"], DEFAULT_COLOR)
         self.assertEqual(last_item["comment"], "")
         self.assertEqual(last_item["created_by"], self.john_wick.username)
 
@@ -422,7 +416,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         first_item = instance_data["history"][0]
         self.assertEqual(first_item["status"], ValidationNodeStatus.ACCEPTED)
         self.assertEqual(first_item["level"], "Third node")
-        self.assertEqual(first_item["color"], "#6E6593")
+        self.assertEqual(first_item["color"], MOBILE_STATUS_TO_COLOR[ValidationNodeStatus.ACCEPTED])
         self.assertEqual(first_item["comment"], "LGTM 2")
         self.assertEqual(first_item["created_by"], self.john_wick.username)
         self.assertEqual(first_item["updated_by"], self.john_wick.username)
@@ -430,7 +424,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         second_item = instance_data["history"][1]
         self.assertEqual(second_item["status"], ValidationNodeStatus.ACCEPTED)
         self.assertEqual(second_item["level"], "Second node")
-        self.assertEqual(second_item["color"], "#12FA4B")
+        self.assertEqual(second_item["color"], MOBILE_STATUS_TO_COLOR[ValidationNodeStatus.ACCEPTED])
         self.assertEqual(second_item["comment"], "LGTM 1")
         self.assertEqual(second_item["created_by"], self.john_wick.username)
         self.assertEqual(second_item["updated_by"], self.john_wick.username)
@@ -438,7 +432,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         third_item = instance_data["history"][2]
         self.assertEqual(third_item["status"], ValidationNodeStatus.ACCEPTED)
         self.assertEqual(third_item["level"], "First node")
-        self.assertEqual(third_item["color"], "#FFFFFF")
+        self.assertEqual(third_item["color"], MOBILE_STATUS_TO_COLOR[ValidationNodeStatus.ACCEPTED])
         self.assertEqual(third_item["comment"], "LGTM 0")
         self.assertEqual(third_item["created_by"], self.john_wick.username)
         self.assertEqual(third_item["updated_by"], self.john_wick.username)
@@ -446,7 +440,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         last_item = instance_data["history"][-1]
         self.assertEqual(last_item["status"], ValidationNodeStatus.SUBMISSION)
         self.assertEqual(last_item["level"], "First node")
-        self.assertEqual(last_item["color"], "#FFFFFF")
+        self.assertEqual(last_item["color"], DEFAULT_COLOR)
         self.assertEqual(last_item["comment"], "")
         self.assertEqual(last_item["created_by"], self.john_wick.username)
 
@@ -486,7 +480,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         second_item = instance_data["history"][0]
         self.assertEqual(second_item["status"], ValidationNodeStatus.REJECTED)
         self.assertEqual(second_item["level"], "Second node")
-        self.assertEqual(second_item["color"], "#12FA4B")
+        self.assertEqual(second_item["color"], MOBILE_STATUS_TO_COLOR[ValidationNodeStatus.REJECTED])
         self.assertEqual(second_item["comment"], "Nope")
         self.assertEqual(second_item["created_by"], self.john_wick.username)
         self.assertEqual(second_item["updated_by"], self.john_wick.username)
@@ -494,7 +488,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         third_item = instance_data["history"][1]
         self.assertEqual(third_item["status"], ValidationNodeStatus.ACCEPTED)
         self.assertEqual(third_item["level"], "First node")
-        self.assertEqual(third_item["color"], "#FFFFFF")
+        self.assertEqual(third_item["color"], MOBILE_STATUS_TO_COLOR[ValidationNodeStatus.ACCEPTED])
         self.assertEqual(third_item["comment"], "LGTM 0")
         self.assertEqual(third_item["created_by"], self.john_wick.username)
         self.assertEqual(third_item["updated_by"], self.john_wick.username)
@@ -502,7 +496,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         last_item = instance_data["history"][-1]
         self.assertEqual(last_item["status"], ValidationNodeStatus.SUBMISSION)
         self.assertEqual(last_item["level"], "First node")
-        self.assertEqual(last_item["color"], "#FFFFFF")
+        self.assertEqual(last_item["color"], DEFAULT_COLOR)
         self.assertEqual(last_item["comment"], "")
         self.assertEqual(last_item["created_by"], self.john_wick.username)
 
@@ -543,7 +537,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         second_item = instance_data["history"][0]
         self.assertEqual(second_item["status"], ValidationNodeStatus.UNKNOWN)
         self.assertEqual(second_item["level"], "First node")
-        self.assertEqual(second_item["color"], "#FFFFFF")
+        self.assertEqual(second_item["color"], MOBILE_STATUS_TO_COLOR[ValidationNodeStatus.UNKNOWN])
         self.assertEqual(second_item["comment"], "")
         self.assertEqual(second_item["created_by"], self.john_wick.username)
         self.assertIsNone(second_item["updated_by"])
@@ -551,7 +545,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         second_item = instance_data["history"][1]
         self.assertEqual(second_item["status"], ValidationNodeStatus.NEW_VERSION)
         self.assertEqual(second_item["level"], "First node")
-        self.assertEqual(second_item["color"], "#FFFFFF")
+        self.assertEqual(second_item["color"], DEFAULT_COLOR)
         self.assertEqual(second_item["comment"], "")
         self.assertEqual(second_item["created_by"], self.john_wick.username)
         self.assertIsNone(second_item["updated_by"])
@@ -559,7 +553,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         second_item = instance_data["history"][2]
         self.assertEqual(second_item["status"], ValidationNodeStatus.REJECTED)
         self.assertEqual(second_item["level"], "Second node")
-        self.assertEqual(second_item["color"], "#12FA4B")
+        self.assertEqual(second_item["color"], MOBILE_STATUS_TO_COLOR[ValidationNodeStatus.REJECTED])
         self.assertEqual(second_item["comment"], "Nope")
         self.assertEqual(second_item["created_by"], self.john_wick.username)
         self.assertEqual(second_item["updated_by"], self.john_wick.username)
@@ -567,7 +561,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         third_item = instance_data["history"][3]
         self.assertEqual(third_item["status"], ValidationNodeStatus.ACCEPTED)
         self.assertEqual(third_item["level"], "First node")
-        self.assertEqual(third_item["color"], "#FFFFFF")
+        self.assertEqual(third_item["color"], MOBILE_STATUS_TO_COLOR[ValidationNodeStatus.ACCEPTED])
         self.assertEqual(third_item["comment"], "LGTM 0")
         self.assertEqual(third_item["created_by"], self.john_wick.username)
         self.assertEqual(third_item["updated_by"], self.john_wick.username)
@@ -575,7 +569,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         last_item = instance_data["history"][-1]
         self.assertEqual(last_item["status"], ValidationNodeStatus.SUBMISSION)
         self.assertEqual(last_item["level"], "First node")
-        self.assertEqual(last_item["color"], "#FFFFFF")
+        self.assertEqual(last_item["color"], DEFAULT_COLOR)
         self.assertEqual(last_item["comment"], "")
         self.assertEqual(last_item["created_by"], self.john_wick.username)
 

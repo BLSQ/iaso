@@ -70,7 +70,7 @@ from .api.forms.views_mobile import MobileFormViewSet
 from .api.group_sets.views import GroupSetsViewSet
 from .api.groups.views import GroupsViewSet
 from .api.hesabu_descriptors import HesabuDescriptorsViewSet
-from .api.instances.instances import InstancesViewSet
+from .api.instances.views import InstancesViewSet
 from .api.instances.views_mobile import InstancesMobileViewSet
 from .api.links import LinkViewSet
 from .api.logs import LogsViewSet
@@ -229,10 +229,14 @@ router.register(r"entityduplicates", EntityDuplicateViewSet, basename="entitydup
 router.register(r"entityduplicates_analyzes", EntityDuplicateAnalyzisViewSet, basename="entityduplicates_analyzes")
 router.register(r"bulkcreateuser", BulkCreateUserFromCsvViewSet, basename="bulkcreateuser")
 router.register(r"teams", TeamViewSet, basename="teams")
-router.register(r"microplanning/plannings", PlanningViewSet, basename="planning")
+router.register(r"microplanning/plannings", PlanningViewSet, basename="planning").register(
+    r"orgunits",
+    PlanningOrgunitsViewSet,
+    basename="planning-orgunits",
+    parents_query_lookups=["pk"],
+)
 router.register(r"microplanning/assignments", AssignmentViewSet, basename="assignments")
 router.register(r"microplanning/samplings", PlanningSamplingResultViewSet, basename="planning-sampling-results")
-router.register(r"microplanning/orgunits", PlanningOrgunitsViewSet, basename="planning-orgunits")
 router.register(r"mobile/plannings", MobilePlanningViewSet, basename="mobileplanning")
 router.register(r"storages", StorageViewSet, basename="storage")
 router.register(r"mobile/storages?/logs", StorageLogViewSet, basename="storagelogs")
@@ -273,6 +277,10 @@ router.register(r"mobile/stockrulesversions", StockRulesVersionMobileViewSet, ba
 router.register(r"api_import", APIImportViewSet, basename="api_import")
 router.register(r"notifications", NotificationViewSet, basename="notifications")
 
+router.register(
+    r"validation-workflows/instance", ValidationWorkflowInstanceViewSet, basename="validation_workflow_instances"
+)
+
 router.register(r"validation-workflows", ValidationWorkflowViewSet, basename="validation_workflows").register(
     r"node-templates",
     ValidationNodeTemplatesView,
@@ -285,13 +293,9 @@ router.register(
     basename="validation_workflow_nodes",
 )
 router.register(r"mobile/validation-workflows", ValidationWorkflowMobileViewSet, basename="mobile_validation_workflows")
-router.register(
-    r"validation-workflows/instance", ValidationWorkflowInstanceViewSet, basename="validation_workflow_instances"
-)
+
 router.registry.extend(plugins_router.registry)
-router.register(
-    r"validation-workflows/instance", ValidationWorkflowInstanceViewSet, basename="validation_workflow_instances"
-)
+
 urlpatterns: URLList = [
     path(
         "fill/<form_uuid>/<org_unit_id>/<period>",
@@ -308,6 +312,7 @@ urlpatterns: URLList = [
         "enketo/instance_files/<instance_file_id>/<file_name>", view=enketo_instance_files, name="enketo-instance-files"
     ),
     path("logout-iaso", auth.views.LogoutView.as_view(next_page="login"), name="logout-iaso"),
+    path("captcha/", include("captcha.urls")),
 ]
 
 

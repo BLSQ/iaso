@@ -47,7 +47,7 @@ class ValidationNodeAPIUndoTestCase(BaseAPITestCase):
             self.instance.get_next_pending_nodes().first(), self.john_wick, self.instance, approved=True, comment="LGTM"
         )
 
-        with self.assertNumQueries(11):
+        with self.assertNumQueries(12):
             # 1-2: PERM
             # 3: ORGUNIT
             # 4-6: RETRIEVE

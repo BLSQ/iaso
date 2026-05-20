@@ -113,7 +113,7 @@ class CampaignViewSet(ModelViewSet):
 
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
-        if self.action in ("update", "partial_update", "retrieve", "destroy"):
+        if self.action in ("update", "partial_update", "retrieve", "destroy", "preparedness"):
             return queryset
         campaign_category = self.request.query_params.get("campaign_category")
         campaign_groups = self.request.query_params.get("campaign_groups")

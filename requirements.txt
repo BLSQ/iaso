@@ -25,6 +25,7 @@ drf-spectacular[sidecar]==0.29.0  # https://github.com/tfranzel/drf-spectacular
 pyjwt==1.7.1  # https://github.com/jpadilla/pyjwt/tags
 nested-multipart-parser==1.5.0 # https://github.com/remigermain/nested-multipart-parser
 drf-extensions==0.8.0 # https://github.com/chibisov/drf-extensions
+drf-excel==2.5.3
 
 # Redis.
 # ------------------------------------------------------------------------------
@@ -71,6 +72,8 @@ names-generator==0.2.0 # https://github.com/glentner/names_generator
 django-autoslug==1.9.9 # https://github.com/justinmayer/django-autoslug
 python-magic==0.4.27 # https://github.com/ahupp/python-magic
 jsonref==1.1.0 # https://github.com/gazpachoking/jsonref
+django-simple-captcha==0.6.3  # https://github.com/mbi/django-simple-captcha/tags
+environs==14.4.0  # https://github.com/sloria/environs/tags
 
 # Exporting tools.
 # ------------------------------------------------------------------------------
@@ -118,6 +121,8 @@ psutil==7.2.2 # https://pypi.org/project/psutil/
 # ------------------------------------------------------------------------------
 https://github.com/BLSQ/django-webpack-loader/archive/5fa2b6897b27dc6ff5bb51162e1375fd0aa8afea.tar.gz#egg=django_webpack_loader
 
+https://github.com/BLSQ/spreadsheet-xlsform-validator/archive/main.zip
+
 # ODK-specific libraries.
 # ------------------------------------------------------------------------------
 # pyxform depends on:
@@ -134,7 +139,7 @@ https://github.com/BLSQ/django-webpack-loader/archive/5fa2b6897b27dc6ff5bb51162e
 # Since pyxform is used 2 times in Iaso for `create_survey_from_xls`, we should
 # get rid of it to upgrade to newer versions of Python and Pandas.
 # ------------------------------------------------------------------------------
-pyxform==2.0.0  # https://github.com/XLSForm/pyxform/tags
+pyxform==2.0.3  # https://github.com/XLSForm/pyxform/tags
 
 # Bug fix for: "App Engine" was removed from `requests_toolbelt`.
 # ------------------------------------------------------------------------------
@@ -160,12 +165,16 @@ gpxpy==1.4.0
 snaql==0.4.2
 tsp-solver2==0.4.1
 
+
+# active_list plugin
+openhexa.sdk==0.3.1
+
 # Azure blob storage.
 azure-storage-blob==12.19.0
 
 # SNT Malaria plugin.
 # ------------------------------------------------------------------------------
-snt-malaria-budgeting==0.9.1
+snt-malaria-budgeting==0.10.1
 django-countries==8.2.0  # https://github.com/SmileyChris/django-countries/tags
 
 # Sass compiler for template styles.

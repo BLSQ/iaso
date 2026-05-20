@@ -301,16 +301,6 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                     />
                                 </Grid>
                                 <Grid item xs={6} md={3}>
-                                    <Field
-                                        label={formatMessage(
-                                            MESSAGES.date_vrf_submission_dg,
-                                        )}
-                                        name="vrf.date_vrf_submitted_to_dg"
-                                        component={DateInput}
-                                        disabled={isFieldDisabledEdit(vrfData)}
-                                    />
-                                </Grid>
-                                <Grid item xs={6} md={3}>
                                     <Box>
                                         <DocumentUploadWithPreview
                                             errors={documentErrors}

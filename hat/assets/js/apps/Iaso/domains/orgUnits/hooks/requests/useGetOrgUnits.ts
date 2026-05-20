@@ -1,7 +1,7 @@
+import { PaginationType } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
 
 import { createSearchParamsWithArray } from 'Iaso/libs/utils';
-import { Pagination } from 'Iaso/types/general';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 
@@ -16,7 +16,7 @@ export type Count = {
     index: number;
     count: number;
 };
-export type Result = Pagination & {
+export type Result = PaginationType & {
     orgunits: OrgUnit[];
     counts: Count[];
 };

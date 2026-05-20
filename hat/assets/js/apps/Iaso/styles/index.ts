@@ -1,4 +1,5 @@
 import Color from 'color';
+import { SxStyles } from 'Iaso/types/general';
 import { styles as mapCluster } from './mapCluster';
 import { styles as mapCustomControl } from './mapCustomControl';
 
@@ -12,10 +13,18 @@ export const getOverriddenTheme = (theme, themeConfig) => {
     const primaryContrastText = primaryColor.isDark() ? '#fff' : '#000';
     const secondaryContrastText = secondaryColor.isDark() ? '#fff' : '#000';
     const warningContrastText = warningColor.isDark() ? '#fff' : '#000';
+
     return {
         ...theme,
         palette: {
             ...theme.palette,
+            background: {
+                ...theme.palette.background,
+                grey: theme.palette.grey[400],
+                warning: theme.palette.warning.main,
+                error: theme.palette.error.main,
+                success: theme.palette.success.main,
+            },
             primary: {
                 contrastText: primaryContrastText,
                 dark: primaryColor.darken(0.2).hex(),
@@ -34,6 +43,10 @@ export const getOverriddenTheme = (theme, themeConfig) => {
                 ...theme.palette.warning,
                 contrastText: warningContrastText,
                 background: warningColor.lighten(0.8).hex(),
+            },
+            success: {
+                ...theme.palette.success,
+                contrastText: '#fff',
             },
         },
         typography: {
@@ -108,3 +121,19 @@ export const getGlobalOverrides = theme => ({
         display: 'none !important',
     },
 });
+
+export const smallInputOverrides: SxStyles = {
+    '& .MuiOutlinedInput-input': {
+        paddingTop: theme => theme.spacing(1),
+        paddingBottom: theme => theme.spacing(1),
+    },
+    '& .MuiInputLabel-formControl': {
+        height: '35px',
+    },
+    '& .MuiInputLabel-shrink': {
+        height: '25px',
+    },
+    '& .MuiSvgIcon-root ': {
+        cursor: 'pointer',
+    },
+};

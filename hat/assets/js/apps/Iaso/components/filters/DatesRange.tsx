@@ -1,6 +1,6 @@
 import React, { useState, useCallback, FunctionComponent } from 'react';
 import EventIcon from '@mui/icons-material/Event';
-import { Grid, useTheme, useMediaQuery, Box, TextField } from '@mui/material';
+import { Grid, useTheme, useMediaQuery, Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { DesktopDatePicker as DatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import {
@@ -28,7 +28,12 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const useCurrentBreakPointSpacing = (xs, sm, md, lg) => {
+const useCurrentBreakPointSpacing = (
+    xs: number,
+    sm: number,
+    md: number,
+    lg: number,
+): number => {
     const theme = useTheme();
     const isXs = useMediaQuery(
         theme.breakpoints.down('xs') || theme.breakpoints.between('xs', 'sm'),
@@ -102,17 +107,11 @@ const DatesRange: FunctionComponent<Props> = ({
     const [to, setTo] = useState<string | Moment | null>(dateTo);
 
     const handleChange = useCallback(
-        (keyValue, date) => {
-            if (blockInvalidDates) {
-                onChangeDate(
-                    keyValue,
-                    date && date.isValid()
-                        ? date.format(dateFormat)
-                        : undefined,
-                );
-            } else {
-                onChangeDate(keyValue, date?.format(dateFormat));
+        (keyValue: string, date: Moment | null) => {
+            if (blockInvalidDates && date && !date.isValid()) {
+                return;
             }
+            onChangeDate(keyValue, date?.format(dateFormat));
         },
         [blockInvalidDates, onChangeDate],
     );
@@ -133,31 +132,13 @@ const DatesRange: FunctionComponent<Props> = ({
                 <Box mt={marginTop}>
                     <FormControl errors={errors[0]}>
                         <DatePicker
-                            autoOk
-                            renderInput={props => <TextField {...props} />}
-                            disableToolbar
-                            required={dateFromRequired}
-                            variant="inline"
                             maxDate={
                                 dateTo === '' || dateTo === null
                                     ? undefined
                                     : getUrlParamDateObject(dateTo)
                             }
-                            InputLabelProps={{
-                                shrink: Boolean(from),
-                            }}
-                            InputProps={{
-                                //@ts-ignore
-                                'data-test': 'start-date',
-                            }}
-                            KeyboardButtonProps={{
-                                size: 'small',
-                            }}
-                            keyboardIcon={<EventIcon size="small" />}
                             format={getLocaleDateFormat('L')}
                             label={formatMessage(labelFrom)}
-                            helperText=""
-                            inputVariant="outlined"
                             value={
                                 from === '' || from === null
                                     ? null
@@ -167,8 +148,21 @@ const DatesRange: FunctionComponent<Props> = ({
                                 setFrom(date);
                                 handleChange(keyDateFrom, date);
                             }}
-                            error={errors[0].length > 0}
                             disabled={disabled}
+                            slots={{ openPickerIcon: EventIcon }}
+                            slotProps={{
+                                toolbar: { hidden: true },
+                                openPickerButton: { size: 'small' },
+                                textField: {
+                                    variant: 'outlined',
+                                    required: dateFromRequired,
+                                    error: errors[0].length > 0,
+                                    InputProps: {
+                                        // @ts-expect-error data-test for automated tests
+                                        'data-test': 'start-date',
+                                    },
+                                },
+                            }}
                         />
                         {dateFrom && !disabled && (
                             <span className={classes.clearDateButton}>
@@ -190,30 +184,13 @@ const DatesRange: FunctionComponent<Props> = ({
                 <Box mt={marginTop}>
                     <FormControl errors={errors[1]}>
                         <DatePicker
-                            autoOk
-                            renderInput={props => <TextField {...props} />}
-                            disableToolbar
-                            required={dateToRequired}
-                            inputVariant="outlined"
-                            variant="inline"
                             minDate={
                                 dateFrom === '' || dateFrom === null
                                     ? undefined
                                     : getUrlParamDateObject(dateFrom)
                             }
-                            InputLabelProps={{
-                                shrink: Boolean(to),
-                            }}
-                            InputProps={{
-                                'data-test': 'end-date',
-                            }}
-                            KeyboardButtonProps={{
-                                size: 'small',
-                            }}
-                            keyboardIcon={<EventIcon size="small" />}
                             format={getLocaleDateFormat('L')}
                             label={formatMessage(labelTo)}
-                            helperText=""
                             value={
                                 to === '' || to === null
                                     ? null
@@ -223,8 +200,21 @@ const DatesRange: FunctionComponent<Props> = ({
                                 setTo(date);
                                 handleChange(keyDateTo, date);
                             }}
-                            error={errors[1].length > 0}
                             disabled={disabled}
+                            slots={{ openPickerIcon: EventIcon }}
+                            slotProps={{
+                                toolbar: { hidden: true },
+                                openPickerButton: { size: 'small' },
+                                textField: {
+                                    variant: 'outlined',
+                                    required: dateToRequired,
+                                    error: errors[1].length > 0,
+                                    InputProps: {
+                                        // @ts-expect-error data-test for automated tests
+                                        'data-test': 'end-date',
+                                    },
+                                },
+                            }}
                         />
                         {dateTo && !disabled && (
                             <span className={classes.clearDateButton}>

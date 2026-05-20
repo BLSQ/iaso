@@ -7,8 +7,8 @@ from rest_framework.permissions import BasePermission
 from rest_framework.viewsets import GenericViewSet
 
 from iaso.api.common import Paginator
-from iaso.api.instances.instances import HasInstancePermission
 from iaso.api.instances.serializers import FileTypeSerializer, InstanceFileSerializer, MobileInstancesSerializer
+from iaso.api.instances.views import HasInstancePermission
 from iaso.models import (
     Instance,
     InstanceFile,

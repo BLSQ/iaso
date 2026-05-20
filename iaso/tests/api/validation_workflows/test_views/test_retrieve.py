@@ -13,7 +13,7 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
         self.account_2 = Account.objects.create(name="account_2")
         self.enable_validation_workflow_feature_flag(self.account, self.account_2)
 
-        self.group = Group.objects.create(name="Group")
+        self.group = Group.objects.create(name=f"{self.account.id}_Group")
         self.user_role = UserRole.objects.create(group=self.group, account=self.account)
 
         self.form = Form.objects.create(name="form")
@@ -49,7 +49,6 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
         self.node_template = ValidationNodeTemplate.objects.create(
             name="First node",
             description="First node description",
-            color="#FDD75A",
             can_skip_previous_nodes=False,
             workflow=self.validation_workflow,
         )
@@ -60,7 +59,6 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
         self.second_node_template = ValidationNodeTemplate.objects.create(
             name="Second node",
             description="Second node description",
-            color="#740D54",
             can_skip_previous_nodes=True,
             workflow=self.validation_workflow,
         )
@@ -159,7 +157,7 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
 
                 with self.subTest("checking node_templates"):
                     for node_template in res_data["node_templates"]:
-                        for k in ["slug", "name", "description", "color", "can_skip_previous_nodes", "roles_required"]:
+                        for k in ["slug", "name", "description", "can_skip_previous_nodes", "roles_required"]:
                             self.assertIn(k, node_template)
 
                     self.assertEqual(
@@ -169,7 +167,6 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
                                 "slug": "first-node",
                                 "name": "First node",
                                 "description": "First node description",
-                                "color": "#FDD75A",
                                 "roles_required": [{"name": "Group", "id": self.group.pk}],
                                 "can_skip_previous_nodes": False,
                             },
@@ -177,7 +174,6 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
                                 "slug": "second-node",
                                 "name": "Second node",
                                 "description": "Second node description",
-                                "color": "#740D54",
                                 "roles_required": [],
                                 "can_skip_previous_nodes": True,
                             },

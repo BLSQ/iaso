@@ -3,6 +3,7 @@ import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../../libs/utils';
 import { Team } from '../../../teams/types/team';
+import { ASSIGNMENTS_API_URL } from '../../constants/api';
 import { AssignmentApi } from '../../types/assigment';
 
 type Option = {
@@ -15,7 +16,7 @@ export type AssignmentsResult = {
 };
 
 const getAssignments = async (options: Option): Promise<AssignmentApi[]> => {
-    const url = makeUrlWithParams('/api/microplanning/assignments/', options);
+    const url = makeUrlWithParams(ASSIGNMENTS_API_URL, options);
     return getRequest(url) as Promise<AssignmentApi[]>;
 };
 

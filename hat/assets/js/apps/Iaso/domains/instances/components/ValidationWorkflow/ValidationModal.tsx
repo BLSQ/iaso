@@ -1,63 +1,93 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { Box } from '@mui/material';
 import {
     ConfirmCancelModal,
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
-import { Field, FormikProvider, useFormik } from 'formik';
+import { FormikProvider, useFormik } from 'formik';
+
 import InputComponent from 'Iaso/components/forms/InputComponent';
-import { SingleSelect } from 'Iaso/domains/pages/components/SingleSelect';
+
 import MESSAGES from '../../messages';
-import { useNodeValidationSchema } from './useNodeValidationSchema';
-import { useSaveNode } from './useSaveNode';
+
+import {
+    useNodeValidationApproveSchema,
+    useNodeValidationRejectSchema,
+} from './useNodeValidationSchema';
+
+import { useCompleteNode, useCompleteNodeByPass } from './useSaveNode';
+
 import { ValidateButton } from './ValidateButton';
 
-const useApprovalOptions = () => {
-    const { formatMessage } = useSafeIntl();
-    return useMemo(
-        () => [
-            { label: formatMessage(MESSAGES.approve), value: 'true' },
-            { label: formatMessage(MESSAGES.rejected), value: 'false' },
-        ],
-        [formatMessage],
-    );
-};
-
-type Props = {
+type BaseModalProps = {
     instanceId: number;
-    nodeId?: number;
-    nodeSlug?: string;
     closeDialog: () => void;
     isOpen: boolean;
 };
 
-export const ValidationModal = ({
-    instanceId,
-    nodeId,
-    nodeSlug,
-    closeDialog,
-    isOpen,
-}: Props) => {
-    const { formatMessage } = useSafeIntl();
-    const { mutateAsync: save } = useSaveNode({ instanceId, nodeId });
-    const validationSchema = useNodeValidationSchema();
-    const formik = useFormik<{
-        approved: boolean;
-        comment?: string;
-        node?: string;
-    }>({
+type ModalProps = BaseModalProps & {
+    nodeId: number;
+};
+
+type ByPassModalProps = BaseModalProps & {
+    nodeSlug: string;
+};
+
+type ValidationFormValues = {
+    comment: string;
+};
+
+type BaseValidationModalProps = {
+    isOpen: boolean;
+    closeDialog: () => void;
+    titleMessage: any;
+    modalId: string;
+    approved: boolean;
+    requiredComment?: boolean;
+    validationSchema: any;
+    onSubmit: (values: ValidationFormValues) => Promise<unknown>;
+};
+
+const useValidationFormik = ({
+    approved,
+    validationSchema,
+    onSubmit,
+}: {
+    approved: boolean;
+    validationSchema: any;
+    onSubmit: (values: ValidationFormValues) => Promise<unknown>;
+}) => {
+    return useFormik<ValidationFormValues>({
         initialValues: {
-            approved: false,
             comment: '',
-            node: nodeSlug,
         },
         enableReinitialize: true,
         validateOnBlur: true,
+        validateOnMount: !approved,
         validationSchema,
-        onSubmit: values => save(values),
+        onSubmit,
     });
-    const approvalOptions = useApprovalOptions();
+};
+
+const BaseValidationModal = ({
+    isOpen,
+    closeDialog,
+    titleMessage,
+    modalId,
+    approved,
+    requiredComment = false,
+    validationSchema,
+    onSubmit,
+}: BaseValidationModalProps) => {
+    const { formatMessage } = useSafeIntl();
+
+    const formik = useValidationFormik({
+        approved,
+        validationSchema,
+        onSubmit,
+    });
+
     const onChange = useCallback(
         (keyValue: string, value: any) => {
             formik.setFieldTouched(keyValue, true);
@@ -70,37 +100,165 @@ export const ValidationModal = ({
         <FormikProvider value={formik}>
             <ConfirmCancelModal
                 open={isOpen}
-                id={'confirm-node'}
-                dataTestId={'confirm-node'}
+                allowConfirm={approved || formik.isValid}
+                id={modalId}
+                dataTestId={modalId}
                 closeDialog={closeDialog}
                 confirmMessage={MESSAGES.save}
                 cancelMessage={MESSAGES.cancel}
-                titleMessage={MESSAGES.validateSubmission}
+                titleMessage={titleMessage}
                 onConfirm={() => formik.handleSubmit()}
                 onCancel={() => formik.resetForm()}
                 onClose={() => null}
                 maxWidth="md"
             >
                 <Box>
-                    <Field
-                        label={formatMessage(MESSAGES.approve)}
-                        name="approved"
-                        component={SingleSelect}
-                        withMarginTop
-                        options={approvalOptions}
-                        required
-                    />
                     <InputComponent
                         keyValue="comment"
                         type="textarea"
                         labelString={formatMessage(MESSAGES.comment)}
                         onChange={onChange}
                         withMarginTop
+                        required={requiredComment}
                     />
                 </Box>
             </ConfirmCancelModal>
         </FormikProvider>
     );
 };
-const modalWithButton = makeFullModal(ValidationModal, ValidateButton);
-export { modalWithButton as ValidateNodeModal };
+
+export const ValidationApproveModal = ({
+    instanceId,
+    nodeId,
+    closeDialog,
+    isOpen,
+}: ModalProps) => {
+    const validationSchema = useNodeValidationApproveSchema();
+
+    const { mutateAsync: save } = useCompleteNode(instanceId, nodeId);
+
+    return (
+        <BaseValidationModal
+            isOpen={isOpen}
+            closeDialog={closeDialog}
+            approved
+            modalId="approve-node"
+            titleMessage={MESSAGES.approve}
+            validationSchema={validationSchema}
+            onSubmit={values =>
+                save({
+                    approved: true,
+                    ...values,
+                })
+            }
+        />
+    );
+};
+
+export const ValidationRejectModal = ({
+    instanceId,
+    nodeId,
+    closeDialog,
+    isOpen,
+}: ModalProps) => {
+    const validationSchema = useNodeValidationRejectSchema();
+
+    const { mutateAsync: save } = useCompleteNode(instanceId, nodeId);
+
+    return (
+        <BaseValidationModal
+            isOpen={isOpen}
+            closeDialog={closeDialog}
+            approved={false}
+            requiredComment
+            modalId="reject-node"
+            titleMessage={MESSAGES.reject}
+            validationSchema={validationSchema}
+            onSubmit={values =>
+                save({
+                    approved: false,
+                    ...values,
+                })
+            }
+        />
+    );
+};
+
+export const ValidationApproveByPassModal = ({
+    instanceId,
+    nodeSlug,
+    closeDialog,
+    isOpen,
+}: ByPassModalProps) => {
+    const validationSchema = useNodeValidationApproveSchema();
+
+    const { mutateAsync: save } = useCompleteNodeByPass(instanceId);
+
+    return (
+        <BaseValidationModal
+            isOpen={isOpen}
+            closeDialog={closeDialog}
+            approved
+            modalId="approve-bypass-node"
+            titleMessage={MESSAGES.approve}
+            validationSchema={validationSchema}
+            onSubmit={values =>
+                save({
+                    approved: true,
+                    node: nodeSlug,
+                    ...values,
+                })
+            }
+        />
+    );
+};
+
+export const ValidationRejectByPassModal = ({
+    instanceId,
+    nodeSlug,
+    closeDialog,
+    isOpen,
+}: ByPassModalProps) => {
+    const validationSchema = useNodeValidationRejectSchema();
+
+    const { mutateAsync: save } = useCompleteNodeByPass(instanceId);
+
+    return (
+        <BaseValidationModal
+            isOpen={isOpen}
+            closeDialog={closeDialog}
+            approved={false}
+            requiredComment
+            modalId="reject-bypass-node"
+            titleMessage={MESSAGES.reject}
+            validationSchema={validationSchema}
+            onSubmit={values =>
+                save({
+                    approved: false,
+                    node: nodeSlug,
+                    ...values,
+                })
+            }
+        />
+    );
+};
+
+export const ValidateNodeRejectModal = makeFullModal(
+    ValidationRejectModal,
+    ValidateButton,
+);
+
+export const ValidateNodeApproveModal = makeFullModal(
+    ValidationApproveModal,
+    ValidateButton,
+);
+
+export const ValidateNodeRejectByPassModal = makeFullModal(
+    ValidationRejectByPassModal,
+    ValidateButton,
+);
+
+export const ValidateNodeApproveByPassModal = makeFullModal(
+    ValidationApproveByPassModal,
+    ValidateButton,
+);

@@ -59,6 +59,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'accountId',
             'search',
             'showDeleted',
+            'onlyDeleted',
             'planning',
             'orgUnitTypeIds',
             'projectsIds',
@@ -71,11 +72,11 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         params: ['accountId'],
     },
     pipelineList: {
-        url: 'pipelines/',
+        url: 'settings/pipelines/',
         params: ['accountId'],
     },
     pipelineDetails: {
-        url: 'pipelines/details',
+        url: 'settings/pipelines/details',
         params: ['accountId', 'pipelineId'],
     },
     formDetail: {
@@ -129,20 +130,6 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     instanceDetail: {
         url: 'forms/submission',
         params: ['accountId', 'instanceId', 'referenceFormId'],
-    },
-    instanceValidation: {
-        url: 'validation/submissions',
-        params: [
-            'accountId',
-            'forms',
-            'name',
-            'showDeleted',
-            ...paginationPathParams,
-        ],
-    },
-    instanceValidationDetail: {
-        url: 'validation/submissions/detail',
-        params: ['accountId', 'slug'],
     },
     compareInstanceLogs: {
         url: 'forms/compareInstanceLogs',
@@ -341,6 +328,10 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParams,
         ],
     },
+    usersBulkCreate: {
+        url: 'settings/users/management/bulk-create',
+        params: ['accountId'],
+    },
     userDetails: {
         url: 'settings/users/management/details',
         params: ['accountId', 'userId'],
@@ -514,7 +505,13 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     assignments: {
         url: 'planning/assignments',
-        params: ['accountId', 'planningId'],
+        params: [
+            'accountId',
+            'planningId',
+            'tab',
+            'search',
+            ...paginationPathParams,
+        ],
     },
     teams: {
         url: 'settings/users/teams',
@@ -524,6 +521,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'managers',
             'types',
             'projects',
+            'fields',
             ...paginationPathParams,
         ],
     },
@@ -633,6 +631,26 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'value_to',
         ],
     },
+
+    validationWorkflowsConfiguration: {
+        url: 'validation-workflows/configuration',
+        params: ['accountId', 'forms', 'name', ...paginationPathParams],
+    },
+    validationWorkflowsConfigurationDetail: {
+        url: 'validation-workflows/configuration/detail',
+        params: ['accountId', 'slug'],
+    },
+    validationWorkflowInstances: {
+        url: 'validation-workflows/submissions',
+        params: [
+            'accountId',
+            'forms',
+            'status',
+            'requires_user_action',
+            'validation_workflows',
+            ...paginationPathParams,
+        ],
+    },
     adminApiImport: {
         url: 'settings/apiImports',
         params: [
@@ -700,8 +718,6 @@ type IasoBaseUrls = {
     formsStats: string;
     instances: string;
     instanceDetail: string;
-    instanceValidation: string;
-    instanceValidationDetail: string;
     compareInstanceLogs: string;
     compareInstances: string;
     mappings: string;
@@ -720,6 +736,7 @@ type IasoBaseUrls = {
     modules: string;
     users: string;
     userDetails: string;
+    usersBulkCreate: string;
     usersHistory: string;
     userRoles: string;
     projects: string;
@@ -759,6 +776,10 @@ type IasoBaseUrls = {
     login: string;
     apiLogs: string;
     adminApiImport: string;
+    pipelines: string;
+    validationWorkflowsConfiguration: string;
+    validationWorkflowsConfigurationDetail: string;
+    validationWorkflowInstances: string;
 };
 
 export const baseUrls = extractUrls(baseRouteConfigs) as IasoBaseUrls;

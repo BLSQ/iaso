@@ -32,6 +32,7 @@ export type Team = {
     deleted_at?: string;
     parent?: number;
     color: string;
+    members_count?: number;
 };
 
 export type TeamDropdown = {
@@ -49,6 +50,7 @@ export type TeamFilterParams = {
     type?: TeamType;
     managers?: User;
     ancestor?: string;
+    fields?: string;
 };
 
 export type TeamParams = UrlParams &

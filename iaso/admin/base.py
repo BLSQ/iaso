@@ -31,7 +31,7 @@ from ..models import (
     Account,
     AccountFeatureFlag,
     AlgorithmRun,
-    BulkCreateUserCsvFile,
+    BulkCreateUserFile,
     DataSource,
     DataSourceVersionsSynchronization,
     Device,
@@ -728,6 +728,7 @@ class PlanningAdmin(admin.ModelAdmin):
                     "ended_at",
                     "pipeline_uuids",
                     "selected_sampling_result",
+                    "target_org_unit_types",
                 ),
             },
         ),
@@ -1344,6 +1345,6 @@ admin.site.register(DeviceOwnership)
 admin.site.register(MatchingAlgorithm)
 admin.site.register(ExternalCredentials)
 admin.site.register(DevicePosition)
-admin.site.register(BulkCreateUserCsvFile)
+admin.site.register(BulkCreateUserFile)
 admin.site.register(Report)
 admin.site.register(ReportVersion)

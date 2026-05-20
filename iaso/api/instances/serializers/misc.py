@@ -116,3 +116,18 @@ class InstanceLockSerializer(serializers.ModelSerializer):
 class UnlockSerializer(serializers.Serializer):
     lock = serializers.PrimaryKeyRelatedField(queryset=InstanceLock.objects.all())
     # we will  check that the user can access from the directly in remove_lock()
+
+
+class InstanceLocationSerializer(serializers.ModelSerializer):
+    latitude = serializers.SerializerMethodField()
+    longitude = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Instance
+        fields = ["id", "latitude", "longitude"]
+
+    def get_latitude(self, obj):
+        return obj.location.y if obj.location else None
+
+    def get_longitude(self, obj):
+        return obj.location.x if obj.location else None

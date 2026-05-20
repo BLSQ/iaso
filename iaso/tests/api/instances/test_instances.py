@@ -3084,7 +3084,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         )
 
     def test_map_location_list_is_constant_queries(self):
-        """GET /instances/?withLocation=true must return minimal {id, lat, lng} in O(1) queries
+        """GET /instances/map/ must return minimal {id, lat, lng} in O(1) queries
         regardless of how many instances are returned — no per-instance FK traversal."""
         self.client.force_authenticate(self.yoda)
         self.yoda.iaso_profile.projects.add(self.project)
@@ -3100,16 +3100,15 @@ class InstancesAPITestCase(TaskAPITestCase):
             for i in range(5)
         ]
 
-        with self.assertNumQueries(5) as ctx:
-            response = self.client.get("/api/instances/", {"withLocation": "true"})
+        with self.assertNumQueries(5):
+            response = self.client.get("/api/instances/map/")
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIsInstance(data, list)
 
         returned_ids = {item["id"] for item in data}
-        for instance in instances_with_location:
-            self.assertIn(instance.id, returned_ids)
+        self.assertCountEqual([instance.id for instance in instances_with_location], returned_ids)
 
         for item in data:
             self.assertIn("id", item)

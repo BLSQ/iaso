@@ -718,11 +718,15 @@ export const getEndpointUrl = (
 export const getLocationEndpointUrl = (
     params: Record<string, string | undefined>,
 ): string => {
-    const urlParams = {
-        withLocation: params.withLocation ?? 'true',
-        ...getFilters({ ...params, withLocation: undefined }),
-    };
-    return getTableUrl('instances', urlParams, false, 'csv', false, false);
+    const { withLocation: _ignored, mapResults, ...rest } = params;
+    const filters = getFilters(rest);
+    const limit = mapResults ?? '3000';
+    const queryString = new URLSearchParams(
+        Object.entries({ ...filters, limit }).filter(
+            ([, v]) => v !== undefined,
+        ) as [string, string][],
+    ).toString();
+    return `/api/instances/map/${queryString ? `?${queryString}` : ''}`;
 };
 
 type FileType = 'image_only' | 'video_only' | 'document_only' | 'other_only';

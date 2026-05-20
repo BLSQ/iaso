@@ -103,7 +103,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v7
         with:
-          file: Dockerfile
+          file: ./Dockerfile
           push: true
           tags: blsq/iaso:${{ steps.config.outputs.TAG }}
           # https://docs.docker.com/build/cache/backends/

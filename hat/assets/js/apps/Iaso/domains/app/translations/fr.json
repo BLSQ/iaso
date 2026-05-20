@@ -1236,6 +1236,7 @@
     "iaso.permissions.group.snt_malaria": "SNT Malaria",
     "iaso.permissions.group.stock_management": "Gestion des stocks",
     "iaso.permissions.group.trypelim": "Trypelim",
+    "iaso.permissions.group.validation_workflow": "Workflow de validation",
     "iaso.permissions.iaso_account_management": "Gestion du compte",
     "iaso.permissions.iaso_account_management_tooltip": "Permet de gérer les choses en rapport avec le compte (à ne pas confondre avec la gestion des utilisateurs)",
     "iaso.permissions.iaso_dhis2_link": "Lier avec DHIS2",

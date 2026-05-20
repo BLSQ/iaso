@@ -20,7 +20,13 @@ class ProjectsAPITestCase(APITestCase):
         cls.john = cls.create_user_with_profile(username="johndoe", account=wha, permissions=[CORE_FORMS_PERMISSION])
         cls.jim = cls.create_user_with_profile(username="jimdoe", account=ghi)
 
-        cls.project_1 = m.Project.objects.create(name="Project 1", app_id="org.ghi.p1", account=ghi, color="#FF5733")
+        cls.project_1 = m.Project.objects.create(
+            name="Project 1",
+            app_id="org.ghi.p1",
+            account=ghi,
+            color="#FF5733",
+            description="Project 1 description",
+        )
         flag = m.FeatureFlag.objects.create(name="A feature", code="a_feature")
         cls.project_1.feature_flags.set([flag])
         m.Project.objects.create(name="Project 2", app_id="org.ghi.p2", account=ghi)
@@ -68,6 +74,8 @@ class ProjectsAPITestCase(APITestCase):
         # Verify color is included
         self.assertIn("color", response.json()["projects"][0])
         self.assertEqual(response.json()["projects"][0]["color"], "#FF5733")
+        self.assertIn("description", response.json()["projects"][0])
+        self.assertEqual(response.json()["projects"][0]["description"], "Project 1 description")
 
     def test_projects_list_query_count(self):
         """
@@ -96,6 +104,8 @@ class ProjectsAPITestCase(APITestCase):
         # Verify color is included
         self.assertIn("color", response_data["projects"][0])
         self.assertEqual(response_data["projects"][0]["color"], "#FF5733")
+        self.assertIn("description", response_data["projects"][0])
+        self.assertEqual(response_data["projects"][0]["description"], "Project 1 description")
 
     def test_feature_flags_list_paginated(self):
         """GET /featureflags/ paginated happy path"""
@@ -289,6 +299,8 @@ class ProjectsAPITestCase(APITestCase):
         # Verify color is included
         self.assertIn("color", response_data)
         self.assertEqual(response_data["color"], "#FF5733")
+        self.assertIn("description", response_data)
+        self.assertEqual(response_data["description"], "Project 1 description")
 
     def test_projects_create(self):
         """POST /projects/: not authorized for now"""
@@ -374,5 +386,6 @@ class ProjectsAPITestCase(APITestCase):
         # Color is optional, so we only check its type if it exists
         if "color" in project_data:
             self.assertIsInstance(project_data["color"], str)
+        self.assertHasField(project_data, "description", str)
         for feature_flag_data in project_data["feature_flags"]:
             self.assertValidFeatureFlagData(feature_flag_data)

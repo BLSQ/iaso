@@ -1416,6 +1416,7 @@
     "iaso.projects.appId": "App ID",
     "iaso.projects.appVersion": "App Version",
     "iaso.projects.create": "Create project",
+    "iaso.projects.description": "Description",
     "iaso.projects.false": "User doesn't need authentication",
     "iaso.projects.name": "Project name",
     "iaso.projects.needsAuthentication": "Requires authentication",

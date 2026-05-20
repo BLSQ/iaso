@@ -75,6 +75,7 @@ class Project(models.Model):
     external_token = models.UUIDField(default=uuid4, null=True)
     min_version = models.IntegerField(null=True, blank=False)
     redirection_url = models.URLField(null=True, blank=True)
+    description = models.TextField(blank=True, default="", null=False)
     color = ColorField(null=True, blank=True, default=DEFAULT_COLOR)
 
     objects = ProjectManager()
@@ -86,7 +87,13 @@ class Project(models.Model):
         return "%s " % (self.name,)
 
     def as_dict(self):
-        return {"id": self.id, "name": self.name, "app_id": self.app_id, "color": self.color}
+        return {
+            "id": self.id,
+            "name": self.name,
+            "app_id": self.app_id,
+            "color": self.color,
+            "description": self.description,
+        }
 
     def has_feature(self, feature_code):
         return self.feature_flags.filter(code=feature_code).exists()

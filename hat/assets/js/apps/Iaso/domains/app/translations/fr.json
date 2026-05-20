@@ -1415,6 +1415,7 @@
     "iaso.projects.appId": "Identifiant de l'App",
     "iaso.projects.appVersion": "Version de l'App",
     "iaso.projects.create": "Créer un projet",
+    "iaso.projects.description": "Description",
     "iaso.projects.false": "L'utilisateur n'a pas besoin d'authentification",
     "iaso.projects.name": "Nom du projet",
     "iaso.projects.needsAuthentication": "Nécessite une authentification",

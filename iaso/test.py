@@ -491,6 +491,6 @@ class IasoMigratorTestCase(MigratorTestCase):
         self.prepare()
         if self.num_queries:
             with self.assertNumQueries(self.num_queries):
-                self._migrator.apply_tested_migration(self.migrate_to)
+                self.new_state = self._migrator.apply_tested_migration(self.migrate_to)
         else:
-            self._migrator.apply_tested_migration(self.migrate_to)
+            self.new_state = self._migrator.apply_tested_migration(self.migrate_to)

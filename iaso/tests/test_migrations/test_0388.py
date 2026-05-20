@@ -1,4 +1,3 @@
-from iaso.models import Account, AccountFeatureFlag
 from iaso.modules import MODULE_VALIDATION_WORKFLOW
 from iaso.test import IasoMigratorTestCase
 
@@ -9,6 +8,9 @@ class Test0388DirectMigration(IasoMigratorTestCase):
     num_queries = 15
 
     def prepare(self):
+        AccountFeatureFlag = self.old_state.apps.get_model("iaso", "AccountFeatureFlag")
+        Account = self.old_state.apps.get_model("iaso", "Account")
+
         # create FF
         self.vf_ff = AccountFeatureFlag.objects.get(
             code="SUBMISSION_VALIDATION_WORKFLOW",
@@ -31,23 +33,25 @@ class Test0388DirectMigration(IasoMigratorTestCase):
         self.account_without_vf.feature_flags.add(self.other_ff)
 
     def test_migration(self):
+        AccountFeatureFlag = self.new_state.apps.get_model("iaso", "AccountFeatureFlag")
+        Account = self.new_state.apps.get_model("iaso", "Account")
         self.assertFalse(AccountFeatureFlag.objects.filter(code="SUBMISSION_VALIDATION_WORKFLOW").exists())
 
-        self.account.refresh_from_db()
-        self.assertEqual(self.account.modules, [])
-        self.assertEqual(self.account.feature_flags.all().count(), 0)
+        account = Account.objects.get(pk=self.account.pk)
+        self.assertEqual(account.modules, [])
+        self.assertEqual(account.feature_flags.all().count(), 0)
 
-        self.account_with_vf_ff.refresh_from_db()
-        self.assertEqual(self.account_with_vf_ff.modules, [MODULE_VALIDATION_WORKFLOW.codename])
-        self.assertEqual(self.account_with_vf_ff.feature_flags.all().count(), 0)
+        account_with_vf_ff = Account.objects.get(pk=self.account_with_vf_ff.pk)
+        self.assertEqual(account_with_vf_ff.modules, [MODULE_VALIDATION_WORKFLOW.codename])
+        self.assertEqual(account_with_vf_ff.feature_flags.all().count(), 0)
 
-        self.account_with_vf_ff_and_others.refresh_from_db()
-        self.assertEqual(self.account_with_vf_ff_and_others.modules, [MODULE_VALIDATION_WORKFLOW.codename])
-        self.assertEqual(self.account_with_vf_ff_and_others.feature_flags.all().count(), 1)
+        account_with_vf_ff_and_others = Account.objects.get(pk=self.account_with_vf_ff_and_others.pk)
+        self.assertEqual(account_with_vf_ff_and_others.modules, [MODULE_VALIDATION_WORKFLOW.codename])
+        self.assertEqual(account_with_vf_ff_and_others.feature_flags.all().count(), 1)
 
-        self.account_without_vf.refresh_from_db()
-        self.assertEqual(self.account_without_vf.modules, [])
-        self.assertEqual(self.account_without_vf.feature_flags.all().count(), 1)
+        account_without_vf = Account.objects.get(pk=self.account_without_vf.pk)
+        self.assertEqual(account_without_vf.modules, [])
+        self.assertEqual(account_without_vf.feature_flags.all().count(), 1)
 
 
 class Test0388ReverseMigration(IasoMigratorTestCase):
@@ -57,6 +61,9 @@ class Test0388ReverseMigration(IasoMigratorTestCase):
     migrate_from = ("iaso", "0388_alter_account_modules")
 
     def prepare(self):
+        AccountFeatureFlag = self.old_state.apps.get_model("iaso", "AccountFeatureFlag")
+        Account = self.old_state.apps.get_model("iaso", "Account")
+
         self.other_ff = AccountFeatureFlag.objects.exclude(code="SUBMISSION_VALIDATION_WORKFLOW").first()
 
         self.assertIsNotNone(self.other_ff)
@@ -76,19 +83,22 @@ class Test0388ReverseMigration(IasoMigratorTestCase):
         self.account_without_vf.feature_flags.add(self.other_ff)
 
     def test_migration(self):
+        AccountFeatureFlag = self.new_state.apps.get_model("iaso", "AccountFeatureFlag")
+        Account = self.new_state.apps.get_model("iaso", "Account")
+
         self.assertTrue(AccountFeatureFlag.objects.filter(code="SUBMISSION_VALIDATION_WORKFLOW").exists())
-        self.account.refresh_from_db()
-        self.assertEqual(self.account.modules, [])
-        self.assertEqual(self.account.feature_flags.all().count(), 0)
+        account = Account.objects.get(pk=self.account.pk)
+        self.assertEqual(account.modules, [])
+        self.assertEqual(account.feature_flags.all().count(), 0)
 
-        self.account_with_vf_ff.refresh_from_db()
-        self.assertEqual(self.account_with_vf_ff.modules, [MODULE_VALIDATION_WORKFLOW.codename])
-        self.assertEqual(self.account_with_vf_ff.feature_flags.all().count(), 1)
+        account_with_vf_ff = Account.objects.get(pk=self.account_with_vf_ff.pk)
+        self.assertEqual(account_with_vf_ff.modules, [MODULE_VALIDATION_WORKFLOW.codename])
+        self.assertEqual(account_with_vf_ff.feature_flags.all().count(), 1)
 
-        self.account_with_vf_ff_and_others.refresh_from_db()
-        self.assertEqual(self.account_with_vf_ff_and_others.modules, [MODULE_VALIDATION_WORKFLOW.codename])
-        self.assertEqual(self.account_with_vf_ff_and_others.feature_flags.all().count(), 2)
+        account_with_vf_ff_and_others = Account.objects.get(pk=self.account_with_vf_ff_and_others.pk)
+        self.assertEqual(account_with_vf_ff_and_others.modules, [MODULE_VALIDATION_WORKFLOW.codename])
+        self.assertEqual(account_with_vf_ff_and_others.feature_flags.all().count(), 2)
 
-        self.account_without_vf.refresh_from_db()
-        self.assertEqual(self.account_without_vf.modules, [])
-        self.assertEqual(self.account_without_vf.feature_flags.all().count(), 1)
+        account_without_vf = Account.objects.get(pk=self.account_without_vf.pk)
+        self.assertEqual(account_without_vf.modules, [])
+        self.assertEqual(account_without_vf.feature_flags.all().count(), 1)

@@ -16,6 +16,7 @@ from iaso.modules import (
     MODULE_PLANNING,
     MODULE_REGISTRY,
     MODULE_STOCK,
+    MODULE_VALIDATION_WORKFLOW,
 )
 from iaso.permissions.base import IasoPermission
 
@@ -349,7 +350,7 @@ CORE_WORKFLOW_PERMISSION = CorePermission(
 CORE_VALIDATION_WORKFLOW_PERMISSION = CorePermission(
     codename="iaso_validation_workflows",
     label=_("Validation workflows"),
-    module=MODULE_DEFAULT,
+    module=MODULE_VALIDATION_WORKFLOW,
     ui_group=PERMISSION_GROUP_ADMIN,
 )
 CORE_ACCOUNT_MANAGEMENT_PERMISSION = CorePermission(

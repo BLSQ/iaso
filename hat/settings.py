@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 import importlib
 import os
 import sys
+import tempfile
 
 from datetime import timedelta
 from typing import Any, Dict
@@ -907,7 +908,7 @@ for plugin_name in PLUGINS:
         )
         INSTALLED_APPS.append(f"plugins.{plugin_name}")
 
-XLSFORM_VALIDATOR_TEMP_DIR = "/tmp"
+XLSFORM_VALIDATOR_TEMP_DIR = tempfile.gettempdir()
 INSTALLED_APPS.append("dynamic_fields")
 
 # Making sure that files are not stored on disk while running tests

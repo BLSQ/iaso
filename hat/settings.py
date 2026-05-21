@@ -846,6 +846,7 @@ if SSO_WHO_CLIENT_ID:
     sso_who_account = os.environ.get("SSO_WHO_ACCOUNT", "")
     if not sso_who_account:
         raise ImproperlyConfigured("need SSO_WHO_ACCOUNT to associate a tenant to the WHO auth server")
+    SSO_WHO_CLIENT_SECRET = os.environ.get("SSO_WHO_CLIENT_SECRET", "")
 
     SSO_PROVIDERS["who"] = {
         "name": "WHO",
@@ -861,7 +862,7 @@ if SSO_WHO_CLIENT_ID:
     SOCIALACCOUNT_PROVIDERS["who"] = {
         "APP": {
             "client_id": SSO_WHO_CLIENT_ID,
-            "secret": None,
+            "secret": SSO_WHO_CLIENT_SECRET,
         },
         "OAUTH_PKCE_ENABLED": True,
         "SCOPE": ["openid", "profile", "email"],

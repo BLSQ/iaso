@@ -22,6 +22,8 @@ export const fetchInstancesAsDict = (url: string) => getRequest(url);
 
 export const fetchInstancesAsSmallDict = (url: string) => getRequest(url);
 
+export const fetchInstancesAsLocation = (url: string) => getRequest(url);
+
 export const useGetInstancesFiles = (params, rowsPerPage, page, type) =>
     useSnackQuery(
         ['instances', 'files', params, type],

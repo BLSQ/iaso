@@ -42,6 +42,7 @@ from iaso.api.instances.serializers import (
     FileTypeSerializer,
     InstanceFileAttachmentSerializer,
     InstanceImportAccuracySerializer,
+    InstanceLocationSerializer,
     InstanceLockSerializer,
     InstanceSerializer,
     UnlockSerializer,
@@ -97,11 +98,19 @@ class InstancesViewSet(viewsets.ViewSet):
     def get_queryset(self):
         request = self.request
         queryset: InstanceQuerySet = (
-            Instance.objects.order_by("-id")
-            .filter_for_user(request.user)
-            .filter_on_user_projects(user=request.user)
-            .select_related("form", "created_by", "last_modified_by")
+            Instance.objects.order_by("-id").filter_for_user(request.user).filter_on_user_projects(user=request.user)
         )
+
+        if self.action == "map":
+            queryset = (
+                queryset.exclude(file="")
+                .exclude(device__test_device=True)
+                .filter(location__isnull=False)
+                .only("id", "location")
+            )
+
+        else:
+            queryset = queryset.select_related("form", "created_by", "last_modified_by")
         return queryset
 
     def _get_filtered_attachments_queryset(self, request):
@@ -514,6 +523,18 @@ class InstancesViewSet(viewsets.ViewSet):
         response = CleaningFileResponse(tmp.name, as_attachment=True, filename="submissions.parquet")
 
         return response
+
+    @action(detail=False, methods=["GET"])
+    def map(self, request):
+        """Return minimal location data for map display.
+        Returns a flat list of {id, latitude, longitude} for all instances with
+        a location that match the given filters. Intentionally not paginated.
+        """
+        filters = parse_instance_filters(request.GET)
+        limit = int(request.GET.get("limit", 3000))
+        queryset = self.get_queryset().for_filters(**filters)[:limit]
+        serializer = InstanceLocationSerializer(queryset, many=True)
+        return Response(serializer.data)
 
     @action(detail=True, permission_classes=PERMISSION_CLASSES_RW, methods=["POST"])
     def add_lock(self, request, pk):

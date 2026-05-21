@@ -1,11 +1,13 @@
 import decimal
 
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 import iaso.periods as periods
 
 from iaso.api.comment import UserSerializerForComment
 from iaso.api.common import TimestampField
+from iaso.api.common.serializer import ModelSerializer
 from iaso.api.serializers import OrgUnitSerializer
 from iaso.models import Instance, InstanceLock, OrgUnit
 from iaso.utils.file_utils import get_file_type
@@ -116,3 +118,20 @@ class InstanceLockSerializer(serializers.ModelSerializer):
 class UnlockSerializer(serializers.Serializer):
     lock = serializers.PrimaryKeyRelatedField(queryset=InstanceLock.objects.all())
     # we will  check that the user can access from the directly in remove_lock()
+
+
+class InstanceLocationSerializer(ModelSerializer):
+    latitude = serializers.SerializerMethodField()
+    longitude = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Instance
+        fields = ["id", "latitude", "longitude"]
+
+    @extend_schema_field(serializers.FloatField(allow_null=True))
+    def get_latitude(self, obj):
+        return obj.location.y if obj.location else None
+
+    @extend_schema_field(serializers.FloatField(allow_null=True))
+    def get_longitude(self, obj):
+        return obj.location.x if obj.location else None

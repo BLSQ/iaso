@@ -1,7 +1,7 @@
 from django.test import TestCase
 from rest_framework.exceptions import ValidationError
 
-from iaso.api.instances.serializers import FileTypeSerializer
+from iaso.api.instances.serializers import FileTypeSerializer, InstanceLocationSerializer
 
 
 class FileTypeSerializerTestCase(TestCase):
@@ -47,3 +47,29 @@ class FileTypeSerializerTestCase(TestCase):
         self.assertEqual(serializer.validated_data["video_only"], False)
         self.assertEqual(serializer.validated_data["document_only"], False)
         self.assertEqual(serializer.validated_data["other_only"], False)
+
+
+class InstanceLocationSerializerTestCase(TestCase):
+    def test_location_none(self):
+        class MockInstance:
+            id = 1
+            location = None
+
+        serializer = InstanceLocationSerializer(MockInstance())
+        data = dict(serializer.data)
+        self.assertIsNone(data["latitude"])
+        self.assertIsNone(data["longitude"])
+
+    def test_location_returns_lat_lng(self):
+        class MockPoint:
+            x = 2.5
+            y = 48.8
+
+        class MockInstance:
+            id = 2
+            location = MockPoint()
+
+        serializer = InstanceLocationSerializer(MockInstance())
+        data = dict(serializer.data)
+        self.assertEqual(data["latitude"], 48.8)
+        self.assertEqual(data["longitude"], 2.5)

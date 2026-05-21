@@ -47,7 +47,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
 
         self.third_node = ValidationNodeTemplate.objects.create(name="Third node", workflow=self.validation_workflow)
         self.third_node.previous_node_templates.add(self.second_node)
-        self.form = Form.objects.create(name="Form")
+        self.form = Form.objects.create(name="Form", label_keys=["A", "C", "E"])
         self.other_form = Form.objects.create(name="Form 2")
 
         self.validation_workflow.form_set.set([self.form, self.other_form])
@@ -62,6 +62,12 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
             form=self.form,
             project=self.project,
             uuid=str(uuid.uuid4()),
+            json={
+                "A": "Item A",
+                "B": "Item B",
+                "C": "Item C",
+                "D": "Item D",
+            },
         )
 
         self.other_instance = self.create_form_instance(
@@ -293,6 +299,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.assertEqual(instance_data["validation_status"], ValidationWorkflowArtefactStatus.PENDING)
         self.assertIsNone(instance_data["rejection_comment"])
         self.assertEqual(instance_data["name"], self.form.name)
+        self.assertEqual(instance_data["display_name"], "Item A Item C")
 
         self.assertHasField(instance_data, "created_at", float)
         self.assertHasField(instance_data, "updated_at", float)
@@ -338,6 +345,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.assertEqual(instance_data["validation_status"], ValidationWorkflowArtefactStatus.APPROVED)
         self.assertIsNone(instance_data["rejection_comment"])
         self.assertEqual(instance_data["name"], self.form.name)
+        self.assertEqual(instance_data["display_name"], "Item A Item C")
 
         self.assertHasField(instance_data, "created_at", float)
         self.assertHasField(instance_data, "updated_at", float)
@@ -399,6 +407,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.assertEqual(instance_data["validation_status"], ValidationWorkflowArtefactStatus.APPROVED)
         self.assertIsNone(instance_data["rejection_comment"])
         self.assertEqual(instance_data["name"], self.form.name)
+        self.assertEqual(instance_data["display_name"], "Item A Item C")
 
         self.assertHasField(instance_data, "created_at", float)
         self.assertHasField(instance_data, "updated_at", float)
@@ -462,6 +471,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.assertEqual(instance_data["validation_status"], ValidationWorkflowArtefactStatus.REJECTED)
         self.assertEqual(instance_data["rejection_comment"], "Nope")
         self.assertEqual(instance_data["name"], self.form.name)
+        self.assertEqual(instance_data["display_name"], "Item A Item C")
 
         self.assertHasField(instance_data, "created_at", float)
         self.assertHasField(instance_data, "updated_at", float)
@@ -519,6 +529,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.assertEqual(instance_data["validation_status"], ValidationWorkflowArtefactStatus.PENDING)
         self.assertIsNone(instance_data["rejection_comment"])
         self.assertEqual(instance_data["name"], self.form.name)
+        self.assertEqual(instance_data["display_name"], "Item A Item C")
 
         self.assertHasField(instance_data, "created_at", float)
         self.assertHasField(instance_data, "updated_at", float)

@@ -57,6 +57,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Planning',
         id: 'iaso.projets.featureflag.category.PLA',
     },
+    featureFlag_STM: {
+        defaultMessage: 'Stock management',
+        id: 'iaso.projets.featureflag.category.STM',
+    },
     featureFlag_SPO: {
         defaultMessage: 'Specific options',
         id: 'iaso.projets.featureflag.category.SPO',
@@ -386,7 +390,7 @@ const MESSAGES = defineMessages({
     },
     mobile_stock: {
         id: 'iaso.projets.featureflag.tooltip.mobile_stock',
-        defaultMessage: 'Mobile: Enable stock managementg',
+        defaultMessage: 'Mobile: Enable stock management',
     },
     mobile_hide_closed_org_unit: {
         id: 'iaso.projets.featureflag.tooltip.mobile_hide_closed_org_unit',

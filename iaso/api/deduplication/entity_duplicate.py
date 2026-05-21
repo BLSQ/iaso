@@ -473,8 +473,10 @@ class EntityDuplicatePostSerializer(serializers.Serializer):
 
         # Update existing EntityDuplicate records that reference e1 or e2
         # while avoiding the uniqueness constraint
-        duplicates_to_update = EntityDuplicate.objects.exclude(pk=ed.pk).filter(
-            Q(entity1=e1) | Q(entity2=e1) | Q(entity1=e2) | Q(entity2=e2)
+        duplicates_to_update = (
+            EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING)
+            .exclude(pk=ed.pk)
+            .filter(Q(entity1=e1) | Q(entity2=e1) | Q(entity1=e2) | Q(entity2=e2))
         )
         for duplicate in duplicates_to_update:
             if duplicate.entity1_id in (e1.pk, e2.pk):
@@ -548,7 +550,12 @@ class EntityDuplicateViewSet(ModelViewSet):
 
     def get_queryset(self):
         user_account = self.request.user.iaso_profile.account
-        return EntityDuplicate.objects.filter_for_account(user_account)
+        qs = EntityDuplicate.objects.filter_for_account(user_account)
+
+        qs = qs.exclude(validation_status=ValidationStatus.PENDING, entity1__deleted_at__isnull=False).exclude(
+            validation_status=ValidationStatus.PENDING, entity2__deleted_at__isnull=False
+        )
+        return qs
 
     @extend_schema(parameters=[duplicate_detail_entities_param])
     @action(detail=False, methods=["get"], url_path="detail", pagination_class=None, filter_backends=[])

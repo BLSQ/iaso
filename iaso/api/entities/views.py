@@ -146,12 +146,16 @@ class EntityViewSet(ModelViewSet):
             ),
             Prefetch(
                 "duplicates1",
-                queryset=EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING),
+                queryset=EntityDuplicate.objects.filter(
+                    validation_status=ValidationStatus.PENDING, entity2__deleted_at__isnull=True
+                ),
                 to_attr="pending_duplicates1",
             ),
             Prefetch(
                 "duplicates2",
-                queryset=EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING),
+                queryset=EntityDuplicate.objects.filter(
+                    validation_status=ValidationStatus.PENDING, entity1__deleted_at__isnull=True
+                ),
                 to_attr="pending_duplicates2",
             ),
         )

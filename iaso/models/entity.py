@@ -318,8 +318,8 @@ class Entity(SoftDeletableModel):
                 results.add(duplicate.entity1_id)
             return list(results)
 
-        e1qs = self.duplicates1.filter(validation_status=ValidationStatus.PENDING)
-        e2qs = self.duplicates2.filter(validation_status=ValidationStatus.PENDING)
+        e1qs = self.duplicates1.filter(validation_status=ValidationStatus.PENDING, entity2__deleted_at__isnull=True)
+        e2qs = self.duplicates2.filter(validation_status=ValidationStatus.PENDING, entity1__deleted_at__isnull=True)
         for duplicate in e1qs:
             results.add(duplicate.entity2_id)
         for duplicate in e2qs:

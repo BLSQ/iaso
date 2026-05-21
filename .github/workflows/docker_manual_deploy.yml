@@ -47,7 +47,7 @@ jobs:
 
   build:
     needs: config
-    uses: ./.github/workflows/docker_build.yml
+    uses: ./.github/workflows/docker_build
     secrets: inherit
     with:
       branch: ${{ needs.config.outputs.branch }}

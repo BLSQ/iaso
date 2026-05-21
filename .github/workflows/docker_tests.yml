@@ -42,7 +42,7 @@ jobs:
 
   build:
     needs: config
-    uses: ./.github/workflows/docker_build.yml
+    uses: ./.github/workflows/docker_build
     secrets: inherit
     with:
       branch: ${{ needs.config.outputs.branch }}
@@ -53,7 +53,7 @@ jobs:
     needs: config
     steps:
       - name: Setup
-        uses: ./.github/actions/setup.yml
+        uses: ./.github/actions/setup
         with:
           docker_username: ${{ secrets.DOCKER_USERNAME }}
           docker_password: ${{ secrets.DOCKER_PASSWORD }}

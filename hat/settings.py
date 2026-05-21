@@ -856,7 +856,7 @@ if SSO_WHO_CLIENT_ID:
         "login_path": "polio/login/",
         "callback_path": "polio/login/callback",
         "token_path": "polio/token/",
-        "account_name": sso_who_account,
+        "account_id": sso_who_account,
         "email_recipients_new_account": os.environ.get("SSO_WHO_EMAIL_RECIPIENTS_NEW_ACCOUNT", "").split(","),
     }
     SOCIALACCOUNT_PROVIDERS["who"] = {

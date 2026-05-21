@@ -1,0 +1,60 @@
+name: Build IASO image
+
+on:
+  workflow_call:
+    inputs:
+      image_tag:
+        required: true
+        type: string
+      branch:
+        description: Branch to build
+        required: true
+        type: string
+
+jobs:
+  build_iaso_image:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Setup
+        uses: ./.github/actions/setup.yml
+        with:
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Building IASO image based on branch ${{ inputs.branch }}
+        run: |
+          echo "
+           ___    _    ____   ___
+          |_ _|  / \  / ___| / _ \\
+           | |  / _ \ \___ \| | | |
+           | | / ___ \ ___) | |_| |
+          |___/_/   \_\____/ \___/
+          ------------------------
+          Building IASO image based on branch ${{ inputs.branch }}
+          $(date)
+          "
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Checking for existing image with tag ${{ inputs.image_tag }}
+        run: |
+          echo "Checking for existing image with tag ${{ inputs.image_tag }}"
+          if docker pull blsq/iaso:${{ inputs.image_tag }}; then
+            echo "Image blsq/iaso:${{ inputs.image_tag }} already exists. Skipping build and push."
+            echo "IMAGE_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "Image blsq/iaso:${{ inputs.image_tag }} does not exist. Proceeding with build and push."
+            echo "IMAGE_EXISTS=false" >> $GITHUB_ENV
+          fi
+
+      - name: Build and push image
+        if: env.IMAGE_EXISTS != 'true'
+        uses: docker/build-push-action@v7
+        with:
+          file: docker/prod/Dockerfile
+          push: true
+          tags: blsq/iaso:${{ inputs.image_tag }}
+          # https://docs.docker.com/build/cache/backends/
+          cache-from: type=registry,ref=blsq/iaso:buildcache-${{ inputs.image_tag }}
+          cache-to: type=registry,ref=blsq/iaso:buildcache-${{ inputs.image_tag }},mode=max

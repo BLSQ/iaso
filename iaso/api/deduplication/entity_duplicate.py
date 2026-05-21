@@ -27,7 +27,7 @@ from hat.audit.models import ENTITY_DUPLICATE_MERGE, log_modification
 from iaso.api.common import HasPermission, ModelViewSet
 from iaso.api.deduplication.serializers import BulkIgnoreRequestSerializer
 from iaso.api.workflows.serializers import find_question_by_name
-from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyzis, EntityType, Form, Instance
+from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyzis, EntityType, Form, Instance, InstanceFile
 from iaso.models.deduplication import (  # type: ignore
     TypeOfRelation,
     ValidationStatus,  # type: ignore
@@ -248,6 +248,10 @@ def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: D
     new_attributes.file.save(new_file_name, new_xml_content, save=True)  # saves the model here
     new_attributes.get_and_save_json_of_xml()
 
+    files_to_copy = InstanceFile.objects.filter(instance__in=[att1, att2])
+    for file in files_to_copy:
+        InstanceFile.objects.create(instance=new_attributes, file=file.file, name=file.name)
+
     return new_attributes
 
 
@@ -278,6 +282,13 @@ def copy_instance(inst: Instance, new_entity: Entity):
     new_inst.file_name = f"{slugify(inst.form.name)}_{new_uuid}.xml"
     new_inst.file.save(new_inst.file_name, new_xml_content, save=True)
     new_inst.get_and_save_json_of_xml()
+
+    files_to_copy = InstanceFile.objects.filter(instance=inst)
+    for file in files_to_copy:
+        file.pk = None
+        file.instance = new_inst
+        file.save()
+
     return new_inst
 
 

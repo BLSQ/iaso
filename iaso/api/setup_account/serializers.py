@@ -3,19 +3,14 @@ import logging
 import django.core.exceptions as django_exceptions
 
 from django.conf import settings
-from django.contrib.auth.models import Permission, User
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
 from django.contrib.auth.password_validation import validate_password
-from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.utils.translation import gettext as _
-from drf_spectacular.utils import extend_schema
-from rest_framework import permissions, serializers
-from rest_framework.mixins import CreateModelMixin
-from rest_framework.viewsets import GenericViewSet
+from rest_framework import serializers
 
-from hat.audit.models import SETUP_ACCOUNT_API, Modification
 from hat.menupermissions.constants import DEFAULT_ACCOUNT_FEATURE_FLAGS
-from iaso.api.common import IsAdminOrSuperUser
 from iaso.api.profiles.views import ProfilesViewSet
 from iaso.models import (
     Account,
@@ -86,12 +81,12 @@ class SetupAccountSerializer(serializers.Serializer):
         return value
 
     def validate_user_username(self, value):
-        if User.objects.filter(username=value).exists():
+        if get_user_model().objects.filter(username=value).exists():
             raise serializers.ValidationError("user_name_already_exist")
         return value
 
     def validate_user_email(self, value):
-        if value and User.objects.filter(email=value).exists():
+        if value and get_user_model().objects.filter(email=value).exists():
             raise serializers.ValidationError("user_email_already_exist")
         return value
 
@@ -143,7 +138,7 @@ class SetupAccountSerializer(serializers.Serializer):
 
         if email_invitation and not password:
             # Create user without password when sending email invitation only
-            user = User.objects.create_user(
+            user = get_user_model().objects.create_user(
                 username=validated_data["user_username"],
                 password=None,  # Will be set later via email invitation
                 first_name=validated_data.get("user_first_name", ""),
@@ -154,7 +149,7 @@ class SetupAccountSerializer(serializers.Serializer):
             user.save()
         else:
             # Create user with password (either password only or password + email invitation)
-            user = User.objects.create_user(
+            user = get_user_model().objects.create_user(
                 username=validated_data["user_username"],
                 password=password,
                 first_name=validated_data.get("user_first_name", ""),
@@ -260,7 +255,7 @@ class SetupAccountSerializer(serializers.Serializer):
         # Get language from validated data, defaulting to English
         language = validated_data.get("language", "en")
 
-        profile = Profile.objects.create(account=account, user=user, language=language)
+        Profile.objects.create(account=account, user=user, language=language)
 
         # Get all permissions linked to the modules
         modules_permissions = [perm.codename for perm in account.permissions_from_active_modules]
@@ -280,89 +275,3 @@ class SetupAccountSerializer(serializers.Serializer):
 
         validated_data["created_account_id"] = account.id
         return validated_data
-
-
-@extend_schema(tags=["Setup account"])
-class SetupAccountViewSet(CreateModelMixin, GenericViewSet):
-    permission_classes = [permissions.IsAuthenticated, IsAdminOrSuperUser]
-    serializer_class = SetupAccountSerializer
-
-    def create(self, request, *args, **kwargs):
-        # Prepare audit data for logging
-        audit_data = {
-            "account_name": request.data.get("account_name", ""),
-            "user_username": request.data.get("user_username", ""),
-            "user_first_name": request.data.get("user_first_name", ""),
-            "user_last_name": request.data.get("user_last_name", ""),
-            "user_email": request.data.get("user_email", ""),
-            "email_invitation": request.data.get("email_invitation", False),
-            "language": request.data.get("language", "en"),
-            "modules": request.data.get("modules", []),
-            "feature_flags": request.data.get("feature_flags", []),
-            "project_feature_flags": [FeatureFlag.REQUIRE_AUTHENTICATION, FeatureFlag.FORMS_AUTO_UPLOAD],
-            "requesting_user": request.user.username if request.user else None,
-            "requesting_user_id": request.user.id if request.user else None,
-            "create_main_org_unit": request.data.get("create_main_org_unit", True),
-            "create_demo_form": request.data.get("create_demo_form", True),
-        }
-
-        try:
-            # Call the parent create method
-            response = super().create(request, *args, **kwargs)
-
-            # Log successful account creation
-            audit_data.update(
-                {
-                    "status": "success",
-                    "created_account_id": response.data["created_account_id"],
-                }
-            )
-
-            # Create audit log for successful operation
-            # Use Account content type since we're creating an account
-            account_content_type = ContentType.objects.get_for_model(Account)
-            Modification.objects.create(
-                user=request.user,
-                content_type=account_content_type,
-                object_id=response.data["created_account_id"],
-                past_value=[],
-                new_value=[audit_data],
-                source=SETUP_ACCOUNT_API,
-            )
-
-            logger.info(
-                f"Account setup completed successfully: {audit_data['account_name']} by user {request.user.username if request.user else 'unknown'}",
-                extra={"audit_data": audit_data},
-            )
-
-            return response
-
-        except Exception as e:
-            # Log failed account creation
-            audit_data.update(
-                {
-                    "status": "error",
-                    "error_message": str(e),
-                    "error_type": type(e).__name__,
-                }
-            )
-
-            # Create audit log for failed operation
-            # Use Account content type since we're trying to create an account
-            account_content_type = ContentType.objects.get_for_model(Account)
-            Modification.objects.create(
-                user=request.user,
-                content_type=account_content_type,
-                object_id="0",  # Use 0 as placeholder since no account was created
-                past_value=[],
-                new_value=[audit_data],
-                source=SETUP_ACCOUNT_API,
-            )
-
-            logger.error(
-                f"Account setup failed: {audit_data['account_name']} by user {request.user.username if request.user else 'unknown'}: {str(e)}",
-                extra={"audit_data": audit_data, "exception": e},
-            )
-
-            # Re-raise the exception to maintain normal error handling
-            raise

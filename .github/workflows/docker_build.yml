@@ -15,6 +15,11 @@ jobs:
   build_iaso_image:
     runs-on: ubuntu-24.04
     steps:
+      - name: Check out repository code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
       - name: Setup
         uses: ./.github/actions/setup
         with:

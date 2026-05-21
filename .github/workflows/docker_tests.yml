@@ -68,6 +68,7 @@ jobs:
         uses: astral-sh/ruff-action@v4.0.0
         with:
           args: "--version"
+          version: "0.9.6"
 
       - name: Linting with ruff
         run: ruff check --output-format=github .

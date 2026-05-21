@@ -1,5 +1,4 @@
-from django.db.models import F, Prefetch, Q, Window
-from django.db.models.functions import Lag
+from django.db.models import Prefetch
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework.filters import OrderingFilter
@@ -12,7 +11,6 @@ from iaso.api.instances.permissions import HasInstanceETLPermission
 from iaso.api.instances.serializers import ETLInstanceListSerializer
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.models import Instance, OrgUnitChangeRequest, ValidationNode
-from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 
 
 @extend_schema(tags=["ETL"])
@@ -32,29 +30,27 @@ class ETLInstanceViewSet(CustomPaginationListModelMixin, GenericViewSet):
             .prefetch_related(
                 Prefetch(
                     "validationnode_set",
-                    queryset=ValidationNode.objects.select_related("instance")
-                    .only("created_at", "updated_at", "status", "instance_id", "instance__general_validation_status")
-                    .order_by("-created_at"),
-                    to_attr="prefetched_validation_nodes",
-                ),
-                Prefetch(
-                    "validationnode_set",
-                    queryset=(
-                        ValidationNode.objects.filter(
-                            Q(status=ValidationNodeStatus.SUBMISSION) | Q(status=ValidationNodeStatus.NEW_VERSION)
-                        )
-                        .only("created_at", "status", "instance_id", "instance__general_validation_status")
-                        .select_related("instance")
-                        .annotate(
-                            next_created_at=Window(
-                                expression=Lag("created_at"),
-                                partition_by=[F("instance_id")],
-                                order_by=F("created_at").desc(),
-                            )
-                        )
-                        .order_by("-created_at")
-                    ),
-                    to_attr="prefetched_submission_nodes",
+                    queryset=ValidationNode.objects.select_related("instance", "node", "updated_by", "created_by")
+                    .only(
+                        "id",
+                        "status",
+                        "comment",
+                        "node_id",
+                        "node__name",
+                        "instance_id",
+                        "created_at",
+                        "updated_at",
+                        "updated_by_id",
+                        "updated_by__username",
+                        "updated_by__first_name",
+                        "updated_by__last_name",
+                        "created_by_id",
+                        "created_by__username",
+                        "created_by__first_name",
+                        "created_by__last_name",
+                    )
+                    .order_by("-updated_at"),
+                    to_attr="prefeteched_validationnode_set",
                 ),
                 Prefetch(
                     "org_unit__orgunitchangerequest_set",

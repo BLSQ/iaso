@@ -2,9 +2,8 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer
+from iaso.api.validation_workflows.serializers.common import UserDisplayNameField
 from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest, ValidationNode
-from iaso.models.common import ValidationWorkflowArtefactStatus
-from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 
 
 class NestedOrgUnitSerializer(ModelSerializer):
@@ -42,50 +41,21 @@ class NestedOrgUnitSerializer(ModelSerializer):
 
 
 class NestedHistorySerializer(ModelSerializer):
-    validation_status = serializers.SerializerMethodField()
-    submitted_at = serializers.DateTimeField(read_only=True, source="created_at")
-    last_updated = serializers.SerializerMethodField()
+    level = serializers.CharField(read_only=True, source="node.name")
+    created_by = UserDisplayNameField()
+    updated_by = UserDisplayNameField(allow_null=True)
 
     class Meta:
         model = ValidationNode
-        fields = ["submitted_at", "last_updated", "validation_status"]
-
-    @extend_schema_field(serializers.DateTimeField)
-    def get_last_updated(self, obj):
-        instance = self._get_instance(obj)
-        nodes = instance.prefetched_validation_nodes
-        filtered_nodes = [n for n in nodes if n.created_at >= obj.created_at]
-        if obj.next_created_at:
-            filtered_nodes = [n for n in filtered_nodes if n.created_at < obj.next_created_at]
-        updated_at_list = [n.updated_at for n in filtered_nodes]
-
-        return max(updated_at_list)
-
-    def _get_instance(self, obj):
-        if "instance" in self.context:
-            instance = self.context.get("instance")
-        else:
-            instance = obj.instance
-        return instance
-
-    @extend_schema_field(serializers.ChoiceField(choices=ValidationWorkflowArtefactStatus.choices))
-    def get_validation_status(self, obj):
-        instance = self._get_instance(obj)
-
-        if not obj.next_created_at:
-            return instance.general_validation_status
-
-        nodes = instance.prefetched_validation_nodes
-        rejected_nodes = [
-            n
-            for n in nodes
-            if n.created_at >= obj.created_at
-            and n.created_at < obj.next_created_at
-            and n.status == ValidationNodeStatus.REJECTED
+        fields = [
+            "level",
+            "created_at",
+            "updated_at",
+            "status",
+            "comment",
+            "updated_by",
+            "created_by",
         ]
-        if len(rejected_nodes):
-            return ValidationWorkflowArtefactStatus.REJECTED
-        return ValidationWorkflowArtefactStatus.PENDING
 
 
 class ETLInstanceListSerializer(ModelSerializer):
@@ -125,8 +95,7 @@ class ETLInstanceListSerializer(ModelSerializer):
 
     @extend_schema_field(NestedHistorySerializer(many=True))
     def get_history(self, obj):
-        nodes = obj.prefetched_submission_nodes
-        return NestedHistorySerializer(nodes, many=True, context={**self.context, "instance": obj}).data
+        return NestedHistorySerializer(obj.prefeteched_validationnode_set, many=True).data
 
     @extend_schema_field(serializers.ChoiceField(choices=OrgUnitChangeRequest.Statuses, allow_blank=True))
     def get_org_unit_validation_status(self, obj):

@@ -12,6 +12,7 @@ from iaso.models import (
     ValidationWorkflow,
 )
 from iaso.models.common import ValidationWorkflowArtefactStatus
+from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
@@ -135,7 +136,7 @@ class ETLInstanceTestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(11):
+        with self.assertNumQueries(10):
             # 1-2: PERMISSIONS
             # 3-5: queryset filter
             # 6-8: serializer
@@ -173,15 +174,39 @@ class ETLInstanceTestCase(SwaggerTestCaseMixin, APITestCase):
 
         history = first_instance["history"]
 
-        self.assertEqual(len(history), 2)
+        self.assertEqual(len(history), 4)
 
-        self.assertEqual(history[0]["validation_status"], ValidationWorkflowArtefactStatus.PENDING)
-        self.assertIsNotNone(history[0]["submitted_at"])
-        self.assertIsNotNone(history[0]["last_updated"])
+        self.assertEqual(history[0]["level"], self.first_node.name)
+        self.assertIsNotNone(history[0]["created_at"])
+        self.assertIsNotNone(history[0]["updated_at"])
+        self.assertEqual(history[0]["status"], ValidationNodeStatus.UNKNOWN)
+        self.assertEqual(history[0]["comment"], "")
+        self.assertIsNone(history[0]["updated_by"])
+        self.assertEqual(history[0]["created_by"], self.john_doe.username)
 
-        self.assertEqual(history[1]["validation_status"], ValidationWorkflowArtefactStatus.REJECTED)
-        self.assertIsNotNone(history[1]["submitted_at"])
-        self.assertIsNotNone(history[1]["last_updated"])
+        self.assertEqual(history[1]["level"], self.first_node.name)
+        self.assertIsNotNone(history[1]["created_at"])
+        self.assertIsNotNone(history[1]["updated_at"])
+        self.assertEqual(history[1]["status"], ValidationNodeStatus.NEW_VERSION)
+        self.assertEqual(history[1]["comment"], "")
+        self.assertIsNone(history[1]["updated_by"])
+        self.assertEqual(history[1]["created_by"], self.john_doe.username)
+
+        self.assertEqual(history[2]["level"], self.first_node.name)
+        self.assertIsNotNone(history[2]["created_at"])
+        self.assertIsNotNone(history[2]["updated_at"])
+        self.assertEqual(history[2]["status"], ValidationNodeStatus.REJECTED)
+        self.assertEqual(history[2]["comment"], "Nope")
+        self.assertEqual(history[2]["updated_by"], self.john_wick.username)
+        self.assertEqual(history[2]["created_by"], self.john_doe.username)
+
+        self.assertEqual(history[3]["level"], self.first_node.name)
+        self.assertIsNotNone(history[3]["created_at"])
+        self.assertIsNotNone(history[3]["updated_at"])
+        self.assertEqual(history[3]["status"], ValidationNodeStatus.SUBMISSION)
+        self.assertEqual(history[3]["comment"], "")
+        self.assertIsNone(history[3]["updated_by"])
+        self.assertEqual(history[3]["created_by"], self.john_doe.username)
 
         second_instance = res_data["results"][1]
         self.assertEqual(second_instance["id"], self.instance_2.pk)

@@ -2,7 +2,7 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer
-from iaso.models import Instance, OrgUnit, ValidationNode
+from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest, ValidationNode
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 
@@ -93,10 +93,20 @@ class ETLInstanceListSerializer(ModelSerializer):
     file_url = serializers.SerializerMethodField()
     org_unit = NestedOrgUnitSerializer(read_only=True)
     history = serializers.SerializerMethodField()
+    org_unit_validation_status = serializers.SerializerMethodField()
 
     class Meta:
         model = Instance
-        fields = ["id", "general_validation_status", "file_url", "file_content", "org_unit", "history", "form_id"]
+        fields = [
+            "id",
+            "general_validation_status",
+            "org_unit_validation_status",
+            "file_url",
+            "file_content",
+            "org_unit",
+            "history",
+            "form_id",
+        ]
         extra_kwargs = {
             "id": {"read_only": True},
             "general_validation_status": {"read_only": True, "allow_blank": True},
@@ -117,3 +127,9 @@ class ETLInstanceListSerializer(ModelSerializer):
     def get_history(self, obj):
         nodes = obj.prefetched_submission_nodes
         return NestedHistorySerializer(nodes, many=True, context={**self.context, "instance": obj}).data
+
+    @extend_schema_field(serializers.ChoiceField(choices=OrgUnitChangeRequest.Statuses, allow_blank=True))
+    def get_org_unit_validation_status(self, obj):
+        if obj.org_unit and getattr(obj.org_unit, "prefetched_org_unit_changerequest_set", None):
+            return next(iter(obj.org_unit.prefetched_org_unit_changerequest_set)).status
+        return ""

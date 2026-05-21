@@ -2,7 +2,15 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
-from iaso.models import Account, Form, OrgUnit, Project, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import (
+    Account,
+    Form,
+    OrgUnit,
+    OrgUnitChangeRequest,
+    Project,
+    ValidationNodeTemplate,
+    ValidationWorkflow,
+)
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
@@ -68,6 +76,15 @@ class ETLInstanceTestCase(SwaggerTestCaseMixin, APITestCase):
         )
         ValidationWorkflowEngine.start(self.vf, self.john_doe, self.instance_1)
 
+        # setup orgunit change request
+        OrgUnitChangeRequest.objects.create(
+            org_unit=self.ou_1, status=OrgUnitChangeRequest.Statuses.APPROVED, created_by=self.john_wick
+        )
+
+        OrgUnitChangeRequest.objects.create(
+            org_unit=self.ou_1, status=OrgUnitChangeRequest.Statuses.REJECTED, created_by=self.john_wick
+        )
+
     def assertValidData(self, data, expected_length):
         self.assertValidListData(list_data=data, results_key="results", expected_length=expected_length, paginated=True)
         self.assertResponseCompliantToSwagger(data, "PaginatedETLInstanceListList")
@@ -118,7 +135,7 @@ class ETLInstanceTestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(10):
+        with self.assertNumQueries(11):
             # 1-2: PERMISSIONS
             # 3-5: queryset filter
             # 6-8: serializer
@@ -138,6 +155,7 @@ class ETLInstanceTestCase(SwaggerTestCaseMixin, APITestCase):
         first_instance = res_data["results"][0]
         self.assertEqual(first_instance["id"], self.instance_1.pk)
         self.assertEqual(first_instance["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING)
+        self.assertEqual(first_instance["org_unit_validation_status"], OrgUnitChangeRequest.Statuses.REJECTED)
         self.assertIsNotNone(first_instance["file_url"])
         self.assertIsNotNone(first_instance["file_content"])
         self.assertEqual(first_instance["form_id"], self.form_1.pk)
@@ -168,6 +186,7 @@ class ETLInstanceTestCase(SwaggerTestCaseMixin, APITestCase):
         second_instance = res_data["results"][1]
         self.assertEqual(second_instance["id"], self.instance_2.pk)
         self.assertEqual(second_instance["general_validation_status"], "")
+        self.assertEqual(second_instance["org_unit_validation_status"], "")
         self.assertIsNotNone(second_instance["file_url"])
         self.assertIsNotNone(second_instance["file_content"])
         self.assertEqual(second_instance["form_id"], self.form_2.pk)
@@ -195,4 +214,13 @@ class ETLInstanceTestCase(SwaggerTestCaseMixin, APITestCase):
         self.instance_1.save()
 
         res = self.client.get(reverse("api-etl:instances-list"))
-        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertJSONResponse(res, status.HTTP_200_OK)
+
+    def test_instance_without_org_unit(self):
+        self.client.force_authenticate(self.john_wick)
+
+        self.instance_1.org_unit = None
+        self.instance_1.save()
+
+        res = self.client.get(reverse("api-etl:instances-list"))
+        self.assertJSONResponse(res, status.HTTP_200_OK)

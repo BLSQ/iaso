@@ -11,7 +11,7 @@ from iaso.api.instances.pagination import ETLInstancePagination
 from iaso.api.instances.permissions import HasInstanceETLPermission
 from iaso.api.instances.serializers import ETLInstanceListSerializer
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
-from iaso.models import Instance, ValidationNode
+from iaso.models import Instance, OrgUnitChangeRequest, ValidationNode
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 
 
@@ -55,6 +55,13 @@ class ETLInstanceViewSet(CustomPaginationListModelMixin, GenericViewSet):
                         .order_by("-created_at")
                     ),
                     to_attr="prefetched_submission_nodes",
+                ),
+                Prefetch(
+                    "org_unit__orgunitchangerequest_set",
+                    queryset=OrgUnitChangeRequest.objects.only("updated_at", "status", "id", "org_unit_id").order_by(
+                        "-updated_at"
+                    ),
+                    to_attr="prefetched_org_unit_changerequest_set",
                 ),
             )
             .only(

@@ -71,7 +71,7 @@ jobs:
                   git describe --tags
                   export VERSION_NAME=$(git describe --tags)--$GITHUB_BRANCH
                   echo "::set-output name=VERSION_NAME::$VERSION_NAME"
-                  echo "::set-output name=IMAGE_TAG::${{ env.REGISTRY }}/blsq/iaso:$GITHUB_SHA"
+                  echo "::set-output name=PROD_BUILD_IMAGE_TAG::${{ env.REGISTRY }}/blsq/iaso:$GITHUB_SHA"
             - name: Log in to the Container registry
               uses: docker/login-action@v3
               with:

@@ -23,7 +23,7 @@ from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Prefetch, Subquery
+from django.db.models import Exists, OuterRef, Prefetch, Subquery
 
 from iaso.models import Account, Instance, OrgUnit, Project
 from iaso.models.deduplication import ValidationStatus
@@ -137,7 +137,7 @@ class ProjectNotFoundError(ValidationError):
 
 class EntityQuerySet(models.QuerySet):
     def _filter_entities_with_instances(self, *, limit_date=None, org_units_qs=None):
-        instances = Instance.objects.all()
+        instances = Instance.objects.filter(entity_id=OuterRef("id"))
 
         if org_units_qs is not None:
             instances = instances.filter(org_unit__in=org_units_qs)
@@ -148,7 +148,7 @@ class EntityQuerySet(models.QuerySet):
             except ValidationError:
                 raise InvalidLimitDateError(f"Invalid limit date {limit_date}")
 
-        return self.filter(id__in=Subquery(instances.values("entity_id").distinct()))
+        return self.filter(Exists(instances))
 
     def filter_for_mobile_entity(self, limit_date=None, json_content=None):
         queryset = self

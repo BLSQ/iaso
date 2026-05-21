@@ -18,6 +18,7 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v6
         with:
+          ref: ${{ inputs.branch }}
           fetch-depth: 0
 
       - name: Setup

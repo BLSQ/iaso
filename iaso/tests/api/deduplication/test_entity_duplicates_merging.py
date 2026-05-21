@@ -85,6 +85,8 @@ class EntityDuplicatesMergingAPITestCase(APITestCase):
                 },
                 file=ContentFile(xml_content.encode("utf-8"), name=f"test_{i}.xml"),
             )
+            m.InstanceFile.objects.create(instance=instance, file=f"test_file_{i}.jpg", name=f"test_file_{i}.jpg")
+
             entity = m.Entity.objects.create(
                 name=f"Entity {i}",
                 entity_type=cls.entity_type,
@@ -94,6 +96,18 @@ class EntityDuplicatesMergingAPITestCase(APITestCase):
             )
             instance.entity = entity
             instance.save()
+
+            extra_instance = m.Instance.objects.create(
+                form=cls.form,
+                form_version=cls.form_version,
+                project=cls.project,
+                entity=entity,
+                file=ContentFile(xml_content.encode("utf-8"), name=f"extra_test_{i}.xml"),
+            )
+            m.InstanceFile.objects.create(
+                instance=extra_instance, file=f"extra_test_file_{i}.jpg", name=f"extra_test_file_{i}.jpg"
+            )
+
             cls.entities.append(entity)
 
         # Create duplicate pairs: (0, 1) and (0, 2)
@@ -144,6 +158,16 @@ class EntityDuplicatesMergingAPITestCase(APITestCase):
         self.dup2.refresh_from_db()
         self.assertEqual(self.dup2.entity1.pk, new_entity_id)
         self.assertEqual(self.dup2.entity2.pk, self.entities[2].pk)
+
+        # Verify InstanceFiles are copied
+        new_entity = m.Entity.objects.get(pk=new_entity_id)
+        # files from merged attributes
+        self.assertEqual(new_entity.attributes.instancefile_set.count(), 2)
+
+        other_instances = new_entity.instances.exclude(id=new_entity.attributes_id)
+        self.assertEqual(other_instances.count(), 2)
+        for inst in other_instances:
+            self.assertEqual(inst.instancefile_set.count(), 1)
 
     def test_detail_view_with_merged_entities(self):
         self.client.force_authenticate(self.user)

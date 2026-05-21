@@ -150,7 +150,7 @@ class ProfileCreateSerializer(ModelSerializer):
         )
 
         try:
-            if account.enforce_password_validation and "password" in validated_data:
+            if account.enforce_password_validation and validated_data.get("password"):
                 validate_password(password=validated_data["password"], user=user)
         except django_exceptions.ValidationError as e:
             raise serializers.ValidationError({"password": e.messages})

@@ -298,13 +298,16 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
             "email": "test@test.com",
         }
 
-        response = self.client.post(reverse("profiles-list"), data=data, format="json")
+        with self.captureOnCommitCallbacks(execute=True) as callbacks:
+            response = self.client.post(reverse("profiles-list"), data=data, format="json")
         result = self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         profile = Profile.objects.get(pk=result["id"])
         user = profile.user
 
         self.assertTrue(user.has_usable_password())  # because the view sets a random 32-char password
+        self.assertEqual(len(callbacks), 1)
+        self.assertEqual(len(mail.outbox), 1)
 
     def test_create_profile_with_managed_geo_limit(self):
         self.client.force_authenticate(self.user_managed_geo_limit)

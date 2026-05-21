@@ -19,7 +19,7 @@ def unset_mobile_stock_category(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0385_alter_corepermissionsupport_options"),
+        ("iaso", "0389_alter_account_modules"),
     ]
 
     operations = [

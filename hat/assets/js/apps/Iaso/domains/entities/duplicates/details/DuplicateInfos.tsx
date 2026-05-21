@@ -1,7 +1,11 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Button, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useRedirectTo, useSafeIntl } from 'bluesquare-components';
+import {
+    useRedirectTo,
+    useSafeIntl,
+    LoadingSpinner,
+} from 'bluesquare-components';
 import classnames from 'classnames';
 import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
 import {
@@ -83,12 +87,14 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
     const onSuccess = useCallback(() => {
         redirectTo(baseUrls.entityDuplicates);
     }, [redirectTo]);
-    const { mutate: mergeEntities } = useMergeDuplicate(
+    const { mutate: mergeEntities, isLoading: isMerging } = useMergeDuplicate(
         successSnackBar,
         onSuccess,
     );
-    const { mutate: softDeleteEntity } = useSoftDeleteEntity(onSuccess);
-    const { mutateAsync: ignoreDuplicate } = useIgnoreDuplicate(onSuccess);
+    const { mutate: softDeleteEntity, isLoading: isDeleting } =
+        useSoftDeleteEntity(onSuccess);
+    const { mutateAsync: ignoreDuplicate, isLoading: isIgnoring } =
+        useIgnoreDuplicate(onSuccess);
     return (
         <Box data-test="duplicate-infos">
             <Grid container>
@@ -124,6 +130,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                                 color="primary"
                                 variant="outlined"
                                 data-test="ignore-button"
+                                disabled={isIgnoring}
                                 onClick={() => {
                                     ignoreDuplicate({
                                         entity1_id: entityIds[0],
@@ -132,6 +139,14 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                                 }}
                             >
                                 {formatMessage(MESSAGES.ignore)}
+                                {isIgnoring && (
+                                    <LoadingSpinner
+                                        size={16}
+                                        absolute
+                                        fixed={false}
+                                        transparent
+                                    />
+                                )}
                             </Button>
                         </Box>
                         {hasFeatureFlag(
@@ -150,11 +165,20 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                                         variant="contained"
                                         color="primary"
                                         data-test="soft-delete-A-button"
+                                        disabled={isDeleting}
                                         onClick={() =>
                                             softDeleteEntity(entityIds[0])
                                         }
                                     >
                                         {formatMessage(MESSAGES.softDeleteA)}
+                                        {isDeleting && (
+                                            <LoadingSpinner
+                                                size={16}
+                                                absolute
+                                                fixed={false}
+                                                transparent
+                                            />
+                                        )}
                                     </Button>
                                 </Box>
                                 <Box ml={2}>
@@ -162,11 +186,20 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                                         variant="contained"
                                         color="primary"
                                         data-test="soft-delete-B-button"
+                                        disabled={isDeleting}
                                         onClick={() =>
                                             softDeleteEntity(entityIds[1])
                                         }
                                     >
                                         {formatMessage(MESSAGES.softDeleteB)}
+                                        {isDeleting && (
+                                            <LoadingSpinner
+                                                size={16}
+                                                absolute
+                                                fixed={false}
+                                                transparent
+                                            />
+                                        )}
                                     </Button>
                                 </Box>
                             </Box>
@@ -187,9 +220,17 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                                             merge: query,
                                         });
                                     }}
-                                    disabled={disableMerge}
+                                    disabled={disableMerge || isMerging}
                                 >
                                     {formatMessage(MESSAGES.merge)}
+                                    {isMerging && (
+                                        <LoadingSpinner
+                                            size={16}
+                                            absolute
+                                            fixed={false}
+                                            transparent
+                                        />
+                                    )}
                                 </Button>
                             </Box>
                         )}

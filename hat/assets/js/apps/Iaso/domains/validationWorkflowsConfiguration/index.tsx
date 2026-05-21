@@ -19,6 +19,7 @@ import { useGetSubmissionValidationWorkflows } from './api/Get';
 import { Filters } from './components/Filters';
 import { useWorkflowsTableColumns } from './config';
 import MESSAGES from './messages';
+// import { useCustomApiValidationWorkflowsList } from './api/Get';
 
 const useStyles = makeStyles((theme: any) => {
     return { ...commonStyles(theme) };
@@ -30,6 +31,8 @@ export const ValidationWorkflowsConfiguration = () => {
     );
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
+    // const { data: workflows, isFetching: isLoadingWorkflows } =
+    //     useCustomApiValidationWorkflowsList(params);
     const { data: workflows, isFetching: isLoadingWorkflows } =
         useGetSubmissionValidationWorkflows(params);
     const columns = useWorkflowsTableColumns();

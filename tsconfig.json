@@ -26,6 +26,8 @@
     "include": [
         "assets/js/apps/Iaso/**/*",
         "assets/js/apps/Iaso/*",
+        "hat/assets/js/orval/**/*",
+        "hat/assets/js/orval/*",
         "hat/assets/js/apps/Iaso/**/*",
         "hat/assets/js/apps/Iaso/*",
         "plugins/**/js/**/*",

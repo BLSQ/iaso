@@ -127,7 +127,7 @@ class SSOBaseAdapter(OAuth2Adapter):
             if app_id != account_name:
                 uid = f"{app_id}_{uid}"
         else:
-            account = Account.objects.get(name=account_name)
+            account = Account.objects.get(id=account_name)
 
         try:
             social_account = SocialAccount.objects.get(uid=uid, provider=self.provider_id)

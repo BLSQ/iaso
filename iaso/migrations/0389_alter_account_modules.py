@@ -4,6 +4,84 @@ from django.db import migrations, models
 
 import iaso.utils.models.choice_array_field
 
+from iaso.modules import MODULE_VALIDATION_WORKFLOW
+
+
+BATCH_SIZE = 100
+
+
+def enable_validation_workflow_module(apps, schema_editor):
+    AccountModel = apps.get_model("iaso", "Account")
+    AccountFeatureFlagModel = apps.get_model("iaso", "AccountFeatureFlag")
+    ff = AccountFeatureFlagModel.objects.filter(code="SUBMISSION_VALIDATION_WORKFLOW").first()
+
+    if ff:
+        accounts = (
+            AccountModel.objects.filter(feature_flags__in=[ff.pk])
+            .exclude(modules__contains=[MODULE_VALIDATION_WORKFLOW])
+            .only("id", "modules")
+            .iterator(chunk_size=BATCH_SIZE)
+        )
+        accounts_to_update = []
+
+        for account in accounts:
+            account.modules = (account.modules or []) + [MODULE_VALIDATION_WORKFLOW]
+            accounts_to_update.append(account)
+
+            if len(accounts_to_update) >= BATCH_SIZE:
+                AccountModel.objects.bulk_update(accounts_to_update, ["modules"])
+                accounts_to_update.clear()
+
+        if accounts_to_update:
+            AccountModel.objects.bulk_update(accounts_to_update, ["modules"])
+
+
+def disable_validation_workflow_module(apps, schema_editor):
+    AccountModel = apps.get_model("iaso", "Account")
+    AccountFeatureFlagThrough = apps.get_model("iaso", "Account_feature_flags")
+    AccountFeatureFlagModel = apps.get_model("iaso", "AccountFeatureFlag")
+
+    ff = AccountFeatureFlagModel.objects.filter(code="SUBMISSION_VALIDATION_WORKFLOW").first()
+
+    if ff:
+        accounts = (
+            AccountModel.objects.filter(modules__contains=[MODULE_VALIDATION_WORKFLOW])
+            .only("id", "modules")
+            .iterator(chunk_size=BATCH_SIZE)
+        )
+        accounts_to_update = []
+        account_ff_through = []
+
+        for account in accounts:
+            account.modules = [x for x in account.modules if x != MODULE_VALIDATION_WORKFLOW]
+            accounts_to_update.append(account)
+            account_ff_through.append(AccountFeatureFlagThrough(account_id=account.pk, accountfeatureflag_id=ff.pk))
+
+            if len(accounts_to_update) >= BATCH_SIZE:
+                AccountModel.objects.bulk_update(accounts_to_update, ["modules"])
+                AccountFeatureFlagModel.feature_flags.through.bulk_create(account_ff_through)
+                accounts_to_update.clear()
+                account_ff_through.clear()
+
+        if accounts_to_update:
+            AccountModel.objects.bulk_update(accounts_to_update, ["modules"])
+        if account_ff_through:
+            AccountFeatureFlagThrough.objects.bulk_create(account_ff_through)
+
+
+def create_validation_workflow_feature_flag(apps, schema_editor):
+    AccountFeatureFlag = apps.get_model("iaso", "AccountFeatureFlag")
+    if not AccountFeatureFlag.objects.filter(code="SUBMISSION_VALIDATION_WORKFLOW").exists():
+        AccountFeatureFlag.objects.create(
+            code="SUBMISSION_VALIDATION_WORKFLOW",
+            name="Web: Enable validation workflow",
+        )
+
+
+def remove_validation_workflow_feature_flag(apps, schema_editor):
+    AccountFeatureFlag = apps.get_model("iaso", "AccountFeatureFlag")
+    AccountFeatureFlag.objects.filter(code="SUBMISSION_VALIDATION_WORKFLOW").delete()
+
 
 class Migration(migrations.Migration):
     dependencies = [
@@ -43,5 +121,9 @@ class Migration(migrations.Migration):
                 null=True,
                 size=None,
             ),
+        ),
+        migrations.RunPython(code=enable_validation_workflow_module, reverse_code=disable_validation_workflow_module),
+        migrations.RunPython(
+            code=remove_validation_workflow_feature_flag, reverse_code=create_validation_workflow_feature_flag
         ),
     ]

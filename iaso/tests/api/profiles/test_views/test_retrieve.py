@@ -1,5 +1,7 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
+from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status
 
@@ -10,6 +12,25 @@ from iaso.utils.colors import DEFAULT_COLOR
 
 
 class ProfileRetrieveAPITestCase(BaseProfileAPITestCase):
+    @override_settings(
+        USER_MANUAL_PATH="https://www.openiaso.com/user-manual/",
+        FORUM_PATH="https://forum.example.com/",
+    )
+    def test_account_paths_fallback_to_settings_when_empty(self):
+        self.account.user_manual_path = ""
+        self.account.forum_path = None
+        self.account.save(update_fields=["user_manual_path", "forum_path"])
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(reverse("profiles-detail", kwargs={"pk": "me"}))
+        response_data = self.assertJSONResponse(response, 200)
+
+        self.assertEqual(
+            response_data["account"]["user_manual_path"],
+            settings.USER_MANUAL_PATH,
+        )
+        self.assertEqual(response_data["account"]["forum_path"], settings.FORUM_PATH)
+
     def test_account_feature_flags_is_included(self):
         aff = AccountFeatureFlag.objects.create(code="shape", name="Can edit shape")
         AccountFeatureFlag.objects.create(code="not-used", name="this is not used")

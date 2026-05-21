@@ -24,6 +24,7 @@ runs:
         password: ${{ inputs.docker_password }}
 
     - name: Prepare prod files
+      shell: bash
       run: |
           mv docker-compose.yml docker-compose.bak.yml
           cp docker/prod/docker-compose.prod.yml docker-compose.yml

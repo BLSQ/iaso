@@ -5,8 +5,9 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
-from iaso.models import Account, AccountFeatureFlag, Form, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import Account, Form, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
 from iaso.models.common import ValidationWorkflowArtefactStatus
+from iaso.modules import MODULE_VALIDATION_WORKFLOW
 from iaso.permissions.core_permissions import CORE_SUBMISSIONS_PERMISSION, CORE_VALIDATION_WORKFLOW_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
@@ -109,13 +110,16 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
             project=self.other_project,
             uuid=str(uuid.uuid4()),
         )
-        self.enable_validation_workflow_feature_flag(self.account)
+        self.add_validation_workflow_module(self.account)
 
     @staticmethod
-    def enable_validation_workflow_feature_flag(*accounts):
-        feature_flag = AccountFeatureFlag.objects.get(code="SUBMISSION_VALIDATION_WORKFLOW")
+    def add_validation_workflow_module(*accounts):
         for account in accounts:
-            account.feature_flags.add(feature_flag)
+            account_modules = account.modules or []
+            if MODULE_VALIDATION_WORKFLOW not in account_modules:
+                account_modules.append(MODULE_VALIDATION_WORKFLOW.codename)
+                account.modules = account_modules
+                account.save()
 
     def assertValidVFInstanceListData(self, data, expected_length):
         self.assertValidListData(list_data=data, expected_length=expected_length, paginated=True, results_key="results")
@@ -636,7 +640,7 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
         )
 
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(5):
             res = self.client.get(reverse("validation_workflow_instances-list"))
         self.assertJSONResponse(res, status.HTTP_200_OK)
 
@@ -653,6 +657,6 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
         )
 
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(5):
             res = self.client.get(reverse("validation_workflow_instances-list"))
         self.assertJSONResponse(res, status.HTTP_200_OK)

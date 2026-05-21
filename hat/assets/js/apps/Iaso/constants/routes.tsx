@@ -64,10 +64,7 @@ import { Details as UserDetails } from '../domains/users/details';
 import { UsersHistory } from '../domains/users/history/UsersHistory';
 import { Workflows } from '../domains/workflows';
 import { Details as WorkflowDetails } from '../domains/workflows/details';
-import {
-    SHOW_PAGES,
-    SUBMISSION_VALIDATION_WORKFLOW,
-} from '../utils/featureFlags';
+import { SHOW_PAGES } from '../utils/featureFlags';
 import * as Permission from '../utils/permissions';
 import { baseUrls } from './urls';
 
@@ -490,7 +487,6 @@ export const validationWorkflowConfigurationPath = {
     baseUrl: baseUrls.validationWorkflowsConfiguration,
     routerUrl: `${baseUrls.validationWorkflowsConfiguration}/*`,
     permissions: [Permission.VALIDATION_WORKFLOWS],
-    featureFlag: SUBMISSION_VALIDATION_WORKFLOW,
     element: <ValidationWorkflowsConfiguration />,
 };
 
@@ -498,7 +494,6 @@ export const validationWorkflowsConfigurationDetailPath = {
     baseUrl: baseUrls.validationWorkflowsConfigurationDetail,
     routerUrl: `${baseUrls.validationWorkflowsConfigurationDetail}/*`,
     permissions: [Permission.VALIDATION_WORKFLOWS],
-    featureFlag: SUBMISSION_VALIDATION_WORKFLOW,
     element: <ValidationWorkflowConfigurationDetail />,
 };
 
@@ -506,7 +501,6 @@ export const validationWorkflowInstancesPath = {
     baseUrl: baseUrls.validationWorkflowInstances,
     routerUrl: `${baseUrls.validationWorkflowInstances}/*`,
     permissions: [Permission.SUBMISSIONS, Permission.VALIDATION_WORKFLOWS],
-    feature_flag: SUBMISSION_VALIDATION_WORKFLOW,
     element: <ValidationWorkflowInstances />,
 };
 

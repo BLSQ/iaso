@@ -118,3 +118,28 @@ class HasAccountFeatureFlag:
 
     def __call__(self, *args, **kwargs):
         return self._permission_class()
+
+
+class HasModulePermission:
+    def __init__(self, *modules):
+        class PermissionClass(permissions.BasePermission):
+            message = _("The related module(s) are not activated for your account.")
+
+            def has_permission(self, request, view):
+                if not request.user or not request.user.is_authenticated:
+                    return False
+
+                if not getattr(request.user, "iaso_profile", None):
+                    return False
+
+                if modules:
+                    account = request.user.iaso_profile.account
+                    account_modules = set([x for x in getattr(account, "modules", [])])
+                    return set([module.codename for module in modules]).issubset(account_modules)
+
+                return True
+
+        self._permission_class = PermissionClass
+
+    def __call__(self, *args, **kwargs):
+        return self._permission_class()

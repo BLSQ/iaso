@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import { defineMessages } from 'react-intl';
 
 // List of translations for Iaso groups of permissions used all along the project
@@ -67,7 +66,11 @@ const PERMISSIONS_GROUPS_MESSAGES = defineMessages({
     snt_malaria: {
         id: 'iaso.permissions.group.snt_malaria',
         defaultMessage: 'SNT Malaria',
-    }
+    },
+    validation_workflow: {
+        id: 'iaso.permissions.group.validation_workflow',
+        defaultMessage: 'Validation workflow',
+    },
 });
 
 export default PERMISSIONS_GROUPS_MESSAGES;

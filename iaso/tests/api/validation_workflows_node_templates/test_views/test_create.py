@@ -13,7 +13,7 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
         super().setUp()
         self.project = Project.objects.create(name="project", account=self.account)
         self.account_2 = Account.objects.create(name="account_2")
-        self.enable_validation_workflow_feature_flag(self.account, self.account_2)
+        self.add_validation_workflow_module(self.account, self.account_2)
 
         self.group = Group.objects.create(name="Group")
         self.user_role = UserRole.objects.create(group=self.group, account=self.account)
@@ -105,7 +105,7 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
     def test_num_queries_insert_first(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(17):
+        with self.assertNumQueries(16):
             res = self.client.post(
                 reverse(
                     "validation_node_templates-list",
@@ -125,7 +125,7 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
     def test_num_queries_insert_last(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(17):
+        with self.assertNumQueries(16):
             res = self.client.post(
                 reverse(
                     "validation_node_templates-list",
@@ -144,7 +144,7 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
 
     def test_num_queries_insert_between(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(18):
+        with self.assertNumQueries(17):
             res = self.client.post(
                 reverse(
                     "validation_node_templates-list",

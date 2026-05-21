@@ -5,9 +5,10 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
-from iaso.models import Account, AccountFeatureFlag, Form, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import Account, Form, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
+from iaso.modules import MODULE_VALIDATION_WORKFLOW
 from iaso.permissions.core_permissions import CORE_SUBMISSIONS_PERMISSION, CORE_VALIDATION_WORKFLOW_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
@@ -79,15 +80,16 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(SwaggerTestCaseMixin, APITes
             project=self.other_project,
             uuid=str(uuid.uuid4()),
         )
-        self.enable_validation_workflow_feature_flag(self.account, self.other_account)
+        self.add_validation_workflow_module(self.account, self.other_account)
 
     @staticmethod
-    def enable_validation_workflow_feature_flag(*accounts):
-        feature_flag = AccountFeatureFlag.objects.get(
-            code="SUBMISSION_VALIDATION_WORKFLOW",
-        )
+    def add_validation_workflow_module(*accounts):
         for account in accounts:
-            account.feature_flags.add(feature_flag)
+            account_modules = account.modules or []
+            if MODULE_VALIDATION_WORKFLOW not in account_modules:
+                account_modules.append(MODULE_VALIDATION_WORKFLOW.codename)
+                account.modules = account_modules
+                account.save()
 
     def assertValidResponse(self, data):
         self.assertResponseCompliantToSwagger(data, "ValidationWorkflowInstanceRetrieve")
@@ -145,7 +147,7 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(SwaggerTestCaseMixin, APITes
         self.client.force_authenticate(self.john_wick)
         self.setup_approve()
 
-        with self.assertNumQueries(11):
+        with self.assertNumQueries(10):
             res = self.client.get(reverse("validation_workflow_instances-detail", kwargs={"pk": self.instance.pk}))
 
         self.assertJSONResponse(res, status.HTTP_200_OK)
@@ -408,15 +410,16 @@ class ValidationWorkflowInstanceAPIRetrieveTestCaseResubmissionWithNextByPass(Sw
             project=self.project,
             uuid=str(uuid.uuid4()),
         )
-        self.enable_validation_workflow_feature_flag(self.account)
+        self.add_validation_workflow_module(self.account)
 
     @staticmethod
-    def enable_validation_workflow_feature_flag(*accounts):
-        feature_flag = AccountFeatureFlag.objects.get(
-            code="SUBMISSION_VALIDATION_WORKFLOW",
-        )
+    def add_validation_workflow_module(*accounts):
         for account in accounts:
-            account.feature_flags.add(feature_flag)
+            account_modules = account.modules or []
+            if MODULE_VALIDATION_WORKFLOW not in account_modules:
+                account_modules.append(MODULE_VALIDATION_WORKFLOW.codename)
+                account.modules = account_modules
+                account.save()
 
     def assertValidResponse(self, data):
         self.assertResponseCompliantToSwagger(data, "ValidationWorkflowInstanceRetrieve")
@@ -667,7 +670,7 @@ class ValidationWorkflowInstanceAPIRetrieveTestCaseResubmissionWithNextByPass(Sw
         ValidationWorkflowEngine.start(self.validation_workflow, self.john_wick, self.instance)
 
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(13):
+        with self.assertNumQueries(12):
             res = self.client.get(reverse("validation_workflow_instances-detail", kwargs={"pk": self.instance.pk}))
         self.assertJSONResponse(res, status.HTTP_200_OK)
 

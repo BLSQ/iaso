@@ -18,10 +18,6 @@ const { mockUserHasPermission } = vi.hoisted(() => {
     return { mockUserHasPermission: vi.fn() };
 });
 
-vi.mock('Iaso/domains/users/utils', () => ({
-    userHasPermission: mockUserHasPermission,
-}));
-
 const { mockUseGetWorkflowOptions } = vi.hoisted(() => {
     return { mockUseGetWorkflowOptions: vi.fn() };
 });
@@ -30,15 +26,16 @@ vi.mock('Iaso/domains/validationWorkflowsConfiguration/api/Get', () => ({
     useGetWorkflowOptions: mockUseGetWorkflowOptions,
 }));
 
-const { mockHasFeatureFlag } = vi.hoisted(() => {
-    return { mockHasFeatureFlag: vi.fn() };
+const { mockUserHasAccessToModule } = vi.hoisted(() => {
+    return { mockUserHasAccessToModule: vi.fn() };
 });
 
-vi.mock('Iaso/utils/featureFlags', async () => {
-    const actual = await vi.importActual('Iaso/utils/featureFlags');
+vi.mock('Iaso/domains/users/utils', async () => {
+    const actual = await vi.importActual('Iaso/domains/users/utils');
     return {
         ...actual,
-        hasFeatureFlag: mockHasFeatureFlag,
+        userHasAccessToModule: mockUserHasAccessToModule,
+        userHasPermission: mockUserHasPermission,
     };
 });
 
@@ -55,10 +52,10 @@ describe('ValidationWorkflowDropdown', () => {
         vi.clearAllMocks();
         mockCurrentUser.mockReturnValue({ id: 1 });
         mockUserHasPermission.mockReturnValue(true);
-        mockHasFeatureFlag.mockReturnValue(true);
+        mockUserHasAccessToModule.mockReturnValue(true);
     });
 
-    it('renders input normally when user has permission and feature flag', () => {
+    it('renders input normally when user has permission and module', () => {
         mockUseGetWorkflowOptions.mockReturnValue({
             data: [{ label: 'A', value: 'a' }],
             isFetching: false,
@@ -93,8 +90,8 @@ describe('ValidationWorkflowDropdown', () => {
         expect(container.innerHTML).toBe('');
     });
 
-    it('does not render input when when user lacks feature flag', () => {
-        mockHasFeatureFlag.mockReturnValue(false);
+    it('does not render input when when user lacks module', () => {
+        mockUserHasAccessToModule.mockReturnValue(false);
 
         mockUseGetWorkflowOptions.mockReturnValue({
             data: [],
@@ -180,8 +177,8 @@ describe('ValidationWorkflowDropdown', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('does not call the API when user has no feature flag', () => {
-        mockHasFeatureFlag.mockReturnValue(false);
+    it('does not call the API when user has no module', () => {
+        mockUserHasAccessToModule.mockReturnValue(false);
 
         mockUseGetWorkflowOptions.mockReturnValue({});
 
@@ -192,8 +189,8 @@ describe('ValidationWorkflowDropdown', () => {
         expect(mockUseGetWorkflowOptions).toHaveBeenCalledWith(false);
     });
 
-    it('does not pass initialValue when user has no feature flag', () => {
-        mockHasFeatureFlag.mockReturnValue(false);
+    it('does not pass initialValue when user has no module', () => {
+        mockUserHasAccessToModule.mockReturnValue(false);
 
         mockUseGetWorkflowOptions.mockReturnValue({});
 

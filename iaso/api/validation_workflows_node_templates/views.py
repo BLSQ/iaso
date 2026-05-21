@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from iaso.api.common import ModelViewSet
-from iaso.api.common.permissions import HasAccountFeatureFlag
+from iaso.api.common.permissions import HasModulePermission
 from iaso.api.validation_workflows_node_templates.pagination import ValidationNodeTemplatePagination
 from iaso.api.validation_workflows_node_templates.permissions import (
     HasValidationNodeTemplatePermission,
@@ -26,6 +26,7 @@ from iaso.api.validation_workflows_node_templates.serializers.move import Valida
 from iaso.api.validation_workflows_node_templates.serializers.retrieve import ValidationNodeTemplateRetrieveSerializer
 from iaso.api.validation_workflows_node_templates.serializers.update import ValidationNodeTemplateUpdateSerializer
 from iaso.models import UserRole, ValidationNodeTemplate
+from iaso.modules import MODULE_VALIDATION_WORKFLOW
 
 
 @extend_schema(tags=["Validation workflow node templates"])
@@ -35,7 +36,7 @@ class ValidationNodeTemplatesView(NestedViewSetMixin, ModelViewSet):
     permission_classes = [
         IsAuthenticated,
         HasValidationNodeTemplatePermission,
-        HasAccountFeatureFlag("SUBMISSION_VALIDATION_WORKFLOW"),
+        HasModulePermission(MODULE_VALIDATION_WORKFLOW),
     ]
     model = ValidationNodeTemplate
     filter_backends = [OrderingFilter]

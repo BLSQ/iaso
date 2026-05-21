@@ -2,12 +2,12 @@ import React from 'react';
 import InputComponent, {
     InputComponentProps,
 } from 'Iaso/components/forms/InputComponent';
-import { userHasPermission } from 'Iaso/domains/users/utils';
-import { useGetWorkflowOptions } from 'Iaso/domains/validationWorkflowsConfiguration/api/Get';
 import {
-    hasFeatureFlag,
-    SUBMISSION_VALIDATION_WORKFLOW,
-} from 'Iaso/utils/featureFlags';
+    userHasAccessToModule,
+    userHasPermission,
+} from 'Iaso/domains/users/utils';
+import { useGetWorkflowOptions } from 'Iaso/domains/validationWorkflowsConfiguration/api/Get';
+import { VALIDATION_WORKFLOW_MODULE } from 'Iaso/utils/modules';
 import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 
@@ -21,19 +21,19 @@ export const ValidationWorkflowDropdown = ({
 }: ValidationWorkflowDropdownProps) => {
     const currentUser = useCurrentUser();
     const hasPermission = userHasPermission(VALIDATION_WORKFLOWS, currentUser);
-    const userHasFeatureFlag = hasFeatureFlag(
+    const userHasModule = userHasAccessToModule(
+        VALIDATION_WORKFLOW_MODULE,
         currentUser,
-        SUBMISSION_VALIDATION_WORKFLOW,
     );
 
     const { data: workflowOptions, isFetching: isFetchingWorkflows } =
-        useGetWorkflowOptions(hasPermission && userHasFeatureFlag);
+        useGetWorkflowOptions(hasPermission && userHasModule);
     const { loading, disabled, ...newProps } = props;
 
     const isLoading = loading || isFetchingWorkflows;
-    const isDisabled = disabled || !hasPermission || !userHasFeatureFlag;
+    const isDisabled = disabled || !hasPermission || !userHasModule;
 
-    return hasPermission && userHasFeatureFlag ? (
+    return hasPermission && userHasModule ? (
         <InputComponent
             dataTestId={'validation-workflow-dropdown-input'}
             type="select"

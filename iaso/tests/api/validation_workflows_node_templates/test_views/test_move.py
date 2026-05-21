@@ -12,7 +12,7 @@ class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
         super().setUp()
         self.project = Project.objects.create(name="project", account=self.account)
         self.account_2 = Account.objects.create(name="account_2")
-        self.enable_validation_workflow_feature_flag(self.account, self.account_2)
+        self.add_validation_workflow_module(self.account, self.account_2)
 
         self.group = Group.objects.create(name="Group")
         self.user_role = UserRole.objects.create(group=self.group, account=self.account)
@@ -187,7 +187,7 @@ class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
         self.validation_workflow.refresh_from_db()
         self.assertEqual(self.validation_workflow.dump_nodes(), ["second-node", "first-node", "third-node"])
 
-        with self.assertNumQueries(11):
+        with self.assertNumQueries(10):
             res = self.client.put(
                 reverse(
                     "validation_node_templates-move",

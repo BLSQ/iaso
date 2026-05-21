@@ -17,9 +17,11 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.core.files.storage import default_storage
 from django.http import FileResponse, HttpResponse, StreamingHttpResponse
-from django.test import TestCase as BaseTestCase
+from django.test import TestCase as BaseTestCase, TransactionTestCase as BaseTransactionTestCase
 from django.urls import clear_url_caches, reverse
 from django.utils import timezone
+from django_test_migrations.contrib.unittest_case import MigratorTestCase
+from django_test_migrations.migrator import Migrator
 from jinja2 import Environment, FileSystemLoader
 from jsonschema import Draft202012Validator
 from rest_framework.test import APIClient, APITestCase as BaseAPITestCase
@@ -475,3 +477,20 @@ class PasswordValidationTestMixin:
     ERROR_PASSWORD_TOO_SIMILAR_FIRST_NAME = "The password is too similar to the first name."
     ERROR_PASSWORD_TOO_SIMILAR_LAST_NAME = "The password is too similar to the last name."
     ERROR_PASSWORD_NUMERIC = "This password is entirely numeric."
+
+
+class IasoMigratorTestCase(MigratorTestCase):
+    num_queries = None
+
+    def setUp(self) -> None:
+        super(BaseTransactionTestCase, self).setUp()
+        self._migrator = Migrator(self.database_name)
+        self.old_state = self._migrator.apply_initial_migration(
+            self.migrate_from,
+        )
+        self.prepare()
+        if self.num_queries:
+            with self.assertNumQueries(self.num_queries):
+                self.new_state = self._migrator.apply_tested_migration(self.migrate_to)
+        else:
+            self.new_state = self._migrator.apply_tested_migration(self.migrate_to)

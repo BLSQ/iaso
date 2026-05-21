@@ -1,0 +1,153 @@
+name: Iaso Automated Docker CI testing
+# This workflow run automatically for every PR on github it checks the syntax and launch the tests.
+on:
+  pull_request:
+    types: [ opened, synchronize, ready_for_review ]
+  push:
+    # Run On push (or merge) on develop.  This populates the cache and avoid the issue where we have undetected migrations
+    # conflict following subsequent merge
+    branches:
+      - develop
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DEBUG: true
+  DJANGO_SETTINGS_MODULE: hat.settings
+  PLUGINS: polio,wfp,wfp_auth
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  RDS_DB_NAME: github_actions
+  RDS_HOSTNAME: localhost
+  RDS_PASSWORD: postgres
+  RDS_PORT: 5432
+  RDS_USERNAME: postgres
+  SECRET_KEY: secret
+
+jobs:
+  config:
+    runs-on: ubuntu-24.04
+    outputs:
+      branch: ${{ steps.vars.outputs.branch }}
+      image_tag: ${{ steps.vars.outputs.image_tag }}
+    steps:
+      - name: Determine branch and image tag
+        id: vars
+        run: |
+          BRANCH=${GITHUB_REF##*heads/}
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+          echo "image_tag=$BRANCH-$GITHUB_SHA" >> $GITHUB_OUTPUT
+
+  build:
+    needs: config
+    uses: ./.github/workflows/docker_build.yml
+    secrets: inherit
+    with:
+      branch: ${{ needs.config.outputs.branch }}
+      image_tag: ${{ needs.config.outputs.image_tag }}
+
+  backend_lint_and_format:
+    runs-on: ubuntu-24.04
+    needs: config
+    steps:
+      - name: Setup
+        uses: ./.github/actions/setup.yml
+        with:
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Install ruff
+        uses: astral-sh/ruff-action@v4.0.0
+        with:
+          args: "--version"
+
+      - name: Linting with ruff
+        run: ruff check --output-format=github .
+
+      - name: Formatting with ruff
+        run: ruff format --check .
+
+  backend_tests:
+    runs-on: ubuntu-24.04
+    needs: build
+    services:
+      postgres:
+        image: postgis/postgis:16-3.5
+        ports:
+          - 5432:5432
+        # needed because the postgres container does not provide a health check
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set up Docker containers (prod-like)
+        run: docker compose up -d --wait --wait-timeout 120
+
+      - name: Check Backend (Django) translations
+        run: |
+          docker compose exec iaso python manage.py make_translations
+          docker compose exec iaso python manage.py compile_translations
+
+      - name: Check for missing migrations
+        run: docker compose exec iaso python manage.py makemigrations --check
+
+      - name: Run Django tests
+        run: docker compose exec iaso python -W "ignore" manage.py test
+
+      - name: Slack notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_USERNAME: ${{ github.workflow }}
+          SLACK_ICON_EMOJI: ':robot_face:'
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: iaso-dev
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: ${{ format('Job {0} failed on {1}', github.job, github.ref) }}
+          SLACK_FOOTER: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
+          MSG_MINIMAL: true
+        if: failure()
+
+  frontend_tests:
+    runs-on: ubuntu-24.04
+    needs: build
+    services:
+      postgres:
+        image: postgis/postgis:16-3.5
+        ports:
+          - 5432:5432
+        # needed because the postgres container does not provide a health check
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set up Docker containers (prod-like)
+        run: docker compose up -d --wait --wait-timeout 120
+
+      - name: Check Frontend (JS/React) translations
+        run: docker compose exec iaso python scripts/update_trads.py
+
+      - name: Run frontend tests
+        run: docker compose exec iaso npm test
+
+      - name: Slack notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_USERNAME: ${{ github.workflow }}
+          SLACK_ICON_EMOJI: ':robot_face:'
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: iaso-dev
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: ${{ format('Job {0} failed on {1}', github.job, github.ref) }}
+          SLACK_FOOTER: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
+          MSG_MINIMAL: true
+        if: failure()

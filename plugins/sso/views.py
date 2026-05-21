@@ -120,7 +120,7 @@ class SSOBaseAdapter(OAuth2Adapter):
         uid = extra_data["sub"].lower().strip()
 
         app_id = request.GET.get(APP_ID, None)
-        account_name = self.sso_config["account_name"]
+        account_name = self.sso_config["account_id"]
 
         if app_id:
             account = get_object_or_404(Project, app_id=app_id).account

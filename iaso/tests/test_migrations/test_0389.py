@@ -3,8 +3,8 @@ from iaso.test import IasoMigratorTestCase
 
 
 class Test0388DirectMigration(IasoMigratorTestCase):
-    migrate_from = ("iaso", "0387_merge_20260518_0937")
-    migrate_to = ("iaso", "0388_alter_account_modules")
+    migrate_from = ("iaso", "0388_project_description")
+    migrate_to = ("iaso", "0389_alter_account_modules")
     num_queries = 15
 
     def prepare(self):
@@ -57,8 +57,8 @@ class Test0388DirectMigration(IasoMigratorTestCase):
 class Test0388ReverseMigration(IasoMigratorTestCase):
     num_queries = 17
 
-    migrate_to = ("iaso", "0387_merge_20260518_0937")
-    migrate_from = ("iaso", "0388_alter_account_modules")
+    migrate_to = ("iaso", "0388_project_description")
+    migrate_from = ("iaso", "0389_alter_account_modules")
 
     def prepare(self):
         AccountFeatureFlag = self.old_state.apps.get_model("iaso", "AccountFeatureFlag")

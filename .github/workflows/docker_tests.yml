@@ -36,9 +36,10 @@ jobs:
       - name: Determine branch and image tag
         id: vars
         run: |
-          BRANCH=${GITHUB_REF##*heads/}
-          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
-          echo "image_tag=$BRANCH-$GITHUB_SHA" >> $GITHUB_OUTPUT
+          TAG_BRANCH=${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}
+          TAG_BRANCH=$(echo "$TAG_BRANCH" | tr '/' '-')
+          echo "branch=$GITHUB_REF" >> $GITHUB_OUTPUT
+          echo "image_tag=$TAG_BRANCH-$GITHUB_SHA" >> $GITHUB_OUTPUT
 
   build:
     needs: config
@@ -52,6 +53,11 @@ jobs:
     runs-on: ubuntu-24.04
     needs: config
     steps:
+      - name: Check out repository code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
       - name: Setup
         uses: ./.github/actions/setup
         with:
@@ -124,6 +130,11 @@ jobs:
         # needed because the postgres container does not provide a health check
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
+      - name: Check out repository code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
       - name: Setup
         uses: ./.github/actions/setup
         with:

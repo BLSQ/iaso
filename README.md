@@ -877,7 +877,7 @@ SECRET_KEY=
 ENKETO_API_TOKEN=
 ENKETO_SIGNING_SECRET=
 # Docker image tag (defaults to "latest" if not set)
-IMAGE_TAG=
+PROD_DOCKER_IMAGE_TAG=
 ```
 
 Docker Compose automatically reads a `.env` file in the project root, so no `source` command is needed.

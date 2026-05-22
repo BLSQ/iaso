@@ -506,6 +506,7 @@ SPECTACULAR_SETTINGS = {
     "TAGS": [
         {"name": "Mobile", "description": "Endpoints used by the mobile application"},
         {"name": "v2", "description": "Version 2 of the API"},
+        {"name": "FHIR", "description": "FHIR R4 compliant endpoints for health data interoperability"},
     ],
     "SWAGGER_UI_SETTINGS": {  # see https://swagger.io/docs/open-source-tools/swagger-ui/usage/configuration/
         "defaultModelsExpandDepth": 0,  # collapsing schemas by default

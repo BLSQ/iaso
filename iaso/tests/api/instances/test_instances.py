@@ -837,7 +837,7 @@ class InstancesAPITestCase(TaskAPITestCase):
 
         instance = self.create_form_instance(form=self.form_1, org_unit=parent, project=self.project)
 
-        with self.assertNumQueries(18):
+        with self.assertNumQueries(17):
             response = self.client.get(f"/api/instances/{instance.id}/")
         self.assertEqual(response.status_code, 200)
 
@@ -3118,6 +3118,33 @@ class InstancesAPITestCase(TaskAPITestCase):
             self.assertNotIn("file_content", item)
             self.assertIsNotNone(item["latitude"])
             self.assertIsNotNone(item["longitude"])
+
+    def test_instances_list_is_constant_queries(self):
+        """
+        GET /api/instances/ must evaluate in O(1) constant queries regardless of
+        how many instances are returned.
+        """
+        self.client.force_authenticate(self.yoda)
+        self.yoda.iaso_profile.projects.add(self.project)
+
+        expected_queries = 14
+
+        with self.assertNumQueries(expected_queries):
+            response = self.client.get("/api/instances/?limit=3000")
+
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertIn("instances", data)
+
+        # we have 8 instances in total but one was deleted and the other one belongs to another project
+        self.assertEqual(len(data["instances"]), 6)
+
+        for item in data["instances"]:
+            self.assertIn("is_instance_of_reference_form", item)
+            self.assertIn("is_reference_instance", item)
+            self.assertFalse(item["is_instance_of_reference_form"])
+            self.assertFalse(item["is_reference_instance"])
 
     def assertInstanceListContainsStrictly(self, api_response, expected_instances):
         try:

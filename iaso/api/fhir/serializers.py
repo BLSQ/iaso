@@ -226,3 +226,43 @@ class FHIRLocationSerializer(serializers.ModelSerializer):
             )
 
         return extensions
+
+
+# Old POC code kept here for reference
+# class FHIRBundleSerializer(serializers.Serializer):
+#     """
+#     Serializer for FHIR Bundle resources containing Location entries
+#     """
+
+#     resourceType = serializers.CharField(default="Bundle", read_only=True)
+#     id = serializers.CharField(read_only=True)
+#     meta = serializers.DictField(read_only=True)
+#     type = serializers.CharField(default="searchset", read_only=True)
+#     total = serializers.IntegerField(read_only=True)
+#     link = serializers.ListField(child=serializers.DictField(), read_only=True)
+#     entry = serializers.ListField(child=serializers.DictField(), read_only=True)
+
+
+# class FHIROperationOutcomeSerializer(serializers.Serializer):
+#     """
+#     Serializer for FHIR OperationOutcome resources (errors)
+#     """
+
+#     resourceType = serializers.CharField(default="OperationOutcome", read_only=True)
+#     issue = serializers.ListField(child=serializers.DictField(), read_only=True)
+
+
+# class FHIRCapabilityStatementSerializer(serializers.Serializer):
+#     """
+#     Serializer for FHIR CapabilityStatement resource
+#     """
+
+#     resourceType = serializers.CharField(default="CapabilityStatement", read_only=True)
+#     status = serializers.CharField(default="active", read_only=True)
+#     date = serializers.CharField(read_only=True)
+#     publisher = serializers.CharField(default="Iaso", read_only=True)
+#     kind = serializers.CharField(default="instance", read_only=True)
+#     software = serializers.DictField(read_only=True)
+#     fhirVersion = serializers.CharField(default="4.0.1", read_only=True)
+#     format = serializers.ListField(default=["json"], read_only=True)
+#     rest = serializers.ListField(child=serializers.DictField(), read_only=True)

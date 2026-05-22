@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db import connection, transaction
-from django.db.models import Case, Count, F, Prefetch, Q, QuerySet, TextField, Value, When
+from django.db.models import Case, Count, Exists, F, OuterRef, Prefetch, Q, QuerySet, TextField, Value, When
 from django.db.models.functions import Cast, Concat, JSONObject, Replace
 from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.utils.timezone import now
@@ -61,6 +61,7 @@ from iaso.models import (
     InstanceQuerySet,
     OrgUnit,
     OrgUnitChangeRequest,
+    OrgUnitReferenceInstance,
     Project,
 )
 from iaso.models.common import ValidationWorkflowArtefactStatus
@@ -110,7 +111,20 @@ class InstancesViewSet(viewsets.ViewSet):
             )
 
         else:
-            queryset = queryset.select_related("form", "created_by", "last_modified_by")
+            queryset = queryset.select_related("form", "created_by", "last_modified_by").annotate(
+                _is_reference_instance=Exists(
+                    OrgUnitReferenceInstance.objects.filter(
+                        org_unit_id=OuterRef("org_unit_id"),
+                        instance_id=OuterRef("pk"),
+                    )
+                ),
+                _is_instance_of_reference_form=Exists(
+                    Form.objects.filter(
+                        id=OuterRef("form_id"),
+                        reference_of_org_unit_types=OuterRef("org_unit__org_unit_type_id"),
+                    )
+                ),
+            )
         return queryset
 
     def _get_filtered_attachments_queryset(self, request):
@@ -441,8 +455,8 @@ class InstancesViewSet(viewsets.ViewSet):
                     d = instance.as_dict_with_descriptor() if with_descriptor == "true" else instance.as_dict()
                     d["can_user_modify"] = instance.count_lock_applying_to_user == 0
                     d["is_locked"] = instance.count_active_lock > 0
-                    d["is_instance_of_reference_form"] = instance.is_instance_of_reference_form
-                    d["is_reference_instance"] = instance.is_reference_instance
+                    d["is_instance_of_reference_form"] = instance._is_instance_of_reference_form
+                    d["is_reference_instance"] = instance._is_reference_instance
                     return d
 
                 res["instances"] = map(as_dict_formatter, page.object_list)
@@ -631,8 +645,8 @@ class InstancesViewSet(viewsets.ViewSet):
         # To display either the "unlock" or the "lock" icon depending on if the instance is already lock or not
         response["is_locked"] = any(lock.unlocked_by is None for lock in all_instance_locks)
 
-        response["is_instance_of_reference_form"] = instance.is_instance_of_reference_form
-        response["is_reference_instance"] = instance.is_reference_instance
+        response["is_instance_of_reference_form"] = instance._is_instance_of_reference_form
+        response["is_reference_instance"] = instance._is_reference_instance
 
         return Response(response)
 

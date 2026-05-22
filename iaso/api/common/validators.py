@@ -1,5 +1,3 @@
-import os
-
 import jsonschema
 import magic
 
@@ -36,26 +34,6 @@ class JSONSchemaFieldValidator:
             raise ValidationError(self.message, code=self.code, params={"error": e.message})
 
 
-# libmagic may report OOXML spreadsheets as application/zip when too few bytes are read.
-# python-magic recommends at least 2048; 4096 covers macOS libmagic on typical .xlsx files.
-FILE_TYPE_MAGIC_BUFFER_SIZE = 4096
-
-# libmagic often returns these for valid csv/xlsx/xls; use the file extension as a fallback.
-AMBIGUOUS_MIMETYPES = frozenset(
-    {
-        "application/zip",
-        "application/octet-stream",
-        "application/cdfv2",
-    }
-)
-
-EXTENSION_CANONICAL_MIMETYPES = {
-    "csv": ("text/csv", "text/plain"),
-    "xlsx": ("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",),
-    "xls": ("application/vnd.ms-excel",),
-}
-
-
 class FileTypeValidator:
     message = _("Unsupported file type.")
     code = "invalid_file_type"
@@ -72,35 +50,7 @@ class FileTypeValidator:
 
     def __call__(self, value):
         value.seek(0)
-        file_mime_type = self._detect_mime_type(value)
+        file_mime_type = magic.from_buffer(value.read(1024), mime=True)
         value.seek(0)
-        if file_mime_type in self.allowed_mimetypes:
-            return
-        if self._extension_fallback_allows(value, file_mime_type):
-            return
-        raise ValidationError(code=self.code, message=self.message)
-
-    def _detect_mime_type(self, value):
-        temporary_file_path = getattr(value, "temporary_file_path", None)
-        if callable(temporary_file_path):
-            try:
-                return magic.from_file(temporary_file_path(), mime=True).lower()
-            except (NotImplementedError, AttributeError):
-                pass
-
-        value.seek(0)
-        file_mime_type = magic.from_buffer(value.read(FILE_TYPE_MAGIC_BUFFER_SIZE), mime=True).lower()
-        value.seek(0)
-        return file_mime_type
-
-    def _extension_fallback_allows(self, value, detected_mime_type):
-        if detected_mime_type not in AMBIGUOUS_MIMETYPES:
-            return False
-
-        file_name = getattr(value, "name", "") or ""
-        extension = os.path.splitext(file_name)[1].lower().lstrip(".")
-        canonical_mimetypes = EXTENSION_CANONICAL_MIMETYPES.get(extension)
-        if not canonical_mimetypes:
-            return False
-
-        return any(canonical_mime in self.allowed_mimetypes for canonical_mime in canonical_mimetypes)
+        if file_mime_type not in self.allowed_mimetypes:
+            raise ValidationError(code=self.code, message=self.message)

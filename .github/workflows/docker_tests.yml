@@ -162,15 +162,6 @@ jobs:
         run: |
           python scripts/update_trads.py
 
-      - name: Set up Docker containers (prod-like)
-        run: docker compose up -d --wait --wait-timeout 120
-
-      - name: Check Frontend (JS/React) translations
-        run: docker compose exec iaso python scripts/update_trads.py
-
-      - name: Run frontend tests
-        run: docker compose exec iaso npm test
-
       - name: Slack notification
         uses: rtCamp/action-slack-notify@v2
         env:

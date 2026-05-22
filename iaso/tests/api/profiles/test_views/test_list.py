@@ -66,14 +66,16 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
         self.client.force_authenticate(self.john)
         response = self.client.get(reverse("profiles-list"), {"managedUsersOnly": True})
         response_data = self.assertJSONResponse(response, 200)
-        self.assertValidProfileListData(response_data, 7)
+        self.assertValidProfileListData(response_data, 6)
+        self.assertNotIn(self.john.iaso_profile.id, [profile["id"] for profile in response_data["results"]])
 
     def test_profile_list_managed_user_only_user_admin(self):
-        """GET /profiles/ with auth (superuser)"""
-        self.client.force_authenticate(self.john)
+        """GET /profiles/ with auth (user has user admin permissions)"""
+        self.client.force_authenticate(self.jim)
         response = self.client.get(reverse("profiles-list"), {"managedUsersOnly": True})
         response_data = self.assertJSONResponse(response, 200)
-        self.assertValidProfileListData(response_data, 7)
+        self.assertValidProfileListData(response_data, 6)
+        self.assertNotIn(self.jim.iaso_profile.id, [profile["id"] for profile in response_data["results"]])
 
     def test_profile_list_managed_user_only_user_manager_no_org_unit(self):
         """GET /profiles/ with auth (superuser)"""

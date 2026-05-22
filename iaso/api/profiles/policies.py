@@ -126,7 +126,7 @@ class ManagedUsersPolicy:
     @staticmethod
     def authorize_list(requester, queryset):
         if requester.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()):
-            return queryset
+            return queryset.exclude(user=requester)
 
         if requester.has_perm(CORE_USERS_MANAGED_PERMISSION.full_name()):
             managed_org_units = (

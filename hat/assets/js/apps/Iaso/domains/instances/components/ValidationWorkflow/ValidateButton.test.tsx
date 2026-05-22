@@ -17,12 +17,12 @@ vi.mock('bluesquare-components', async () => {
 
 describe('ValidateButton', () => {
     it('renders with default size and variant', () => {
-        renderWithTheme(<ValidateButton />);
+        renderWithTheme(<ValidateButton buttonText={'buttonText'} />);
         const button = screen.getByRole('button');
 
         expect(button).toBeInTheDocument();
         expect(button).toHaveClass('MuiButton-root'); // styles.button
-        expect(button).toHaveTextContent('Validate');
+        expect(button).toHaveTextContent('buttonText');
 
         // defaults for variant and size
         expect(button).toHaveClass('MuiButton-contained');
@@ -37,7 +37,13 @@ describe('ValidateButton', () => {
     });
 
     it('renders custom size and variant', () => {
-        renderWithTheme(<ValidateButton size="large" variant="outlined" />);
+        renderWithTheme(
+            <ValidateButton
+                size="large"
+                variant="outlined"
+                buttonText={'buttonText'}
+            />,
+        );
         const button = screen.getByRole('button');
 
         expect(button).toHaveClass('MuiButton-outlined');
@@ -45,17 +51,16 @@ describe('ValidateButton', () => {
     });
 
     it('passes additional props', () => {
-        renderWithTheme(<ValidateButton id="my-button" disabled />);
+        renderWithTheme(
+            <ValidateButton
+                id="my-button"
+                disabled
+                buttonText={'buttonText'}
+            />,
+        );
         const button = screen.getByRole('button');
 
         expect(button).toHaveAttribute('id', 'my-button');
         expect(button).toBeDisabled();
-    });
-
-    it('uses formatMessage if buttonText not provided', () => {
-        renderWithTheme(<ValidateButton />);
-        const button = screen.getByRole('button');
-
-        expect(button).toHaveTextContent('Validate');
     });
 });

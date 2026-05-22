@@ -1,6 +1,5 @@
 import csv
 
-from django.db import transaction
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
@@ -38,6 +37,10 @@ class MetricTypeViewSet(viewsets.ModelViewSet):
         include_utility = self.request.query_params.get("include_utility", "false").lower() == "true"
         if not include_utility:
             queryset = queryset.filter(is_utility=False)
+
+        metric_kind = self.request.query_params.get("metric_kind")
+        if metric_kind:
+            queryset = queryset.filter(metric_kind=metric_kind)
         return queryset
 
     def get_serializer_class(self):
@@ -122,14 +125,7 @@ class MetricValueViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        metric_values = serializer.context.get("metric_values")
-        with transaction.atomic():
-            # Clear existing metric values to avoid duplicates
-            metric_type_ids = set(mv.metric_type_id for mv in metric_values)
-            org_unit_ids = set(mv.org_unit_id for mv in metric_values)
-            MetricValue.objects.filter(metric_type_id__in=metric_type_ids, org_unit_id__in=org_unit_ids).delete()
-
-            MetricValue.objects.bulk_create(metric_values)
+        metric_values = serializer.save()
 
         return Response(
             {

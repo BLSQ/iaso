@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 import importlib
 import os
 import sys
+import tempfile
 
 from datetime import timedelta
 from typing import Any, Dict
@@ -459,6 +460,9 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/login/"
+# Extra paths IasoLogoutView accepts as ?next=... (in addition to the default).
+LOGOUT_NEXT_ALLOWED_PATHS = env.list("LOGOUT_NEXT_ALLOWED_PATHS", default=[], delimiter=",")
 
 AUTH_CLASSES = [
     "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -904,7 +908,7 @@ for plugin_name in PLUGINS:
         )
         INSTALLED_APPS.append(f"plugins.{plugin_name}")
 
-XLSFORM_VALIDATOR_TEMP_DIR = "/tmp"
+XLSFORM_VALIDATOR_TEMP_DIR = tempfile.gettempdir()
 INSTALLED_APPS.append("dynamic_fields")
 
 # Making sure that files are not stored on disk while running tests

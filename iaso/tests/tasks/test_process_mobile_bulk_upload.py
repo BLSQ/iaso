@@ -739,7 +739,7 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(ent1.instances.count(), 2)
         self.assertEqual(ent2.instances.count(), 1)
 
-    @mock.patch("iaso.api.instances.instances.logger")
+    @mock.patch("iaso.api.instances.views.logger")
     def test_duplicate_uuids_multiple_active(self, mock_logger):
         # Create two active Disasi with same uuid
         ent1 = create_entity_with_registration(self, name="Disasi 1", uuid=DISASI_MAKULO_REGISTRATION)

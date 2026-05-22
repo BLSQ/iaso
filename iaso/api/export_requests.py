@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 from rest_framework import permissions, serializers, status
 from rest_framework.response import Response
 
-from iaso.api.instances.instance_filters import parse_instance_filters
+from iaso.api.instances.filters import parse_instance_filters
 from iaso.api.tasks.serializers import TaskSerializer
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from iaso.models import KILLED, QUEUED, ExportRequest, Task

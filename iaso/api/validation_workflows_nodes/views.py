@@ -1,4 +1,4 @@
-from django.db.models import Prefetch
+from django.db.models import OuterRef, Prefetch, Q, Subquery
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
@@ -7,16 +7,23 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from iaso.api.common.permissions import HasModulePermission
 from iaso.api.validation_workflows_nodes.permissions import HasValidationWorkflowPermission
 from iaso.api.validation_workflows_nodes.serializers.complete import ValidationNodeCompleteSerializer
 from iaso.api.validation_workflows_nodes.serializers.complete_bypass import ValidationNodeCompleteBypassSerializer
 from iaso.api.validation_workflows_nodes.serializers.undo import ValidationNodeUndoSerializer
 from iaso.models import Instance, ValidationNode
+from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
+from iaso.modules import MODULE_VALIDATION_WORKFLOW
 
 
 @extend_schema(tags=["Validation nodes"])
 class ValidationNodeViewSet(GenericViewSet):
-    permission_classes = [IsAuthenticated, HasValidationWorkflowPermission]
+    permission_classes = [
+        IsAuthenticated,
+        HasValidationWorkflowPermission,
+        HasModulePermission(MODULE_VALIDATION_WORKFLOW),
+    ]
     http_method_names = ["get", "post"]
     pagination_class = None
 
@@ -26,6 +33,14 @@ class ValidationNodeViewSet(GenericViewSet):
                 Instance.objects.select_related("project__account", "form", "form__validation_workflow")
                 .filter_for_user(self.request.user)
                 .filter(form__deleted_at__isnull=True)
+                .annotate(
+                    annotate_last_submission_created_at=Subquery(
+                        ValidationNode.objects.filter(instance=OuterRef("pk"))
+                        .filter(Q(status=ValidationNodeStatus.SUBMISSION) | Q(status=ValidationNodeStatus.NEW_VERSION))
+                        .order_by("-created_at")
+                        .values("created_at")[:1]
+                    ),
+                )
                 .prefetch_related(
                     Prefetch(
                         "validationnode_set",

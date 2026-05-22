@@ -12,7 +12,7 @@ from iaso.api.metrics.serializers import (
 )
 from iaso.models.base import Account
 from iaso.models.data_source import DataSource, SourceVersion
-from iaso.models.metric import MetricType
+from iaso.models.metric import MetricType, MetricValue
 from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.models.project import Project
 from iaso.test import TestCase
@@ -449,6 +449,16 @@ class ImportMetricValuesSerializerTestCase(TestCase):
             legend_config={"domain": [5, 15, 25], "range": ["#A2CAEA", "#ACDF9B", "#F5F1A0"]},
         )
 
+        cls.mt_population = MetricType.objects.create(
+            account=cls.account,
+            code="POP",
+            name="Population",
+            category="Demographics",
+            legend_type="linear",
+            metric_kind="population",
+            legend_config={"domain": [1000, 10000], "range": ["#A2CAEA", "#ACDF9B"]},
+        )
+
         # Create Org Units
         cls.project = project = Project.objects.create(
             name="Project",
@@ -517,55 +527,70 @@ class ImportMetricValuesSerializerTestCase(TestCase):
     def test_validate_metric_types_all_exist(self):
         csv_content = f"ADM1_NAME,ADM2_NAME,ADM2_ID,MT1\nDISTRICT,District 1,{self.district1.id},1\nDISTRICT,District 2,{self.district2.id},20"
         valid_file = SimpleUploadedFile("test.csv", csv_content.encode(), content_type="text/csv")
-        serializer = ImportMetricValuesSerializer(data={"file": valid_file}, context={"request": self.request})
+        serializer = ImportMetricValuesSerializer(
+            data={"file": valid_file, "year": 2024}, context={"request": self.request}
+        )
         self.assertTrue(serializer.is_valid())
-        self.assertEqual(len(serializer.context["metric_values"]), 2)
 
     def test_validate_wrong_file_type(self):
         invalid_file = SimpleUploadedFile("test.txt", b"Some text content", content_type="text/plain")
-        serializer = ImportMetricValuesSerializer(data={"file": invalid_file}, context={"request": self.request})
+        serializer = ImportMetricValuesSerializer(
+            data={"file": invalid_file, "year": 2024}, context={"request": self.request}
+        )
         self.assertFalse(serializer.is_valid())
         self.assertIn("The file must be a CSV.", serializer.errors["file"][0])
 
     def test_validate_metric_types_some_missing(self):
         csv_content = "ADM1_NAME,ADM2_NAME,ADM2_ID,MT3\nCOMOE,DS BANFORA,738,1"
         invalid_file = SimpleUploadedFile("test.csv", csv_content.encode(), content_type="text/csv")
-        serializer = ImportMetricValuesSerializer(data={"file": invalid_file}, context={"request": self.request})
+        serializer = ImportMetricValuesSerializer(
+            data={"file": invalid_file, "year": 2024}, context={"request": self.request}
+        )
         self.assertFalse(serializer.is_valid())
         self.assertIn("The following metric types do not exist: MT3", serializer.errors["file"][0])
 
     def test_validate_no_metric_type(self):
         csv_content = "ADM1_NAME,ADM2_NAME,ADM2_ID\n"
         invalid_file = SimpleUploadedFile("test.csv", csv_content.encode(), content_type="text/csv")
-        serializer = ImportMetricValuesSerializer(data={"file": invalid_file}, context={"request": self.request})
+        serializer = ImportMetricValuesSerializer(
+            data={"file": invalid_file, "year": 2024}, context={"request": self.request}
+        )
         self.assertFalse(serializer.is_valid())
         self.assertIn("The CSV must contain at least one metric type column.", serializer.errors["file"][0])
 
     def test_validate_missing_required_headers(self):
         csv_content = "MT1\nCOMOE,738,1"
         invalid_file = SimpleUploadedFile("test.csv", csv_content.encode(), content_type="text/csv")
-        serializer = ImportMetricValuesSerializer(data={"file": invalid_file}, context={"request": self.request})
+        serializer = ImportMetricValuesSerializer(
+            data={"file": invalid_file, "year": 2024}, context={"request": self.request}
+        )
         self.assertFalse(serializer.is_valid())
         self.assertIn("The CSV must contain 'ADM1_NAME, ADM2_NAME, ADM2_ID' columns.", serializer.errors["file"][0])
 
     def test_validate_no_row(self):
         csv_content = "ADM1_NAME,ADM2_NAME,ADM2_ID,MT2"
         invalid_file = SimpleUploadedFile("test.csv", csv_content.encode(), content_type="text/csv")
-        serializer = ImportMetricValuesSerializer(data={"file": invalid_file}, context={"request": self.request})
+        serializer = ImportMetricValuesSerializer(
+            data={"file": invalid_file, "year": 2024}, context={"request": self.request}
+        )
         self.assertFalse(serializer.is_valid())
         self.assertIn("The CSV must contain at least one value row.", serializer.errors["file"][0])
 
     def test_validate_missing_org_unit_ids(self):
         csv_content = "ADM1_NAME,ADM2_NAME,ADM2_ID,MT1\nCOMOE,DS BANFORA,9999,1"
         invalid_file = SimpleUploadedFile("test.csv", csv_content.encode(), content_type="text/csv")
-        serializer = ImportMetricValuesSerializer(data={"file": invalid_file}, context={"request": self.request})
+        serializer = ImportMetricValuesSerializer(
+            data={"file": invalid_file, "year": 2024}, context={"request": self.request}
+        )
         self.assertFalse(serializer.is_valid())
         self.assertIn("The following org unit IDs do not exist: 9999", serializer.errors["file"][0])
 
     def test_validate_invalid_org_units(self):
         csv_content = f"ADM1_NAME,ADM2_NAME,ADM2_ID,MT1\nDISTRICT,District Rejected,{self.district_rejected.id},1\nDISTRICT,District New,{self.district_new.id},1\nDISTRICT,District Wrong Version,{self.district_wrong_version.id},1\nDISTRICT,District No Location,{self.district_no_location.id},1"
         invalid_file = SimpleUploadedFile("test.csv", csv_content.encode(), content_type="text/csv")
-        serializer = ImportMetricValuesSerializer(data={"file": invalid_file}, context={"request": self.request})
+        serializer = ImportMetricValuesSerializer(
+            data={"file": invalid_file, "year": 2024}, context={"request": self.request}
+        )
         self.assertFalse(serializer.is_valid())
         error_message = serializer.errors["file"][0]
         self.assertIn("The following org unit IDs do not exist: ", error_message)
@@ -573,6 +598,129 @@ class ImportMetricValuesSerializerTestCase(TestCase):
         self.assertIn(str(self.district_new.id), error_message)
         self.assertIn(str(self.district_wrong_version.id), error_message)
         self.assertIn(str(self.district_no_location.id), error_message)
+
+    def test_validate_missing_year(self):
+        csv_content = f"ADM1_NAME,ADM2_NAME,ADM2_ID,MT1\nDISTRICT,District 1,{self.district1.id},1"
+        valid_file = SimpleUploadedFile("test.csv", csv_content.encode(), content_type="text/csv")
+        serializer = ImportMetricValuesSerializer(data={"file": valid_file}, context={"request": self.request})
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("This field is required.", serializer.errors["year"][0])
+
+    def test_validate_year_not_integer(self):
+        csv_content = f"ADM1_NAME,ADM2_NAME,ADM2_ID,MT1\nDISTRICT,District 1,{self.district1.id},1"
+        valid_file = SimpleUploadedFile("test.csv", csv_content.encode(), content_type="text/csv")
+        serializer = ImportMetricValuesSerializer(
+            data={"file": valid_file, "year": "not an integer"}, context={"request": self.request}
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("A valid integer is required.", serializer.errors["year"][0])
+
+    def test_validate_year_out_of_range(self):
+        csv_content = f"ADM1_NAME,ADM2_NAME,ADM2_ID,MT1\nDISTRICT,District 1,{self.district1.id},1"
+        valid_file = SimpleUploadedFile("test.csv", csv_content.encode(), content_type="text/csv")
+        serializer = ImportMetricValuesSerializer(
+            data={"file": valid_file, "year": 1800}, context={"request": self.request}
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("Year must be between 1900 and 2100.", serializer.errors["year"][0])
+
+        valid_file.seek(0)
+        serializer = ImportMetricValuesSerializer(
+            data={"file": valid_file, "year": 2101}, context={"request": self.request}
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("Year must be between 1900 and 2100.", serializer.errors["year"][0])
+
+    def test_validate_save_valid_file(self):
+        csv_content = f"ADM1_NAME,ADM2_NAME,ADM2_ID,MT1,MT2,POP\nDISTRICT,District 1,{self.district1.id},1,5,15000\nDISTRICT,District 2,{self.district2.id},20,15,20000"
+        valid_file = SimpleUploadedFile("test.csv", csv_content.encode(), content_type="text/csv")
+        serializer = ImportMetricValuesSerializer(
+            data={"file": valid_file, "year": 2024},
+            context={"request": self.request},
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        metric_values = serializer.save()
+        self.assertEqual(len(metric_values), 6)
+        mv1 = metric_values[0]
+        mv2 = metric_values[1]
+        mv_population_1 = metric_values[2]
+        mv3 = metric_values[3]
+        mv4 = metric_values[4]
+        mv_population_2 = metric_values[5]
+
+        self.assertEqual(mv1.metric_type, self.mt_1)
+        self.assertEqual(mv1.org_unit, self.district1)
+        self.assertEqual(mv1.year, None)
+        self.assertEqual(mv1.value, 1)
+        self.assertEqual(mv1.string_value, "")
+
+        self.assertEqual(mv2.metric_type, self.mt_2)
+        self.assertEqual(mv2.org_unit, self.district1)
+        self.assertEqual(mv2.year, None)
+        self.assertEqual(mv2.value, 5)
+        self.assertEqual(mv2.string_value, "")
+
+        self.assertEqual(mv_population_1.metric_type, self.mt_population)
+        self.assertEqual(mv_population_1.org_unit, self.district1)
+        self.assertEqual(mv_population_1.year, 2024)
+        self.assertEqual(mv_population_1.value, 15000)
+        self.assertEqual(mv_population_1.string_value, "")
+
+        self.assertEqual(mv3.metric_type, self.mt_1)
+        self.assertEqual(mv3.org_unit, self.district2)
+        self.assertEqual(mv3.year, None)
+        self.assertEqual(mv3.value, 20)
+        self.assertEqual(mv3.string_value, "")
+
+        self.assertEqual(mv4.metric_type, self.mt_2)
+        self.assertEqual(mv4.org_unit, self.district2)
+        self.assertEqual(mv4.year, None)
+        self.assertEqual(mv4.value, 15)
+        self.assertEqual(mv4.string_value, "")
+
+        self.assertEqual(mv_population_2.metric_type, self.mt_population)
+        self.assertEqual(mv_population_2.org_unit, self.district2)
+        self.assertEqual(mv_population_2.year, 2024)
+        self.assertEqual(mv_population_2.value, 20000)
+        self.assertEqual(mv_population_2.string_value, "")
+
+    def test_save_other_year_doesnt_override(self):
+        csv_content = f"ADM1_NAME,ADM2_NAME,ADM2_ID,MT1,MT2,POP\nDISTRICT,District 1,{self.district1.id},1,5,15000\nDISTRICT,District 2,{self.district2.id},20,15,20000"
+        valid_file = SimpleUploadedFile("test.csv", csv_content.encode(), content_type="text/csv")
+        serializer = ImportMetricValuesSerializer(
+            data={"file": valid_file, "year": 2024},
+            context={"request": self.request},
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        csv_content_2 = f"ADM1_NAME,ADM2_NAME,ADM2_ID,MT1,MT2,POP\nDISTRICT,District 1,{self.district1.id},1,5,12000\nDISTRICT,District 2,{self.district2.id},20,15,15000"
+        valid_file_2 = SimpleUploadedFile("test.csv", csv_content_2.encode(), content_type="text/csv")
+
+        serializer_2 = ImportMetricValuesSerializer(
+            data={"file": valid_file_2, "year": 2025},
+            context={"request": self.request},
+        )
+        serializer_2.is_valid(raise_exception=True)
+        serializer_2.save()
+
+        ou1_2024_population = MetricValue.objects.filter(
+            metric_type__code="POP", org_unit=self.district1, year=2024
+        ).first()
+        ou2_2024_population = MetricValue.objects.filter(
+            metric_type__code="POP", org_unit=self.district2, year=2024
+        ).first()
+        ou1_2025_population = MetricValue.objects.filter(
+            metric_type__code="POP", org_unit=self.district1, year=2025
+        ).first()
+        ou2_2025_population = MetricValue.objects.filter(
+            metric_type__code="POP", org_unit=self.district2, year=2025
+        ).first()
+
+        self.assertEqual(ou1_2024_population.value, 15000)
+        self.assertEqual(ou2_2024_population.value, 20000)
+        self.assertEqual(ou1_2025_population.value, 12000)
+        self.assertEqual(ou2_2025_population.value, 15000)
 
 
 class OrgUnitIdSerializerTestCase(TestCase):

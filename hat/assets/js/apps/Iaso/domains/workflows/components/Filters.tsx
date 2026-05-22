@@ -1,16 +1,16 @@
-import { Box, Grid, useTheme, useMediaQuery } from '@mui/material';
 import React, { FunctionComponent, useState } from 'react';
+import { Box, Grid, useTheme, useMediaQuery } from '@mui/material';
 
-import { FilterButton } from '../../../components/FilterButton';
+import { SearchButton } from 'Iaso/components/SearchButton';
 import InputComponent from '../../../components/forms/InputComponent';
 
-import { WorkflowsParams } from '../types';
-
+import { baseUrls } from '../../../constants/urls';
 import { useFilterState } from '../../../hooks/useFilterState';
+
 import { useGetStatus } from '../hooks/useGetStatus';
 
 import MESSAGES from '../messages';
-import { baseUrls } from '../../../constants/urls';
+import { WorkflowsParams } from '../types';
 
 type Props = {
     params: WorkflowsParams;
@@ -58,9 +58,9 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                     alignItems="start"
                     mt={isLargeLayout ? 2 : 0}
                 >
-                    <FilterButton
+                    <SearchButton
                         disabled={textSearchError || !filtersUpdated}
-                        onFilter={handleSearch}
+                        onSearch={handleSearch}
                     />
                 </Box>
             </Grid>

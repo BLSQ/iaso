@@ -6,7 +6,7 @@ import { userHasPermission } from '../domains/users/utils';
 import * as Permissions from './permissions';
 
 export type Profile = {
-    id: string;
+    id: number;
     first_name: string;
     user_name?: string;
     username?: string;
@@ -60,6 +60,8 @@ export type Account = {
     default_version?: DefaultVersion;
     feature_flags: string[];
     modules: string[];
+    user_manual_path?: string;
+    forum_path?: string;
 };
 
 export type User = {
@@ -69,7 +71,7 @@ export type User = {
     username: string;
     user_name?: string;
     email: string;
-    account: Account;
+    account?: Account;
     other_accounts: Account[];
     permissions: string[];
     is_staff?: boolean;
@@ -85,6 +87,7 @@ export type User = {
     editable_org_unit_type_ids?: number[];
     user_roles: number[];
     user_roles_editable_org_unit_type_ids?: number[];
+    color?: string;
 };
 
 export const getDisplayName = (

@@ -1,41 +1,52 @@
 import React, { FunctionComponent, useMemo } from 'react';
+import { Box } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { isEqual } from 'lodash';
-import { Box } from '@mui/material';
-
-import { ConvertedLqasImData } from '../../../../constants/types';
-import { PercentageChartWithTitle } from './PercentageChartWithTitle';
-import { useGetRegions } from '../hooks/api/useGetRegions';
+import { UseQueryResult } from 'react-query';
+import { imBarColorThresholds } from '../../IM/constants';
 import { formatImDataForChart, imTooltipFormatter } from '../../IM/utils';
+import { lqasBarColorThresholds } from '../../LQAS/constants';
 import {
     formatLqasDataForChart,
     lqasChartTooltipFormatter,
 } from '../../LQAS/utils';
+import { ConvertedLqasImData } from '../../types';
+import { useGetRegions } from '../hooks/api/useGetRegions';
 import { NoData } from './NoData';
-import { lqasBarColorTresholds } from '../../LQAS/constants';
-import { imBarColorTresholds } from '../../IM/constants';
+import { GraphTooltipFormatter } from './PercentageBarChart/types';
+import { PercentageChartWithTitle } from './PercentageChartWithTitle';
 
 type Props = {
     type: 'imGlobal' | 'imIHH' | 'imOHH' | 'lqas';
-    round: number;
+    round: number | undefined | string;
     campaign: string;
-    countryId: number;
+    countryId?: number;
     data: Record<string, ConvertedLqasImData>;
     isLoading: boolean;
+    isEmbedded?: boolean;
 };
 
 export const LqasImHorizontalChart: FunctionComponent<Props> = ({
     type,
-    round,
+    round: roundProps,
     campaign,
     countryId,
     data,
     isLoading,
+    isEmbedded = false,
 }) => {
     // TODO: add consition on scope
     const { formatMessage } = useSafeIntl();
-    const { data: regions = [], isLoading: isLoadingRegions } =
-        useGetRegions(countryId);
+    const round =
+        typeof roundProps === 'string' ? parseInt(roundProps, 10) : roundProps;
+    const {
+        data: regions,
+        isLoading: isLoadingRegions,
+    }: UseQueryResult<{ name: string; id: number }[]> = useGetRegions(
+        countryId,
+        isEmbedded,
+    );
+
     const chartData = useMemo(() => {
         if (type === 'lqas') {
             return formatLqasDataForChart({
@@ -52,12 +63,18 @@ export const LqasImHorizontalChart: FunctionComponent<Props> = ({
             regions,
         });
     }, [data, campaign, regions, round, type]);
-    const tooltipFormatter =
-        type === 'lqas' ? lqasChartTooltipFormatter : imTooltipFormatter;
-    const colorTresholds =
-        type === 'lqas' ? lqasBarColorTresholds : imBarColorTresholds;
+
+    const tooltipFormatter: GraphTooltipFormatter = useMemo(() => {
+        const baseFormatter =
+            type === 'lqas' ? lqasChartTooltipFormatter : imTooltipFormatter;
+        return baseFormatter(formatMessage);
+    }, [formatMessage, type]);
+
+    const colorThresholds =
+        type === 'lqas' ? lqasBarColorThresholds : imBarColorThresholds;
+
     const hasData =
-        data && campaign && data[campaign]
+        data && campaign && data[campaign] && round
             ? !isEqual(data[campaign][round], [])
             : false;
     return (
@@ -67,11 +84,11 @@ export const LqasImHorizontalChart: FunctionComponent<Props> = ({
                 <Box p={2}>
                     <PercentageChartWithTitle
                         data={chartData}
-                        tooltipFormatter={tooltipFormatter(formatMessage)}
+                        tooltipFormatter={tooltipFormatter}
                         chartKey={`LQASIMChart-${round}-${campaign}-${type}`}
                         isLoading={isLoading || isLoadingRegions}
                         showChart={Boolean(campaign)}
-                        colorTresholds={colorTresholds}
+                        colorThresholds={colorThresholds}
                     />
                 </Box>
             )}

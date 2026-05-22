@@ -3,10 +3,11 @@ import typing
 from django.db.models import Q
 from rest_framework import serializers
 
+from dynamic_fields.serializer import DynamicFieldsModelSerializerBackwardCompatible
 from iaso.models import Form, OrgUnit, OrgUnitType, Project
 
-from ..common import DynamicFieldsModelSerializer, TimestampField
-from ..forms import FormSerializer
+from ..common import TimestampField
+from ..forms.serializers import FormSerializer
 from ..projects.serializers import ProjectSerializer
 
 
@@ -37,7 +38,7 @@ def validate_reference_forms(data):
 
 
 # Kept for the mobile
-class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
+class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializerBackwardCompatible):
     """
     V1 kept for mobile where sub_types is actually `allow_creating_sub_unit_types`
 
@@ -86,16 +87,19 @@ class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
         ):
             orgUnits = OrgUnit.objects.filter_for_user_and_app_id(
                 self.context["request"].user, self.context["request"].query_params.get("app_id")
-            ).filter(Q(validated=True) & Q(org_unit_type__id=obj.id))
+            ).filter(Q(org_unit_type__id=obj.id))
             return orgUnits.count()
         return None
 
     def get_sub_unit_types(self, obj: OrgUnitType):
         # Filter sub unit types to show only visible items for the current app id
-        unit_types = obj.allow_creating_sub_unit_types.all()
-        app_id = self.context["request"].query_params.get("app_id")
-        if app_id is not None:
-            unit_types = unit_types.filter(projects__app_id=app_id)
+        if hasattr(obj, "filtered_allow_creating_sub_unit_types"):
+            unit_types = obj.filtered_allow_creating_sub_unit_types
+        else:
+            unit_types = obj.allow_creating_sub_unit_types.all()
+            app_id = self.context["request"].query_params.get("app_id")
+            if app_id is not None:
+                unit_types = unit_types.filter(projects__app_id=app_id)
 
         return OrgUnitTypeSerializerV1(
             unit_types,
@@ -133,7 +137,7 @@ class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
         return super().to_representation(instance)
 
 
-class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializer):
+class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializerBackwardCompatible):
     """This one is a bit cryptic: sub_unit_types is only needed for "root" org unit types
     (the ones returned by the viewset queryset), and they need to be filtered by app_id,
     hence the SerializerMethodField()"""
@@ -196,7 +200,7 @@ class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializer):
         ):
             orgUnits = OrgUnit.objects.filter_for_user_and_app_id(
                 self.context["request"].user, self.context["request"].query_params.get("app_id")
-            ).filter(Q(validation_status=OrgUnit.VALIDATION_VALID) & Q(org_unit_type__id=obj.id))
+            ).filter(Q(org_unit_type__id=obj.id))
             return orgUnits.count()
         return None
 
@@ -268,8 +272,24 @@ class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializer):
         return super().to_representation(instance)
 
 
+class OrgUnitTypeHierarchySerializer(serializers.ModelSerializer):
+    """Lightweight serializer for org unit type hierarchy with recursive sub_unit_types"""
+
+    sub_unit_types = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrgUnitType
+        fields = ["id", "name", "short_name", "depth", "category", "sub_unit_types"]
+        read_only_fields = ["id", "name", "short_name", "depth", "category", "sub_unit_types"]
+
+    def get_sub_unit_types(self, obj):
+        """Recursively serialize sub_unit_types to build complete hierarchy"""
+        sub_types = obj.sub_unit_types.all()
+        return OrgUnitTypeHierarchySerializer(sub_types, many=True, context=self.context).data
+
+
 class OrgUnitTypesDropdownSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrgUnitType
-        fields = ["id", "name", "depth"]
-        read_only_fields = ["id", "name", "depth"]
+        fields = ["id", "name", "depth", "sub_unit_types"]
+        read_only_fields = ["id", "name", "depth", "sub_unit_types"]

@@ -1,3 +1,10 @@
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
 import { Box, Grid } from '@mui/material';
 import {
     InputWithInfos,
@@ -9,30 +16,19 @@ import {
 import intersection from 'lodash/intersection';
 import isEqual from 'lodash/isEqual';
 import uniq from 'lodash/uniq';
-import React, {
-    FunctionComponent,
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
-} from 'react';
-import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
-import { FilterButton } from '../../components/FilterButton';
-import { AsyncSelect } from '../../components/forms/AsyncSelect';
+import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
+import { SearchButton } from 'Iaso/components/SearchButton';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useFilterState } from 'Iaso/hooks/useFilterState';
+import { DropdownOptionsWithOriginal } from 'Iaso/types/utils';
 import InputComponent from '../../components/forms/InputComponent';
-import { baseUrls } from '../../constants/urls';
-import { useFilterState } from '../../hooks/useFilterState';
-import { DropdownOptionsWithOriginal } from '../../types/utils';
-import { PLANNING_READ, PLANNING_WRITE } from '../../utils/permissions';
-import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus';
-import { getUsersDropDown } from '../instances/hooks/requests/getUsersDropDown';
-import { useGetProfilesDropdown } from '../instances/hooks/useGetProfilesDropdown';
 import { OrgUnitTreeviewModal } from '../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../orgUnits/components/TreeView/requests';
 import { useGetGroupDropdown } from '../orgUnits/hooks/requests/useGetGroups';
+import { useGetOrgUnitValidationStatus } from '../orgUnits/hooks/utils/useGetOrgUnitValidationStatus';
 import PeriodPicker from '../periods/components/PeriodPicker';
 import { NO_PERIOD, PERIOD_TYPE_PLACEHOLDER } from '../periods/constants';
-import { useGetPlanningsOptions } from '../plannings/hooks/requests/useGetPlannings';
+import { PlanningsDropdown } from '../plannings/components/PlanningsDropdown';
 import { useGetProjectsDropdownOptions } from '../projects/hooks/requests';
 import { useGetTeamsDropdown } from '../teams/hooks/requests/useGetTeams';
 import { useGetOrgUnitTypesOptions } from './hooks/api/useGetOrgUnitTypesOptions';
@@ -75,8 +71,6 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
 
     const { data: orgUnitTypes, isFetching: fetchingTypes } =
         useGetOrgUnitTypesOptions(filters.parentId);
-    const { data: availablePlannings, isFetching: fetchingPlannings } =
-        useGetPlanningsOptions(filters.formId);
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
         useGetTeamsDropdown({});
     useSkipEffectOnMount(() => {
@@ -86,7 +80,6 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         defaultVersion: 'true',
     });
 
-    const { data: selectedUsers } = useGetProfilesDropdown(filters.userIds);
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
     // React to org unit type filtering, if the type is not available anymore
@@ -150,13 +143,6 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         [handleChange],
     );
 
-    const handleChangeUsers = useCallback(
-        (keyValue, newValue) => {
-            const joined = newValue?.map(r => r.value)?.join(',');
-            handleChange(keyValue, joined);
-        },
-        [handleChange],
-    );
     const messages = {
         [PERIOD_TYPE_PLACEHOLDER]: MESSAGES.periodPlaceHolder,
         [NO_PERIOD]: MESSAGES.noPeriodPlaceHolder,
@@ -168,7 +154,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
     const {
         data: validationStatusOptions,
         isLoading: isLoadingValidationStatusOptions,
-    } = useGetValidationStatus();
+    } = useGetOrgUnitValidationStatus();
 
     return (
         <>
@@ -226,19 +212,12 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         loading={fetchingTypes}
                         options={orgUnitTypes ?? []}
                     />
-                    <DisplayIfUserHasPerm
-                        permissions={[PLANNING_READ, PLANNING_WRITE]}
-                    >
-                        <InputComponent
-                            type="select"
-                            onChange={handleChange}
-                            keyValue="planningId"
-                            label={MESSAGES.planning}
-                            value={filters.planningId}
-                            loading={fetchingPlannings}
-                            options={availablePlannings ?? []}
-                        />
-                    </DisplayIfUserHasPerm>
+                    <PlanningsDropdown
+                        handleChange={handleChange}
+                        value={filters.planningId}
+                        formIds={filters.formId}
+                        keyValue="planningId"
+                    />
                 </Grid>
 
                 <Grid item xs={12} md={3}>
@@ -265,14 +244,10 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
 
                 <Grid item xs={12} md={3}>
                     <Box mt={2}>
-                        <AsyncSelect
+                        <UserAsyncSelect
+                            handleChange={handleChange}
+                            filterUsers={filters.userIds}
                             keyValue="userIds"
-                            label={MESSAGES.user}
-                            value={selectedUsers ?? ''}
-                            onChange={handleChangeUsers}
-                            debounceTime={500}
-                            multi
-                            fetchOptions={input => getUsersDropDown(input)}
                         />
                     </Box>
                     <InputComponent
@@ -288,9 +263,9 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                 </Grid>
             </Grid>
             <Box display="flex" justifyContent="flex-end" mb={1} mt={2}>
-                <FilterButton
+                <SearchButton
                     disabled={!filtersUpdated}
-                    onFilter={handleSearch}
+                    onSearch={handleSearch}
                 />
             </Box>
         </>

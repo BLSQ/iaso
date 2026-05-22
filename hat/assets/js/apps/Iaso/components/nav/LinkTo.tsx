@@ -11,6 +11,7 @@ import classNames from 'classnames';
 import React, { FunctionComponent } from 'react';
 
 import MESSAGES from './messages';
+import { SvgIconComponent } from '@mui/icons-material';
 
 export type IconVariant = IconButtonBuiltInIcon;
 
@@ -27,6 +28,7 @@ type Props = {
     color?: string;
     target?: '_blank' | '_self' | '_parent' | '_top';
     icon?: IconVariant;
+    overrideIcon?: SvgIconComponent;
 };
 
 const useStyles = makeStyles(() => ({
@@ -64,6 +66,7 @@ export const LinkTo: FunctionComponent<Props> = ({
     color,
     tooltipMessage = MESSAGES.see,
     icon = 'remove-red-eye',
+    overrideIcon,
 }) => {
     const targetBlankEnabled = useKeyPressListener('Meta');
     const actualTarget = targetBlankEnabled ? '_blank' : target;
@@ -81,6 +84,7 @@ export const LinkTo: FunctionComponent<Props> = ({
                     replace={replace}
                     color={color}
                     target={actualTarget}
+                    overrideIcon={overrideIcon}
                 />
             );
         }

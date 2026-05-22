@@ -6,8 +6,6 @@ from io import StringIO
 from typing import List
 from unittest import mock
 
-import numpy as np
-import pandas as pd
 import pytz
 
 from django.http import StreamingHttpResponse
@@ -25,6 +23,7 @@ from iaso.models import (
     StorageDevice,
     StorageLogEntry,
 )
+from iaso.permissions.core_permissions import CORE_STORAGE_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -39,7 +38,9 @@ class StorageAPITestCase(APITestCase):
     def setUpTestData(cls):
         cls.star_wars = Account.objects.create(name="Star Wars")
         star_wars_2 = Account.objects.create(name="Star Wars revival")
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=cls.star_wars, permissions=["iaso_storages"])
+        cls.yoda = cls.create_user_with_profile(
+            username="yoda", account=cls.star_wars, permissions=[CORE_STORAGE_PERMISSION]
+        )
 
         # Another user that doesn't have the iaso_storages permission
         cls.another_user = cls.create_user_with_profile(username="yoda2", account=cls.star_wars)
@@ -545,6 +546,7 @@ class StorageAPITestCase(APITestCase):
                 {
                     "updated_at": 1580608922.0,
                     "created_at": 1580608922.0,
+                    "id": self.existing_storage_device.id,
                     "storage_id": "EXISTING_STORAGE",
                     "storage_type": "NFC",
                     "storage_status": {"status": "OK", "updated_at": "2020-02-02T02:02:02Z"},
@@ -554,6 +556,7 @@ class StorageAPITestCase(APITestCase):
                 {
                     "updated_at": 1580608922.0,
                     "created_at": 1580608922.0,
+                    "id": self.existing_storage_device_2.id,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
                     "storage_type": "NFC",
                     "storage_status": {
@@ -568,6 +571,7 @@ class StorageAPITestCase(APITestCase):
                 {
                     "updated_at": 1580608922.0,
                     "created_at": 1580608922.0,
+                    "id": self.existing_storage_device_3.id,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
                     "storage_type": "SD",
                     "storage_status": {
@@ -593,6 +597,7 @@ class StorageAPITestCase(APITestCase):
                 {
                     "updated_at": 1580608922.0,
                     "created_at": 1580608922.0,
+                    "id": self.existing_storage_device_2.id,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
                     "storage_type": "NFC",
                     "storage_status": {
@@ -607,6 +612,7 @@ class StorageAPITestCase(APITestCase):
                 {
                     "updated_at": 1580608922.0,
                     "created_at": 1580608922.0,
+                    "id": self.existing_storage_device_3.id,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
                     "storage_type": "SD",
                     "storage_status": {
@@ -634,6 +640,7 @@ class StorageAPITestCase(APITestCase):
                 {
                     "updated_at": 1580608922.0,
                     "created_at": 1580608922.0,
+                    "id": self.existing_storage_device_2.id,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
                     "storage_type": "NFC",
                     "storage_status": {
@@ -659,6 +666,7 @@ class StorageAPITestCase(APITestCase):
                 {
                     "updated_at": 1580608922.0,
                     "created_at": 1580608922.0,
+                    "id": self.existing_storage_device.id,
                     "storage_id": "EXISTING_STORAGE",
                     "storage_type": "NFC",
                     "storage_status": {"status": "OK", "updated_at": "2020-02-02T02:02:02Z"},
@@ -668,6 +676,7 @@ class StorageAPITestCase(APITestCase):
                 {
                     "updated_at": 1580608922.0,
                     "created_at": 1580608922.0,
+                    "id": self.existing_storage_device_2.id,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
                     "storage_type": "NFC",
                     "storage_status": {
@@ -708,6 +717,7 @@ class StorageAPITestCase(APITestCase):
                 {
                     "updated_at": 1580608922.0,
                     "created_at": 1580608922.0,
+                    "id": self.existing_storage_device.id,
                     "storage_id": "EXISTING_STORAGE",
                     "storage_type": "NFC",
                     "storage_status": {"status": "OK", "updated_at": "2020-02-02T02:02:02Z"},
@@ -717,6 +727,7 @@ class StorageAPITestCase(APITestCase):
                 {
                     "updated_at": 1580608922.0,
                     "created_at": 1580608922.0,
+                    "id": self.existing_storage_device_3.id,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
                     "storage_type": "SD",
                     "storage_status": {
@@ -867,19 +878,19 @@ class StorageAPITestCase(APITestCase):
 
     def test_get_logs_for_device_unauthenticated(self):
         """A non authenticated user should receive a 401"""
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs")
+        response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs")
         self.assertEqual(response.status_code, 401)
 
     def test_get_logs_for_device_insufficient_permissions(self):
         """A user without the "iaso_storages" permission should receive a 403"""
         self.client.force_authenticate(self.another_user)
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs")
+        response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs")
         self.assertEqual(response.status_code, 403)
 
     def test_get_logs_for_device_base(self):
         """Test the basics of the logs per device endpoint"""
         self.client.force_authenticate(self.yoda)
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs")
+        response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs")
         self.assertEqual(response.status_code, 200)
         received_json = response.json()
         self.assertDictEqual(
@@ -887,6 +898,7 @@ class StorageAPITestCase(APITestCase):
             {
                 "updated_at": 1580608922.0,
                 "created_at": 1580608922.0,
+                "id": self.existing_storage_device.id,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": "2020-02-02T02:02:02Z"},
@@ -921,7 +933,9 @@ class StorageAPITestCase(APITestCase):
         """The logs per device endpoint can be filtered by org_unit_id"""
         self.client.force_authenticate(self.yoda)
         # 1. Case one: no logs because no log entries for this device refer to the given OU
-        response = self.client.get(f"/api/storages/NFC/EXISTING_STORAGE/logs?org_unit_id={self.org_unit.id}")
+        response = self.client.get(
+            f"/api/storages/NFC/{self.existing_storage_device.id}/logs?org_unit_id={self.org_unit.id}"
+        )
 
         self.assertEqual(response.status_code, 200)
         received_json = response.json()
@@ -930,6 +944,7 @@ class StorageAPITestCase(APITestCase):
             {
                 "updated_at": 1580608922.0,
                 "created_at": 1580608922.0,
+                "id": self.existing_storage_device.id,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": "2020-02-02T02:02:02Z"},
@@ -953,7 +968,9 @@ class StorageAPITestCase(APITestCase):
         )
 
         # This time, it should be returned
-        response = self.client.get(f"/api/storages/NFC/EXISTING_STORAGE/logs?org_unit_id={self.org_unit.id}")
+        response = self.client.get(
+            f"/api/storages/NFC/{self.existing_storage_device.id}/logs?org_unit_id={self.org_unit.id}"
+        )
         received_json = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(
@@ -961,6 +978,7 @@ class StorageAPITestCase(APITestCase):
             {
                 "updated_at": 1580608922.0,
                 "created_at": 1580608922.0,
+                "id": self.existing_storage_device.id,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": "2020-02-02T02:02:02Z"},
@@ -996,7 +1014,7 @@ class StorageAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         # Case 1: we request WRITE_PROFILE, there is one from setupTestData
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs?types=WRITE_PROFILE")
+        response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?types=WRITE_PROFILE")
         received_json = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(
@@ -1004,6 +1022,7 @@ class StorageAPITestCase(APITestCase):
             {
                 "updated_at": 1580608922.0,
                 "created_at": 1580608922.0,
+                "id": self.existing_storage_device.id,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": "2020-02-02T02:02:02Z"},
@@ -1035,7 +1054,7 @@ class StorageAPITestCase(APITestCase):
         )
 
         # Case 2: we request WRITE_RECORD, there's currently none
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs?types=WRITE_RECORD")
+        response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?types=WRITE_RECORD")
         self.assertEqual(response.status_code, 200)
         received_json = response.json()
         self.assertDictEqual(
@@ -1043,6 +1062,7 @@ class StorageAPITestCase(APITestCase):
             {
                 "updated_at": 1580608922.0,
                 "created_at": 1580608922.0,
+                "id": self.existing_storage_device.id,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": "2020-02-02T02:02:02Z"},
@@ -1053,7 +1073,9 @@ class StorageAPITestCase(APITestCase):
         )
 
         # Case 3: we request both, there's currently only one WRITE_PROFILE
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs?types=WRITE_PROFILE,WRITE_RECORD")
+        response = self.client.get(
+            f"/api/storages/NFC/{self.existing_storage_device.id}/logs?types=WRITE_PROFILE,WRITE_RECORD"
+        )
         self.assertEqual(response.status_code, 200)
         received_json = response.json()
         self.assertDictEqual(
@@ -1061,6 +1083,7 @@ class StorageAPITestCase(APITestCase):
             {
                 "updated_at": 1580608922.0,
                 "created_at": 1580608922.0,
+                "id": self.existing_storage_device.id,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": "2020-02-02T02:02:02Z"},
@@ -1101,7 +1124,9 @@ class StorageAPITestCase(APITestCase):
             org_unit=self.org_unit,
         )
 
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs?types=WRITE_PROFILE,WRITE_RECORD&order=id")
+        response = self.client.get(
+            f"/api/storages/NFC/{self.existing_storage_device.id}/logs?types=WRITE_PROFILE,WRITE_RECORD&order=id"
+        )
         self.assertEqual(response.status_code, 200)
         received_json = response.json()
         self.assertEqual(
@@ -1109,6 +1134,7 @@ class StorageAPITestCase(APITestCase):
             {
                 "updated_at": 1580608922.0,
                 "created_at": 1580608922.0,
+                "id": self.existing_storage_device.id,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": "2020-02-02T02:02:02Z"},
@@ -1164,7 +1190,7 @@ class StorageAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         # Case 1: we request the OK status, there is one from setupTestData
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs?status=OK")
+        response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?status=OK")
         self.assertEqual(response.status_code, 200)
         received_json = response.json()
         self.assertDictEqual(
@@ -1172,6 +1198,7 @@ class StorageAPITestCase(APITestCase):
             {
                 "updated_at": 1580608922.0,
                 "created_at": 1580608922.0,
+                "id": self.existing_storage_device.id,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": "2020-02-02T02:02:02Z"},
@@ -1203,7 +1230,7 @@ class StorageAPITestCase(APITestCase):
         )
 
         # Case 2: we request the blacklisted status, there is none
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs?status=BLACKLISTED")
+        response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?status=BLACKLISTED")
         self.assertEqual(response.status_code, 200)
         received_json = response.json()
         self.assertEqual(
@@ -1211,6 +1238,7 @@ class StorageAPITestCase(APITestCase):
             {
                 "updated_at": 1580608922.0,
                 "created_at": 1580608922.0,
+                "id": self.existing_storage_device.id,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": "2020-02-02T02:02:02Z"},
@@ -1224,7 +1252,7 @@ class StorageAPITestCase(APITestCase):
         """The logs per device endpoint can be filtered by (status) reason"""
         self.client.force_authenticate(self.yoda)
 
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs?reason=STOLEN")
+        response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?reason=STOLEN")
         self.assertEqual(response.status_code, 200)
         received_json = response.json()
         self.assertDictEqual(
@@ -1232,6 +1260,7 @@ class StorageAPITestCase(APITestCase):
             {
                 "updated_at": 1580608922.0,
                 "created_at": 1580608922.0,
+                "id": self.existing_storage_device.id,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": "2020-02-02T02:02:02Z"},
@@ -1255,7 +1284,7 @@ class StorageAPITestCase(APITestCase):
             org_unit=self.org_unit,
         )
 
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs?performed_at=2022-11-03")
+        response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?performed_at=2022-11-03")
         self.assertEqual(response.status_code, 200)
         received_json = response.json()
         # if the filter didn't worked, we would also receive the log from setupTestData
@@ -1276,7 +1305,7 @@ class StorageAPITestCase(APITestCase):
         )
 
         # We request the first page
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs?limit=1&page=1&order=id")
+        response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?limit=1&page=1&order=id")
         received_json = response.json()
         self.assertEqual(
             received_json,
@@ -1285,6 +1314,7 @@ class StorageAPITestCase(APITestCase):
                 "results": {
                     "updated_at": 1580608922.0,
                     "created_at": 1580608922.0,
+                    "id": self.existing_storage_device.id,
                     "storage_id": "EXISTING_STORAGE",
                     "storage_type": "NFC",
                     "storage_status": {"status": "OK", "updated_at": "2020-02-02T02:02:02Z"},
@@ -1322,7 +1352,7 @@ class StorageAPITestCase(APITestCase):
         )
 
         # Then the second
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs?limit=1&page=2&order=id")
+        response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?limit=1&page=2&order=id")
         received_json = response.json()
         self.assertDictEqual(
             received_json,
@@ -1331,6 +1361,7 @@ class StorageAPITestCase(APITestCase):
                 "results": {
                     "updated_at": 1580608922.0,
                     "created_at": 1580608922.0,
+                    "id": self.existing_storage_device.id,
                     "storage_id": "EXISTING_STORAGE",
                     "storage_type": "NFC",
                     "storage_status": {"status": "OK", "updated_at": "2020-02-02T02:02:02Z"},
@@ -1368,7 +1399,7 @@ class StorageAPITestCase(APITestCase):
         )
 
         # Then both records on the same page
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs?limit=10&page=1&order=id")
+        response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?limit=10&page=1&order=id")
         received_json = response.json()
         self.assertEqual(
             received_json,
@@ -1377,6 +1408,7 @@ class StorageAPITestCase(APITestCase):
                 "results": {
                     "updated_at": 1580608922.0,
                     "created_at": 1580608922.0,
+                    "id": self.existing_storage_device.id,
                     "storage_id": "EXISTING_STORAGE",
                     "storage_type": "NFC",
                     "storage_status": {"status": "OK", "updated_at": "2020-02-02T02:02:02Z"},
@@ -1447,7 +1479,7 @@ class StorageAPITestCase(APITestCase):
         )
 
         # We request the first page
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs?limit=1&page=1&order=id")
+        response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?limit=1&page=1&order=id")
         received_json = response.json()
         self.assertEqual(received_json["count"], 1)
 
@@ -1466,37 +1498,37 @@ class StorageAPITestCase(APITestCase):
         )
 
         # Ordering by "id"
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs?order=id")
+        response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?order=id")
         received_json = response.json()
         received_data = [e["id"] for e in received_json["logs"]]
         self.assertEqual(received_data, sorted(received_data))
 
         # Ordering by reverse "id"
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs?order=-id")
+        response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?order=-id")
         received_json = response.json()
         received_data = [e["id"] for e in received_json["logs"]]
         self.assertEqual(received_data[::-1], sorted(received_data))
 
         # Ordering by "operation_type"
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs?order=operation_type")
+        response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?order=operation_type")
         received_json = response.json()
         received_data = [e["operation_type"] for e in received_json["logs"]]
         self.assertEqual(received_data, sorted(received_data))
 
         # Ordering by reverse "operation_type"
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs?order=-operation_type")
+        response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?order=-operation_type")
         received_json = response.json()
         received_data = [e["operation_type"] for e in received_json["logs"]]
         self.assertEqual(received_data[::-1], sorted(received_data))
 
         # Ordering by "performed_at"
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs?order=performed_at")
+        response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?order=performed_at")
         received_json = response.json()
         received_data = [e["performed_at"] for e in received_json["logs"]]
         self.assertEqual(received_data, sorted(received_data))
 
         # Ordering by reverse "performed_at"
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs?order=-performed_at")
+        response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?order=-performed_at")
         received_json = response.json()
         received_data = [e["performed_at"] for e in received_json["logs"]]
         self.assertEqual(received_data[::-1], sorted(received_data))
@@ -1605,14 +1637,9 @@ class StorageAPITestCase(APITestCase):
 
         # 1. Check the response status and content type
         response = self.client.get("/api/storages/?xlsx=true")
-        self.assertEqual(response.status_code, 200)
-
-        self.assertEqual(response["Content-Type"], "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-
-        excel_data = pd.read_excel(response.content, engine="openpyxl")
+        excel_columns, excel_data = self.assertXlsxFileResponse(response)
 
         # 2. Check the headers
-        excel_columns = list(excel_data.columns.ravel())
         self.assertEqual(
             excel_columns,
             [
@@ -1630,9 +1657,8 @@ class StorageAPITestCase(APITestCase):
         )
 
         # 3. Check the data
-        data_dict = excel_data.replace({np.nan: None}).to_dict()
         self.assertDictEqual(
-            data_dict,
+            excel_data,
             {
                 "Storage ID": {
                     0: "EXISTING_STORAGE",
@@ -1703,7 +1729,7 @@ class StorageAPITestCase(APITestCase):
         """A CSV download with decent content is returned"""
         self.client.force_authenticate(self.yoda)
 
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs?csv=true")
+        response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?csv=true")
 
         # 1. Check the response status and content type
         self.assertEqual(response.status_code, 200)
@@ -1754,15 +1780,12 @@ class StorageAPITestCase(APITestCase):
         """A XLSX download with decent content is returned"""
         self.client.force_authenticate(self.yoda)
 
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs?xlsx=true")
-        excel_data = pd.read_excel(response.content, engine="openpyxl")
+        response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?xlsx=true")
 
         # 1. Check the response status and content type
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response["Content-Type"], "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        excel_columns, excel_data = self.assertXlsxFileResponse(response)
 
         # 2. Check the headers
-        excel_columns = list(excel_data.columns.ravel())
         self.assertEqual(
             excel_columns,
             [
@@ -1782,9 +1805,8 @@ class StorageAPITestCase(APITestCase):
         )
 
         # 3. Check the data
-        data_dict = excel_data.replace({np.nan: None}).to_dict()
         self.assertEqual(
-            data_dict,
+            excel_data,
             {
                 "id": {0: "e4200710-bf82-4d29-a29b-6a042f79ef25"},
                 "storage_id": {0: "EXISTING_STORAGE"},
@@ -1815,7 +1837,9 @@ class StorageAPITestCase(APITestCase):
             org_unit=self.org_unit,
         )
 
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs?csv=true&types=WRITE_RECORD")
+        response = self.client.get(
+            f"/api/storages/NFC/{self.existing_storage_device.id}/logs?csv=true&types=WRITE_RECORD"
+        )
         data = self._csv_response_to_list(response)
         # We check that only the new one is found, the one from setUpTestData is filtered out
         self.assertEqual(len(data), 2)  # 1 header, 1 data row
@@ -1851,7 +1875,7 @@ class StorageAPITestCase(APITestCase):
             org_unit=self.org_unit,
         )
 
-        response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs?csv=true&order=-id")
+        response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?csv=true&order=-id")
         data = self._csv_response_to_list(response)
         self.assertEqual(data[1][0], "e4200710-bf82-4d29-a29b-6a042f79ef26")
         self.assertEqual(data[2][0], "e4200710-bf82-4d29-a29b-6a042f79ef25")

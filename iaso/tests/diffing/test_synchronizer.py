@@ -5,6 +5,7 @@ import time_machine
 
 from django.test import TestCase
 
+from iaso import models as m
 from iaso.diffing import DataSourceVersionsSynchronizer, Differ, diffs_to_json
 from iaso.tests.diffing.utils import PyramidBaseTest
 
@@ -64,7 +65,7 @@ class DataSourceVersionsSynchronizerTestCase(TestCase):
                 "field": "name",
                 "before": "Angola",
                 "after": "Angola new",
-                "status": "modified",
+                "status": Differ.STATUS_MODIFIED,
                 "distance": None,
             },
         ]
@@ -77,14 +78,14 @@ class DataSourceVersionsSynchronizerTestCase(TestCase):
                 "field": "name",
                 "before": "Angola",
                 "after": "Angola new",
-                "status": "modified",
+                "status": Differ.STATUS_MODIFIED,
                 "distance": None,
             },
             {
                 "field": "group:group-a:Group A",
                 "before": [{"id": "group-a", "name": "Group A", "iaso_id": 1260}],
                 "after": [{"id": "group-a", "name": "Group A", "iaso_id": 1262}],
-                "status": "same",
+                "status": Differ.STATUS_SAME,
                 "distance": 0,
             },
         ]
@@ -97,14 +98,14 @@ class DataSourceVersionsSynchronizerTestCase(TestCase):
                 "field": "name",
                 "before": "Angola",
                 "after": "Angola new",
-                "status": "modified",
+                "status": Differ.STATUS_MODIFIED,
                 "distance": None,
             },
             {
                 "field": "group:group-b:Group B",
                 "before": [{"id": "group-b", "name": "Group B", "iaso_id": 1261}],
                 "after": [],
-                "status": "deleted",
+                "status": Differ.STATUS_NOT_IN_ORIGIN,
                 "distance": None,
             },
         ]
@@ -117,14 +118,14 @@ class DataSourceVersionsSynchronizerTestCase(TestCase):
                 "field": "name",
                 "before": "Angola",
                 "after": "Angola new",
-                "status": "modified",
+                "status": Differ.STATUS_MODIFIED,
                 "distance": None,
             },
             {
                 "field": "group:group-c:Group C",
                 "before": [],
                 "after": [{"id": "group-c", "name": "Group C", "iaso_id": 1263}],
-                "status": "new",
+                "status": Differ.STATUS_NEW,
                 "distance": None,
             },
         ]
@@ -153,11 +154,13 @@ class DiffsToJsonTestCase(PyramidBaseTest):
             validation_status=None,
             top_org_unit=None,
             org_unit_types=[self.org_unit_type_country],
+            org_unit_group=None,
             # Version to compare with.
             version_ref=self.source_version_to_compare_with,
             validation_status_ref=None,
             top_org_unit_ref=None,
             org_unit_types_ref=[self.org_unit_type_country],
+            org_unit_group_ref=None,
             # Options.
             ignore_groups=True,
             show_deleted_org_units=False,
@@ -207,13 +210,13 @@ class DiffsToJsonTestCase(PyramidBaseTest):
                     "closed_date": "2025-11-28",
                     "groups": [self.group_a1.pk, self.group_b.pk],
                 },
-                "status": "modified",
+                "status": Differ.STATUS_MODIFIED,
                 "comparisons": [
                     {
                         "field": "name",
                         "before": "Angola",
                         "after": "Angola new",
-                        "status": "modified",
+                        "status": Differ.STATUS_MODIFIED,
                         "distance": None,
                     }
                 ],
@@ -221,6 +224,141 @@ class DiffsToJsonTestCase(PyramidBaseTest):
         ]
 
         self.assertJSONEqual(json_diffs, expected_json_diffs)
+
+
+class PrepareModifiedChangeRequestsTestCase(PyramidBaseTest):
+    def _make_synchronizer(self):
+        account = m.Account.objects.create(name="Account")
+        data_source_sync = m.DataSourceVersionsSynchronization.objects.create(
+            name="sync",
+            source_version_to_update=self.source_version_to_update,
+            source_version_to_compare_with=self.source_version_to_compare_with,
+            json_diff="[]",
+            account=account,
+        )
+        return DataSourceVersionsSynchronizer(data_source_sync=data_source_sync)
+
+    def test_prepare_modified_change_request_handles_status_new(self):
+        synchronizer = self._make_synchronizer()
+        diff = {
+            "status": Differ.STATUS_MODIFIED,
+            "orgunit_dhis2": {
+                "id": self.angola_country_to_update.pk,
+                "name": "Angola",
+                "parent": None,
+                "opening_date": None,
+                "closed_date": "2025-11-28",
+                "org_unit_type": self.org_unit_type_country.pk,
+                "location": None,
+            },
+            "comparisons": [
+                {
+                    "field": "opening_date",
+                    "before": None,
+                    "after": "2024-01-01",
+                    "status": Differ.STATUS_NEW,
+                    "distance": None,
+                }
+            ],
+        }
+
+        change_request, group_changes = synchronizer._prepare_modified_change_requests(diff)
+
+        self.assertIsNotNone(change_request)
+        self.assertIn("new_opening_date", change_request.requested_fields)
+        self.assertEqual(change_request.new_opening_date, datetime.date(2024, 1, 1))
+        self.assertEqual(group_changes, [])
+
+    def test_prepare_modified_change_request_handles_status_not_in_origin(self):
+        synchronizer = self._make_synchronizer()
+        diff = {
+            "status": Differ.STATUS_MODIFIED,
+            "orgunit_dhis2": {
+                "id": self.angola_country_to_update.pk,
+                "name": "Angola",
+                "parent": None,
+                "opening_date": "2024-01-01",
+                "closed_date": "2025-11-28",
+                "org_unit_type": self.org_unit_type_country.pk,
+                "location": None,
+            },
+            "comparisons": [
+                {
+                    "field": "opening_date",
+                    "before": "2024-01-01",
+                    "after": None,
+                    "status": Differ.STATUS_NOT_IN_ORIGIN,
+                    "distance": None,
+                }
+            ],
+        }
+
+        change_request, group_changes = synchronizer._prepare_modified_change_requests(diff)
+
+        self.assertIsNotNone(change_request)
+        self.assertIn("new_opening_date", change_request.requested_fields)
+        self.assertIsNone(change_request.new_opening_date)
+        self.assertEqual(group_changes, [])
+
+    def test_prepare_modified_change_request_ignores_empty_name(self):
+        synchronizer = self._make_synchronizer()
+        diff = {
+            "status": Differ.STATUS_MODIFIED,
+            "orgunit_dhis2": {
+                "id": self.angola_country_to_update.pk,
+                "name": "Angola",
+                "parent": None,
+                "opening_date": "2024-01-01",
+                "closed_date": "2025-11-28",
+                "org_unit_type": self.org_unit_type_country.pk,
+                "location": None,
+            },
+            "comparisons": [
+                {
+                    "field": "name",
+                    "before": "Angola",
+                    "after": "",
+                    "status": Differ.STATUS_MODIFIED,
+                    "distance": None,
+                }
+            ],
+        }
+
+        change_request, group_changes = synchronizer._prepare_modified_change_requests(diff)
+
+        self.assertIsNotNone(change_request)
+        self.assertNotIn("new_name", change_request.requested_fields)
+        self.assertEqual(change_request.new_name, "")
+
+    def test_prepare_modified_change_request_removes_parent(self):
+        synchronizer = self._make_synchronizer()
+        diff = {
+            "status": Differ.STATUS_MODIFIED,
+            "orgunit_dhis2": {
+                "id": self.angola_country_to_update.pk,
+                "name": "Angola",
+                "parent": self.angola_region_to_update.pk,
+                "opening_date": "2024-01-01",
+                "closed_date": "2025-11-28",
+                "org_unit_type": self.org_unit_type_country.pk,
+                "location": None,
+            },
+            "comparisons": [
+                {
+                    "field": "parent",
+                    "before": "parent-ref",
+                    "after": None,
+                    "status": Differ.STATUS_MODIFIED,
+                    "distance": None,
+                }
+            ],
+        }
+
+        change_request, group_changes = synchronizer._prepare_modified_change_requests(diff)
+
+        self.assertIsNotNone(change_request)
+        self.assertIn("new_parent", change_request.requested_fields)
+        self.assertIsNone(change_request.new_parent_id)
 
     def test_dump_as_json_for_org_unit_creation(self):
         """
@@ -237,11 +375,13 @@ class DiffsToJsonTestCase(PyramidBaseTest):
             validation_status=None,
             top_org_unit=None,
             org_unit_types=[self.org_unit_type_country],
+            org_unit_group=None,
             # Version to compare with.
             version_ref=self.source_version_to_compare_with,
             validation_status_ref=None,
             top_org_unit_ref=None,
             org_unit_types_ref=[self.org_unit_type_country],
+            org_unit_group_ref=None,
             # Options.
             ignore_groups=True,
             show_deleted_org_units=False,
@@ -255,10 +395,10 @@ class DiffsToJsonTestCase(PyramidBaseTest):
                 "org_unit": {
                     "id": self.angola_country_to_compare_with.pk,
                     "version": self.source_version_to_compare_with.pk,
+                    "source_ref": "id-1",
                     "path": str(self.angola_country_to_compare_with.path),
                     "location": None,
                     "org_unit_type": self.org_unit_type_country.pk,
-                    "source_ref": "id-1",
                     "name": "Angola",
                     "parent": None,
                     "opening_date": "2022-11-28",
@@ -279,13 +419,13 @@ class DiffsToJsonTestCase(PyramidBaseTest):
                     "groups": [self.group_a2.pk, self.group_c.pk],
                 },
                 "orgunit_dhis2": None,
-                "status": "new",
+                "status": Differ.STATUS_NEW,
                 "comparisons": [
                     {
                         "field": "name",
                         "before": None,
                         "after": "Angola",
-                        "status": "new",
+                        "status": Differ.STATUS_NEW,
                         "distance": None,
                     }
                 ],

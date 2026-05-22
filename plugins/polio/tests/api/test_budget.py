@@ -15,6 +15,7 @@ from iaso import models as m
 from iaso.test import APITestCase
 from plugins.polio.budget.models import BudgetProcess, BudgetStep, MailTemplate
 from plugins.polio.models import Campaign, CampaignType, Round
+from plugins.polio.permissions import POLIO_BUDGET_PERMISSION
 from plugins.polio.tests.utils.budget import get_mocked_workflow
 
 
@@ -55,7 +56,7 @@ class BudgetProcessViewSetTestCase(APITestCase):
             first_name="test",
             last_name="test",
             account=cls.account,
-            permissions=["iaso_polio_budget"],
+            permissions=[POLIO_BUDGET_PERMISSION],
         )
 
         # Campaign type.
@@ -329,7 +330,7 @@ class BudgetProcessViewSetTestCase(APITestCase):
         GET /api/polio/budget/?fields=obr_name,country_name
         """
         self.client.force_login(self.user)
-        response = self.client.get("/api/polio/budget/?fields=obr_name,country_name")
+        response = self.client.get("/api/polio/budget/", data={"fields": ",".join(["obr_name", "country_name"])})
         response_data = self.assertJSONResponse(response, 200)
         for budget_process in response_data["results"]:
             self.assertEqual(budget_process["obr_name"], "test campaign")
@@ -390,6 +391,7 @@ class BudgetProcessViewSetTestCase(APITestCase):
                 "comment": "hello world2",
                 "files": [fake_file],
             },
+            format="multipart",
         )
         response_data = self.assertJSONResponse(response, 201)
         self.assertEqual(response_data["result"], "success")
@@ -454,6 +456,7 @@ class BudgetProcessViewSetTestCase(APITestCase):
                     ]
                 ),
             },
+            format="multipart",
         )
         response_data = self.assertJSONResponse(response, 201)
         self.assertEqual(response_data["result"], "success")
@@ -692,6 +695,7 @@ class BudgetProcessViewSetTestCase(APITestCase):
                 "comment": "override me",
                 "files": [fake_file],
             },
+            format="multipart",
         )
         response_data = self.assertJSONResponse(response, 201)
         self.assertEqual(response_data["result"], "success")
@@ -789,7 +793,7 @@ class BudgetProcessViewSetTestCase(APITestCase):
 
     def test_csv_export(self):
         self.client.force_login(self.user)
-        r = self.client.get("/api/polio/budget/export_csv/?fields=obr_name,rounds")
+        r = self.client.get("/api/polio/budget/export_csv/", data={"fields": ",".join(["obr_name", "rounds"])})
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r["Content-Type"], "text/csv")
         self.assertEqual(r.content, b'OBR name,Rounds\r\ntest campaign,"1,2"\r\ntest campaign,3\r\n')
@@ -824,18 +828,21 @@ class BudgetProcessViewSetTestCase(APITestCase):
             {
                 "value": self.round_1.pk,
                 "label": 1,
+                "on_hold": False,
                 "campaign_id": str(self.campaign.id),
                 "target_population": None,
             },
             {
                 "value": self.round_2.pk,
                 "label": 2,
+                "on_hold": False,
                 "campaign_id": str(self.campaign.id),
                 "target_population": None,
             },
             {
                 "value": self.round_4.pk,
                 "label": 4,
+                "on_hold": False,
                 "campaign_id": str(self.campaign.id),
                 "target_population": None,
             },
@@ -865,6 +872,7 @@ class BudgetProcessViewSetTestCase(APITestCase):
                 {
                     "value": self.round_4.id,
                     "label": 4,
+                    "on_hold": False,
                     "campaign_id": str(self.campaign.id),
                     "target_population": None,
                 },
@@ -884,7 +892,9 @@ class FilterBudgetProcessViewSetTestCase(APITestCase):
         cls.data_source = m.DataSource.objects.create(name="Data Source")
         cls.source_version = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
         cls.account = m.Account.objects.create(name="Account", default_version=cls.source_version)
-        cls.user = cls.create_user_with_profile(username="user", account=cls.account, permissions=["iaso_polio_budget"])
+        cls.user = cls.create_user_with_profile(
+            username="user", account=cls.account, permissions=[POLIO_BUDGET_PERMISSION]
+        )
 
         # Campaign type.
         cls.polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
@@ -994,7 +1004,9 @@ class FilterBudgetStepViewSetTestCase(APITestCase):
         cls.data_source = m.DataSource.objects.create(name="Data Source")
         cls.source_version = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
         cls.account = m.Account.objects.create(name="Account", default_version=cls.source_version)
-        cls.user = cls.create_user_with_profile(username="user", account=cls.account, permissions=["iaso_polio_budget"])
+        cls.user = cls.create_user_with_profile(
+            username="user", account=cls.account, permissions=[POLIO_BUDGET_PERMISSION]
+        )
 
         # Campaign.
         cls.country = m.OrgUnit.objects.create(name="ANGOLA")

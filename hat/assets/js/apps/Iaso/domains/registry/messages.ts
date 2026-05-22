@@ -125,6 +125,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.deleteText',
         defaultMessage: 'Undelete is possible on submission detail page',
     },
+    startPeriod: {
+        id: 'iaso.instance.start',
+        defaultMessage: 'Start period',
+    },
+    endPeriod: {
+        id: 'iaso.instance.end',
+        defaultMessage: 'End period',
+    },
+    periodError: {
+        id: 'iaso.instance.chronologicalPeriodError',
+        defaultMessage: 'Start period should be before end period',
+    },
     missingSubmission: {
         id: 'iaso.registry.missingSubmission',
         defaultMessage: 'Missing submissions',
@@ -141,10 +153,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.add',
         defaultMessage: 'Add',
     },
+    periodType: {
+        id: 'iaso.label.periodType',
+        defaultMessage: 'Period type',
+    },
     markerClustering: {
         id: 'iaso.map.title.markerClustering',
         defaultMessage: 'Clustering',
-    },
+    }
 });
 
 export default MESSAGES;

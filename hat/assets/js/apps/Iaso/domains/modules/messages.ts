@@ -86,6 +86,26 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Data validation',
         id: 'iaso.modules.data_validation',
     },
+    saas: {
+        defaultMessage: 'SaaS',
+        id: 'iaso.modules.saas',
+    },
+    stock_management: {
+        defaultMessage: 'Stock management',
+        id: 'iaso.modules.stock_management',
+    },
+    snt_malaria: {
+        defaultMessage: 'SNT Malaria',
+        id: 'iaso.modules.snt_malaria',
+    },
+    form_ai: {
+        defaultMessage: 'Form AI',
+        id: 'iaso.modules.form_ai',
+    },
+    validation_workflow: {
+        defaultMessage: 'Validation workflows',
+        id: 'iaso.modules.validation_workflow',
+    },
 });
 
 export default MESSAGES;

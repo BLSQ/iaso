@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react';
-import { Paper, Box } from '@mui/material';
+import { Box, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { scaleThreshold } from '@visx/scale';
-import { ScaleThreshold } from '../../../components/LegendBuilder/types';
-import { Legend } from '../../../components/LegendBuilder/Legend';
+import { Legend } from 'Iaso/components/LegendBuilder/Legend';
+import { ScaleThreshold } from 'Iaso/components/LegendBuilder/types';
 
 const useStyles = makeStyles(theme => ({
     root: {

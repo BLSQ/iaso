@@ -1,57 +1,65 @@
-import React, { useState, FunctionComponent, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 
+import Add from '@mui/icons-material/Add';
 import { Grid, Button, Box, useMediaQuery, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import SearchIcon from '@mui/icons-material/Search';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
-
+import {
+    commonStyles,
+    useRedirectTo,
+    useSafeIntl,
+} from 'bluesquare-components';
+import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
+import { SearchButton } from 'Iaso/components/SearchButton';
+import { baseUrls } from 'Iaso/constants/urls';
+import { PlanningsDropdown } from 'Iaso/domains/plannings/components/PlanningsDropdown';
+import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
+import { useQueryString } from 'Iaso/hooks/useApiParams';
+import { useFilterState } from 'Iaso/hooks/useFilterState';
+import { PLANNING_READ, PLANNING_WRITE } from 'Iaso/utils/permissions';
+import * as Permission from 'Iaso/utils/permissions';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
+import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import InputComponent from '../../../components/forms/InputComponent';
-import { useFilterState } from '../../../hooks/useFilterState';
-
-import MESSAGES from '../messages';
-
-import { baseUrl } from '../config';
-import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings';
-import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
-
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
+import { baseUrl } from '../config';
+import { FormResponse, tableDefaults } from '../hooks/useGetForms';
+import MESSAGES from '../messages';
+import { FormsParams } from '../types/forms';
+const dwnldBaseUrl = '/api/forms';
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-type Params = {
-    pageSize: string;
-    order: string;
-    page: string;
-    search?: string;
-    showDeleted?: string;
-    planning?: string;
-    projectsIds?: string;
-};
-
 type Props = {
-    params: Params;
+    params: FormsParams;
+    forms?: FormResponse;
+    isLoadingForms: boolean;
 };
 
-const Filters: FunctionComponent<Props> = ({ params }) => {
+const Filters = ({ params, forms, isLoadingForms }: Props) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState({ baseUrl, params, withPagination: false });
+    const redirectTo = useRedirectTo();
+    const { filters, handleSearch, handleChange } = useFilterState({
+        baseUrl,
+        params,
+        withPagination: false,
+        searchAlwaysEnabled: true,
+    });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
-    const [showDeleted, setShowDeleted] = useState<boolean>(
-        filters.showDeleted === 'true',
+    const currentUser = useCurrentUser();
+    const hasPlanningPermission = userHasOneOfPermissions(
+        [PLANNING_READ, PLANNING_WRITE],
+        currentUser,
     );
-    const handleShowDeleted = useCallback(
+    const handleOnlyDeleted = useCallback(
         (key, value) => {
-            // converting false to undefined to be able to compute `filtersUpdated` correctly
-            const valueForParam = value || undefined;
+            const valueForParam = value ? '1' : undefined;
             handleChange(key, valueForParam);
-            setShowDeleted(value);
         },
         [handleChange],
     );
-    const { data: planningsDropdownOptions } = useGetPlanningsOptions();
     const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
         useGetOrgUnitTypesDropdownOptions();
     const { data: allProjects, isFetching: isFetchingProjects } =
@@ -59,6 +67,19 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
 
     const theme = useTheme();
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
+
+    const handleAddForm = useCallback(() => {
+        redirectTo(baseUrls.formDetail, {
+            formId: '0',
+        });
+    }, [redirectTo]);
+
+    const downloadQueryString = useQueryString(
+        { ...params, all: 'true' },
+        tableDefaults,
+    );
+    const csvUrl = `${dwnldBaseUrl}/?${downloadQueryString}&csv=true`;
+    const xlsxUrl = `${dwnldBaseUrl}/?${downloadQueryString}&xlsx=true`;
 
     return (
         <Grid container>
@@ -103,26 +124,34 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     />
                 </Grid>
                 <Grid item xs={12} md={3}>
-                    <InputComponent
-                        type="select"
-                        multi
-                        keyValue="planning"
-                        onChange={handleChange}
+                    <PlanningsDropdown
+                        handleChange={handleChange}
                         value={filters.planning}
-                        label={MESSAGES.planning}
-                        options={planningsDropdownOptions}
+                        keyValue="planning"
+                        multi
                     />
+                    {!hasPlanningPermission && (
+                        <InputComponent
+                            keyValue="onlyDeleted"
+                            onChange={handleOnlyDeleted}
+                            value={filters.onlyDeleted === '1'}
+                            type="checkbox"
+                            label={MESSAGES.onlyDeleted}
+                        />
+                    )}
                 </Grid>
             </Grid>
             <Grid container item xs={12} spacing={2}>
                 <Grid item xs={12} md={3}>
-                    <InputComponent
-                        keyValue="showDeleted"
-                        onChange={handleShowDeleted}
-                        value={showDeleted}
-                        type="checkbox"
-                        label={MESSAGES.showDeleted}
-                    />
+                    {hasPlanningPermission && (
+                        <InputComponent
+                            keyValue="onlyDeleted"
+                            onChange={handleOnlyDeleted}
+                            value={filters.onlyDeleted === '1'}
+                            type="checkbox"
+                            label={MESSAGES.onlyDeleted}
+                        />
+                    )}
                 </Grid>
                 <Grid item xs={12} md={9}>
                     <Box
@@ -130,20 +159,33 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                         display="flex"
                         justifyContent="flex-end"
                     >
-                        <Button
-                            data-test="search-button"
-                            disabled={
-                                (!showDeleted && !filtersUpdated) ||
-                                textSearchError
-                            }
-                            variant="contained"
-                            className={classes.button}
-                            color="primary"
-                            onClick={() => handleSearch()}
-                        >
-                            <SearchIcon className={classes.buttonIcon} />
-                            {formatMessage(MESSAGES.search)}
-                        </Button>
+                        <DisplayIfUserHasPerm permissions={[Permission.FORMS]}>
+                            <Button
+                                variant="outlined"
+                                className={classes.button}
+                                color="primary"
+                                onClick={handleAddForm}
+                                data-test="add-form-button"
+                                sx={{
+                                    mr: 2,
+                                }}
+                            >
+                                <Add className={classes.buttonIcon} />
+                                {formatMessage(MESSAGES.addForm)}
+                            </Button>
+                        </DisplayIfUserHasPerm>
+                        <SearchButton
+                            disabled={textSearchError}
+                            onSearch={handleSearch}
+                        />
+                    </Box>
+                    <Box mt={2} display="flex" justifyContent="flex-end">
+                        <DownloadButtonsComponent
+                            variant="outlined"
+                            xlsxUrl={xlsxUrl}
+                            csvUrl={csvUrl}
+                            disabled={isLoadingForms || !forms?.forms?.length}
+                        />
                     </Box>
                 </Grid>
             </Grid>

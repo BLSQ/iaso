@@ -1,10 +1,12 @@
 import React from 'react';
+
 import { GlobalStyles } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme } from 'bluesquare-components';
 import { SnackbarProvider } from 'notistack';
 import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from 'react-query';
 
 import './libs/polyfills';
@@ -44,6 +46,7 @@ declare global {
             themeConfig: ThemeConfig,
             userHomePage: string,
         ) => void;
+        __TANSTACK_QUERY_CLIENT__: QueryClient;
     }
 }
 
@@ -56,6 +59,7 @@ const IasoApp: React.FC<{
     const { plugins, pluginHomePage, pluginTheme } =
         usePlugins(enabledPluginsName);
     const usedTheme = pluginTheme || getOverriddenTheme(theme, themeConfig);
+    window.__TANSTACK_QUERY_CLIENT__ = queryClient;
     return ReactDOM.createPortal(
         <QueryClientProvider client={queryClient}>
             <PluginsContext.Provider value={{ plugins }}>
@@ -65,7 +69,11 @@ const IasoApp: React.FC<{
                         <GlobalStyles styles={getGlobalOverrides(theme)} />
                         <SidebarProvider>
                             <LocaleProvider>
-                                <LocalizedAppComponent>
+                                <LocalizedAppComponent
+                                    userHomePage={
+                                        pluginHomePage || userHomePage
+                                    }
+                                >
                                     <SnackbarProvider
                                         maxSnack={3}
                                         autoHideDuration={4000}
@@ -92,13 +100,13 @@ const IasoApp: React.FC<{
 };
 
 window.iasoApp = (element, enabledPluginsName, themeConfig, userHomePage) => {
-    ReactDOM.render(
+    const root = createRoot(element!); // createRoot(container!) if you use TypeScript
+    root.render(
         <IasoApp
             element={element}
             enabledPluginsName={enabledPluginsName}
             themeConfig={themeConfig}
             userHomePage={userHomePage}
         />,
-        element,
     );
 };

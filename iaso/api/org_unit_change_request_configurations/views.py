@@ -1,6 +1,7 @@
 import django_filters
 
 from django.db.models import Q
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -24,6 +25,7 @@ from iaso.api.org_unit_change_request_configurations.serializers import (
 from iaso.models import OrgUnitChangeRequestConfiguration, OrgUnitType
 
 
+@extend_schema(tags=["Org unit change request configurations"])
 class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet):
     """OrgUnitChangeRequestConfiguration API
 

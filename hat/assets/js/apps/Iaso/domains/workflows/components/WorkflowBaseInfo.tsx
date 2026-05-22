@@ -1,3 +1,4 @@
+import React, { FunctionComponent, ReactNode } from 'react';
 import {
     Table,
     TableBody,
@@ -7,17 +8,12 @@ import {
     Box,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { FunctionComponent, ReactNode } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-
-import MESSAGES from '../messages';
-
-import { WorkflowVersionDetail } from '../types';
-
-import { StatusCell } from './StatusCell';
-import { DetailsForm } from './DetailsForm';
 import { LinkToForm } from '../../forms/components/LinkToForm';
-
+import MESSAGES from '../messages';
+import { WorkflowVersionDetail } from '../types';
+import { DetailsForm } from './DetailsForm';
+import { StatusCell } from './StatusCell';
 import { PublishVersionModal } from './versions/PublishVersionModal';
 
 const useStyles = makeStyles(theme => ({

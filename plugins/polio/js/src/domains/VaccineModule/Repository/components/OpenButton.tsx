@@ -1,7 +1,7 @@
 import { Box } from '@mui/material';
 import React from 'react';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
-import PdfSvgComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/svg/PdfSvgComponent';
+import PdfSvgComponent from 'Iaso/components/svg/PdfSvgComponent';
 
 export const OpenButtonComponent = ({ onClick, date }) => (
     <Box

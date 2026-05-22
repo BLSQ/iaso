@@ -1,9 +1,10 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
 
-from hat.menupermissions import models as permission
 from iaso.api.common import EtlModelViewset, HasPermission
 from plugins.polio.budget.models import BudgetProcess
 from plugins.polio.models import Round
+from plugins.polio.permissions import POLIO_BUDGET_PERMISSION
 
 
 class RoundsNestedSerializer(serializers.ModelSerializer):
@@ -31,6 +32,7 @@ class BudgetDashboardSerializer(serializers.ModelSerializer):
         return filtered_queryset.first().campaign.obr_name
 
 
+@extend_schema(tags=["Polio - Dashboards - Budget"])
 class BudgetDashboardViewSet(EtlModelViewset):
     """
     GET /api/polio/dashboards/budgets/
@@ -39,7 +41,7 @@ class BudgetDashboardViewSet(EtlModelViewset):
     """
 
     http_method_names = ["get"]
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.POLIO_BUDGET)]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(POLIO_BUDGET_PERMISSION)]
     model = BudgetProcess
     serializer_class = BudgetDashboardSerializer
 

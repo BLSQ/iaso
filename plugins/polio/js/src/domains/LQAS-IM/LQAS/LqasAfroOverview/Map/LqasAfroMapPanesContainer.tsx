@@ -1,25 +1,27 @@
+/* eslint-disable react/no-unstable-nested-components */
 import React, {
     FunctionComponent,
     useEffect,
     useCallback,
     useContext,
 } from 'react';
-import { useMapEvents } from 'react-leaflet';
 import { LoadingSpinner, useRedirectToReplace } from 'bluesquare-components';
-import { COUNTRY, DISTRICT } from '../../../shared/constants';
+import { useMapEvents } from 'react-leaflet';
+import { defaultShapeStyle } from '../../../../../utils';
 import { MapPanes } from '../../../../Campaigns/MapComponent/MapPanes';
+import { COUNTRY, DISTRICT } from '../../../shared/constants';
+import { lqasDistrictColors } from '../../constants';
+import { LqasAfroOverviewContext } from '../Context/LqasAfroOverviewContext';
 import {
     useAfroMapShapes,
     useGetZoomedInBackgroundShapes,
     useGetZoomedInShapes,
 } from '../hooks/useAfroMapShapes';
-import { defaultShapeStyle } from '../../../../../utils';
-import { AfroMapParams, Side } from '../types';
-import { LqasAfroTooltip } from './LqasAfroTooltip';
-import { LqasAfroPopup } from './LqasAfroPopUp';
+import { AfroMapParams } from '../types';
 import { getRound } from '../utils';
-import { LqasAfroOverviewContext } from '../Context/LqasAfroOverviewContext';
-import { lqasDistrictColors } from '../../constants';
+import { LqasAfroPopup } from './LqasAfroPopUp';
+import { LqasAfroTooltip } from './LqasAfroTooltip';
+import { Side } from '../../../../../constants/types';
 import { baseUrls } from '../../../../../constants/urls';
 
 const getMainLayerStyle = shape => {
@@ -36,14 +38,17 @@ const getBackgroundLayerStyle = () => {
 };
 
 type Props = {
-    params: AfroMapParams;
+    params: AfroMapParams & { accountId: string };
     side: Side;
+    currentUrl: string;
 };
-const baseUrl = baseUrls.lqasAfro;
+
 export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
     params,
     side,
+    currentUrl,
 }) => {
+    const isEmbedded = currentUrl === baseUrls.embeddedLqasAfroPath;
     const redirectToReplace = useRedirectToReplace();
     const handleEvent = useCallback(
         currentMap => {
@@ -67,9 +72,9 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
             if (side === 'right') {
                 newParams.centerRight = paramCenter;
             }
-            redirectToReplace(baseUrl, newParams);
+            redirectToReplace(currentUrl, newParams);
         },
-        [params, redirectToReplace, side],
+        [params, redirectToReplace, side, currentUrl],
     );
     const map = useMapEvents({
         zoomend: () => {
@@ -96,6 +101,7 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
             params,
             selectedRound,
             side,
+            isEmbedded,
         });
 
     const { data: zoominShapes, isFetching: isLoadingZoomin } =
@@ -106,6 +112,7 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
             params,
             selectedRound,
             side,
+            isEmbedded,
         });
 
     const {
@@ -114,6 +121,7 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
     } = useGetZoomedInBackgroundShapes({
         bounds: JSON.stringify(bounds),
         enabled: !showCountries && Boolean(bounds),
+        isEmbedded,
     });
     const paramsAsString = JSON.stringify(params);
     const isLoading =
@@ -140,6 +148,7 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
                     mainLayer={mapShapes}
                     getMainLayerStyle={getMainLayerStyle}
                     name={`LQAS-Map-country-view-${paramsAsString}`}
+                    // @ts-ignore
                     makePopup={shape => {
                         return <LqasAfroPopup shape={shape} view={COUNTRY} />;
                     }}

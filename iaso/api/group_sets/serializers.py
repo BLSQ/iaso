@@ -2,8 +2,9 @@ import typing
 
 from rest_framework import serializers
 
+from dynamic_fields.serializer import DynamicFieldsModelSerializerBackwardCompatible
 from hat.audit import models as audit_models
-from iaso.api.common import DynamicFieldsModelSerializer, TimestampField
+from iaso.api.common import TimestampField
 from iaso.models import DataSource, Group, GroupSet, SourceVersion
 
 
@@ -33,7 +34,7 @@ class GroupSerializer(serializers.ModelSerializer):
     source_version = SourceVersionSerializerForGroupset(read_only=True)
 
 
-class GroupSetSerializer(DynamicFieldsModelSerializer):
+class GroupSetSerializer(DynamicFieldsModelSerializerBackwardCompatible):
     class Meta:
         model = GroupSet
         default_fields = [

@@ -1,5 +1,6 @@
 import django_filters
 
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -7,6 +8,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from dynamic_fields.filter_backends import DynamicFieldsFilterBackendBackwardCompatible
 from iaso.api.data_source_versions_synchronization.filters import DataSourceVersionsSynchronizationFilter
 from iaso.api.data_source_versions_synchronization.pagination import DataSourceVersionsSynchronizationPagination
 from iaso.api.data_source_versions_synchronization.permissions import DataSourceVersionsSynchronizationPermission
@@ -19,8 +21,13 @@ from iaso.models import DataSourceVersionsSynchronization
 from iaso.tasks.data_source_versions_synchronization import synchronize_source_versions_async
 
 
+@extend_schema(tags=["Data sources", "Data sources synchronization"])
 class DataSourceVersionsSynchronizationViewSet(viewsets.ModelViewSet):
-    filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
+    filter_backends = [
+        filters.OrderingFilter,
+        django_filters.rest_framework.DjangoFilterBackend,
+        DynamicFieldsFilterBackendBackwardCompatible,
+    ]
     filterset_class = DataSourceVersionsSynchronizationFilter
     ordering_fields = [
         "id",

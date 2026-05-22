@@ -36,6 +36,9 @@ export const useStyles = makeStyles(theme => {
                 borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
             },
         },
+        plannedCampaign: {
+            opacity: 0.6,
+        },
         tableCell: {
             padding: '0 !important',
             margin: '0 !important',

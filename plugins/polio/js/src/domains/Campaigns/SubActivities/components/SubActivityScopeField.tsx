@@ -1,7 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { useFormikContext } from 'formik';
-import { useDebounce } from 'use-debounce';
-import { useSkipEffectOnMount } from 'bluesquare-components';
+import { useSkipEffectOnMount, useDebounce } from 'bluesquare-components';
 import { ScopeField } from '../../Scope/ScopeField';
 import { CampaignFormValues, Round } from '../../../../constants/types';
 import { useIsPolioCampaign } from '../../hooks/useIsPolioCampaignCheck';

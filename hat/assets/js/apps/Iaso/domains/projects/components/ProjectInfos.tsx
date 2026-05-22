@@ -1,9 +1,12 @@
 import React, { FunctionComponent } from 'react';
 
-import { LoadingSpinner } from 'bluesquare-components';
+import { Box } from '@mui/material';
+import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
+import { defaultProjectColor } from 'Iaso/components/LegendBuilder/colors';
+import { ProjectFeatureFlag } from 'Iaso/domains/projects/types/featureFlag';
+import { SxStyles } from 'Iaso/types/general';
 import InputComponent from '../../../components/forms/InputComponent';
 
-import { useGetProjectQRCode } from '../hooks/requests/useGetProjectQRCode';
 import MESSAGES from '../messages';
 
 type Form = {
@@ -11,24 +14,39 @@ type Form = {
     errors: Array<string>;
 };
 
-type ProjectForm = {
+export type ProjectForm = {
     id?: Form;
     app_id: Form;
+    description: Form;
     name: Form;
+    feature_flags: {
+        value: Array<ProjectFeatureFlag> | undefined;
+        errors: Array<string>;
+    };
+    qr_code: Form;
+    color: Form;
 };
 
 type Props = {
     setFieldValue: (key: string, value: string) => void;
     currentProject: ProjectForm;
 };
-
+const styles: SxStyles = {
+    qrCodeLarge: {
+        width: 300,
+        height: 300,
+    },
+    qrCodeContainer: {
+        display: 'flex',
+        justifyContent: 'center',
+        pt: 2,
+        pb: 2,
+    },
+};
 const ProjectInfos: FunctionComponent<Props> = ({
     setFieldValue,
     currentProject,
 }) => {
-    const { data: qrCode, isFetching: fetchingProjectQRCode } =
-        useGetProjectQRCode(currentProject?.id?.value);
-
     return (
         <>
             <InputComponent
@@ -49,11 +67,31 @@ const ProjectInfos: FunctionComponent<Props> = ({
                 label={MESSAGES.appId}
                 required
             />
-            {fetchingProjectQRCode && <LoadingSpinner />}
-            {!fetchingProjectQRCode && qrCode && (
-                <div style={{ textAlign: 'center' }}>
-                    <img width={200} height={200} alt="QRCode" src={qrCode} />
-                </div>
+            <InputComponent
+                keyValue="description"
+                onChange={(key, value) => setFieldValue(key, value)}
+                value={currentProject.description.value}
+                errors={currentProject.description.errors}
+                type="textarea"
+                label={MESSAGES.description}
+            />
+            <Box mt={2}>
+                <ColorPicker
+                    currentColor={
+                        currentProject.color.value ?? defaultProjectColor
+                    }
+                    onChangeColor={color => setFieldValue('color', color)}
+                />
+            </Box>
+            {currentProject.qr_code.value && (
+                <Box sx={styles.qrCodeContainer}>
+                    <Box
+                        component="img"
+                        src={currentProject.qr_code.value}
+                        sx={styles.qrCodeLarge}
+                        alt="QR Code Large"
+                    />
+                </Box>
             )}
         </>
     );

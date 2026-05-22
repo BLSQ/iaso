@@ -4,6 +4,23 @@ import { defineMessages } from 'react-intl';
 // List of translations for Iaso permissions used all along the project
 
 const PERMISSIONS_MESSAGES = defineMessages({
+    iaso_pipeline_management: {
+        id: 'iaso.permissions.iaso_pipeline_management',
+        defaultMessage: 'Pipeline management',
+    },
+    iaso_pipeline_management_tooltip: {
+        id: 'iaso.permissions.iaso_pipeline_management_tooltip',
+        defaultMessage: 'Allows to manage openhexa pipelines',
+    },
+    iaso_account_management: {
+        id: 'iaso.permissions.iaso_account_management',
+        defaultMessage: 'Account management',
+    },
+    iaso_account_management_tooltip: {
+        id: 'iaso.permissions.iaso_account_management_tooltip',
+        defaultMessage:
+            'Allows to manage things related to your account (not to be confused with user management)',
+    },
     iaso_completeness: {
         id: 'iaso.permissions.completeness',
         defaultMessage: 'Export completeness',
@@ -245,7 +262,7 @@ const PERMISSIONS_MESSAGES = defineMessages({
     iaso_entity_type_write_tooltip: {
         id: 'iaso.permissions.tooltip.iaso_entity_type_write',
         defaultMessage:
-            'Manage entity types and workflows associated. Entity types can be "Beneficiaries", "Mosquito nets", "Medicines" etc.',
+            'Manage entity types and workflows associated. Entity types can be"Mosquito nets", "Medicines" etc.',
     },
     iaso_dhis2_link: {
         id: 'iaso.permissions.iaso_dhis2_link',
@@ -647,6 +664,10 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.readEdit.no_admin',
         defaultMessage: 'Non-admin',
     },
+    read_only: {
+        id: 'iaso.permissions.readEdit.read_only',
+        defaultMessage: 'Read only',
+    },
     all: {
         id: 'iaso.permissions.readEdit.all',
         defaultMessage: 'All',
@@ -785,6 +806,76 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.sourcesCanChangeDefaultVersionTooltip',
         defaultMessage:
             'Allows to change the default version of a geo data source',
+    },
+    iaso_saas_account_creation: {
+        id: 'iaso.permissions.iaso_saas_account_creation',
+        defaultMessage: 'SaaS account creation',
+    },
+    iaso_saas_account_creation_tooltip: {
+        id: 'iaso.permissions.iaso_saas_account_creation_tooltip',
+        defaultMessage:
+            'Allows to create new SaaS accounts and to check for account/user name availability',
+    },
+    iaso_stock_management: {
+        id: 'iaso.permissions.iaso_stock_management',
+        defaultMessage: 'Stock management',
+    },
+    iaso_stock_management_tooltip: {
+        id: 'iaso.permissions.iaso_stock_management_tooltip',
+        defaultMessage:
+            'Allows to manage all aspects of stock management of items such as medical supplies or equipment',
+    },
+    iaso_polio_country_plan_permissions: {
+        id: 'iaso.permissions.iaso_polio_country_plan_permissions',
+        defaultMessage: 'National Logistics Plan',
+    },
+    iaso_polio_country_plan_permissions_tooltip: {
+        id: 'iaso.permissions.iaso_polio_country_plan_permissions_tooltip',
+        defaultMessage:
+            "Allows to manage data for vaccine module's national logistics plan",
+    },
+    iaso_snt_scenario_permissions: {
+        id: 'iaso.permissions.iaso_snt_scenario_permissions',
+        defaultMessage: 'Scenarios - Write',
+    },
+    iaso_snt_scenario_permissions_tooltip: {
+        id: 'iaso.permissions.iaso_snt_scenario_permissions_tooltip',
+        defaultMessage:
+            'Allows to create and update Scenarios. Basic = can edit only your own scenarios, Full = can edit all scenarios.',
+    },
+    basic: {
+        id: 'iaso.permissions.readEdit.basic',
+        defaultMessage: 'Basic',
+    },
+    full: {
+        id: 'iaso.permissions.readEdit.full',
+        defaultMessage: 'Full',
+    },
+    iaso_snt_settings_permissions: {
+        id: 'iaso.permissions.iaso_snt_settings_permissions',
+        defaultMessage: 'Settings',
+    },
+    iaso_snt_settings_permissions_tooltip: {
+        id: 'iaso.permissions.iaso_snt_settings_permissions_tooltip',
+        defaultMessage: 'Allows to view and edit global settings',
+    },
+    iaso_metric_types: {
+        id: 'iaso.permissions.iaso_metric_types',
+        defaultMessage: 'Metric types management',
+    },
+    iaso_metric_types_tooltip: {
+        id: 'iaso.permissions.iaso_metric_types_tooltip',
+        defaultMessage:
+            'Manage metric types: create, update and delete metric types',
+    },
+    iaso_validation_workflows: {
+        id: 'iaso.permissions.iaso_validation_workflows',
+        defaultMessage: 'Validation workflows',
+    },
+    iaso_validation_workflows_tooltip: {
+        id: 'iaso.permissions.iaso_validation_workflows_tooltip',
+        defaultMessage:
+            'Manage validation workflows: create, update and delete validation workflows',
     },
 });
 

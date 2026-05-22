@@ -3,6 +3,7 @@ import typing
 from uuid import uuid4
 
 from iaso import models as m
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -11,7 +12,7 @@ class DevicesPositionAPITestCase(APITestCase):
     def setUpTestData(cls):
         star_wars = m.Account.objects.create(name="Star Wars")
 
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_forms"])
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=[CORE_FORMS_PERMISSION])
 
         cls.project_1 = m.Project.objects.create(
             name="Hydroponic gardens",
@@ -149,6 +150,14 @@ class DevicesPositionAPITestCase(APITestCase):
             has_problems=True,
             exception_contains_string="device_id",
         )
+
+    def test_get_details_requires_auth(self):
+        response = self.client.get(f"/api/devicespositions/1/?app_id={self.project_1.app_id}")
+        self.assertEqual(response.status_code, 401)
+
+    def test_get_list_requires_auth(self):
+        response = self.client.get(f"/api/devicespositions/?app_id={self.project_1.app_id}")
+        self.assertEqual(response.status_code, 401)
 
     def assertValidDevicePositionListData(
         self, list_data: typing.Mapping, expected_length: int, with_result_key=True, paginated: bool = False

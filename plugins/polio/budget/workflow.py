@@ -7,7 +7,7 @@ from django.db.models import Q, QuerySet
 
 import plugins.polio.models
 
-from iaso.models.microplanning import Team, TeamType
+from iaso.models.team import Team, TeamType
 
 
 # from plugins.polio.models import Campaign

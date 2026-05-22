@@ -7,6 +7,8 @@
   <title>{{ app_title }}</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  {# OSM tile policy requires valid Referer; avoid restrictive Referrer-Policy #}
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="description" content="">
   <meta name="keywords" content="">
   {# favicon #}
@@ -26,10 +28,8 @@
   <meta property="og:image" content="" />
   <meta property="og:url" content="{{ request.build_absolute_uri }} " />
   {% endif %}
-  {% if ANALYTICS_SCRIPTS %}
-    {% for analytic_script in ANALYTICS_SCRIPTS %}
-      {{ analytic_script | safe }}
-    {% endfor %} 
+  {% if ANALYTICS_DATA %}
+    {% include "iaso/analytics/plausible.html" %}
   {% endif %}
 </head>
 

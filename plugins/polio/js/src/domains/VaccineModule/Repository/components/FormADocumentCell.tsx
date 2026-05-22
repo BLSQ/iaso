@@ -1,13 +1,13 @@
+import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { textPlaceholder } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { PdfPreview } from '../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/PdfPreview';
 import { SxStyles } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
+import { FORM_A_IS_LATE_COLOR } from '../constants';
 import { DocumentData } from '../types';
 import { defaultStyles } from './DocumentCell';
 import { OpenButtonComponent } from './OpenButton';
-import { FORM_A_IS_LATE_COLOR } from '../constants';
 
 const LateStyle = {
     backgroundColor: FORM_A_IS_LATE_COLOR,
@@ -46,7 +46,7 @@ export const FormADocumentCell: FunctionComponent<Props> = ({
     return (
         <Box sx={boxStyle}>
             <PdfPreview
-                pdfUrl={file}
+                pdf={file}
                 OpenButtonComponent={OpenButtonComponent}
                 buttonProps={{
                     date,

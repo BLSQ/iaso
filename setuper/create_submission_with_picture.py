@@ -15,7 +15,9 @@ from submissions import (
 
 
 def define_health_facility_reference_form(iaso_client):
-    org_unit_types = iaso_client.get("/api/v2/orgunittypes/?with_units_count=true")["orgUnitTypes"]
+    org_unit_types = iaso_client.get(
+        "/api/v2/orgunittypes/?with_units_count=true&fields=id,name,units_count,projects,sub_unit_types,allow_creating_sub_unit_types&search=Health facility/Formation sanitaire - HF"
+    )["orgUnitTypes"]
     health_facility_type = [out for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF"][
         0
     ]
@@ -31,7 +33,7 @@ def define_health_facility_reference_form(iaso_client):
     health_facility_type["allow_creating_sub_unit_type_ids"] = [
         sub_unit_type["id"] for sub_unit_type in health_facility_type["allow_creating_sub_unit_types"]
     ]
-    update_reference_forms = iaso_client.put(
+    update_reference_forms = iaso_client.patch(
         f"/api/v2/orgunittypes/{health_facility_type['id']}/", json=health_facility_type
     )
     form_ids = [form["id"] for form in update_reference_forms.get("reference_forms")]
@@ -51,7 +53,11 @@ def create_submission_with_picture(account_name, iaso_client):
     limit = form["number_of_org_units"]
     orgunits = iaso_client.get(
         "/api/orgunits/",
-        params={"limit": limit, "orgUnitTypeId": form["org_unit_type_id"]},
+        params={
+            "limit": limit,
+            "orgUnitTypeId": form["org_unit_type_id"],
+            "fields": "id,longitude,latitude,altitude,org_unit_type_name",
+        },
     )["orgunits"]
     current_datetime = int(datetime.now().timestamp())
 
@@ -83,7 +89,7 @@ def create_submission_with_picture(account_name, iaso_client):
         iaso_client.post(f"/api/instances/?app_id={account_name}", json=instance_body)
         form_versions = iaso_client.get("/api/formversions/")["form_versions"]
         form_version = [form_version for form_version in form_versions if form_version["form_id"] == form_id]
-
+        health_facility_electricity = random.choice(["yes", "no"])
         instance_json = {
             "start": "2022-09-07T17:54:55.805+02:00",
             "end": "2022-09-07T17:55:31.192+02:00",
@@ -103,9 +109,32 @@ def create_submission_with_picture(account_name, iaso_client):
                 "photo_fosa": picture,
             },
             "equipment_group": {
-                "HFR_CS_16": random.choice(["yes", "no"]),
-                "HFR_CS_17": random.choice(["pub", "gr_elect", "syst_sol", "autre"]),
-                "HFR_CS_18": random.choice(["res_pub", "forage", "puit", "puit_non_prot"]),
+                "HFR_CS_16": health_facility_electricity,
+                "HFR_CS_17": (
+                    random.choice(
+                        [
+                            "pub gr_elect syst_sol",
+                            "pub gr_elect syst_sol autre",
+                            "gr_elect syst_sol autre",
+                            "syst_sol autre",
+                            "gr_elect",
+                            "syst_sol autre",
+                            "autre",
+                        ]
+                    )
+                    if health_facility_electricity == "yes"
+                    else None
+                ),
+                "HFR_CS_18": random.choice(
+                    [
+                        "res_pub forage puit puit_non_prot",
+                        "forage",
+                        "forage puit puit_non_prot",
+                        "puit puit_non_prot",
+                        "puit",
+                        "puit_non_prot",
+                    ]
+                ),
             },
             "services_group": {
                 "HFR_CS_26": random.choice(["yes", "no"]),

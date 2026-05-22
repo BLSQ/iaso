@@ -10,6 +10,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.core import serializers
 from django.db import models
 
+from hat.audit.modifications import get_values_serializer
+
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +39,7 @@ PAYMENT_API_BULK = "payment_api_bulk"
 PAYMENT_LOT_API = "payment_lot_api"
 PROFILE_API = "profile_api"
 PROFILE_API_BULK = "profile_api_bulk"
+SETUP_ACCOUNT_API = "setup_account_api"
 
 
 AnyModelInstance = TypeVar("AnyModelInstance", bound=models.Model)
@@ -98,12 +101,13 @@ class Modification(models.Model):
         )
 
     def as_dict(self):
+        values_serializer = get_values_serializer(self.content_object)
         return {
             "id": self.id,
             "content_type": self.content_type.app_label,
             "object_id": self.object_id,
-            "past_value": self.past_value,
-            "new_value": self.new_value,
+            "past_value": values_serializer.serialize(self.past_value),
+            "new_value": values_serializer.serialize(self.new_value),
             "source": self.source,
             "user": self.user.iaso_profile.as_dict() if self.user else None,
             "created_at": self.created_at,
@@ -137,6 +141,42 @@ class Modification(models.Model):
         past_fields = past_value.get("fields") or {}
         new_fields = new_value.get("fields") or {}
         return dict_compare(past_fields, new_fields)
+
+    @staticmethod
+    def make_json_schema(past_value_schema, new_value_schema):
+        """Convenience method to generate json_schema when writing tests"""
+
+        return {
+            "type": "object",
+            "properties": {
+                "id": {"type": "number"},
+                "content_type": {"type": "string"},
+                "object_id": {"type": "string"},
+                "source": {"type": "string"},
+                "user": {
+                    "type": "object",
+                    "properties": {
+                        "id": {"type": "number"},
+                        "first_name": {"type": ["string", "null"]},
+                        "user_name": {"type": "string"},
+                        "last_name": {"type": ["string", "null"]},
+                        "email": {"type": ["string", "null"]},
+                        "language": {"type": ["string", "null"]},
+                        "user_id": {"type": "number"},
+                        "phone_number": {"type": ["string", "null"]},
+                        "country_code": {"type": ["string", "null"]},
+                        "editable_org_unit_type_ids": {"type": "array", "items": {"type": "number"}},
+                        "user_roles_editable_org_unit_type_ids": {"type": "array", "items": {"type": "number"}},
+                    },
+                    "required": ["id", "user_name", "user_id"],
+                },
+                "created_at": {"type": "string"},
+                "org_unit_change_request_id": {"type": ["string", "null"]},
+                "past_value": {"type": "array", "items": past_value_schema},
+                "new_value": {"type": "array", "items": new_value_schema},
+            },
+            "required": ["id", "content_type", "object_id", "source", "user", "created_at", "past_value", "new_value"],
+        }
 
 
 def log_modification(

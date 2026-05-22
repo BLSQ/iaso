@@ -14,6 +14,7 @@ const getPluginFolders = rootDir => {
             fs.statSync(fullPath).isDirectory() &&
             !pluginName.startsWith('.') &&
             !pluginName.startsWith('__') &&
+            pluginName !== 'template' &&
             // Check if the directory contains a js/config.tsx file
             fs.existsSync(path.join(fullPath, 'js', 'config.tsx'))
         );

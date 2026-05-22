@@ -1,7 +1,12 @@
 from django.contrib.auth.models import Permission
 
-from hat.menupermissions import models as permission
 from iaso import models as m
+from iaso.permissions.core_permissions import (
+    CORE_MAPPINGS_PERMISSION,
+    CORE_SOURCE_CAN_CHANGE_DEFAULT_VERSION_PERMISSION,
+    CORE_SOURCE_PERMISSION,
+    CORE_SOURCE_WRITE_PERMISSION,
+)
 from iaso.test import APITestCase
 
 
@@ -19,13 +24,19 @@ class DataSourcesAPITestCase(APITestCase):
         cls.project2.save()
         cls.data_source2.save()
         # read perms
-        cls.jane = cls.create_user_with_profile(username="janedoe", account=cls.account, permissions=["iaso_mappings"])
+        cls.jane = cls.create_user_with_profile(
+            username="janedoe", account=cls.account, permissions=[CORE_MAPPINGS_PERMISSION]
+        )
         # write perms
-        cls.joe = cls.create_user_with_profile(username="joe", account=cls.account, permissions=["iaso_write_sources"])
+        cls.joe = cls.create_user_with_profile(
+            username="joe", account=cls.account, permissions=[CORE_SOURCE_WRITE_PERMISSION]
+        )
         # no perms
         cls.jim = cls.create_user_with_profile(username="jimdoe", account=cls.account)
         # with read but no write perms
-        cls.john = cls.create_user_with_profile(username="johnny", account=cls.account, permissions=["iaso_sources"])
+        cls.john = cls.create_user_with_profile(
+            username="johnny", account=cls.account, permissions=[CORE_SOURCE_PERMISSION]
+        )
 
     def test_datasource_list_without_auth(self):
         """GET /datasources/ without auth should result in a 401"""
@@ -45,7 +56,8 @@ class DataSourcesAPITestCase(APITestCase):
         # if the user has one perms
         self.client.force_authenticate(self.jane)
 
-        response = self.client.get("/api/datasources/")
+        with self.assertNumQueries(7):
+            response = self.client.get("/api/datasources/")
         self.assertJSONResponse(response, 200)
 
     def test_datasource_post_with_all_params(self):
@@ -228,11 +240,11 @@ class DataSourcesAPITestCase(APITestCase):
             ["User doesn't have the permission to change the default version of a data source."], json_response
         )
 
-        perm = Permission.objects.get(codename=permission._SOURCES_CAN_CHANGE_DEFAULT_VERSION)
+        perm = Permission.objects.get(codename=CORE_SOURCE_CAN_CHANGE_DEFAULT_VERSION_PERMISSION.codename)
         self.joe.user_permissions.add(perm)
         del self.joe._perm_cache
         del self.joe._user_perm_cache
-        self.assertTrue(self.joe.has_perm(permission.SOURCES_CAN_CHANGE_DEFAULT_VERSION))
+        self.assertTrue(self.joe.has_perm(CORE_SOURCE_CAN_CHANGE_DEFAULT_VERSION_PERMISSION.full_name()))
 
         response = self.client.put(f"/api/datasources/{self.data_source.id}/", format="json", data=data)
         self.assertJSONResponse(response, 200)
@@ -273,3 +285,59 @@ class DataSourcesAPITestCase(APITestCase):
         self.client.force_authenticate(self.jim)
         response = self.client.get("/api/datasources/dropdown/?order=name")
         self.assertJSONResponse(response, 403)
+
+    def test_datasource_update_can_unset_read_only(self):
+        self.client.force_authenticate(self.joe)
+        self.data_source.read_only = True
+        self.data_source.save()
+        data = {
+            "id": self.data_source.id,
+            "name": self.data_source.name,
+            "read_only": False,
+            "credentials": None,
+            "description": self.data_source.description,
+            "created_at": None,
+            "updated_at": None,
+            "default_version": None,
+            "tree_config_status_fields": self.data_source.tree_config_status_fields,
+            "projects": None,
+            "versions": None,
+            "url": None,
+        }
+
+        response = self.client.put(f"/api/datasources/{self.data_source.id}/", format="json", data=data)
+        json_response = self.assertJSONResponse(response, 200)
+
+        self.assertFalse(json_response["read_only"])
+        self.data_source.refresh_from_db()
+        self.assertFalse(self.data_source.read_only)
+
+        response = self.client.get(f"/api/datasources/{self.data_source.id}/")
+        json_response = self.assertJSONResponse(response, 200)
+        self.assertFalse(json_response["read_only"])
+
+    def test_datasource_update_without_read_only_does_not_alter_it(self):
+        self.client.force_authenticate(self.joe)
+        self.data_source.read_only = True
+        self.data_source.save()
+
+        data = {
+            "id": self.data_source.id,
+            "name": self.data_source.name,
+            "credentials": None,
+            "description": self.data_source.description,
+            "created_at": None,
+            "updated_at": None,
+            "default_version": None,
+            "tree_config_status_fields": self.data_source.tree_config_status_fields,
+            "projects": None,
+            "versions": None,
+            "url": None,
+        }
+
+        response = self.client.put(f"/api/datasources/{self.data_source.id}/", format="json", data=data)
+        json_response = self.assertJSONResponse(response, 200)
+
+        self.assertTrue(json_response["read_only"])
+        self.data_source.refresh_from_db()
+        self.assertTrue(self.data_source.read_only)

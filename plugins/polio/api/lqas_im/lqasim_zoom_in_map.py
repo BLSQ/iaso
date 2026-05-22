@@ -5,7 +5,7 @@ from datetime import timedelta
 
 from django.contrib.gis.geos import Polygon
 from django.db.models import Q, Subquery
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions
 from rest_framework.response import Response
 
@@ -60,7 +60,7 @@ def get_latest_active_campaign_and_rounds(org_unit, start_date_after, end_date_b
     return latest_active_campaign, latest_active_campaign_rounds, round_numbers
 
 
-@swagger_auto_schema(tags=["lqaszoomin"])
+@extend_schema(tags=["Polio - Lqas IM Zoom-in maps"])
 class LQASIMZoominMapViewSet(LqasAfroViewset):
     http_method_names = ["get"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -76,9 +76,9 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
                 bounds["_northEast"]["lat"],
             ),
         )
-        # TODO see if we need to filter per user as with Campaign
         return (
-            OrgUnit.objects.filter(org_unit_type__category="COUNTRY")
+            OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
+            .filter(org_unit_type__category="COUNTRY")
             .exclude(simplified_geom__isnull=True)
             .filter(simplified_geom__intersects=bounds_as_polygon)
         )
@@ -177,6 +177,7 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
                         "id": district.id,
                         "data": {
                             "campaign": latest_active_campaign.obr_name,
+                            "campaign_id": str(latest_active_campaign.id),
                             **district_stats,
                             "district_name": district.name,
                             "round_number": round_number,
@@ -192,6 +193,7 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
                         "id": district.id,
                         "data": {
                             "campaign": latest_active_campaign.obr_name,
+                            "campaign_id": str(latest_active_campaign.id),
                             "district_name": district.name,
                             "region_name": district.parent.name,
                         },
@@ -204,7 +206,7 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
         return Response({"results": results})
 
 
-@swagger_auto_schema(tags=["lqaszoominbackground"])
+@extend_schema(tags=["Polio - Lqas IM Zoom-in map backgrounds"])
 class LQASIMZoominMapBackgroundViewSet(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -220,13 +222,14 @@ class LQASIMZoominMapBackgroundViewSet(ModelViewSet):
                 bounds["_northEast"]["lat"],
             )
         )
-        # TODO see if we need to filter per user as with Campaign
+
         qs = (
-            OrgUnit.objects.filter(org_unit_type__category="COUNTRY")
+            OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
+            .filter(org_unit_type__category="COUNTRY")
             .exclude(simplified_geom__isnull=True)
             .filter(simplified_geom__intersects=bounds_as_polygon)
         )
-        print("Query", qs.query)
+
         return qs
 
     def list(self, request):

@@ -11,6 +11,7 @@ from django.shortcuts import get_object_or_404, render, resolve_url
 
 from hat.__version__ import DEPLOYED_BY, DEPLOYED_ON, VERSION
 from iaso.models import IFRAME, POWERBI, SUPERSET, TEXT, Account, Page
+from iaso.permissions.core_permissions import CORE_PAGE_WRITE_PERMISSION
 from iaso.utils.powerbi import get_powerbi_report_token
 
 
@@ -44,8 +45,12 @@ def page(request, page_slug):
     page = get_object_or_404(Page, slug=page_slug)
     path = request.get_full_path()
     resolved_login_url = resolve_url(settings.LOGIN_URL)
-    if page.needs_authentication and ((not request.user.is_authenticated) or (request.user not in page.users.all())):
-        return redirect_to_login(path, resolved_login_url, "next")
+    if page.needs_authentication:
+        if not request.user.is_authenticated:
+            return redirect_to_login(path, resolved_login_url, "next")
+
+        if not user_can_access_page(request.user, page):
+            return redirect_to_login(path, resolved_login_url, "next")
     if page.type == IFRAME:
         content.update({"src": page.content, "title": page.name, "page": page})
         response = render(
@@ -104,6 +109,21 @@ def page(request, page_slug):
         response = HttpResponse(raw_html)
     response["X-Frame-Options"] = "ALLOW"
     return response
+
+
+def user_can_access_page(user, page):
+    """Check if user has access to view this page."""
+
+    # WRITE permission grants access to all pages in the account
+    if user.has_perm(CORE_PAGE_WRITE_PERMISSION.full_name()):
+        return page.account == user.iaso_profile.account
+
+    # Check direct user assignment
+    if user in page.users.all():
+        return True
+
+    # Check role-based assignment
+    return page.user_roles.filter(group__in=user.groups.all()).exists()
 
 
 # Function to append analytics script in the head tag
@@ -180,6 +200,7 @@ import json
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.db import models
+from django.http import HttpResponseForbidden
 from django.shortcuts import render
 from django.views import View
 
@@ -188,6 +209,9 @@ from iaso import models as iaso_models
 
 class ModelDataView(View):
     def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return HttpResponseForbidden("authentication required")
+
         model_data = self.get_model_data()
         return render(request, "iaso/model_diagram.html", {"model_data": json.dumps(model_data)})
 

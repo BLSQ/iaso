@@ -1,26 +1,35 @@
-import datetime
 import logging
 
 from traceback import format_exc
 
 from django.core.files.uploadhandler import TemporaryFileUploadHandler
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import serializers, status
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
+from rest_framework import permissions, serializers, status
 from rest_framework.generics import get_object_or_404
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
 from hat.api_import.models import APIImport
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.query_params import APP_ID
 from iaso.api.serializers import AppIdSerializer
-from iaso.models import Project
+from iaso.models import FeatureFlag, Project
 from iaso.tasks.process_mobile_bulk_upload import process_mobile_bulk_upload
-from iaso.utils.s3_client import upload_file_to_s3
 
 
 logger = logging.getLogger(__name__)
+
+
+class MobileBulkUploadsPermission(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj: Project) -> bool:
+        """
+        Access is public unless `FeatureFlag.REQUIRE_AUTHENTICATION` is enabled for the current project.
+        """
+        if obj.has_feature(FeatureFlag.REQUIRE_AUTHENTICATION) and not request.user.is_authenticated:
+            return False
+        return True
 
 
 class ZipFileSerializer(serializers.Serializer):
@@ -32,61 +41,61 @@ class ZipFileSerializer(serializers.Serializer):
         raise ValueError("Zip file not valid")
 
 
+@extend_schema(tags=["Mobile"])
 class MobileBulkUploadsViewSet(ViewSet):
     parser_classes = [MultiPartParser]
+    permission_classes = [AuthenticationEnforcedPermission, MobileBulkUploadsPermission]
 
-    app_id_param = openapi.Parameter(
+    app_id_param = OpenApiParameter(
         name=APP_ID,
-        in_=openapi.IN_QUERY,
+        location=OpenApiParameter.QUERY,
         required=True,
         description="Application id",
-        type=openapi.TYPE_STRING,
+        type=OpenApiTypes.STR,
     )
-    zip_file_param = openapi.Parameter(
-        name="zip_file",
-        in_=openapi.IN_FORM,
-        required=True,
-        description="file to import",
-        type=openapi.TYPE_FILE,
-    )
+    # todo : this should be a serializer
+    # zip_file_param = OpenApiParameter(
+    #     name="zip_file",
+    #     location=OpenApiParameter.FORM,
+    #     required=True,
+    #     description="file to import",
+    #     type=OpenApiTypes.BINARY,
+    # )
 
-    @swagger_auto_schema(
+    @extend_schema(
         responses={
             204: "Import was successful",
             400: f"parameters '{APP_ID}' was not provided or post didn't contain an zip",
             404: "project for given app id doesn't exist",
         },
-        manual_parameters=[app_id_param, zip_file_param],
+        parameters=[app_id_param],
+        request=OpenApiTypes.BINARY,
     )
     def create(self, request):
         request.upload_handlers = [TemporaryFileUploadHandler(request)]
 
-        current_user = self.request.user
-        user = self.request.user
+        current_user = self.request.user if self.request.user.is_authenticated else None
+        user = current_user
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
         project = get_object_or_404(Project, app_id=app_id)
+
+        self.check_object_permissions(request, project)
+
         serializer = ZipFileSerializer(data=request.data)
 
         try:
             zip_file = serializer.validateZipFile()
 
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S.%f")
-            object_name = "/".join(
-                [
-                    "mobilebulkuploads",
-                    app_id,
-                    str(user.id),
-                    f"mobilebulkupload-{timestamp}.zip",
-                ]
-            )
-
             api_import = APIImport.objects.create(
                 user=user,
                 import_type="bulk",
-                json_body={"file": object_name},
+                file=zip_file,
+                json_body={
+                    "user_agent": request.META.get("HTTP_USER_AGENT"),
+                },
+                app_id=request.GET.get("app_id", default=""),
+                app_version=request.GET.get("app_version", default=""),
             )
-
-            upload_file_to_s3(file_name=zip_file.temporary_file_path(), object_name=object_name)
 
             process_mobile_bulk_upload(
                 api_import_id=api_import.id,

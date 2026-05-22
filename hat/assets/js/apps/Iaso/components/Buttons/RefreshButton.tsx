@@ -1,12 +1,12 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Button } from '@mui/material';
 import Autorenew from '@mui/icons-material/Autorenew';
+import { Box, Button } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     LoadingSpinner,
     commonStyles,
     useSafeIntl,
 } from 'bluesquare-components';
-import { makeStyles } from '@mui/styles';
 import { defineMessages } from 'react-intl';
 
 const useStyles = makeStyles(theme => ({

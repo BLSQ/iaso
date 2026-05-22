@@ -94,6 +94,7 @@ build_scripts/deploy.zip
 #!.elasticbeanstalk/*.global.yml
 .elasticbeanstalk/config.yml
 .elasticbeanstalk/logs
+.elasticbeanstalk/app_versions
 
 ### Built JS ###
 hat/assets/bundles/
@@ -117,6 +118,8 @@ pip-selfcheck.json
 
 # dev environment
 .env*
+!.env.example
+!.env.smoke.template
 \.idea/*
 \.run/*
 
@@ -156,12 +159,6 @@ docker/enketo/start.sh
 temp.json
 *.mp4
 
-cypress/screenshots/
-cypress/videos/
-**/cypress/screenshots/
-**/cypress/videos/
-**/cypress/integration/1-getting-started
-**/cypress/integration/2-advanced-examples
 
 mockLQASData.json
 mockImData.json
@@ -190,9 +187,33 @@ originals
 /site/**/*/
 
 *.code-workspace
+
+# Other IASO parts to ignore (plugins, setuper info...)
 /setuper/credentials.py
 /setuper/generated/
 plugins/trypelim
 plugins/snt_malaria
-
 plugins/snt-malaria
+plugins/saas
+plugins/ginger
+
+# some local env config to be ignored
+.direnv
+CACHEDIR.TAG
+iaso_3_9_18
+.cursor
+/temp
+iaso-enketo/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+
+# eslint
+.eslintcache
+.claude
+
+plugins/active_list

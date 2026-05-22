@@ -1,8 +1,11 @@
+import datetime
+
 import time_machine
 
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.core.cache import cache
 
+from iaso.api.mobile.org_units import SHAPE_RESULTS_MAX
 from iaso.api.query_params import APP_ID, IDS, LIMIT, PAGE
 from iaso.models import (
     Account,
@@ -12,12 +15,14 @@ from iaso.models import (
     FormVersion,
     Group,
     Instance,
+    InstanceFile,
     OrgUnit,
     OrgUnitReferenceInstance,
     OrgUnitType,
     Project,
     SourceVersion,
 )
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -37,8 +42,18 @@ class MobileOrgUnitAPITestCase(APITestCase):
             account=account,
             needs_authentication=True,
         )
-        cls.user = user = cls.create_user_with_profile(username="user", account=account, permissions=["iaso_org_units"])
-        cls.user2 = cls.create_user_with_profile(username="user2", account=account2, permissions=["iaso_org_units"])
+        cls.project2 = project2 = Project.objects.create(
+            name="Nameks",
+            app_id="dragon.ball.nameks",
+            account=account,
+            needs_authentication=False,
+        )
+        cls.user = user = cls.create_user_with_profile(
+            username="user", account=account, permissions=[CORE_ORG_UNITS_PERMISSION]
+        )
+        cls.user2 = cls.create_user_with_profile(
+            username="user2", account=account2, permissions=[CORE_ORG_UNITS_PERMISSION]
+        )
         cls.sw_source = sw_source = DataSource.objects.create(name="Vegeta Planet")
         sw_source.projects.add(project)
         cls.sw_version_1 = sw_version_1 = SourceVersion.objects.create(data_source=sw_source, number=1)
@@ -60,6 +75,9 @@ class MobileOrgUnitAPITestCase(APITestCase):
         cls.on_earth = on_earth = OrgUnitType.objects.create(name="Born on Earth")
         on_earth.projects.add(project)
         super_saiyans.sub_unit_types.add(on_earth)
+
+        cls.nameks = nameks = OrgUnitType.objects.create(name="Nameks")
+        nameks.projects.add(project2)
 
         cls.raditz = raditz = OrgUnit.objects.create(
             uuid="702dbae8-0f47-4065-ad0c-b2557f31cc96",
@@ -134,10 +152,121 @@ class MobileOrgUnitAPITestCase(APITestCase):
         response = self.client.get(BASE_URL, {APP_ID: self.project.app_id})
         self.assertJSONResponse(response, 200)
 
-    def test_org_unit_have_correct_parent_id_without_limit(self):
+    def test_org_unit_with_shapes_limited(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
+        response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, "shapes": True, "limit": 25000, "page": 1})
+        self.assertEqual(response.json()["limit"], SHAPE_RESULTS_MAX)
+
+        response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, "limit": 25000, "page": 1})
+
+        self.assertEqual(response.json()["limit"], 25000)
+
+    def test_org_unit_have_correct_parent_id_without_limit(self):
+        self.client.force_authenticate(self.user)
+        with self.assertNumQueries(14):
+            # 1. SELECT "iaso_project" (permission / app lookup by app_id)
+            # 2. SELECT "iaso_account"
+            # 3. SELECT "iaso_orgunit" … profile roots (org_units M2M)
+            # 4. SELECT "django_cache_table" (cache get)
+            # 5. SELECT "iaso_project" LEFT JOIN "iaso_account" + "iaso_sourceversion"
+            #    (Project.get_for_user_and_app_id — select_related avoids extra account/version queries)
+            # 6. SELECT EXISTS "iaso_featureflag" (LIMIT_OU_DOWNLOAD_TO_ROOTS)
+            # 7. SELECT "iaso_orgunit" … (main list + parent + org unit type)
+            # 8. Prefetch org unit types → projects (M2M)
+            # 9. Prefetch org units → groups
+            # 10. SELECT COUNT(*) FROM "django_cache_table"
+            # 11. SAVEPOINT (atomic cache write)
+            # 12. SELECT "django_cache_table" (cache key)
+            # 13. INSERT "django_cache_table"
+            # 14. RELEASE SAVEPOINT
+            response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
+        self.assertJSONResponse(response, 200)
+        self.assertEqual([self.raditz.id, self.goku.id], response.json()["roots"])
+        self.assertNotIn("count", response.json())
+        self.assertNotIn("next", response.json())
+        self.assertNotIn("previous", response.json())
+        self.assertEqual(len(response.json()["orgUnits"]), 4)
+        self.assertEqual(response.json()["orgUnits"][0]["name"], "Bardock")
+        self.assertEqual(response.json()["orgUnits"][0]["parent_id"], None)
+        self.assertEqual(1, len(response.json()["orgUnits"][0]["groups"]))
+        self.assertEqual(response.json()["orgUnits"][0]["groups"][0], self.group_2.id)
+        self.assertEqual(response.json()["orgUnits"][1]["name"], "Raditz")
+        self.assertEqual(response.json()["orgUnits"][1]["parent_id"], self.bardock.id)
+        self.assertEqual(0, len(response.json()["orgUnits"][1]["groups"]))
+        self.assertEqual(response.json()["orgUnits"][2]["name"], "Son Gohan")
+        self.assertEqual(response.json()["orgUnits"][2]["parent_id"], None)
+        self.assertEqual(0, len(response.json()["orgUnits"][2]["groups"]))
+        self.assertEqual(response.json()["orgUnits"][3]["name"], "Son Goten")
+        self.assertEqual(response.json()["orgUnits"][3]["parent_id"], None)
+        self.assertEqual(0, len(response.json()["orgUnits"][3]["groups"]))
+
+    def test_org_unit_have_correct_parent_id_when_everything_is_fine_without_limit(self):
+        self.goku.validation_status = OrgUnit.VALIDATION_VALID
+        self.goku.save()
+        self.client.force_authenticate(self.user)
+        with self.assertNumQueries(14):
+            # 1. SELECT "iaso_project" (permission / app lookup by app_id)
+            # 2. SELECT "iaso_account"
+            # 3. SELECT "iaso_orgunit" … profile roots (org_units M2M)
+            # 4. SELECT "django_cache_table" (cache get)
+            # 5. SELECT "iaso_project" LEFT JOIN "iaso_account" + "iaso_sourceversion"
+            #    (Project.get_for_user_and_app_id — select_related avoids extra account/version queries)
+            # 6. SELECT EXISTS "iaso_featureflag" (LIMIT_OU_DOWNLOAD_TO_ROOTS)
+            # 7. SELECT "iaso_orgunit" … (main list + parent + org unit type)
+            # 8. Prefetch org unit types → projects (M2M)
+            # 9. Prefetch org units → groups
+            # 10. SELECT COUNT(*) FROM "django_cache_table"
+            # 11. SAVEPOINT (atomic cache write)
+            # 12. SELECT "django_cache_table" (cache key)
+            # 13. INSERT "django_cache_table"
+            # 14. RELEASE SAVEPOINT
+            response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
+        self.assertJSONResponse(response, 200)
+        self.assertEqual([self.raditz.id, self.goku.id], response.json()["roots"])
+        self.assertNotIn("count", response.json())
+        self.assertNotIn("next", response.json())
+        self.assertNotIn("previous", response.json())
+        self.assertEqual(len(response.json()["orgUnits"]), 5)
+        self.assertEqual(response.json()["orgUnits"][0]["name"], "Bardock")
+        self.assertEqual(response.json()["orgUnits"][0]["parent_id"], None)
+        self.assertEqual(1, len(response.json()["orgUnits"][0]["groups"]))
+        self.assertEqual(response.json()["orgUnits"][0]["groups"][0], self.group_2.id)
+        self.assertEqual(response.json()["orgUnits"][1]["name"], "Raditz")
+        self.assertEqual(response.json()["orgUnits"][1]["parent_id"], self.bardock.id)
+        self.assertEqual(0, len(response.json()["orgUnits"][1]["groups"]))
+        self.assertEqual(response.json()["orgUnits"][2]["name"], "Son Goku")
+        self.assertEqual(response.json()["orgUnits"][2]["parent_id"], self.bardock.id)
+        self.assertEqual(1, len(response.json()["orgUnits"][2]["groups"]))
+        self.assertEqual(response.json()["orgUnits"][3]["name"], "Son Gohan")
+        self.assertEqual(response.json()["orgUnits"][3]["parent_id"], self.goku.id)
+        self.assertEqual(0, len(response.json()["orgUnits"][3]["groups"]))
+        self.assertEqual(response.json()["orgUnits"][4]["name"], "Son Goten")
+        self.assertEqual(response.json()["orgUnits"][4]["parent_id"], self.goku.id)
+        self.assertEqual(0, len(response.json()["orgUnits"][4]["groups"]))
+
+    def test_org_unit_have_correct_parent_id_when_parent_wrong_type_without_limit(self):
+        self.goku.validation_status = OrgUnit.VALIDATION_VALID
+        self.goku.org_unit_type = self.nameks
+        self.goku.save()
+        self.client.force_authenticate(self.user)
+        with self.assertNumQueries(14):
+            # 1. SELECT "iaso_project" (permission / app lookup by app_id)
+            # 2. SELECT "iaso_account"
+            # 3. SELECT "iaso_orgunit" … profile roots (org_units M2M)
+            # 4. SELECT "django_cache_table" (cache get)
+            # 5. SELECT "iaso_project" LEFT JOIN "iaso_account" + "iaso_sourceversion"
+            #    (Project.get_for_user_and_app_id — select_related avoids extra account/version queries)
+            # 6. SELECT EXISTS "iaso_featureflag" (LIMIT_OU_DOWNLOAD_TO_ROOTS)
+            # 7. SELECT "iaso_orgunit" … (main list + parent + org unit type)
+            # 8. Prefetch org unit types → projects (M2M)
+            # 9. Prefetch org units → groups
+            # 10. SELECT COUNT(*) FROM "django_cache_table"
+            # 11. SAVEPOINT (atomic cache write)
+            # 12. SELECT "django_cache_table" (cache key)
+            # 13. INSERT "django_cache_table"
+            # 14. RELEASE SAVEPOINT
+            response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
         self.assertJSONResponse(response, 200)
         self.assertEqual([self.raditz.id, self.goku.id], response.json()["roots"])
         self.assertNotIn("count", response.json())
@@ -281,9 +410,17 @@ class MobileOrgUnitAPITestCase(APITestCase):
         instance2 = Instance.objects.create(
             form=form2, org_unit=self.raditz, json={"key": "bar"}, form_version=form_version2
         )
+        instance_file1 = InstanceFile.objects.create(instance=instance2, file="test1.jpg")
+        # Instance 3. Form is soft-deleted
+        form3 = Form.objects.create(name="Form 3", deleted_at=datetime.datetime.now())
+        form_version3 = FormVersion.objects.create(form=form3, version_id=9)
+        instance3 = Instance.objects.create(
+            form=form3, org_unit=self.raditz, json={"key": "foobar"}, form_version=form_version3
+        )
         # Mark instances as reference instances.
         OrgUnitReferenceInstance.objects.create(org_unit=self.raditz, instance=instance1, form=form1)
         OrgUnitReferenceInstance.objects.create(org_unit=self.raditz, instance=instance2, form=form2)
+        OrgUnitReferenceInstance.objects.create(org_unit=self.raditz, instance=instance3, form=form3)
 
         self.client.force_authenticate(self.user)
 
@@ -311,6 +448,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
                         "created_at": 1698310800.0,
                         "updated_at": 1698310800.0,
                         "json": {"key": "foo"},
+                        "instance_files": [],
                     },
                     {
                         "id": instance2.pk,
@@ -320,6 +458,22 @@ class MobileOrgUnitAPITestCase(APITestCase):
                         "created_at": 1698310800.0,
                         "updated_at": 1698310800.0,
                         "json": {"key": "bar"},
+                        "instance_files": [
+                            {
+                                "id": instance_file1.pk,
+                                "instance_id": instance2.pk,
+                                "file": "http://testserver/media/test1.jpg",
+                                "created_at": 1698310800.0,
+                                "file_type": "image/jpeg",
+                                "name": None,
+                                "submitted_at": 1698310800.0,
+                                "org_unit": {
+                                    "id": self.raditz.id,
+                                    "name": self.raditz.name,
+                                },
+                                "form_name": form2.name,
+                            },
+                        ],
                     },
                 ],
                 "has_next": False,
@@ -350,6 +504,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
                         "created_at": 1698310800.0,
                         "updated_at": 1698310800.0,
                         "json": {"key": "foo"},
+                        "instance_files": [],
                     },
                 ],
                 "has_next": False,
@@ -378,3 +533,97 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
         response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, IDS: f"{self.goku.id},-1,{self.goten.id}"})
         self.assertEqual(response.status_code, 404)
+
+    def test_create_org_unit_not_authenticated_project_requires_authentication(self):
+        count_before = OrgUnit.objects.count()
+        response = self.client.post(
+            f"{BASE_URL}?{APP_ID}={self.project.app_id}",
+            data=[
+                {
+                    "id": "123",
+                    "name": "My OrgUnit",
+                    "time": 0,
+                    "created_at": 1698310800.0,
+                    "updated_at": 1698310800.0,
+                }
+            ],
+        )
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(OrgUnit.objects.count(), count_before)
+        self.assertFalse(OrgUnit.objects.filter(name="My OrgUnit").exists())
+
+    def test_create_org_unit_authenticated_project_requires_authentication(self):
+        count_before = OrgUnit.objects.count()
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            f"{BASE_URL}?{APP_ID}={self.project.app_id}",
+            data=[
+                {
+                    "id": "123",
+                    "name": "My OrgUnit",
+                    "time": 0,
+                    "created_at": 1698310800.0,
+                    "updated_at": 1698310800.0,
+                }
+            ],
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(OrgUnit.objects.count(), count_before + 1)
+        self.assertTrue(OrgUnit.objects.filter(name="My OrgUnit").exists())
+
+    def test_create_org_unit_not_authenticated_project_doesnt_require_authentication(self):
+        count_before = OrgUnit.objects.count()
+        response = self.client.post(
+            f"{BASE_URL}?{APP_ID}={self.project2.app_id}",
+            data=[
+                {
+                    "id": "123",
+                    "name": "My OrgUnit",
+                    "time": 0,
+                    "created_at": 1698310800.0,
+                    "updated_at": 1698310800.0,
+                }
+            ],
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(OrgUnit.objects.count(), count_before + 1)
+        self.assertTrue(OrgUnit.objects.filter(name="My OrgUnit").exists())
+
+    def test_safe_api_import(self):
+        self.client.force_authenticate(self.user)
+        uuid = "61e1dbfe-a0fc-4075-bfa2-5f3201c918f3"
+        name = "Hopital Sous Fifre"
+        unit_body = [
+            {
+                "id": uuid,
+                "latitude": 0,
+                "created_at": 1565194077699,
+                "updated_at": 1565194077800,
+                "longitude": 0,
+                "accuracy": 0,
+                "altitude": 0,
+                "time": 0,
+                "name": name,
+            }
+        ]
+        # No app id - An APIImport record with has_problem set to True should be created
+        response = self.client.post("/api/mobile/orgunits/", data=unit_body, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertAPIImport(
+            "orgUnit",
+            request_body=unit_body,
+            has_problems=True,
+            exception_contains_string="Could not find project for user",
+            exception_contains_code="404",
+        )
+
+        # Wrong app id - An APIImport record with has_problem set to True should be created
+        response = self.client.post("/api/mobile/orgunits/?app_id=1234", data=unit_body, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertAPIImport(
+            "orgUnit",
+            request_body=unit_body,
+            has_problems=True,
+            exception_contains_string="Could not find project for user",
+            exception_contains_code="404",
+        )

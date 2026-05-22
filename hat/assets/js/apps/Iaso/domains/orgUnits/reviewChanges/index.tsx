@@ -2,58 +2,15 @@ import React, { FunctionComponent, useMemo } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, getTableUrl, useSafeIntl } from 'bluesquare-components';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import TopBar from '../../../components/nav/TopBarComponent';
-import { baseUrls } from '../../../constants/urls';
-import { useParamsObject } from '../../../routing/hooks/useParamsObject';
 import { ReviewOrgUnitChangesFilter } from './Filter/ReviewOrgUnitChangesFilter';
 import { useGetApprovalProposals } from './hooks/api/useGetApprovalProposals';
 import MESSAGES from './messages';
 import { ReviewOrgUnitChangesTable } from './Tables/ReviewOrgUnitChangesTable';
 import { ApproveOrgUnitParams } from './types';
-/*
-# Org Unit Change Request
-
-## Status:
-There are 3 status:
-- New → orange
-- Approved → green
-- Rejected → red
-
-### If new:
-- Left side: old org unit values (org unit values at request creation time). Comes from change request API (old_value field)
-- Right side: proposed changes. Red if not selected, green if selected
-
-### If approved:
-- Left side: old org unit values (org unit values at request creation time). Comes from change request API (old_value field)
-- Right side: proposed change → approved = green, rejected = red
-
-### If rejected:
-- Left side: old org unit values (org unit values at request creation time). Comes from change request API (old_value field)
-- Right side: proposed changes in red
-
-## Creation:
-
-While creating a change request with the mobile app to create an org unit:
-1. A change request is initiated with the validation_status set to "NEW".
-2. The appropriate instance(s) are created.
-3. The change request is created.
-
-The org unit is assumed to be created with this change request.
-The only validation performed is checking if the validation_status of the org unit is "NEW".
-
-The mobile app and Django backend check for the existence of required fields (name, org unit type).
-The frontend does not perform this check, as the API will reject the change request if these fields are missing.
-
-When the org unit creation is approved, the status changes from "NEW" to "VALID".
-
-A prompt should appear if the change request is rejected or partially approved asking the reason of the rejection.
-
-The layout only shows new fields if the org unit is created using a change request, and all fields can either be approved or rejected in bulk.
-
-Change requests to create an org unit should be highlighted in the table.
-
-*/
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -71,28 +28,51 @@ export const ReviewOrgUnitChanges: FunctionComponent = () => {
         () => ({
             parent_id: params.parent_id,
             groups: params.groups,
+            org_unit_search: params.org_unit,
             org_unit_type_id: params.org_unit_type_id,
             status: params.status,
+            order: params.order,
             created_at_after: params.created_at_after,
             created_at_before: params.created_at_before,
             forms: params.forms,
             users: params.userIds,
             user_roles: params.userRoles,
             with_location: params.withLocation,
+            projects: params.projectIds,
+            payment_status: params.paymentStatus,
+            payment_ids: params.paymentIds,
             source_version_id: params.source_version_id,
+            potential_payment_ids: params.potentialPaymentIds,
+            data_source_synchronization_id:
+                params.data_source_synchronization_id,
+            ids: params.ids,
+            is_soft_deleted: params.is_soft_deleted || false,
+            requested_fields: params.requested_fields,
+            kind: params.kind,
         }),
         [
+            params.parent_id,
+            params.groups,
+            params.org_unit,
+            params.org_unit_type_id,
+            params.status,
+            params.order,
             params.created_at_after,
             params.created_at_before,
             params.forms,
-            params.groups,
-            params.org_unit_type_id,
-            params.parent_id,
-            params.source_version_id,
-            params.status,
             params.userIds,
             params.userRoles,
             params.withLocation,
+            params.projectIds,
+            params.paymentStatus,
+            params.paymentIds,
+            params.source_version_id,
+            params.potentialPaymentIds,
+            params.data_source_synchronization_id,
+            params.ids,
+            params.is_soft_deleted,
+            params.requested_fields,
+            params.kind,
         ],
     );
 

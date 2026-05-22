@@ -7,13 +7,12 @@ import {
 } from 'bluesquare-components';
 import React, { FunctionComponent, useCallback, useState } from 'react';
 import MESSAGES from '../../../../../constants/messages';
-import { Sides } from '../../../../../constants/types';
-import { baseUrls } from '../../../../../constants/urls';
+import { Side, Sides } from '../../../../../constants/types';
 import { LIST, MAP, paperElevation } from '../../../shared/constants';
 import { LqasAfroOverviewContextProvider } from '../Context/LqasAfroOverviewContext';
 import { LqasAfroList } from '../ListView/LqasAfroList';
 import { LqasAfroSelector } from '../LqasAfroSelector';
-import { AfroMapParams, Side } from '../types';
+import { AfroMapParams } from '../types';
 import { LqasAfroMap } from './LqasAfroMap';
 
 const useStyles = makeStyles(theme => ({
@@ -34,16 +33,18 @@ type Props = {
     selectedRound: string;
     onRoundChange: (value: string, side: Side) => void;
     side: Side;
-    params: AfroMapParams;
+    params: AfroMapParams & { accountId: string };
     onDisplayedShapeChange: (value: string, side: Side) => void;
+    currentUrl: string;
 };
-const baseUrl = baseUrls.lqasAfro;
+
 export const LqasAfroMapWithSelector: FunctionComponent<Props> = ({
     selectedRound,
     onRoundChange,
     side,
     params,
     onDisplayedShapeChange,
+    currentUrl,
 }) => {
     const { formatMessage } = useSafeIntl();
     const redirectToReplace = useRedirectToReplace();
@@ -60,9 +61,9 @@ export const LqasAfroMapWithSelector: FunctionComponent<Props> = ({
                 ...params,
                 [tabKey]: newtab,
             };
-            redirectToReplace(baseUrl, newParams);
+            redirectToReplace(currentUrl, newParams);
         },
-        [side, params, redirectToReplace],
+        [side, params, redirectToReplace, currentUrl],
     );
     // TABS
     return (
@@ -75,7 +76,7 @@ export const LqasAfroMapWithSelector: FunctionComponent<Props> = ({
                     }}
                     className={classes.marginBottom}
                     indicatorColor="primary"
-                    onChange={(event, newtab) => handleChangeTab(newtab)}
+                    onChange={(_, newtab) => handleChangeTab(newtab)}
                 >
                     <Tab value={MAP} label={formatMessage(MESSAGES.map)} />
                     <Tab value={LIST} label={formatMessage(MESSAGES.list)} />
@@ -97,7 +98,11 @@ export const LqasAfroMapWithSelector: FunctionComponent<Props> = ({
                         tab === MAP ? classes.mapContainer : classes.hidden
                     }
                 >
-                    <LqasAfroMap params={params} side={side} />
+                    <LqasAfroMap
+                        params={params}
+                        side={side}
+                        currentUrl={currentUrl}
+                    />
                 </Box>
 
                 <Box
@@ -107,7 +112,11 @@ export const LqasAfroMapWithSelector: FunctionComponent<Props> = ({
                         tab === LIST ? classes.mapContainer : classes.hidden
                     }
                 >
-                    <LqasAfroList params={params} side={side} />{' '}
+                    <LqasAfroList
+                        params={params}
+                        side={side}
+                        currentUrl={currentUrl}
+                    />
                 </Box>
             </Paper>
         </LqasAfroOverviewContextProvider>

@@ -1,7 +1,7 @@
+import { useCallback, useState } from 'react';
+import { PaginationType } from 'bluesquare-components';
 import { UseQueryResult, useQueryClient } from 'react-query';
 
-import { Pagination } from 'bluesquare-components';
-import { useCallback, useState } from 'react';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
 
@@ -67,7 +67,7 @@ export const useGetOrgUnit = (
     });
 };
 
-export type OrgUnitListChildren = Pagination & {
+export type OrgUnitListChildren = PaginationType & {
     orgunits: OrgUnit[];
 };
 

@@ -51,7 +51,6 @@ class Command(BaseCommand):
                     org_unit.sub_source = source_name
                     org_unit.version = version
                     org_unit.source_ref = row[0].strip()
-                    org_unit.validated = False
                     parent = row[2]
                     if parent:
                         self.stdout.write(f"Attempting to find parent {parent}")

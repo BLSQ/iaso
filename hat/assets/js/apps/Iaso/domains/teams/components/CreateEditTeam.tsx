@@ -1,59 +1,45 @@
-import React, { FunctionComponent, useMemo, useEffect, useState } from 'react';
+import React, { FunctionComponent, useMemo, useEffect } from 'react';
+import { Box } from '@mui/material';
 import {
     AddButton,
     useSafeIntl,
-    IconButton,
     IntlFormatMessage,
+    ConfirmCancelModal,
+    makeFullModal,
 } from 'bluesquare-components';
-// @ts-ignore
-import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
+import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
+import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
+import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
+import { useGetColors } from 'Iaso/hooks/useGetColors';
+import {
+    useApiErrorValidation,
+    useTranslatedErrors,
+} from 'Iaso/libs/validation';
+import { commaSeparatedIdsToArray } from 'Iaso/utils/forms';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 
 import InputComponent from '../../../components/forms/InputComponent';
-import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 
-import { commaSeparatedIdsToArray } from '../../../utils/forms';
-import { useTeamValidation } from '../validation';
-import { DropdownTeamsOptions } from '../types/team';
-
+import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
+import { TEAM_OF_TEAMS, TEAM_OF_USERS } from '../constants';
+import { useGetTeamsDropdown } from '../hooks/requests/useGetTeams';
 import {
     convertAPIErrorsToState,
     SaveTeamQuery,
     useSaveTeam,
 } from '../hooks/requests/useSaveTeam';
-import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
-import { useGetProfilesDropdown } from '../hooks/requests/useGetProfilesDropdown';
-import { useGetTeamsDropdown } from '../hooks/requests/useGetTeams';
-import {
-    useApiErrorValidation,
-    useTranslatedErrors,
-} from '../../../libs/validation';
-import { TEAM_OF_TEAMS, TEAM_OF_USERS } from '../constants';
 import MESSAGES from '../messages';
+import { DropdownTeamsOptions } from '../types/team';
+import { useTeamValidation } from '../validation';
 
 type ModalMode = 'create' | 'edit';
 
 type Props = Partial<SaveTeamQuery> & {
     dialogType: ModalMode;
-};
-
-const makeRenderTrigger = (dialogType: 'create' | 'edit') => {
-    if (dialogType === 'create') {
-        return ({ openDialog }) => (
-            <AddButton
-                dataTestId="create-plannning-button"
-                onClick={openDialog}
-            />
-        );
-    }
-    return ({ openDialog }) => (
-        <IconButton
-            onClick={openDialog}
-            icon="edit"
-            tooltipMessage={MESSAGES.edit}
-        />
-    );
+    isOpen: boolean;
+    closeDialog: () => void;
 };
 
 const formatTitle = (
@@ -70,7 +56,7 @@ const formatTitle = (
     }
 };
 
-export const CreateEditTeam: FunctionComponent<Props> = ({
+const CreateEditTeam: FunctionComponent<Props> = ({
     dialogType,
     id,
     name,
@@ -81,10 +67,13 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
     type,
     users,
     parent,
+    isOpen,
+    closeDialog,
+    color,
 }) => {
+    const { data: colors } = useGetColors();
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
-    const [closeModal, setCloseModal] = useState<any>();
     const { data: projectsDropdown, isFetching: isFetchingProjects } =
         useGetProjectsDropDown();
     const { data: teamsDropdown = [], isFetching: isFetchingTeams } =
@@ -94,8 +83,7 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
             },
             id,
         );
-    const { data: profilesDropdown, isFetching: isFetchingProfiles } =
-        useGetProfilesDropdown();
+
     const { mutateAsync: saveTeam } = useSaveTeam(dialogType);
 
     const {
@@ -105,7 +93,7 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
     } = useApiErrorValidation<Partial<SaveTeamQuery>, any>({
         mutationFn: saveTeam,
         onSuccess: () => {
-            closeModal.closeDialog();
+            closeDialog();
             formik.resetForm();
         },
         convertError: convertAPIErrorsToState,
@@ -124,6 +112,7 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
             type,
             users: users || [],
             parent,
+            color,
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -143,13 +132,13 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
         resetForm,
     } = formik;
 
-    const renderTrigger = useMemo(
-        () => makeRenderTrigger(dialogType),
-        [dialogType],
-    );
-    const onChange = (keyValue, value) => {
+    const onChange = (keyValue: string, value: any) => {
         setFieldTouched(keyValue, true);
-        setFieldValue(keyValue, value);
+        if (keyValue === 'users') {
+            setFieldValue(keyValue, commaSeparatedIdsToArray(value));
+        } else {
+            setFieldValue(keyValue, value);
+        }
     };
 
     const getErrors = useTranslatedErrors({
@@ -185,22 +174,21 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
     );
     return (
         <FormikProvider value={formik}>
-            {/* @ts-ignore */}
-            <ConfirmCancelDialogComponent
+            <ConfirmCancelModal
+                dataTestId="create-team-modal"
+                id="create-team-modal"
+                open={isOpen}
+                closeDialog={closeDialog}
                 allowConfirm={isValid && !isEqual(values, initialValues)}
                 titleMessage={titleMessage}
-                onConfirm={closeDialog => {
-                    setCloseModal({ closeDialog });
-                    handleSubmit();
-                }}
-                onCancel={closeDialog => {
+                onConfirm={handleSubmit}
+                onCancel={() => {
                     resetForm();
-                    closeDialog();
                 }}
                 maxWidth="xs"
+                onClose={() => null}
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}
-                renderTrigger={renderTrigger}
             >
                 <InputComponent
                     keyValue="name"
@@ -211,17 +199,15 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
                     label={MESSAGES.name}
                     required
                 />
-                <InputComponent
-                    type="select"
-                    keyValue="manager"
-                    onChange={onChange}
-                    value={values.manager}
-                    errors={getErrors('manager')}
-                    label={MESSAGES.manager}
-                    required
-                    options={profilesDropdown}
-                    loading={isFetchingProfiles}
-                />
+                <Box mt={2}>
+                    <UserAsyncSelect
+                        keyValue="manager"
+                        handleChange={onChange}
+                        filterUsers={`${values.manager}`}
+                        label={MESSAGES.manager}
+                        multi={false}
+                    />
+                </Box>
                 <InputComponent
                     type="select"
                     keyValue="project"
@@ -259,20 +245,26 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
                         },
                     ]}
                 />
+                <Box mt={2}>
+                    {colors && (
+                        <ColorPicker
+                            currentColor={values.color ?? colors[0]}
+                            onChangeColor={color =>
+                                setFieldValue('color', color)
+                            }
+                        />
+                    )}
+                </Box>
                 {values.type === TEAM_OF_USERS && (
-                    <InputComponent
-                        type="select"
-                        keyValue="users"
-                        onChange={(key, value) =>
-                            onChange(key, commaSeparatedIdsToArray(value))
-                        }
-                        value={values.users}
-                        errors={getErrors('users')}
-                        label={MESSAGES.users}
-                        options={profilesDropdown}
-                        loading={isFetchingProfiles}
-                        multi
-                    />
+                    <Box mt={2}>
+                        <UserAsyncSelect
+                            keyValue="users"
+                            handleChange={onChange}
+                            filterUsers={values.users.join(',')}
+                            label={MESSAGES.users}
+                            multi
+                        />
+                    </Box>
                 )}
                 {values.type === TEAM_OF_TEAMS && (
                     <InputComponent
@@ -300,7 +292,11 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
                     loading={isFetchingTeams}
                     multi={false}
                 />
-            </ConfirmCancelDialogComponent>
+            </ConfirmCancelModal>
         </FormikProvider>
     );
 };
+const AddTeamModal = makeFullModal(CreateEditTeam, AddButton);
+const EditTeamModal = makeFullModal(CreateEditTeam, EditIconButton);
+
+export { AddTeamModal, EditTeamModal };

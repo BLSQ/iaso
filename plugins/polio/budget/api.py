@@ -4,14 +4,14 @@ from django.db.models import F, Q, QuerySet
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
-from hat.menupermissions import models as permission
+from dynamic_fields.filter_backends import DynamicFieldsFilterBackendBackwardCompatible
 from iaso.api.common import (
     CSVExportMixin,
     DeletionFilterBackend,
@@ -38,9 +38,10 @@ from plugins.polio.budget.serializers import (
     WorkflowSerializer,
 )
 from plugins.polio.models import Campaign, Round
+from plugins.polio.permissions import POLIO_BUDGET_ADMIN_PERMISSION, POLIO_BUDGET_PERMISSION
 
 
-@swagger_auto_schema(tags=["budget"])
+@extend_schema(tags=["Polio - Budget"])
 class BudgetProcessViewSet(ModelViewSet, CSVExportMixin):
     """
     Budget information endpoint.
@@ -50,15 +51,17 @@ class BudgetProcessViewSet(ModelViewSet, CSVExportMixin):
 
     exporter_serializer_class = ExportBudgetProcessSerializer
     export_filename = "campaigns_budget_list_{date}.csv"
-    permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
+    permission_classes = [HasPermission(POLIO_BUDGET_PERMISSION)]
     use_field_order = True
     http_method_names = ["delete", "get", "head", "patch", "post"]
     filter_backends = [
         filters.OrderingFilter,
         DjangoFilterBackend,
         DeletionFilterBackend,
+        DynamicFieldsFilterBackendBackwardCompatible,
     ]
     filterset_class = BudgetProcessFilter
+    dynamic_fields_serializer_class = BudgetProcessSerializer
     ordering_fields = [
         "current_state_key",
         "obr_name",
@@ -118,7 +121,7 @@ class BudgetProcessViewSet(ModelViewSet, CSVExportMixin):
         detail=False,
         methods=["POST"],
         serializer_class=TransitionOverrideSerializer,
-        permission_classes=[HasPermission(permission.POLIO_BUDGET_ADMIN)],
+        permission_classes=[HasPermission(POLIO_BUDGET_ADMIN_PERMISSION)],
     )
     def override(self, request):
         """
@@ -188,7 +191,7 @@ class BudgetProcessViewSet(ModelViewSet, CSVExportMixin):
         return Response(available_rounds.as_ui_dropdown_data()["rounds"], status=status.HTTP_200_OK)
 
 
-@swagger_auto_schema(tags=["budget"])
+@extend_schema(tags=["Polio - Budget steps"])
 class BudgetStepViewSet(ModelViewSet):
     """
     Step on a budget process, to progress the budget workflow.
@@ -203,7 +206,7 @@ class BudgetStepViewSet(ModelViewSet):
             return UpdateBudgetStepSerializer
         return BudgetStepSerializer
 
-    permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
+    permission_classes = [HasPermission(POLIO_BUDGET_PERMISSION)]
 
     http_method_names = ["get", "head", "delete", "patch"]
     filter_backends = [
@@ -262,7 +265,7 @@ class BudgetStepViewSet(ModelViewSet):
 
 
 # noinspection PyMethodMayBeStatic
-@swagger_auto_schema(tags=["budget"])
+@extend_schema(tags=["Polio - workflows"])
 class WorkflowViewSet(ViewSet):
     """
     Info on the budge workflow
@@ -270,7 +273,7 @@ class WorkflowViewSet(ViewSet):
     This endpoint is currently used to show the possible state in the filter
     """
 
-    permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
+    permission_classes = [HasPermission(POLIO_BUDGET_PERMISSION)]
 
     # At the moment I only implemented retrieve /current hardcode because we only support one workflow at the time
     # to keep the design simple, change if/when we want to support multiple workflow.

@@ -1,12 +1,15 @@
 import django_filters
 
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
+from dynamic_fields.filter_backends import DynamicFieldsFilterBackendBackwardCompatible
 from iaso.api.common import Paginator
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.models import GroupSet, Project, SourceVersion
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION, CORE_ORG_UNITS_READ_PERMISSION
 
 from ..common import HasPermission, ModelViewSet
 from .filters import GroupSetFilter
@@ -44,10 +47,11 @@ class GroupSetDropdownSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "name", "label"]
 
 
+@extend_schema(tags=["Groups", "Group sets"])
 class GroupSetsViewSet(ModelViewSet):
     f"""Groups API
 
-    This API is restricted to users having the "{permission.ORG_UNITS}", "{permission.ORG_UNITS_READ}" permission
+    This API is restricted to users having the "{CORE_ORG_UNITS_PERMISSION}", "{CORE_ORG_UNITS_READ_PERMISSION}" permission
 
     GET /api/group_sets/      params : version, dataSource, defaultVersion, search, order
     GET /api/group_sets/<id>
@@ -58,18 +62,28 @@ class GroupSetsViewSet(ModelViewSet):
     lookup_field = "id"
 
     permission_classes = [
+        AuthenticationEnforcedPermission,
         permissions.IsAuthenticated,
-        HasPermission(permission.ORG_UNITS, permission.ORG_UNITS_READ),  # type: ignore
+        HasPermission(CORE_ORG_UNITS_PERMISSION, CORE_ORG_UNITS_READ_PERMISSION),  # type: ignore
         HasGroupsetPermission,
     ]
 
-    filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = GroupSetFilter
     ordering = ["name"]
 
     serializer_class = GroupSetSerializer
     results_key = "group_sets"
     http_method_names = ["get", "post", "put", "patch", "delete", "head", "options", "trace"]
+
+    @property
+    def filter_backends(self):
+        if self.action in ["list", "dropdown"]:
+            return [
+                filters.OrderingFilter,
+                django_filters.rest_framework.DjangoFilterBackend,
+                DynamicFieldsFilterBackendBackwardCompatible,
+            ]
+        return [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
 
     def pagination_class(self):
         return GroupSetPagination(self.results_key)
@@ -94,7 +108,12 @@ class GroupSetsViewSet(ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    @action(permission_classes=[], detail=False, methods=["GET"], serializer_class=GroupSetDropdownSerializer)
+    @action(
+        permission_classes=[AuthenticationEnforcedPermission],
+        detail=False,
+        methods=["GET"],
+        serializer_class=GroupSetDropdownSerializer,
+    )
     def dropdown(self, request, *args):
         """To be used in dropdowns (filters)
 

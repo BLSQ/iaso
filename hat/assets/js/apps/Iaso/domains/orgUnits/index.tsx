@@ -13,10 +13,11 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { useNavigate } from 'react-router-dom';
+import { MainWrapper } from 'Iaso/components/MainWrapper';
+import { getColor, useGetColors } from 'Iaso/hooks/useGetColors';
+import { SxStyles } from 'Iaso/types/general';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
-import { getChipColors } from '../../constants/chipColors';
-import { MENU_HEIGHT_WITHOUT_TABS } from '../../constants/uiConstants';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { OrgUnitFiltersContainer } from './components/OrgUnitFiltersContainer';
@@ -34,21 +35,17 @@ import { Search } from './types/search';
 
 import { decodeSearch } from './utils';
 
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-    container: {
-        width: '100%',
-        height: `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px)`,
-        padding: 0,
-        margin: 0,
-        overflow: 'auto',
-        backgroundColor: 'white',
-        position: 'relative',
+const styles: SxStyles = {
+    mainWrapper: {
         top: 48,
         '& .MuiSpeedDial-directionUp, &.MuiSpeedDial-directionLeft': {
             position: 'fixed',
         },
     },
+};
+
+const useStyles = makeStyles(theme => ({
+    ...commonStyles(theme),
     tabs: {
         ...commonStyles(theme).tabs,
         padding: 0,
@@ -80,10 +77,6 @@ export const OrgUnits: FunctionComponent = () => {
     const searches: [Search] = useMemo(() => {
         return decodeSearch(decodeURI(params.searches));
     }, [params.searches]);
-    const isSearchActive: boolean = useMemo(
-        () => params.searchActive === 'true',
-        [params.searchActive],
-    );
     // MEMO
 
     // CUSTOM HOOKS
@@ -101,8 +94,6 @@ export const OrgUnits: FunctionComponent = () => {
     const { data: orgUnitsData, isFetching: isFetchingOrgUnits } =
         useGetOrgUnits({
             params: apiParams,
-            isSearchActive,
-            enabled: isSearchActive, // this is required to count result in search tab
         });
     const {
         data: orgUnitsDataLocation,
@@ -110,11 +101,10 @@ export const OrgUnits: FunctionComponent = () => {
     } = useGetOrgUnitsLocations({
         params: apiParamsLocations,
         searches,
-        isSearchActive,
-        enabled: tab === 'map' && isSearchActive,
+        enabled: tab === 'map',
     });
     // REQUESTS HOOKS
-
+    const { data: colors } = useGetColors(true);
     const getSearchColor = useCallback(
         currentSearchIndex => {
             const currentSearch = searches[currentSearchIndex];
@@ -123,24 +113,21 @@ export const OrgUnits: FunctionComponent = () => {
                 currentColor = currentSearch.color;
             }
             if (!currentColor) {
-                currentColor = getChipColors(currentSearchIndex);
+                currentColor = getColor(currentSearchIndex, colors);
             } else {
                 currentColor = `#${currentColor}`;
             }
             return currentColor;
         },
-        [searches],
+        [searches, colors],
     );
 
     const onSearch = useCallback(
-        newParams => {
+        (newParams: OrgUnitParams) => {
             const tempParams = {
                 ...newParams,
                 searches: JSON.stringify(newParams.searches),
             };
-            if (newParams.searchActive !== 'true') {
-                tempParams.searchActive = true;
-            }
             navigate(makeRedirectionUrl(baseUrl, tempParams), {
                 replace: true,
             });
@@ -149,7 +136,7 @@ export const OrgUnits: FunctionComponent = () => {
     );
     // TABS
     const handleChangeTab = useCallback(
-        newtab => {
+        (newtab: string) => {
             setTab(newtab);
             const newParams = {
                 ...params,
@@ -170,13 +157,14 @@ export const OrgUnits: FunctionComponent = () => {
             {isLoading && <LoadingSpinner fixed={false} absolute />}
             <TopBar title={formatMessage(MESSAGES.title)} disableShadow />
 
-            <Box className={classes.container}>
+            <MainWrapper sx={styles.mainWrapper}>
                 <OrgUnitFiltersContainer
                     params={params}
                     onSearch={onSearch}
                     currentTab={tab}
                     paramsSearches={searches || []}
                     counts={(!isLoading && orgUnitsData?.counts) || []}
+                    colors={colors || []}
                 />
                 {tab === 'list' &&
                     orgUnitsData &&
@@ -195,56 +183,47 @@ export const OrgUnits: FunctionComponent = () => {
                             />
                         </Box>
                     )}
-                {isSearchActive && (
-                    <Box px={4}>
-                        <Tabs
-                            value={tab}
-                            classes={{
-                                root: classes.tabs,
-                            }}
-                            className={classes.marginBottom}
-                            indicatorColor="primary"
-                            onChange={(event, newtab) =>
-                                handleChangeTab(newtab)
-                            }
-                        >
-                            <Tab
-                                value="list"
-                                label={formatMessage(MESSAGES.list)}
-                            />
-                            <Tab
-                                value="map"
-                                label={formatMessage(MESSAGES.map)}
-                            />
-                        </Tabs>
-                        {tab === 'list' && (
-                            <TableList
-                                params={params}
-                                saveMulti={saveMulti}
-                                orgUnitsData={orgUnitsData}
-                            />
-                        )}
 
-                        <Box
-                            className={
-                                tab === 'map' ? '' : classes.hiddenOpacity
-                            }
-                        >
-                            <Box className={classes.containerMarginNeg}>
-                                <OrgUnitsMap
-                                    getSearchColor={getSearchColor}
-                                    orgUnits={
-                                        orgUnitsDataLocation || {
-                                            locations: [],
-                                            shapes: [],
-                                        }
+                <Box px={4}>
+                    <Tabs
+                        value={tab}
+                        classes={{
+                            root: classes.tabs,
+                        }}
+                        className={classes.marginBottom}
+                        indicatorColor="primary"
+                        onChange={(event, newtab) => handleChangeTab(newtab)}
+                    >
+                        <Tab
+                            value="list"
+                            label={formatMessage(MESSAGES.list)}
+                        />
+                        <Tab value="map" label={formatMessage(MESSAGES.map)} />
+                    </Tabs>
+                    {tab === 'list' && (
+                        <TableList
+                            params={params}
+                            saveMulti={saveMulti}
+                            orgUnitsData={orgUnitsData}
+                        />
+                    )}
+
+                    <Box className={tab === 'map' ? '' : classes.hiddenOpacity}>
+                        <Box className={classes.containerMarginNeg}>
+                            <OrgUnitsMap
+                                params={params}
+                                getSearchColor={getSearchColor}
+                                orgUnits={
+                                    orgUnitsDataLocation || {
+                                        locations: [],
+                                        shapes: [],
                                     }
-                                />
-                            </Box>
+                                }
+                            />
                         </Box>
                     </Box>
-                )}
-            </Box>
+                </Box>
+            </MainWrapper>
         </>
     );
 };

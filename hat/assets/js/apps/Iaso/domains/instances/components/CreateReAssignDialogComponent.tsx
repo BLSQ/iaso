@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useState } from 'react';
 import UpdateIcon from '@mui/icons-material/Update';
 import {
     AddButton,
@@ -5,7 +6,6 @@ import {
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { FunctionComponent, useState } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import PeriodPicker from '../../periods/components/PeriodPicker';
@@ -14,12 +14,12 @@ import { isValidPeriod } from '../../periods/utils';
 import { ReassignInstancePayload } from '../hooks/useReassignInstance';
 import MESSAGES from '../messages';
 
-type Props = {
+type CreateReAssignDialogProps = {
     titleMessage: any;
     confirmMessage: any;
     cancelMessage: any;
     formType: {
-        id: number;
+        id: number | string;
         periodType: string;
     };
     currentInstance?: {
@@ -39,7 +39,9 @@ type Props = {
     closeDialog: () => void;
 };
 
-export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
+export const CreateReAssignDialogComponent: FunctionComponent<
+    CreateReAssignDialogProps
+> = ({
     titleMessage,
     confirmMessage = MESSAGES.ok,
     cancelMessage = MESSAGES.cancel,
@@ -107,7 +109,7 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
             open={isOpen}
             confirmMessage={confirmMessage}
             cancelMessage={cancelMessage}
-            maxWidth="xs"
+            maxWidth="sm"
             allowConfirm={allowConfirm}
             closeDialog={closeDialog}
             onClose={closeDialog}
@@ -164,4 +166,4 @@ export const ReAssignDialog = makeFullModal(
     UpdateIcon,
 );
 
-export { CreateReAssignDialog };
+export { CreateReAssignDialog, CreateReAssignDialogProps };

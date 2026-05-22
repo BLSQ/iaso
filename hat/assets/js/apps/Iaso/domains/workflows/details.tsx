@@ -5,47 +5,47 @@ import React, {
     useMemo,
     useEffect,
 } from 'react';
+import { Box, Grid, Button } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     useSafeIntl,
     commonStyles,
     LoadingSpinner,
     formatThousand,
-    Column,
     SortableTable,
     useHumanReadableJsonLogic,
     useGoBack,
+    ColumnWithAccessor,
 } from 'bluesquare-components';
 import { isEqual } from 'lodash';
-import { Box, Grid, Button } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import orderBy from 'lodash/orderBy';
 import uniqWith from 'lodash/uniqWith';
 import TopBar from '../../components/nav/TopBarComponent';
-import MESSAGES from './messages';
+import WidgetPaper from '../../components/papers/WidgetPaperComponent';
+import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
-import { useGetWorkflowVersion } from './hooks/requests/useGetWorkflowVersions';
-import { useGetWorkflowVersionChanges } from './hooks/requests/useGetWorkflowVersionChanges';
-import { useGetQueryBuildersFields } from '../forms/fields/hooks/useGetQueryBuildersFields';
-import { useGetQueryBuilderListToReplace } from '../forms/fields/hooks/useGetQueryBuilderListToReplace';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { useGetFormDescriptor } from '../forms/fields/hooks/useGetFormDescriptor';
+import { useGetQueryBuilderListToReplace } from '../forms/fields/hooks/useGetQueryBuilderListToReplace';
+import { useGetQueryBuildersFields } from '../forms/fields/hooks/useGetQueryBuildersFields';
+import { useGetPossibleFieldsByFormVersion } from '../forms/hooks/useGetPossibleFields';
+import { PossibleField } from '../forms/types/forms';
+import { AddChangeModal } from './components/changes/Modal';
+import { AddFollowUpsModal } from './components/followUps/Modal';
+import { FollowUpsTable } from './components/followUps/Table';
+import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
+import { useGetChangesColumns } from './config/changes';
+import { useGetFollowUpsColumns, iasoFields } from './config/followUps';
 import { useBulkUpdateWorkflowFollowUp } from './hooks/requests/useBulkUpdateWorkflowFollowUp';
+import { useGetWorkflowVersionChanges } from './hooks/requests/useGetWorkflowVersionChanges';
+import { useGetWorkflowVersion } from './hooks/requests/useGetWorkflowVersions';
+import MESSAGES from './messages';
 import {
     WorkflowVersionDetail,
     WorkflowParams,
     FollowUps,
     Change,
 } from './types';
-import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
-import { FollowUpsTable } from './components/followUps/Table';
-import { AddFollowUpsModal } from './components/followUps/Modal';
-import { AddChangeModal } from './components/changes/Modal';
-import WidgetPaper from '../../components/papers/WidgetPaperComponent';
-import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-import { useGetChangesColumns } from './config/changes';
-import { useGetFollowUpsColumns, iasoFields } from './config/followUps';
-import { useGetPossibleFieldsByFormVersion } from '../forms/hooks/useGetPossibleFields';
-import { PossibleField } from '../forms/types/forms';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -65,7 +65,9 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export const Details: FunctionComponent = () => {
-    const params = useParamsObject(baseUrls.workflowDetail) as WorkflowParams;
+    const params = useParamsObject(
+        baseUrls.workflowDetail,
+    ) as unknown as WorkflowParams;
     const classes: Record<string, string> = useStyles();
     const [followUps, setFollowUps] = useState<FollowUps[]>([]);
 
@@ -93,7 +95,31 @@ export const Details: FunctionComponent = () => {
         data?: Change[];
     } = useGetWorkflowVersionChanges(params);
 
-    const updateCurrentFollowUps = workflowVersionFollowUps => {
+    const handleSortChange = useCallback((items: FollowUps[]) => {
+        setFollowUps(
+            items.map((item: FollowUps, index: number) => ({
+                ...item,
+                order: index + 1,
+            })),
+        );
+        setIsFollowUpOrderChange(true);
+    }, []);
+
+    const handleResetFollowUpsOrder = useCallback(() => {
+        updateCurrentFollowUps(workflowVersion?.follow_ups);
+        setIsFollowUpOrderChange(false);
+    }, [workflowVersion?.follow_ups]);
+
+    const handleSaveFollowUpsOrder = useCallback(() => {
+        saveFollowUpOrder(
+            followUps.map(fu => ({
+                id: fu.id,
+                order: fu.order - 1,
+            })),
+        );
+    }, [followUps, saveFollowUpOrder]);
+
+    const updateCurrentFollowUps = (workflowVersionFollowUps?: FollowUps[]) => {
         if (workflowVersionFollowUps) {
             const newFollowUps = orderBy(
                 workflowVersionFollowUps,
@@ -150,26 +176,6 @@ export const Details: FunctionComponent = () => {
         workflowVersion,
         fields,
     );
-    const handleSortChange = useCallback((items: any) => {
-        setFollowUps(
-            items.map((item, index) => ({ ...item, order: index + 1 })),
-        );
-        setIsFollowUpOrderChange(true);
-    }, []);
-
-    const handleResetFollowUpsOrder = useCallback(() => {
-        updateCurrentFollowUps(workflowVersion?.follow_ups);
-        setIsFollowUpOrderChange(false);
-    }, [workflowVersion?.follow_ups]);
-
-    const handleSaveFollowUpsOrder = useCallback(() => {
-        saveFollowUpOrder(
-            followUps.map(fu => ({
-                id: fu.id,
-                order: fu.order - 1,
-            })),
-        );
-    }, [followUps, saveFollowUpOrder]);
 
     return (
         <>
@@ -217,9 +223,10 @@ export const Details: FunctionComponent = () => {
                                     {workflowVersion.status === 'DRAFT' && (
                                         <SortableTable
                                             items={followUps}
+                                            // @ts-ignore
                                             onChange={handleSortChange}
                                             columns={
-                                                followUpsColumns as Column[]
+                                                followUpsColumns as ColumnWithAccessor[]
                                             }
                                         />
                                     )}

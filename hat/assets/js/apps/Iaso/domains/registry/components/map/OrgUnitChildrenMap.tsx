@@ -1,3 +1,11 @@
+import React, {
+    Dispatch,
+    FunctionComponent,
+    SetStateAction,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import { Box } from '@mui/material';
 import { red } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
@@ -9,38 +17,28 @@ import {
 import classNames from 'classnames';
 import L from 'leaflet';
 import { keyBy } from 'lodash';
-import React, {
-    Dispatch,
-    FunctionComponent,
-    SetStateAction,
-    useCallback,
-    useMemo,
-    useState,
-} from 'react';
 import { MapContainer, ScaleControl } from 'react-leaflet';
+
+import { CustomTileLayer } from '../../../../components/maps/tools/CustomTileLayer';
+import { CustomZoomControl } from '../../../../components/maps/tools/CustomZoomControl';
+import { Tile } from '../../../../components/maps/tools/TilesSwitchControl';
+import TILES from '../../../../constants/mapTiles';
+import { baseUrls } from '../../../../constants/urls';
+import { useObjectState } from '../../../../hooks/useObjectState';
 import {
+    CloseTooltipOnMoveStart,
     getOrgUnitBounds,
     getOrgUnitsBounds,
     mergeBounds,
 } from '../../../../utils/map/mapUtils';
-
-import { Tile } from '../../../../components/maps/tools/TilesSwitchControl';
-import { MapLegend } from './MapLegend';
-
 import { OrgUnit } from '../../../orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../../orgUnits/types/orgunitTypes';
-import { useGetLegendOptions } from '../../hooks/useGetLegendOptions';
-
-import { MapToggleFullscreen } from './MapToggleFullscreen';
-
-import { CustomTileLayer } from '../../../../components/maps/tools/CustomTileLayer';
-import { CustomZoomControl } from '../../../../components/maps/tools/CustomZoomControl';
-import TILES from '../../../../constants/mapTiles';
-import { baseUrls } from '../../../../constants/urls';
-import { useObjectState } from '../../../../hooks/useObjectState';
 import { HEIGHT } from '../../config';
+import { useGetLegendOptions } from '../../hooks/useGetLegendOptions';
 import { RegistryParams } from '../../types';
+import { MapLegend } from './MapLegend';
 import { MapSettings } from './MapSettings';
+import { MapToggleFullscreen } from './MapToggleFullscreen';
 import { OrgUnitChildrenLocations } from './OrgUnitChildrenLocations';
 import { OrgUnitChildrenShapes } from './OrgUnitChildrenShapes';
 import { OrgUnitLocation } from './OrgUnitLocation';
@@ -57,8 +55,8 @@ type Props = {
     handleOrgUnitChange: (newOrgUnit: OrgUnit) => void;
 };
 
-const boundsOptions = {
-    padding: [50, 50],
+const boundsOptions: L.FitBoundsOptions = {
+    padding: L.point(50, 50),
 };
 const tabsHeight = '50px';
 const mapHeight = `calc(${HEIGHT} - ${tabsHeight})`;
@@ -204,12 +202,12 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                     zoom={3}
                     scrollWheelZoom={false}
                     zoomControl={false}
-                    contextmenu
                     bounds={bounds}
                     boundsOptions={boundsOptions}
                     trackResize
                     key={`${params.orgUnitId}-${params.fullScreen}`}
                 >
+                    <CloseTooltipOnMoveStart />
                     <MapSettings
                         settings={settings}
                         handleChangeSettings={handleChangeSettings}

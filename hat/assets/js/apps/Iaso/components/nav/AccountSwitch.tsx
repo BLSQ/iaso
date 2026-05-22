@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import {
     ClickAwayListener,
     Grow,
@@ -7,7 +8,6 @@ import {
     Popper,
     Typography,
 } from '@mui/material';
-import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 
 import { useSwitchAccount } from '../../hooks/useSwitchAccount';
 import { useCurrentUser } from '../../utils/usersUtils';
@@ -61,7 +61,7 @@ export const AccountSwitch: FunctionComponent<Props> = ({
         prevOpen.current = open;
     }, [open]);
     const menuListKeyDownHandler = React.useCallback(handleListKeyDown, []);
-    if (currentUser.other_accounts?.length === 0) {
+    if (!currentUser?.other_accounts?.length) {
         return (
             <Typography
                 variant="body2"
@@ -104,10 +104,10 @@ export const AccountSwitch: FunctionComponent<Props> = ({
                 placement="bottom-end"
                 transition
                 disablePortal
+                sx={{ zIndex: 10 }}
             >
                 {({ TransitionProps }) => (
                     <Grow
-                        // eslint-disable-next-line react/jsx-props-no-spreading
                         {...TransitionProps}
                         style={{
                             transformOrigin: 'right bottom',
@@ -121,7 +121,7 @@ export const AccountSwitch: FunctionComponent<Props> = ({
                                     aria-labelledby="account-button"
                                     onKeyDown={menuListKeyDownHandler}
                                 >
-                                    {currentUser.other_accounts.map(account => (
+                                    {currentUser?.other_accounts?.map(account => (
                                         <MenuItem
                                             key={account.id}
                                             selected={

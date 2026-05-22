@@ -1,6 +1,5 @@
-import datetime
-
 from iaso import models as m
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_CHANGE_REQUEST_REVIEW_PERMISSION, CORE_PAYMENTS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -8,8 +7,6 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
     """
     Test actions on the ViewSet.
     """
-
-    DT = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
 
     @classmethod
     def setUpTestData(cls):
@@ -33,12 +30,12 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
         user_with_perm = cls.create_user_with_profile(
             username="user_with_perm",
             account=account,
-            permissions=["iaso_org_unit_change_request_review", "iaso_payments"],
+            permissions=[CORE_ORG_UNITS_CHANGE_REQUEST_REVIEW_PERMISSION, CORE_PAYMENTS_PERMISSION],
         )
         geo_limited_user = cls.create_user_with_profile(
             username="geo_limited_user",
             account=account,
-            permissions=["iaso_org_unit_change_request_review", "iaso_payments"],
+            permissions=[CORE_ORG_UNITS_CHANGE_REQUEST_REVIEW_PERMISSION, CORE_PAYMENTS_PERMISSION],
         )
         geo_limited_user.iaso_profile.org_units.set([other_org_unit])
 
@@ -72,10 +69,22 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
             created_by=self.user_from_another_account,
         )
 
+        self.assertEqual(0, m.PotentialPayment.objects.count())
+        self.assertEqual(3, m.OrgUnitChangeRequest.objects.count())
+        for change_request in m.OrgUnitChangeRequest.objects.all():
+            self.assertIsNone(change_request.payment)
+            self.assertIsNone(change_request.potential_payment)
+
         self.client.force_authenticate(self.user_with_perm)
 
+        with self.assertNumQueries(18):
+            response = self.client.get("/api/potential_payments/")
+            self.assertJSONResponse(response, 200)
+
         response = self.client.get("/api/potential_payments/")
+        self.assertIn("count", response.data)
         self.assertJSONResponse(response, 200)
+
         # Check that the correct number of PotentialPayment objects were created
         self.assertEqual(2, len(response.data["results"]))
         # Check that the PotentialPayment objects were created for the correct users
@@ -83,6 +92,15 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
         self.assertIn(self.user.id, user_ids)
         self.assertIn(self.user_with_perm.id, user_ids)
         self.assertNotIn(self.user_from_another_account.id, user_ids)
+
+        # Check DB objects.
+        self.assertEqual(2, m.PotentialPayment.objects.count())
+
+        potential_payment_1 = m.PotentialPayment.objects.get(user=self.user)
+        self.assertEqual(1, potential_payment_1.change_requests.count())
+
+        potential_payment_2 = m.PotentialPayment.objects.get(user=self.user_with_perm)
+        self.assertEqual(1, potential_payment_2.change_requests.count())
 
     def test_list_without_auth(self):
         response = self.client.get("/api/potential_payments/")

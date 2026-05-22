@@ -1,6 +1,6 @@
+import React, { FunctionComponent, ReactNode, useState } from 'react';
 import { Grid, Typography } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent, ReactNode, useState } from 'react';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import MESSAGES from '../messages';
 import { useCreateSourceVersion } from '../requests';
@@ -58,7 +58,6 @@ export const AddNewEmptyVersion: FunctionComponent<Props> = ({
             dataTestId="new-empty-version-modal"
         >
             {createSourceVersion.isLoading && <LoadingSpinner />}
-
             <Grid container spacing={4}>
                 <Grid item>
                     <Typography>

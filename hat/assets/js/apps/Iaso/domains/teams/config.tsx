@@ -1,19 +1,20 @@
 import React, { ReactElement } from 'react';
-
-import { Column, IntlFormatMessage } from 'bluesquare-components';
-import MESSAGES from './messages';
-
-import { Team } from './types/team';
-
+import { Column, useSafeIntl } from 'bluesquare-components';
+import { ColorBadge } from 'Iaso/components/ColorBadge';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
-import { CreateEditTeam } from './components/CreateEditTeam';
+import { ProjectChip } from '../projects/components/ProjectChip';
+import { EditTeamModal } from './components/CreateEditTeam';
 import { TypeCell } from './components/TypeCell';
 import { UsersTeamsCell } from './components/UsersTeamsCell';
+import { useDeleteTeam } from './hooks/requests/useDeleteTeam';
+import MESSAGES from './messages';
 
-export const teamColumns = (
-    formatMessage: IntlFormatMessage,
-    deleteTeam: (team: Team) => void,
-): Column[] => {
+export const useTeamColumns = ({ params, data }): Column[] => {
+    const { mutate: deleteTeam } = useDeleteTeam({
+        params,
+        count: data?.count ?? 0,
+    });
+    const { formatMessage } = useSafeIntl();
     return [
         {
             Header: 'Id',
@@ -21,15 +22,30 @@ export const teamColumns = (
             width: 80,
         },
         {
-            Header: formatMessage(MESSAGES.project),
-            accessor: 'project_details',
-            id: 'project__name',
-            Cell: settings => settings.row.original.project_details.name
+            Header: formatMessage(MESSAGES.color),
+            accessor: 'color',
+            id: 'color',
+            width: 10,
+            sortable: false,
+            Cell: settings => (
+                <ColorBadge
+                    data-testid={'team-badge-color'}
+                    backgroundColor={settings.row.original.color}
+                />
+            ),
         },
         {
             Header: formatMessage(MESSAGES.name),
             accessor: 'name',
             id: 'name',
+        },
+        {
+            Header: formatMessage(MESSAGES.project),
+            accessor: 'project_details',
+            id: 'project__name',
+            Cell: settings => (
+                <ProjectChip project={settings.row.original.project_details} />
+            ),
         },
         {
             Header: formatMessage(MESSAGES.type),
@@ -46,10 +62,18 @@ export const teamColumns = (
             Cell: (settings): ReactElement => (
                 <UsersTeamsCell
                     type={settings.row.original.type}
-                    subTeamsDetails={settings.row.original.sub_teams_details}
-                    usersDetails={settings.row.original.users_details}
+                    subTeamsDetails={
+                        settings.row.original.sub_teams_details || []
+                    }
+                    usersDetails={settings.row.original.users_details || []}
                 />
             ),
+        },
+        {
+            Header: formatMessage(MESSAGES.membersCount),
+            accessor: 'members_count',
+            id: 'members_count',
+            sortable: true,
         },
         {
             Header: formatMessage(MESSAGES.actions),
@@ -60,7 +84,7 @@ export const teamColumns = (
                 return (
                     // TODO: limit to user permissions
                     <>
-                        <CreateEditTeam
+                        <EditTeamModal
                             dialogType="edit"
                             id={settings.row.original.id}
                             name={settings.row.original.name}
@@ -71,6 +95,8 @@ export const teamColumns = (
                             type={settings.row.original.type}
                             users={settings.row.original.users}
                             parent={settings.row.original.parent}
+                            color={settings.row.original.color}
+                            iconProps={{}}
                         />
                         <DeleteDialog
                             keyName="team"

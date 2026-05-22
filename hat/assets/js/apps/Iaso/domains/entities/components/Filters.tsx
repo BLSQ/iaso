@@ -2,7 +2,6 @@ import React, {
     FunctionComponent,
     useCallback,
     useEffect,
-    useMemo,
     useState,
 } from 'react';
 
@@ -11,50 +10,40 @@ import { Box, Button, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import {
-    QueryBuilderInput,
     commonStyles,
-    useHumanReadableJsonLogic,
     useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
 
-// @ts-ignore
 import DatesRange from 'Iaso/components/filters/DatesRange';
-// @ts-ignore
-import { LocationLimit } from 'Iaso/utils/map/LocationLimit';
-// @ts-ignore
-import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction.tsx';
-import InputComponent from '../../../components/forms/InputComponent';
-import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
-
-import MESSAGES from '../messages';
-
-import { baseUrl } from '../config';
-
-import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
-import { useGetGroupDropdown } from '../../orgUnits/hooks/requests/useGetGroups';
-import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
-import {
-    useGetBeneficiariesApiParams,
-    useGetBeneficiaryTypesDropdown,
-    useGetUsersDropDown,
-} from '../hooks/requests';
-import { useFiltersParams } from '../hooks/useFiltersParams';
-
-import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
+import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
+import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction';
 import {
     SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
     hasFeatureFlag,
-} from '../../../utils/featureFlags';
-import { useCurrentUser } from '../../../utils/usersUtils';
-import { Filters as FilterType, Params } from '../types/filters';
+} from 'Iaso/utils/featureFlags';
+import { LocationLimit } from 'Iaso/utils/map/LocationLimit';
 
-import { Popper } from '../../forms/fields/components/Popper';
-import { useGetAllFormDescriptors } from '../../forms/fields/hooks/useGetFormDescriptor';
-import { useGetQueryBuilderListToReplace } from '../../forms/fields/hooks/useGetQueryBuilderListToReplace';
-import { useGetQueryBuilderFieldsForAllForms } from '../../forms/fields/hooks/useGetQueryBuildersFields';
-import { useGetAllPossibleFields } from '../../forms/hooks/useGetPossibleFields';
-import { parseJson } from '../../instances/utils/jsonLogicParse';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
+import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
+import InputComponent from '../../../components/forms/InputComponent';
+
+import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
+import { useGetGroupDropdown } from '../../orgUnits/hooks/requests/useGetGroups';
+import {
+    useGetTeamsDropdown,
+    useGetTeam,
+} from '../../teams/hooks/requests/useGetTeams';
+import { baseUrl } from '../config';
+import {
+    useGetEntitiesApiParams,
+    useGetEntityTypesDropdown,
+} from '../hooks/requests';
+import { useFiltersParams } from '../hooks/useFiltersParams';
+import MESSAGES from '../messages';
+import { Filters as FilterType, Params } from '../types/filters';
+import { EntitiesQueryBuilder } from './EntitiesQuerybuilder';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -63,9 +52,14 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     params: Params;
     isFetching: boolean;
+    isSearchActive: boolean;
 };
 
-const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
+const Filters: FunctionComponent<Props> = ({
+    params,
+    isFetching,
+    isSearchActive,
+}) => {
     const getParams = useFiltersParams();
     const currentUser = useCurrentUser();
     const classes: Record<string, string> = useStyles();
@@ -105,15 +99,11 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
 
     const { data: types, isFetching: isFetchingTypes } =
-        useGetBeneficiaryTypesDropdown();
+        useGetEntityTypesDropdown();
     const { data: teamOptions } = useGetTeamsDropdown({});
-    const selectedTeam = useMemo(() => {
-        return teamOptions?.find(
-            option => option.value === filters.submitterTeamId,
-        )?.original;
-    }, [filters.submitterTeamId, teamOptions]);
-
-    const { data: usersOptions } = useGetUsersDropDown(selectedTeam);
+    const { data: selectedTeam } = useGetTeam(
+        filters?.submitterTeamId ? parseInt(filters.submitterTeamId, 10) : 0,
+    );
     const dataSourceId = currentUser?.account?.default_version?.data_source?.id;
     const sourceVersionId = currentUser?.account?.default_version?.id;
     const { data: groups, isFetching: isFetchingGroups } = useGetGroupDropdown({
@@ -121,41 +111,22 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
         sourceVersionId,
     });
 
-    // Load QueryBuilder resources
-    const { allPossibleFields } = useGetAllPossibleFields();
-    const { data: formDescriptors } = useGetAllFormDescriptors();
-    const fields = useGetQueryBuilderFieldsForAllForms(
-        formDescriptors,
-        allPossibleFields,
-    );
-    const queryBuilderListToReplace = useGetQueryBuilderListToReplace();
-    const getHumanReadableJsonLogic = useHumanReadableJsonLogic(
-        fields,
-        queryBuilderListToReplace,
-    );
     const fieldsSearchJson = filters.fieldsSearch
         ? JSON.parse(filters.fieldsSearch)
         : undefined;
 
-    const handleChangeQueryBuilder = value => {
-        if (value) {
-            const parsedValue = parseJson({ value, fields });
-            handleChange('fieldsSearch', JSON.stringify(parsedValue));
-        } else {
-            handleChange('fieldsSearch', undefined);
-        }
-    };
-
+    const searchEnabled = filtersUpdated || !isSearchActive;
     const handleSearch = useCallback(() => {
-        if (filtersUpdated) {
+        if (searchEnabled) {
             setFiltersUpdated(false);
             const tempParams: Params = getParams(params, filters);
+            tempParams.isSearchActive = 'true';
             redirectTo(baseUrl, tempParams);
         }
-    }, [filtersUpdated, getParams, params, filters, redirectTo]);
+    }, [searchEnabled, getParams, params, filters, redirectTo]);
 
     const handleChange = useCallback(
-        (key, value) => {
+        (key: string, value: any) => {
             setFiltersUpdated(true);
             if (key === 'location') {
                 setInitialOrgUnitId(value);
@@ -168,7 +139,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
         [filters],
     );
     const handleTeamChange = useCallback(
-        (key, value) => {
+        (key: string, value: any) => {
             setFiltersUpdated(true);
             setFilters({
                 ...filters,
@@ -179,7 +150,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
         [filters],
     );
 
-    const { url: apiUrl } = useGetBeneficiariesApiParams(params);
+    const { url: apiUrl } = useGetEntitiesApiParams(params);
     return (
         <Box mb={1}>
             <UserOrgUnitRestriction />
@@ -289,34 +260,27 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
                         label={MESSAGES.submitterTeam}
                         options={teamOptions}
                     />
-                    <InputComponent
-                        keyValue="submitterId"
-                        onChange={handleChange}
-                        value={filters.submitterId}
-                        type="select"
-                        label={MESSAGES.submitter}
-                        options={usersOptions}
-                    />
+                    <Box mt={2}>
+                        <UserAsyncSelect
+                            keyValue="submitterId"
+                            handleChange={handleChange}
+                            filterUsers={filters.submitterId}
+                            multi={false}
+                            label={MESSAGES.submitter}
+                            additionalFilters={{
+                                teams: selectedTeam?.id,
+                            }}
+                        />
+                    </Box>
                 </Grid>
             </Grid>
 
             <Box mt={-2}>
                 <Grid container columnSpacing={2}>
                     <Grid item xs={12} sm={6}>
-                        <QueryBuilderInput
-                            label={MESSAGES.queryBuilder}
-                            onChange={handleChangeQueryBuilder}
-                            initialLogic={fieldsSearchJson}
-                            fields={fields}
-                            iconProps={{
-                                label: MESSAGES.queryBuilder,
-                                value: getHumanReadableJsonLogic(
-                                    fieldsSearchJson,
-                                ),
-                                onClear: () =>
-                                    handleChange('fieldsSearch', undefined),
-                            }}
-                            InfoPopper={<Popper />}
+                        <EntitiesQueryBuilder
+                            fieldsSearchJson={fieldsSearchJson}
+                            handleChange={handleChange}
                         />
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -330,9 +294,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
                             <Box mb={2}>
                                 <Button
                                     data-test="search-button"
-                                    disabled={
-                                        textSearchError || !filtersUpdated
-                                    }
+                                    disabled={textSearchError || !searchEnabled}
                                     variant="contained"
                                     color="primary"
                                     onClick={() => handleSearch()}
@@ -343,11 +305,13 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
                                     {formatMessage(MESSAGES.search)}
                                 </Button>
                             </Box>
-                            <DownloadButtonsComponent
-                                csvUrl={`${apiUrl}&csv=true`}
-                                xlsxUrl={`${apiUrl}&xlsx=true`}
-                                disabled={isFetching}
-                            />
+                            {isSearchActive && (
+                                <DownloadButtonsComponent
+                                    csvUrl={`${apiUrl}&csv=true`}
+                                    xlsxUrl={`${apiUrl}&xlsx=true`}
+                                    disabled={isFetching}
+                                />
+                            )}
                         </Box>
                     </Grid>
                 </Grid>

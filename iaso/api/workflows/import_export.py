@@ -1,15 +1,16 @@
 import typing
 
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission
 from iaso.models import Account, Workflow
 from iaso.models.entity import EntityType
 from iaso.models.forms import Form
 from iaso.models.workflow import Workflow, WorkflowChange, WorkflowFollowup, WorkflowVersion, WorkflowVersionsStatus
+from iaso.permissions.core_permissions import CORE_WORKFLOW_PERMISSION
 
 
 def export_workflow_real(workflow: Workflow) -> typing.Dict:
@@ -144,8 +145,9 @@ def import_workflow_real(workflow_data: typing.Dict, account: Account) -> Workfl
     return wf
 
 
+@extend_schema(tags=["Workflows"])
 @api_view(["GET"])
-@permission_classes([permissions.IsAuthenticated, HasPermission(permission.WORKFLOW)])  # type: ignore
+@permission_classes([permissions.IsAuthenticated, HasPermission(CORE_WORKFLOW_PERMISSION)])
 def export_workflow(request, workflow_id):
     """GET /api/workflows/export/{workflow_id}/
     Exports the workflow version given by {version_id} as a JSON
@@ -155,8 +157,9 @@ def export_workflow(request, workflow_id):
     return Response(workflow_data)
 
 
+@extend_schema(tags=["Workflows"])
 @api_view(["POST"])
-@permission_classes([permissions.IsAuthenticated, HasPermission(permission.WORKFLOW)])  # type: ignore
+@permission_classes([permissions.IsAuthenticated, HasPermission(CORE_WORKFLOW_PERMISSION)])
 def import_workflow(request):
     """POST /api/workflows/import/
     Imports the workflow version given by from a JSON body containing an export workflow.

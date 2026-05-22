@@ -1,7 +1,7 @@
-import React, { FunctionComponent, useCallback } from 'react';
+import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { FilterButton } from '../../../../components/FilterButton';
+import { SearchButton } from 'Iaso/components/SearchButton';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { baseUrls } from '../../../../constants/urls';
 import { useFilterState } from '../../../../hooks/useFilterState';
@@ -74,9 +74,9 @@ export const OrgUnitChangeRequestConfigsFilter: FunctionComponent<Props> = ({
                 alignItems="center"
             >
                 <Box mb={{ xs: 2, sm: 0 }}>
-                    <FilterButton
+                    <SearchButton
                         disabled={!filtersUpdated}
-                        onFilter={handleSearch}
+                        onSearch={handleSearch}
                     />
                 </Box>
             </Grid>

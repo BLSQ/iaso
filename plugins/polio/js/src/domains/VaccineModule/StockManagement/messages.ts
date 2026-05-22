@@ -223,7 +223,11 @@ const MESSAGES = defineMessages({
     },
     unreadable_label: {
         id: 'iaso.polio.label.unreadable_label',
-        defaultMessage: 'Unreadable Label',
+        defaultMessage: 'Unreadable label',
+    },
+    missing_droppers: {
+        id: 'iaso.polio.label.missing_droppers',
+        defaultMessage: 'Missing droppers',
     },
     stockCorrection: {
         id: 'iaso.polio.label.stockCorrection',
@@ -405,6 +409,68 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.duplicate_destruction',
         defaultMessage:
             'A destruction report with the same date and unusable vials destroyed already exists',
+    },
+    customObrName: {
+        id: 'iaso.polio.label.customObrName',
+        defaultMessage: 'Custom campaign name',
+    },
+    useCustomObrName: {
+        id: 'iaso.polio.label.useCustomObrName',
+        defaultMessage: 'Use custom campaign name',
+    },
+    ALL_ROUNDS_ON_HOLD: {
+        id: 'iaso.polio.tooltip.label.ALL_ROUNDS_ON_HOLD',
+        defaultMessage: 'All rounds of this campaign have been put on hold',
+    },
+    ROUND_ON_HOLD: {
+        id: 'iaso.polio.tooltip.label.ROUND_ON_HOLD',
+        defaultMessage: 'The attached round has been put on hold',
+    },
+    TEST_CAMPAIGN: {
+        id: 'iaso.polio.tooltip.label.TEST_CAMPAIGN',
+        defaultMessage: 'This campaign has been marked as test campaign',
+    },
+    CAMPAIGN_ON_HOLD: {
+        id: 'iaso.polio.tooltip.label.CAMPAIGN_ON_HOLD',
+        defaultMessage: 'This campaign has been put on hold',
+    },
+    roundsOnHold: {
+        id: 'iaso.polio.tooltip.label.roundsOnHold',
+        defaultMessage: 'The attached round(s) have been put on hold',
+    },
+    doses_per_vial: {
+        id: 'iaso.polio.form.doses_per_vial',
+        defaultMessage: 'Doses per vial',
+    },
+    temporary_form_a: {
+        id: 'iaso.polio.form.temporary_form_a',
+        defaultMessage: 'Temporary Form A',
+    },
+    temporary_status_change_title: {
+        id: 'iaso.polio.form.temporary_status_change_title',
+        defaultMessage: 'Change Form A status',
+    },
+    received_to_temporary_warning: {
+        id: 'iaso.polio.form.received_to_temporary_warning',
+        defaultMessage:
+            'Changing this Form A back to temporary will remove the reception date and file on save.',
+    },
+    temporary_toggle_unsaved_warning: {
+        id: 'iaso.polio.form.temporary_toggle_unsaved_warning',
+        defaultMessage:
+            'Switching back to temporary will discard the reception date and file you have entered.',
+    },
+    form_a_status: {
+        id: 'iaso.polio.label.form_a_status',
+        defaultMessage: 'Status',
+    },
+    form_a_status_temporary: {
+        id: 'iaso.polio.label.form_a_status_temporary',
+        defaultMessage: 'Temporary',
+    },
+    form_a_status_received: {
+        id: 'iaso.polio.label.form_a_status_received',
+        defaultMessage: 'Received',
     },
 });
 

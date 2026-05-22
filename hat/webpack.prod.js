@@ -228,38 +228,26 @@ module.exports = {
             },
             {
                 test: /\.css$/,
-                use: [MiniCssExtractPlugin.loader, 'css-loader'],
+                use: [
+                    MiniCssExtractPlugin.loader,
+                    {
+                        loader: 'css-loader',
+                        options: {
+                            url: true,
+                        },
+                    },
+                ],
             },
             {
                 test: /\.(png|jpg|jpeg|gif|svg)$/,
                 type: 'asset/resource',
             },
             {
-                test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
+                test: /\.(woff|woff2|ttf|eot|otf)$/,
                 type: 'asset/resource',
                 generator: {
                     filename: 'fonts/[name].[hash][ext]',
-                },
-            },
-            {
-                test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/,
-                type: 'asset/resource',
-                generator: {
-                    filename: 'fonts/[name].[hash][ext]',
-                },
-            },
-            {
-                test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
-                type: 'asset/resource',
-                generator: {
-                    filename: 'fonts/[name].[hash][ext]',
-                },
-            },
-            {
-                test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
-                type: 'asset/resource',
-                generator: {
-                    filename: 'fonts/[name].[hash][ext]',
+                    publicPath: '/static/',
                 },
             },
             {
@@ -284,7 +272,7 @@ module.exports = {
 
     resolve: {
         alias: {
-            'react/jsx-runtime': 'react/jsx-runtime.js',
+            'react/jsx-runtime.js': 'react/jsx-runtime',
             // Add alias for the combined config
             'IasoModules/plugins/configs': combinedConfigPath,
             'IasoModules/plugins/keys': pluginKeysPath,

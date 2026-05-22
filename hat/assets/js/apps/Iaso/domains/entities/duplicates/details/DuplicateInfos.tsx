@@ -1,8 +1,8 @@
+import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Button, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useRedirectTo, useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
-import React, { FunctionComponent, useCallback } from 'react';
 import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
 import {
     formSuccessFullMessageKey,
@@ -16,7 +16,7 @@ import {
 import * as Permission from '../../../../utils/permissions';
 import { useCurrentUser } from '../../../../utils/usersUtils';
 import { userHasPermission } from '../../../users/utils';
-import { useSoftDeleteBeneficiary } from '../../hooks/requests';
+import { useSoftDeleteEntity } from '../../hooks/requests';
 import { useIgnoreDuplicate } from '../hooks/api/useIgnoreDuplicate';
 import { useMergeDuplicate } from '../hooks/api/useMergeDuplicate';
 import MESSAGES from '../messages';
@@ -87,8 +87,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
         successSnackBar,
         onSuccess,
     );
-    const { mutate: softDeleteBeneficiary } =
-        useSoftDeleteBeneficiary(onSuccess);
+    const { mutate: softDeleteEntity } = useSoftDeleteEntity(onSuccess);
     const { mutateAsync: ignoreDuplicate } = useIgnoreDuplicate(onSuccess);
     return (
         <Box data-test="duplicate-infos">
@@ -152,7 +151,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                                         color="primary"
                                         data-test="soft-delete-A-button"
                                         onClick={() =>
-                                            softDeleteBeneficiary(entityIds[0])
+                                            softDeleteEntity(entityIds[0])
                                         }
                                     >
                                         {formatMessage(MESSAGES.softDeleteA)}
@@ -164,7 +163,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                                         color="primary"
                                         data-test="soft-delete-B-button"
                                         onClick={() =>
-                                            softDeleteBeneficiary(entityIds[1])
+                                            softDeleteEntity(entityIds[1])
                                         }
                                     >
                                         {formatMessage(MESSAGES.softDeleteB)}

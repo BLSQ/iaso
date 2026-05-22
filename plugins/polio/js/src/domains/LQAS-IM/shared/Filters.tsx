@@ -4,29 +4,22 @@ import React, {
     useMemo,
     useState,
 } from 'react';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { Box, Grid } from '@mui/material';
 import {
     Select,
     useSafeIntl,
     IconButton,
     useRedirectToReplace,
 } from 'bluesquare-components';
-import { Box, Grid } from '@mui/material';
-
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import MESSAGES from '../../../constants/messages';
+import { POLIO_ADMIN } from '../../../constants/permissions';
+import { baseUrls } from '../../../constants/urls';
 import { makeCampaignsDropDown } from '../../../utils/index';
+import { IMType, LqasImFilterParams, LqasIMType } from '../types';
 import { useGetLqasImCountriesOptions } from './hooks/api/useGetLqasImCountriesOptions';
 import { RefreshLqasIMData } from './RefreshLqasIMData';
-import { baseUrls } from '../../../constants/urls';
-import { POLIO_ADMIN } from '../../../constants/permissions';
-import { IMType } from '../../../constants/types';
-
-export type Params = {
-    campaign: string | undefined;
-    country: string | undefined;
-    rounds: string | undefined;
-};
 
 type FiltersState = {
     campaign: string | undefined;
@@ -37,15 +30,15 @@ type Props = {
     isFetching: boolean;
     campaigns: any[];
     campaignsFetching: boolean;
-    params: Params;
+    params: LqasImFilterParams;
     imType?: IMType;
 };
 
-const getCurrentUrl = (imType?: 'imGlobal' | 'imHH' | 'imOHH'): string => {
+const getCurrentUrl = (imType?: LqasIMType | 'imHH'): string => {
     if (imType === 'imGlobal') {
         return baseUrls.imGlobal;
     }
-    if (imType === 'imHH') {
+    if (imType === 'imHH' || imType === 'imIHH') {
         return baseUrls.imHH;
     }
     if (imType === 'imOHH') {
@@ -112,6 +105,8 @@ export const Filters: FunctionComponent<Props> = ({
                         clearable
                         multi={false}
                         value={country?.toString()}
+                        // ts-error from blsq-comp
+                        // @ts-ignore
                         options={countriesOptions}
                         onChange={value => onChange('country', value)}
                     />
@@ -125,6 +120,8 @@ export const Filters: FunctionComponent<Props> = ({
                         multi={false}
                         value={campaign}
                         // Not showing campaigns before Im data has been fetched because selecting a campaign before the end of data fetching will cause bugs in the map
+                        // ts-error from blsq-comp
+                        // @ts-ignore
                         options={isFetching ? [] : dropDownOptions}
                         onChange={value => onChange('campaign', value)}
                         disabled={Boolean(!country) && isFetching}

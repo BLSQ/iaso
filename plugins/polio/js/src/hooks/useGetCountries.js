@@ -12,14 +12,13 @@ export const useGetCountries = (status = 'all', enabled = true) => {
 
     const queryString = new URLSearchParams(params);
 
-    return useSnackQuery(
-        ['countries', params],
-        () => getRequest(`/api/orgunits/?${queryString.toString()}`),
-        undefined,
-        {
-            staleTime: 1000 * 60 * 15, // in MS
-            cacheTime: 1000 * 60 * 5,
+    return useSnackQuery({
+        queryKey: ['orgunits', 'countries', params],
+        queryFn: () => getRequest(`/api/orgunits/?${queryString.toString()}`),
+        options: {
+            staleTime: Infinity,
+            cacheTime: Infinity,
             enabled,
         },
-    );
+    });
 };

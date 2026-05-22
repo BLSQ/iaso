@@ -58,7 +58,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Modified by',
     },
     org_unit: {
-        defaultMessage: 'Org unit',
+        defaultMessage: 'Org Unit',
         id: 'iaso.instance.org_unit',
     },
     period: {

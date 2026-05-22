@@ -4,7 +4,7 @@ import { Box, Grid, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import DHIS2Svg from '../../../../../../hat/assets/js/apps/Iaso/components/svg/DHIS2SvgComponent';
+import DHIS2Svg from 'Iaso/components/svg/DHIS2SvgComponent';
 import blsqLogo from '../../../images/blsq.png';
 import datavizLogo from '../../../images/dataviz.png';
 import dhis2Logo from '../../../images/dhis2.png';

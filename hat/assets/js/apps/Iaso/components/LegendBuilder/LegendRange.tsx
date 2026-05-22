@@ -1,7 +1,7 @@
+import React, { FunctionComponent } from 'react';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { Box, Grid, IconButton, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { FunctionComponent } from 'react';
 import { ColorPicker } from '../forms/ColorPicker';
 import InputComponent from '../forms/InputComponent';
 import { legendColors } from './colors';

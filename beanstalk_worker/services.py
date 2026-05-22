@@ -12,7 +12,8 @@ from django.conf import settings
 from django.db import connection
 from django.utils import timezone
 
-from iaso.models.base import KILLED, QUEUED, RUNNING, Task
+from iaso.models.base import KILLED, QUEUED, RUNNING
+from iaso.models.task import Task
 
 
 logger = getLogger(__name__)

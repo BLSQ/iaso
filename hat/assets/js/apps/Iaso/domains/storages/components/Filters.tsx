@@ -1,18 +1,18 @@
-import { Box, Grid, useTheme, useMediaQuery } from '@mui/material';
 import React, { FunctionComponent, useState } from 'react';
+import { Box, Grid, useTheme, useMediaQuery } from '@mui/material';
 
-import { FilterButton } from '../../../components/FilterButton';
+import { SearchButton } from 'Iaso/components/SearchButton';
 import InputComponent from '../../../components/forms/InputComponent';
 
-import { StorageParams } from '../types/storages';
-
+import { baseUrls } from '../../../constants/urls';
 import { useFilterState } from '../../../hooks/useFilterState';
-import { useGetTypes } from '../hooks/useGetTypes';
-import { useGetStatus } from '../hooks/useGetStatus';
+
 import { useGetReasons } from '../hooks/useGetReasons';
+import { useGetStatus } from '../hooks/useGetStatus';
+import { useGetTypes } from '../hooks/useGetTypes';
 
 import MESSAGES from '../messages';
-import { baseUrls } from '../../../constants/urls';
+import { StorageParams } from '../types/storages';
 
 type Props = {
     params: StorageParams;
@@ -78,9 +78,9 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
 
             <Grid container item xs={12} md={3} justifyContent="flex-end">
                 <Box mt={isLargeLayout ? 2 : 0}>
-                    <FilterButton
+                    <SearchButton
                         disabled={textSearchError || !filtersUpdated}
-                        onFilter={handleSearch}
+                        onSearch={handleSearch}
                     />
                 </Box>
             </Grid>

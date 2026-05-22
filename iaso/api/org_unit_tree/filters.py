@@ -5,7 +5,8 @@ from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import ValidationError
 
-from iaso.models import DataSource, OrgUnit
+from iaso.api.filters import ScopedModelChoiceFilter
+from iaso.models import DataSource, OrgUnit, SourceVersion
 
 
 class OrgUnitTreeFilter(django_filters.rest_framework.FilterSet):
@@ -16,6 +17,12 @@ class OrgUnitTreeFilter(django_filters.rest_framework.FilterSet):
         choices=OrgUnit.VALIDATION_STATUS_CHOICES, label=_("Validation status"), widget=forms.CheckboxSelectMultiple
     )
     search = django_filters.CharFilter(field_name="name", lookup_expr="icontains")
+
+    version = ScopedModelChoiceFilter(
+        field_name="version",
+        queryset=SourceVersion.objects.none(),  # safe default nothing visible
+        scope_queryset=lambda request: SourceVersion.objects.filter_for_user(request.user),
+    )
 
     class Meta:
         model = OrgUnit

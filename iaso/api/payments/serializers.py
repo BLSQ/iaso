@@ -4,10 +4,9 @@ from rest_framework import serializers
 from hat.audit.audit_logger import AuditLogger
 from hat.audit.models import PAYMENT_API, PAYMENT_LOT_API
 from iaso.api.payments.filters.potential_payments import filter_by_dates, filter_by_forms, filter_by_parent
-from iaso.api.payments.pagination import PaymentPagination
 from iaso.models import OrgUnitChangeRequest, Payment, PaymentLot, PotentialPayment
-from iaso.models.base import Task
 from iaso.models.payments import PaymentStatuses
+from iaso.models.task import Task
 
 from ..common import TimestampField
 
@@ -37,8 +36,7 @@ class OrgChangeRequestNestedSerializer(serializers.ModelSerializer):
         user = self.context.get("request").user
         if user.is_superuser:
             return True
-        user_org_units = list(user.iaso_profile.get_hierarchy_for_user().values_list("id", flat=True))
-        return obj.org_unit.id in user_org_units
+        return obj.org_unit.id in self.context["user_org_units"]
 
 
 class AuditOrgChangeRequestNestedSerializer(serializers.ModelSerializer):
@@ -51,27 +49,28 @@ class AuditOrgChangeRequestNestedSerializer(serializers.ModelSerializer):
 class NestedPaymentSerializer(serializers.ModelSerializer):
     change_requests = serializers.SerializerMethodField()
     can_see_change_requests = serializers.SerializerMethodField()
+    user = UserNestedSerializer()
 
     class Meta:
         model = Payment
         fields = ["id", "change_requests", "user", "status", "can_see_change_requests"]
         read_only_fields = ["id"]
 
-    user = UserNestedSerializer()
-
     def get_change_requests(self, obj):
-        change_requests = OrgUnitChangeRequest.objects.filter(payment=obj)
+        change_requests = getattr(obj, "prefetched_change_requests", None)
+        if change_requests is None:
+            change_requests = obj.change_requests.all()
         return OrgChangeRequestNestedSerializer(change_requests, many=True, context=self.context).data
 
     def get_can_see_change_requests(self, obj):
-        change_requests = self.get_change_requests(obj)
-
-        blocked_change_requests = [
-            change_request for change_request in change_requests if change_request["can_see_change_request"] == False
-        ]
-        if blocked_change_requests:
-            return False
-        return True
+        user = getattr(self.context.get("request", None), "user", None)
+        if getattr(user, "is_superuser", False):
+            return True
+        user_org_units = self.context.get("user_org_units")
+        change_requests = getattr(obj, "prefetched_change_requests", None)
+        if change_requests is None:
+            change_requests = obj.change_requests.all()
+        return all(cr.org_unit.id in user_org_units for cr in change_requests)
 
 
 class NestedTaskSerializer(serializers.ModelSerializer):
@@ -100,7 +99,6 @@ class PaymentLotSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at"]
 
-    pagination_class = PaymentPagination
     created_by = UserNestedSerializer()
     created_at = TimestampField(read_only=True)
 
@@ -108,13 +106,10 @@ class PaymentLotSerializer(serializers.ModelSerializer):
         user = self.context.get("request").user
         if user.is_superuser:
             return True
-        user_org_units = set(user.iaso_profile.get_hierarchy_for_user().values_list("id", flat=True))
-        change_requests_org_units_for_lot = (
-            OrgUnitChangeRequest.objects.filter(payment__in=obj.payments.all())
-            .values_list("org_unit__id", flat=True)
-            .distinct()
-        )
-        return set(change_requests_org_units_for_lot).issubset(user_org_units)
+        org_unit_ids = []
+        for payment in obj.payments.all():
+            org_unit_ids.extend([cr.org_unit_id for cr in payment.prefetched_change_requests])
+        return set(org_unit_ids).issubset(set(self.context["user_org_units"]))
 
     def get_payments(self, obj):
         payments = obj.payments.all()
@@ -128,13 +123,12 @@ class PotentialPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = PotentialPayment
         fields = ["id", "user", "change_requests", "payment_lot", "can_see_change_requests"]
-        read_only_fields = ["id", "created_at", "updated_at", "payment_lot", "can_see_change_requests"]
+        read_only_fields = ["id", "payment_lot", "can_see_change_requests"]
 
-    pagination_class = PaymentPagination
     user = UserNestedSerializer()
 
     def get_change_requests(self, obj):
-        change_requests = OrgUnitChangeRequest.objects.filter(potential_payment=obj)
+        change_requests = obj.change_requests.all()
         request = self.context.get("request", None)
         change_requests = filter_by_forms(request, change_requests)
         change_requests = filter_by_parent(request, change_requests)
@@ -142,6 +136,7 @@ class PotentialPaymentSerializer(serializers.ModelSerializer):
             start_date = request.GET.get("change_requests__created_at_after", None)
             end_date = request.GET.get("change_requests__created_at_before", None)
             change_requests = filter_by_dates(request, change_requests, start_date, end_date)
+
         return OrgChangeRequestNestedSerializer(change_requests, many=True, context=self.context).data
 
     def get_can_see_change_requests(self, obj):
@@ -181,15 +176,13 @@ class PaymentSerializer(serializers.ModelSerializer):
             "updated_by",
         ]
 
-    pagination_class = PaymentPagination
-
     def validate_status(self, status):
         if status not in PaymentStatuses:
             raise serializers.ValidationError("Invalid status")
         return status
 
     def get_change_requests(self, obj):
-        change_requests = OrgUnitChangeRequest.objects.filter(payment=obj)
+        change_requests = obj.change_requests.all()
         return OrgChangeRequestNestedSerializer(change_requests, many=True, context=self.context).data
 
     def update(self, obj, validated_data):

@@ -1,3 +1,5 @@
+import { UseQueryResult } from 'react-query';
+import { createSearchParamsWithArray } from 'Iaso/libs/utils';
 import { openSnackBar } from '../../components/snackBars/EventDispatcher';
 import { errorSnackBar } from '../../constants/snackBars';
 import {
@@ -7,21 +9,35 @@ import {
     putRequest,
 } from '../../libs/Api';
 import { useSnackQuery } from '../../libs/apiHooks';
+import { Form } from './types/forms';
 
-export const useGetForm = formId =>
-    useSnackQuery(
-        ['forms', formId],
-        () =>
-            getRequest(
-                // eslint-disable-next-line max-len
-                `/api/forms/${formId}/?fields=id,name,org_unit_types,projects,period_type,derived,single_per_period,periods_before_allowed,periods_after_allowed,device_field,location_field,label_keys,possible_fields,legend_threshold,change_request_mode`,
-            ),
-        undefined,
-        {
-            enabled: formId && formId !== '0',
-            keepPreviousData: true,
+export const useGetForm = (
+    formId: number | string | undefined,
+    enabled = Boolean(formId) && formId !== '0',
+    fields?: string,
+    appId?: string,
+): UseQueryResult<Form, Error> => {
+    const queryKey: any[] = ['forms', formId];
+    if (fields) {
+        queryKey.push(fields);
+    }
+
+    const params = {
+        ...(appId ? { app_id: appId } : {}),
+        ...(fields ? { fields: fields } : {}),
+    };
+    const url = `/api/forms/${formId}/?${createSearchParamsWithArray(params).toString()}`;
+    return useSnackQuery({
+        queryKey,
+        queryFn: () => getRequest(url),
+        options: {
+            retry: false,
+            enabled,
+            staleTime: 60000,
+            cacheTime: 1000 * 60 * 5,
         },
-    );
+    });
+};
 
 export const createForm = formData =>
     postRequest('/api/forms/', formData).catch(error => {
@@ -32,6 +48,26 @@ export const updateForm = (formId, formData) =>
     putRequest(`/api/forms/${formId}/`, formData).catch(error => {
         openSnackBar(errorSnackBar('updateFormError', null, error));
     });
+
+export type FormVersionDiff = {
+    previous_version_id: string | null;
+    removed_questions: { name: string; label: string; type: string }[];
+    added_questions: { name: string; label: string; type: string }[];
+    modified_questions: {
+        name: string;
+        label: string;
+        old_type: string;
+        new_type: string;
+    }[];
+};
+
+export const previewFormVersion = (
+    formVersionData,
+): Promise<FormVersionDiff> => {
+    const { data } = formVersionData;
+    const fileData = { xls_file: formVersionData.xls_file };
+    return postRequest('/api/formversions/preview/', data, fileData);
+};
 
 export const createFormVersion = formVersionData => {
     const { data } = formVersionData;

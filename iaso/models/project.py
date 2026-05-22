@@ -5,6 +5,9 @@ from uuid import uuid4
 from django.contrib.auth.models import AnonymousUser, User
 from django.db import models
 
+from iaso.utils.colors import DEFAULT_COLOR
+from iaso.utils.models.color import ColorField
+
 
 class ProjectQuerySet(models.QuerySet):
     def get_for_user_and_app_id(
@@ -22,14 +25,14 @@ class ProjectQuerySet(models.QuerySet):
 
         if app_id is not None:
             try:
-                project = self.get(app_id=app_id)
+                project = self.select_related("account", "account__default_version").get(app_id=app_id)
                 if (
                     user is None
                     or not project.needs_authentication
                     or (
                         user.is_authenticated
                         and user.iaso_profile is not None
-                        and project.account.id == user.iaso_profile.account.id
+                        and project.account_id == user.iaso_profile.account_id
                     )
                 ):
                     return project
@@ -56,22 +59,41 @@ class Project(models.Model):
     name = models.TextField(null=False, blank=False)
     forms = models.ManyToManyField("Form", blank=True, related_name="projects")
     account = models.ForeignKey("Account", on_delete=models.DO_NOTHING, null=True, blank=True)
-    app_id = models.TextField(null=True, blank=True)
+    app_id = models.TextField(
+        blank=True,
+        # Empty values are stored as NULL if both `null=True` and `unique=True` are set.
+        # This avoids unique constraint violations when saving multiple objects with blank values.
+        null=True,
+        unique=True,
+    )
+    # The `needs_authentication` boolean field existed before the feature flags.
+    # Use feature flags instead.
     needs_authentication = models.BooleanField(default=False)
-    feature_flags = models.ManyToManyField("FeatureFlag", related_name="+", blank=True)
+    feature_flags = models.ManyToManyField("FeatureFlag", related_name="+", blank=True, through="ProjectFeatureFlags")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     external_token = models.UUIDField(default=uuid4, null=True)
     min_version = models.IntegerField(null=True, blank=False)
     redirection_url = models.URLField(null=True, blank=True)
+    description = models.TextField(blank=True, default="", null=False)
+    color = ColorField(null=True, blank=True, default=DEFAULT_COLOR)
 
     objects = ProjectManager()
+
+    class Meta:
+        ordering = ["id"]
 
     def __str__(self):
         return "%s " % (self.name,)
 
     def as_dict(self):
-        return {"id": self.id, "name": self.name, "app_id": self.app_id}
+        return {
+            "id": self.id,
+            "name": self.name,
+            "app_id": self.app_id,
+            "color": self.color,
+            "description": self.description,
+        }
 
     def has_feature(self, feature_code):
         return self.feature_flags.filter(code=feature_code).exists()

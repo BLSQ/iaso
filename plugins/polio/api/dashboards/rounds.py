@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
 
 from iaso.api.common import ModelViewSet
@@ -13,6 +14,7 @@ class RoundDashboardSerializer(serializers.ModelSerializer):
         exclude = ["preparedness_spreadsheet_url"]
 
 
+@extend_schema(tags=["Polio - Dashboards - Rounds"])
 class RoundDashboardViewSet(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [PolioReadPermission]

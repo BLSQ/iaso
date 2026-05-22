@@ -1,20 +1,18 @@
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { FilterButton } from '../../../../components/FilterButton';
-import { useFilterState } from '../../../../hooks/useFilterState';
+import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
+import { SearchButton } from 'Iaso/components/SearchButton';
+import DatesRange from '../../../../components/filters/DatesRange';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { baseUrls } from '../../../../constants/urls';
-import MESSAGES from '../../messages';
+import { useFilterState } from '../../../../hooks/useFilterState';
+import { DropdownOptions } from '../../../../types/utils';
 import { OrgUnitTreeviewModal } from '../../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../../orgUnits/components/TreeView/requests';
+import MESSAGES from '../../messages';
 
-import DatesRange from '../../../../components/filters/DatesRange';
 import { PotentialPaymentParams } from '../../types';
-import { AsyncSelect } from '../../../../components/forms/AsyncSelect';
-import { getUsersDropDown } from '../../../instances/hooks/requests/getUsersDropDown';
-import { useGetProfilesDropdown } from '../../../instances/hooks/useGetProfilesDropdown';
-import { DropdownOptions } from '../../../../types/utils';
 
 const baseUrl = baseUrls.lotsPayments;
 type Props = { params: PotentialPaymentParams };
@@ -24,14 +22,6 @@ export const PaymentLotsFilters: FunctionComponent<Props> = ({ params }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
     const { data: initialOrgUnit } = useGetOrgUnit(params.parent_id);
-    const { data: selectedUsers } = useGetProfilesDropdown(filters.users);
-    const handleChangeUsers = useCallback(
-        (keyValue, newValue) => {
-            const joined = newValue?.map(r => r.value)?.join(',');
-            handleChange(keyValue, joined);
-        },
-        [handleChange],
-    );
 
     const statusOptions: DropdownOptions<string>[] = useMemo(
         () => [
@@ -59,14 +49,9 @@ export const PaymentLotsFilters: FunctionComponent<Props> = ({ params }) => {
         <Grid container spacing={2}>
             <Grid item xs={12} md={4} lg={3}>
                 <Box mt={2}>
-                    <AsyncSelect
-                        keyValue="users"
-                        label={MESSAGES.user}
-                        value={selectedUsers ?? ''}
-                        onChange={handleChangeUsers}
-                        debounceTime={500}
-                        multi
-                        fetchOptions={input => getUsersDropDown(input)}
+                    <UserAsyncSelect
+                        handleChange={handleChange}
+                        filterUsers={filters.users}
                     />
                 </Box>
                 <InputComponent
@@ -108,9 +93,9 @@ export const PaymentLotsFilters: FunctionComponent<Props> = ({ params }) => {
             </Grid>
             <Grid item xs={12} md={4} lg={3}>
                 <Box mt={2} display="flex" justifyContent="flex-end">
-                    <FilterButton
+                    <SearchButton
                         disabled={!filtersUpdated}
-                        onFilter={handleSearch}
+                        onSearch={handleSearch}
                     />
                 </Box>
             </Grid>

@@ -4,6 +4,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.utils import timezone
 
 from iaso import models as m
+from iaso.permissions.core_permissions import CORE_COMPLETENESS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -47,7 +48,7 @@ class DerivedInstancesTests(APITestCase):
             username="Test User Name",
             email="testemail@bluesquarehub.com",
             account=account,
-            permissions=["iaso_completeness"],
+            permissions=[CORE_COMPLETENESS_PERMISSION],
         )
         credentials, creds_created = m.ExternalCredentials.objects.get_or_create(
             name="Test export api", url="https://dhis2.com", login="admin", password="whocares", account=account
@@ -63,15 +64,9 @@ class DerivedInstancesTests(APITestCase):
 
         datasource.projects.add(self.project)
 
-        org_unit = m.OrgUnit()
-        org_unit.validated = True
-        org_unit.source_ref = "OU_DHIS2_ID"
-        org_unit.version = source_version
-        org_unit.save()
+        self.org_unit = m.OrgUnit.objects.create(source_ref="OU_DHIS2_ID", version=source_version)
 
-        self.org_unit = org_unit
-
-        derived_form, created = m.Form.objects.get_or_create(
+        derived_form, _ = m.Form.objects.get_or_create(
             form_id="satisfaction_stats",
             name="Client satisfaction statistics",
             period_type="quarter",
@@ -79,7 +74,7 @@ class DerivedInstancesTests(APITestCase):
         )
         self.derived_form = derived_form
 
-        derived_form_version, created = m.FormVersion.objects.get_or_create(form=derived_form, version_id="1")
+        derived_form_version, _ = m.FormVersion.objects.get_or_create(form=derived_form, version_id="1")
         derived_form_mapping = m.Mapping(form=derived_form, data_source=self.datasource, mapping_type=m.DERIVED)
         derived_form_mapping.save()
 

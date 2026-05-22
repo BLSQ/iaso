@@ -1,6 +1,6 @@
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from drf_yasg import openapi
-from drf_yasg.utils import no_body, swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import filters, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -8,20 +8,21 @@ from rest_framework.response import Response
 import iaso.api.workflows.serializers as ser
 import iaso.api.workflows.utils as utils
 
-from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission, ModelViewSet
 from iaso.models import WorkflowFollowup
+from iaso.permissions.core_permissions import CORE_WORKFLOW_PERMISSION
 
 
-workflow_version_id_param = openapi.Parameter(
+workflow_version_id_param = OpenApiParameter(
     name="workflow_version_id",
-    in_=openapi.IN_QUERY,
+    location=OpenApiParameter.QUERY,
     description="The workflow version id for which we create a followup",
-    type=openapi.TYPE_STRING,
+    type=OpenApiTypes.STR,
     required=True,
 )
 
 
+@extend_schema(tags=["Workflow followup"])
 class WorkflowFollowupViewSet(ModelViewSet):
     """Workflow Followup API
 
@@ -52,7 +53,7 @@ class WorkflowFollowupViewSet(ModelViewSet):
     Will delete the followup with id {followup_id}
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.WORKFLOW)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_WORKFLOW_PERMISSION)]
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
     ordering_fields = ["order"]
     serializer_class = ser.WorkflowVersionDetailSerializer
@@ -63,9 +64,7 @@ class WorkflowFollowupViewSet(ModelViewSet):
     filterset_fields = {"workflow_version": ["exact"]}
     http_method_names = ["post", "delete"]
 
-    @swagger_auto_schema(
-        manual_parameters=[workflow_version_id_param], request_body=ser.WorkflowFollowupCreateSerializer
-    )
+    @extend_schema(parameters=[workflow_version_id_param], request=ser.WorkflowFollowupCreateSerializer)
     def create(self, request, *args, **kwargs):
         version_id = request.query_params.get("version_id", kwargs.get("version_id"))
         utils.validate_version_id(version_id, request.user)
@@ -77,7 +76,7 @@ class WorkflowFollowupViewSet(ModelViewSet):
         serialized_data = ser.WorkflowFollowupSerializer(res).data
         return Response(serialized_data)
 
-    @swagger_auto_schema(request_body=ser.WorkflowFollowupModifySerializer(many=True))
+    @extend_schema(request=ser.WorkflowFollowupModifySerializer(many=True))
     @action(detail=False, methods=["post"], url_path="bulkupdate")
     def bulk_update(self, request, *args, **kwargs):
         modifs = []
@@ -94,7 +93,7 @@ class WorkflowFollowupViewSet(ModelViewSet):
         resp = ser.WorkflowFollowupSerializer(modifs, many=True).data
         return Response(resp)
 
-    @swagger_auto_schema(request_body=no_body)
+    @extend_schema(request=None)
     def destroy(self, request, *args, **kwargs):
         followup_id = request.query_params.get("followup_id", kwargs.get("followup_id"))
         wf = WorkflowFollowup.objects.get(pk=followup_id)

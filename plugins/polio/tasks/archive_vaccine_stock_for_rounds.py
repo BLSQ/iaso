@@ -21,9 +21,9 @@ def archive_stock_for_round(round, vaccine_stock, reference_date, country=None):
             vaccine_stock_for_vaccine = vaccine_stock_for_vaccine.filter(country=round.campaign.country)
         if vaccine_stock_for_vaccine:
             vaccine_stock_for_vaccine = vaccine_stock_for_vaccine.first()
-            calculator = VaccineStockCalculator(vaccine_stock_for_vaccine)
-            total_usable_vials_in, total_usable_doses_in = calculator.get_total_of_usable_vials(reference_date)
-            total_unusable_vials_in, total_unusable_doses_in = calculator.get_total_of_unusable_vials(reference_date)
+            calculator = VaccineStockCalculator(vaccine_stock_for_vaccine, reference_date)
+            total_usable_vials_in, total_usable_doses_in = calculator.get_total_of_usable_vials()
+            total_unusable_vials_in, total_unusable_doses_in = calculator.get_total_of_unusable_vials()
             VaccineStockHistory.objects.create(
                 vaccine_stock=vaccine_stock_for_vaccine,
                 round=round,

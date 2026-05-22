@@ -6,14 +6,25 @@ const VACCINE_AUTH = 'iaso_polio_vaccine_authorizations_read_only';
 const VACCINE_AUTH_ADMIN = 'iaso_polio_vaccine_authorizations_admin';
 const SUPPLYCHAIN_READ = 'iaso_polio_vaccine_supply_chain_read';
 const SUPPLYCHAIN_WRITE = 'iaso_polio_vaccine_supply_chain_write';
+const SUPPLYCHAIN_READ_ONLY = 'iaso_polio_vaccine_supply_chain_read_only';
 const STOCK_MANAGEMENT_READ = 'iaso_polio_vaccine_stock_management_read';
+const STOCK_MANAGEMENT_READ_ONLY =
+    'iaso_polio_vaccine_stock_management_read_only';
 const STOCK_MANAGEMENT_WRITE = 'iaso_polio_vaccine_stock_management_write';
+
+const POLIO_COUNTRY_PLAN_READ_ONLY_PERMISSION =
+    'iaso_polio_country_plan_read_only';
+const POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION =
+    'iaso_polio_country_plan_non_admin';
+const POLIO_COUNTRY_PLAN_ADMIN_PERMISSION = 'iaso_polio_country_plan_admin';
+const POLIO_PERFORMANCE_THRESHOLD_WRITE_PERMISSION =
+    'iaso_polio_perf_threshold_write';
 const NOTIFICATION = 'iaso_polio_notifications';
 const CHRONOGRAM = 'iaso_polio_chronogram';
 const CHRONOGRAM_RESTRICTED_WRITE = 'iaso_polio_chronogram_restricted_write';
 const STOCK_EARMARKS_NONADMIN = 'iaso_polio_vaccine_stock_earmarks_nonadmin';
 const STOCK_EARMARKS_ADMIN = 'iaso_polio_vaccine_stock_earmarks_admin';
-
+const STOCK_EARMARKS_READ_ONLY = 'iaso_polio_vaccine_stock_earmarks_read_only';
 export {
     POLIO,
     POLIO_ADMIN,
@@ -22,12 +33,19 @@ export {
     VACCINE_AUTH,
     VACCINE_AUTH_ADMIN,
     SUPPLYCHAIN_READ,
+    SUPPLYCHAIN_READ_ONLY,
     SUPPLYCHAIN_WRITE,
     STOCK_MANAGEMENT_READ,
     STOCK_MANAGEMENT_WRITE,
+    STOCK_MANAGEMENT_READ_ONLY,
+    POLIO_COUNTRY_PLAN_READ_ONLY_PERMISSION,
+    POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
+    POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
     NOTIFICATION,
     CHRONOGRAM,
     CHRONOGRAM_RESTRICTED_WRITE,
     STOCK_EARMARKS_NONADMIN,
     STOCK_EARMARKS_ADMIN,
+    STOCK_EARMARKS_READ_ONLY,
+    POLIO_PERFORMANCE_THRESHOLD_WRITE_PERMISSION,
 };

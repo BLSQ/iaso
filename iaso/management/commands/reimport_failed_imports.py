@@ -1,8 +1,9 @@
 from django.core.management.base import BaseCommand
 
 from hat.api_import.models import APIImport
-from iaso.api.instances import import_data as import_instances
-from iaso.api.org_units import import_data as import_units
+from iaso.api.instances.views import import_data as import_instances
+from iaso.api.org_units import import_org_units
+from iaso.models import Project
 
 
 class Command(BaseCommand):
@@ -13,10 +14,12 @@ class Command(BaseCommand):
         unit_count = 0
         for i in failed_org_units_imports:
             try:
-                import_units(i.json_body, i.user, i.headers["QUERY_STRING"][7:].split("&")[0])
+                import_org_units(i.json_body, i.user, i.headers["QUERY_STRING"][7:].split("&")[0])
                 i.has_problem = False
                 i.save()
                 unit_count = unit_count + 1
+            except Project.DoesNotExist as e:
+                print(f"No Project found for app id {i} {str(e)}")
             except Exception as e:
                 print("An error happened", e)
 

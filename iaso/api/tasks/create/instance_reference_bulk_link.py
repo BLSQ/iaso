@@ -1,13 +1,15 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 
-from iaso.api.instances import HasInstanceBulkPermission
+from iaso.api.instances.permissions import HasInstanceBulkPermission
 from iaso.api.org_units import HasCreateOrgUnitPermission
 from iaso.api.tasks.serializers import TaskSerializer
 from iaso.api.tasks.utils.link_unlink_allowed_actions import AllowedActions
 from iaso.tasks.instance_reference_bulk_link import instance_reference_bulk_link
 
 
+@extend_schema(tags=["Org units", "Instances", "Tasks"])
 class InstanceReferenceBulkLinkViewSet(viewsets.ViewSet):
     """Bulk link or unlink reference Instances to/from their related OrgUnit."""
 
@@ -27,8 +29,16 @@ class InstanceReferenceBulkLinkViewSet(viewsets.ViewSet):
 
         user = self.request.user
 
+        # We need to pass filters to the task, but QueryDicts are not serializable
+        filters = request.GET.dict()
+
         task = instance_reference_bulk_link(
-            actions=actions, select_all=select_all, selected_ids=selected_ids, unselected_ids=unselected_ids, user=user
+            actions=actions,
+            select_all=select_all,
+            selected_ids=selected_ids,
+            unselected_ids=unselected_ids,
+            user=user,
+            filters=filters,
         )
         return Response(
             {"task": TaskSerializer(instance=task).data},

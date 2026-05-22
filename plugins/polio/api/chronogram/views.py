@@ -2,12 +2,13 @@ import django_filters
 
 from django.db.models import Prefetch, QuerySet
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema
 from rest_framework import exceptions, filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
 
-from hat.menupermissions import models as iaso_permission
+from dynamic_fields.filter_backends import DynamicFieldsFilterBackendBackwardCompatible
 from iaso.api.common import Paginator
 from plugins.polio.api.chronogram.filters import ChronogramFilter, ChronogramTaskFilter
 from plugins.polio.api.chronogram.permissions import HasChronogramPermission, HasChronogramRestrictedWritePermission
@@ -18,18 +19,29 @@ from plugins.polio.api.chronogram.serializers import (
     ChronogramTemplateTaskSerializer,
 )
 from plugins.polio.models import Campaign, Chronogram, ChronogramTask, ChronogramTemplateTask, Round
+from plugins.polio.permissions import POLIO_CHRONOGRAM_PERMISSION, POLIO_CHRONOGRAM_RESTRICTED_WRITE_PERMISSION
 
 
 class ChronogramPagination(Paginator):
     page_size = 20
 
 
+@extend_schema(tags=["Polio - Chronograms"])
 class ChronogramViewSet(viewsets.ModelViewSet):
-    filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = ChronogramFilter
     http_method_names = ["delete", "get", "options", "head", "post", "trace"]
     pagination_class = ChronogramPagination
     permission_classes = [HasChronogramPermission | HasChronogramRestrictedWritePermission]
+
+    @property
+    def filter_backends(self):
+        if self.action in ["list"]:
+            return [
+                filters.OrderingFilter,
+                django_filters.rest_framework.DjangoFilterBackend,
+                DynamicFieldsFilterBackendBackwardCompatible,
+            ]
+        return [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -37,10 +49,10 @@ class ChronogramViewSet(viewsets.ModelViewSet):
         return ChronogramSerializer
 
     def get_permissions(self):
-        if self.request.user.has_perm(iaso_permission.POLIO_CHRONOGRAM):
+        if self.request.user.has_perm(POLIO_CHRONOGRAM_PERMISSION.full_name()):
             return super().get_permissions()
         if self.request.method not in SAFE_METHODS and self.request.user.has_perm(
-            iaso_permission.POLIO_CHRONOGRAM_RESTRICTED_WRITE
+            POLIO_CHRONOGRAM_RESTRICTED_WRITE_PERMISSION.full_name()
         ):
             raise exceptions.PermissionDenied()
         return super().get_permissions()
@@ -50,7 +62,7 @@ class ChronogramViewSet(viewsets.ModelViewSet):
         rounds_ids = Campaign.polio_objects.filter_for_user(user).values_list("rounds", flat=True)
         return (
             Chronogram.objects.valid()
-            .filter(round_id__in=rounds_ids)
+            .filter(round_id__in=rounds_ids, round__on_hold=False)
             .select_related("round__campaign", "created_by", "updated_by")
             .prefetch_related(Prefetch("tasks", queryset=ChronogramTask.objects.valid()))
             .prefetch_related("tasks__created_by", "tasks__updated_by")
@@ -124,6 +136,7 @@ class ChronogramViewSet(viewsets.ModelViewSet):
         return Response(available_rounds.as_ui_dropdown_data(), status=status.HTTP_200_OK)
 
 
+@extend_schema(tags=["Polio - Chronogram tasks"])
 class ChronogramTaskViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = ChronogramTaskFilter
@@ -131,11 +144,21 @@ class ChronogramTaskViewSet(viewsets.ModelViewSet):
     permission_classes = [HasChronogramPermission | HasChronogramRestrictedWritePermission]
     serializer_class = ChronogramTaskSerializer
 
+    @property
+    def filter_backends(self):
+        if self.action in ["list"]:
+            return [
+                filters.OrderingFilter,
+                django_filters.rest_framework.DjangoFilterBackend,
+                DynamicFieldsFilterBackendBackwardCompatible,
+            ]
+        return [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
+
     def get_permissions(self):
-        if self.request.user.has_perm(iaso_permission.POLIO_CHRONOGRAM):
+        if self.request.user.has_perm(POLIO_CHRONOGRAM_PERMISSION.full_name()):
             return super().get_permissions()
         if self.request.method in ["POST", "DELETE"] and self.request.user.has_perm(
-            iaso_permission.POLIO_CHRONOGRAM_RESTRICTED_WRITE
+            POLIO_CHRONOGRAM_RESTRICTED_WRITE_PERMISSION.full_name()
         ):
             raise exceptions.PermissionDenied()
         return super().get_permissions()
@@ -159,11 +182,22 @@ class ChronogramTaskViewSet(viewsets.ModelViewSet):
         serializer.save()
 
 
+@extend_schema(tags=["Polio - Chronogram template tasks"])
 class ChronogramTemplateTaskViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     pagination_class = ChronogramPagination
     permission_classes = [HasChronogramPermission]
     serializer_class = ChronogramTemplateTaskSerializer
+
+    @property
+    def filter_backends(self):
+        if self.action in ["list"]:
+            return [
+                filters.OrderingFilter,
+                django_filters.rest_framework.DjangoFilterBackend,
+                DynamicFieldsFilterBackendBackwardCompatible,
+            ]
+        return [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
 
     def get_queryset(self) -> QuerySet:
         account = self.request.user.iaso_profile.account

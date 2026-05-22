@@ -1,0 +1,32 @@
+meta {
+  name: PATCH Org unit types without permissions
+  type: http
+  seq: 2
+}
+
+patch {
+  url: {{HOST}}/api/v2/orgunittypes/{{typeId}}/
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{apitoken}}
+}
+
+body:json {
+  {
+    "id": {{typeId}},
+    "name": "test write"
+  }
+}
+
+vars:pre-request {
+  typeId: 
+  apitoken: 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

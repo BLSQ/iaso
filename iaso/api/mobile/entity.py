@@ -1,14 +1,15 @@
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions, serializers
 from rest_framework.exceptions import AuthenticationFailed, NotFound, ParseError
 from rest_framework.pagination import PageNumberPagination
 
-from hat.menupermissions import models as permission
 from iaso.api.common import DeletionFilterBackend, HasPermission, ModelViewSet, Paginator, TimestampField
 from iaso.api.query_params import LIMIT, PAGE
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import Entity, EntityType, FormVersion, Instance, Project
 from iaso.models.entity import InvalidJsonContentError, InvalidLimitDateError, ProjectNotFoundError, UserNotAuthError
+from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION
 
 
 def filter_for_mobile_entity(queryset, request):
@@ -63,9 +64,9 @@ class MobileEntityAttributesSerializer(serializers.ModelSerializer):
             "json",
         ]
 
-    form_id = serializers.IntegerField(read_only=True, source="form.id")
+    form_id = serializers.IntegerField(read_only=True)
     id = serializers.CharField(read_only=True, source="uuid")
-    org_unit_id = serializers.CharField(read_only=True, source="org_unit.id")
+    org_unit_id = serializers.CharField(read_only=True)
     form_version_id = serializers.SerializerMethodField()
     created_at = TimestampField(read_only=True, source="source_created_at_with_fallback")
     updated_at = TimestampField(read_only=True, source="source_updated_at_with_fallback")
@@ -130,6 +131,7 @@ class MobileEntitiesSetPagination(Paginator):
         return int(request.query_params.get(self.page_query_param, 1))
 
 
+@extend_schema(tags=["Mobile", "Entities"])
 class MobileEntityViewSet(ModelViewSet):
     f"""Entity API for mobile
 
@@ -148,7 +150,7 @@ class MobileEntityViewSet(ModelViewSet):
     results_key = "results"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.ENTITIES)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_ENTITIES_PERMISSION)]
 
     def pagination_class(self):
         return MobileEntitiesSetPagination(self.results_key)
@@ -161,14 +163,14 @@ class MobileEntityViewSet(ModelViewSet):
     def get_serializer_context(self):
         context = super().get_serializer_context()
         user = self.request.user
-        possible_form_versions = FormVersion.objects.filter(
-            form__projects__account=user.iaso_profile.account
-        ).distinct()
-        possible_form_versions_dict = {}
-        for version in possible_form_versions:
-            key = "%s|%s" % (version.version_id, str(version.form_id))
-            possible_form_versions_dict[key] = version.id
-        context["possible_form_versions"] = possible_form_versions_dict
+
+        qs = FormVersion.objects.filter(form__projects__account=user.iaso_profile.account).values_list(
+            "version_id", "form_id", "id"
+        )
+
+        context["possible_form_versions"] = {
+            f"{version_id}|{form_id}": version_pk for version_id, form_id, version_pk in qs
+        }
 
         return context
 
@@ -185,12 +187,10 @@ class MobileEntityViewSet(ModelViewSet):
         queryset = filter_on_user_and_app_id(queryset, user, app_id)
         queryset = filter_for_mobile_entity(queryset, self.request)
 
-        queryset = queryset.select_related("entity_type").prefetch_related(
-            "instances__org_unit",
-            "attributes__org_unit",
-            "instances__form__form_versions",
-            "attributes__form__form_versions",
-        )
+        queryset = queryset.select_related("entity_type", "attributes").prefetch_related("instances")
+
+        queryset = queryset.distinct("id")
+
         return queryset.order_by("id")
 
 
@@ -207,6 +207,7 @@ class DeletedMobileEntitySerializer(serializers.ModelSerializer):
             return entity.merged_to.uuid
 
 
+@extend_schema(tags=["Entities", "Mobile"])
 class MobileEntityDeletedViewSet(ModelViewSet):
     """Entity API for mobile
 
@@ -221,8 +222,8 @@ class MobileEntityDeletedViewSet(ModelViewSet):
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission(permission.ENTITIES),
-    ]  # type: ignore
+        HasPermission(CORE_ENTITIES_PERMISSION),
+    ]
 
     def pagination_class(self):
         return MobileEntitiesSetPagination(self.results_key)

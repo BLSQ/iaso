@@ -10,13 +10,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.entities.title',
     },
     entityTypesTitle: {
-        defaultMessage: 'Beneficiary types',
+        defaultMessage: 'Entity types',
         id: 'iaso.entityTypes.title',
     },
     submissionsTitle: {
         defaultMessage: 'Submissions',
         id: 'iaso.instance.title',
     },
+
     formsStats: {
         defaultMessage: 'Form Stats',
         id: 'iaso.forms.stats.title',
@@ -24,6 +25,10 @@ const MESSAGES = defineMessages({
     list: {
         defaultMessage: 'List',
         id: 'iaso.label.list',
+    },
+    formAI: {
+        defaultMessage: 'Form AI',
+        id: 'iaso.formAI.title',
     },
     formList: {
         defaultMessage: 'Form List',
@@ -41,9 +46,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Links List',
         id: 'iaso.label.linksList',
     },
-    beneficiariesList: {
-        defaultMessage: 'Beneficiaries List',
-        id: 'iaso.label.beneficiariesList',
+    entitiesList: {
+        defaultMessage: 'Entities List',
+        id: 'iaso.label.entitiesList',
     },
     planningList: {
         defaultMessage: 'Planning List',
@@ -102,7 +107,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.users',
     },
     userRoles: {
-        defaultMessage: 'User roles',
+        defaultMessage: 'User Roles',
         id: 'iaso.label.userRoles',
     },
     projects: {
@@ -161,9 +166,13 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Parent',
         id: 'iaso.assignment.map.parent',
     },
-    beneficiaries: {
-        defaultMessage: 'Beneficiaries',
-        id: 'iaso.label.beneficiaries',
+    entities: {
+        defaultMessage: 'Entities',
+        id: 'iaso.label.entities',
+    },
+    stockManagement: {
+        defaultMessage: 'Stock Management',
+        id: 'iaso.label.stockManagement',
     },
     storages: {
         defaultMessage: 'External storage',
@@ -181,6 +190,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Duplicates',
         id: 'iaso.label.duplicates',
     },
+    entityDuplicateAnalysesTitle: {
+        defaultMessage: 'Duplicate Analyses',
+        id: 'iaso.label.duplicateAnalyses',
+    },
     modules: {
         defaultMessage: 'Modules',
         id: 'iaso.label.modules',
@@ -196,6 +209,10 @@ const MESSAGES = defineMessages({
     potentialPayments: {
         defaultMessage: 'Potential payments',
         id: 'iaso.payments.potentialPayments',
+    },
+    submissions: {
+        defaultMessage: 'Submissions',
+        id: 'iaso.label.submissions',
     },
     lots: {
         defaultMessage: 'Payments lots',
@@ -224,6 +241,30 @@ const MESSAGES = defineMessages({
     validation: {
         defaultMessage: 'Validation',
         id: 'iaso.label.validation',
+    },
+    accountSetup: {
+        defaultMessage: 'Setup a new account',
+        id: 'iaso.setup.accountSetup',
+    },
+    apiImport: {
+        defaultMessage: 'APIImport',
+        id: 'iaso.label.apiimport',
+    },
+    skus: {
+        defaultMessage: 'Stock Keeping Units',
+        id: 'iaso.label.stockkeepingunits',
+    },
+    stockItems: {
+        defaultMessage: 'Stock entries',
+        id: 'iaso.label.stockItems',
+    },
+    validationWorkflow: {
+        defaultMessage: 'Validation workflows',
+        id: 'iaso.label.validationWorkflows',
+    },
+    pipelines: {
+        defaultMessage: 'Pipelines',
+        id: 'iaso.label.pipelines',
     },
 });
 

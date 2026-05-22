@@ -12,6 +12,7 @@ from iaso.utils.powerbi import (
     launch_external_task,
     monitor_task_and_raise_if_fail,
 )
+from plugins.polio.permissions import POLIO_PERMISSION
 from plugins.polio.tasks.api.refresh_lqas_data import LQAS_CONFIG_SLUG
 
 
@@ -29,7 +30,7 @@ class RefreshPowerBITestCase(APITestCase):
     def setUp(cls):
         cls.url = "/api/polio/powerbirefresh/"
         cls.account = account = m.Account.objects.create(name="test account")
-        cls.user = cls.create_user_with_profile(username="test user", account=account, permissions=["iaso_polio"])
+        cls.user = cls.create_user_with_profile(username="test user", account=account, permissions=[POLIO_PERMISSION])
 
         cls.external_task1 = m.Task.objects.create(
             status=RUNNING, account=account, launcher=cls.user, name="external task 1", external=True
@@ -84,13 +85,13 @@ class RefreshPowerBITestCase(APITestCase):
         cls.openhexa_config = Config.objects.create(slug="powerbi_dataset_configs", content=cls.dataset_json)
         cls.powerbi_config = Config.objects.create(slug="powerbi_sp", content=cls.powerbi_config_json)
 
-    def mock_openhexa_call_success(slug=None, config=None, id_field=None, task_id=None):
+    def mock_openhexa_call_success(slug=None, config=None, id_field=None, task_id=None, pipeline_config=None):
         return SUCCESS
 
-    def mock_openhexa_call_skipped(slug=None, config=None, id_field=None, task_id=None):
+    def mock_openhexa_call_skipped(slug=None, config=None, id_field=None, task_id=None, pipeline_config=None):
         return SKIPPED
 
-    def mock_openhexa_call_running(slug=None, config=None, id_field=None, task_id=None):
+    def mock_openhexa_call_running(slug=None, config=None, id_field=None, task_id=None, pipeline_config=None):
         return RUNNING
 
     def mock_get_powerbi_service_principal_token(self, tenant_id=None, client_id=None, secret_value=None):

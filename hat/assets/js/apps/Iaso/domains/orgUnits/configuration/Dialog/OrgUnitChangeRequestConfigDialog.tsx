@@ -7,6 +7,7 @@ import {
 } from 'bluesquare-components';
 import { useFormik } from 'formik';
 import { isEqual } from 'lodash';
+import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { useTranslatedErrors } from '../../../../libs/validation';
 import { useGetGroupDropdown } from '../../hooks/requests/useGetGroups';
@@ -16,7 +17,6 @@ import {
     editableFieldsManyToManyFields,
     orgUnitChangeRequestConfigTypeCreation,
 } from '../constants';
-import { useGetFormDropdownOptions } from '../hooks/api/useGetFormDropdownOptions';
 import { useRetrieveOrgUnitChangeRequestConfig } from '../hooks/api/useRetrieveOrgUnitChangeRequestConfig';
 import { useSaveOrgUnitChangeRequestConfiguration } from '../hooks/api/useSaveOrgUnitChangeRequestConfiguration';
 import { useCallbackOrgUnitConfigurationTypeDisplayName } from '../hooks/useCallbackOrgUnitConfigurationTypeDisplayName';
@@ -95,7 +95,11 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
             projectIds: `${config.project.id}`,
         });
     const { data: formOptions, isFetching: isFetchingFormOptions } =
-        useGetFormDropdownOptions(config.orgUnitType.id);
+        useGetFormsDropdownOptions({
+            params: {
+                orgUnitTypeIds: config.orgUnitType.id,
+            },
+        });
     const { data: groupSetOptions, isFetching: isFetchingGroupSetOptions } =
         useGetGroupSetsDropdown({
             project_ids: `${config.project.id}`,

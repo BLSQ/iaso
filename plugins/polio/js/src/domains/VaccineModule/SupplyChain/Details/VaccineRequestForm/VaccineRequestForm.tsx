@@ -7,6 +7,7 @@ import React, {
 import { Box, Grid, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { Field, useFormikContext } from 'formik';
+import { useSkipEffectUntilValue } from 'Iaso/hooks/useSkipEffectUntilValue';
 import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
 import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
 import InputComponent from '../../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
@@ -19,7 +20,6 @@ import {
     useCampaignDropDowns,
     useGetCountriesOptions,
 } from '../../hooks/api/vrf';
-import { useSkipEffectUntilValue } from '../../hooks/utils';
 import MESSAGES from '../../messages';
 import { useSharedStyles } from '../shared';
 
@@ -55,11 +55,12 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
         vaccines,
         rounds,
         isFetching: isFetchingDropDowns,
-    } = useCampaignDropDowns(
-        values?.vrf?.country,
-        values?.vrf?.campaign,
-        values?.vrf?.vaccine_type,
-    );
+    } = useCampaignDropDowns({
+        countryId: values?.vrf?.country,
+        campaign: values?.vrf?.campaign,
+        rounds: values?.vrf?.rounds,
+        vaccine: values?.vrf?.vaccine_type,
+    });
 
     useEffect(() => {
         if (!values?.vrf?.vrf_type) {
@@ -101,8 +102,8 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
     const isNormalType = values?.vrf?.vrf_type === 'Normal';
 
     const documentErrors = useMemo(() => {
-        return processErrorDocsBase(errors.document);
-    }, [errors.document]);
+        return processErrorDocsBase(errors.file);
+    }, [errors.file]);
     return (
         <Box className={className} mb={3}>
             <Box mb={2}>
@@ -287,61 +288,6 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 </Grid>
                             </Grid>
                             <Grid container item xs={12} spacing={2}>
-                                <Grid item xs={6} md={3}>
-                                    <Field
-                                        label={formatMessage(
-                                            MESSAGES.date_vrf_submission_dg,
-                                        )}
-                                        name="vrf.date_vrf_submitted_to_dg"
-                                        component={DateInput}
-                                        disabled={isFieldDisabledEdit(vrfData)}
-                                    />
-                                </Grid>
-                                <Grid item xs={6} md={3}>
-                                    <Field
-                                        label={formatMessage(
-                                            MESSAGES.quantities_approved_by_dg_in_doses,
-                                        )}
-                                        name="vrf.quantities_approved_by_dg_in_doses"
-                                        component={NumberInput}
-                                        disabled={isFieldDisabledEdit(vrfData)}
-                                    />
-                                </Grid>
-                                <Grid item xs={6} md={3}>
-                                    <Field
-                                        label={formatMessage(
-                                            MESSAGES.date_dg_approval,
-                                        )}
-                                        name="vrf.date_dg_approval"
-                                        component={DateInput}
-                                        disabled={isFieldDisabledEdit(vrfData)}
-                                    />
-                                </Grid>
-                                <Grid item xs={6} md={3}>
-                                    <Box>
-                                        <DocumentUploadWithPreview
-                                            errors={documentErrors}
-                                            onFilesSelect={files => {
-                                                if (files.length) {
-                                                    setFieldTouched(
-                                                        'vrf.document',
-                                                        true,
-                                                    );
-                                                    setFieldValue(
-                                                        'vrf.document',
-                                                        files,
-                                                    );
-                                                }
-                                            }}
-                                            disabled={isFieldDisabledEdit(
-                                                vrfData,
-                                            )}
-                                            document={values?.vrf?.document}
-                                        />
-                                    </Box>
-                                </Grid>
-                            </Grid>
-                            <Grid container item xs={12} spacing={2}>
                                 <Grid item xs={12} lg={6}>
                                     <InputComponent
                                         type="textarea"
@@ -353,6 +299,37 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                         disabled={isFieldDisabledEdit(vrfData)}
                                         withMarginTop={false}
                                     />
+                                </Grid>
+                                <Grid item xs={6} md={3}>
+                                    <Box>
+                                        <DocumentUploadWithPreview
+                                            errors={documentErrors}
+                                            onFilesSelect={files => {
+                                                if (Array.isArray(files)) {
+                                                    setFieldTouched(
+                                                        'vrf.file',
+                                                        true,
+                                                    );
+                                                    setFieldValue(
+                                                        'vrf.file',
+                                                        files,
+                                                    );
+                                                }
+                                            }}
+                                            disabled={isFieldDisabledEdit(
+                                                vrfData,
+                                            )}
+                                            document={values?.vrf?.file}
+                                            scanResult={
+                                                values?.vrf?.scan_result
+                                            }
+                                            scanTimestamp={
+                                                values?.vrf?.scan_timestamp
+                                            }
+                                            coloredScanResultIcon
+                                            enableDelete
+                                        />
+                                    </Box>
                                 </Grid>
                             </Grid>
                         </>

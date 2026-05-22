@@ -19,23 +19,22 @@ import {
 
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { commaSeparatedIdsToStringArray } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
+import { Campaign } from '../../../../constants/types';
 import {
     CAMPAIGNS_ENDPOINT,
     useGetCampaigns,
 } from '../../../Campaigns/hooks/api/useGetCampaigns';
 import { patchRequest2, postRequest2 } from '../../SupplyChain/hooks/api/vrf';
 import MESSAGES from '../messages';
+import { FormAFormValues } from '../StockVariation/types';
 import {
+    DosesPerVialDropdown,
     StockManagementDetailsParams,
     StockManagementListParams,
     StockVariationParams,
 } from '../types';
 
-const defaults = {
-    order: 'country',
-    pageSize: 20,
-    page: 1,
-};
+const defaults = { order: 'country', pageSize: 20, page: 1 };
 const options = {
     select: data => {
         if (!data) return { results: [] };
@@ -133,36 +132,6 @@ export const useGetUnusableVials = (
     });
 };
 
-const getEarmarked = async (id: string, queryString: string) => {
-    return getRequest(`${apiUrl}${id}/get_earmarked_stock/?${queryString}`);
-};
-// Need to pass id to apiUrl
-// Splitting hooks to be able to store both payloads in the cache and avoid refetching with each tab change
-export const useGetEarmarked = (
-    params: StockManagementDetailsParams,
-    enabled: boolean,
-): UseQueryResult<any, any> => {
-    const {
-        earmarkedOrder: order,
-        earmarkedPage: page,
-        earmarkedPageSize: pageSize,
-    } = params;
-    const safeParams = useUrlParams({
-        order,
-        page,
-        pageSize,
-    } as Partial<UrlParams>);
-    const { id } = params;
-    const apiParams = useApiParams(safeParams);
-    const queryString = new URLSearchParams(apiParams).toString();
-    return useSnackQuery({
-        queryKey: ['earmarked', queryString, id],
-        queryFn: () => getEarmarked(id, queryString),
-        options: { ...options, enabled },
-    });
-};
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 const getStockManagementSummary = async (id?: string) => {
     return getRequest(`${apiUrl}${id}/summary/`);
 };
@@ -193,16 +162,8 @@ export const useGetFormAList = (
     } = params;
 
     const safeParams = useUrlParams(
-        {
-            order,
-            page,
-            pageSize,
-            vaccine_stock,
-        } as Partial<UrlParams>,
-        {
-            order: '-form_a_reception_date',
-            pageSize: 20,
-        },
+        { order, page, pageSize, vaccine_stock } as Partial<UrlParams>,
+        { order: '-form_a_reception_date', pageSize: 20 },
     );
 
     const apiParams = useApiParams(safeParams);
@@ -228,16 +189,8 @@ export const useGetDestructionList = (
         id: vaccine_stock,
     } = params;
     const safeParams = useUrlParams(
-        {
-            order,
-            page,
-            pageSize,
-            vaccine_stock,
-        } as Partial<UrlParams>,
-        {
-            order: '-rrt_destruction_report_reception_date',
-            pageSize: 20,
-        },
+        { order, page, pageSize, vaccine_stock } as Partial<UrlParams>,
+        { order: '-rrt_destruction_report_reception_date', pageSize: 20 },
     );
     const apiParams = useApiParams(safeParams);
     const queryString = new URLSearchParams(apiParams).toString();
@@ -262,16 +215,8 @@ export const useGetIncidentList = (
         id: vaccine_stock,
     } = params;
     const safeParams = useUrlParams(
-        {
-            order,
-            page,
-            pageSize,
-            vaccine_stock,
-        } as Partial<UrlParams>,
-        {
-            order: '-incident_report_received_by_rrt',
-            pageSize: 20,
-        },
+        { order, page, pageSize, vaccine_stock } as Partial<UrlParams>,
+        { order: '-incident_report_received_by_rrt', pageSize: 20 },
     );
     const apiParams = useApiParams(safeParams);
     const queryString = new URLSearchParams(apiParams).toString();
@@ -297,16 +242,8 @@ export const useGetEarmarkedList = (
         id: vaccine_stock,
     } = params;
     const safeParams = useUrlParams(
-        {
-            order,
-            page,
-            pageSize,
-            vaccine_stock,
-        } as Partial<UrlParams>,
-        {
-            order: '-created_at',
-            pageSize: 20,
-        },
+        { order, page, pageSize, vaccine_stock } as Partial<UrlParams>,
+        { order: '-created_at', pageSize: 20 },
     );
     const apiParams = useApiParams(safeParams);
     const queryString = new URLSearchParams(apiParams).toString();
@@ -314,6 +251,19 @@ export const useGetEarmarkedList = (
         queryKey: ['earmarked-list', queryString, vaccine_stock],
         queryFn: () => getEarmarkedList(queryString),
         options: { ...options, enabled },
+    });
+};
+
+export const useGetDosesOptions = (
+    stockId: number,
+): UseQueryResult<DosesPerVialDropdown> => {
+    return useSnackQuery({
+        queryKey: ['doses_options', stockId],
+        queryFn: () => getRequest(`${apiUrl}doses_options/?stockId=${stockId}`),
+        options: {
+            ...options,
+            select: data => data?.results ?? [],
+        },
     });
 };
 
@@ -327,6 +277,7 @@ type UseCampaignOptionsResult = {
 export const useCampaignOptions = (
     countryName: string,
     campaignName?: string,
+    round?: number,
 ): UseCampaignOptionsResult => {
     const { formatMessage } = useSafeIntl();
     const queryOptions = {
@@ -339,46 +290,47 @@ export const useCampaignOptions = (
         cacheTime: 1000 * 60 * 5,
     };
     const { data, isFetching } = useGetCampaigns(
-        { show_test: false, on_hold: true },
+        // Show on hold and test campaigns to avoid missing forms
+        // whose campaign has been changed after creation
+        { show_test: true, on_hold: true },
         CAMPAIGNS_ENDPOINT,
         undefined,
         queryOptions,
     );
 
+    const selectedCampaign = useMemo(
+        // @ts-ignore
+        () => (data ?? []).find(campaign => campaign.obr_name === campaignName),
+        [data, campaignName],
+    );
     const roundOptions = useMemo(() => {
-        const selectedCampaign = (data ?? []).find(
-            campaign => campaign.obr_name === campaignName,
-        );
         return selectedCampaign
-            ? selectedCampaign.rounds.map(round => {
+            ? selectedCampaign.rounds.map(rnd => {
                   return {
-                      label: `${formatMessage(MESSAGES.round)} ${round.number}`,
-                      value: round.id,
+                      label: `${formatMessage(MESSAGES.round)} ${rnd.number}`,
+                      value: rnd.id,
                   };
               })
             : [];
-    }, [campaignName, data, formatMessage]);
+    }, [formatMessage, selectedCampaign]);
 
     const roundNumberOptions = useMemo(() => {
-        const selectedCampaign = (data ?? []).find(
-            campaign => campaign.obr_name === campaignName,
-        );
         return selectedCampaign
-            ? selectedCampaign.rounds.map(round => {
-                  return {
-                      label: `${formatMessage(MESSAGES.round)} ${round.number}`,
-                      value: round.number,
-                  };
-              })
+            ? selectedCampaign.rounds
+                  .filter(r => !r.on_hold || r.number === round)
+                  .map(rnd => {
+                      return {
+                          label: `${formatMessage(MESSAGES.round)} ${rnd.number}`,
+                          value: rnd.number,
+                          original: rnd,
+                      };
+                  })
             : [];
-    }, [campaignName, data, formatMessage]);
+    }, [formatMessage, round, selectedCampaign]);
 
     const campaignOptions = useMemo(() => {
-        const campaignsList = (data ?? []).map(c => {
-            return {
-                label: c.obr_name,
-                value: c.obr_name,
-            };
+        const campaignsList = ((data ?? []) as Campaign[]).map(c => {
+            return { label: c.obr_name, value: c.obr_name };
         });
         const defaultList = [{ label: campaignName, value: campaignName }];
         if ((campaignsList ?? []).length > 0) {
@@ -400,7 +352,7 @@ export const useCampaignOptions = (
     }, [campaignOptions, isFetching, roundOptions, roundNumberOptions]);
 };
 
-const createEditFormA = async (body: any) => {
+export const createEditFormA = async (body: any) => {
     const copy = { ...body };
     const { lot_numbers } = body;
     if (lot_numbers && !Array.isArray(lot_numbers)) {
@@ -408,13 +360,17 @@ const createEditFormA = async (body: any) => {
         copy.lot_numbers = lotNumbersArray;
     }
 
+    // Drop only `undefined` (= "field not set") so explicit `null` is forwarded
+    // as an intentional clear for nullable JSON fields (e.g. form_a_reception_date).
+    // `file` is excluded unconditionally because it travels via multipart below, not
+    // JSON — sending `file: null` here would not clear it server-side (the DRF
+    // FileField has no allow_null and would reject it anyway). The only supported
+    // "clear file" path today is the received→temporary status transition, which
+    // the backend serializer self-clears in `update()`.
     const filteredParams = copy
         ? Object.fromEntries(
               Object.entries(copy).filter(
-                  ([key, value]) =>
-                      value !== undefined &&
-                      value !== null &&
-                      key !== 'document',
+                  ([key, value]) => value !== undefined && key !== 'file',
               ),
           )
         : {};
@@ -423,11 +379,14 @@ const createEditFormA = async (body: any) => {
         url: `${modalUrl}outgoing_stock_movement/`,
         data: filteredParams,
     };
+    const isNewFileUpload =
+        Array.isArray(copy?.file) &&
+        copy?.file.length > 0 &&
+        copy?.file[0] instanceof File;
 
-    if (copy?.document) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
-        const { files, ...data } = filteredParams;
-        const fileData = { files: copy.document };
+    if (isNewFileUpload) {
+        const { files: _files, ...data } = filteredParams;
+        const fileData = { files: copy.file };
         requestBody.data = data;
         requestBody.fileData = fileData;
     }
@@ -439,7 +398,12 @@ const createEditFormA = async (body: any) => {
     return postRequest2(requestBody);
 };
 
-export const useSaveFormA = () => {
+export const useSaveFormA = (): UseMutationResult<
+    FormAFormValues,
+    any,
+    any,
+    any
+> => {
     return useSnackMutation({
         mutationFn: body => createEditFormA(body),
         invalidateQueryKey: [
@@ -448,9 +412,10 @@ export const useSaveFormA = () => {
             'usable-vials',
             'stock-management-summary',
             'unusable-vials',
-            'document',
+            'file',
             'earmarked',
             'earmarked-list',
+            'doses_options',
         ],
     });
 };
@@ -466,9 +431,7 @@ const createEditDestruction = async (body: any) => {
         ? Object.fromEntries(
               Object.entries(copy).filter(
                   ([key, value]) =>
-                      value !== undefined &&
-                      value !== null &&
-                      key !== 'document',
+                      value !== undefined && value !== null && key !== 'file',
               ),
           )
         : {};
@@ -478,10 +441,10 @@ const createEditDestruction = async (body: any) => {
         data: filteredParams,
     };
 
-    if (copy?.document) {
+    if (copy?.file) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
         const { files, ...data } = filteredParams;
-        const fileData = { files: copy.document };
+        const fileData = { files: copy.file };
         requestBody.data = data;
         requestBody.fileData = fileData;
     }
@@ -502,7 +465,8 @@ export const useSaveDestruction = () => {
             'usable-vials',
             'stock-management-summary',
             'unusable-vials',
-            'document',
+            'file',
+            'doses_options',
         ],
     });
 };
@@ -518,9 +482,7 @@ const createEditIncident = async (body: any) => {
         ? Object.fromEntries(
               Object.entries(copy).filter(
                   ([key, value]) =>
-                      value !== undefined &&
-                      value !== null &&
-                      key !== 'document',
+                      value !== undefined && value !== null && key !== 'file',
               ),
           )
         : {};
@@ -529,10 +491,10 @@ const createEditIncident = async (body: any) => {
         data: filteredParams,
     };
 
-    if (copy?.document) {
+    if (copy?.file) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
         const { files, ...data } = filteredParams;
-        const fileData = { files: copy.document };
+        const fileData = { files: copy.file };
         requestBody.data = data;
         requestBody.fileData = fileData;
     }
@@ -553,14 +515,18 @@ export const useSaveIncident = () => {
             'usable-vials',
             'stock-management-summary',
             'unusable-vials',
-            'document',
+            'file',
             'earmarked',
             'earmarked-list',
+            'doses_options',
         ],
     });
 };
 const createEditEarmarked = (body: any) => {
     const copy = { ...body };
+    if (!body.doses_earmarked) {
+        copy.doses_earmarked = body.vials_earmarked * body.doses_per_vial;
+    }
 
     const filteredParams = copy
         ? Object.fromEntries(
@@ -592,6 +558,7 @@ export const useSaveEarmarked = () => {
             'unusable-vials',
             'earmarked',
             'earmarked-list',
+            'doses_options',
         ],
     });
 };
@@ -622,6 +589,7 @@ export const useDeleteIncident = (): UseMutationResult => {
             'unusable-vials',
             'earmarked',
             'earmarked-list',
+            'doses_options',
         ],
     });
 };
@@ -639,6 +607,7 @@ export const useDeleteDestruction = (): UseMutationResult => {
             'usable-vials',
             'stock-management-summary',
             'unusable-vials',
+            'doses_options',
         ],
     });
 };
@@ -658,6 +627,7 @@ export const useDeleteFormA = (): UseMutationResult => {
             'unusable-vials',
             'earmarked',
             'earmarked-list',
+            'doses_options',
         ],
     });
 };
@@ -675,6 +645,7 @@ export const useDeleteEarmarked = (): UseMutationResult => {
             'unusable-vials',
             'earmarked',
             'earmarked-list',
+            'doses_options',
         ],
     });
 };
@@ -723,9 +694,9 @@ export const useCheckDestructionDuplicate = ({
         options: {
             enabled: Boolean(
                 vaccineStockId &&
-                    destructionReportDate &&
-                    unusableVialsDestroyed &&
-                    moment(destructionReportDate, 'YYYY-MM-DD', true).isValid(),
+                destructionReportDate &&
+                unusableVialsDestroyed &&
+                moment(destructionReportDate, 'YYYY-MM-DD', true).isValid(),
             ),
             staleTime: 1000 * 60 * 15, // in MS
             keepPreviousData: false,

@@ -1,12 +1,9 @@
 import React from 'react';
 import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
-
-import MESSAGES from '../messages';
-
 import { baseUrls } from '../../../constants/urls';
-
 import { StatusCell } from '../components/StatusCell';
 import { VersionsActionCell } from '../components/versions/ActionCell';
+import MESSAGES from '../messages';
 
 export const defaultSorted = [{ id: 'id', desc: true }];
 

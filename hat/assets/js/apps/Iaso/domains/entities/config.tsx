@@ -1,14 +1,15 @@
+import React, { ReactElement, useMemo } from 'react';
+
+import FileCopyIcon from '@mui/icons-material/FileCopy';
 import {
     Column,
     IconButton as IconButtonComponent,
     IntlFormatMessage,
+    IntlMessage,
     LinkWithLocation,
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { ReactElement, useMemo } from 'react';
-
-import FileCopyIcon from '@mui/icons-material/FileCopy';
 import _ from 'lodash';
 import moment from 'moment';
 import {
@@ -16,27 +17,27 @@ import {
     DateTimeCell,
     DateTimeCellRfc,
 } from '../../components/Cells/DateTimeCell';
-import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
-
-import MESSAGES from './messages';
 
 import { baseUrls } from '../../constants/urls';
 
 import getDisplayName from '../../utils/usersUtils';
 import { LinkToInstance } from '../instances/components/LinkToInstance';
 import { formatLabel } from '../instances/utils';
-import { filterOrgUnitsByGroupUrl } from '../orgUnits/utils';
+import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
+import { useFilterOrgUnitsByGroupUrl } from '../orgUnits/utils';
 import { useGetFieldValue } from './hooks/useGetFieldValue';
+import MESSAGES from './messages';
 import { ExtraColumn } from './types/fields';
 
 export const baseUrl = baseUrls.entities;
 
-export const defaultSorted = [{ id: 'last_saved_instance', desc: false }];
+export const defaultSorted = [{ id: 'id', desc: true }];
 
 export const useStaticColumns = (): Array<Column> => {
     const getValue = useGetFieldValue();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
+    const filterOrgUnitsByGroupUrl = useFilterOrgUnitsByGroupUrl();
     return [
         {
             Header: formatMessage(MESSAGES.id),
@@ -109,7 +110,7 @@ export const useColumns = (
         if (entityTypeIds.length !== 1) {
             columns.unshift({
                 Header: formatMessage(MESSAGES.type),
-                id: 'entity_type',
+                id: 'entity_type__name',
                 accessor: 'entity_type',
             });
         }
@@ -145,19 +146,11 @@ export const useColumns = (
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.see}
                         />
-                        {settings.row.original.duplicates.length === 1 && (
-                            <IconButtonComponent
-                                url={`/${baseUrls.entityDuplicateDetails}/entities/${settings.row.original.id},${settings.row.original.duplicates[0]}/`}
-                                overrideIcon={FileCopyIcon}
-                                tooltipMessage={MESSAGES.seeDuplicate}
-                            />
-                        )}
-                        {/* When there's more than one dupe for the entity */}
-                        {settings.row.original.duplicates.length > 1 && (
+                        {settings.row.original.has_duplicates && (
                             <IconButtonComponent
                                 url={`/${baseUrls.entityDuplicates}/entity_id/${settings.row.original.id}/order/id/pageSize/50/page/1/`}
                                 overrideIcon={FileCopyIcon}
-                                tooltipMessage={MESSAGES.seeDuplicates}
+                                tooltipMessage={MESSAGES.seeDuplicate}
                             />
                         )}
                     </>
@@ -176,11 +169,15 @@ export const useColumns = (
 
 const generateColumnsFromFieldsList = (
     fields: string[],
-    formatMessage: IntlFormatMessage,
+    formatMessage: (
+        key: string,
+        messages: Record<string, IntlMessage>,
+        values?: any,
+    ) => string,
 ): Column[] => {
     return fields.map(field => {
         return {
-            Header: formatMessage(MESSAGES[field]) ?? field,
+            Header: formatMessage(field, MESSAGES),
             id: `${field}`,
             accessor: `${field}`,
             Cell: settings => {
@@ -205,14 +202,14 @@ const generateColumnsFromFieldsList = (
 export const useColumnsFromFieldsList = (
     fields: Array<string> = [],
 ): Array<Column> => {
-    const { formatMessage } = useSafeIntl();
+    const { formatNullishMessage } = useSafeIntl();
     return useMemo(
-        () => generateColumnsFromFieldsList(fields, formatMessage),
-        [fields, formatMessage],
+        () => generateColumnsFromFieldsList(fields, formatNullishMessage),
+        [fields, formatNullishMessage],
     );
 };
 
-export const useBeneficiariesDetailsColumns = (
+export const useEntitiesDetailsColumns = (
     entityId: number | null,
     fields: Array<string> = [],
 ): Column[] => {

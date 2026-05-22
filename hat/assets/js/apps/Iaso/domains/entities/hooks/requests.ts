@@ -1,9 +1,8 @@
+import { UrlParams } from 'bluesquare-components';
 import moment from 'moment';
 import { UseMutationResult, UseQueryResult } from 'react-query';
-
-// @ts-ignore
-import { apiDateFormat } from 'Iaso/utils/dates.ts';
-import { Pagination, UrlParams } from 'bluesquare-components';
+import { ParamsWithAccountId } from 'Iaso/routing/hooks/useParamsObject';
+import { apiDateFormat } from 'Iaso/utils/dates';
 import {
     deleteRequest,
     getRequest,
@@ -11,23 +10,25 @@ import {
     postRequest,
 } from '../../../libs/Api';
 import { useSnackMutation, useSnackQuery } from '../../../libs/apiHooks';
-import MESSAGES from '../messages';
 
 import { makeUrlWithParams } from '../../../libs/utils';
-import getDisplayName, { Profile } from '../../../utils/usersUtils';
-import { Location } from '../components/ListMap';
 
 import { DropdownOptions } from '../../../types/utils';
 import { PaginatedInstances } from '../../instances/types/instance';
-import { DropdownTeamsOptions, Team } from '../../teams/types/team';
-import { Beneficiary } from '../types/beneficiary';
+import { Location } from '../components/ListMap';
+import { EntityType } from '../entityTypes/types/entityType';
+import MESSAGES from '../messages';
+import { Entity } from '../types/entity';
 import { ExtraColumn } from '../types/fields';
 import { Params } from '../types/filters';
 import { DisplayedLocation } from '../types/locations';
 
-export interface PaginatedBeneficiaries extends Pagination {
-    result: Array<Beneficiary>;
+export interface PaginatedEntities {
+    result: Array<Entity>;
     columns: Array<ExtraColumn>;
+    /** Cursor pagination tokens from `/api/entities/` when using `cursor` query param. */
+    next?: string | null;
+    previous?: string | null;
 }
 
 type ApiParams = {
@@ -41,20 +42,22 @@ type ApiParams = {
     created_by_team_id?: string;
     created_by_id?: string;
     entity_type_ids?: string;
-    asLocation?: boolean;
+    asLocation?: string;
     locationLimit?: string;
     groups?: string;
     tab: string;
     fields_search?: string;
+    cursor?: string;
 };
 
 type GetAPiParams = {
     url: string;
     apiParams: ApiParams;
 };
-export const useGetBeneficiariesApiParams = (
+export const useGetEntitiesApiParams = (
     params: Params,
     asLocation = false,
+    cursorPagination = false,
 ): GetAPiParams => {
     const apiParams: ApiParams = {
         order_columns: params.order || 'id',
@@ -75,8 +78,11 @@ export const useGetBeneficiariesApiParams = (
         tab: params.tab || 'list',
         fields_search: params.fieldsSearch,
     };
+    if (cursorPagination) {
+        apiParams.cursor = params.cursor || 'null';
+    }
     if (asLocation) {
-        apiParams.asLocation = true;
+        apiParams.asLocation = 'true';
         apiParams.limit = params.locationLimit || '1000';
     }
     const url = makeUrlWithParams('/api/entities/', apiParams);
@@ -86,86 +92,115 @@ export const useGetBeneficiariesApiParams = (
     };
 };
 
-export const useGetBeneficiariesPaginated = (
+export const useGetEntitiesPaginated = (
     params: Params,
-): UseQueryResult<PaginatedBeneficiaries, Error> => {
-    const { url, apiParams } = useGetBeneficiariesApiParams(params);
+    isEnabled: boolean,
+): UseQueryResult<PaginatedEntities, Error> => {
+    const { url, apiParams } = useGetEntitiesApiParams(params, false, true);
     return useSnackQuery({
-        queryKey: ['beneficiaries', apiParams],
+        queryKey: ['entities', apiParams],
         queryFn: () => getRequest(url),
         options: {
-            enabled: apiParams.tab === 'list',
+            enabled: apiParams.tab === 'list' && isEnabled,
             staleTime: 60000,
             cacheTime: 1000 * 60 * 5,
             keepPreviousData: true,
         },
     });
 };
-export const useGetBeneficiariesLocations = (
+export const useGetEntitiesLocations = (
     params: Params,
     displayedLocation: DisplayedLocation,
 ): UseQueryResult<Array<Location>, Error> => {
-    const { url, apiParams } = useGetBeneficiariesApiParams(params, true);
+    const { url, apiParams } = useGetEntitiesApiParams(params, true);
     return useSnackQuery({
-        queryKey: ['beneficiariesLocations', apiParams],
+        queryKey: ['entitiesLocations', apiParams],
         queryFn: () => getRequest(url),
         options: {
             enabled: apiParams.tab === 'map',
             staleTime: 60000,
             select: data =>
-                data?.result?.map(beneficiary => ({
+                data?.result?.map((entity: Entity) => ({
                     latitude:
                         displayedLocation === 'submissions'
-                            ? beneficiary.latitude
-                            : beneficiary.org_unit?.latitude,
+                            ? entity.latitude
+                            : entity.org_unit?.latitude,
                     longitude:
                         displayedLocation === 'submissions'
-                            ? beneficiary.longitude
-                            : beneficiary.org_unit?.longitude,
-                    orgUnit: beneficiary.org_unit,
-                    id: beneficiary.id,
+                            ? entity.longitude
+                            : entity.org_unit?.longitude,
+                    orgUnit: entity.org_unit,
+                    id: entity.id,
                     original: {
-                        ...beneficiary,
+                        ...entity,
                     },
                 })) || [],
         },
     });
 };
 
-export const useGetBeneficiaryTypesDropdown = (): UseQueryResult<
+export const useGetEntitiesCount = (
+    params: Params,
+    hasCursor: boolean,
+): UseQueryResult<{ count: number }, Error> => {
+    // strip attributes that shouldn't affect the count cache or api
+    const {
+        cursor: _cursor,
+        page: _page,
+        pageSize: _pageSize,
+        order: _order,
+        ...countParams
+    } = params;
+
+    const { url, apiParams } = useGetEntitiesApiParams(
+        countParams as Params,
+        false,
+        true,
+    );
+    const countUrl = url.replace('/entities/', '/entities/count/');
+
+    return useSnackQuery({
+        queryKey: ['entities-count', countParams],
+        queryFn: () => getRequest(countUrl),
+        options: {
+            enabled: hasCursor && apiParams.tab === 'list',
+            staleTime: 1000 * 60 * 5,
+            cacheTime: 1000 * 60 * 10,
+        },
+    });
+};
+
+export const useGetEntityTypesDropdown = (): UseQueryResult<
     Array<DropdownOptions<number>>,
     Error
 > =>
     useSnackQuery({
-        queryKey: ['beneficiaryTypesOptions'],
+        queryKey: ['entityTypesOptions'],
         queryFn: () => getRequest('/api/entitytypes/?order=name'),
         options: {
-            staleTime: 1000 * 60 * 15, // in MS
+            staleTime: Infinity,
             cacheTime: 1000 * 60 * 5,
             select: data =>
-                data?.map(
-                    type =>
-                        ({
-                            label: type.name,
-                            value: type.id,
-                            original: type,
-                        }) || [],
-                ),
+                data?.map((type: EntityType) => ({
+                    label: type.name,
+                    value: type.id,
+                    original: type,
+                })),
         },
     });
 
-export const useSoftDeleteBeneficiary = (
+export const useSoftDeleteEntity = (
     onSuccess: (data: any) => void = _data => {},
 ): UseMutationResult =>
     useSnackMutation({
         mutationFn: entityId => deleteRequest(`/api/entities/${entityId}/`),
         snackSuccessMessage: MESSAGES.deleteSuccess,
         snackErrorMsg: MESSAGES.deleteError,
-        invalidateQueryKey: ['beneficiaries'],
+        invalidateQueryKey: ['entities'],
         options: { onSuccess },
     });
 
-export const useSaveBeneficiary = (): UseMutationResult =>
+export const useSaveEntity = (): UseMutationResult =>
     useSnackMutation(
         body =>
             body.id
@@ -173,19 +208,19 @@ export const useSaveBeneficiary = (): UseMutationResult =>
                 : postRequest('/api/entities/', body),
         undefined,
         undefined,
-        ['beneficiaries'],
+        ['entities'],
     );
 
-const getBeneficiary = (entityId: string | undefined): Promise<Beneficiary> => {
+const getEntity = (entityId: string | undefined): Promise<Entity> => {
     return getRequest(`/api/entities/${entityId}/`);
 };
-export const useGetBeneficiary = (
+export const useGetEntity = (
     entityId: string | undefined,
-): UseQueryResult<Beneficiary, Error> => {
-    const queryKey: any[] = ['beneficiary', entityId];
+): UseQueryResult<Entity, Error> => {
+    const queryKey: any[] = ['entity', entityId];
     return useSnackQuery({
         queryKey,
-        queryFn: () => getBeneficiary(entityId),
+        queryFn: () => getEntity(entityId),
         options: {
             retry: false,
             staleTime: Infinity,
@@ -213,6 +248,9 @@ export const useGetSubmissions = (
     params: Partial<UrlParams> & ParamsWithAccountId,
     entityId: number,
 ): UseQueryResult<PaginatedInstances, Error> => {
+    if (!params.order) {
+        params.order = 'source_created_at';
+    }
     return useSnackQuery({
         queryKey: ['submissionsForEntity', entityId, params],
         queryFn: () => getSubmissions(params, entityId),
@@ -222,75 +260,6 @@ export const useGetSubmissions = (
             keepPreviousData: true,
             cacheTime: 1000 * 60 * 5,
             staleTime: 1000 * 60 * 5,
-        },
-    });
-};
-
-export const useGetUsersDropDown = (
-    team?: Team,
-): UseQueryResult<DropdownOptions<number>[], Error> => {
-    return useSnackQuery(
-        ['profiles', team],
-        () => getRequest('/api/profiles/'),
-        MESSAGES.projectsError,
-        {
-            select: data => {
-                if (!data) return [];
-                if (team) {
-                    return data.profiles
-                        ?.filter((profile: Profile) => {
-                            return Boolean(
-                                team.users_details.find(
-                                    userProfile =>
-                                        userProfile.username ===
-                                        profile.user_name,
-                                ),
-                            );
-                        })
-                        .map((profile: Profile) => {
-                            return {
-                                value: profile.user_id,
-                                label: getDisplayName(profile),
-                            };
-                        });
-                }
-                return data.profiles.map((profile: Profile) => {
-                    return {
-                        value: profile.user_id,
-                        label: getDisplayName(profile),
-                    };
-                });
-            },
-        },
-    );
-};
-
-const getTeams = async (): Promise<Team[]> => {
-    return getRequest('/api/microplanning/teams/') as Promise<Team[]>;
-};
-
-export const useGetTeamsDropdown = (): UseQueryResult<
-    DropdownTeamsOptions[],
-    Error
-> => {
-    const queryKey: any[] = ['teamsList'];
-    // @ts-ignore
-    return useSnackQuery({
-        queryKey,
-        queryFn: () => getTeams(),
-        options: {
-            select: teams => {
-                if (!teams) return [];
-                return teams
-                    .filter(team => team.type === 'TEAM_OF_USERS')
-                    .map(team => {
-                        return {
-                            value: team.id,
-                            label: team.name,
-                            original: team,
-                        };
-                    });
-            },
         },
     });
 };

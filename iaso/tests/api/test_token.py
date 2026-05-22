@@ -246,7 +246,7 @@ class TokenAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(m.OrgUnit.objects.filter(uuid=uuid).first() is not None)
-        self.assertAPIImport("orgUnit", request_body=unit_body, has_problems=False, check_auth_header=True)
+        self.assertAPIImport("orgUnit", request_body=unit_body, has_problems=False)
 
     def test_unauthenticated_post_org_unit(self):
         """Test upload to a project that requires authentication without token"""
@@ -346,13 +346,40 @@ class TokenAPITestCase(APITestCase):
         self.assertJSONResponse(response, 401)
         self.assertEqual(
             response.json()["detail"],
-            "No active account found with the given credentials",
+            "No active account found with the given credentials.",
         )
 
         # Login with main user and non-existent app_id
         response = self.client.post("/api/token/?app_id=account.c", data=login, format="json")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, 404)
         self.assertEqual(
             response.json()["detail"],
-            "No active account found with the given credentials",
+            "Unknown project.",
         )
+
+    def test_user_with_project_restrictions(self):
+        user = self.yoda
+        authorized_project = self.project
+        unauthorized_project = m.Project.objects.create(
+            name="Unauthorized project",
+            app_id="unauthorized.project",
+            account=self.default_account,
+            needs_authentication=True,
+        )
+        login = {"username": user.username, "password": "IMomLove"}
+
+        # Without project restrictions.
+        self.assertEqual(0, user.iaso_profile.projects.count())
+        response = self.client.post(f"/api/token/?app_id={authorized_project.app_id}", data=login, format="json")
+        self.assertJSONResponse(response, 200)
+
+        # With project restrictions.
+        user.iaso_profile.projects.set([authorized_project])
+        self.assertEqual(1, user.iaso_profile.projects.count())
+
+        response = self.client.post(f"/api/token/?app_id={authorized_project.app_id}", data=login, format="json")
+        self.assertJSONResponse(response, 200)
+
+        response = self.client.post(f"/api/token/?app_id={unauthorized_project.app_id}", data=login, format="json")
+        self.assertJSONResponse(response, 403)
+        self.assertEqual(response.data["detail"], "You don't have access to this project.")

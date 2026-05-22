@@ -1,11 +1,12 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions, serializers
 from rest_framework.pagination import LimitOffsetPagination
 
-from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission, ModelViewSet
 from iaso.models import Report
+from iaso.permissions.core_permissions import CORE_REPORTS_PERMISSION
 
 
 class ReportSerializer(serializers.ModelSerializer):
@@ -16,6 +17,7 @@ class ReportSerializer(serializers.ModelSerializer):
     published_version = serializers.CharField(read_only=True, source="published_version.name")
 
 
+@extend_schema(tags=["Reports"])
 class ReportsViewSet(ModelViewSet):
     """
     api/reports
@@ -28,7 +30,7 @@ class ReportsViewSet(ModelViewSet):
     results_key = "result"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.REPORTS)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_REPORTS_PERMISSION)]
     pagination_class = LimitOffsetPagination
 
     def get_serializer_class(self):

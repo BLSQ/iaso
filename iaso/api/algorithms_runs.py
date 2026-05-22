@@ -2,17 +2,19 @@ import importlib
 
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema
 from rest_framework import exceptions, permissions, viewsets
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
 from iaso.models import AlgorithmRun, DataSource, MatchingAlgorithm, SourceVersion
+from iaso.permissions.core_permissions import CORE_LINKS_PERMISSION
 
 
+@extend_schema(tags=["Algorithm runs"])
 class AlgorithmsRunsViewSet(viewsets.ViewSet):
     f"""Algorithms runs API
 
-    This API is restricted to authenticated users having the "{permission.LINKS}" permission
+    This API is restricted to authenticated users having the "{CORE_LINKS_PERMISSION}" permission
 
     GET /api/algorithmsruns/
     GET /api/algorithmsruns/<id>

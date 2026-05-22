@@ -2,8 +2,9 @@ import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../../libs/utils';
+import { Team } from '../../../teams/types/team';
+import { ASSIGNMENTS_API_URL } from '../../constants/api';
 import { AssignmentApi } from '../../types/assigment';
-import { Team } from '../../types/team';
 
 type Option = {
     planning: string | undefined;
@@ -15,7 +16,7 @@ export type AssignmentsResult = {
 };
 
 const getAssignments = async (options: Option): Promise<AssignmentApi[]> => {
-    const url = makeUrlWithParams('/api/microplanning/assignments/', options);
+    const url = makeUrlWithParams(ASSIGNMENTS_API_URL, options);
     return getRequest(url) as Promise<AssignmentApi[]>;
 };
 
@@ -23,7 +24,7 @@ export const useGetAssignments = (
     options: Option,
     currentTeam?: Team,
 ): UseQueryResult<AssignmentsResult, Error> => {
-    const queryKey: any[] = ['assignmentsList'];
+    const queryKey: any[] = ['assignmentsList', options];
     return useSnackQuery(queryKey, () => getAssignments(options), undefined, {
         enabled: Boolean(options.planning),
         select: data => {
@@ -47,5 +48,6 @@ export const useGetAssignments = (
                 allAssignments: data,
             };
         },
+        staleTime: Infinity,
     });
 };

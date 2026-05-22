@@ -1,15 +1,17 @@
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend  # type:ignore
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission
 from iaso.api.tasks.serializers import ExternalTaskPostSerializer, ExternalTaskSerializer, TaskSerializer
 from iaso.api.tasks.views import ExternalTaskModelViewSet
-from iaso.models.base import ERRORED, RUNNING, SUCCESS, Task
+from iaso.models.base import ERRORED, RUNNING, SUCCESS
 from iaso.models.org_unit import OrgUnit
+from iaso.models.task import Task
+from plugins.polio.permissions import POLIO_CONFIG_PERMISSION, POLIO_PERMISSION
 
 
 LQAS_TASK_NAME = "Refresh LQAS data"
@@ -92,8 +94,12 @@ class CustomTaskSearchFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
+@extend_schema(tags=["Polio - tasks - Refresh LQAS IM"])
 class RefreshLQASIMDataViewset(ExternalTaskModelViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.POLIO, permission.POLIO_CONFIG)]  # type: ignore
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission(POLIO_PERMISSION, POLIO_CONFIG_PERMISSION),
+    ]  # type: ignore
     http_method_names = ["get", "post", "patch"]
     model = Task
     filter_backends = [

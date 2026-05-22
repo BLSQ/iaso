@@ -35,7 +35,10 @@ export const ChronogramDetailsTable: FunctionComponent<Props> = ({
             columns={columns}
             count={data?.count ?? 0}
             params={params}
-            extraProps={{ loading: isFetching }}
+            extraProps={{
+                loading: isFetching,
+                defaultPageSize: data?.limit ?? 20,
+            }}
             columnSelectorEnabled
             columnSelectorButtonType="button"
         />

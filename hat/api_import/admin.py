@@ -9,13 +9,16 @@ class APIImportAdmin(admin.GeoModelAdmin):
     search_fields = ("json_body", "headers", "exception")
     list_display = (
         "id",
+        "created_at",
         "import_type",
         "has_problem",
         "user",
+        "app_id",
     )
     list_filter = (
         "has_problem",
         "import_type",
+        "app_id",
     )
 
     def get_queryset(self, request):

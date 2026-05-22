@@ -7,28 +7,28 @@ import {
     useSafeIntl,
     useRedirectTo,
 } from 'bluesquare-components';
-import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
+import { MainWrapper } from 'Iaso/components/MainWrapper';
 import TopBar from '../../components/nav/TopBarComponent';
-import { Filters } from './components/Filters';
-import {
-    useGetBeneficiariesLocations,
-    useGetBeneficiariesPaginated,
-    useGetBeneficiaryTypesDropdown,
-} from './hooks/requests';
-import { useColumns, baseUrl, defaultSorted } from './config';
-import MESSAGES from './messages';
-import { ListMap } from './components/ListMap';
-import { MENU_HEIGHT_WITH_TABS } from '../../constants/uiConstants';
-import { DisplayedLocation } from './types/locations';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { CountLabel } from './components/CountLabel';
+import { CursorPagination } from './components/CursorPagination';
+import { Filters } from './components/Filters';
+import { ListMap } from './components/ListMap';
+import { useColumns, baseUrl, defaultSorted } from './config';
+import {
+    useGetEntitiesLocations,
+    useGetEntitiesPaginated,
+    useGetEntitiesCount,
+    useGetEntityTypesDropdown,
+} from './hooks/requests';
+import MESSAGES from './messages';
+import type { Params } from './types/filters';
+import { DisplayedLocation } from './types/locations';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
-    container: {
-        height: `calc(100vh - ${MENU_HEIGHT_WITH_TABS}px)`,
-        overflow: 'auto',
-    },
     hiddenOpacity: {
         position: 'absolute',
         top: 0,
@@ -38,28 +38,20 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-type Params = {
-    pageSize: string;
-    order: string;
-    page: string;
-    tab?: string;
-    search?: string;
-    entityTypes?: string;
-    entityTypeIds?: string;
-    locationLimit?: string;
-    groups?: string;
-    fieldsSearch?: string;
-};
-
-export const Beneficiaries: FunctionComponent = () => {
-    const params = useParamsObject(baseUrls.entities) as Params;
+export const Entities: FunctionComponent = () => {
+    const params = useParamsObject(baseUrls.entities) as unknown as Params;
     const classes: Record<string, string> = useStyles();
     const [displayedLocation, setDisplayedLocation] =
         useState<DisplayedLocation>('submissions');
     const { formatMessage } = useSafeIntl();
     const redirectTo = useRedirectTo();
+    const isSearchActive = params?.isSearchActive === 'true';
 
-    const { data, isFetching } = useGetBeneficiariesPaginated(params);
+    const { data, isFetching } = useGetEntitiesPaginated(
+        params,
+        isSearchActive,
+    );
+
     const [tab, setTab] = useState(params.tab ?? 'list');
 
     const isLoading = isFetching;
@@ -78,23 +70,52 @@ export const Beneficiaries: FunctionComponent = () => {
 
     const {
         result,
-        pages,
-        count,
+        next,
+        previous,
         columns: extraColumns,
     } = useMemo(() => {
         if (!data) {
             return {
                 result: [],
-                pages: 0,
-                count: 0,
+                next: null,
+                previous: null,
                 columns: [],
             };
         }
         return data;
     }, [data]);
+
+    const hasCursor = !!(next || previous);
+    const { data: countData, isFetching: isFetchingCount } =
+        useGetEntitiesCount(params, hasCursor);
+
+    const lengthResults = data?.result?.length ?? 0;
+    const totalCount = countData?.count ?? lengthResults;
+
+    const handleNextPage = () => {
+        if (next) {
+            redirectTo(baseUrl, { ...params, cursor: next });
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (previous) {
+            redirectTo(baseUrl, { ...params, cursor: previous });
+        }
+    };
+    const handlePageSizeChange = (newPageSize: number) => {
+        redirectTo(baseUrl, {
+            ...params,
+            pageSize: newPageSize.toString(),
+            cursor: 'null',
+        });
+    };
+
+    const { cursor: _cursor, ...tableParams } = params;
+
     const columns = useColumns(entityTypeIds, extraColumns || []);
 
-    const { data: types } = useGetBeneficiaryTypesDropdown();
+    const { data: types } = useGetEntityTypesDropdown();
 
     let entityTypeName;
     if (entityTypeIds.length === 1) {
@@ -106,13 +127,13 @@ export const Beneficiaries: FunctionComponent = () => {
         }
     }
     const { data: locations, isFetching: isFetchingLocations } =
-        useGetBeneficiariesLocations(params, displayedLocation);
+        useGetEntitiesLocations(params, displayedLocation);
 
     return (
         <>
             {isLoading && tab === 'map' && <LoadingSpinner />}
             <TopBar
-                title={`${formatMessage(MESSAGES.beneficiaries)}${
+                title={`${formatMessage(MESSAGES.entities)}${
                     entityTypeName ? ` - ${entityTypeName}` : ''
                 }`}
                 displayBackButton={false}
@@ -131,8 +152,12 @@ export const Beneficiaries: FunctionComponent = () => {
                     <Tab value="map" label={formatMessage(MESSAGES.map)} />
                 </Tabs>
             </TopBar>
-            <Box p={4} className={classes.container}>
-                <Filters params={params} isFetching={isFetching} />
+            <MainWrapper sx={{ padding: 4 }} navHasTabs={true}>
+                <Filters
+                    params={params}
+                    isFetching={isFetching}
+                    isSearchActive={isSearchActive}
+                />
                 <Box position="relative" width="100%" mt={2}>
                     <Box
                         width="100%"
@@ -150,21 +175,42 @@ export const Beneficiaries: FunctionComponent = () => {
                     </Box>
                     {tab === 'list' && (
                         <Box>
+                            <CountLabel
+                                count={totalCount}
+                                isFetching={isFetchingCount}
+                            />
                             <TableWithDeepLink
                                 marginTop={false}
                                 data={result ?? []}
-                                pages={pages ?? 1}
+                                pages={1}
                                 defaultSorted={defaultSorted}
                                 columns={columns}
-                                count={count ?? 0}
+                                count={0}
+                                countOnTop={false}
                                 baseUrl={baseUrl}
-                                params={params}
+                                params={tableParams}
+                                showPagination={false}
                                 extraProps={{ loading: isFetching }}
+                                noDataMessage={
+                                    !isSearchActive
+                                        ? MESSAGES.searchToSeeEntities
+                                        : undefined
+                                }
                             />
+                            {result?.length > 0 && (
+                                <CursorPagination
+                                    hasNext={!!next}
+                                    hasPrev={!!previous}
+                                    onNext={handleNextPage}
+                                    onPrev={handlePrevPage}
+                                    pageSize={Number(params.pageSize) || 20}
+                                    onPageSizeChange={handlePageSizeChange}
+                                />
+                            )}
                         </Box>
                     )}
                 </Box>
-            </Box>
+            </MainWrapper>
         </>
     );
 };

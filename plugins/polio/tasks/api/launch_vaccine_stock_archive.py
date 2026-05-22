@@ -1,9 +1,10 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers, viewsets
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission
 from iaso.api.tasks.serializers import TaskSerializer
+from plugins.polio.permissions import POLIO_VACCINE_STOCK_MANAGEMENT_WRITE_PERMISSION
 from plugins.polio.tasks.archive_vaccine_stock_for_rounds import archive_vaccine_stock_for_rounds
 
 
@@ -14,8 +15,12 @@ class ArchiveVaccineStockSerializer(serializers.Serializer):
     vaccine = serializers.CharField(max_length=200, required=False, default=None)  # TODO add choices
 
 
+@extend_schema(tags=["Polio - Tasks - Archive vaccine stock"])
 class ArchiveVaccineStockViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE)]  # type: ignore
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission(POLIO_VACCINE_STOCK_MANAGEMENT_WRITE_PERMISSION),
+    ]
     serializer_class = ArchiveVaccineStockSerializer
 
     def create(self, request):

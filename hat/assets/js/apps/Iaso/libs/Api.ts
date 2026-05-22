@@ -1,6 +1,6 @@
+import * as Sentry from '@sentry/browser';
 import moment from 'moment';
 
-import * as Sentry from '@sentry/browser';
 import { PostArg } from '../types/general';
 import { Nullable, Optional } from '../types/utils';
 import { FETCHING_ABORTED } from './constants';
@@ -53,8 +53,9 @@ export const iasoFetch = async (
 ): Promise<Response> => {
     let response;
     const url =
-        typeof resource === 'string' ? resource : resource.url ?? resource;
+        typeof resource === 'string' ? resource : (resource.url ?? resource);
     const method = init?.method ?? 'GET';
+
     try {
         response = await fetch(resource, {
             ...init,
@@ -256,7 +257,10 @@ export const putRequest = (
             'Accept-Language': moment.locale(),
         },
         signal,
-    }).then(response => response.json());
+    }).then(response => {
+        if (response.status === 204) return;
+        return response.json();
+    });
 
 export const optionsRequest = async (
     url: string,

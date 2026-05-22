@@ -30,12 +30,14 @@ type Props = {
     selection: Selection<Instance>;
     isOpen: boolean;
     closeDialog: () => void;
+    filters: Record<string, string>;
 };
 
 const PushGpsDialogComponent: FunctionComponent<Props> = ({
     selection,
     isOpen,
     closeDialog,
+    filters,
 }) => {
     const INSTANCE_HAS_NO_GPS = 'instanceHasNoGPS';
     const ORG_UNIT_HAS_ALREADY_GPS = 'orgUnitHasAlreadyGps';
@@ -66,6 +68,7 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
         selected_ids: selected_ids.map(item => item.id).join(','),
         select_all,
         unselected_ids: unselected_ids.map(item => item.id).join(','),
+        ...filters,
     });
 
     const instancebulkgpspush = useCallback(async () => {
@@ -73,8 +76,9 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
             select_all,
             selected_ids: selected_ids.map(item => item.id),
             unselected_ids: unselected_ids.map(item => item.id),
+            filters,
         });
-    }, [bulkgpspush, select_all, selected_ids, unselected_ids]);
+    }, [bulkgpspush, select_all, selected_ids, unselected_ids, filters]);
 
     const onConfirm = useCallback(async () => {
         await instancebulkgpspush();

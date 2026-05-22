@@ -1,4 +1,5 @@
 from iaso import models as m
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -23,18 +24,18 @@ class OUCRCAPIBase(APITestCase):
         cls.user_ash_ketchum = cls.create_user_with_profile(
             username="Ash Ketchum",
             account=cls.account_pokemon,
-            permissions=["iaso_org_unit_change_request_configurations"],
+            permissions=[CORE_ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS_PERMISSION],
         )
         cls.user_misty = cls.create_user_with_profile(
             username="Misty",
             account=cls.account_pokemon,
-            permissions=["iaso_org_unit_change_request_configurations"],
+            permissions=[CORE_ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS_PERMISSION],
             projects=[cls.project_johto],
         )
         cls.user_brock = cls.create_user_with_profile(
             username="Brock",
             account=cls.account_pokemon,
-            permissions=["iaso_org_unit_change_request_configurations"],
+            permissions=[CORE_ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS_PERMISSION],
             projects=[cls.project_johto],
         )
         cls.user_without_perms_giovanni = cls.create_user_with_profile(username="Giovanni", account=cls.account_pokemon)

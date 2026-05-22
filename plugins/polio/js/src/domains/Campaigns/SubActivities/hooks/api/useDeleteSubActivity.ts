@@ -11,7 +11,7 @@ const deleteActivity = (id: string) => {
 export const useDeleteSubActivity = (): UseMutationResult => {
     return useSnackMutation({
         mutationFn: deleteActivity,
-        invalidateQueryKey: 'subActivities',
+        invalidateQueryKey: ['subActivities', 'calendar-campaigns'],
         // TODO add success and error messages
     });
 };

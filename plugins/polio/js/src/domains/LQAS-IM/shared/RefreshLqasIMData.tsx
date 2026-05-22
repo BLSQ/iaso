@@ -4,21 +4,16 @@ import React, {
     useEffect,
     useState,
 } from 'react';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import { Box, Button } from '@mui/material';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import moment from 'moment';
-import { Box, Button } from '@mui/material';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import { useQueryClient } from 'react-query';
 import { Task } from '../../../../../../../hat/assets/js/apps/Iaso/domains/tasks/types';
-import { useGetLatestLQASIMUpdate } from '../../../hooks/useGetLatestLQASIMUpdate';
 import { useCreateTask } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/taskMonitor';
 import MESSAGES from '../../../constants/messages';
-import { IMType } from '../../../constants/types';
-
-type Props = {
-    countryId?: string;
-    imType?: IMType;
-};
+import { useGetLatestLQASIMUpdate } from '../../../hooks/useGetLatestLQASIMUpdate';
+import { IMType } from '../types';
 
 const LQAS_TASK_ENDPOINT = '/api/polio/tasks/refreshlqas/';
 const LQAS_CONFIG_SLUG = 'lqas-pipeline-config';
@@ -32,9 +27,10 @@ const IM_HH_API_PARAM = 'HH';
 const IM_OHH_API_PARAM = 'OHH';
 const IM_HH_OHH_API_PARAM = 'HH_OHH';
 
-const getImEndpoint = (imType: IMType): string => {
+const getImEndpoint = (imType: IMType | 'imHH'): string => {
     switch (imType) {
         case 'imHH':
+        case 'imIHH':
             return IM_HH_TASK_ENDPOINT;
         case 'imOHH':
             return IM_OHH_TASK_ENDPOINT;
@@ -48,9 +44,10 @@ const getImEndpoint = (imType: IMType): string => {
     }
 };
 
-const getImConfigSlug = (imType: IMType): string => {
+const getImConfigSlug = (imType: IMType | 'imHH'): string => {
     switch (imType) {
         case 'imHH':
+        case 'imIHH':
             return IM_HH_CONFIG_SLUG;
         case 'imOHH':
             return IM_OHH_CONFIG_SLUG;
@@ -61,9 +58,10 @@ const getImConfigSlug = (imType: IMType): string => {
     }
 };
 
-const getPipelineParam = (imType: IMType): string => {
+const getPipelineParam = (imType: IMType | 'imHH'): string => {
     switch (imType) {
         case 'imHH':
+        case 'imIHH':
             return IM_HH_API_PARAM;
         case 'imOHH':
             return IM_OHH_API_PARAM;
@@ -96,6 +94,11 @@ const useLastUpdate = (
         result.updateStatus = updateStatus;
     }
     return result;
+};
+
+type Props = {
+    countryId?: string;
+    imType?: IMType;
 };
 
 export const RefreshLqasIMData: FunctionComponent<Props> = ({

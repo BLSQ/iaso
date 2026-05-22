@@ -9,7 +9,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("iaso", "0110_make_readonlyrole"),
+        ("iaso", "0002_auto_20191001_1142_squashed_0100_auto_20210702_0835"),
     ]
 
     operations = [

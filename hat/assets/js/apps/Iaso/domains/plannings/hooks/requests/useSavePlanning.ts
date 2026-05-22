@@ -6,7 +6,8 @@ import {
     dateRangePickerToDateApi,
     getApiParamDateTimeString,
 } from '../../../../utils/dates';
-import { endpoint } from '../../constants';
+import { PLANNINGS_API_URL } from '../../constants';
+import { Planning } from '../../types';
 
 export type SavePlanningQuery = {
     id?: number;
@@ -14,11 +15,14 @@ export type SavePlanningQuery = {
     startDate: string;
     endDate: string;
     forms: number[];
-    selectedOrgUnit: number[];
+    selectedOrgUnit: number;
     selectedTeam: number;
     description?: string;
     project: number;
     publishingStatus: 'published' | 'draft';
+    pipelineUuids: string[];
+    targetOrgUnitTypes: number[];
+    selected_sampling_result_id?: number | null;
 };
 
 const convertToApi = data => {
@@ -28,6 +32,8 @@ const convertToApi = data => {
         endDate,
         startDate,
         publishingStatus,
+        pipelineUuids,
+        targetOrgUnitTypes,
         ...converted
     } = data;
     if (selectedTeam !== undefined) {
@@ -48,12 +54,31 @@ const convertToApi = data => {
     } else if (publishingStatus === 'draft') {
         converted.published_at = null;
     }
+    if (pipelineUuids !== undefined) {
+        converted.pipeline_uuids = pipelineUuids;
+    }
+    if (targetOrgUnitTypes !== undefined) {
+        converted.target_org_unit_types = targetOrgUnitTypes;
+    }
+
+    if (converted.selected_sampling_result_id !== undefined) {
+        converted.selected_sampling_result =
+            converted.selected_sampling_result_id;
+    }
 
     return converted;
 };
 export const convertAPIErrorsToState = data => {
-    const { team, org_unit, ended_at, started_at, published_at, ...converted } =
-        data;
+    const {
+        team,
+        org_unit,
+        ended_at,
+        started_at,
+        published_at,
+        pipeline_uuids,
+        target_org_unit_types,
+        ...converted
+    } = data;
     if (team !== undefined) {
         converted.selectedTeam = team;
     }
@@ -70,18 +95,24 @@ export const convertAPIErrorsToState = data => {
     if (published_at !== undefined) {
         converted.publishingStatus = published_at;
     }
+    if (pipeline_uuids !== undefined) {
+        converted.pipelineUuids = pipeline_uuids;
+    }
+    if (target_org_unit_types !== undefined) {
+        converted.targetOrgUnitTypes = target_org_unit_types;
+    }
 
     return converted;
 };
 
 const patchPlanning = async (body: Partial<SavePlanningQuery>) => {
-    const url = `${endpoint}${body.id}/`;
+    const url = `${PLANNINGS_API_URL}${body.id}/`;
     return patchRequest(url, convertToApi(body));
 };
 
 const postPlanning = async (body: SavePlanningQuery) => {
     return postRequest({
-        url: endpoint,
+        url: PLANNINGS_API_URL,
         data: convertToApi(body),
     });
 };
@@ -94,26 +125,40 @@ const duplicatePlanning = async (body: SavePlanningQuery) => {
     return postPlanning(duplicate);
 };
 
-export const useSavePlanning = (
-    type: 'create' | 'edit' | 'copy',
-): UseMutationResult => {
-    const ignoreErrorCodes = [400];
+type UseSavePlanningArgs = {
+    type: 'create' | 'edit' | 'copy';
+    onSuccess?: (data: Planning) => void;
+    showSuccessSnackBar?: boolean;
+};
+export const useSavePlanning = ({
+    type,
+    onSuccess,
+    showSuccessSnackBar,
+}: UseSavePlanningArgs): UseMutationResult => {
     const editPlanning = useSnackMutation({
         mutationFn: (data: Partial<SavePlanningQuery>) => patchPlanning(data),
-        invalidateQueryKey: ['planningsList'],
-        ignoreErrorCodes,
+        invalidateQueryKey: [
+            'planningsList',
+            'planningDetails',
+            'planningOrgUnits',
+            'planningSamplingResults',
+            'planningRootOrgUnit',
+            'planningChildrenOrgUnits',
+        ],
+        options: { onSuccess },
+        showSuccessSnackBar,
     });
     const createPlanning = useSnackMutation({
         mutationFn: (data: SavePlanningQuery) => {
             return postPlanning(data);
         },
-        invalidateQueryKey: ['planningsList'],
-        ignoreErrorCodes,
+        invalidateQueryKey: ['planningsList', 'planningDetails'],
+        options: { onSuccess },
     });
     const copyPlanning = useSnackMutation({
         mutationFn: (data: SavePlanningQuery) => duplicatePlanning(data),
-        invalidateQueryKey: ['planningsList'],
-        ignoreErrorCodes,
+        invalidateQueryKey: ['planningsList', 'planningDetails'],
+        options: { onSuccess },
     });
 
     switch (type) {

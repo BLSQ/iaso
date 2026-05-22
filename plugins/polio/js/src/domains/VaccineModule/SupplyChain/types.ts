@@ -1,5 +1,5 @@
-import { FormikProps } from 'formik';
 import React from 'react';
+import { FormikProps } from 'formik';
 import { UseMutateAsyncFunction } from 'react-query';
 import {
     DropdownOptions,
@@ -18,6 +18,7 @@ export type VRF = {
     campaign: string; // obr_name
     obr_name: string;
     vaccine_type: Vaccine;
+    created_at: string; // date in string form
     rounds: { number: number }[];
     date_vrf_signature: string; // date in string form
     quantities_ordered_in_doses?: number;
@@ -27,12 +28,10 @@ export type VRF = {
     quantities_approved_by_orpg_in_doses?: number;
     date_rrt_orpg_approval?: string; // date in string form
     date_vrf_submitted_to_dg?: string; // date in string form
-    quantities_approved_by_dg_in_doses?: number;
-    date_dg_approval?: string; // date in string form
     target_population?: number;
     comments?: string;
     vrf_type: 'Normal' | 'Missing' | 'Not Required';
-    document?: File;
+    file?: File;
 };
 
 export type VRFFormData = Omit<VRF, 'rounds'> & {
@@ -49,7 +48,7 @@ export type PreAlert = {
     doses_per_vial: number;
     vials_shipped: number;
     to_delete?: boolean;
-    document?: File;
+    file?: File;
     can_edit: boolean;
     scan_result?: ScanResultStatus;
     scan_timestamp?: number;

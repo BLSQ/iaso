@@ -1,0 +1,6 @@
+from rest_framework import routers
+
+
+# router for DRF APIs
+router = routers.SimpleRouter()
+# example: router.register(r'{{ app_name }}/resource', ResourceViewSet, basename='resource')

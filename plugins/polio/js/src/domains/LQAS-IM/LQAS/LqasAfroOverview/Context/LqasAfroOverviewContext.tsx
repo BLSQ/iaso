@@ -4,6 +4,7 @@ import React, {
     createContext,
     useState,
     useMemo,
+    ReactNode,
 } from 'react';
 
 type LqasAfroOverviewContextObject = {
@@ -18,7 +19,12 @@ const defaultContext: LqasAfroOverviewContextObject = {
 const LqasAfroOverviewContext =
     createContext<LqasAfroOverviewContextObject>(defaultContext);
 
-const LqasAfroOverviewContextProvider: FunctionComponent = ({ children }) => {
+type Props = {
+    children: ReactNode;
+};
+const LqasAfroOverviewContextProvider: FunctionComponent<Props> = ({
+    children,
+}) => {
     const [bounds, setBounds] = useState<Bounds | undefined>(undefined);
     const contextValue: LqasAfroOverviewContextObject = useMemo(
         () => ({

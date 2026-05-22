@@ -1,8 +1,10 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, serializers
 from rest_framework.fields import Field
 
-from iaso.api.common import ModelViewSet, UserSerializer
+from iaso.api.common import HasPermission, ModelViewSet, UserSerializer
 from iaso.models import OrgUnit
+from plugins.polio.permissions import POLIO_CONFIG_PERMISSION, POLIO_PERMISSION
 
 from ..models import CountryUsersGroup
 
@@ -33,21 +35,25 @@ class CountryUsersGroupSerializer(serializers.ModelSerializer):
         ]
 
 
+@extend_schema(tags=["Polio - Country user groups"])
 class CountryUsersGroupViewSet(ModelViewSet):
     serializer_class = CountryUsersGroupSerializer
     results_key = "country_users_group"
     http_method_names = ["get", "put"]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["country__name", "language"]
+    permission_classes = [HasPermission(POLIO_PERMISSION, POLIO_CONFIG_PERMISSION)]
 
     def get_queryset(self):
         countries = OrgUnit.objects.filter_for_user_and_app_id(self.request.user).filter(
             org_unit_type__category="COUNTRY"
         )
-        for country in countries:
-            cug, created = CountryUsersGroup.objects.get_or_create(
-                country=country
-            )  # ensuring that such a model always exist
-            if created:
-                print(f"created {cug}")
-        return CountryUsersGroup.objects.filter(country__in=countries)
+        countries_without_group = countries.filter(countryusersgroup__isnull=True)
+
+        if countries_without_group.exists():
+            groups_to_create = [CountryUsersGroup(country=country) for country in countries_without_group]
+            CountryUsersGroup.objects.bulk_create(groups_to_create, ignore_conflicts=True)
+
+        queryset = CountryUsersGroup.objects.select_related("country").prefetch_related("users", "teams")
+
+        return queryset.filter(country__in=countries)

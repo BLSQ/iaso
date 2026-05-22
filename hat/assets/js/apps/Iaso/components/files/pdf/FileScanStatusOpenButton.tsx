@@ -18,20 +18,22 @@ export const FileScanStatusOpenButton: FunctionComponent<
 
     return (
         <Tooltip title={tooltipMessage} arrow>
-            <IconButton
-                onClick={onClick}
-                aria-label="preview document"
-                disabled={disabled}
-            >
-                <FileScanStatusOpenButtonIcon
-                    scanResult={scanResult}
-                    coloredIcon={coloredIcon}
-                />
-                {/* TODO: make the icon white also once it's implemented everywhere
+            <span>
+                <IconButton
+                    onClick={onClick}
+                    aria-label="preview document"
+                    disabled={disabled}
+                >
+                    <FileScanStatusOpenButtonIcon
+                        scanResult={scanResult}
+                        coloredIcon={coloredIcon}
+                    />
+                    {/* TODO: make the icon white also once it's implemented everywhere
                 <PdfSvgComponent sx={!coloredIcon && styles.whiteState} />
                 */}
-                <PdfSvgComponent />
-            </IconButton>
+                    <PdfSvgComponent />
+                </IconButton>
+            </span>
         </Tooltip>
     );
 };

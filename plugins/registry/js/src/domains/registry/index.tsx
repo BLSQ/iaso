@@ -1,3 +1,9 @@
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import { Box, Grid } from '@mui/material';
 import {
     useRedirectTo,
@@ -5,15 +11,10 @@ import {
     useSkipEffectOnMount,
 } from 'bluesquare-components';
 import { orderBy } from 'lodash';
-import React, {
-    FunctionComponent,
-    useCallback,
-    useMemo,
-    useState,
-} from 'react';
-import { getOtChipColors } from '../../../../../../hat/assets/js/apps/Iaso/constants/chipColors';
+import { getColor, useGetColors } from 'Iaso/hooks/useGetColors';
 import { OrgUnitTreeviewModal } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { OrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
+import { Placeholder } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/Placeholder';
 import { useParamsObject } from '../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { SxStyles } from '../../../../../../hat/assets/js/apps/Iaso/types/general';
 
@@ -23,6 +24,7 @@ import {
     useGetOrgUnitListChildren,
     useGetOrgUnitsMapChildren,
 } from '../../hooks/useGetOrgUnit';
+import { useGetRegistryConfig } from '../../hooks/useGetRegistryConfig';
 import { OrgunitTypeRegistry, RegistryParams } from '../../types';
 import { Instances } from './components/Instances';
 import { OrgUnitPaper } from './components/OrgUnitPaper';
@@ -31,12 +33,8 @@ import { SelectedOrgUnit } from './components/selectedOrgUnit';
 import { MESSAGES } from './messages';
 
 /* STILL USING REGISTRY COMPONENTS */
-/* eslint-disable sort-imports */
-import { Placeholder } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/Placeholder';
-/* STILL USING REGISTRY COMPONENTS */
-/* eslint-enable sort-imports */
 
-import { useGetRegistryConfig } from '../../hooks/useGetRegistryConfig';
+/* STILL USING REGISTRY COMPONENTS */
 
 const styles: SxStyles = {
     breadCrumbContainer: {
@@ -85,10 +83,13 @@ export const Registry: FunctionComponent = () => {
     >(orgUnitChildrenId);
     const redirectTo = useRedirectTo();
     const redirectToReplace = useRedirectToReplace();
-
+    const { data: colors } = useGetColors(true);
     const { data: config } = useGetRegistryConfig(registrySlug);
 
-    const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId, config?.app_id);
+    const { data: orgUnit, isFetching } = useGetOrgUnit(
+        orgUnitId,
+        config?.app_id,
+    );
     const { data: selectedChildren, isFetching: isFetchingSelectedChildren } =
         useGetOrgUnit(selectedChildrenId, config?.app_id);
     const { data: orgUnitListChildren, isFetching: isFetchingListChildren } =
@@ -112,13 +113,13 @@ export const Registry: FunctionComponent = () => {
         const options =
             orgUnit?.org_unit_type?.sub_unit_types.map((subType, index) => ({
                 ...subType,
-                color: getOtChipColors(index) as string,
+                color: getColor(index, colors),
                 orgUnits: orgUnitMapChildren.filter(
                     subOrgUnit => subOrgUnit.org_unit_type_id === subType.id,
                 ),
             })) || [];
         return orderBy(options, [f => f.depth], ['asc']);
-    }, [orgUnit, orgUnitMapChildren]);
+    }, [orgUnit, orgUnitMapChildren, colors]);
 
     useSkipEffectOnMount(() => {
         setSelectedChildrenId(undefined);

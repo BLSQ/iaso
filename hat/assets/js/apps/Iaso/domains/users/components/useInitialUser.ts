@@ -1,103 +1,114 @@
-import get from 'lodash/get';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
+import get from 'lodash/get';
+import { emailRegex } from '../../../libs/utils';
 import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles';
 import { UserRole } from '../../userRoles/types/userRoles';
+import MESSAGES from '../messages';
 import { InitialUserData, UserDialogData } from '../types';
 
 export type InitialUserUtils = {
     user: UserDialogData;
     setFieldErrors: (fieldName, fieldError) => void;
     setFieldValue: (fieldName, fieldError) => void;
+    setPhoneNumber: (phoneNumber: string, countryCode: string) => void;
+    setEmail: (email: string) => void;
+    hasErrors: boolean;
 };
 
 export const useInitialUser = (
-    initialData: InitialUserData,
+    initialData: InitialUserData | undefined,
 ): InitialUserUtils => {
+    const { formatMessage } = useSafeIntl();
     const initialUser: UserDialogData = useMemo(() => {
+        const data: InitialUserData = initialData ?? {};
         return {
-            id: { value: get(initialData, 'id', null), errors: [] },
+            id: { value: get(data, 'id', null), errors: [] },
             user_name: {
-                value: get(initialData, 'user_name', ''),
+                value: get(data, 'user_name', ''),
                 errors: [],
             },
             first_name: {
-                value: get(initialData, 'first_name', ''),
+                value: get(data, 'first_name', ''),
                 errors: [],
             },
             last_name: {
-                value: get(initialData, 'last_name', ''),
+                value: get(data, 'last_name', ''),
                 errors: [],
             },
-            email: { value: get(initialData, 'email', ''), errors: [] },
+            email: { value: get(data, 'email', ''), errors: [] },
             password: { value: '', errors: [] },
             permissions: {
-                value: get(initialData, 'permissions', []),
+                value: get(data, 'permissions', []),
                 errors: [],
             },
             org_units: {
-                value: get(initialData, 'org_units', []),
+                value: get(data, 'org_units', []),
                 errors: [],
             },
             language: {
-                value: get(initialData, 'language', ''),
+                value: get(data, 'language', ''),
                 errors: [],
             },
             home_page: {
-                value: get(initialData, 'home_page', ''),
+                value: get(data, 'home_page', ''),
                 errors: [],
             },
             organization: {
-                value: get(initialData, 'organization', undefined),
+                value: get(data, 'organization', undefined),
                 errors: [],
             },
             dhis2_id: {
-                value: get(initialData, 'dhis2_id', ''),
+                value: get(data, 'dhis2_id', ''),
                 errors: [],
             },
             user_roles: {
-                value: get(initialData, 'user_roles', []),
+                value: get(data, 'user_roles', []),
                 errors: [],
             },
             user_roles_permissions: {
-                value: get(initialData, 'user_roles_permissions', []),
+                value: get(data, 'user_roles_permissions', []),
                 errors: [],
             },
             user_permissions: {
-                value: get(initialData, 'user_permissions', []),
+                value: get(data, 'user_permissions', []),
                 errors: [],
             },
             send_email_invitation: {
-                value: get(initialData, 'send_email_invitation', false),
+                value: get(data, 'send_email_invitation', false),
                 errors: [],
             },
             projects: {
-                value: get(initialData, 'projects', []).map(
-                    project => project.id,
+                value: get(data, 'projects', []).map(
+                    (project: { id: number }) => project.id,
                 ),
                 errors: [],
             },
             phone_number: {
-                value: get(initialData, 'phone_number', ''),
+                value: get(data, 'phone_number', ''),
                 errors: [],
             },
             country_code: {
-                value: get(initialData, 'country_code', ''),
+                value: get(data, 'country_code', ''),
                 errors: [],
             },
             editable_org_unit_type_ids: {
-                value: get(initialData, 'editable_org_unit_type_ids', []),
-                errors: [],
-            },
-            user_roles_editable_org_unit_type_ids: {
-                value: get(
-                    initialData,
-                    'user_roles_editable_org_unit_type_ids',
-                    [],
+                value: get(data, 'editable_org_unit_types', []).map(
+                    (orgUnitWriteType: { id: number; name: string }) =>
+                        orgUnitWriteType.id,
                 ),
                 errors: [],
             },
+            user_roles_editable_org_unit_type_ids: {
+                value: get(data, 'user_roles_editable_org_unit_type_ids', []),
+                errors: [],
+            },
             has_multiple_accounts: {
-                value: get(initialData, 'other_accounts', []).length > 0,
+                value: get(data, 'other_accounts', [])?.length > 0,
+                errors: [],
+            },
+            color: {
+                value: get(data, 'color', ''),
                 errors: [],
             },
         };
@@ -122,23 +133,16 @@ export const useInitialUser = (
             const newUser = {
                 ...user,
             };
-
-            if (fieldName === 'phone_number_obj') {
-                newUser.phone_number = {
-                    value: fieldValue.phone_number,
-                    errors: [],
-                };
-                newUser.country_code = {
-                    value: fieldValue.country_code?.countryCode,
-                    errors: [],
-                };
-            } else {
-                newUser[fieldName] = {
-                    value: fieldValue,
+            newUser[fieldName] = {
+                value: fieldValue,
+                errors: [],
+            };
+            if (fieldName === 'send_email_invitation' && fieldValue) {
+                newUser.password = {
+                    value: null,
                     errors: [],
                 };
             }
-
             if (fieldName === 'user_roles') {
                 let user_roles_editable_org_unit_type_ids: any = [];
                 const userRolesPermissions: UserRole[] = (userRoles || [])
@@ -172,11 +176,54 @@ export const useInitialUser = (
         [user, userRoles],
     );
 
+    const setPhoneNumber = useCallback(
+        (phoneNumber, countryCode) => {
+            setUser({
+                ...user,
+                phone_number: { value: phoneNumber, errors: [] },
+                country_code: { value: countryCode, errors: [] },
+            });
+        },
+        [user],
+    );
+    const setEmail = useCallback(
+        email => {
+            setUser({
+                ...user,
+                email: {
+                    value: email === '' ? undefined : email,
+                    errors:
+                        emailRegex.test(email) || email === ''
+                            ? []
+                            : [formatMessage(MESSAGES.invalidEmailFormat)],
+                },
+            });
+        },
+        [user, formatMessage],
+    );
+    const hasErrors = useMemo(() => {
+        return Object.values(user).some(field => field.errors.length > 0);
+    }, [user]);
+
     useEffect(() => {
         setUser(initialUser);
     }, [initialUser]);
 
     return useMemo(() => {
-        return { user, setFieldValue, setFieldErrors };
-    }, [setFieldErrors, setFieldValue, user]);
+        return {
+            user,
+            setFieldValue,
+            setFieldErrors,
+            setPhoneNumber,
+            setEmail,
+            hasErrors,
+        };
+    }, [
+        setFieldErrors,
+        setFieldValue,
+        user,
+        setPhoneNumber,
+        setEmail,
+        hasErrors,
+    ]);
 };

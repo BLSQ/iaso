@@ -1,10 +1,10 @@
-import { Box, Grid } from '@mui/material';
 import React, { FunctionComponent, useCallback, useState } from 'react';
+import { Box, Grid } from '@mui/material';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { SearchButton } from '../../../../components/SearchButton';
 import { OU_CHILDREN_PREFIX } from '../../../../constants/urls';
 import { useFilterState } from '../../../../hooks/useFilterState';
-import { DropdownOptions } from '../../../../types/utils';
+import { GroupDropdownOption } from '../../configuration/types';
 import { useGetOrgUnitValidationStatus } from '../../hooks/utils/useGetOrgUnitValidationStatus';
 import { useInstancesOptions } from '../../hooks/utils/useInstancesOptions';
 import { useLocationOptions } from '../../hooks/utils/useLocationOptions';
@@ -14,7 +14,7 @@ import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnitTypes/hooks/useG
 type Props = {
     params: any;
     baseUrl: string;
-    groups?: DropdownOptions<string>[];
+    groups?: GroupDropdownOption[];
 };
 
 export const OrgUnitChildrenFilters: FunctionComponent<Props> = ({

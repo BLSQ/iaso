@@ -1,0 +1,207 @@
+import React, {
+    useCallback,
+    useMemo,
+    useState,
+    FunctionComponent,
+} from 'react';
+import AddBox from '@mui/icons-material/AddBoxOutlined';
+import Public from '@mui/icons-material/Public';
+import { Button, DialogActions, Grid, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import {
+    commonStyles,
+    DHIS2Svg,
+    Table,
+    useSafeIntl,
+} from 'bluesquare-components';
+
+import { FormattedMessage } from 'react-intl';
+import { userHasAccessToModule } from 'Iaso/domains/users/utils';
+import DialogComponent from '../../../components/dialogs/DialogComponent';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import { useVersionsDialogTableColumns } from '../hooks/useVersionsDialogTableColumns';
+import MESSAGES from '../messages';
+import {
+    getSortedSourceVersions,
+    getTablePages,
+    getTableParams,
+    handleSort,
+    handleTableParamsChange,
+} from '../utils';
+import { AddNewEmptyVersion } from './AddNewEmptyVersion';
+import { AddTask } from './AddTaskComponent';
+import { ImportGeoPkgDialog } from './ImportGeoPkgDialog';
+import { DataSource } from '../types/dataSources';
+
+const useStyles = makeStyles(theme => ({
+    spanStyle: {
+        marginLeft: '4px',
+    },
+    ...commonStyles(theme),
+}));
+
+type Props = {
+    renderTrigger: ({
+        openDialog,
+    }: {
+        openDialog: () => void;
+    }) => React.JSX.Element;
+    source: DataSource;
+};
+
+export const VersionsDialog: FunctionComponent<Props> = ({
+    renderTrigger,
+    source,
+}) => {
+    const { spanStyle, ...classes } = useStyles();
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [sortBy, setSortBy] = useState('asc');
+    const [sortFocus, setSortFocus] = useState('number');
+    const dataForTable = useMemo(
+        () => source?.versions ?? [],
+        [source?.versions],
+    );
+    const hasDhis2Module = userHasAccessToModule(
+        'DHIS2_MAPPING',
+        useCurrentUser(),
+    );
+    const { formatMessage } = useSafeIntl();
+
+    const columns = useVersionsDialogTableColumns(source, hasDhis2Module);
+
+    const formatDataForTable = useCallback(
+        (tableData, sortFunc) =>
+            tableData
+                .sort(sortFunc)
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
+        [page, rowsPerPage],
+    );
+
+    const sortedData = useMemo(() => {
+        return getSortedSourceVersions(
+            dataForTable,
+            sortFocus,
+            sortBy,
+            formatDataForTable,
+            formatMessage,
+        );
+    }, [dataForTable, sortFocus, sortBy, formatDataForTable, formatMessage]);
+
+    const handleSortFunction = useCallback(
+        focus => {
+            handleSort(focus, sortFocus, sortBy, setSortFocus, setSortBy);
+        },
+        [sortBy, sortFocus],
+    );
+
+    const handleTableParamsChangeFunction = tableParams => {
+        handleTableParamsChange(
+            tableParams,
+            handleSortFunction,
+            setRowsPerPage,
+            setPage,
+        );
+    };
+
+    const titleMessage = (
+        <FormattedMessage
+            id="iaso.versionsDialog.label.dialogVersions"
+            defaultMessage="Versions on source: {source}"
+            values={{
+                source: source.name,
+            }}
+        />
+    );
+    const params = useMemo(() => {
+        return getTableParams(rowsPerPage, page);
+    }, [page, rowsPerPage]);
+
+    const pages = useMemo(() => {
+        return getTablePages(dataForTable, rowsPerPage);
+    }, [dataForTable, rowsPerPage]);
+
+    return (
+        <DialogComponent
+            dataTestId="versions-dialog-modal"
+            renderTrigger={renderTrigger}
+            titleMessage={titleMessage}
+            maxWidth="md"
+            renderActions={({ closeDialog }) => (
+                <DialogActions className={classes.action}>
+                    <Button onClick={closeDialog} color="primary">
+                        {formatMessage(MESSAGES.close)}
+                    </Button>
+                </DialogActions>
+            )}
+        >
+            <Table
+                data={sortedData}
+                columns={columns}
+                params={params}
+                page={page}
+                pages={pages}
+                elevation={0}
+                count={source?.versions.length ?? 0}
+                onTableParamsChange={handleTableParamsChangeFunction}
+            />
+            {source.versions.length === 0 && (
+                <Typography style={{ padding: 5 }}>
+                    <FormattedMessage
+                        id="iaso.versionsDialog.label.datasource.noVersion"
+                        defaultMessage="This datasource is empty, please create a versions using one of the buttons below"
+                    />
+                </Typography>
+            )}
+            <Grid item>
+                {hasDhis2Module && (
+                    <AddTask
+                        renderTrigger={({ openDialog }) => (
+                            <Button onClick={openDialog}>
+                                <DHIS2Svg />
+                                <span className={spanStyle}>
+                                    <FormattedMessage
+                                        id="iaso.versionsDialog.label.newVersionDhis2"
+                                        defaultMessage="New version from DHIS2"
+                                    />
+                                </span>
+                            </Button>
+                        )}
+                        sourceId={source.id}
+                        sourceCredentials={source.credentials ?? {}}
+                    />
+                )}
+                <ImportGeoPkgDialog
+                    renderTrigger={({ openDialog }) => (
+                        <Button onClick={openDialog}>
+                            <Public />
+                            <span className={spanStyle}>
+                                <FormattedMessage
+                                    id="iaso.versionsDialog.label.newVersionGpkg"
+                                    defaultMessage="New version from a Geopackage"
+                                />
+                            </span>
+                        </Button>
+                    )}
+                    sourceId={source.id}
+                    sourceName={source.name}
+                />
+
+                <AddNewEmptyVersion
+                    renderTrigger={({ openDialog }) => (
+                        <Button onClick={openDialog}>
+                            <AddBox />
+                            <span className={spanStyle}>
+                                <FormattedMessage
+                                    id="iaso.versionsDialog.label.newEmptyVersion"
+                                    defaultMessage="New empty version"
+                                />
+                            </span>
+                        </Button>
+                    )}
+                    sourceId={source.id}
+                />
+            </Grid>
+        </DialogComponent>
+    );
+};

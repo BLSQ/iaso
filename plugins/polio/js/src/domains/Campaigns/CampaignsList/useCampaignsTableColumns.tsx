@@ -2,29 +2,29 @@ import React, { useMemo } from 'react';
 import { Tooltip } from '@mui/material';
 import { Column, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
+import { LinkTo } from 'Iaso/components/nav/LinkTo';
 import { DeleteModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DeleteRestoreModals/DeleteModal';
 import { RestoreModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DeleteRestoreModals/RestoreModal';
 import MESSAGES from '../../../constants/messages';
 import { CampaignListItem } from '../../../constants/types';
-import { EditCampaignModal } from '../MainDialog/EditCampaignModal';
+import { baseUrls } from '../../../constants/urls';
+import { CampaignCategoryCell } from './CampaignCategoryCell';
 
 type Args = {
     showOnlyDeleted: boolean;
     handleClickRestoreRow: (value: number) => void;
     handleClickDeleteRow: (value: number) => void;
-    params: any;
 };
 
 export const useCampaignsTableColumns = ({
     showOnlyDeleted,
     handleClickRestoreRow,
     handleClickDeleteRow,
-    params,
 }: Args): Column[] => {
     const { formatMessage } = useSafeIntl();
 
     return useMemo(() => {
-        const cols = [
+        const cols: Column[] = [
             {
                 Header: formatMessage(MESSAGES.country),
                 id: 'country__name',
@@ -80,31 +80,12 @@ export const useCampaignsTableColumns = ({
                 Header: formatMessage(MESSAGES.campaignCategory),
                 accessor: 'campaign_category',
                 sortable: false,
-                Cell: ({
-                    row: { original },
-                }: {
-                    row: { original: CampaignListItem };
-                }): string => {
-                    let campaignCategory;
-                    if (original.on_hold) {
-                        campaignCategory = original.is_preventive
-                            ? `${formatMessage(MESSAGES.campaignOnHold)} - ${formatMessage(MESSAGES.preventiveShort)}`
-                            : formatMessage(MESSAGES.campaignOnHold);
-                    } else if (original.is_test) {
-                        campaignCategory = original.is_preventive
-                            ? `${formatMessage(MESSAGES.testCampaign)} - ${formatMessage(MESSAGES.preventiveShort)}`
-                            : formatMessage(MESSAGES.testCampaign);
-                    } else {
-                        campaignCategory = original.is_preventive
-                            ? formatMessage(MESSAGES.preventiveShort)
-                            : formatMessage(MESSAGES.regular);
-                    }
-                    return campaignCategory;
-                },
+                Cell: CampaignCategoryCell,
             },
             {
                 Header: formatMessage(MESSAGES.status),
                 accessor: 'general_status',
+                sortable: false,
             },
             {
                 Header: formatMessage(MESSAGES.actions),
@@ -114,10 +95,13 @@ export const useCampaignsTableColumns = ({
                     <>
                         {!showOnlyDeleted && (
                             <>
-                                <EditCampaignModal
-                                    params={params}
-                                    campaignId={settings.value}
+                                <LinkTo
+                                    condition
+                                    useIcon
+                                    icon="edit"
+                                    url={`/${baseUrls.campaignDetails}/campaignId/${settings.value}`}
                                 />
+
                                 <DeleteModal
                                     type="icon"
                                     onConfirm={() =>
@@ -158,7 +142,6 @@ export const useCampaignsTableColumns = ({
     }, [
         formatMessage,
         showOnlyDeleted,
-        params,
         handleClickDeleteRow,
         handleClickRestoreRow,
     ]);

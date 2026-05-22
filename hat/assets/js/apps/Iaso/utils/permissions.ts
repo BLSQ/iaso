@@ -1,3 +1,4 @@
+const ACCOUNT_MANAGEMENT = 'iaso_account_management';
 const COMPLETENESS = 'iaso_completeness';
 const COMPLETENESS_STATS = 'iaso_completeness_stats';
 const DATA_DEVICES = 'iaso_data_devices';
@@ -27,12 +28,19 @@ const POLIO_CHRONOGRAM_RESTRICTED_WRITE =
     'iaso_polio_chronogram_restricted_write';
 const POLIO_SUPPLY_CHAIN_READ = 'iaso_polio_vaccine_supply_chain_read';
 const POLIO_SUPPLY_CHAIN_WRITE = 'iaso_polio_vaccine_supply_chain_write';
+const POLIO_SUPPLY_CHAIN_READ_ONLY =
+    'iaso_polio_vaccine_supply_chain_read_only';
 const POLIO_VACCINE_STOCK_READ = 'iaso_polio_vaccine_stock_management_read';
+const POLIO_VACCINE_STOCK_READ_ONLY =
+    'iaso_polio_vaccine_stock_management_read_only';
 const POLIO_VACCINE_STOCK_WRITE = 'iaso_polio_vaccine_stock_management_write';
+
 const POLIO_VACCINE_STOCK_EARMARKS_NONADMIN =
     'iaso_polio_vaccine_stock_earmarks_nonadmin';
 const POLIO_VACCINE_STOCK_EARMARKS_ADMIN =
     'iaso_polio_vaccine_stock_earmarks_admin';
+const POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY =
+    'iaso_polio_vaccine_stock_earmarks_read_only';
 const PROJECTS = 'iaso_projects';
 const REGISTRY_WRITE = 'iaso_registry_write';
 const REGISTRY_READ = 'iaso_registry_read';
@@ -54,8 +62,13 @@ const WORKFLOWS = 'iaso_workflows';
 const MODULES = 'iaso_modules';
 const POLIO_NOTIFICATIONS = 'iaso_polio_notifications';
 const PAYMENTS = 'iaso_payments';
+const STOCK_MANAGEMENT = 'iaso_stock_management';
+const METRIC_TYPES = 'iaso_metric_types';
+const VALIDATION_WORKFLOWS = 'iaso_validation_workflows';
+const PIPELINE_MANAGEMENT = 'iaso_pipeline_management';
 
 export {
+    ACCOUNT_MANAGEMENT,
     COMPLETENESS,
     COMPLETENESS_STATS,
     DATA_DEVICES,
@@ -68,6 +81,7 @@ export {
     FORMS_STATS,
     LINKS,
     MAPPINGS,
+    METRIC_TYPES,
     MOBILE_APP_OFFLINE_SETUP,
     MODULES,
     ORG_UNITS,
@@ -82,23 +96,28 @@ export {
     PAYMENTS,
     PLANNING_READ,
     PLANNING_WRITE,
+    PIPELINE_MANAGEMENT,
     POLIO,
     POLIO_CHRONOGRAM,
     POLIO_CHRONOGRAM_RESTRICTED_WRITE,
     POLIO_CONFIG,
     POLIO_NOTIFICATIONS,
     POLIO_SUPPLY_CHAIN_READ,
+    POLIO_SUPPLY_CHAIN_READ_ONLY,
     POLIO_SUPPLY_CHAIN_WRITE,
     POLIO_VACCINE_STOCK_READ,
+    POLIO_VACCINE_STOCK_READ_ONLY,
     POLIO_VACCINE_STOCK_WRITE,
     POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
     POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
+    POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY,
     PROJECTS,
     REGISTRY_READ,
     REGISTRY_WRITE,
     SOURCES,
     SOURCES_CAN_CHANGE_DEFAULT_VERSION,
     SOURCE_WRITE,
+    STOCK_MANAGEMENT,
     STORAGES,
     SUBMISSIONS,
     SUBMISSIONS_UPDATE,
@@ -106,5 +125,6 @@ export {
     USERS_ADMIN,
     USERS_MANAGEMENT,
     USER_ROLES,
+    VALIDATION_WORKFLOWS,
     WORKFLOWS,
 };

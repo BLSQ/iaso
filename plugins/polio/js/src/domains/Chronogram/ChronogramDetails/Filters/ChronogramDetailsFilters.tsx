@@ -3,18 +3,18 @@ import { Box, Grid } from '@mui/material';
 
 import { useSafeIntl } from 'bluesquare-components';
 
-import * as Permission from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
-import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
-import { FilterButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
+import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { SearchButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/SearchButton';
 import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
+import * as Permission from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 
-import MESSAGES from '../messages';
+import { baseUrls } from '../../../../constants/urls';
 import { Chronogram } from '../../Chronogram/types';
 import { ChronogramTaskMetaData } from '../../types';
-import { ChronogramTasksParams } from '../types';
+import MESSAGES from '../messages';
 import { CreateChronogramTaskModal } from '../Modals/ChronogramTaskCreateEditModal';
-import { baseUrls } from '../../../../constants/urls';
+import { ChronogramTasksParams } from '../types';
 
 type Props = {
     params: ChronogramTasksParams;
@@ -62,9 +62,9 @@ export const ChronogramDetailsFilters: FunctionComponent<Props> = ({
             </Grid>
             <Grid container item justifyContent="flex-end">
                 <Box mt={2}>
-                    <FilterButton
+                    <SearchButton
                         disabled={!filtersUpdated}
-                        onFilter={handleSearch}
+                        onSearch={handleSearch}
                     />
                 </Box>
             </Grid>

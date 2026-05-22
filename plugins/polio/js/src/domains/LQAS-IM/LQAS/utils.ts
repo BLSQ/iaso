@@ -1,23 +1,28 @@
 import { IntlFormatMessage } from 'bluesquare-components';
 import MESSAGES from '../../../constants/messages';
 import {
-    LqasImDistrictDataWithNameAndRegion,
-    ConvertedLqasImData,
-    LqasImCampaign,
-    LqasImDistrictData,
-} from '../../../constants/types';
-import {
     OK_COLOR,
     FAIL_COLOR,
     MODERATE_COLOR,
     POOR_COLOR,
 } from '../../../styles/constants';
 import { makeLegendItem } from '../../../utils';
+import { GraphTooltipFormatter } from '../shared/charts/PercentageBarChart/types';
+import { HASHED_BACKGROUND, IN_SCOPE } from '../shared/constants';
 import {
     accessArrayRound,
     accessDictRound,
     convertStatToPercent,
 } from '../shared/LqasIm';
+import {
+    ConvertedLqasImData,
+    LqasDataForChart,
+    LQASDistrictStatus,
+    LqasImCampaign,
+    LqasImDistrictData,
+    LqasImDistrictDataWithNameAndRegion,
+    LqasImLegendItem,
+} from '../types';
 import {
     LQAS_PASS,
     LQAS_POOR,
@@ -26,34 +31,22 @@ import {
     LQAS_UNDERSAMPLED,
     LQAS_VERY_POOR,
 } from './constants';
-import { HASHED_BACKGROUND, IN_SCOPE } from '../shared/constants';
 
 /** @deprecated
  *
  * The API returns the LQAS district status directly.
  * This method is only used to avoid breaking a map component shared with IM
  */
-export const determineStatusForDistrict = district => {
-    if (!district) return null;
+export const determineStatusForDistrict = (district): LQASDistrictStatus => {
     return district.status;
 };
 
 export const getLqasStatsForRound = (
     lqasData: Record<string, ConvertedLqasImData>,
     campaign: string | undefined,
-    round: number,
-): (
-    | '1lqasOK'
-    | '3lqaspoor'
-    | '3lqasmoderate'
-    | '2lqasDisqualified'
-    | '3lqasundersampled'
-    | '3lqasoversampled'
-    | '3lqasverypoor'
-    | 'inScope'
-    | null
-)[][] => {
-    if (!campaign || !lqasData[campaign]) return [[], [], [], []];
+    round: number | undefined,
+): (LQASDistrictStatus | null)[][] => {
+    if (!campaign || !lqasData[campaign] || !round) return [[], [], [], []];
     const totalEvaluated = accessArrayRound(lqasData[campaign], round).map(
         district => ({
             ...district,
@@ -82,13 +75,8 @@ export const makeLqasMapLegendItems =
     (
         lqasData: Record<string, ConvertedLqasImData>,
         campaign: string | undefined,
-        round: number,
-    ): {
-        label: string;
-        value: string;
-        color?: string;
-        background?: string;
-    }[] => {
+        round: number | undefined,
+    ): LqasImLegendItem[] => {
         const [passed, moderate, poor, failed, oversampled, undersampled] =
             getLqasStatsForRound(lqasData, campaign, round);
         const noValidDataCount =
@@ -130,7 +118,22 @@ export const makeLqasMapLegendItems =
         ];
     };
 
-export const getLqasStatsWithStatus = ({ data, campaign, round }) => {
+type GetLqasStatsWithStatusArgs = {
+    data: Record<string, ConvertedLqasImData>;
+    campaign: string;
+    round: number | 'latest' | undefined;
+};
+
+type GetLqasStatsWithStatusResult = Array<
+    LqasImDistrictDataWithNameAndRegion & {
+        status: LQASDistrictStatus;
+    }
+>;
+export const getLqasStatsWithStatus = ({
+    data,
+    campaign,
+    round,
+}: GetLqasStatsWithStatusArgs): GetLqasStatsWithStatusResult => {
     if (!data[campaign]) return [];
     return [...accessArrayRound(data[campaign], round)].map(district => ({
         ...district,
@@ -138,13 +141,25 @@ export const getLqasStatsWithStatus = ({ data, campaign, round }) => {
     }));
 };
 
-export const formatLqasDataForChart = ({ data, campaign, round, regions }) => {
-    const dataForRound = getLqasStatsWithStatus({
+type FormatLqasDataForChartArgs = {
+    data: Record<string, ConvertedLqasImData>;
+    campaign: string;
+    round: number | 'latest' | undefined;
+    regions?: { name: string; id: number }[];
+};
+
+export const formatLqasDataForChart = ({
+    data,
+    campaign,
+    round,
+    regions = [],
+}: FormatLqasDataForChartArgs): LqasDataForChart[] => {
+    const dataForRound: GetLqasStatsWithStatusResult = getLqasStatsWithStatus({
         data,
         campaign,
         round,
     });
-    const regionsList: any[] = [];
+    const regionsList: LqasDataForChart[] = [];
     regions.forEach(region => {
         const regionData = dataForRound.filter(
             district => district.region_name === region.name,
@@ -168,20 +183,22 @@ export const formatLqasDataForChart = ({ data, campaign, round, regions }) => {
             });
         }
     });
-    return regionsList.sort(
-        (a, b) => parseFloat(b.value) - parseFloat(a.value),
-    );
+    return regionsList.sort((a, b) => b.value - a.value);
 };
 
 export const lqasChartTooltipFormatter =
-    formatMessage => (_value, _name, props) => {
-        // eslint-disable-next-line react/prop-types
+    (formatMessage: IntlFormatMessage): GraphTooltipFormatter =>
+    (
+        _value: any,
+        _name: any,
+        props: { payload: { passing: number; found: number } },
+    ): [string, string] => {
         const ratio = `${props.payload.passing}/${props.payload.found}`;
         return [ratio, formatMessage(MESSAGES.passing)];
     };
 
 export const sumChildrenCheckedLqas = (
-    round: number,
+    round: number | undefined,
     data?: Record<string, LqasImCampaign>,
     campaign?: string,
 ): number => {
@@ -197,7 +214,7 @@ export const sumChildrenCheckedLqas = (
 export const makeDataForTable = (
     data: Record<string, ConvertedLqasImData>,
     campaign: string,
-    round: number,
+    round: number | undefined,
 ): LqasImDistrictDataWithNameAndRegion[] => {
     if (!data || !campaign || !data[campaign]) return [];
     return accessArrayRound(data[campaign], round);

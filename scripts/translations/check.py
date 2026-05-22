@@ -51,6 +51,10 @@ def check_po_file(po_path):
             in_msgid = False
             in_msgstr = True
             current_msgstr = [line[8:-1]]
+        elif line.startswith(('msgstr[0] "', 'msgstr[1] "')):
+            in_msgid = False
+            in_msgstr = True
+            current_msgstr = [line[11:-1]]
         elif line.startswith('"') and (in_msgid or in_msgstr):
             content = line[1:-1]
             if in_msgid:

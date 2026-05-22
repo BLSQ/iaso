@@ -1,10 +1,11 @@
 from django.contrib.auth.password_validation import validate_password
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission
 from iaso.api.tasks.serializers import TaskSerializer
+from iaso.permissions.core_permissions import CORE_MOBILE_APP_OFFLINE_SETUP_PERMISSION
 from iaso.tasks.export_mobile_app_setup_for_user import export_mobile_app_setup_for_user
 
 
@@ -17,12 +18,13 @@ class ExportMobileSetupSerializer(serializers.Serializer):
         validate_password(password)
 
 
+@extend_schema(tags=["Export mobile setup", "Tasks"])
 class ExportMobileSetupViewSet(viewsets.ViewSet):
     """Export mobile app setup"""
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission(permission.MOBILE_APP_OFFLINE_SETUP),
+        HasPermission(CORE_MOBILE_APP_OFFLINE_SETUP_PERMISSION),
     ]
 
     def create(self, request):

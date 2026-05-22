@@ -1,9 +1,11 @@
-import numpy as np
-import pandas as pd
-
 from hat.audit import models as am
 from iaso import models as m
 from iaso.models.payments import PaymentStatuses
+from iaso.permissions.core_permissions import (
+    CORE_DATA_TASKS_PERMISSION,
+    CORE_PAYMENTS_PERMISSION,
+    CORE_SOURCE_PERMISSION,
+)
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
@@ -20,10 +22,14 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         account = m.Account.objects.create(name="Account", default_version=version)
         # The data souces and data tasks permissions are needed because we use the task API for task related assertions
         cls.user = cls.create_user_with_profile(
-            username="user", permissions=["iaso_payments", "iaso_sources", "iaso_data_tasks"], account=account
+            username="user",
+            permissions=[CORE_PAYMENTS_PERMISSION, CORE_SOURCE_PERMISSION, CORE_DATA_TASKS_PERMISSION],
+            account=account,
         )
         cls.geo_limited_user = cls.create_user_with_profile(
-            username="other_user", permissions=["iaso_payments", "iaso_sources", "iaso_data_tasks"], account=account
+            username="other_user",
+            permissions=[CORE_PAYMENTS_PERMISSION, CORE_SOURCE_PERMISSION, CORE_DATA_TASKS_PERMISSION],
+            account=account,
         )
         cls.payment_beneficiary = cls.create_user_with_profile(
             username="payment_beneficiary", first_name="John", last_name="Doe", account=account
@@ -95,14 +101,39 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
 
     def test_create_payment_lot(self):
         self.client.force_authenticate(self.user)
-        response = self.client.post(
-            "/api/payments/lots/", {"name": "New Payment Lot", "potential_payments": [self.potential_payment.pk]}
-        )
 
+        # Invalid format for `potential_payments`.
+        data = {"name": "New Payment Lot", "potential_payments": "foo"}
+        response = self.client.post("/api/payments/lots/", data, format="json")
+        self.assertJSONResponse(response, 400)
+        self.assertEqual(response.json(), ["Expecting `potential_payments` to be a list of IDs."])
+
+        # No `potential_payments`.
+        data = {"name": "New Payment Lot"}
+        response = self.client.post("/api/payments/lots/", data, format="json")
+        self.assertJSONResponse(response, 400)
+        self.assertEqual(response.json(), ["At least one potential payment required."])
+
+        # `potential_payments` is a list of multiple IDs.
+        potential_payment_ids = [self.potential_payment.pk, self.potential_payment_with_task.pk]
+        data = {"name": "New Payment Lot", "potential_payments": potential_payment_ids}
+        response = self.client.post("/api/payments/lots/", data, format="json")
         self.assertJSONResponse(response, 201)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="create_payment_lot")
         self.assertEqual(task.launcher, self.user)
+        self.assertCountEqual(task.params["kwargs"]["potential_payment_ids"], potential_payment_ids)
+        self.runAndValidateTask(task, "ERRORED")
+
+        # `potential_payments` is a list containing only one ID.
+        potential_payment_ids = [self.potential_payment.pk]
+        data = {"name": "New Payment Lot", "potential_payments": potential_payment_ids}
+        response = self.client.post("/api/payments/lots/", data, format="json")
+        self.assertJSONResponse(response, 201)
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="create_payment_lot")
+        self.assertEqual(task.launcher, self.user)
+        self.assertCountEqual(task.params["kwargs"]["potential_payment_ids"], potential_payment_ids)
 
         # Run the task
         self.runAndValidateTask(task, "SUCCESS")
@@ -133,7 +164,9 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
 
     def test_update_payment_lot_mark_payments_as_sent(self):
         self.client.force_authenticate(self.user)
-        response = self.client.patch(f"/api/payments/lots/{self.payment_lot.id}/?mark_payments_as_sent=true")
+        response = self.client.patch(
+            f"/api/payments/lots/{self.payment_lot.id}/?mark_payments_as_sent=true", format="json"
+        )
         self.assertJSONResponse(response, 201)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="mark_payments_as_read")
@@ -152,13 +185,13 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
 
     def test_retrieve_payment_lot(self):
         self.client.force_authenticate(self.user)
-        response = self.client.get(f"/api/payments/lots/{self.payment_lot.id}/")
+        response = self.client.get(f"/api/payments/lots/{self.payment_lot.id}/", format="json")
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.data["name"], self.payment_lot.name)
 
     def test_retrieve_payment_lot_to_csv(self):
         self.client.force_authenticate(self.user)
-        response = self.client.get(f"/api/payments/lots/{self.payment_lot.id}/?csv=true")
+        response = self.client.get(f"/api/payments/lots/{self.payment_lot.id}/?csv=true", format="json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/csv")
         response_csv = response.getvalue().decode("utf-8")
@@ -174,16 +207,10 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         )
         extra_change_request.new_reference_instances.set([self.instance1, self.instance2, self.instance3])
 
-        with self.assertNumQueries(10):
-            response = self.client.get(f"/api/payments/lots/{self.payment_lot.id}/?xlsx=true")
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(
-                response["Content-Type"], "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
+        with self.assertNumQueries(11):
+            response = self.client.get(f"/api/payments/lots/{self.payment_lot.id}/?xlsx=true", format="json")
+            excel_columns, excel_data = self.assertXlsxFileResponse(response)
 
-        excel_data = pd.read_excel(response.content, engine="openpyxl")
-
-        excel_columns = list(excel_data.columns.ravel())
         self.assertEqual(
             excel_columns,
             [
@@ -205,9 +232,8 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
             ],
         )
 
-        data_dict = excel_data.replace({np.nan: None}).to_dict()
         self.assertDictEqual(
-            data_dict,
+            excel_data,
             {
                 "ID": {
                     0: self.second_payment.id,
@@ -281,6 +307,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
                 "name": "New Payment Lot",
                 "potential_payments": [self.potential_payment.pk, self.potential_payment_with_task.pk],
             },
+            format="json",
         )
 
         self.assertJSONResponse(response, 201)
@@ -301,6 +328,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
                 "name": "New Payment Lot",
                 "potential_payments": [self.potential_payment.pk, self.potential_payment_with_task.pk + 100],
             },
+            format="json",
         )
 
         self.assertJSONResponse(response, 201)
@@ -313,9 +341,90 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         # No new payment lot created, we find only the one from setup
         self.assertEqual(m.PaymentLot.objects.count(), 1)
 
+    def test_list_payment_lots_num_queries_constant(self):
+        self.client.force_authenticate(self.user)
+
+        self.client.get("/api/payments/lots/", format="json")
+
+        with self.assertNumQueries(6):
+            response = self.client.get("/api/payments/lots/", format="json")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.data["results"]), 1)
+
+        # Include a task on the extra lot — catches the task FK N+1 (null task skips the query).
+        extra_task = m.Task.objects.create(launcher=self.user, account=self.user.iaso_profile.account, status="SUCCESS")
+        extra_lot = m.PaymentLot.objects.create(
+            name="Extra lot", created_by=self.user, updated_by=self.user, task=extra_task
+        )
+        extra_payment = m.Payment.objects.create(
+            user=self.payment_beneficiary,
+            payment_lot=extra_lot,
+            status=PaymentStatuses.PENDING,
+            created_by=self.user,
+        )
+        m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            new_name="Extra place",
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+            payment=extra_payment,
+        )
+
+        # Same count with 2 lots — proves O(1), not O(N)
+        with self.assertNumQueries(6):
+            response = self.client.get("/api/payments/lots/", format="json")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.data["results"]), 2)
+
+    def test_list_payment_lots_response_structure(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get("/api/payments/lots/", format="json")
+        self.assertJSONResponse(response, 200)
+        self.assertIn("count", response.data)
+
+        results = response.data["results"]
+        self.assertEqual(len(results), 1)
+        lot = results[0]
+
+        self.assertEqual(lot["name"], "Test Payment Lot")
+        self.assertEqual(lot["status"], "new")
+        self.assertIsNone(lot["comment"])
+        self.assertIsNone(lot["task"])
+        self.assertIn("id", lot)
+        self.assertIn("created_at", lot)
+        self.assertIn("can_see_change_requests", lot)
+
+        created_by = lot["created_by"]
+        self.assertEqual(created_by["username"], "user")
+        self.assertIn("id", created_by)
+        self.assertIn("first_name", created_by)
+        self.assertIn("last_name", created_by)
+        self.assertIn("phone_number", created_by)
+
+        payments = lot["payments"]
+        self.assertEqual(len(payments), 2)
+        payment = payments[0]
+        self.assertEqual(payment["status"], "pending")
+        self.assertIn("id", payment)
+        self.assertIn("can_see_change_requests", payment)
+
+        user = payment["user"]
+        self.assertEqual(user["username"], "payment_beneficiary")
+        self.assertEqual(user["first_name"], "John")
+        self.assertEqual(user["last_name"], "Doe")
+        self.assertIn("id", user)
+        self.assertIn("phone_number", user)
+
+        change_requests = payment["change_requests"]
+        self.assertEqual(len(change_requests), 1)
+        change_request = change_requests[0]
+        self.assertEqual(change_request["org_unit_id"], self.org_unit.id)
+        self.assertIn("id", change_request)
+        self.assertIn("uuid", change_request)
+        self.assertIn("can_see_change_request", change_request)
+
     def test_geo_limited_user_cannot_see_change_requests_not_in_org_units(self):
         self.client.force_authenticate(self.geo_limited_user)
-        response = self.client.get("/api/payments/lots/")
+        response = self.client.get("/api/payments/lots/", format="json")
         self.assertJSONResponse(response, 200)
         data = response.json()
         results = data["results"]

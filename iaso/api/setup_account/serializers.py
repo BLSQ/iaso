@@ -1,0 +1,277 @@
+import logging
+
+import django.core.exceptions as django_exceptions
+
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
+from django.contrib.auth.password_validation import validate_password
+from django.core.files import File
+from django.utils.translation import gettext as _
+from rest_framework import serializers
+
+from hat.menupermissions.constants import DEFAULT_ACCOUNT_FEATURE_FLAGS
+from iaso.api.profiles.views import ProfilesViewSet
+from iaso.models import (
+    Account,
+    AccountFeatureFlag,
+    DataSource,
+    FeatureFlag,
+    Form,
+    FormVersion,
+    OrgUnit,
+    OrgUnitType,
+    Profile,
+    Project,
+    ProjectFeatureFlags,
+    SourceVersion,
+)
+from iaso.modules import MODULES
+from iaso.odk import parsing
+from iaso.utils import parse_json_field
+
+
+logger = logging.getLogger(__name__)
+
+
+# noinspection PyMethodMayBeStatic
+class SetupAccountSerializer(serializers.Serializer):
+    """Set up an account with a first user and the appropriate sources"""
+
+    account_name = serializers.CharField(required=True)
+    user_username = serializers.CharField(max_length=150, required=True)
+    user_first_name = serializers.CharField(max_length=30, required=False)
+    user_last_name = serializers.CharField(max_length=150, required=False)
+    user_email = serializers.EmailField(required=False)
+    password = serializers.CharField(required=False)
+    user_manual_path = serializers.CharField(required=False)
+    email_invitation = serializers.BooleanField(required=False, default=False)
+    language = serializers.ChoiceField(
+        choices=settings.LANGUAGES,
+        required=False,
+        default="en",
+        help_text="Language for the user interface and email invitations",
+    )
+    modules = serializers.JSONField(required=True, initial=["DATA_COLLECTION_FORMS"])  # type: ignore
+    feature_flags = serializers.JSONField(
+        required=False, default=DEFAULT_ACCOUNT_FEATURE_FLAGS, initial=DEFAULT_ACCOUNT_FEATURE_FLAGS
+    )
+    create_main_org_unit = serializers.BooleanField(
+        required=False,
+        default=True,
+        help_text="Whether to create a main org unit and org unit type during account setup",
+    )
+    create_demo_form = serializers.BooleanField(
+        required=False,
+        default=True,
+        help_text="Whether to create a demo form during account setup",
+    )
+    enforce_password_validation = serializers.BooleanField(
+        required=False,
+        default=True,
+        help_text="Whether to validate passwords with default Django validation for all new users",
+    )
+    created_account_id = serializers.IntegerField(read_only=True)
+
+    def validate_account_name(self, value):
+        if Account.objects.filter(name=value).exists():
+            raise serializers.ValidationError("account_name_already_exist")
+        if DataSource.objects.filter(name=value).exists():
+            raise serializers.ValidationError("data_source_name_already_exist")
+        return value
+
+    def validate_user_username(self, value):
+        if get_user_model().objects.filter(username=value).exists():
+            raise serializers.ValidationError("user_name_already_exist")
+        return value
+
+    def validate_user_email(self, value):
+        if value and get_user_model().objects.filter(email=value).exists():
+            raise serializers.ValidationError("user_email_already_exist")
+        return value
+
+    def validate(self, data):
+        password = data.get("password", "")
+        email_invitation = data.get("email_invitation", False)
+        user_email = data.get("user_email", "")
+
+        # Parse JSON fields that might come as strings
+        parse_json_field(data, "modules", [])
+        parse_json_field(data, "feature_flags", [])
+
+        # If email invitation is True, email is required
+        if email_invitation and not user_email:
+            raise serializers.ValidationError({"user_email": _("Email is required when email_invitation is True")})
+
+        # If email invitation is False, password is required
+        if not email_invitation and not password:
+            raise serializers.ValidationError({"password": _("Password is required when email_invitation is False")})
+
+        return data
+
+    def validate_modules(self, modules):
+        if len(modules) == 0:
+            raise serializers.ValidationError("modules_empty")
+        module_codenames = [module.codename for module in MODULES]
+        for module_codename in modules:
+            if module_codename not in module_codenames:
+                raise serializers.ValidationError("module_not_exist")
+        return modules
+
+    def validate_feature_flags(self, feature_flags):
+        if not feature_flags or len(feature_flags) == 0:
+            raise serializers.ValidationError("feature_flags_empty")
+        default_account_feature_flags = AccountFeatureFlag.objects.all()
+        account_feature_flags = [feature_flag.code for feature_flag in default_account_feature_flags]
+        for feature_flag in feature_flags:
+            if feature_flag not in account_feature_flags:
+                raise serializers.ValidationError("invalid_account_feature_flag")
+        return feature_flags
+
+    def create(self, validated_data):
+        data_source = DataSource.objects.create(name=validated_data["account_name"], description="via setup_account")
+        source_version = SourceVersion.objects.create(data_source=data_source, number=1)
+
+        # Create user with or without password based on email invitation
+        email_invitation = validated_data.get("email_invitation", False)
+        password = validated_data.get("password", "")
+
+        if email_invitation and not password:
+            # Create user without password when sending email invitation only
+            user = get_user_model().objects.create_user(
+                username=validated_data["user_username"],
+                password=None,  # Will be set later via email invitation
+                first_name=validated_data.get("user_first_name", ""),
+                last_name=validated_data.get("user_last_name", ""),
+                email=validated_data.get("user_email", ""),
+            )
+            user.set_unusable_password()
+            user.save()
+        else:
+            # Create user with password (either password only or password + email invitation)
+            user = get_user_model().objects.create_user(
+                username=validated_data["user_username"],
+                password=password,
+                first_name=validated_data.get("user_first_name", ""),
+                last_name=validated_data.get("user_last_name", ""),
+                email=validated_data.get("user_email", ""),
+            )
+
+        module_codenames = [module.codename for module in MODULES]
+
+        account_modules = []
+        for module in validated_data.get("modules"):
+            if module in module_codenames and module not in account_modules:
+                account_modules.append(module)
+
+        if "DEFAULT" not in account_modules:
+            account_modules.append("DEFAULT")
+
+        account = Account.objects.create(
+            name=validated_data["account_name"],
+            default_version=source_version,
+            user_manual_path=validated_data.get("user_manual_path"),
+            modules=account_modules,
+            enforce_password_validation=validated_data.get("enforce_password_validation", True),
+        )
+        account.feature_flags.set(validated_data.get("feature_flags"))
+
+        if account.enforce_password_validation and password:
+            try:
+                if account.enforce_password_validation:
+                    validate_password(password=password, user=user)
+            except django_exceptions.ValidationError as e:
+                raise serializers.ValidationError({"password": e.messages})
+
+        # Create a setup_account project with an app_id represented by the account name
+        app_id = validated_data["account_name"].replace(" ", ".").replace("-", ".")
+
+        initial_project = Project.objects.create(name="Main Project", account=account, app_id=app_id)
+
+        # Add project feature flags
+        codes = [FeatureFlag.REQUIRE_AUTHENTICATION, FeatureFlag.FORMS_AUTO_UPLOAD, FeatureFlag.TAKE_GPS_ON_FORM]
+        feature_flags = FeatureFlag.objects.filter(code__in=codes)
+
+        found_codes = [ff.code for ff in feature_flags]
+        missing_codes = [code for code in codes if code not in found_codes]
+        if missing_codes:
+            logger.warning(f"Could not find the following feature flags: {missing_codes}")
+
+        project_feature_flags = [
+            ProjectFeatureFlags(project=initial_project, featureflag=feature_flag, configuration=None)
+            for feature_flag in feature_flags
+        ]
+        ProjectFeatureFlags.objects.bulk_create(project_feature_flags)
+
+        logger.info(f"Added project feature flags to project {initial_project.name}")
+
+        # Link data source to projects and source version
+        data_source.projects.set([initial_project])
+        data_source.default_version = source_version
+        data_source.save()
+
+        # Create a main org unit type and org unit if requested
+        create_main_org_unit = validated_data.get("create_main_org_unit", True)
+        main_org_unit_type = None
+
+        if create_main_org_unit:
+            # Create a main org unit type for immediate use
+            main_org_unit_type = OrgUnitType.objects.create(
+                name="Main org unit type",
+                short_name="Main ou type",
+                depth=0,
+            )
+            main_org_unit_type.projects.set([initial_project])
+
+            # Create a main org unit using the created type
+            OrgUnit.objects.create(
+                name="Main org unit",
+                org_unit_type=main_org_unit_type,
+                version=source_version,
+                validation_status=OrgUnit.VALIDATION_VALID,
+            )
+
+        # Create a demo form using the demo form file if requested
+        create_demo_form = validated_data.get("create_demo_form", True)
+
+        if create_demo_form:
+            demo_form = Form.objects.create(
+                name="Demo Form",
+                form_id="demo_form",
+                location_field="gps",
+            )
+            if main_org_unit_type:
+                demo_form.org_unit_types.add(main_org_unit_type)
+            demo_form.projects.add(initial_project)
+
+            # Create the first version of the form using the demo form file
+            with open("iaso/fixtures/demo_form.xlsx", "rb") as demo_form_file:
+                survey = parsing.parse_xls_form(demo_form_file)
+                demo_form_file.seek(0)  # Reset file pointer to beginning
+                FormVersion.objects.create_for_form_and_survey(
+                    form=demo_form, survey=survey, xls_file=File(demo_form_file)
+                )
+
+        # Get language from validated data, defaulting to English
+        language = validated_data.get("language", "en")
+
+        Profile.objects.create(account=account, user=user, language=language)
+
+        # Get all permissions linked to the modules
+        modules_permissions = [perm.codename for perm in account.permissions_from_active_modules]
+
+        user.user_permissions.set(Permission.objects.filter(codename__in=modules_permissions))
+
+        # Send email invitation if requested
+        if email_invitation and user.email:
+            profile_viewset = ProfilesViewSet()
+            profile_viewset.request = self.context.get("request")
+
+            # Get the profile for the user
+            profile = Profile.objects.get(user=user, account=account)
+
+            # Send email invitation using existing logic with profile language
+            profile_viewset.send_email_invitation(profile=profile, language=profile.language)
+
+        validated_data["created_account_id"] = account.id
+        return validated_data

@@ -1,16 +1,23 @@
-/* eslint-disable react/forbid-prop-types */
-import React, { useCallback, useMemo } from 'react';
+import React, {
+    FocusEventHandler,
+    FunctionComponent,
+    ReactNode,
+    useCallback,
+    useMemo,
+} from 'react';
 import ClearIcon from '@mui/icons-material/Clear';
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import { makeStyles } from '@mui/styles';
-import { useSafeIntl } from 'bluesquare-components';
-import PropTypes from 'prop-types';
-
+import {
+    DropdownOptions,
+    IntlMessage,
+    useSafeIntl,
+} from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
-
 import { TextInput } from './TextInput';
 import { defaultRenderTags, getExtraProps, getOption } from './utils';
+import { SxProps } from '@mui/material';
 
 const styles = theme => ({
     inputLabel: {
@@ -73,31 +80,57 @@ const MESSAGES = defineMessages({
 
 export { MESSAGES };
 
-const SingleSelect = ({
+type Props = {
+    keyValue: string;
+    onChange: (value: any) => void;
+    errors?: string[];
+    label?: string;
+    required?: boolean;
+    disabled?: boolean;
+    clearable?: boolean;
+    value?: any;
+    onBlur?: FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+    loadingText?: IntlMessage;
+    noOptionsText?: IntlMessage;
+    helperText?: ReactNode;
+    options?: DropdownOptions<any>[];
+    loading?: boolean;
+    getOptionLabel?: Record<string, any> | Function;
+    getOptionSelected?: Record<string, any> | Function;
+    renderOption?: (arg: { label: string }) => ReactNode;
+    renderTags?: Function;
+    returnFullObject?: boolean;
+    placeholder?: string;
+    dataTestId?: string;
+    freeSolo?: boolean;
+    sx?: SxProps;
+    className?: string;
+};
+export const SingleSelect: FunctionComponent<Props> = ({
     sx,
     className = '',
     value,
     keyValue,
     label,
-    errors,
     onChange,
-    options,
-    onBlur,
-    disabled,
-    clearable,
-    required,
-    noOptionsText,
-    getOptionLabel,
-    getOptionSelected,
-    loading,
-    loadingText,
-    renderOption,
-    renderTags,
-    returnFullObject,
     helperText,
     placeholder,
-    freeSolo,
     dataTestId,
+    getOptionLabel,
+    getOptionSelected,
+    renderOption,
+    errors = [],
+    disabled = false,
+    clearable = true,
+    required = false,
+    loading = false,
+    options = [],
+    onBlur = () => {},
+    noOptionsText = MESSAGES.noOptions,
+    loadingText = MESSAGES.loadingOptions,
+    renderTags = defaultRenderTags,
+    returnFullObject = false, // use this one if you pass array of objects as options and want an array of objects as sected items, not a string of id's
+    freeSolo = false,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
@@ -181,59 +214,3 @@ const SingleSelect = ({
         </Box>
     );
 };
-
-SingleSelect.defaultProps = {
-    value: undefined,
-    errors: [],
-    label: undefined,
-    disabled: false,
-    clearable: true,
-    required: false,
-    loading: false,
-    options: [],
-    onBlur: () => {},
-    getOptionSelected: null,
-    getOptionLabel: null,
-    renderOption: null,
-    noOptionsText: MESSAGES.noOptions,
-    loadingText: MESSAGES.loadingOptions,
-    helperText: undefined,
-    renderTags: defaultRenderTags,
-    returnFullObject: false, // use this one if you pass array of objects as options and want an array of objects as sected items, not a string of id's
-    placeholder: undefined,
-    dataTestId: undefined,
-    freeSolo: false,
-    sx: undefined,
-    className: '',
-};
-
-SingleSelect.propTypes = {
-    errors: PropTypes.arrayOf(PropTypes.string),
-    keyValue: PropTypes.string.isRequired,
-    label: PropTypes.string,
-    required: PropTypes.bool,
-    disabled: PropTypes.bool,
-    clearable: PropTypes.bool,
-    // eslint-disable-next-line react/forbid-prop-types
-    value: PropTypes.any,
-    onBlur: PropTypes.func,
-    loadingText: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
-    noOptionsText: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
-    helperText: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
-    // eslint-disable-next-line react/forbid-prop-types
-    options: PropTypes.array,
-    loading: PropTypes.bool,
-    onChange: PropTypes.func.isRequired,
-    getOptionLabel: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
-    getOptionSelected: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
-    renderOption: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
-    renderTags: PropTypes.func,
-    returnFullObject: PropTypes.bool,
-    placeholder: PropTypes.string,
-    dataTestId: PropTypes.string,
-    freeSolo: PropTypes.bool,
-    sx: PropTypes.any,
-    className: PropTypes.string,
-};
-
-export { SingleSelect };

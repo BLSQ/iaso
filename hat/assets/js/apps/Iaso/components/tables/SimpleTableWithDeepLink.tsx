@@ -1,5 +1,5 @@
-import { Column, Setting, UrlParams } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
+import { Column, Setting, UrlParams } from 'bluesquare-components';
 import { TableWithDeepLink } from './TableWithDeepLink';
 
 type Props = {

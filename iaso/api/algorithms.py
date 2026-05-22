@@ -1,8 +1,9 @@
 from django.db.models import Q
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers, viewsets
 
-from hat.menupermissions import models as permission
 from iaso.models import MatchingAlgorithm, Project
+from iaso.permissions.core_permissions import CORE_LINKS_PERMISSION
 
 
 class AlgorithmsSerializer(serializers.ModelSerializer):
@@ -12,10 +13,11 @@ class AlgorithmsSerializer(serializers.ModelSerializer):
         read_only_fields = ["created_at"]
 
 
+@extend_schema(tags=["Algorithms"])
 class AlgorithmsViewSet(viewsets.ModelViewSet):
     f"""Algorithms API
 
-    This API is restricted to authenticated users having the "{permission.LINKS}" permission
+    This API is restricted to authenticated users having the "{CORE_LINKS_PERMISSION}" permission
 
     GET /api/algorithms/
     """

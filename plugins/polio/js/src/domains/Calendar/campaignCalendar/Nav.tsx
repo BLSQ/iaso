@@ -1,33 +1,42 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
-
-import {
-    Box,
-    Button,
-    ClickAwayListener,
-    Popper,
-    TextField,
-    Tooltip,
-} from '@mui/material';
-
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import ArrowForward from '@mui/icons-material/ArrowForward';
 import ChevronLeft from '@mui/icons-material/ChevronLeft';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import Today from '@mui/icons-material/Today';
+import { Box, Button, ClickAwayListener, Popper, Tooltip } from '@mui/material';
 import { DesktopDatePicker as DatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
-import { useSafeIntl, useRedirectToReplace } from 'bluesquare-components';
-import { Link } from 'react-router-dom';
-// @ts-ignore
+import {
+    useSafeIntl,
+    useRedirectToReplace,
+    convertObjectToUrlParams,
+} from 'bluesquare-components';
 import moment, { Moment } from 'moment';
-import { useStyles } from './Styles';
-import { dateFormat } from './constants';
+import { Link } from 'react-router-dom';
+import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
+import { GenUrlFunction } from 'Iaso/routing/routing';
 import MESSAGES from '../../../constants/messages';
-import { useGenUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
+import { dateFormat } from './constants';
+import { useStyles } from './Styles';
 
 type Props = {
     currentMonday: Moment;
     currentDate: Moment;
     url: string;
+};
+
+const useGenUrl = (url: string): GenUrlFunction => {
+    const currentParams = useParamsObject(url);
+    return useCallback(
+        (
+            newParams: Record<string, string | number | null | undefined>,
+        ): string => {
+            const updatedParams = { ...currentParams, ...newParams };
+            const paramsAsString = convertObjectToUrlParams(updatedParams);
+            return `/${url}${paramsAsString}`;
+        },
+        [url, currentParams],
+    );
 };
 
 export const Nav: FunctionComponent<Props> = ({
@@ -38,7 +47,7 @@ export const Nav: FunctionComponent<Props> = ({
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    const genUrl = useGenUrl();
+    const genUrl = useGenUrl(url);
     const redirectToReplace = useRedirectToReplace();
     const urlForDate = useCallback(
         (date: Moment) =>
@@ -123,15 +132,21 @@ export const Nav: FunctionComponent<Props> = ({
                     >
                         <DatePicker
                             label=""
-                            renderInput={props => <TextField {...props} />}
-                            value={currentDate.format(dateFormat)}
-                            onChange={date =>
-                                date
-                                    ? handleDateChange(
-                                          moment(date).format(dateFormat),
-                                      )
-                                    : undefined
-                            }
+                            format={dateFormat}
+                            value={currentDate}
+                            onChange={date => {
+                                if (date && moment(date).isValid()) {
+                                    handleDateChange(
+                                        moment(date).format(dateFormat),
+                                    );
+                                }
+                            }}
+                            slotProps={{
+                                textField: {
+                                    size: 'small',
+                                    variant: 'outlined',
+                                },
+                            }}
                         />
                     </Popper>
                 </ClickAwayListener>

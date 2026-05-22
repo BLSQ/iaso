@@ -4,6 +4,12 @@ from hat.audit import models as am
 from iaso import models as m
 from iaso.models import QUEUED, Task
 from iaso.models.payments import PaymentStatuses
+from iaso.permissions.core_permissions import (
+    CORE_DATA_TASKS_PERMISSION,
+    CORE_FORMS_PERMISSION,
+    CORE_PAYMENTS_PERMISSION,
+    CORE_SOURCE_PERMISSION,
+)
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
@@ -29,15 +35,19 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
         )
         # The data souces and data tasks permissions are needed because we use the task API for task related assertions
         cls.user = cls.create_user_with_profile(
-            username="user", permissions=["iaso_payments", "iaso_sources", "iaso_data_tasks"], account=account
+            username="user",
+            permissions=[CORE_PAYMENTS_PERMISSION, CORE_SOURCE_PERMISSION, CORE_DATA_TASKS_PERMISSION],
+            account=account,
         )
         # The data souces and data tasks permissions are needed because we use the task API for task related assertions
         cls.user_no_perm = cls.create_user_with_profile(
-            username="user no perm", permissions=["iaso_forms", "iaso_sources", "iaso_data_tasks"], account=account
+            username="user no perm",
+            permissions=[CORE_FORMS_PERMISSION, CORE_SOURCE_PERMISSION, CORE_DATA_TASKS_PERMISSION],
+            account=account,
         )
         cls.other_user = cls.create_user_with_profile(
             username="other user",
-            permissions=["iaso_payments", "iaso_sources", "iaso_data_tasks"],
+            permissions=[CORE_PAYMENTS_PERMISSION, CORE_SOURCE_PERMISSION, CORE_DATA_TASKS_PERMISSION],
             account=other_account,
         )
         cls.payment_beneficiary = cls.create_user_with_profile(username="payment_beneficiary", account=account)

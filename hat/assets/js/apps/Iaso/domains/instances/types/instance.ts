@@ -1,8 +1,8 @@
-import { Pagination } from 'bluesquare-components';
+import { PaginationType } from 'bluesquare-components';
 import { User } from '../../../utils/usersUtils';
-import { Beneficiary } from '../../entities/types/beneficiary';
+import { Entity } from '../../entities/types/entity';
 import { OrgUnitChangeRequest } from '../../orgUnits/reviewChanges/types';
-import { OrgUnit } from '../../orgUnits/types/orgUnit';
+import { OrgUnit, ShortOrgUnit } from '../../orgUnits/types/orgUnit';
 
 type Lock = {
     id: number;
@@ -16,6 +16,11 @@ export type ShortFile = {
     itemId: number;
     createdAt: number;
     path: string;
+    submittedAt: number;
+    orgUnit: ShortOrgUnit;
+    formName: string;
+    questionName: string;
+    questionId: string;
     file_type?: MimeType;
 };
 
@@ -24,6 +29,11 @@ export type File = {
     instance_id: number;
     file: string;
     created_at: number;
+    submitted_at: number;
+    org_unit: ShortOrgUnit;
+    form_name: string;
+    question_name: string;
+    question_id: string;
     file_type: MimeType;
 };
 
@@ -56,7 +66,7 @@ export type Instance = {
     is_locked: boolean;
     is_instance_of_reference_form: boolean;
     is_reference_instance: boolean;
-    entity: Beneficiary;
+    entity: Entity;
     source_created_at: number;
     change_requests: Array<OrgUnitChangeRequest>;
 };
@@ -70,7 +80,7 @@ export type InstanceLogDetail = {
     created_at: string;
 };
 
-export type InstanceLogsDetail = Pagination & {
+export type InstanceLogsDetail = PaginationType & {
     list: Array<InstanceLogDetail>;
 };
 
@@ -87,6 +97,7 @@ export type InstanceLogData = {
     user: User;
     possible_fields: Record<string, any>[];
     files: string[];
+    form_descriptor: Record<string, any>[];
 };
 
 type FormVersions = {
@@ -99,11 +110,13 @@ export type FormDescriptor = {
 export type FileContent = {
     logA: Record<string, any>;
     logB: Record<string, any>;
-    logAFiles: string[];
-    logBFiles: string[];
+    logAFiles: Record<string, string>;
+    logBFiles: Record<string, string>;
     fields: Record<string, any>[];
+    formDescriptorA: Record<string, any>[];
+    formDescriptorB: Record<string, any>[];
 };
-export interface PaginatedInstances extends Pagination {
+export interface PaginatedInstances extends PaginationType {
     instances: Instance[];
 }
 

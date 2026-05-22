@@ -8,6 +8,7 @@ const defaultOrder = 'first_round_started_at';
 
 export const DEFAULT_CELL_COLOR = '#bcbcbc';
 export const SUBACTIVITY_CELL_COLOR = 'rebeccapurple';
+export const INTEGRATED_CAMPAIGN_BORDER_COLOR = '#EA8418'; // theme secondary color. It might change so using theme context seemed overkill at this stage
 const colsCounts = {
     quarter: 13,
     semester: 26,

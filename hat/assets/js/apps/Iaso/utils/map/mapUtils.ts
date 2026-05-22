@@ -1,9 +1,11 @@
+import { FunctionComponent, useRef } from 'react';
 import { Theme } from '@mui/material/styles';
 import Color from 'color';
 import L from 'leaflet';
 import { isEqual } from 'lodash';
 import isNumber from 'lodash/isNumber';
 import orderBy from 'lodash/orderBy';
+import { useMap, useMapEvent } from 'react-leaflet';
 import { ScaleThreshold } from '../../components/LegendBuilder/types';
 
 import { CompletenessMapStats } from '../../domains/completenessStats/types';
@@ -13,8 +15,9 @@ import {
 } from '../../domains/orgUnits/components/orgUnitMap/OrgUnitMap/types';
 import { OrgUnit } from '../../domains/orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../domains/orgUnits/types/orgunitTypes';
+import { PlanningOrgUnits } from '../../domains/plannings/types';
 
-export const defaultCenter = [5, 20];
+export const defaultCenter = L.latLng(5, 20);
 export const defaultZoom = 4;
 
 export const orderOrgUnitsByDepth = (orgUnits: OrgUnit[]): OrgUnit[] =>
@@ -44,7 +47,7 @@ export const isValidCoordinate = (
 };
 
 export const getLatLngBounds = items => {
-    if (!items || (items && items.length === 0)) return null;
+    if (!items || (items && items.length === 0)) return undefined;
     const latLngs: any[] = [];
     items.forEach(i => {
         if (isValidCoordinate(i.latitude, i.longitude)) {
@@ -54,22 +57,48 @@ export const getLatLngBounds = items => {
         }
     });
     if (latLngs.length === 0) {
-        return null;
+        return undefined;
     }
-    const bounds = L.latLngBounds(latLngs);
-    return bounds;
+    try {
+        const bounds = L.latLngBounds(latLngs);
+        return bounds && bounds.isValid() ? bounds : undefined;
+    } catch (error) {
+        console.warn('Error creating lat lng bounds:', error);
+        return undefined;
+    }
 };
 
 export const getShapesBounds = (shapes, shapeKey = 'geo_json') => {
+    if (!shapes || shapes.length === 0) {
+        return undefined;
+    }
+
     const groups: any[] = [];
     shapes.forEach(s => {
-        const shapeGroup = new L.FeatureGroup();
-        const shape = L.geoJSON(s[shapeKey]);
-        shape.addTo(shapeGroup);
-        groups.push(shapeGroup);
+        if (s[shapeKey]) {
+            try {
+                const shapeGroup = new L.FeatureGroup();
+                const shape = L.geoJSON(s[shapeKey]);
+                shape.addTo(shapeGroup);
+                groups.push(shapeGroup);
+            } catch (error) {
+                console.warn('Error parsing shape geo JSON:', error);
+            }
+        }
     });
-    const group = new L.FeatureGroup(groups);
-    return group.getBounds();
+
+    if (groups.length === 0) {
+        return undefined;
+    }
+
+    try {
+        const group = new L.FeatureGroup(groups);
+        const bounds = group.getBounds();
+        return bounds && bounds.isValid() ? bounds : undefined;
+    } catch (error) {
+        console.warn('Error getting shapes bounds:', error);
+        return undefined;
+    }
 };
 
 export const clusterCustomMarker = (cluster, color = 'primary') =>
@@ -77,7 +106,7 @@ export const clusterCustomMarker = (cluster, color = 'primary') =>
         html: `<div><span>${cluster.getChildCount()}</span></div>`,
         className: `marker-cluster ${color} default`,
         iconSize: L.point(34, 34, true),
-        iconAnchor: [17, 17],
+        iconAnchor: L.point(17, 17),
     });
 
 export const colorClusterCustomMarker = (cluster, backgroundColor, size = 34) =>
@@ -91,10 +120,7 @@ export const colorClusterCustomMarker = (cluster, backgroundColor, size = 34) =>
             '</div>',
         className: 'marker-cluster color',
         iconSize: L.point(size, size, true),
-        iconAnchor: [size / 2, size / 2],
-        style: () => ({
-            backgroundColor,
-        }),
+        iconAnchor: L.point(size / 2, size / 2),
     });
 
 const svgString =
@@ -104,11 +130,11 @@ const svgString =
 export const customMarkerOptions = {
     className: 'marker-custom primary',
     html: `<span class="marker_bg"></span><span>
-        ${L.Util.template(svgString)}
+        ${L.Util.template(svgString, {})}
     </span>`,
     iconSize: new L.Point(24, 34),
-    popupAnchor: [-1, -28],
-    iconAnchor: [12, 32],
+    popupAnchor: L.point(-1, -28),
+    iconAnchor: L.point(12, 32),
 };
 
 export const customMarker = L.divIcon(customMarkerOptions);
@@ -170,60 +196,63 @@ export const polygonDrawOption = (
     };
 };
 
-export const shapeOptions = (): {
-    onEachFeature: (feature: any, layer: any) => void;
-} => ({
+export const shapeOptions = (): L.GeoJSONOptions => ({
     onEachFeature: (feature, layer) => {
-        layer.setStyle({
-            weight: 3,
-        });
+        const pathLayer = layer as L.Path;
+        if (pathLayer.setStyle) {
+            pathLayer.setStyle({
+                weight: 3,
+            });
+        }
     },
 });
-export const getleafletGeoJson = (geoJson: any): void =>
-    geoJson ? L.geoJson(geoJson, shapeOptions) : null;
+export const getleafletGeoJson = (geoJson: any): L.GeoJSON | null =>
+    geoJson ? L.geoJson(geoJson as any, shapeOptions()) : null;
 
-// TODO: this should be available in the new version of leaflet
-type LatLng = {
-    lat: number;
-    lng: number;
-};
-export type Bounds = {
-    _northEast: LatLng;
-    _southWest: LatLng;
-    extend: (bounds: Bounds) => Bounds;
-    isValid: () => boolean;
-};
+export type Bounds = L.LatLngBounds;
 
 export const getOrgUnitBounds = (
-    orgUnit: OrgUnit | CompletenessMapStats,
+    orgUnit: OrgUnit | CompletenessMapStats | PlanningOrgUnits,
 ): Bounds | undefined => {
     let bounds: Bounds | undefined;
-    const locations: { latitude: number; longitude: number }[] = [];
     if (orgUnit.geo_json) {
-        bounds = L.geoJSON(orgUnit.geo_json).getBounds();
+        try {
+            bounds = L.geoJSON(orgUnit.geo_json as any).getBounds();
+            // Return undefined if the bounds are not valid
+            if (!bounds || !bounds.isValid()) {
+                return undefined;
+            }
+        } catch (error) {
+            console.warn('Error parsing org unit geo JSON:', error);
+            return undefined;
+        }
     } else if (isNumber(orgUnit.latitude) && isNumber(orgUnit.longitude)) {
-        locations.push(L.latLng(orgUnit.latitude, orgUnit.longitude));
-        const locationsBounds: Bounds | undefined = L.latLngBounds(locations);
-        bounds = locationsBounds;
+        const locations = [L.latLng(orgUnit.latitude, orgUnit.longitude)];
+        bounds = L.latLngBounds(locations);
+        // Return undefined if the bounds are not valid
+        if (!bounds || !bounds.isValid()) {
+            return undefined;
+        }
     }
+
     return bounds;
 };
 
 export const getOrgUnitsBounds = (
-    orgUnits: OrgUnit[] | CompletenessMapStats[],
+    orgUnits: OrgUnit[] | CompletenessMapStats[] | PlanningOrgUnits[],
 ): Bounds | undefined => {
     let bounds: Bounds | undefined;
-    orgUnits.forEach((childOrgUnit: OrgUnit | CompletenessMapStats) => {
-        const childrenBounds: Bounds | undefined =
-            getOrgUnitBounds(childOrgUnit);
-        if (bounds) {
-            if (childrenBounds) {
+    orgUnits.forEach(
+        (childOrgUnit: OrgUnit | CompletenessMapStats | PlanningOrgUnits) => {
+            const childrenBounds: Bounds | undefined =
+                getOrgUnitBounds(childOrgUnit);
+            if (childrenBounds && bounds) {
                 bounds = bounds.extend(childrenBounds);
+            } else if (childrenBounds) {
+                bounds = childrenBounds;
             }
-        } else if (childrenBounds) {
-            bounds = childrenBounds;
-        }
-    });
+        },
+    );
     return bounds;
 };
 
@@ -257,3 +286,34 @@ export const hasLocation = (orgUnit: OrgUnit): boolean =>
         orgUnit.longitude !== undefined &&
         orgUnit.latitude !== null &&
         orgUnit.longitude !== null);
+
+export const CloseTooltipOnMoveStart: FunctionComponent = () => {
+    const map = useMap();
+    const activeTooltipRef = useRef<any>(null);
+    const isMovingRef = useRef<boolean>(false);
+    const waitForMouseMoveRef = useRef<boolean>(false);
+
+    useMapEvent('tooltipopen', event => {
+        if (isMovingRef.current || waitForMouseMoveRef.current) {
+            map.closeTooltip(event.tooltip);
+            return;
+        }
+        activeTooltipRef.current = event.tooltip;
+    });
+    useMapEvent('tooltipclose', () => {
+        activeTooltipRef.current = null;
+    });
+    useMapEvent('movestart', () => {
+        isMovingRef.current = true;
+    });
+    useMapEvent('moveend', () => {
+        isMovingRef.current = false;
+        waitForMouseMoveRef.current = true;
+    });
+    useMapEvent('mousemove', () => {
+        if (waitForMouseMoveRef.current) {
+            waitForMouseMoveRef.current = false;
+        }
+    });
+    return null;
+};

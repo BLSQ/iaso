@@ -1,12 +1,15 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers, viewsets
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken  # type: ignore
+
+from iaso.utils.tokens import get_user_token
 
 
 class APITokenSerializer(serializers.Serializer):
     token = serializers.CharField()
 
 
+@extend_schema(tags=["API token"])
 class APITokenViewSet(viewsets.ViewSet):
     """
     Used to obtain a token usable for the API.
@@ -14,8 +17,7 @@ class APITokenViewSet(viewsets.ViewSet):
     """
 
     def list(self, request):
-        refresh = RefreshToken.for_user(request.user)
-        token = str(refresh.access_token)
+        token = get_user_token(request.user)
 
         serializer = APITokenSerializer({"token": token})
         return Response(serializer.data)

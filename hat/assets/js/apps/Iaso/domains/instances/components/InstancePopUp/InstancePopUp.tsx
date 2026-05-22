@@ -1,9 +1,7 @@
-import { Theme } from '@mui/material/styles';
-import L from 'leaflet';
 import React, { createRef, FunctionComponent, useCallback } from 'react';
-import { Popup, useMap } from 'react-leaflet';
 
 import { Box, Card, CardContent, CardMedia, Grid } from '@mui/material';
+import { Theme } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
 
 import {
@@ -13,15 +11,18 @@ import {
     mapPopupStyles,
     useSafeIntl,
 } from 'bluesquare-components';
+import L from 'leaflet';
+import { Popup, useMap } from 'react-leaflet';
 import ConfirmDialog from '../../../../components/dialogs/ConfirmDialogComponent';
-import InstanceDetailsInfos from '../InstanceDetailsInfos';
 
 import { baseUrls } from '../../../../constants/urls';
 import { usePopupState } from '../../../../utils/map/usePopupState';
 import { useGetInstance } from '../../../registry/hooks/useGetInstances';
+import { INSTANCE_MAP_METAS_FIELDS } from '../../constants';
 import MESSAGES from '../../messages';
 import { Instance } from '../../types/instance';
-import { INSTANCE_MAP_METAS_FIELDS } from '../../constants';
+import InstanceDetailsInfos from '../InstanceDetailsInfos';
+import { InstancesLabelKeys } from '../InstancesLabelKeys';
 
 const useStyles = makeStyles((theme: Theme) => ({
     ...(commonStyles(theme) as Record<string, any>),
@@ -64,8 +65,8 @@ export const InstancePopup: FunctionComponent<Props> = ({
     }, [currentInstance, map, popup, replaceLocation]);
 
     const hasHero = (currentInstance?.files?.length ?? 0) > 0;
-
     return (
+        // @ts-ignore - Popup className prop type issue with react-leaflet
         <Popup className={classes.popup} ref={popup} pane="popupPane">
             {isLoading && <LoadingSpinner />}
             {currentInstance && (
@@ -86,6 +87,7 @@ export const InstancePopup: FunctionComponent<Props> = ({
                             currentInstance={currentInstance}
                             fieldsToHide={['device_id']}
                         />
+                        <InstancesLabelKeys currentInstance={currentInstance} />
 
                         <Box className={classes.actionBox}>
                             <Grid
@@ -111,6 +113,7 @@ export const InstancePopup: FunctionComponent<Props> = ({
                                         confirm={confirmDialog}
                                     />
                                 )}
+                                {/* This is leading to warning in the console due to the use of unstable_viewTransition prop in Bluesquare Components */}
                                 <LinkButton
                                     variant="outlined"
                                     color="primary"

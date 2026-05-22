@@ -1,17 +1,18 @@
+import React, { FunctionComponent } from 'react';
 import { Box, Typography } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
+import { LqasDataForChart } from '../../types';
 import { PercentageBarChart } from './PercentageBarChart';
+import { GraphTooltipFormatter } from './PercentageBarChart/types';
 
 type Props = {
-    // eslint-disable-next-line react/require-default-props
     title?: string;
-    data: any[];
-    tooltipFormatter: (...args: any) => any;
+    data: LqasDataForChart[];
+    tooltipFormatter: GraphTooltipFormatter;
     isLoading: boolean;
     chartKey: string;
     showChart: boolean;
-    colorTresholds: { ok: number; warning: number };
+    colorThresholds: { ok: number; warning: number };
 };
 
 export const PercentageChartWithTitle: FunctionComponent<Props> = ({
@@ -21,7 +22,7 @@ export const PercentageChartWithTitle: FunctionComponent<Props> = ({
     isLoading,
     chartKey,
     showChart,
-    colorTresholds,
+    colorThresholds,
 }) => {
     return (
         <>
@@ -37,7 +38,7 @@ export const PercentageChartWithTitle: FunctionComponent<Props> = ({
                         data={data}
                         tooltipFormatter={tooltipFormatter}
                         chartKey={chartKey}
-                        colorTresholds={colorTresholds}
+                        colorThresholds={colorThresholds}
                     />
                 </>
             )}

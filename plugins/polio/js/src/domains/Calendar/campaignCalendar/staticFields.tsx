@@ -1,7 +1,7 @@
 import React, { ReactElement } from 'react';
 import { Box } from '@mui/material';
+import { textPlaceholder } from 'bluesquare-components';
 import moment from 'moment';
-
 import { Field } from '../types';
 import { CountryStaticFields } from './cells/CountryStaticFields';
 import { EditCampaignCell } from './cells/EditCampaignCell';
@@ -12,9 +12,9 @@ export const staticFields: Field[] = [
         width: 30,
         key: 'edit',
         hideHeadTitle: true,
-        render: (campaign: MappedCampaign): ReactElement => (
-            <EditCampaignCell campaign={campaign} />
-        ),
+        render: (campaign: MappedCampaign): ReactElement => {
+            return <EditCampaignCell campaign={campaign} />;
+        },
         exportHide: true,
     },
     {
@@ -60,7 +60,7 @@ export const staticFields: Field[] = [
             if (roundOne?.started_at) {
                 return moment(roundOne.started_at).format('L');
             }
-            return '-';
+            return textPlaceholder;
         },
     },
 ];

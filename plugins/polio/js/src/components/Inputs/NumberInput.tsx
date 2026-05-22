@@ -3,6 +3,7 @@ import React, {
     FocusEventHandler,
     FunctionComponent,
     useCallback,
+    useEffect,
 } from 'react';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 
@@ -60,6 +61,12 @@ export const NumberInput: FunctionComponent<Props> = ({
         },
         [field.name, form, onChange],
     );
+    // Ugly hack top prevent form validation error when initialValues is null and value is undefined
+    useEffect(() => {
+        if (field.value === undefined) {
+            form.setFieldValue(field.name, null);
+        }
+    }, [form.setFieldValue, field.value]);
 
     return (
         <InputComponent

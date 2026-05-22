@@ -1,5 +1,5 @@
-import { ApiParams, UrlParams } from 'bluesquare-components';
 import { useMemo } from 'react';
+import { ApiParams, UrlParams } from 'bluesquare-components';
 import { cleanupParams } from '../utils/requests';
 
 export type FormattedApiParams = ApiParams & Record<string, any>;
@@ -31,6 +31,9 @@ export const useApiParams = (
         if (formattedParams.accountId) {
             delete formattedParams.accountId;
         }
+        if (formattedParams.isSearchActive) {
+            delete formattedParams.isSearchActive;
+        }
         return formattedParams as FormattedApiParams;
     }, [defaults?.limit, defaults?.order, defaults?.page, params]);
 };
@@ -42,7 +45,7 @@ export type TableDefaults = {
 };
 export const useQueryString = (
     params: Record<string, string>,
-    tableDefaults: TableDefaults,
+    tableDefaults?: TableDefaults,
 ): string => {
     const apiParams = useApiParams(params, tableDefaults);
     return new URLSearchParams(apiParams).toString();

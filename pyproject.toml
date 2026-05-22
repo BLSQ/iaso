@@ -2,9 +2,11 @@
 name = "Iaso"
 readme = "README.md"
 requires-python = "~=3.9"
+version = "v1.3"
 
 [project.urls]
 Repository = "https://github.com/BLSQ/"
+
 
 # https://docs.astral.sh/ruff/settings/
 [tool.ruff]
@@ -160,3 +162,11 @@ quote-style = "double"
 combine-as-imports = true
 lines-after-imports = 2
 lines-between-types = 1
+
+[tool.coverage.run]
+omit = [
+    "plugins/*/migrations/*",
+    "plugins/*/tests/*",
+    "*/migrations/*",  
+    "iaso/tests/*"
+]

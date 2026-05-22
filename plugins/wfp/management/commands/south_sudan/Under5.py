@@ -3,188 +3,117 @@ import logging
 from itertools import groupby
 from operator import itemgetter
 
+from django.core.paginator import Paginator
+
+from iaso.models import Task
 from plugins.wfp.common import ETL
-from plugins.wfp.models import *
+from plugins.wfp.models import Beneficiary
 
 
 logger = logging.getLogger(__name__)
 
 
 class Under5:
-    def group_visit_by_entity(self, entities):
-        instances = []
-        i = 0
-        instances_by_entity = groupby(list(entities), key=itemgetter("entity_id"))
-        initial_weight = None
-        current_weight = None
-        initial_date = None
-        current_date = None
-        duration = 0
-        for entity_id, entity in instances_by_entity:
-            instances.append({"entity_id": entity_id, "visits": [], "journey": []})
-            for visit in entity:
-                current_record = visit.get("json", None)
-                instances[i]["program"] = ETL().program_mapper(current_record)
-                if current_record is not None and current_record != None:
-                    if (
-                        current_record.get("actual_birthday__date__") is not None
-                        and current_record.get("actual_birthday__date__", None) != ""
-                    ):
-                        birth_date = current_record.get("actual_birthday__date__", None)
-                        instances[i]["birth_date"] = birth_date[:10]
-                    elif (
-                        current_record.get("age_entry", None) is not None
-                        and current_record.get("age_entry", None) != ""
-                    ):
-                        calculated_date = ETL().calculate_birth_date(current_record)
-                        instances[i]["birth_date"] = calculated_date
-                    if current_record.get("gender") is not None:
-                        gender = current_record.get("gender", "")
-                        if current_record.get("gender") == "F":
-                            gender = "Female"
-                        elif current_record.get("gender") == "M":
-                            gender = "Male"
-                        instances[i]["gender"] = gender
-                    if current_record.get("last_name") is not None:
-                        instances[i]["last_name"] = current_record.get("last_name", "")
+    """ETL processor for South Sudan Under-5 children, version 2.
 
-                    if current_record.get("first_name") is not None:
-                        instances[i]["first_name"] = current_record.get("first_name", "")
+    Improvements over v1
+    --------------------
+    * Supports an unlimited number of journeys per beneficiary.
+    * Correctly tracks initial/discharge weight **per journey**.
+    * Never mutates source (Instance.json) data.
+    * Detects defaulters as journey-ending events.
+    * Journey boundaries are determined by admission forms, with
+      post-transfer continuation handled via ``transfer_info``.
+    """
 
-                    form_id = visit.get("form__form_id")
-                    current_record["org_unit_id"] = visit.get("org_unit_id", None)
+    PROGRAMME_TYPE = "U5"
+    ENTITY_TYPE_CODE = "ssd_under5"
+    PAGE_SIZE = 5000
 
-                    if current_record.get("weight_kgs", None) is not None:
-                        current_weight = current_record.get("weight_kgs", None)
-                    elif current_record.get("previous_weight_kgs__decimal__", None) is not None:
-                        current_weight = current_record.get("previous_weight_kgs__decimal__", None)
-                    current_date = visit.get(
-                        "source_created_at",
-                        visit.get(
-                            "_visit_date", visit.get("visit_date", visit.get("_new_discharged_today", current_date))
-                        ),
-                    )
+    # ------------------------------------------------------------------
+    # Public API
+    # ------------------------------------------------------------------
 
-                    if form_id == "Anthropometric visit child":
-                        initial_weight = current_weight
-                        instances[i]["initial_weight"] = initial_weight
-                        visit_date = visit.get(
-                            "source_created_at", visit.get("_visit_date", visit.get("visit_date", current_date))
-                        )
-                        initial_date = visit_date
+    def run(self, updated_entity_ids, entity_type_code=None, task_name="etl_ssd"):
+        """Main entry point for the ETL.
 
-                    if initial_date is not None:
-                        duration = (current_date - initial_date).days
-                        current_record["start_date"] = initial_date.strftime("%Y-%m-%d")
+        Parameters
+        ----------
+        entity_type_code : str, optional
+            Override entity type code (defaults to ``ssd_under5``).
+        updated_entity_ids : iterable of int, optional
+            If given, only process these entities.
+        task_name : str
+            Name for the IASO Task log entry.
+        """
+        code = entity_type_code or self.ENTITY_TYPE_CODE
+        elt = ETL(code)
+        account = elt.get_account()
 
-                    weight = ETL().compute_gained_weight(initial_weight, current_weight, duration)
-                    current_record["end_date"] = current_date.strftime("%Y-%m-%d")
-                    current_record["weight_gain"] = weight["weight_gain"]
-                    current_record["weight_loss"] = weight["weight_loss"]
-                    current_record["initial_weight"] = weight["initial_weight"]
-                    current_record["discharge_weight"] = weight["discharge_weight"]
-                    current_record["weight_difference"] = weight["weight_difference"]
-                    current_record["duration"] = duration
+        page_size = self.PAGE_SIZE
+        paginator = Paginator(updated_entity_ids, page_size)
+        pages = paginator.page_range
 
-                    visit_date = visit.get(
-                        "source_created_at", visit.get("_visit_date", visit.get("visit_date", current_date))
-                    )
-                    if visit_date:
-                        current_record["date"] = visit_date.strftime("%Y-%m-%d")
-
-                    current_record["instance_id"] = visit["id"]
-                    current_record["form_id"] = form_id
-                    instances[i]["visits"].append(current_record)
-            i = i + 1
-        return list(
-            filter(
-                lambda instance: (
-                    instance.get("visits")
-                    and len(instance.get("visits")) > 1
-                    and instance.get("gender") is not None
-                    and instance.get("gender") != ""
-                    and instance.get("birth_date") is not None
-                    and instance.get("birth_date") != ""
-                ),
-                instances,
-            )
+        logger.info(
+            f"Processing {len(updated_entity_ids)} entities Child Under 5 across {paginator.num_pages} pages for {account}"
         )
-
-    def journeyMapper(self, visits, admission_form):
-        current_journey = {"visits": [], "steps": []}
-        anthropometric_visit_forms = [
-            "child_antropometric_followUp_tsfp",
-            "child_antropometric_followUp_otp",
-        ]
-        visit_nutrition_program = [visit for visit in visits if visit["form_id"] in admission_form]
-        if len(visit_nutrition_program) > 0:
-            current_journey["nutrition_programme"] = ETL().program_mapper(visit_nutrition_program[0])
-        journey = ETL().entity_journey_mapper(visits, anthropometric_visit_forms, admission_form, current_journey)
-        return journey
-
-    def save_journey(self, beneficiary, record):
-        journey = Journey()
-        journey.initial_weight = record.get("initial_weight", None)
-
-        # Calculate the weight gain only for cured and Transfer from OTP to TSFP cases!
-        if (
-            record.get("exit_type", None) is not None
-            and record.get("exit_type", None) != ""
-            and record.get("exit_type", None) in ["cured", "transfer_to_tsfp"]
-        ):
-            journey.discharge_weight = record.get("discharge_weight", None)
-            journey.weight_gain = record.get("weight_gain", 0)
-            journey.weight_loss = record.get("weight_loss", 0)
-
-        return ETL().save_entity_journey(journey, beneficiary, record, "U5")
-
-    def run(self, type):
-        entity_type = ETL([type])
-        account = entity_type.account_related_to_entity_type()
-        beneficiaries = entity_type.retrieve_entities()
-        logger.info(f"Instances linked to Child Under 5 program: {beneficiaries.count()} for {account}")
-        entities = sorted(list(beneficiaries), key=itemgetter("entity_id"))
-        existing_beneficiaries = ETL().existing_beneficiaries()
-        instances = self.group_visit_by_entity(entities)
-
-        # Cleaning monthly statistics then update the table with fresh data
-        MonthlyStatistics.objects.all().filter(account=account, programme_type="U5").delete()
-
-        for index, instance in enumerate(instances):
-            logger.info(
-                f"---------------------------------------- Beneficiary N° {(index + 1)} {instance['entity_id']}-----------------------------------"
+        for page in pages:
+            submissions, page_info = ETL._retrieve_submissions(
+                code, updated_entity_ids, page_size=page_size, page_number=page
             )
-            instance["journey"] = self.journeyMapper(instance["visits"], ["Anthropometric visit child"])
-            beneficiary = Beneficiary()
-            if (
-                instance["entity_id"] not in existing_beneficiaries
-                and len(instance["journey"][0]["visits"]) > 0
-                and instance["journey"][0].get("nutrition_programme") is not None
-            ):
-                beneficiary.gender = instance["gender"]
-                beneficiary.birth_date = instance["birth_date"]
-                beneficiary.entity_id = instance["entity_id"]
-                beneficiary.account = account
-                beneficiary.save()
-                logger.info("Created new beneficiary")
-            else:
-                beneficiary = Beneficiary.objects.filter(entity_id=instance["entity_id"]).first()
+            logger.info(f"Processing {len(page_info.object_list)} entities on page {page} for {account}")
+            all_beneficiaries = []
+            all_journeys = []
+            all_visits = []
+            all_steps = []
 
-            logger.info("Retrieving journey linked to beneficiary")
-            if beneficiary is not None:
-                for journey_instance in instance["journey"]:
-                    if len(journey_instance["visits"]) > 0:
-                        journey = self.save_journey(beneficiary, journey_instance)
-                        visits = ETL().save_visit(journey_instance["visits"], journey)
-                        logger.info(f"Inserted {len(visits)} Visits")
-                        grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
-                        admission_step = grouped_steps[0]
+            existing_entity_ids = set(
+                Beneficiary.objects.filter(account=account).exclude(entity_id=None).values_list("entity_id", flat=True)
+            )
 
-                        followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
-                        steps = ETL().save_steps(visits, followUpVisits)
-                        logger.info(f"Inserted {len(steps)} Steps")
-                    else:
-                        logger.info("No new journey")
-                logger.info(
-                    "---------------------------------------------------------------------------------------------\n\n"
-                )
+            current_entity_id = None
+            entity_count = 0
+            skipped_count = 0
+
+            for entity_id, entity_submissions in groupby(submissions, key=itemgetter("entity_id")):
+                current_entity_id = entity_id
+                entity_count += 1
+
+                entity_subs = list(entity_submissions)
+                result = elt._process_entity(self.PROGRAMME_TYPE, entity_id, entity_subs, account, existing_entity_ids)
+                if result is None:
+                    skipped_count += 1
+                    continue
+
+                beneficiary, journeys, visits, steps = result
+                if beneficiary is not None:
+                    all_beneficiaries.append(beneficiary)
+                all_journeys.extend(journeys)
+                all_visits.extend(visits)
+                all_steps.extend(steps)
+
+                if entity_count % page_size == 0:
+                    logger.info(f"Processed {entity_count} entities ({skipped_count} skipped)")
+
+            logger.info(
+                f"Processed {entity_count} entities total ({skipped_count} skipped) for {self.PROGRAMME_TYPE}. "
+                f"Creating: {len(all_beneficiaries)} beneficiaries, "
+                f"{len(all_journeys)} journeys, "
+                f"{len(all_visits)} visits, "
+                f"{len(all_steps)} steps \n"
+            )
+
+            task = Task(
+                name=f"{task_name} for {code} on page {page}",
+                account=account,
+                status="QUEUED",
+            )
+            elt._save_all(
+                all_beneficiaries,
+                all_journeys,
+                all_visits,
+                all_steps,
+                account,
+                current_entity_id,
+                task,
+            )

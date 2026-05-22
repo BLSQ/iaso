@@ -14,6 +14,7 @@ from iaso import models as m
 from iaso.api.org_unit_change_requests.serializers import (
     InstanceForChangeRequestSerializer,
     MobileOrgUnitChangeRequestListSerializer,
+    OrgUnitChangeRequestBulkDeleteSerializer,
     OrgUnitChangeRequestBulkReviewSerializer,
     OrgUnitChangeRequestListSerializer,
     OrgUnitChangeRequestRetrieveSerializer,
@@ -184,7 +185,7 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
                 "groups": [
                     {"id": self.group.id, "name": "Group"},
                 ],
-                "projects": [{"id": self.project.id, "name": self.project.name}],
+                "projects": [{"id": self.project.id, "name": self.project.name, "color": self.project.color}],
                 "requested_fields": serializer.data["requested_fields"],
                 "approved_fields": serializer.data["approved_fields"],
                 "rejection_comment": "",
@@ -310,6 +311,7 @@ class MobileOrgUnitChangeRequestListSerializerTestCase(TestCase):
                             "created_at": 1697202000.0,
                             "updated_at": 1697202000.0,
                             "json": {"Foo": "Bar"},
+                            "instance_files": [],
                         }
                     )
                 ],
@@ -638,7 +640,7 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
             "uuid": "e05933f4-8370-4329-8cf5-197941785a24",
             "org_unit_id": self.org_unit.id,
             "new_parent_id": parent_org_unit.id,
-            "new_name": "Foo",
+            "new_name": "Foo ",  # extra white space to check name trimming
             "new_org_unit_type_id": self.org_unit_type.id,
             "new_groups": [group1.id, group2.id],
             "new_location": {
@@ -833,3 +835,60 @@ class OrgUnitChangeRequestBulkReviewSerializerTestCase(TestCase):
         with self.assertRaises(ValidationError) as error:
             serializer.is_valid(raise_exception=True)
         self.assertEqual(error.exception.detail["non_field_errors"][0], "A `rejection_comment` must be provided.")
+
+
+class OrgUnitChangeRequestBulkDeleteSerializerTestCase(TestCase):
+    """
+    Test bulk delete/restore serializer.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.org_unit = m.OrgUnit.objects.create()
+        cls.change_request = m.OrgUnitChangeRequest.objects.create(org_unit=cls.org_unit, new_name="Foo")
+
+    def test_serialize_ok(self):
+        data = {
+            "select_all": 0,
+            "selected_ids": [1, 2, 3],
+            "unselected_ids": [],
+        }
+        serializer = OrgUnitChangeRequestBulkDeleteSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+        self.assertEqual(serializer.validated_data["select_all"], False)
+        self.assertEqual(serializer.validated_data["selected_ids"], [1, 2, 3])
+        self.assertEqual(serializer.validated_data["unselected_ids"], [])
+        self.assertEqual(serializer.validated_data["restore"], False)
+
+        data = {
+            "select_all": 0,
+            "selected_ids": [1, 2, 3],
+            "unselected_ids": [],
+            "restore": "true",
+        }
+        serializer = OrgUnitChangeRequestBulkDeleteSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+        self.assertEqual(serializer.validated_data["restore"], True)
+
+    def test_validate_selection(self):
+        data = {
+            "select_all": 1,
+            "selected_ids": [1, 2, 3],
+        }
+        serializer = OrgUnitChangeRequestBulkDeleteSerializer(data=data)
+        with self.assertRaises(ValidationError) as error:
+            serializer.is_valid(raise_exception=True)
+        self.assertEqual(
+            error.exception.detail["non_field_errors"][0], "You cannot set both `select_all` and `selected_ids`."
+        )
+
+        data = {
+            "select_all": 0,
+            "unselected_ids": [1, 2, 3],
+        }
+        serializer = OrgUnitChangeRequestBulkDeleteSerializer(data=data)
+        with self.assertRaises(ValidationError) as error:
+            serializer.is_valid(raise_exception=True)
+        self.assertEqual(
+            error.exception.detail["non_field_errors"][0], "You cannot set `unselected_ids` without `select_all`."
+        )

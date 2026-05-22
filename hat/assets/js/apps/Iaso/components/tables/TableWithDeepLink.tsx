@@ -1,9 +1,9 @@
+import React, { FunctionComponent, useCallback } from 'react';
 import {
     Table,
     TableComponentProps,
     useRedirectToReplace,
 } from 'bluesquare-components';
-import React, { FunctionComponent, useCallback } from 'react';
 import { useQueryClient } from 'react-query';
 
 type TableWithDeepLinkProps = TableComponentProps & {
@@ -32,6 +32,7 @@ type UseDeleteTableRowArgs = {
     count: number;
     invalidateQueries?: string[];
     baseUrl: string;
+    onSuccessCustomAction?: () => void;
 };
 
 export const useDeleteTableRow = ({
@@ -41,6 +42,7 @@ export const useDeleteTableRow = ({
     count,
     invalidateQueries,
     baseUrl,
+    onSuccessCustomAction = () => {},
 }: UseDeleteTableRowArgs): (() => void) => {
     const queryClient = useQueryClient();
     const redirectToReplace = useRedirectToReplace();
@@ -59,6 +61,7 @@ export const useDeleteTableRow = ({
         if (invalidateQueries) {
             queryClient.invalidateQueries(invalidateQueries);
         }
+        onSuccessCustomAction();
     }, [
         baseUrl,
         count,
@@ -68,5 +71,6 @@ export const useDeleteTableRow = ({
         params,
         queryClient,
         redirectToReplace,
+        onSuccessCustomAction,
     ]);
 };

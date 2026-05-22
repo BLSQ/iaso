@@ -41,7 +41,7 @@ export const Dashboard: FunctionComponent = () => {
         if (!rawCampaigns) return rawCampaigns;
         return {
             ...rawCampaigns,
-            campaigns: rawCampaigns.campaigns.map(campaign => ({
+            campaigns: rawCampaigns?.campaigns?.map(campaign => ({
                 ...campaign,
                 grouped_campaigns:
                     (campaign.grouped_campaigns?.length ?? 0) > 0
@@ -68,7 +68,6 @@ export const Dashboard: FunctionComponent = () => {
         showOnlyDeleted: Boolean(params.showOnlyDeleted),
         handleClickDeleteRow: handleDeleteConfirmDialogConfirm,
         handleClickRestoreRow: handleRestoreDialogConfirm,
-        params,
     });
 
     return (
@@ -86,6 +85,7 @@ export const Dashboard: FunctionComponent = () => {
                 <Box mb={2}>
                     <DashboardButtons exportToCSV={exportToCSV} />
                 </Box>
+                {/* @ts-ignore */}
                 <TableWithDeepLink
                     data={campaigns?.campaigns ?? []}
                     count={campaigns?.count}

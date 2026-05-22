@@ -1,12 +1,14 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 
-from iaso.api.instances import HasInstanceBulkPermission
+from iaso.api.instances.permissions import HasInstanceBulkPermission
 from iaso.api.org_units import HasCreateOrgUnitPermission
 from iaso.api.tasks.serializers import TaskSerializer
 from iaso.tasks.instance_bulk_gps_push import instance_bulk_gps_push
 
 
+@extend_schema(tags=["Instances", "GPKG", "Tasks"])
 class InstanceBulkGpsPushViewSet(viewsets.ViewSet):
     """Bulk push gps location from Instances to their related OrgUnit.
 
@@ -20,11 +22,17 @@ class InstanceBulkGpsPushViewSet(viewsets.ViewSet):
         select_all = raw_select_all not in [False, "false", "False", "0", 0]
         selected_ids = request.data.get("selected_ids", [])
         unselected_ids = request.data.get("unselected_ids", [])
-
         user = self.request.user
 
+        # We need to pass filters to the task, but QueryDicts are not serializable
+        filters = request.GET.dict()
+
         task = instance_bulk_gps_push(
-            select_all=select_all, selected_ids=selected_ids, unselected_ids=unselected_ids, user=user
+            select_all=select_all,
+            selected_ids=selected_ids,
+            unselected_ids=unselected_ids,
+            user=user,
+            filters=filters,
         )
         return Response(
             {"task": TaskSerializer(instance=task).data},

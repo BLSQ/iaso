@@ -1,7 +1,7 @@
 import { UseQueryResult } from 'react-query';
 
-import { optionsRequest } from '../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
-import { useSnackQuery } from '../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { optionsRequest } from 'Iaso/libs/Api';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
 
 import { apiBaseUrl } from '../constants';
 import { ChronogramMetaData, ChronogramTaskMetaData } from '../types';

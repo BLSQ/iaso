@@ -23,11 +23,11 @@ application.
 Other environment variables can be provided by a [.env
 file](https://docs.docker.com/v17.12/compose/environment-variables/#the-env-file).
 
-As a starting point, you can copy the sample .env.dist file and edit it
+As a starting point, you can copy the sample .env.example file and edit it
 to your needs.
 
 ``` {.sourceCode .bash}
-cp .env.dist .env
+cp .env.example .env
 ```
 
 **note:**
@@ -375,7 +375,16 @@ APP_TITLE="<app_title>"
 FAVICON_PATH="<path_in_static_folder>"
 LOGO_PATH="<path_in_static_folder>"
 SHOW_NAME_WITH_LOGO="<'yes' or 'no'>"
+HIDE_BASIC_NAV_ITEMS="<'yes' or 'no'>"
 ```
 
 Those settings are optional and are using a default value if nothing is provided
 
+### 23. Create a new IASO plugin
+
+You can create a new plugin using the command:
+``` {.sourceCode .bash}
+docker compose exec iaso ./manage.py startplugin <plugin_name>
+```
+
+It will create the skeleton of a new plugin in the `plugins/<plugin_name>` folder.

@@ -1,3 +1,10 @@
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
 import { Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -7,28 +14,20 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import get from 'lodash/get';
-import React, {
-    FunctionComponent,
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
-} from 'react';
-
-import { Form, ProjectFeatureFlags } from './ProjectFeatureFlags';
-import { ProjectInfos } from './ProjectInfos';
-
-import { Project } from '../types/project';
+import { defaultProjectColor } from 'Iaso/components/LegendBuilder/colors';
 
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
 import { useGetFeatureFlags } from '../hooks/requests';
 import MESSAGES from '../messages';
 import { FeatureFlag } from '../types/featureFlag';
+import { Project } from '../types/project';
+import { ProjectFeatureFlags } from './ProjectFeatureFlags';
+import { ProjectInfos, ProjectForm } from './ProjectInfos';
 
 type Tab = 'infos' | 'feature_flags';
 
 type Props = {
-    initialData?: Project | null;
+    initialData?: Project;
     saveProject: (s: Project) => Promise<any>;
     closeDialog: () => void;
     isOpen: boolean;
@@ -57,11 +56,14 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const emptyProject = {
+const emptyProject: ProjectForm = {
     id: { value: '', errors: [] },
     app_id: { value: '', errors: [] },
+    description: { value: '', errors: [] },
     name: { value: '', errors: [] },
-    feature_flags: { value: [], errors: [] } as Form,
+    feature_flags: { value: [], errors: [] },
+    qr_code: { value: '', errors: [] },
+    color: { value: '', errors: [] },
 };
 
 export const forbiddenCharacters = ['"', '?', '/', '%', '&', ' ', '-'];
@@ -77,11 +79,7 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
     dialogType = 'create',
     closeDialog,
     isOpen,
-    initialData = {
-        name: null,
-        app_id: null,
-        feature_flags: [],
-    },
+    initialData,
     saveProject,
 }) => {
     const { data: featureFlags, isFetching: isFetchingFeatureFlags } =
@@ -99,17 +97,27 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
                     value: get(pr, 'name', ''),
                     errors: [],
                 },
+                description: {
+                    value: get(pr, 'description', ''),
+                    errors: [],
+                },
                 feature_flags: {
-                    value: get(pr, 'feature_flags', [] as FeatureFlag[]).map(
-                        (v: FeatureFlag): number | string => v.id,
-                    ),
+                    value: get(pr, 'feature_flags', [] as FeatureFlag[]),
+                    errors: [],
+                },
+                qr_code: {
+                    value: get(pr, 'qr_code', ''),
+                    errors: [],
+                },
+                color: {
+                    value: get(pr, 'color', defaultProjectColor),
                     errors: [],
                 },
             };
         },
         [initialData],
     );
-    const [project, setProject] = useState(emptyProject);
+    const [project, setProject] = useState<ProjectForm>(emptyProject);
     const [tab, setTab] = useState<Tab>('infos');
     const appIdError = formatMessage(MESSAGES.appIdError);
 
@@ -171,12 +179,12 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
     const onConfirm = () => {
         const currentProject: Project = {
             id: initialData?.app_id,
-            feature_flags: (featureFlags ?? []).filter(fF =>
-                project.feature_flags.value.includes(fF.id),
-            ),
+            feature_flags: project.feature_flags.value ?? [],
             app_id: project.app_id.value || '',
             name: project.name.value || '',
+            description: project.description.value || '',
             old_app_id: initialData?.app_id,
+            color: project.color.value || defaultProjectColor,
         };
         saveProject(currentProject)
             .then(() => {
@@ -195,6 +203,21 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
         setProject(initialProject(initialData));
     }, [initialData, initialProject]);
 
+    const validateFeatureFlagsConfiguration = useCallback(() => {
+        return (project.feature_flags.value ?? []).every(pff => {
+            const ff = featureFlags?.find(x => x.id === pff.id);
+            return (
+                ff == null ||
+                ff.configuration_schema == null ||
+                Object.entries(ff.configuration_schema).every(
+                    ([confKey]) =>
+                        pff.configuration?.[confKey] &&
+                        pff.configuration?.[confKey] !== '',
+                )
+            );
+        });
+    }, [project, featureFlags]);
+
     const allowConfirm = useMemo(
         () =>
             project &&
@@ -203,8 +226,9 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
             project.app_id &&
             project.app_id.value !== '' &&
             project.app_id.errors.length === 0 &&
-            !isFetchingFeatureFlags,
-        [project, isFetchingFeatureFlags],
+            !isFetchingFeatureFlags &&
+            validateFeatureFlagsConfiguration(),
+        [project, isFetchingFeatureFlags, validateFeatureFlagsConfiguration],
     );
     const titleMessage =
         dialogType === 'create'
@@ -261,11 +285,11 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
                 )}
                 {tab === 'feature_flags' && (
                     <ProjectFeatureFlags
-                        setFieldValue={(_key, value) =>
+                        onFeatureFlagsChanged={(value: FeatureFlag[]) =>
                             setFieldValue('feature_flags', value)
                         }
-                        projectFeatureFlagsValues={project.feature_flags.value}
-                        featureFlags={featureFlags?.map(featureFlag =>
+                        projectFeatureFlags={project.feature_flags.value ?? []}
+                        featureFlags={(featureFlags ?? [])?.map(featureFlag =>
                             translatedFeatureFlag(featureFlag),
                         )}
                         isFetchingFeatureFlag={isFetchingFeatureFlags}
@@ -274,10 +298,6 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
             </div>
         </ConfirmCancelModal>
     );
-};
-
-CreateEditProjectDialog.defaultProps = {
-    initialData: null,
 };
 
 const createProjectModalWithButton = makeFullModal(

@@ -160,19 +160,22 @@ export const searchOrgUnits = async ({
 };
 
 export const useGetOrgUnit = (
-    OrgUnitId: string | undefined,
+    orgUnitId?: string,
 ): UseQueryResult<OrgUnit, Error> =>
     useSnackQuery(
-        ['orgunits', OrgUnitId],
-        () => getRequest(`/api/orgunits/${OrgUnitId}/`),
+        ['orgunits', `${orgUnitId}`],
+        () => getRequest(`/api/orgunits/${orgUnitId}/`),
         undefined,
         {
-            enabled: !!OrgUnitId,
+            enabled: Boolean(orgUnitId),
+            staleTime: Infinity,
+            cacheTime: 1000 * 60 * 5,
+            keepPreviousData: true,
         },
     );
 
 const getOrgUnits = async (
-    orgUnitsIds: string[] | string,
+    orgUnitsIds: string | (number | string)[] | undefined,
     statusSettings = 'all',
 ): Promise<OrgUnit[]> => {
     const idsString = Array.isArray(orgUnitsIds)
@@ -183,7 +186,7 @@ const getOrgUnits = async (
 };
 
 export const useGetMultipleOrgUnits = (
-    orgUnitsIds: string[] | string,
+    orgUnitsIds: string | (number | string)[] | undefined,
     statusSettings = 'all',
 ): UseQueryResult<OrgUnit[], Error> => {
     return useSnackQuery({

@@ -9,9 +9,8 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.test import override_settings
 
 from hat import settings
-from iaso.test import TestCase
-from iaso.utils.clamav import scan_disk_file_for_virus, scan_uploaded_file_for_virus
-from iaso.utils.models.virus_scan import VirusScanStatus
+from iaso.test import MockClamavScanResults, TestCase
+from iaso.utils.virus_scan.clamav import VirusScanStatus, scan_disk_file_for_virus, scan_uploaded_file_for_virus
 
 
 @override_settings(
@@ -31,7 +30,7 @@ class ClamAVTestCase(TestCase):
     @patch("clamav_client.get_scanner")
     def test_negative_uploaded_file(self, mock_get_scanner):
         mock_scanner = MagicMock()
-        mock_scanner.scan.return_value = MockResults(
+        mock_scanner.scan.return_value = MockClamavScanResults(
             state="OK",
             details="",
             passed=True,
@@ -56,7 +55,7 @@ class ClamAVTestCase(TestCase):
     @patch("clamav_client.get_scanner")
     def test_positive_uploaded_file(self, mock_get_scanner):
         mock_scanner = MagicMock()
-        mock_scanner.scan.return_value = MockResults(
+        mock_scanner.scan.return_value = MockClamavScanResults(
             state="FOUND",
             details="Eicar-signature",
             passed=False,
@@ -81,7 +80,7 @@ class ClamAVTestCase(TestCase):
     @patch("clamav_client.get_scanner")
     def test_negative_disk_file(self, mock_get_scanner):
         mock_scanner = MagicMock()
-        mock_scanner.scan.return_value = MockResults(
+        mock_scanner.scan.return_value = MockClamavScanResults(
             state="OK",
             details="",
             passed=True,
@@ -98,7 +97,7 @@ class ClamAVTestCase(TestCase):
     @patch("clamav_client.get_scanner")
     def test_positive_disk_file(self, mock_get_scanner):
         mock_scanner = MagicMock()
-        mock_scanner.scan.return_value = MockResults(
+        mock_scanner.scan.return_value = MockClamavScanResults(
             state="FOUND",
             details="Eicar-signature",
             passed=False,
@@ -125,10 +124,3 @@ class ClamAVTestCase(TestCase):
 
         self.assertEqual(result, VirusScanStatus.ERROR)
         self.assertIsNone(timestamp_scan)
-
-
-class MockResults:
-    def __init__(self, state, details, passed):
-        self.state = state
-        self.details = details
-        self.passed = passed

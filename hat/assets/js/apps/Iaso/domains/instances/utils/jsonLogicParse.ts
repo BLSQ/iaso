@@ -1,5 +1,5 @@
-import moment, { MomentInput } from 'moment';
 import { QueryBuilderFields } from 'bluesquare-components';
+import moment, { MomentInput } from 'moment';
 
 import {
     apiDateFormat,

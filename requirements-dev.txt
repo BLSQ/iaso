@@ -17,6 +17,7 @@ types-jwt==0.1.3  # https://pypi.org/project/types-jwt/
 # ------------------------------------------------------------------------------
 django-debug-toolbar==4.4.2  # https://github.com/jazzband/django-debug-toolbar/tags
 django-sslserver==0.22  # https://pypi.org/project/django-sslserver/
+coverage==7.10.6 # https://coverage.readthedocs.io
 
 # Quality and performance.
 # ------------------------------------------------------------------------------
@@ -42,7 +43,3 @@ types-mock==4.0.15  # https://pypi.org/project/types-mock/
 # Trypelim plugin.
 # ------------------------------------------------------------------------------
 vcrpy==4.1.1  # https://github.com/kevin1024/vcrpy
-
-# Sass compiler.
-# ------------------------------------------------------------------------------
-django-sass-processor==1.4.1  # https://github.com/jrief/django-sass-processor/releases/tag/1.4.1

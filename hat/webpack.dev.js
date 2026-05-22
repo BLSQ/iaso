@@ -25,10 +25,13 @@ const LOCALE = 'fr';
 // If you launch the dev server with `WEBPACK_HOST=192.168.1.XXX  npm run dev`
 // where 192.168.1.XXX is your local IP address, you can access the dev server
 // from another device on the same network, typically from a mobile device or tablet
-const WEBPACK_HOST = process.env.WEBPACK_HOST || 'localhost';
-const WEBPACK_PORT = process.env.WEBPACK_PORT || '3000';
-const WEBPACK_PROTOCOL = process.env.WEBPACK_PROTOCOL || 'http';
-const WEBPACK_URL = `${WEBPACK_PROTOCOL}://${WEBPACK_HOST}:${WEBPACK_PORT}`;
+const WEBPACK_HOST = process.env.WEBPACK_HOST;
+const WEBPACK_PORT = process.env.WEBPACK_PORT;
+const WEBPACK_PROTOCOL = process.env.WEBPACK_PROTOCOL;
+const WEBPACK_URL =
+    WEBPACK_HOST && WEBPACK_PORT && WEBPACK_PROTOCOL
+        ? `${WEBPACK_PROTOCOL}://${WEBPACK_HOST}:${WEBPACK_PORT}`
+        : '';
 const WEBPACK_PATH =
     process.env.WEBPACK_PATH || path.resolve(__dirname, './assets/webpack/');
 
@@ -64,7 +67,6 @@ module.exports = {
             'moment',
             'leaflet',
             'leaflet-draw',
-            'prop-types',
             'typescript',
             'video.js',
         ],
@@ -82,9 +84,10 @@ module.exports = {
         path: WEBPACK_PATH,
         filename: '[name].js',
         sourceMapFilename: '[name].[contenthash].js.map',
-        publicPath: ``, // replace here with `${WEBPACK_URL}/` to use another url for webpack
+        publicPath: WEBPACK_URL,
         assetModuleFilename: 'assets/[name].[hash][ext][query]',
         scriptType: 'text/javascript',
+        compareBeforeEmit: true,
     },
     devtool: 'source-map',
 
@@ -162,11 +165,14 @@ module.exports = {
                     eager: true,
                     requiredVersion: false,
                 },
-                'bluesquare-components': {
-                    singleton: true,
-                    eager: true,
-                    requiredVersion: false,
-                },
+                // Exclude from shared when LIVE_COMPONENTS so resolve.alias to local src works
+                ...(process.env.LIVE_COMPONENTS !== 'true' && {
+                    'bluesquare-components': {
+                        singleton: true,
+                        eager: true,
+                        requiredVersion: false,
+                    },
+                }),
             },
         }),
     ],
@@ -184,38 +190,26 @@ module.exports = {
                 : newBrowsersConfig),
             {
                 test: /\.css$/,
-                use: [{ loader: 'style-loader' }, { loader: 'css-loader' }],
+                use: [
+                    { loader: 'style-loader' },
+                    {
+                        loader: 'css-loader',
+                        options: {
+                            url: true, // Ensure css-loader processes url() statements
+                        },
+                    },
+                ],
             },
             {
                 test: /\.(png|jpg|jpeg|gif|svg)$/,
                 type: 'asset/resource',
             },
             {
-                test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
+                test: /\.(woff|woff2|ttf|eot|otf)$/,
                 type: 'asset/resource',
                 generator: {
                     filename: 'fonts/[name].[hash][ext]',
-                },
-            },
-            {
-                test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/,
-                type: 'asset/resource',
-                generator: {
-                    filename: 'fonts/[name].[hash][ext]',
-                },
-            },
-            {
-                test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
-                type: 'asset/resource',
-                generator: {
-                    filename: 'fonts/[name].[hash][ext]',
-                },
-            },
-            {
-                test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
-                type: 'asset/resource',
-                generator: {
-                    filename: 'fonts/[name].[hash][ext]',
+                    publicPath: '/static/', // Ensure URLs in CSS point to the correct path
                 },
             },
             {
@@ -237,16 +231,56 @@ module.exports = {
 
     resolve: {
         alias: {
-            'react/jsx-runtime': 'react/jsx-runtime.js',
+            'react/jsx-runtime.js': 'react/jsx-runtime',
             // Add alias for the combined config
             'IasoModules/plugins/configs': combinedConfigPath,
             'IasoModules/plugins/keys': pluginKeysPath,
             'IasoModules/translations/configs': combinedTranslationsPath,
             'IasoModules/language/configs': languageConfigsPath,
             ...(process.env.LIVE_COMPONENTS === 'true' && {
+                // Alias bluesquare-components to local source
                 'bluesquare-components': path.resolve(
                     __dirname,
                     '../../bluesquare-components/src/',
+                ),
+                // Force host's singleton deps so bluesquare-components src uses same instances
+                // (avoids duplicate react-router-dom → useNavigate outside Router context)
+                react: path.resolve(__dirname, '../node_modules/react'),
+                'react-dom': path.resolve(
+                    __dirname,
+                    '../node_modules/react-dom',
+                ),
+                'react-router': path.resolve(
+                    __dirname,
+                    '../node_modules/react-router',
+                ),
+                'react-router-dom': path.resolve(
+                    __dirname,
+                    '../node_modules/react-router-dom',
+                ),
+                'react-intl': path.resolve(
+                    __dirname,
+                    '../node_modules/react-intl',
+                ),
+                '@mui/material': path.resolve(
+                    __dirname,
+                    '../node_modules/@mui/material',
+                ),
+                '@mui/styles': path.resolve(
+                    __dirname,
+                    '../node_modules/@mui/styles',
+                ),
+                '@emotion/react': path.resolve(
+                    __dirname,
+                    '../node_modules/@emotion/react',
+                ),
+                '@emotion/styled': path.resolve(
+                    __dirname,
+                    '../node_modules/@emotion/styled',
+                ),
+                'react-query': path.resolve(
+                    __dirname,
+                    '../node_modules/react-query',
                 ),
             }),
         },

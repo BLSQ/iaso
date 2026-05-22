@@ -132,7 +132,7 @@ export const LqasAfroPopup: FunctionComponent<Props> = ({
                                 color="primary"
                                 size="small"
                                 target="_blank"
-                                to={`/${baseUrls.lqasCountry}/campaign/${shape.data.campaign}/country/${countryId}/rounds/${roundNumber},${roundNumber}/rightTab/list`}
+                                to={`/${baseUrls.lqasCountry}/leftCampaign/${shape.data.campaign_id}/leftCountry/${countryId}/leftRound/${roundNumber}/leftTab/map/rightCampaign/${shape.data.campaign_id}/rightCountry/${countryId}/rightRound/${roundNumber}/rightTab/list/leftFilterType/country/rightFilterType/country/`}
                             >
                                 {formatMessage(MESSAGES.gotoLqasForCountry)}
                             </LinkButton>

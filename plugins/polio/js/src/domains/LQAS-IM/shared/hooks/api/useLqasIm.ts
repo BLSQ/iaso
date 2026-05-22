@@ -1,33 +1,37 @@
-// @ts-ignore
-import { useSnackQuery } from 'Iaso/libs/apiHooks';
-// @ts-ignore
-import { getRequest } from 'Iaso/libs/Api';
 import { UseQueryResult } from 'react-query';
+import { getRequest } from 'Iaso/libs/Api';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
+
 import {
     IM_COUNTRY_URL,
     IM_GLOBAL_SLUG,
     IM_OHH_SLUG,
     IM_HH_SLUG,
 } from '../../../IM/constants';
-import { LqasImData } from '../../../../../constants/types';
 import { LQAS_COUNTRY_URL } from '../../../LQAS/constants';
-
-export type LQASIMRequestType = 'lqas' | 'imOHH' | 'imHH' | 'imGlobal';
+import { LqasImData, LqasIMType } from '../../../types';
+import { appId } from '../../../../../constants/app';
 
 export const getLqasIm = (
-    type: LQASIMRequestType,
-    countryId: string,
+    type: LqasIMType,
+    countryId?: string,
+    isEmbedded = false,
 ): Promise<any> => {
     switch (type) {
         case 'imOHH':
             return getRequest(`${IM_COUNTRY_URL}${IM_OHH_SLUG}_${countryId}`);
-        case 'imHH':
+        case 'imIHH':
             return getRequest(`${IM_COUNTRY_URL}${IM_HH_SLUG}_${countryId}`);
         case 'imGlobal':
             return getRequest(
                 `${IM_COUNTRY_URL}${IM_GLOBAL_SLUG}_${countryId}`,
             );
         case 'lqas':
+            if (isEmbedded) {
+                return getRequest(
+                    `${LQAS_COUNTRY_URL}${countryId}/?app_id=${appId}`,
+                );
+            }
             return getRequest(`${LQAS_COUNTRY_URL}${countryId}/`);
         default:
             throw new Error(
@@ -37,12 +41,13 @@ export const getLqasIm = (
 };
 
 export const useLqasIm = (
-    type: LQASIMRequestType,
-    countryId: string,
+    type: LqasIMType,
+    countryId?: string,
+    isEmbedded = false,
 ): UseQueryResult<LqasImData> => {
     return useSnackQuery({
         queryKey: [type, countryId, getLqasIm],
-        queryFn: async () => getLqasIm(type, countryId),
+        queryFn: async () => getLqasIm(type, countryId, isEmbedded),
         dispatchOnError: false,
         options: {
             select: data => {
@@ -52,6 +57,10 @@ export const useLqasIm = (
             keepPreviousData: false,
             initialData: { stats: {} },
             enabled: Boolean(countryId),
+            onError: err => {
+                console.warn(err);
+                return undefined;
+            },
         },
     });
 };

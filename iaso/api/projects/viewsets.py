@@ -1,15 +1,24 @@
+from django.db.models import Prefetch, QuerySet
 from django.http import HttpResponse
+from drf_spectacular.utils import extend_schema
 from qr_code.qrcode.maker import make_qr_code_image
 from qr_code.qrcode.utils import QRCodeOptions
-from rest_framework import filters, permissions, status
+from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 
-from iaso.models import Project
+from iaso.models import Project, ProjectFeatureFlags
 
+from ...permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION
 from ..common import ModelViewSet
 from .serializers import ProjectSerializer
 
 
+class ProjectsQuerystringSerializer(serializers.Serializer):
+    bypass_restrictions = serializers.BooleanField(default=False)
+
+
+@extend_schema(tags=["Projects"])
 class ProjectsViewSet(ModelViewSet):
     """Projects API
 
@@ -22,16 +31,33 @@ class ProjectsViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["app_id", "name"]
+    ordering = ["id"]
     serializer_class = ProjectSerializer
     results_key = "projects"
     http_method_names = ["get", "head", "options", "trace"]
 
-    def get_queryset(self):
-        """Always filter the base queryset by account"""
+    def get_queryset(self) -> QuerySet[Project]:
+        querystring = self.request.query_params
+        querystring_serializer = ProjectsQuerystringSerializer(data=querystring)
+        querystring_serializer.is_valid(raise_exception=True)
+        bypass_restrictions = querystring_serializer.validated_data.get("bypass_restrictions")
 
-        return Project.objects.filter(account=self.request.user.iaso_profile.account).filter_on_user_projects(
-            self.request.user
+        projects = Project.objects.filter(account=self.request.user.iaso_profile.account).prefetch_related(
+            Prefetch(
+                "projectfeatureflags_set",
+                queryset=ProjectFeatureFlags.objects.select_related("featureflag"),
+            )
         )
+
+        if not bypass_restrictions:
+            projects = projects.filter_on_user_projects(self.request.user)
+        else:
+            # An admin should be able to bypass its own project restrictions in some cases,
+            # e.g., for users management.
+            if not self.request.user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()):
+                raise PermissionDenied(f"{CORE_USERS_ADMIN_PERMISSION} permission is required to access all projects.")
+
+        return projects
 
     @action(detail=True, methods=["get"])
     def qr_code(self, request, *args, **kwargs):

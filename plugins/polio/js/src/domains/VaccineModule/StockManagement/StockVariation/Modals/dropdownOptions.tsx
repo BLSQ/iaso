@@ -3,6 +3,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import { DropdownOptions } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { CREATED, RETURNED } from '../../constants';
 import MESSAGES from '../../messages';
+import { DosesPerVialDropdown } from '../../types';
 
 export const VM_REACHED_DISCARD_POINT = 'vvm_reached_discard_point';
 export const VACCINE_EXPIRED = 'vaccine_expired';
@@ -13,6 +14,7 @@ export const PHYSICAL_INVENTORY_ADD = 'physical_inventory_add';
 export const PHYSICAL_INVENTORY_REMOVE = 'physical_inventory_remove';
 export const BROKEN = 'broken';
 export const UNREADABLE_LABEL = 'unreadable_label';
+export const MISSING_DROPPERS = 'missing_droppers';
 // from backend model.
 // class StockCorrectionChoices(models.TextChoices):
 // VVM_REACHED_DISCARD_POINT = "vvm_reached_discard_point", _("VVM reached the discard point")
@@ -21,7 +23,8 @@ export const UNREADABLE_LABEL = 'unreadable_label';
 // RETURN = "return", _("Return")
 // STEALING = "stealing", _("Stealing")
 // PHYSICAL_INVENTORY_ADD = "physical_inventory_add", _("Add to Physical Inventory")
-// PHYSICAL_INVENTORY_REMOVE = "physical_inventory_remove", _("rempove from Physical Inventory")
+// PHYSICAL_INVENTORY_REMOVE = "physical_inventory_remove", _("remove from Physical Inventory")
+// MISSING_DROPPERS = "missing_droppers", _("Missing droppers")
 
 type IncidentType =
     | 'vaccine_expired'
@@ -29,14 +32,19 @@ type IncidentType =
     | 'missing'
     | 'stealing'
     | 'physical_inventory'
+    | 'physical_inventory_add'
+    | 'physical_inventory_remove'
     | 'broken'
+    | 'missing_droppers'
     | 'unreadable_label'
     | 'return';
 
-export const useIncidentOptions = (): DropdownOptions<IncidentType>[] => {
+export const useIncidentOptions = (
+    hasUsableStock: boolean,
+): DropdownOptions<IncidentType>[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
-        return [
+        const optionsForUsable: DropdownOptions<IncidentType>[] = [
             {
                 label: formatMessage(MESSAGES[VM_REACHED_DISCARD_POINT]),
                 value: VM_REACHED_DISCARD_POINT,
@@ -58,14 +66,6 @@ export const useIncidentOptions = (): DropdownOptions<IncidentType>[] => {
                 value: STEALING,
             },
             {
-                label: formatMessage(MESSAGES[PHYSICAL_INVENTORY_ADD]),
-                value: PHYSICAL_INVENTORY_ADD,
-            },
-            {
-                label: formatMessage(MESSAGES[PHYSICAL_INVENTORY_REMOVE]),
-                value: PHYSICAL_INVENTORY_REMOVE,
-            },
-            {
                 label: formatMessage(MESSAGES[BROKEN]),
                 value: BROKEN,
             },
@@ -73,13 +73,35 @@ export const useIncidentOptions = (): DropdownOptions<IncidentType>[] => {
                 label: formatMessage(MESSAGES[UNREADABLE_LABEL]),
                 value: UNREADABLE_LABEL,
             },
-        ].sort(
+            {
+                label: formatMessage(MESSAGES[MISSING_DROPPERS]),
+                value: MISSING_DROPPERS,
+            },
+        ];
+        const inventoryOptions: DropdownOptions<IncidentType>[] = [
+            {
+                label: formatMessage(MESSAGES[PHYSICAL_INVENTORY_ADD]),
+                value: PHYSICAL_INVENTORY_ADD,
+            },
+            {
+                label: formatMessage(MESSAGES[PHYSICAL_INVENTORY_REMOVE]),
+                value: PHYSICAL_INVENTORY_REMOVE,
+            },
+        ];
+
+        if (hasUsableStock) {
+            inventoryOptions.concat(optionsForUsable);
+        }
+        const results = hasUsableStock
+            ? [...inventoryOptions, ...optionsForUsable]
+            : inventoryOptions;
+        return results.sort(
             (
                 option1: DropdownOptions<IncidentType>,
                 option2: DropdownOptions<IncidentType>,
             ) => option1.label.localeCompare(option2.label),
         ) as DropdownOptions<IncidentType>[];
-    }, [formatMessage]);
+    }, [formatMessage, hasUsableStock]);
 };
 
 type EarmarkType = 'created' | 'returned' | 'used';
@@ -104,4 +126,32 @@ export const useEarmarkOptions = (): DropdownOptions<EarmarkType>[] => {
             ) => option1.label.localeCompare(option2.label),
         ) as DropdownOptions<EarmarkType>[];
     }, [formatMessage]);
+};
+
+export const useAvailablePresentations = (
+    dosesOptions: DosesPerVialDropdown | undefined,
+    formData: { doses_per_vial?: number },
+    usable = true,
+): DropdownOptions<number>[] => {
+    return useMemo(() => {
+        const availableOptions: DropdownOptions<number>[] = dosesOptions
+            ? dosesOptions.filter(option =>
+                  usable
+                      ? option.doses_available > 0
+                      : option.unusable_doses > 0,
+              )
+            : [];
+        const availableValues = availableOptions.map(o => o.value);
+        // If the form has already been encoded, we add the value to avoid putting the form in error
+        if (
+            formData?.doses_per_vial &&
+            !availableValues.includes(formData.doses_per_vial)
+        ) {
+            availableOptions.push({
+                label: `${formData.doses_per_vial}`,
+                value: formData.doses_per_vial,
+            });
+        }
+        return availableOptions;
+    }, [dosesOptions, formData?.doses_per_vial]);
 };

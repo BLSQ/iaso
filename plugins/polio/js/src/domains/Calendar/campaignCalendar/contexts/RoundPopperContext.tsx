@@ -19,7 +19,8 @@ const defaultContext: RoundPopperContextObject = {
 const RoundPopperContext =
     createContext<RoundPopperContextObject>(defaultContext);
 
-const RoundPopperContextProvider: FunctionComponent = ({ children }) => {
+type Props = { children: React.ReactNode };
+const RoundPopperContextProvider: FunctionComponent<Props> = ({ children }) => {
     const [anchorEl, setAnchorEl] = useState<undefined | HTMLElement>(
         undefined,
     );

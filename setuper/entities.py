@@ -15,7 +15,7 @@ def create_forms_and_entities(iaso_client):
     print("-- Setting up reference form")
 
     project_id = iaso_client.get("/api/projects/")["projects"][0]["id"]
-    org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
+    org_unit_types = iaso_client.get("/api/v2/orgunittypes/?fields=id,name")["orgUnitTypes"]
     hf_out = [out for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF"][0]
 
     # create registration form form
@@ -34,8 +34,7 @@ def create_forms_and_entities(iaso_client):
         "label_keys": [],
     }
 
-    reg_form = iaso_client.post("/api/forms/", json=reg_form_data)
-    reg_form_id = reg_form["id"]
+    reg_form_id = iaso_client.post("/api/forms/", json=reg_form_data)["id"]
 
     # associate it's form version and upload xlsform
 
@@ -61,8 +60,7 @@ def create_forms_and_entities(iaso_client):
         "label_keys": [],
     }
 
-    follow_form = iaso_client.post("/api/forms/", json=followUp_form_data)
-    follow_form_id = follow_form["id"]
+    follow_form_id = iaso_client.post("/api/forms/", json=followUp_form_data)["id"]
 
     # associate it's form version and upload xlsform
     follow_test_file = "data/entity-child_followup.xlsx"
@@ -211,22 +209,29 @@ def create_child_entities(account_name, iaso_client, orgunit, entity_type):
 
 def setup_entities(account_name, iaso_client, entity_type, new_entity_type):
     print("-- Setting up entity")
-    org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
+    org_unit_types = iaso_client.get("/api/v2/orgunittypes/?fields=id,name")["orgUnitTypes"]
     hf_out = [out for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF"][0]
 
     # fetch orgunit ids
     limit = 20
-    orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": hf_out["id"]})["orgunits"]
+    orgunits = iaso_client.get(
+        "/api/orgunits/",
+        params={"limit": limit, "orgUnitTypeId": hf_out["id"], "fields": "id,longitude,latitude,altitude"},
+    )["orgunits"]
+
+    # Getting the latest form version for reference form
+    if new_entity_type["reference_form"]["id"]:
+        form = iaso_client.get(f"/api/forms/{new_entity_type['reference_form']['id']}/?fields=latest_form_version")
+        new_entity_type["reference_form"]["latest_form_version"] = form["latest_form_version"]
+        new_entity_type["id"] = entity_type["id"]
 
     print("-- Submitting %d submissions" % limit)
     count = 0
     for orgunit in orgunits:
-        entity_type["reference_form"] = new_entity_type["reference_form"]
-        entity_type["followup_form"] = new_entity_type["followup_form"]
         if entity_type["name"] == "Children less than 5":
-            create_child_entities(account_name, iaso_client, orgunit, entity_type)
+            create_child_entities(account_name, iaso_client, orgunit, new_entity_type)
         elif entity_type["name"] in ["Pregnant women", "Household"]:
-            create_additional_entities(account_name, iaso_client, orgunit, entity_type)
+            create_additional_entities(account_name, iaso_client, orgunit, new_entity_type)
         count = count + 1
     print(
         iaso_client.get("/api/instances", params={"limit": 1})["count"],

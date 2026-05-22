@@ -1,12 +1,19 @@
-from django.http import HttpResponse
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
+from iaso.exports.cleaning_file_response import CleaningFileResponse
 from iaso.models import DataSource, SourceVersion
+from iaso.permissions.core_permissions import (
+    CORE_LINKS_PERMISSION,
+    CORE_MAPPINGS_PERMISSION,
+    CORE_ORG_UNITS_PERMISSION,
+    CORE_ORG_UNITS_READ_PERMISSION,
+    CORE_SOURCE_PERMISSION,
+)
 
-from .common import CONTENT_TYPE_CSV, HasPermission, ModelViewSet
+from .common import HasPermission, ModelViewSet
 from .source_versions_serializers import DiffSerializer, ExportSerializer
 from .tasks.serializers import TaskSerializer
 
@@ -76,11 +83,12 @@ class SourceVersionsDropdownSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "data_source", "number", "data_source_name"]
 
 
+@extend_schema(tags=["Source versions"])
 class SourceVersionViewSet(ModelViewSet):
     f"""Data source API
 
-    This API is restricted to authenticated users having at least one of the "{permission.MAPPINGS}",
-    "{permission.ORG_UNITS}","{permission.ORG_UNITS_READ}", and "{permission.LINKS}" permissions
+    This API is restricted to authenticated users having at least one of the "{CORE_MAPPINGS_PERMISSION}",
+    "{CORE_ORG_UNITS_PERMISSION}","{CORE_ORG_UNITS_READ_PERMISSION}", and "{CORE_LINKS_PERMISSION}" permissions
 
     GET /api/sourceversions/
     GET /api/sourceversions/<id>
@@ -101,8 +109,12 @@ class SourceVersionViewSet(ModelViewSet):
     permission_classes = [
         permissions.IsAuthenticated,
         HasPermission(
-            permission.MAPPINGS, permission.ORG_UNITS, permission.ORG_UNITS_READ, permission.LINKS, permission.SOURCES
-        ),  # type: ignore
+            CORE_MAPPINGS_PERMISSION,
+            CORE_ORG_UNITS_PERMISSION,
+            CORE_ORG_UNITS_READ_PERMISSION,
+            CORE_LINKS_PERMISSION,
+            CORE_SOURCE_PERMISSION,
+        ),
     ]
     serializer_class = SourceVersionSerializer
     results_key = "versions"
@@ -160,10 +172,9 @@ class SourceVersionViewSet(ModelViewSet):
             data=request.data if request.method == "POST" else request.query_params
         )
         serializer.is_valid(raise_exception=True)
-        # FIXME: FileResponse don't work, no idea why, not a priority
         filename = "comparison.csv"
-        response = HttpResponse(serializer.generate_csv(), content_type=CONTENT_TYPE_CSV)
-        response["Content-Disposition"] = "attachment; filename=%s" % filename
+        tmp = serializer.generate_csv()
+        response = CleaningFileResponse(tmp.name, as_attachment=True, filename=filename)
         return response
 
     @action(methods=["POST"], detail=False, serializer_class=ExportSerializer)

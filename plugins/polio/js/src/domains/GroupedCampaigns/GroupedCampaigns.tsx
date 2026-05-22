@@ -41,7 +41,7 @@ export const GroupedCampaigns: FunctionComponent = () => {
     }, [params]);
     const { data: groupedCampaigns, isFetching } =
         useGetGroupedCampaigns(tableParams);
-    const { mutateAsync: deleteGroupedCampaign } = useDeleteGroupedCampaign();
+    const { mutateAsync: deleteGroupedCampaign } = useDeleteGroupedCampaign({params: tableParams, count: groupedCampaigns?.count ?? 0});
     const columns = useGroupedCampaignsColumns(deleteGroupedCampaign);
 
     return (

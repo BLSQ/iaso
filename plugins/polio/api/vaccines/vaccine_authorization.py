@@ -5,13 +5,12 @@ import itertools
 from typing import Any
 
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, serializers
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
 from iaso.api.common import (
     Custom403Exception,
     DeletionFilterBackend,
@@ -22,6 +21,10 @@ from iaso.api.common import (
 )
 from iaso.models import OrgUnit
 from plugins.polio.models import Group, VaccineAuthorization
+from plugins.polio.permissions import (
+    POLIO_VACCINE_AUTHORIZATIONS_ADMIN_PERMISSION,
+    POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY_PERMISSION,
+)
 from plugins.polio.settings import COUNTRY
 
 
@@ -111,11 +114,11 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
 
 
 class HasVaccineAuthorizationsPermissions(GenericReadWritePerm):
-    read_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY
-    write_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_ADMIN
+    read_perm = POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY_PERMISSION
+    write_perm = POLIO_VACCINE_AUTHORIZATIONS_ADMIN_PERMISSION
 
 
-@swagger_auto_schema(tags=["vaccineauthorizations"])
+@extend_schema(tags=["Polio - vaccine authorizations"])
 class VaccineAuthorizationViewSet(ModelViewSet):
     """
     Vaccine Authorizations API

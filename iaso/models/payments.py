@@ -48,6 +48,9 @@ class PotentialPayment(models.Model):
         "Task", on_delete=models.SET_NULL, null=True, blank=True, related_name="potential_payments"
     )
 
+    def __str__(self):
+        return f"{self.pk}"
+
 
 class PaymentLot(models.Model):
     """

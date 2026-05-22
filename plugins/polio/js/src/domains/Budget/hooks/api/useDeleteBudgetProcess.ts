@@ -4,14 +4,33 @@ import { deleteRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/l
 import { useSnackMutation } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 
 import MESSAGES from '../../messages';
+import { useDeleteTableRow } from 'Iaso/components/tables/TableWithDeepLink';
+import { baseUrls } from '../../../../../../../polio/js/src/constants/urls';
 
 const deleteBudgetProcess = (id: number) => {
     return deleteRequest(`/api/polio/budget/${id}`);
 };
 
-export const useDeleteBudgetProcess = (): UseMutationResult =>
-    useSnackMutation({
-        mutationFn: deleteBudgetProcess,
-        snackSuccessMessage: MESSAGES.messageDeleteSuccess,
-        invalidateQueryKey: 'budget',
+type useDeleteArgs = {
+    params: any;
+    count: number;
+}
+
+export const useDeleteBudgetProcess = ({params, count}: useDeleteArgs): UseMutationResult =>{
+    const onSuccess = useDeleteTableRow({
+        count,
+        params,
+        pageKey: 'page',
+        pageSizeKey: 'pageSize',
+        invalidateQueries: ['budget'],
+        baseUrl: baseUrls.budget,
     });
+
+    return useSnackMutation({
+        mutationFn: id => deleteBudgetProcess(id),
+        snackSuccessMessage: MESSAGES.messageDeleteSuccess,
+        options: {
+            onSuccess,
+        },
+    });
+}

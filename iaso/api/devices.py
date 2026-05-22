@@ -1,7 +1,8 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
 
-from hat.menupermissions import models as permission
 from iaso.models import Device, DeviceOwnership, Instance
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_SUBMISSIONS_PERMISSION
 
 from .common import HasPermission, ModelViewSet, TimestampField
 
@@ -29,10 +30,11 @@ class DeviceSerializer(serializers.ModelSerializer):
         return owner.user.iaso_profile.as_short_dict() if owner else None
 
 
+@extend_schema(tags=["Devices"])
 class DevicesViewSet(ModelViewSet):
     f"""Iaso Devices API
 
-    This API is restricted to authenticated users having the "{permission.FORMS}" or "{permission.SUBMISSIONS}" permissions.
+    This API is restricted to authenticated users having the "{CORE_FORMS_PERMISSION}" or "{CORE_SUBMISSIONS_PERMISSION}" permissions.
 
     GET /api/devices/
     GET /api/devices/<id>
@@ -40,7 +42,7 @@ class DevicesViewSet(ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission(permission.FORMS, permission.SUBMISSIONS),  # type: ignore
+        HasPermission(CORE_FORMS_PERMISSION, CORE_SUBMISSIONS_PERMISSION),
     ]
     serializer_class = DeviceSerializer
     results_key = "devices"

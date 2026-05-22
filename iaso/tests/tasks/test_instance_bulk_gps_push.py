@@ -1,11 +1,11 @@
 from django.contrib.auth.models import Permission
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.geos import Point
 from rest_framework import status
 
-from hat.menupermissions import models as am
 from iaso import models as m
+from iaso.api.query_params import ORG_UNIT_TYPE_ID, USER_IDS
 from iaso.models import QUEUED, Task
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION, CORE_SUBMISSIONS_PERMISSION
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
@@ -19,7 +19,7 @@ class InstanceBulkPushGpsAPITestCase(TaskAPITestCase):
             "source", "account", "project"
         )
         cls.user, cls.anon_user, cls.user_no_perms = cls.create_base_users(
-            cls.account, ["iaso_submissions", "iaso_org_units"]
+            cls.account, [CORE_SUBMISSIONS_PERMISSION, CORE_ORG_UNITS_PERMISSION]
         )
 
         # Preparing org units & locations
@@ -91,13 +91,14 @@ class InstanceBulkPushGpsAPITestCase(TaskAPITestCase):
             version=self.source_version,
             source_ref="new org unit",
         )
-        new_instance = m.Instance.objects.create(
+        new_instance = self.create_form_instance(
             org_unit=new_org_unit,
             form=self.form,
             period="202004",
             project=self.project,
             created_by=self.user,
             export_id="instance4",
+            location=self.default_location,
         )
 
         self.client.force_authenticate(self.user)
@@ -109,7 +110,17 @@ class InstanceBulkPushGpsAPITestCase(TaskAPITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        response_json = self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        task = self.assertValidTaskAndInDB(response_json["task"], status="QUEUED", name="instance_bulk_gps_push")
+        self.assertEqual(task.launcher, self.user)
+
+        # It should be a success
+        self.runAndValidateTask(task, "SUCCESS")
+        new_org_unit.refresh_from_db()
+        self.assertEqual(new_org_unit.location, self.default_location)
+        self.assertIsNone(
+            self.org_unit_no_location.location
+        )  # Still None since self.instance_without_location doesn't have any loc
 
     def test_not_logged_in(self):
         response = self.client.post(
@@ -122,9 +133,8 @@ class InstanceBulkPushGpsAPITestCase(TaskAPITestCase):
     def test_no_permission_instances(self):
         """POST /api/tasks/create/instancebulkgpspush/ without instances permissions"""
         # Adding org unit permission to user
-        content_type = ContentType.objects.get_for_model(am.CustomPermissionSupport)
         self.user_no_perms.user_permissions.add(
-            Permission.objects.filter(codename="iaso_org_units", content_type=content_type).first().id
+            Permission.objects.filter(codename=CORE_ORG_UNITS_PERMISSION.codename).first().id
         )
 
         self.client.force_authenticate(self.user_no_perms)
@@ -138,9 +148,8 @@ class InstanceBulkPushGpsAPITestCase(TaskAPITestCase):
     def test_no_permission_org_units(self):
         """POST /api/tasks/create/instancebulkgpspush/ without orgunit permissions"""
         # Adding instances permission to user
-        content_type = ContentType.objects.get_for_model(am.CustomPermissionSupport)
         self.user_no_perms.user_permissions.add(
-            Permission.objects.filter(codename="iaso_submissions", content_type=content_type).first().id
+            Permission.objects.filter(codename=CORE_SUBMISSIONS_PERMISSION.codename).first().id
         )
 
         self.client.force_authenticate(self.user_no_perms)
@@ -158,7 +167,9 @@ class InstanceBulkPushGpsAPITestCase(TaskAPITestCase):
             "new source", "new account", "new project"
         )
         new_user = self.create_user_with_profile(
-            username="new user", account=new_account, permissions=["iaso_submissions", "iaso_org_units"]
+            username="new user",
+            account=new_account,
+            permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_ORG_UNITS_PERMISSION],
         )
         new_org_unit = m.OrgUnit.objects.create(
             name="New Org Unit", source_ref="new org unit", validation_status="VALID"
@@ -241,7 +252,7 @@ class InstanceBulkPushGpsAPITestCase(TaskAPITestCase):
     def test_no_location(self):
         """POST /api/tasks/create/instancebulkgpspush/ with instances that don't have any location defined"""
         # Let's create another instance without a location, but this time it's linked to self.org_unit_with_default_location
-        _ = m.Instance.objects.create(
+        _ = self.create_form_instance(
             form=self.form,
             period="202001",
             org_unit=self.org_unit_with_default_location,
@@ -339,7 +350,7 @@ class InstanceBulkPushGpsAPITestCase(TaskAPITestCase):
             version=new_version,
             source_ref="new org unit",
         )
-        new_instance = m.Instance.objects.create(
+        new_instance = self.create_form_instance(
             org_unit=new_org_unit,
             form=self.form,
             period="202004",
@@ -375,6 +386,90 @@ class InstanceBulkPushGpsAPITestCase(TaskAPITestCase):
                 str(instance.org_unit_id), result
             )  # Instead, we should probably check in which error they end up
         self.assertNotIn(str(self.instance_with_default_location.org_unit_id), result)
+
+    def test_push_select_all_with_filters(self):
+        # First, let's prepare some things for this test - creating various instances to be filtered out
+        new_user = self.create_user_with_profile(
+            username="new user",
+            account=self.account,
+            permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_ORG_UNITS_PERMISSION],
+        )
+        new_org_unit_type = m.OrgUnitType.objects.create(name="Org unit type 2", short_name="OUT 2")
+        new_org_unit_type.projects.add(self.project)
+        org_unit_new_type_1 = m.OrgUnit.objects.create(
+            name="New Org Unit 1",
+            org_unit_type=new_org_unit_type,
+            source_ref="new org unit",
+            validation_status="VALID",
+            version=self.source_version,
+        )
+        org_unit_type_setup = m.OrgUnit.objects.create(
+            name="New Org Unit 2",
+            org_unit_type=new_org_unit_type,
+            source_ref="new org unit",
+            validation_status="VALID",
+            version=self.source_version,
+        )
+        instance_filtered_out_by_org_unit_type = self.create_form_instance(
+            form=self.form,
+            period="202003",
+            org_unit=org_unit_new_type_1,
+            project=self.project,
+            created_by=self.user,
+            export_id="new OU 1",
+            location=self.default_location,
+        )
+        instance_filtered_out_by_user = self.create_form_instance(
+            form=self.form,
+            period="202004",
+            org_unit=org_unit_type_setup,
+            project=self.project,
+            created_by=new_user,
+            export_id="new OU 2",
+            location=self.default_location,
+        )
+
+        # Let's change the setup to let setup instances push their location
+        new_location = Point(x=1, y=2, z=3, srid=4326)
+        self.instance_without_location.location = new_location
+        self.instance_without_location.save()
+        self.instance_with_default_location.org_unit = self.org_unit_with_default_location
+        self.instance_with_default_location.location = new_location
+        self.instance_with_default_location.save()
+        self.instance_with_other_location.org_unit = self.org_unit_with_other_location
+        self.instance_with_other_location.location = new_location
+        self.instance_with_other_location.save()
+
+        # Now, let's try again with filters - this time only 3 instances should push their GPS
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            f"{self.BASE_URL}?{USER_IDS}={self.user.id}&{ORG_UNIT_TYPE_ID}={self.org_unit_type.id}",
+            data={
+                "select_all": True,
+            },
+            format="json",
+        )
+
+        response_json = self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        task = self.assertValidTaskAndInDB(response_json["task"], status="QUEUED", name="instance_bulk_gps_push")
+        self.assertEqual(task.launcher, self.user)
+
+        self.runAndValidateTask(task, "SUCCESS")
+        task.refresh_from_db()
+        result = task.result["message"]
+
+        self.assertIn("3 modified", result)
+        # GPS was pushed
+        for org_unit in [
+            self.org_unit_no_location,
+            self.org_unit_with_default_location,
+            self.org_unit_with_other_location,
+        ]:
+            org_unit.refresh_from_db()
+            self.assertEqual(org_unit.location, new_location)
+        # The two instances were filtered out
+        self.assertIsNone(org_unit_new_type_1.location)
+        self.assertIsNone(org_unit_type_setup.location)
 
     def test_task_kill(self):
         """Launch the task and then kill it

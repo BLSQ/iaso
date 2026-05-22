@@ -4,6 +4,7 @@ from rest_framework import status
 from hat.audit.models import Modification
 from iaso import models as m
 from iaso.models import GroupSet
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -22,11 +23,11 @@ class GroupSetsAPITestCase(APITestCase):
 
         cls.acccount_1 = star_wars
         cls.acccount_1_user_1 = cls.create_user_with_profile(
-            username="yoda", account=star_wars, permissions=["iaso_org_units"]
+            username="yoda", account=star_wars, permissions=[CORE_ORG_UNITS_PERMISSION]
         )
         cls.acccount_1_user_2 = cls.create_user_with_profile(username="chewbacca", account=star_wars)
         cls.acccount_3_user_1 = cls.create_user_with_profile(
-            username="raccoon", account=marvel, permissions=["iaso_org_units"]
+            username="raccoon", account=marvel, permissions=[CORE_ORG_UNITS_PERMISSION]
         )
 
         cls.project_1 = m.Project.objects.create(
@@ -383,7 +384,7 @@ class GroupSetsAPITestCase(APITestCase):
         record_1, record_2 = self.seed_list()
         # Search all
 
-        resp = self.client.get("/api/group_sets/?fields=id,name")
+        resp = self.client.get("/api/group_sets/", data={"fields": ",".join(["id", "name"])})
         self.assertEqual(
             resp.json()["group_sets"],
             [
@@ -395,25 +396,30 @@ class GroupSetsAPITestCase(APITestCase):
     def test_list_groupsets_search_by_name(self):
         record_1, record_2 = self.seed_list()
 
-        resp = self.client.get("/api/group_sets/?fields=id,name&search=src 1")
+        resp = self.client.get("/api/group_sets/", data={"fields": ",".join(["id", "name"]), "search": "src 1"})
         self.assertEqual(resp.json()["group_sets"], [record_1])
 
-        resp = self.client.get("/api/group_sets/?fields=id,name&search=src")
+        resp = self.client.get("/api/group_sets/", data={"fields": ",".join(["id", "name"]), "search": "src"})
         self.assertEqual(resp.json()["group_sets"], [record_1, record_2])
 
     def test_list_groupsets_search_by_default_version(self):
         record_1, record_2 = self.seed_list()
 
-        resp = self.client.get("/api/group_sets/?fields=id,name&default_version=true")
+        resp = self.client.get("/api/group_sets/", data={"fields": ",".join(["id", "name"]), "default_version": "true"})
+        self.assertJSONResponse(resp, status.HTTP_200_OK)
         self.assertEqual(resp.json()["group_sets"], [record_1])
 
     def test_list_groupsets_search_by_version(self):
         record_1, record_2 = self.seed_list()
 
-        resp = self.client.get(f"/api/group_sets/?fields=id,name&version={self.source_version_1.id}")
+        resp = self.client.get(
+            "/api/group_sets/", data={"fields": ",".join(["id", "name"]), "version": self.source_version_1.id}
+        )
         self.assertEqual(resp.json()["group_sets"], [record_1])
 
-        resp = self.client.get(f"/api/group_sets/?fields=id,name&version={self.source_version_2.id}")
+        resp = self.client.get(
+            "/api/group_sets/", data={"fields": ",".join(["id", "name"]), "version": self.source_version_2.id}
+        )
         self.assertEqual(resp.json()["group_sets"], [record_2])
 
     def test_list_groupsets_search_return_dynamic_fields(self):
@@ -423,8 +429,11 @@ class GroupSetsAPITestCase(APITestCase):
         self.assertEqual(resp.json()["group_sets"], [{"id": record_1["id"]}, {"id": record_2["id"]}])
 
     def test_list_groupsets_search_return_dynamic_fields_groups(self):
-        record_1, record_2 = self.seed_list()
+        self.seed_list()
 
-        resp = self.client.get(f"/api/group_sets/?fields=id,name,groups&version={self.source_version_1.id}")
-        groups_name = [g["name"] for g in resp.json()["group_sets"][0]["groups"]]
+        resp = self.client.get(
+            "/api/group_sets/", data={"fields": ",".join(["id", "name", "groups"]), "version": self.source_version_1.id}
+        )
+        resp_data = self.assertJSONResponse(resp, status.HTTP_200_OK)
+        groups_name = [g["name"] for g in resp_data["group_sets"][0]["groups"]]
         self.assertEqual(groups_name, ["Councils", "Hidden"])

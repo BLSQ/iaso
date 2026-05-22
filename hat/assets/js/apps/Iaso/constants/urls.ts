@@ -59,11 +59,25 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'accountId',
             'search',
             'showDeleted',
+            'onlyDeleted',
             'planning',
             'orgUnitTypeIds',
             'projectsIds',
+            'fields',
             ...paginationPathParams,
         ],
+    },
+    formAI: {
+        url: 'forms/ai',
+        params: ['accountId'],
+    },
+    pipelineList: {
+        url: 'settings/pipelines/',
+        params: ['accountId'],
+    },
+    pipelineDetails: {
+        url: 'settings/pipelines/details',
+        params: ['accountId', 'pipelineId'],
     },
     formDetail: {
         url: 'forms/detail',
@@ -73,11 +87,12 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'tab',
             ...paginationPathParams,
             ...paginationPathParamsWithPrefix('attachments'),
+            ...paginationPathParamsWithPrefix('predefinedFilters'),
         ],
     },
     formsStats: { url: 'forms/stats', params: ['accountId', 'projectIds'] },
     instances: {
-        url: 'forms/submissions',
+        url: 'forms/submissions/list',
         params: [
             'accountId',
             'formIds',
@@ -108,6 +123,8 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'sentDateFrom',
             'sentDateTo',
             'projectIds',
+            'isSearchActive',
+            'referenceInstances',
         ],
     },
     instanceDetail: {
@@ -146,8 +163,9 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParams,
             'tab',
             'searchTabIndex',
-            'searchActive',
             'searches',
+            'isClusterActive',
+            'fields',
         ],
     },
     orgUnitDetails: {
@@ -161,6 +179,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'formId',
             'referenceFormId',
             'instanceId',
+            'parentOrgUnitId',
             ...paginationPathParams,
             ...orgUnitDetailsChildrenParams,
             ...orgUnitDetailsLinkParams,
@@ -178,12 +197,16 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'forms',
             'groups',
             'ids',
+            'is_soft_deleted',
+            'org_unit',
             'org_unit_type_id',
             'parent_id',
             'paymentIds',
             'paymentStatus',
             'potentialPaymentIds',
             'projectIds',
+            'requested_fields',
+            'kind',
             'source_version_id',
             'status',
             'userIds',
@@ -221,6 +244,9 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'missingSubmissionVisible',
             'showTooltip',
             'clusterEnabled',
+            'periodType',
+            'startPeriod',
+            'endPeriod',
             ...paginationPathParams,
             ...paginationPathParamsWithPrefix('orgUnitList'),
             ...paginationPathParamsWithPrefix('missingSubmissions'),
@@ -302,6 +328,14 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParams,
         ],
     },
+    usersBulkCreate: {
+        url: 'settings/users/management/bulk-create',
+        params: ['accountId'],
+    },
+    userDetails: {
+        url: 'settings/users/management/details',
+        params: ['accountId', 'userId'],
+    },
     usersHistory: {
         url: 'settings/users/history',
         params: [
@@ -346,6 +380,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         url: 'settings/devices',
         params: ['accountId', ...paginationPathParams],
     },
+    setupAccountSettings: { url: 'settings/setupAccount', params: [] },
     groups: {
         url: 'orgunits/configuration/groups',
         params: [
@@ -390,7 +425,11 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'locationLimit',
             'groups',
             'fieldsSearch',
-            ...paginationPathParams,
+            'isSearchActive',
+            // pagination params
+            'order',
+            'pageSize',
+            'cursor',
         ],
     },
     entityDetails: {
@@ -426,6 +465,18 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         url: 'entities/duplicates/details',
         params: ['accountId', 'entities', ...paginationPathParams],
     },
+    entityDuplicateAnalyses: {
+        url: 'entities/duplicate-analyses',
+        params: [
+            'accountId',
+            'users',
+            'status',
+            'algorithm',
+            'start_date',
+            'end_date',
+            ...paginationPathParams,
+        ],
+    },
     pages: {
         url: 'pages',
         params: [
@@ -433,6 +484,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'search',
             'needs_authentication',
             'userId',
+            'userRoleIds',
             ...paginationPathParams,
         ],
     },
@@ -447,17 +499,18 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParams,
         ],
     },
+    planningDetails: {
+        url: 'planning/details',
+        params: ['accountId', 'planningId', 'mode', ...paginationPathParams],
+    },
     assignments: {
         url: 'planning/assignments',
         params: [
             'accountId',
             'planningId',
-            'team',
-            'baseOrgunitType',
-            'parentOrgunitType',
             'tab',
-            'order',
             'search',
+            ...paginationPathParams,
         ],
     },
     teams: {
@@ -468,6 +521,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'managers',
             'types',
             'projects',
+            'fields',
             ...paginationPathParams,
         ],
     },
@@ -537,6 +591,78 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'parent_id',
         ],
     },
+    stockKeepingUnits: {
+        url: 'stock/stockkeepingunits',
+        params: [
+            'accountId',
+            ...paginationPathParams,
+            'created_by',
+            'search',
+            'projectsIds',
+            'orgUnitTypeIds',
+        ],
+    },
+    stockRulesVersions: {
+        url: 'stock/rulesversions',
+        params: [
+            'accountId',
+            ...paginationPathParams,
+            'versionId',
+            'search',
+            'status',
+            'skuId',
+            'formId',
+        ],
+    },
+    stockItems: {
+        url: 'stock/items',
+        params: [
+            'accountId',
+            ...paginationPathParams,
+            'id',
+            'sku',
+            'orgUnit',
+            'value',
+            'question',
+            'impact',
+            'created_at_after',
+            'created_at_before',
+            'value_from',
+            'value_to',
+        ],
+    },
+
+    validationWorkflowsConfiguration: {
+        url: 'validation-workflows/configuration',
+        params: ['accountId', 'forms', 'name', ...paginationPathParams],
+    },
+    validationWorkflowsConfigurationDetail: {
+        url: 'validation-workflows/configuration/detail',
+        params: ['accountId', 'slug'],
+    },
+    validationWorkflowInstances: {
+        url: 'validation-workflows/submissions',
+        params: [
+            'accountId',
+            'forms',
+            'status',
+            'requires_user_action',
+            'validation_workflows',
+            ...paginationPathParams,
+        ],
+    },
+    adminApiImport: {
+        url: 'settings/apiImports',
+        params: [
+            'accountId',
+            ...paginationPathParams,
+            'createdBy',
+            'importType',
+            'hasProblem',
+            'appId',
+            'appVersion',
+        ],
+    },
     hidden: { url: 'secret', params: [] },
     error401: { url: '401', params: [] },
     error403: { url: '403', params: [] },
@@ -550,7 +676,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
 export const extractUrls = (
     config: Record<string, RouteConfig>,
 ): Record<string, string> => {
-    const result = {};
+    const result: Record<string, string> = {};
     Object.entries(config).forEach(([key, value]) => {
         result[key] = value.url;
     });
@@ -561,7 +687,7 @@ export const extractUrls = (
 export const extractParams = (
     config: Record<string, RouteConfig>,
 ): Record<string, string[]> => {
-    const result = {};
+    const result: Record<string, string[]> = {};
     Object.entries(config).forEach(([key, value]) => {
         result[key] = value.params;
     });
@@ -572,7 +698,7 @@ export const extractParams = (
 export const extractParamsConfig = (
     config: Record<string, RouteConfig>,
 ): Record<string, string[]> => {
-    const result = {};
+    const result: Record<string, string[]> = {};
     Object.values(config).forEach(value => {
         result[value.url] = value.params;
     });
@@ -582,9 +708,13 @@ export const extractParamsConfig = (
 // Not super necessary, but it will help the IDE when using baseUrls
 type IasoBaseUrls = {
     setupAccount: string;
+    setupAccountSettings: string;
     home: string;
     forms: string;
+    formAI: string;
     formDetail: string;
+    pipelineDetails: string;
+    pipelineList: string;
     formsStats: string;
     instances: string;
     instanceDetail: string;
@@ -605,6 +735,8 @@ type IasoBaseUrls = {
     completenessStats: string;
     modules: string;
     users: string;
+    userDetails: string;
+    usersBulkCreate: string;
     usersHistory: string;
     userRoles: string;
     projects: string;
@@ -621,8 +753,10 @@ type IasoBaseUrls = {
     entityTypes: string;
     entityDuplicates: string;
     entityDuplicateDetails: string;
+    entityDuplicateAnalyses: string;
     pages: string;
     planning: string;
+    planningDetails: string;
     assignments: string;
     teams: string;
     storages: string;
@@ -631,6 +765,9 @@ type IasoBaseUrls = {
     workflowDetail: string;
     potentialPayments: string;
     lotsPayments: string;
+    stockKeepingUnits: string;
+    stockRulesVersions: string;
+    stockItems: string;
     hidden: string;
     error401: string;
     error403: string;
@@ -638,6 +775,11 @@ type IasoBaseUrls = {
     error500: string;
     login: string;
     apiLogs: string;
+    adminApiImport: string;
+    pipelines: string;
+    validationWorkflowsConfiguration: string;
+    validationWorkflowsConfigurationDetail: string;
+    validationWorkflowInstances: string;
 };
 
 export const baseUrls = extractUrls(baseRouteConfigs) as IasoBaseUrls;

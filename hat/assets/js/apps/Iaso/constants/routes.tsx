@@ -1,4 +1,15 @@
 import React, { ReactElement } from 'react';
+
+import { ApiImports } from 'Iaso/domains/apiimports';
+import { PipelineList } from 'Iaso/domains/openHexa';
+import { PipelineDetails } from 'Iaso/domains/openHexa/details';
+import { StockKeepingUnits } from 'Iaso/domains/stock';
+import { StockItems } from 'Iaso/domains/stock/items';
+import { StockRulesVersions } from 'Iaso/domains/stock/versions';
+import { UsersBulkCreate } from 'Iaso/domains/users/bulkCreate';
+import { ValidationWorkflowInstances } from 'Iaso/domains/validationWorkflowInstances';
+import { ValidationWorkflowsConfiguration } from 'Iaso/domains/validationWorkflowsConfiguration';
+import { ValidationWorkflowConfigurationDetail } from 'Iaso/domains/validationWorkflowsConfiguration/details';
 import PageError from '../components/errors/PageError';
 import { Runs } from '../domains/algorithmRuns/Runs';
 import { Assignments } from '../domains/assignments';
@@ -7,14 +18,17 @@ import { CompletenessStats } from '../domains/completenessStats';
 import DataSources from '../domains/dataSources';
 import { Details as DataSourceDetail } from '../domains/dataSources/details';
 import Devices from '../domains/devices';
-import { Beneficiaries } from '../domains/entities';
-import { Details as BeneficiaryDetail } from '../domains/entities/details';
+import { Entities } from '../domains/entities';
+import { Details as EntityDetail } from '../domains/entities/details';
+import { DuplicateAnalyses } from '../domains/entities/duplicate-analyses/DuplicateAnalyses';
 import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails';
 import { Duplicates } from '../domains/entities/duplicates/list/Duplicates';
 import { EntityTypes } from '../domains/entities/entityTypes';
+import FormAI from '../domains/formAI';
 import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
 import { FormsStats } from '../domains/forms/stats';
+import { Welcome } from '../domains/home/components/ExtraGrid/Welcome';
 import Instances from '../domains/instances';
 import CompareSubmissions from '../domains/instances/compare';
 import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs';
@@ -36,6 +50,7 @@ import Pages from '../domains/pages';
 import { LotsPayments } from '../domains/payments/LotsPayments';
 import { PotentialPayments } from '../domains/payments/PotentialPayments';
 import { Planning } from '../domains/plannings';
+import { Details as PlanningDetails } from '../domains/plannings/details';
 import { Projects } from '../domains/projects';
 import { Registry } from '../domains/registry';
 import { SetupAccount } from '../domains/setup';
@@ -45,13 +60,13 @@ import Tasks from '../domains/tasks';
 import { Teams } from '../domains/teams';
 import { UserRoles } from '../domains/userRoles';
 import { Users } from '../domains/users';
+import { Details as UserDetails } from '../domains/users/details';
 import { UsersHistory } from '../domains/users/history/UsersHistory';
 import { Workflows } from '../domains/workflows';
 import { Details as WorkflowDetails } from '../domains/workflows/details';
 import { SHOW_PAGES } from '../utils/featureFlags';
 import * as Permission from '../utils/permissions';
 import { baseUrls } from './urls';
-import { Welcome } from '../domains/home/components/ExtraGrid/Welcome';
 
 export type RoutePath = {
     baseUrl: string;
@@ -73,6 +88,12 @@ export const setupAccountPath = {
     permissions: [],
     element: <SetupAccount />,
 };
+export const setupAccountSettingsPath = {
+    baseUrl: baseUrls.setupAccountSettings,
+    routerUrl: `${baseUrls.setupAccountSettings}/*`,
+    permissions: [],
+    element: <SetupAccount />,
+};
 
 export const formsPath = {
     baseUrl: baseUrls.forms,
@@ -84,6 +105,13 @@ export const formsPath = {
     ],
     element: <Forms />,
     isRootUrl: true,
+};
+
+export const formAIPath = {
+    baseUrl: baseUrls.formAI,
+    routerUrl: `${baseUrls.formAI}/*`,
+    permissions: [Permission.FORMS],
+    element: <FormAI />,
 };
 
 export const pagesPath = {
@@ -238,6 +266,20 @@ export const usersPath = {
     element: <Users />,
 };
 
+export const usersBulkCreate = {
+    baseUrl: baseUrls.usersBulkCreate,
+    routerUrl: `${baseUrls.usersBulkCreate}/*`,
+    permissions: [Permission.USERS_ADMIN, Permission.USERS_MANAGEMENT],
+    element: <UsersBulkCreate />,
+};
+
+export const userDetailsPath = {
+    baseUrl: baseUrls.userDetails,
+    routerUrl: `${baseUrls.userDetails}/*`,
+    permissions: [Permission.USERS_ADMIN, Permission.USERS_MANAGEMENT],
+    element: <UserDetails />,
+};
+
 export const usersHistoryPath = {
     baseUrl: baseUrls.usersHistory,
     routerUrl: `${baseUrls.usersHistory}/*`,
@@ -318,13 +360,13 @@ export const entitiesPath = {
     baseUrl: baseUrls.entities,
     routerUrl: `${baseUrls.entities}/*`,
     permissions: [Permission.ENTITIES],
-    element: <Beneficiaries />,
+    element: <Entities />,
 };
 export const entityDetailsPath = {
     baseUrl: baseUrls.entityDetails,
     routerUrl: `${baseUrls.entityDetails}/*`,
     permissions: [Permission.ENTITIES],
-    element: <BeneficiaryDetail />,
+    element: <EntityDetail />,
 };
 
 export const entityTypesPath = {
@@ -342,6 +384,15 @@ export const entityDuplicatesPath = {
     ],
     element: <Duplicates />,
 };
+export const entityDuplicateAnalysesPath = {
+    baseUrl: baseUrls.entityDuplicateAnalyses,
+    routerUrl: `${baseUrls.entityDuplicateAnalyses}/*`,
+    permissions: [
+        Permission.ENTITIES_DUPLICATE_READ,
+        Permission.ENTITIES_DUPLICATE_WRITE,
+    ],
+    element: <DuplicateAnalyses />,
+};
 export const entityDuplicatesDetailsPath = {
     baseUrl: baseUrls.entityDuplicateDetails,
     routerUrl: `${baseUrls.entityDuplicateDetails}/*`,
@@ -357,6 +408,12 @@ export const planningPath = {
     // FIXME use planning permissions when they exist
     permissions: [Permission.PLANNING_READ, Permission.PLANNING_WRITE],
     element: <Planning />,
+};
+export const planningDetailsPath = {
+    baseUrl: baseUrls.planningDetails,
+    routerUrl: `${baseUrls.planningDetails}/*`,
+    permissions: [Permission.PLANNING_READ, Permission.PLANNING_WRITE],
+    element: <PlanningDetails />,
 };
 export const assignmentsPath = {
     baseUrl: baseUrls.assignments,
@@ -407,7 +464,64 @@ export const lotsPaymentsPath = {
     permissions: [Permission.PAYMENTS],
     element: <LotsPayments />,
 };
+export const stockKeepingUnitsPath = {
+    baseUrl: baseUrls.stockKeepingUnits,
+    routerUrl: `${baseUrls.stockKeepingUnits}/*`,
+    permissions: [Permission.STOCK_MANAGEMENT],
+    element: <StockKeepingUnits />,
+};
+export const stockRulesVersionsPath = {
+    baseUrl: baseUrls.stockRulesVersions,
+    routerUrl: `${baseUrls.stockRulesVersions}/*`,
+    permissions: [Permission.STOCK_MANAGEMENT],
+    element: <StockRulesVersions />,
+};
+export const stockItemsPath = {
+    baseUrl: baseUrls.stockItems,
+    routerUrl: `${baseUrls.stockItems}/*`,
+    permissions: [Permission.STOCK_MANAGEMENT],
+    element: <StockItems />,
+};
 
+export const validationWorkflowConfigurationPath = {
+    baseUrl: baseUrls.validationWorkflowsConfiguration,
+    routerUrl: `${baseUrls.validationWorkflowsConfiguration}/*`,
+    permissions: [Permission.VALIDATION_WORKFLOWS],
+    element: <ValidationWorkflowsConfiguration />,
+};
+
+export const validationWorkflowsConfigurationDetailPath = {
+    baseUrl: baseUrls.validationWorkflowsConfigurationDetail,
+    routerUrl: `${baseUrls.validationWorkflowsConfigurationDetail}/*`,
+    permissions: [Permission.VALIDATION_WORKFLOWS],
+    element: <ValidationWorkflowConfigurationDetail />,
+};
+
+export const validationWorkflowInstancesPath = {
+    baseUrl: baseUrls.validationWorkflowInstances,
+    routerUrl: `${baseUrls.validationWorkflowInstances}/*`,
+    permissions: [Permission.SUBMISSIONS, Permission.VALIDATION_WORKFLOWS],
+    element: <ValidationWorkflowInstances />,
+};
+
+export const pipelineListPath = {
+    baseUrl: baseUrls.pipelineList,
+    routerUrl: `${baseUrls.pipelineList}/*`,
+    permissions: [Permission.PIPELINE_MANAGEMENT],
+    element: <PipelineList />,
+};
+export const pipelineDetailsPath = {
+    baseUrl: baseUrls.pipelineDetails,
+    routerUrl: `${baseUrls.pipelineDetails}/*`,
+    permissions: [Permission.PIPELINE_MANAGEMENT],
+    element: <PipelineDetails />,
+};
+export const adminApiImportPath = {
+    baseUrl: baseUrls.adminApiImport,
+    routerUrl: `${baseUrls.adminApiImport}/*`,
+    permissions: [Permission.ACCOUNT_MANAGEMENT],
+    element: <ApiImports />,
+};
 export const page401 = {
     baseUrl: baseUrls.error401,
     routerUrl: baseUrls.error401,
@@ -445,6 +559,7 @@ export const page500 = {
 
 export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     formsPath,
+    formAIPath,
     formDetailPath,
     formsStatsPath,
     mappingsPath,
@@ -460,8 +575,10 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     completenessPath,
     completenessStatsPath,
     usersPath,
+    userDetailsPath,
     usersHistoryPath,
     userRolesPath,
+    usersBulkCreate,
     projectsPath,
     dataSourcesPath,
     dataSourceDetailsPath,
@@ -479,11 +596,13 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     page500,
     teamsPath,
     planningPath,
+    planningDetailsPath,
     assignmentsPath,
     entitiesPath,
     entityDetailsPath,
     entityDuplicatesPath,
     entityDuplicatesDetailsPath,
+    entityDuplicateAnalysesPath,
     storagesPath,
     storageDetailPath,
     workflowsPath,
@@ -495,5 +614,14 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     modulesPath,
     potentialPaymentsPath,
     lotsPaymentsPath,
+    stockKeepingUnitsPath,
+    stockRulesVersionsPath,
+    stockItemsPath,
     bonusPath,
+    pipelineDetailsPath,
+    pipelineListPath,
+    adminApiImportPath,
+    validationWorkflowConfigurationPath,
+    validationWorkflowsConfigurationDetailPath,
+    validationWorkflowInstancesPath,
 ];

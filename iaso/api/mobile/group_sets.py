@@ -1,7 +1,7 @@
 from django.db.models import BooleanField, ExpressionWrapper, Q
 from django.db.models.query import QuerySet
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import permissions, serializers
 from rest_framework.generics import get_object_or_404
 from rest_framework.mixins import ListModelMixin
@@ -9,6 +9,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.query_params import APP_ID
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import GroupSet, Project
@@ -32,6 +33,7 @@ class MobileGroupSetSerializer(serializers.ModelSerializer):
         ]
 
 
+@extend_schema(tags=["Groups", "Group sets", "Mobile"])
 class MobileGroupSetsViewSet(ListModelMixin, GenericViewSet):
     """Groupsets API for Mobile.
 
@@ -42,24 +44,24 @@ class MobileGroupSetsViewSet(ListModelMixin, GenericViewSet):
     `GET /api/mobile/group_sets/?app_id=some.app.id`
     """
 
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [AuthenticationEnforcedPermission, permissions.AllowAny]
     serializer_class = MobileGroupSetSerializer
 
-    app_id_param = openapi.Parameter(
+    app_id_param = OpenApiParameter(
         name=APP_ID,
-        in_=openapi.IN_QUERY,
+        location=OpenApiParameter.QUERY,
         required=True,
         description="Application id (`Project.app_id`)",
-        type=openapi.TYPE_STRING,
+        type=OpenApiTypes.STR,
     )
 
-    @swagger_auto_schema(
+    @extend_schema(
         responses={
             200: f"List of groupset for the given '{APP_ID}'.",
             400: f"Parameter '{APP_ID}' is required.",
             404: f"Project for given '{APP_ID}' doesn't exist.",
         },
-        manual_parameters=[app_id_param],
+        parameters=[app_id_param],
     )
     def list(self, request: Request, *args, **kwargs) -> Response:
         return super().list(request, *args, **kwargs)
@@ -77,5 +79,6 @@ class MobileGroupSetsViewSet(ListModelMixin, GenericViewSet):
         qs = qs.annotate(
             annotated_erased=ExpressionWrapper(~Q(source_version=default_version), output_field=BooleanField())
         )
+        qs = qs.prefetch_related("groups")
 
         return qs

@@ -5,11 +5,16 @@ export type SubTeam = {
     id: number;
     name: string;
     deleted_at?: string;
+    color: string;
 };
 
 export type User = {
     id: number;
     username: string;
+    first_name: string;
+    last_name: string;
+    color: string;
+    iaso_profile_id: number;
 };
 
 export type Team = {
@@ -26,13 +31,26 @@ export type Team = {
     created_at: string;
     deleted_at?: string;
     parent?: number;
+    color: string;
+    members_count?: number;
 };
+
+export type TeamDropdown = {
+    id: number;
+    name: string;
+    color: string;
+    type?: TeamType;
+    project: number;
+};
+
 export type TeamFilterParams = {
     dateTo?: string;
     dateFrom?: string;
     project?: number;
     type?: TeamType;
     managers?: User;
+    ancestor?: string;
+    fields?: string;
 };
 
 export type TeamParams = UrlParams &
@@ -43,5 +61,6 @@ export type TeamParams = UrlParams &
 export type DropdownTeamsOptions = {
     label: string;
     value: string;
-    original: Team;
+    original: TeamDropdown;
+    color: string;
 };

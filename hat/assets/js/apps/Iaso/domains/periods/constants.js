@@ -7,6 +7,7 @@ export const PERIOD_TYPE_QUARTER = 'QUARTER';
 export const PERIOD_TYPE_QUARTER_NOV = 'QUARTER_NOV'
 export const PERIOD_TYPE_FINANCIAL_NOV = 'FINANCIAL_NOV'
 export const PERIOD_TYPE_MONTH = 'MONTH';
+export const PERIOD_TYPE_WEEK = 'WEEK';
 export const PERIOD_TYPE_PLACEHOLDER = 'EMPTY';
 export const NO_PERIOD = 'NO_PERIOD';
 
@@ -16,7 +17,8 @@ export const PERIOD_TYPES = [
     PERIOD_TYPE_QUARTER_NOV,
     PERIOD_TYPE_SIX_MONTH,
     PERIOD_TYPE_YEAR,
-    PERIOD_TYPE_FINANCIAL_NOV
+    PERIOD_TYPE_FINANCIAL_NOV,
+    PERIOD_TYPE_WEEK
 ];
 
 export const periodTypeOptions = [
@@ -26,6 +28,7 @@ export const periodTypeOptions = [
     PERIOD_TYPE_QUARTER_NOV,
     PERIOD_TYPE_YEAR,
     PERIOD_TYPE_FINANCIAL_NOV,
+    PERIOD_TYPE_WEEK,
 ].map(periodType => ({
     value: periodType,
     label: MESSAGES[periodType.toLowerCase()],

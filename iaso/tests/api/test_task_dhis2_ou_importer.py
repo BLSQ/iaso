@@ -1,4 +1,5 @@
 from iaso import models as m
+from iaso.permissions.core_permissions import CORE_SOURCE_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -6,7 +7,9 @@ class ApiDhis2ouimporterTestCase(APITestCase):
     @classmethod
     def setUp(cls):
         cls.account = account = m.Account.objects.create(name="test account")
-        cls.user = cls.create_user_with_profile(username="test user", account=account, permissions=["iaso_sources"])
+        cls.user = cls.create_user_with_profile(
+            username="test user", account=account, permissions=[CORE_SOURCE_PERMISSION]
+        )
 
     def test_no_perm(self):
         source = m.DataSource.objects.create(name="test source")

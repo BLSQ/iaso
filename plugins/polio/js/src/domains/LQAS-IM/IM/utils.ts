@@ -1,21 +1,16 @@
-import { isEqual } from 'lodash';
 import { IntlFormatMessage } from 'bluesquare-components';
+import { isEqual } from 'lodash';
+import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
 import MESSAGES from '../../../constants/messages';
-import {
-    BarChartData,
-    ConvertedLqasImData,
-    FormatForNFMArgs,
-    LqasImCampaign,
-    LqasImDistrictData,
-} from '../../../constants/types';
-import { HASHED_BACKGROUND, IN_SCOPE } from '../shared/constants';
+import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../../styles/constants';
 import {
     LegendItem,
     findDataForShape,
     findScopeIds,
     makeLegendItem,
 } from '../../../utils';
-import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../../styles/constants';
+import { determineStatusForDistrict as lqasDistrictStatus } from '../LQAS/utils';
+import { HASHED_BACKGROUND, IN_SCOPE } from '../shared/constants';
 import {
     sortGraphKeys,
     convertStatToPercentNumber,
@@ -24,12 +19,20 @@ import {
     accessArrayRound,
 } from '../shared/LqasIm';
 
-import { determineStatusForDistrict as lqasDistrictStatus } from '../LQAS/utils';
-import { LQASIMType } from '../shared/types/types';
+import {
+    BarChartData,
+    ConvertedLqasImData,
+    FormatForNFMArgs,
+    ImDataForChart,
+    IMDistrictStatus,
+    LqasImCampaign,
+    LqasImDistrictData,
+    LqasImMapLayer,
+    LqasIMType,
+} from '../types';
 import { IM_ERROR, IM_FAIL, IM_PASS, IM_WARNING, imNfmKeys } from './constants';
 
-export const determineStatusForDistrict = district => {
-    if (!district) return null;
+export const determineStatusForDistrict = (district): IMDistrictStatus => {
     const ratio =
         (district.total_child_fmd / district.total_child_checked) * 100;
     if (ratio >= 95) return IM_PASS;
@@ -40,9 +43,9 @@ export const determineStatusForDistrict = district => {
 export const getImStatsForRound = (
     imData: Record<string, ConvertedLqasImData>,
     campaign: string | undefined,
-    round: number,
+    round: number | undefined,
 ): ('1imOK' | '2imWarning' | '3imFail' | '4imError' | null)[][] => {
-    if (!campaign || !imData[campaign]) return [[], [], []];
+    if (!campaign || !imData[campaign] || !round) return [[], [], []];
     const allStatuses = accessArrayRound(imData[campaign], round).map(
         district => {
             return determineStatusForDistrict(district);
@@ -51,7 +54,9 @@ export const getImStatsForRound = (
     const passed = allStatuses.filter(status => status === IM_PASS);
     const disqualified = allStatuses.filter(status => status === IM_WARNING);
     const failed = allStatuses.filter(status => status === IM_FAIL);
-    const errored = allStatuses.filter(status => status === IM_ERROR); // Will be fixed when all statuses come from API
+    // Will be fixed when all statuses come from API
+    // @ts-ignore
+    const errored = allStatuses.filter(status => status === IM_ERROR);
 
     return [passed, failed, disqualified, errored];
 };
@@ -61,7 +66,7 @@ export const makeImMapLegendItems =
     (
         imData: Record<string, ConvertedLqasImData>,
         campaign: string | undefined,
-        round: number,
+        round: number | undefined,
     ): LegendItem[] => {
         const [passed, failed, disqualified, errored] = getImStatsForRound(
             imData,
@@ -97,7 +102,13 @@ export const makeImMapLegendItems =
         ];
     };
 
-export const formatImDataForChart = ({ data, campaign, round, regions }) => {
+export const formatImDataForChart = ({
+    data,
+    campaign,
+    round,
+    regions,
+}): ImDataForChart[] => {
+    if (!regions) return [];
     const dataForRound =
         campaign && data[campaign]
             ? accessArrayRound(data[campaign], round)
@@ -125,14 +136,15 @@ export const formatImDataForChart = ({ data, campaign, round, regions }) => {
             const { checked, marked } = aggregatedData;
             // forcing aggregatedData.checked to 1 to avoid dividing by 0
             const markedRatio = (marked / checked) * 100;
-            regionsList.push({
+            const chartData: ImDataForChart = {
                 name: region.name,
                 value: Number.isSafeInteger(markedRatio)
                     ? markedRatio
                     : Math.round(markedRatio),
                 marked: aggregatedData.marked,
                 checked: aggregatedData.checked,
-            });
+            };
+            regionsList.push(chartData);
         }
     });
     return regionsList.sort(
@@ -140,11 +152,17 @@ export const formatImDataForChart = ({ data, campaign, round, regions }) => {
     );
 };
 
-export const imTooltipFormatter = formatMessage => (_value, _name, props) => {
-    // eslint-disable-next-line react/prop-types
-    const ratio = `${props.payload.marked}/${props.payload.checked}`;
-    return [ratio, formatMessage(MESSAGES.vaccinated)];
-};
+export const imTooltipFormatter =
+    formatMessage =>
+    (
+        _value: any,
+        _name: any,
+        props: { payload: { marked: number; checked: number } },
+    ): [string, string] => {
+        // eslint-disable-next-line react/prop-types
+        const ratio = `${props.payload.marked}/${props.payload.checked}`;
+        return [ratio, formatMessage(MESSAGES.vaccinated)];
+    };
 
 export const formatImDataForNFMChart = ({
     data,
@@ -188,7 +206,7 @@ export const formatImDataForNFMChart = ({
 };
 
 export const sumChildrenCheckedIm = (
-    round: number,
+    round: number | undefined,
     data?: Record<string, LqasImCampaign>,
     campaign?: string,
 ): number => {
@@ -204,10 +222,10 @@ export const sumChildrenCheckedIm = (
 type GetMapLayerArgs = {
     selectedCampaign?: string;
     data: Record<string, ConvertedLqasImData>;
-    type: LQASIMType;
+    type: LqasIMType;
     campaigns: any[];
-    round: number;
-    shapes: any[];
+    round: number | undefined;
+    shapes: OrgUnit[];
 };
 
 export const getLqasImMapLayer = ({
@@ -217,7 +235,7 @@ export const getLqasImMapLayer = ({
     campaigns,
     round,
     shapes,
-}: GetMapLayerArgs): any[] => {
+}: GetMapLayerArgs): LqasImMapLayer[] => {
     if (isEqual(data, {})) return [];
     if (!selectedCampaign) return [];
     const determineStatus =

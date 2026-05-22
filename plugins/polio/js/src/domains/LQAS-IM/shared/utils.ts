@@ -1,12 +1,11 @@
 import { Campaign } from '../../../constants/types';
 import { findCampaignRound } from '../../../utils';
-import { LqasImRefDate } from './Map/LqasImMapHeader';
-import { LQASIMType } from './types/types';
+import { LqasImRefDate, LqasIMType } from '../types';
 
 export const determineLqasImDates = (
     campaign: Campaign,
     round: number,
-    type: LQASIMType,
+    type: LqasIMType,
 ):
     | { start: LqasImRefDate; end: LqasImRefDate }
     | Record<string, LqasImRefDate> => {

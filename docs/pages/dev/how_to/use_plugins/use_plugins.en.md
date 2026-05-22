@@ -216,18 +216,15 @@ The main application:
 
 Quick start guide:
 
-1. Create a new directory in the plugins folder:
+1. Create a new plugin using the custom Django command:
    ```bash
-   mkdir -p plugins/my-plugin/js
+   python manage.py startplugin <your_plugin_name>
    ```
 
-2. Create the basic file structure:
-   ```bash
-   cd plugins/my-plugin
-   touch js/config.tsx js/index.tsx README.md
-   ```
+It will automatically create all the required files in `plugins/<your_plugin_name>`.
 
-3. Initialize the plugin configuration:
+
+2. Initialize the plugin configuration:
    ```typescript
    // js/config.tsx
    import React from 'react';
@@ -268,7 +265,7 @@ Quick start guide:
    };
    ```
 
-4. Add your plugin's main component:
+3. Add your plugin's main component:
    ```typescript
    // js/index.tsx
    import React from 'react';
@@ -280,7 +277,7 @@ Quick start guide:
    export default MyPlugin;
    ```
 
-5. Document your plugin:
+4. Document your plugin:
    ```markdown
    # My Plugin
 
@@ -327,9 +324,7 @@ plugins/
 #### Adding Translations to a Plugin
 
 To add translations to your plugin:
-1. Create a `js/src/constants/translations` directory in your plugin
-2. Add language files (e.g., `en.json`, `fr.json`)
-3. Structure your translations as a flat object with dot-notation keys:
+1. In `js/src/constants/translations/` structure your translation files as a flat object with dot-notation keys:
 ```json
 {
     "myPlugin.title": "My Plugin Title",
@@ -337,7 +332,7 @@ To add translations to your plugin:
 }
 ```
 
-4. Make sure to include at least an English translation file (`en.json`) as it will be used as a fallback for other languages
+2. Make sure to include at least an English translation file (`en.json`) as it will be used as a fallback for other languages
 
 #### Translation Fallbacks
 

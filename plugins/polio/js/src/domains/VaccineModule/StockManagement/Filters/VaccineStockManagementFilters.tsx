@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { FilterButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { SearchButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/SearchButton';
 import { useGetGroupDropdown } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
 import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import { baseUrls } from '../../../../constants/urls';
@@ -59,9 +59,9 @@ export const VaccineStockManagementFilters: FunctionComponent<Props> = ({
                         width="100%"
                     >
                         <Box mt={2}>
-                            <FilterButton
+                            <SearchButton
                                 disabled={!filtersUpdated}
-                                onFilter={handleSearch}
+                                onSearch={handleSearch}
                             />
                         </Box>
                     </Box>

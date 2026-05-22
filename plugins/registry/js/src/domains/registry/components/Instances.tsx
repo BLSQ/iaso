@@ -1,5 +1,3 @@
-import { Box, Grid, Tab, Tabs } from '@mui/material';
-import { Column, useRedirectToReplace } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
@@ -7,14 +5,16 @@ import React, {
     useMemo,
     useState,
 } from 'react';
+import { Box, Grid, Tab, Tabs } from '@mui/material';
+import { Column, useRedirectToReplace } from 'bluesquare-components';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 
+import { useGetFormsDropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { Form } from '../../../../../../../hat/assets/js/apps/Iaso/domains/forms/types/forms';
 import { ColumnSelect } from '../../../../../../../hat/assets/js/apps/Iaso/domains/instances/components/ColumnSelect';
 import { OrgunitType } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgunitTypes';
 import { baseUrls } from '../../../constants/urls';
-import { useGetForms } from '../../../hooks/useGetForms';
 import { defaultSorted, useGetInstances } from '../../../hooks/useGetInstances';
 import { useGetOrgUnitType } from '../../../hooks/useGetOrgUnitType';
 import { OrgunitTypeRegistry, RegistryParams } from '../../../types';
@@ -26,7 +26,7 @@ type Props = {
     subOrgUnitTypes: OrgunitTypeRegistry[];
     params: RegistryParams;
     appId: string;
-    registrySlug: string,
+    registrySlug: string;
 };
 
 const baseUrl = baseUrls.registry;
@@ -84,13 +84,15 @@ export const Instances: FunctionComponent<Props> = ({
         currentType?.id,
         appId,
     );
-    const { data: formsList, isFetching: isFetchingForms } = useGetForms(
-        appId,
-        {
-            orgUnitTypeIds: currentType?.id,
-        },
-    );
-    const currentForm: Form | undefined = useMemo(() => {
+    const { data: formsList, isFetching: isFetchingForms } =
+        useGetFormsDropdownOptions({
+            extraFields: ['period_type', 'label_keys', 'org_unit_type_ids'],
+            params: {
+                orgUnitTypeIds: currentType?.id,
+                app_id: appId,
+            },
+        });
+    const currentForm: Partial<Form> | undefined = useMemo(() => {
         return formsList?.find(f => `${f.value}` === formIds)?.original;
     }, [formIds, formsList]);
     useEffect(() => {
@@ -105,7 +107,7 @@ export const Instances: FunctionComponent<Props> = ({
                 orgunitTypeDetail.reference_forms.length > 0
                     ? `${orgunitTypeDetail.reference_forms[0].id}`
                     : // @ts-ignore formsList cannot be undefined since we check it in the condition
-                      formsList[0]?.value;
+                      `${formsList[0]?.value}`;
             const newParams = {
                 ...params,
                 formIds: selectedForm,

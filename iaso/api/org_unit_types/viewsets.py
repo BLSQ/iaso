@@ -1,15 +1,23 @@
-from django.db.models import Q
+from django.db.models import Prefetch, Q
+from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from dynamic_fields.filter_backends import DynamicFieldsFilterBackendBackwardCompatible
+from iaso.api.org_unit_types.permissions import HasOrgUnitTypeWritePermission
+from iaso.api.permission_checks import (
+    AuthenticationEnforcedPermission,
+    IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired,
+)
 from iaso.api.query_params import APP_ID, ORDER, PROJECT, PROJECT_IDS, SEARCH
 from iaso.models import OrgUnitType
 
-from ...permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
 from ..common import ModelViewSet
 from .filters import OrgUnitTypeDropdownFilter
 from .serializers import (
+    OrgUnitTypeHierarchySerializer,
     OrgUnitTypesDropdownSerializer,
     OrgUnitTypeSerializerV1,
     OrgUnitTypeSerializerV2,
@@ -19,6 +27,7 @@ from .serializers import (
 DEFAULT_ORDER = "name"
 
 
+@extend_schema(tags=["Org unit types"])
 class OrgUnitTypeViewSet(ModelViewSet):
     """Org unit types API (deprecated)
 
@@ -26,20 +35,25 @@ class OrgUnitTypeViewSet(ModelViewSet):
     application
 
     Confusingly in this version  `sub_unit_types` map to allow_creating_sub_unit_types.
-    This API is open to anonymous users.
+    Read: any authenticated user. Write: CORE_ORG_UNITS_TYPES_PERMISSION (staff/superuser bypass).
 
     GET /api/orgunittypes/
     """
 
-    permission_classes = [IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired]
+    permission_classes = [
+        AuthenticationEnforcedPermission,
+        IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired,
+        HasOrgUnitTypeWritePermission,
+    ]
     serializer_class = OrgUnitTypeSerializerV1
     results_key = "orgUnitTypes"
     http_method_names = ["get", "post", "patch", "put", "delete", "head", "options", "trace"]
+    filter_backends = [DjangoFilterBackend, DynamicFieldsFilterBackendBackwardCompatible]
 
     def destroy(self, request, pk):
         t = OrgUnitType.objects.get(pk=pk)
         if t.org_units.count() > 0:
-            return Response("You can't delete a type that still has org units", status=status.HTTP_401_UNAUTHORIZED)
+            return Response("You can't delete a type that still has org units", status=status.HTTP_400_BAD_REQUEST)
         return super(OrgUnitTypeViewSet, self).destroy(request, pk)
 
     def get_queryset(self):
@@ -49,6 +63,18 @@ class OrgUnitTypeViewSet(ModelViewSet):
         search = self.request.query_params.get(SEARCH, None)
         if search:
             queryset = queryset.filter(Q(name__icontains=search) | Q(short_name__icontains=search))
+
+        queryset = queryset.prefetch_related("allow_creating_sub_unit_types")
+
+        app_id = self.request.query_params.get(APP_ID)
+        if app_id:
+            queryset = queryset.prefetch_related(
+                Prefetch(
+                    "allow_creating_sub_unit_types",
+                    queryset=OrgUnitType.objects.filter(projects__app_id=app_id),
+                    to_attr="filtered_allow_creating_sub_unit_types",
+                )
+            )
 
         orders = self.request.query_params.get(ORDER, DEFAULT_ORDER).split(",")
 
@@ -60,23 +86,29 @@ class OrgUnitTypeViewSet(ModelViewSet):
         return context
 
 
+@extend_schema(tags=["Org unit types", "v2"])
 class OrgUnitTypeViewSetV2(ModelViewSet):
     """Org unit types API
 
-    This API is open to anonymous users.
+    Read: any authenticated user. Write: CORE_ORG_UNITS_TYPES_PERMISSION (staff/superuser bypass).
 
     GET /api/v2/orgunittypes/
     """
 
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [
+        AuthenticationEnforcedPermission,
+        permissions.IsAuthenticatedOrReadOnly,
+        HasOrgUnitTypeWritePermission,
+    ]
     serializer_class = OrgUnitTypeSerializerV2
     results_key = "orgUnitTypes"
     http_method_names = ["get", "post", "patch", "put", "delete", "head", "options", "trace"]
+    filter_backends = [DjangoFilterBackend, DynamicFieldsFilterBackendBackwardCompatible]
 
     def destroy(self, request, pk):
         t = OrgUnitType.objects.get(pk=pk)
         if t.org_units.count() > 0:
-            return Response("You can't delete a type that still has org units", status=status.HTTP_401_UNAUTHORIZED)
+            return Response("You can't delete a type that still has org units", status=status.HTTP_400_BAD_REQUEST)
         return super(OrgUnitTypeViewSetV2, self).destroy(request, pk)
 
     def get_queryset(self):
@@ -101,7 +133,6 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
         return queryset.order_by("depth").distinct().order_by(*orders)
 
     @action(
-        permission_classes=[IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired],
         detail=False,
         methods=["GET"],
         serializer_class=OrgUnitTypesDropdownSerializer,
@@ -121,6 +152,31 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @action(
+        detail=True,
+        methods=["GET"],
+        serializer_class=OrgUnitTypeHierarchySerializer,
+        url_path="hierarchy",
+    )
+    def hierarchy(self, request, pk=None):
+        """
+        Get the complete hierarchy of a specific org unit type.
+
+        This endpoint returns the org unit type with all its sub_unit_types
+        recursively, building the complete hierarchy tree.
+
+        GET /api/v2/orgunittypes/{id}/hierarchy/
+        """
+        try:
+            # Get the base org unit type using the standard queryset
+            org_unit_type = self.get_queryset().get(pk=pk)
+
+            serializer = self.get_serializer(org_unit_type)
+            return Response(serializer.data)
+
+        except OrgUnitType.DoesNotExist:
+            return Response({"error": "Org unit type not found"}, status=status.HTTP_404_NOT_FOUND)
 
     def get_serializer_context(self):
         context = super().get_serializer_context()

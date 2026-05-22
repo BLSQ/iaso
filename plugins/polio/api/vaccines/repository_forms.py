@@ -3,8 +3,8 @@
 from datetime import timedelta
 
 from django.db.models import Case, CharField, Exists, Max, Min, OuterRef, Q, Subquery, When
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import filters, permissions, serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -106,7 +106,7 @@ class VaccineRepositorySerializer(serializers.Serializer):
         return [
             {
                 "date": vrf.date_vrf_reception,
-                "file": vrf.document.url if vrf.document else None,
+                "file": vrf.file.url if vrf.file else None,
                 "is_missing": vrf.vrf_type == VaccineRequestFormType.MISSING,
                 "is_not_required": vrf.vrf_type == VaccineRequestFormType.NOT_REQUIRED,
                 "id": vrf.id,
@@ -123,7 +123,7 @@ class VaccineRepositorySerializer(serializers.Serializer):
         return [
             {
                 "date": pa.date_pre_alert_reception,
-                "file": pa.document.url if pa.document else None,
+                "file": pa.file.url if pa.file else None,
                 "vrf_id": pa.request_form.id,
             }
             for pa in pre_alerts
@@ -136,7 +136,7 @@ class VaccineRepositorySerializer(serializers.Serializer):
         return [
             {
                 "date": fa.form_a_reception_date,
-                "file": fa.document.url if fa.document else None,
+                "file": fa.file.url if fa.file else None,
                 "is_late": (
                     fa.form_a_reception_date > (obj["ended_at"] + timedelta(days=14))
                     if fa.form_a_reception_date and obj["ended_at"]
@@ -147,6 +147,7 @@ class VaccineRepositorySerializer(serializers.Serializer):
         ]
 
 
+@extend_schema(tags=["Polio - Vaccine repository forms"])
 class VaccineRepositoryFormsViewSet(GenericViewSet, ListModelMixin):
     """
     ViewSet for retrieving vaccine repository data.
@@ -168,51 +169,51 @@ class VaccineRepositoryFormsViewSet(GenericViewSet, ListModelMixin):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     default_page_size = 50
 
-    file_type_param = openapi.Parameter(
+    file_type_param = OpenApiParameter(
         "file_type",
-        openapi.IN_QUERY,
+        location=OpenApiParameter.QUERY,
         description="Filter by file type (VRF, PRE_ALERT, FORM_A)",
-        type=openapi.TYPE_STRING,
+        type=OpenApiTypes.STR,
     )
 
-    campaign_status_param = openapi.Parameter(
+    campaign_status_param = OpenApiParameter(
         "campaign_status",
-        openapi.IN_QUERY,
+        location=OpenApiParameter.QUERY,
         description="Filter by campaign status (ONGOING, PAST, PREPARING)",
-        type=openapi.TYPE_STRING,
+        type=OpenApiTypes.STR,
     )
 
-    vrf_type_param = openapi.Parameter(
+    vrf_type_param = OpenApiParameter(
         "vrf_type",
-        openapi.IN_QUERY,
+        location=OpenApiParameter.QUERY,
         description="Filter by VRF type (Normal, Missing, Not Required)",
-        type=openapi.TYPE_STRING,
+        type=OpenApiTypes.STR,
     )
 
-    campaign_id_param = openapi.Parameter(
+    campaign_id_param = OpenApiParameter(
         "campaign",
-        openapi.IN_QUERY,
+        location=OpenApiParameter.QUERY,
         description="Filter by campaign ID (OBR name)",
-        type=openapi.TYPE_STRING,
+        type=OpenApiTypes.STR,
     )
 
-    country_block_param = openapi.Parameter(
+    country_block_param = OpenApiParameter(
         "country_block",
-        openapi.IN_QUERY,
+        location=OpenApiParameter.QUERY,
         description="Filter by country block (comma separated list of org unit group ids)",
-        type=openapi.TYPE_STRING,
+        type=OpenApiTypes.STR,
     )
 
-    country_param = openapi.Parameter(
+    country_param = OpenApiParameter(
         "country",
-        openapi.IN_QUERY,
+        location=OpenApiParameter.QUERY,
         description="Filter by country (id of country)",
-        type=openapi.TYPE_STRING,
+        type=OpenApiTypes.STR,
     )
 
     # @method_decorator(cache_page(60 * 5))  # Cache for 5 minutes
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             file_type_param,
             campaign_status_param,
             vrf_type_param,
@@ -262,6 +263,7 @@ class VaccineRepositoryFormsViewSet(GenericViewSet, ListModelMixin):
                 campaign__isnull=False,
                 campaign__deleted_at__isnull=True,
                 campaign__campaign_types__name=CampaignType.POLIO,
+                on_hold=False,
             )
             .select_related(
                 "campaign",

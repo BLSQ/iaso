@@ -1,4 +1,3 @@
-/* eslint-disable radix */
 import _ from 'lodash/fp';
 import {
     PERIOD_TYPE_DAY,
@@ -8,7 +7,9 @@ import {
     PERIOD_TYPE_SIX_MONTH,
     PERIOD_TYPE_YEAR,
     PERIOD_TYPE_FINANCIAL_NOV,
+    PERIOD_TYPE_WEEK,
 } from './constants';
+import { getNumberOfIsoWeeksInYear } from './utils';
 
 export type PeriodObject = {
     month: number;
@@ -16,6 +17,7 @@ export type PeriodObject = {
     semester: number;
     year: number;
     day: number;
+    week?: number;
 };
 
 const QUARTER_NOV_MONTHS = {
@@ -26,17 +28,19 @@ const QUARTER_NOV_MONTHS = {
 };
 
 export class Period {
-    private readonly periodType: string;
+    public readonly periodType: string;
 
-    private readonly year: number;
+    public readonly year: number;
 
-    private readonly month: number;
+    public readonly month: number;
 
-    private readonly quarter: number;
+    public readonly quarter: number;
 
-    private readonly semester: number;
+    public readonly semester: number;
 
-    private readonly day: number;
+    public readonly day: number;
+
+    public readonly week?: number;
 
     public readonly periodString: string;
 
@@ -48,6 +52,7 @@ export class Period {
         this.semester = periodParts.semester;
         this.year = periodParts.year;
         this.day = periodParts.day;
+        this.week = periodParts.week;
         this.periodString = periodString;
     }
 
@@ -77,6 +82,9 @@ export class Period {
                 break;
             case PERIOD_TYPE_SIX_MONTH:
                 periodTypeString = `${this.year}S${this.semester}`;
+                break;
+            case PERIOD_TYPE_WEEK:
+                periodTypeString = `${this.year}W${this.week || 1}`;
                 break;
             case PERIOD_TYPE_YEAR:
                 periodTypeString = `${this.year}`;
@@ -123,6 +131,8 @@ export class Period {
 
     toCode(): string {
         switch (this.periodType) {
+            case PERIOD_TYPE_WEEK:
+                return `${this.year}W${this.week}`;
             case PERIOD_TYPE_DAY:
                 return `${String(this.day).padStart(2, '0')}/${String(
                     this.month,
@@ -161,6 +171,10 @@ export class Period {
                 Period.parseQuarterString(periodString),
             ];
         }
+        if (periodString.length <= 7 && periodString.includes('W')) {
+            //2026W53 2026W1
+            return [PERIOD_TYPE_WEEK, Period.parseWeekString(periodString)];
+        }
         if (periodString.includes('S')) {
             return [
                 PERIOD_TYPE_SIX_MONTH,
@@ -186,6 +200,9 @@ export class Period {
         }
         if (periodString.includes('Nov') && periodString.length === 7) {
             return PERIOD_TYPE_FINANCIAL_NOV;
+        }
+        if (periodString.length <= 7 && periodString.includes('W')) {
+            return PERIOD_TYPE_WEEK;
         }
         if (periodString.includes('Q') && periodString.length === 6) {
             return PERIOD_TYPE_QUARTER;
@@ -227,6 +244,18 @@ export class Period {
             semester: Math.ceil(quarter / 2),
             year,
             day: 1,
+        };
+    }
+
+    static parseWeekString(weekString: string): PeriodObject {
+        const [year, week] = weekString.split('W').map(Number);
+        return {
+            year,
+            month: 1,
+            quarter: 1,
+            semester: 1,
+            day: 1,
+            week,
         };
     }
 
@@ -320,6 +349,9 @@ export class Period {
             if (p1.periodType === PERIOD_TYPE_SIX_MONTH) {
                 return p1.semester < p2.semester;
             }
+            if (p1.periodType === PERIOD_TYPE_WEEK) {
+                return p1.week! < p2.week!;
+            }
             return false;
         }
         return false;
@@ -349,6 +381,9 @@ export class Period {
             }
             if (p1.periodType === PERIOD_TYPE_SIX_MONTH) {
                 return p1.semester <= p2.semester;
+            }
+            if (p1.periodType === PERIOD_TYPE_WEEK) {
+                return p1.week! <= p2.week!;
             }
             if (
                 p1.periodType === PERIOD_TYPE_YEAR ||
@@ -385,6 +420,9 @@ export class Period {
             if (p1.periodType === PERIOD_TYPE_SIX_MONTH) {
                 return p1.semester > p2.semester;
             }
+            if (p1.periodType === PERIOD_TYPE_WEEK) {
+                return p1.week! > p2.week!;
+            }
             return false;
         }
         return false;
@@ -414,6 +452,9 @@ export class Period {
             }
             if (p1.periodType === PERIOD_TYPE_SIX_MONTH) {
                 return p1.semester >= p2.semester;
+            }
+            if (p1.periodType === PERIOD_TYPE_WEEK) {
+                return p1.week! >= p2.week!;
             }
             if (
                 p1.periodType === PERIOD_TYPE_YEAR ||
@@ -512,6 +553,19 @@ export class Period {
         return `${year}S${sixMonth}`;
     }
 
+    nextWeek(period: string): string {
+        let year = parseInt(period.slice(0, 4), 0);
+        let week = parseInt(period.slice(5), 0);
+        const weeksInYear = getNumberOfIsoWeeksInYear(year);
+        if (week === weeksInYear) {
+            year += 1;
+            week = 1;
+        } else if (week < weeksInYear) {
+            week += 1;
+        }
+        return `${year}W${week}`;
+    }
+
     previousQuarter(period: string): string {
         let year = parseInt(period.slice(0, 4), 0);
         let quarter = parseInt(period.slice(5, 6), 0);
@@ -554,6 +608,18 @@ export class Period {
         return `${year}S${sixMonth}`;
     }
 
+    previousWeek(period: string): string {
+        let year = parseInt(period.slice(0, 4), 0);
+        let week = parseInt(period.slice(5), 0);
+        if (week === 1) {
+            year -= 1;
+            week = getNumberOfIsoWeeksInYear(year);
+        } else if (week > 1) {
+            week -= 1;
+        }
+        return `${year}W${week}`;
+    }
+
     next(period: string): string {
         if (period.includes('NovQ')) {
             return this.nextQuarterNov(period);
@@ -563,6 +629,9 @@ export class Period {
         }
         if (period.includes('Q')) {
             return this.nextQuarter(period);
+        }
+        if (period.includes('W')) {
+            return this.nextWeek(period);
         }
         if (period.includes('S')) {
             return this.nextSixMonth(period);
@@ -589,6 +658,9 @@ export class Period {
         }
         if (period.includes('Q')) {
             return this.previousQuarter(period);
+        }
+        if (period.includes('W')) {
+            return this.previousWeek(period);
         }
         if (period.includes('S')) {
             return this.previousSixMonth(period);

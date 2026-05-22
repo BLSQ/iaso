@@ -1,5 +1,7 @@
 import React, { FunctionComponent, useState, useCallback } from 'react';
-import { InView } from 'react-intersection-observer';
+import ArrowBack from '@mui/icons-material/ArrowBack';
+import Close from '@mui/icons-material/Close';
+import ViewColumnIcon from '@mui/icons-material/ViewColumn';
 import {
     Drawer,
     IconButton,
@@ -11,18 +13,16 @@ import {
     Button,
     Box,
 } from '@mui/material';
-import Close from '@mui/icons-material/Close';
-import ArrowBack from '@mui/icons-material/ArrowBack';
-import ViewColumnIcon from '@mui/icons-material/ViewColumn';
 
 import { BlockPlaceholder, useSafeIntl } from 'bluesquare-components';
+import { InView } from 'react-intersection-observer';
 
-import { MESSAGES } from './messages';
 import { ColumnDrawerSwitch } from './ColumnDrawerSwitch';
+import { MESSAGES } from './messages';
 
 import { useStyles } from './styles';
 
-type Option = {
+export type Option = {
     active: boolean;
     disabled: boolean;
     key: string;
@@ -54,6 +54,8 @@ type Props = {
     minColumns?: number;
     disabled: boolean;
     disabledMessage?: string;
+    handleApplyOptions?: () => void;
+    isDisabled?: boolean;
 };
 
 const filterResults = (searchString: string, options: Option[]): Option[] => {
@@ -76,6 +78,8 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
     minColumns = 2,
     disabled,
     disabledMessage,
+    handleApplyOptions,
+    isDisabled,
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -130,7 +134,7 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
             {(!disabled || (disabled && !disabledMessage)) && (
                 <Button
                     disabled={disabled}
-                    variant="contained"
+                    variant="outlined"
                     color="primary"
                     onClick={toggleDrawer(true)}
                     id="ColumnsSelectDrawer-toggleDrawer"
@@ -142,7 +146,7 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
                 </Button>
             )}
             <Drawer anchor="right" open={isOpen} onClose={toggleDrawer(false)}>
-                <Box className={classes.root} sx={{ overflowY: 'auto' }}>
+                <Box className={classes.root}>
                     <div className={classes.toolbar}>
                         <Tooltip title={formatMessage(MESSAGES.close)}>
                             <IconButton onClick={toggleDrawer(false)}>
@@ -178,7 +182,14 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
                         )}
                     </div>
                     <Divider />
-                    <div className={classes.list} id="ColumnsSelectDrawer-list">
+                    <div
+                        className={
+                            handleApplyOptions
+                                ? classes.listWithApply
+                                : classes.list
+                        }
+                        id="ColumnsSelectDrawer-list"
+                    >
                         <List>
                             {displayedOptions.map(o => (
                                 <InView key={o.key}>
@@ -227,6 +238,26 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
                             ))}
                         </List>
                     </div>
+                    {handleApplyOptions && (
+                        <Box
+                            sx={{
+                                height: theme => theme.spacing(8),
+                                display: 'flex',
+                                justifyContent: 'flex-end',
+                                padding: theme => theme.spacing(2),
+                            }}
+                        >
+                            <Button
+                                onClick={handleApplyOptions}
+                                variant="contained"
+                                color="primary"
+                                size="small"
+                                disabled={isDisabled}
+                            >
+                                {formatMessage(MESSAGES.apply)}
+                            </Button>
+                        </Box>
+                    )}
                 </Box>
             </Drawer>
         </>

@@ -30,6 +30,8 @@ def dhis2_ou_exporter(
     top_org_unit_ref_id,
     org_unit_types_ids,
     org_unit_types_ref_ids,
+    org_unit_group_id,
+    org_unit_group_ref_id,
     field_names,
     task: Task,
 ):
@@ -48,6 +50,8 @@ def dhis2_ou_exporter(
         top_org_unit_ref_id,
         org_unit_types_ids,
         org_unit_types_ref_ids,
+        org_unit_group_id,
+        org_unit_group_ref_id,
         field_names,
     )
     task.report_progress_and_stop_if_killed(progress_message=f"Starting to export: {len(diffs)}")

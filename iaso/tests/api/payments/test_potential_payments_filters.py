@@ -3,6 +3,7 @@ import datetime
 from django.contrib.auth.models import Group
 
 from iaso import models as m
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_CHANGE_REQUEST_REVIEW_PERMISSION, CORE_PAYMENTS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -29,7 +30,7 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
         user_with_review_perm = cls.create_user_with_profile(
             username="user_with_review_perm",
             account=account,
-            permissions=["iaso_org_unit_change_request_review", "iaso_payments"],
+            permissions=[CORE_ORG_UNITS_CHANGE_REQUEST_REVIEW_PERMISSION, CORE_PAYMENTS_PERMISSION],
         )
 
         form = m.Form.objects.create(name="Form")
@@ -233,7 +234,7 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
         another_user = self.create_user_with_profile(
             username="another_user",
             account=self.account,
-            permissions=["iaso_org_unit_change_request_review"],
+            permissions=[CORE_ORG_UNITS_CHANGE_REQUEST_REVIEW_PERMISSION],
         )
         potential_payment1 = m.PotentialPayment.objects.create(
             user=self.user,
@@ -298,7 +299,7 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
         another_user = self.create_user_with_profile(
             username="another_user",
             account=self.account,
-            permissions=["iaso_org_unit_change_request_review"],
+            permissions=[CORE_ORG_UNITS_CHANGE_REQUEST_REVIEW_PERMISSION],
         )
         potential_payment1 = m.PotentialPayment.objects.create(
             user=self.user,

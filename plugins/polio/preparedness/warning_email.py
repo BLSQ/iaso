@@ -5,13 +5,16 @@ and containing a list of e-mail as json.
 e.g. ['test@bluesquarehub.com']
 """
 
-import logging
+from logging import getLogger
 
 from django.core.mail import send_mail
 from django.template import Context, Engine
 
 from iaso.models.json_config import Config
 from plugins.polio.preparedness.summary import get_or_set_preparedness_cache_for_round
+
+
+logger = getLogger(__name__)
 
 
 def valid_indicator(x):
@@ -69,7 +72,7 @@ def send_warning_email(round_qs):
                 try:
                     errors = error_for_rounds(pr)
                 except Exception as e:
-                    logging.exception(e)
+                    logger.exception(e)
                     errors = ["Unknown error please contact an admin."]
         if errors:
             round_errors.append({"round": round, "errors": errors})
@@ -80,7 +83,7 @@ def send_warning_email(round_qs):
     txt_content = txt_content.render(context)
     config, _ = Config.objects.get_or_create(slug="emails_for_preparedness_alert", defaults={"content": []})
     if not config or not config.content:
-        logging.warning("no email configured for emails_for_preparedness_alert:")
+        logger.warning("no email configured for emails_for_preparedness_alert:")
         print(txt_content)
 
     emails = config.content

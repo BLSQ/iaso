@@ -1,12 +1,125 @@
 from django.contrib import admin
+from django.contrib.admin import SimpleListFilter
+from django.db.models import JSONField
+from django.db.models.functions import ExtractMonth, ExtractYear
+from django.http import HttpRequest
 
-from .models import Beneficiary, Journey, MonthlyStatistics, Step, Visit
+from iaso.admin.base import IasoJSONEditorWidget
+
+from .models import Beneficiary, Dhis2SyncResults, Journey, MonthlyStatistics, ScreeningData, Step, Visit
+from .tasks import (
+    clean_up_duplicate_instances,
+    clean_up_duplicate_instances_dry_run,
+    create_out_of_band_indexes,
+)
+
+
+@admin.action(description="Create indexes too heavy for the migration process (celery)")
+def create_indexes_celery_action(modeladmin, request: HttpRequest, queryset):
+    """
+    Admin action to trigger the Celery task for creating the index on iaso_instance.uuid and others
+    """
+    create_out_of_band_indexes.delay()
+
+    modeladmin.message_user(
+        request,
+        "Task to create indexes has been launched. You can monitor its progress on the Tasks Results page.",
+    )
+
+
+@admin.action(description="Clean-up duplicate instances (non-blocking)")
+def clean_up_duplicates_action(modeladmin, request: HttpRequest, queryset):
+    """
+    Admin action to trigger the Celery task for creating the index on iaso_instance.uuid and others
+    """
+    clean_up_duplicate_instances.delay()
+
+    modeladmin.message_user(
+        request,
+        "Task to create the index has been launched. You can monitor its progress on the Tasks Results page.",
+    )
+
+
+@admin.action(description="DRY-RUN: Clean-up duplicate instances (non-blocking)")
+def clean_up_duplicates_action_dry_run(modeladmin, request: HttpRequest, queryset):
+    """
+    Admin action to trigger the Celery task for creating the index on iaso_instance.uuid and others
+    """
+    clean_up_duplicate_instances_dry_run.delay()
+
+    modeladmin.message_user(
+        request,
+        "Task to create the index has been launched. You can monitor its progress on the Tasks Results page.",
+    )
+
+
+class ProgrammeType(SimpleListFilter):
+    title = "Programme type"
+    parameter_name = "programme_type"
+
+    def lookups(self, request, modeladmin):
+        return Journey._meta.get_field("programme_type").choices
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(journey__programme_type=self.value()).distinct()
+        return queryset
+
+
+class PhysiologyStatus(SimpleListFilter):
+    title = "Physiology status"
+    parameter_name = "physiology_status"
+
+    def lookups(self, request, modeladmin):
+        return Journey._meta.get_field("physiology_status").choices
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(journey__physiology_status=self.value()).distinct()
+        return queryset
+
+
+class Year(SimpleListFilter):
+    title = "Year"
+    parameter_name = "year"
+
+    def lookups(self, request, modeladmin):
+        years = (
+            modeladmin.model.objects.annotate(year=ExtractYear("date"))
+            .values_list("year", flat=True)
+            .distinct()
+            .order_by("-year")
+        )
+        return [(year, year) for year in years if year]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(date__year=self.value())
+
+
+class Month(SimpleListFilter):
+    title = "Month"
+    parameter_name = "month"
+
+    def lookups(self, request, modeladmin):
+        months = (
+            modeladmin.model.objects.annotate(month=ExtractMonth("date"))
+            .values_list("month", flat=True)
+            .distinct()
+            .order_by("month")
+        )
+        return [(month, month) for month in months if month]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(date__month=self.value())
 
 
 @admin.register(Beneficiary)
 class BeneficiaryAdmin(admin.ModelAdmin):
-    list_filter = ("birth_date", "gender", "account")
-    list_display = ("id", "birth_date", "gender", "account")
+    list_filter = ("birth_date", "gender", PhysiologyStatus, "account", "guidelines", ProgrammeType)
+    list_display = ("id", "birth_date", "gender", "account", "guidelines")
+    actions = [clean_up_duplicates_action, clean_up_duplicates_action_dry_run]
 
 
 @admin.register(Journey)
@@ -14,8 +127,11 @@ class JourneyAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "admission_criteria",
+        "muac_size",
+        "whz_score",
         "admission_type",
         "nutrition_programme",
+        "physiology_status",
         "programme_type",
         "initial_weight",
         "discharge_weight",
@@ -33,26 +149,51 @@ class JourneyAdmin(admin.ModelAdmin):
         "admission_criteria",
         "admission_type",
         "nutrition_programme",
+        "physiology_status",
         "beneficiary__gender",
         "programme_type",
         "start_date",
         "end_date",
         "exit_type",
         "beneficiary__account",
+        "beneficiary__guidelines",
+    )
+
+    search_fields = (
+        "beneficiary__account__name",
+        "beneficiary__gender",
+        "admission_criteria",
+        "admission_type",
+        "nutrition_programme",
+        "programme_type",
     )
 
 
 @admin.register(Visit)
 class VisitAdmin(admin.ModelAdmin):
-    list_display = ("id", "date", "number", "org_unit", "journey")
+    list_display = ("id", "date", "number", "entry_point", "oedema", "muac_size", "whz_color", "org_unit", "journey")
     raw_id_fields = ("org_unit", "journey")
-    list_filter = ("date", "number", "journey__programme_type", "journey__beneficiary__account")
+    list_filter = (
+        "date",
+        Year,
+        Month,
+        "number",
+        "journey__programme_type",
+        "journey__nutrition_programme",
+        "journey__beneficiary__account",
+    )
+    search_fields = ("journey__beneficiary__account__name", "org_unit__id", "org_unit__name", "number")
 
 
 @admin.register(Step)
 class StepAdmin(admin.ModelAdmin):
-    list_display = ("id", "assistance_type", "quantity_given", "visit")
-    list_filter = ("assistance_type", "visit__journey__programme_type", "visit__journey__beneficiary__account")
+    list_display = ("id", "assistance_type", "quantity_given", "ration_size", "visit")
+    list_filter = (
+        "assistance_type",
+        "ration_size",
+        "visit__journey__programme_type",
+        "visit__journey__beneficiary__account",
+    )
 
 
 @admin.register(MonthlyStatistics)
@@ -60,12 +201,107 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
     list_filter = (
         "account",
         "month",
+        "year",
         "gender",
-        "admission_criteria",
-        "admission_type",
+        "physiology_status",
         "nutrition_programme",
         "programme_type",
-        "exit_type",
+    )
+    list_display = (
+        "id",
+        "org_unit",
+        "dhis2_id",
+        "account",
+        "month",
+        "year",
+        "period",
+        "gender",
+        "physiology_status",
+        "nutrition_programme",
+        "programme_type",
+        "muac_under_11_5",
+        "muac_11_5_12_4",
+        "muac_above_12_5",
+        "muac_under_23",
+        "muac_above_23",
+        "oedema",
+        "whz_score_3_2",
+        "whz_score_2",
+        "whz_score_3",
+        "community_health_worker_muac_under_11_5",
+        "community_health_worker_muac_11_5_12_4",
+        "community_health_worker_oedema",
+        "community_health_worker_muac_under_23",
+        "community_health_worker_muac_above_23",
+        "admission_type_new_case",
+        "admission_type_admission_sc_itp_otp",
+        "admission_type_relapse",
+        "admission_type_returned_defaulter",
+        "admission_type_returned_referral",
+        "admission_type_transfer_from_other_tsfp",
+        "admission_type_transfer_sc_itp_otp",
+        "exit_type_cured",
+        "exit_type_death",
+        "exit_type_defaulter",
+        "exit_type_non_respondent",
+        "exit_type_transfer_in_from_other_tsfp",
+        "total_beneficiaries",
+        "number_visits",
+    )
+    search_fields = (
+        "account__name",
+        "org_unit__id",
+        "org_unit__name",
+        "dhis2_id",
+        "nutrition_programme",
+        "programme_type",
+        "physiology_status__icontains",
+        "gender__icontains",
+        "month__icontains",
+        "year__icontains",
+    )
+
+
+@admin.register(Dhis2SyncResults)
+class Dhis2SyncResultsAdmin(admin.ModelAdmin):
+    formfield_overrides = {
+        JSONField: {"widget": IasoJSONEditorWidget},
+    }
+    list_display = (
+        "id",
+        "org_unit_dhis2_id",
+        "org_unit_id",
+        "data_set_id",
+        "period",
+        "month",
+        "year",
+        "response",
+        "json",
+        "account",
+        "status",
+        "created_at",
+        "updated_at",
+    )
+    list_filter = ("account", "status", "month", "year")
+    search_fields = (
+        "account__name",
+        "org_unit_dhis2_id",
+        "org_unit_id",
+        "data_set_id",
+        "period",
+        "year__icontains",
+        "month__icontains",
+        "year__icontains",
+    )
+
+
+@admin.register(ScreeningData)
+class ScreeningDataAdmin(admin.ModelAdmin):
+    list_filter = (
+        "account",
+        "month",
+        "year",
+        "period",
     )
     list_display = (
         "id",
@@ -73,14 +309,23 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
         "account",
         "month",
         "year",
-        "gender",
-        "admission_criteria",
-        "admission_type",
-        "nutrition_programme",
-        "programme_type",
-        "exit_type",
-        "number_visits",
-        "given_sachet_rusf",
-        "given_sachet_rutf",
-        "given_quantity_csb",
+        "period",
+        "u5_male_green",
+        "u5_female_green",
+        "u5_male_yellow",
+        "u5_female_yellow",
+        "u5_male_red",
+        "u5_female_red",
+        "pregnant_w_muac_gt_23",
+        "pregnant_w_muac_lte_23",
+        "lactating_w_muac_gt_23",
+        "lactating_w_muac_lte_23",
+    )
+    search_fields = (
+        "account__name",
+        "org_unit__id",
+        "org_unit__name",
+        "period",
+        "month__icontains",
+        "year__icontains",
     )

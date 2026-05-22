@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import { defineMessages } from 'react-intl';
 
 // List of translations for Iaso groups of permissions used all along the project
@@ -14,7 +13,7 @@ const PERMISSIONS_GROUPS_MESSAGES = defineMessages({
     },
     entities: {
         id: 'iaso.permissions.group.entities',
-        defaultMessage: 'Beneficiaries:',
+        defaultMessage: 'Entities:',
     },
     payments: {
         id: 'iaso.permissions.group.payments',
@@ -55,6 +54,22 @@ const PERMISSIONS_GROUPS_MESSAGES = defineMessages({
     registry: {
         id: 'iaso.permissions.group.registry',
         defaultMessage: 'Registry:',
+    },
+    saas: {
+        id: 'iaso.permissions.group.saas',
+        defaultMessage: 'SaaS:',
+    },
+    stock_management: {
+        id: 'iaso.permissions.group.stock_management',
+        defaultMessage: 'Stock management:',
+    },
+    snt_malaria: {
+        id: 'iaso.permissions.group.snt_malaria',
+        defaultMessage: 'SNT Malaria',
+    },
+    validation_workflow: {
+        id: 'iaso.permissions.group.validation_workflow',
+        defaultMessage: 'Validation workflow',
     },
 });
 

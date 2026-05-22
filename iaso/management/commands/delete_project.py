@@ -1,8 +1,9 @@
 from django.core.management.base import BaseCommand
 
 from iaso.models import Account
-from iaso.models.base import Instance, InstanceFile, Mapping
+from iaso.models.base import Mapping
 from iaso.models.forms import Form
+from iaso.models.instances import Instance, InstanceFile
 
 
 class Command(BaseCommand):

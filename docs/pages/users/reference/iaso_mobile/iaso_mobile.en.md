@@ -1,32 +1,5 @@
 # Mobile Application
 
-## Recommended Devices for IASO Data Collection (last edited Feb 2025)
-
-The **IASO Android app** requires **less than 30MB of storage** and minimal processing power, making it compatible with **entry-level smartphones**.  
-
-### Smartphone Recommendations  
-For standard use, we recommend **Android One devices** (e.g., Nokia 2.3, though the program is now less active). As of 2025, the **Samsung Galaxy A14** is a good alternative ([specs](https://www.gsmarena.com/samsung_galaxy_a14-12151.php)).  
-
-- If collecting **many photos/videos**, opt for phones with **higher storage capacity**.  
-- Avoid devices running **Android versions below 6**.  
-
-### Tablets for Intensive Use  
-For frequent data entry, a **tablet** can improve comfort thanks to a **larger keyboard**. We recommend **Samsung models**, such as the **Galaxy Tab A 8.0 (~€200)**. Ensure it supports **4G connectivity**.  
-
-Before **bulk purchasing**, test a single unit to confirm compatibility with all required apps and hardware features (**NFC, compass, QR scanning**).  
-
-#### Technical Specifications for Tablets  
-- **Screen:** 7-10" Full HD touchscreen  
-- **Memory:** 2GB RAM, 16GB storage (+MicroSD up to 128GB)  
-- **Processor:** Quad-core 1.6GHz  
-- **Battery:** 7-8 hours usage  
-- **Connectivity:** 4G LTE, Wi-Fi, Bluetooth 5.0  
-- **OS:** Android 6+ (preferably **Android One** versions)  
-
-### Accessories  
-- Protective **tablet case**  
-- **25,000mAh solar charger** (Type-C & USB ports)  
-
 ## IASO Mobile Application
 
 IASO mobile application is available on Google Play Store (Android phones only).
@@ -43,13 +16,22 @@ IASO Mobile application has to be configured on the web part before using (see t
 
 Then you can:
 
-- Download [IASO App](https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&pcampaignid=web_share) on Google Play
-- Insert the server url : https://iaso.bluesquare.org
-- Then, enter the App ID 
+- Download [IASO mobile App](https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&pcampaignid=web_share) on Google Play
+- From IASO web application, from the home page or from the side menu, access the part about Projects:
 
+![](attachments/homepageiasoEN.png)
+![](attachments/iasomenuEN.png)
 
+- From the Project page, click on the QR code at the end of the corresponding line.
+![](attachments/qrcodeiasoEN.png)
+- Scan the QR code with the IASO mobile application.
+![](attachments/iasoqrcodeEN1.png)
+![](attachments/iasoqrcodeEN2.png)
+- It's ready!
 
-![](attachments/iasomobileapplicationsetup.png)
+You can also enter manually the url and the Project App ID.
+For this, select "Manual setup" and then select the url, and enter the App ID manually.
+You can find the App ID on IASO web on the Project page.
 
 
 ## Overview of buttons
@@ -90,3 +72,30 @@ Click on the "Send Finalized Forms" icon on the mobile application home page on 
 Then, a specific page will open to let you know if the data has been correctly uploaded. Finalize the operation by clicking on "Send to server".
 
 ![alt text](attachments/sendserver.png)
+
+## Recommended Devices for IASO Data Collection (last edited Feb 2025)
+
+The **IASO Android app** requires **less than 30MB of storage** and minimal processing power, making it compatible with **entry-level smartphones**.  
+
+### Smartphone Recommendations  
+For standard use, we recommend **Android One devices** (e.g., Nokia 2.3, though the program is now less active). As of 2025, the **Samsung Galaxy A14** is a good alternative ([specs](https://www.gsmarena.com/samsung_galaxy_a14-12151.php)).  
+
+- If collecting **many photos/videos**, opt for phones with **higher storage capacity**.  
+- Avoid devices running **Android versions below 6**.  
+
+### Tablets for Intensive Use  
+For frequent data entry, a **tablet** can improve comfort thanks to a **larger keyboard**. We recommend **Samsung models**, such as the **Galaxy Tab A 8.0 (~€200)**. Ensure it supports **4G connectivity**.  
+
+Before **bulk purchasing**, test a single unit to confirm compatibility with all required apps and hardware features (**NFC, compass, QR scanning**).  
+
+#### Technical Specifications for Tablets  
+- **Screen:** 7-10" Full HD touchscreen  
+- **Memory:** 2GB RAM, 16GB storage (+MicroSD up to 128GB)  
+- **Processor:** Quad-core 1.6GHz  
+- **Battery:** 7-8 hours usage  
+- **Connectivity:** 4G LTE, Wi-Fi, Bluetooth 5.0  
+- **OS:** Android 6+ (preferably **Android One** versions)  
+
+### Accessories  
+- Protective **tablet case**  
+- **25,000mAh solar charger** (Type-C & USB ports)  

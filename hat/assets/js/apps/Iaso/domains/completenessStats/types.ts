@@ -1,8 +1,8 @@
 import { Paginated, UrlParams } from 'bluesquare-components';
-import { NameAndId } from '../../types/utils';
+import { ScaleThreshold } from 'Iaso/components/LegendBuilder/types';
+import { NameAndId } from 'Iaso/types/utils';
 import { OrgUnitStatus } from '../orgUnits/types/orgUnit';
 import { Shape } from '../orgUnits/types/shapes';
-import { ScaleThreshold } from '../../components/LegendBuilder/types';
 
 export type FormDesc = {
     id: number;

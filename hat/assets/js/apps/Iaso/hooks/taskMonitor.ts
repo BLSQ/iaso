@@ -25,7 +25,7 @@ export const useCreateTask = ({
 }): UseMutationResult => {
     return useSnackMutation({
         mutationFn: request => createTask(request, endpoint, key),
-        showSucessSnackBar: false,
+        showSuccessSnackBar: false,
         invalidateQueryKey: ['get-latest-task-run'],
     });
 };

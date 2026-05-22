@@ -4,6 +4,7 @@ from iaso.models.base import Group
 from iaso.models.org_unit import OrgUnitType
 from iaso.test import APITestCase
 from plugins.polio.models import SubActivity, SubActivityScope
+from plugins.polio.permissions import POLIO_PERMISSION
 from plugins.polio.tests.api.test import PolioTestCaseMixin
 
 
@@ -16,7 +17,7 @@ class SubactivitiesAPITestCase(APITestCase, PolioTestCaseMixin):
         cls.account, cls.data_source, cls.source_version, cls.project = cls.create_account_datasource_version_project(
             "Account", "Data source", "Project"
         )
-        cls.user, cls.anon, cls.user_no_perms = cls.create_base_users(cls.account, ["iaso_polio"])
+        cls.user, cls.anon, cls.user_no_perms = cls.create_base_users(cls.account, [POLIO_PERMISSION])
         cls.country_type = OrgUnitType.objects.create(name="COUNTRY", short_name="COUNTRY")
         cls.district_type = OrgUnitType.objects.create(name="DISTRICT", short_name="DISTRICT")
         cls.campaign, cls.rnd1, cls.rnd2, cls.rnd3, cls.country, cls.district = cls.create_campaign(

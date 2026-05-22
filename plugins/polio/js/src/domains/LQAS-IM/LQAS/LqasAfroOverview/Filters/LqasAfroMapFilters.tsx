@@ -1,21 +1,23 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
 import { Box, FormControlLabel, FormGroup, Grid, Switch } from '@mui/material';
 import { useSafeIntl, InputWithInfos } from 'bluesquare-components';
-import { useFilterState } from '../../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import DatesRange from '../../../../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
-import { FilterButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
 import InputComponent from '../../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { usePeriodOptions } from '../utils';
+import { SearchButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/SearchButton';
+import { useFilterState } from '../../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import { AfroMapParams } from '../types';
+import { usePeriodOptions } from '../utils';
 import MESSAGES from '../../../../../constants/messages';
-import { baseUrls } from '../../../../../constants/urls';
 
 type Props = {
     params: AfroMapParams;
+    currentUrl: string;
 };
 
-const baseUrl = baseUrls.lqasAfro;
-export const LqasAfroMapFilters: FunctionComponent<Props> = ({ params }) => {
+export const LqasAfroMapFilters: FunctionComponent<Props> = ({
+    params,
+    currentUrl,
+}) => {
     const { formatMessage } = useSafeIntl();
     const {
         filters,
@@ -23,7 +25,7 @@ export const LqasAfroMapFilters: FunctionComponent<Props> = ({ params }) => {
         filtersUpdated,
         setFiltersUpdated,
         setFilters,
-    } = useFilterState({ baseUrl, params, withPagination: false });
+    } = useFilterState({ baseUrl: currentUrl, params, withPagination: false });
     const periodOptions = usePeriodOptions();
     const [chooseDates, setChooseDates] = useState<boolean>(
         Boolean(params.startDate) || Boolean(params.endDate),
@@ -115,9 +117,9 @@ export const LqasAfroMapFilters: FunctionComponent<Props> = ({ params }) => {
             </Grid>
             <Grid container item xs={12} sm={6} justifyContent="flex-end">
                 <Box mt={2}>
-                    <FilterButton
+                    <SearchButton
                         disabled={!filtersUpdated}
-                        onFilter={handleSearch}
+                        onSearch={handleSearch}
                     />
                 </Box>
             </Grid>

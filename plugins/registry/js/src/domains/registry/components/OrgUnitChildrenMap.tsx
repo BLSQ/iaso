@@ -1,3 +1,11 @@
+import React, {
+    Dispatch,
+    FunctionComponent,
+    SetStateAction,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import { Box } from '@mui/material';
 import { red } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
@@ -9,14 +17,6 @@ import {
 import classNames from 'classnames';
 import L from 'leaflet';
 import { keyBy } from 'lodash';
-import React, {
-    Dispatch,
-    FunctionComponent,
-    SetStateAction,
-    useCallback,
-    useMemo,
-    useState,
-} from 'react';
 import { MapContainer, ScaleControl } from 'react-leaflet';
 import { CustomTileLayer } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomZoomControl';
@@ -24,8 +24,19 @@ import { Tile } from '../../../../../../../hat/assets/js/apps/Iaso/components/ma
 import TILES from '../../../../../../../hat/assets/js/apps/Iaso/constants/mapTiles';
 import { OrgUnit } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgunitTypes';
+import { MapLegend } from '../../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/map/MapLegend';
+
+/* STILL USING REGISTRY COMPONENTS */
+
+import { MapSettings } from '../../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/map/MapSettings';
+import { MapToggleFullscreen } from '../../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/map/MapToggleFullscreen';
+import { OrgUnitChildrenLocations } from '../../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/map/OrgUnitChildrenLocations';
+import { OrgUnitChildrenShapes } from '../../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/map/OrgUnitChildrenShapes';
+import { OrgUnitLocation } from '../../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/map/OrgUnitLocation';
+import { useGetLegendOptions } from '../../../../../../../hat/assets/js/apps/Iaso/domains/registry/hooks/useGetLegendOptions';
 import { useObjectState } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/useObjectState';
 import {
+    CloseTooltipOnMoveStart,
     getOrgUnitBounds,
     getOrgUnitsBounds,
     mergeBounds,
@@ -34,16 +45,6 @@ import { baseUrls } from '../../../constants/urls';
 import { RegistryParams } from '../../../types';
 import { HEIGHT } from '../config';
 
-/* STILL USING REGISTRY COMPONENTS */
-/* eslint-disable sort-imports */
-import { MapLegend } from '../../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/map/MapLegend';
-import { MapSettings } from '../../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/map/MapSettings';
-import { MapToggleFullscreen } from '../../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/map/MapToggleFullscreen';
-import { OrgUnitChildrenLocations } from '../../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/map/OrgUnitChildrenLocations';
-import { OrgUnitChildrenShapes } from '../../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/map/OrgUnitChildrenShapes';
-import { OrgUnitLocation } from '../../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/map/OrgUnitLocation';
-import { useGetLegendOptions } from '../../../../../../../hat/assets/js/apps/Iaso/domains/registry/hooks/useGetLegendOptions';
-/* eslint-enable sort-imports */
 /* STILL USING REGISTRY COMPONENTS */
 
 type Props = {
@@ -58,8 +59,8 @@ type Props = {
     handleOrgUnitChange: (newOrgUnit: OrgUnit) => void;
 };
 
-const boundsOptions = {
-    padding: [50, 50],
+const boundsOptions: L.FitBoundsOptions = {
+    padding: L.point(50, 50),
 };
 const tabsHeight = '50px';
 const mapHeight = `calc(${HEIGHT} - ${tabsHeight})`;
@@ -205,12 +206,12 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                     zoom={3}
                     scrollWheelZoom={false}
                     zoomControl={false}
-                    contextmenu
                     bounds={bounds}
                     boundsOptions={boundsOptions}
                     trackResize
                     key={`${params.orgUnitId}-${params.fullScreen}`}
                 >
+                    <CloseTooltipOnMoveStart />
                     <MapSettings
                         settings={settings}
                         handleChangeSettings={handleChangeSettings}

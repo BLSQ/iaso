@@ -13,18 +13,18 @@ const useStyles = makeStyles(theme => ({
         textTransform: 'uppercase',
         cursor: 'pointer',
         padding: theme.spacing(0, 0.5),
-        color: '#ffffff',
+        color: 'inherit',
     },
     languageSwitchButton: {
         backgroundColor: theme.palette.success.main,
-        color: 'white',
+        color: 'inherit',
         borderRadius: 0,
         textTransform: 'none',
         paddingLeft: theme.spacing(3),
         paddingRight: theme.spacing(3),
     },
     languageSwithActive: {
-        color: 'rgba(255, 255, 255, 0.5)',
+        opacity: 0.5,
         cursor: 'text',
     },
 }));

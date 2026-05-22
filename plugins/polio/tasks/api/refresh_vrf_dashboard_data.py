@@ -1,16 +1,19 @@
 from datetime import datetime
 
+from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
 
 from iaso.api.tasks.serializers import TaskSerializer
 from iaso.api.tasks.views import ExternalTaskModelViewSet
-from iaso.models.base import RUNNING, Task
+from iaso.models.base import RUNNING
+from iaso.models.task import Task
 
 
 VRF_TASK_NAME = "Refresh VRF dashboard data"
 VRF_CONFIG_SLUG = "vrf-pipeline-config"
 
 
+@extend_schema(tags=["Polio - Refresh VRF Data"])
 class RefreshVrfDataViewset(ExternalTaskModelViewSet):
     http_method_names = ["get", "patch"]
     model = Task

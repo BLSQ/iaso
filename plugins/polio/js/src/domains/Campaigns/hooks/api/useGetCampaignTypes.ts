@@ -15,8 +15,8 @@ export const useGetCampaignTypes = (
         queryFn: () =>
             getRequest('/api/polio/campaigns/available_campaign_types/'),
         options: {
-            staleTime: 1000 * 60 * 15, // in MS
-            cacheTime: 1000 * 60 * 5,
+            staleTime: Infinity, // in MS
+            cacheTime: Infinity,
             keepPreviousData: true,
             select: data => {
                 return (

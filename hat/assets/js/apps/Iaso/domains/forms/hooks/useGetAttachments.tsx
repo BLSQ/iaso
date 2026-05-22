@@ -1,13 +1,11 @@
-import { Pagination } from 'bluesquare-components';
+import { Paginated } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../libs/utils';
 import { FormAttachment, FormParams } from '../types/forms';
 
-export interface FormAttachmentsApiResult extends Pagination {
-    results: FormAttachment[];
-}
+export type FormAttachmentsApiResult = Paginated<FormAttachment>;
 
 type ApiParams = {
     limit: string;

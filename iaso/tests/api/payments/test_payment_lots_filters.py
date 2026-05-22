@@ -1,5 +1,6 @@
 from iaso.models import Account, DataSource, OrgUnit, OrgUnitType, Payment, PaymentLot, SourceVersion
 from iaso.models.payments import PaymentStatuses
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_CHANGE_REQUEST_REVIEW_PERMISSION, CORE_PAYMENTS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -22,7 +23,7 @@ class TestPaymentLotsFilters(APITestCase):
         cls.user_with_perm = cls.create_user_with_profile(
             username="user_with_perm",
             account=account,
-            permissions=["iaso_org_unit_change_request_review", "iaso_payments"],
+            permissions=[CORE_ORG_UNITS_CHANGE_REQUEST_REVIEW_PERMISSION, CORE_PAYMENTS_PERMISSION],
         )
 
     def test_filter_on_users(self):

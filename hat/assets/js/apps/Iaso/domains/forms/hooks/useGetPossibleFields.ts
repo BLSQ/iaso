@@ -1,15 +1,14 @@
-import { cloneDeep } from 'lodash';
 import { useMemo } from 'react';
+import { cloneDeep } from 'lodash';
 import { UseQueryResult } from 'react-query';
-import { DropdownOptions } from '../../../types/utils';
-import {
-    useGetForm,
-    useGetForms,
-} from '../../entities/entityTypes/hooks/requests/forms';
+import { FormState } from 'Iaso/domains/entities/components/EntitiesQuerybuilder/utils';
+import { getRequest } from 'Iaso/libs/Api';
+import { useSnackQueries, useSnackQuery } from 'Iaso/libs/apiHooks';
+import { createSearchParamsWithArray } from 'Iaso/libs/utils';
+import { DropdownOptions } from 'Iaso/types/utils';
 
-import { getRequest } from '../../../libs/Api';
-import { useSnackQuery } from '../../../libs/apiHooks';
-
+import MESSAGES from '../messages';
+import { useGetForm } from '../requests';
 import { Form, PossibleField } from '../types/forms';
 
 type Result = {
@@ -57,6 +56,80 @@ export const useGetPossibleFields = (
     return usePossibleFields(isFetchingForm, currentForm);
 };
 
+type DynamicPossibleFieldsResult = {
+    possibleFieldsMap: Map<number, PossibleField[]>;
+    isFetching: boolean;
+    isError: boolean;
+};
+
+export const useDynamicPossibleFields = (
+    formStates: FormState[],
+): DynamicPossibleFieldsResult => {
+    // Extract unique form IDs that need possible fields
+    const formIds = useMemo(() => {
+        const uniqueIds = new Set<number>();
+        formStates?.forEach(state => {
+            if (state.form?.id) {
+                uniqueIds.add(state.form.id);
+            }
+        });
+        return Array.from(uniqueIds);
+    }, [formStates]);
+
+    // Build dynamic queries array for possible fields
+    const queries = useMemo(() => {
+        return formIds.map(formId => ({
+            queryKey: ['forms', formId, 'possible_fields'],
+            queryFn: () =>
+                getRequest(`/api/forms/${formId}/?fields=possible_fields`),
+            snackErrorMsg: MESSAGES.fetchPossibleFieldsError,
+            options: {
+                enabled: Boolean(formId),
+                select: (data: any) => {
+                    // Transform possible fields to match the expected format
+                    return (
+                        data?.possible_fields?.map((field: any) => ({
+                            ...field,
+                            fieldKey: field.name.replace('.', ''),
+                        })) || []
+                    );
+                },
+                staleTime: 60000,
+                cacheTime: 1000 * 60 * 5,
+            },
+        }));
+    }, [formIds]);
+
+    // Use useSnackQueries for batch execution
+    const results = useSnackQueries<PossibleField[]>(queries as any);
+
+    // Transform results into a map for easy access
+    const possibleFieldsMap = useMemo(() => {
+        const map = new Map<number, PossibleField[]>();
+        results.forEach((result, index) => {
+            if (result.data && formIds[index]) {
+                map.set(
+                    formIds[index],
+                    result.data as unknown as PossibleField[],
+                );
+            }
+        });
+        return map;
+    }, [results, formIds]);
+
+    const loadingStates = useMemo(
+        () => ({
+            isFetching: results.some(result => result.isFetching),
+            isError: results.some(result => result.isError),
+        }),
+        [results],
+    );
+
+    return {
+        possibleFieldsMap,
+        ...loadingStates,
+    };
+};
 export const useAllPossibleFields = (
     isFetchingForms: boolean,
     allForms: Form[] = [],
@@ -81,14 +154,6 @@ export const useAllPossibleFields = (
             isFetchingForms,
         };
     }, [isFetchingForms, allForms]);
-};
-
-export const useGetAllPossibleFields = (): AllResults => {
-    const { data: allForms, isFetching: isFetchingForms } = useGetForms(true, [
-        'form_id',
-        'possible_fields',
-    ]);
-    return useAllPossibleFields(isFetchingForms, allForms);
 };
 
 type PossibleFieldsDropdown = {
@@ -128,13 +193,17 @@ type FormVersionHookResult = {
 const useGetFormVersion = (
     formId: number | undefined,
     enabled: boolean,
-    fields?: string | undefined,
+    fields?: string,
 ): UseQueryResult<FormVersionsApiResult, Error> => {
     const queryKey: any[] = ['formVersions', formId];
-    let url = `/api/formversions/?form_id=${formId}`;
-    if (fields) {
-        url += `&fields=${fields}`;
-    }
+
+    const queryString = createSearchParamsWithArray({
+        form_id: formId,
+        fields: fields,
+    }).toString();
+
+    const url = `/api/formversions/?${queryString}`;
+
     return useSnackQuery({
         queryKey,
         queryFn: () => getRequest(url),
@@ -176,7 +245,7 @@ export const useGetPossibleFieldsByFormVersion = (
         useGetFormVersion(
             formId,
             Boolean(formId),
-            'version_id,possible_fields,created_at',
+            ['version_id', 'possible_fields', 'created_at'].join(','),
         );
     return useVersionPossibleFields(isFetchingForm, currentFormVersion);
 };

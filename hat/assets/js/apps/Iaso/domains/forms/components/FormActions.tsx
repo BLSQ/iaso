@@ -1,30 +1,49 @@
+import React, { FunctionComponent, useState } from 'react';
 import { Download } from '@mui/icons-material';
 import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
+import { Tooltip } from '@mui/material';
 import { Menu, MenuItem } from '@mui/material';
-import { IconButton } from 'bluesquare-components';
-import React, { FunctionComponent, useState } from 'react';
+import { IconButton, useSafeIntl } from 'bluesquare-components';
 import { Link } from 'react-router-dom';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import * as Permission from '../../../utils/permissions';
 import { createInstance } from '../../instances/actions';
-import { useDeleteForm } from '../hooks/useDeleteForm';
 import { useRestoreForm } from '../hooks/useRestoreForm';
 import MESSAGES from '../messages';
 import { CreateSubmissionModal } from './CreateSubmissionModal/CreateSubmissionModal';
+
+type ShouldShowRestoreActionArgs = {
+    onlyDeleted: boolean;
+    showDeleted: boolean;
+    deletedAt?: string | null;
+};
+
+export const shouldShowRestoreAction = ({
+    onlyDeleted,
+    showDeleted,
+    deletedAt,
+}: ShouldShowRestoreActionArgs): boolean =>
+    onlyDeleted || (showDeleted && Boolean(deletedAt));
 
 type Props = {
     settings: any;
     orgUnitId: number | string;
     baseUrls: any;
+    onlyDeleted: boolean;
     showDeleted: boolean;
+    hasDhis2Module: boolean;
+    deleteForm: (body: { id: number }) => Promise<any>;
 };
 
 export const FormActions: FunctionComponent<Props> = ({
     settings,
     orgUnitId,
     baseUrls,
+    onlyDeleted,
     showDeleted,
+    hasDhis2Module,
+    deleteForm,
 }) => {
     // XLS and XML download states and functions
     const [anchorEl, setAnchorEl] = useState(null);
@@ -43,18 +62,24 @@ export const FormActions: FunctionComponent<Props> = ({
     urlToInstances = `${urlToInstances}/tab/list`;
     // Restore and delete form's hooks
     const { mutateAsync: restoreForm } = useRestoreForm();
-    const { mutateAsync: deleteForm } = useDeleteForm();
+    const hasNoVersion = settings.row.original.latest_form_version === null;
+    const { formatMessage } = useSafeIntl();
+    const shouldShowRestore = shouldShowRestoreAction({
+        onlyDeleted,
+        showDeleted,
+        deletedAt: settings.row.original.deleted_at,
+    });
 
     return (
         <section>
-            {showDeleted && (
+            {shouldShowRestore && (
                 <IconButton
                     onClick={() => restoreForm(settings.row.original.id)}
                     icon="restore-from-trash"
                     tooltipMessage={MESSAGES.restoreFormTooltip}
                 />
             )}
-            {!showDeleted && (
+            {!shouldShowRestore && (
                 <>
                     <DisplayIfUserHasPerm
                         permissions={[
@@ -75,26 +100,57 @@ export const FormActions: FunctionComponent<Props> = ({
                             <DisplayIfUserHasPerm
                                 permissions={[Permission.SUBMISSIONS_UPDATE]}
                             >
-                                <CreateSubmissionModal
-                                    titleMessage={
-                                        MESSAGES.instanceCreationDialogTitle
+                                <Tooltip
+                                    title={
+                                        hasNoVersion
+                                            ? formatMessage(
+                                                  MESSAGES.noFormVersion,
+                                              )
+                                            : ''
                                     }
-                                    confirmMessage={MESSAGES.ok}
-                                    cancelMessage={MESSAGES.cancel}
-                                    formType={{
-                                        id: settings.row.original.id,
-                                        periodType:
-                                            settings.row.original.period_type,
-                                    }}
-                                    onCreateOrReAssign={(
-                                        currentForm,
-                                        payload,
-                                    ) => createInstance(currentForm, payload)}
-                                    orgUnitTypes={
-                                        settings.row.original.org_unit_type_ids
-                                    }
-                                    iconProps={{}}
-                                />
+                                    arrow
+                                >
+                                    <span
+                                        style={
+                                            hasNoVersion
+                                                ? {
+                                                      display: 'inline-block',
+                                                      cursor: 'not-allowed',
+                                                  }
+                                                : {}
+                                        }
+                                    >
+                                        <CreateSubmissionModal
+                                            titleMessage={
+                                                MESSAGES.instanceCreationDialogTitle
+                                            }
+                                            confirmMessage={MESSAGES.ok}
+                                            cancelMessage={MESSAGES.cancel}
+                                            formType={{
+                                                id: settings.row.original.id,
+                                                periodType:
+                                                    settings.row.original
+                                                        .period_type,
+                                            }}
+                                            onCreateOrReAssign={(
+                                                currentForm,
+                                                payload,
+                                            ) =>
+                                                createInstance(
+                                                    currentForm,
+                                                    payload,
+                                                )
+                                            }
+                                            orgUnitTypes={
+                                                settings.row.original
+                                                    .org_unit_type_ids
+                                            }
+                                            iconProps={{
+                                                disabled: hasNoVersion,
+                                            }}
+                                        />
+                                    </span>
+                                </Tooltip>
                             </DisplayIfUserHasPerm>
 
                             <DisplayIfUserHasPerm
@@ -106,30 +162,32 @@ export const FormActions: FunctionComponent<Props> = ({
                                     tooltipMessage={MESSAGES.edit}
                                 />
                             </DisplayIfUserHasPerm>
-                            <DisplayIfUserHasPerm
-                                permissions={[Permission.FORMS]}
-                            >
-                                <IconButton
-                                    // eslint-disable-next-line max-len
-                                    url={`/${baseUrls.mappings}/formId/${settings.row.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
-                                    icon="dhis"
-                                    tooltipMessage={MESSAGES.dhis2Mappings}
-                                    color={
-                                        settings.row.original.has_mappings
-                                            ? 'primary'
-                                            : undefined
-                                    }
-                                />
-                            </DisplayIfUserHasPerm>
+                            {hasDhis2Module && (
+                                <DisplayIfUserHasPerm
+                                    permissions={[Permission.FORMS]}
+                                >
+                                    <IconButton
+                                        // eslint-disable-next-line max-len
+                                        url={`/${baseUrls.mappings}/formId/${settings.row.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
+                                        icon="dhis"
+                                        tooltipMessage={MESSAGES.dhis2Mappings}
+                                        color={
+                                            settings.row.original.has_mappings
+                                                ? 'primary'
+                                                : undefined
+                                        }
+                                    />
+                                </DisplayIfUserHasPerm>
+                            )}
                             <DisplayIfUserHasPerm
                                 permissions={[Permission.FORMS]}
                             >
                                 <DeleteDialog
                                     titleMessage={MESSAGES.deleteFormTitle}
                                     onConfirm={closeDialog =>
-                                        deleteForm(
-                                            settings.row.original.id,
-                                        ).then(closeDialog)
+                                        deleteForm({
+                                            id: settings.row.original.id,
+                                        }).then(closeDialog)
                                     }
                                 />
                             </DisplayIfUserHasPerm>
@@ -161,7 +219,7 @@ export const FormActions: FunctionComponent<Props> = ({
                                     reloadDocument
                                     to={
                                         settings.row.original
-                                            .latest_form_version.xls_file
+                                            .latest_form_version?.xls_file
                                     }
                                 >
                                     XLS
@@ -173,8 +231,8 @@ export const FormActions: FunctionComponent<Props> = ({
                                 download
                                 reloadDocument
                                 to={
-                                    settings.row.original.latest_form_version
-                                        .file
+                                    settings.row.original
+                                        .latest_form_version?.file
                                 }
                             >
                                 XML

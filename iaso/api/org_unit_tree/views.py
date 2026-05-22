@@ -1,12 +1,14 @@
 import django_filters
 
 from django.db.models import Count, Q
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions, serializers, viewsets
 from rest_framework.decorators import action
 
 from iaso.api.org_unit_tree.filters import OrgUnitTreeFilter
 from iaso.api.org_unit_tree.pagination import OrgUnitTreePagination
 from iaso.api.org_unit_tree.serializers import OrgUnitTreeSerializer
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.models import OrgUnit
 
 
@@ -16,6 +18,7 @@ class OrgUnitTreeQuerystringSerializer(serializers.Serializer):
     validation_status = serializers.MultipleChoiceField(choices=OrgUnit.VALIDATION_STATUS_CHOICES)
 
 
+@extend_schema(tags=["Org units"])
 class OrgUnitTreeViewSet(viewsets.ModelViewSet):
     """
     This viewset is a bit unusual because it serves two purposes:
@@ -29,7 +32,7 @@ class OrgUnitTreeViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "options", "head", "trace"]
     ordering_fields = ["id", "name"]
     pagination_class = None  # Since results are displayed level by level, results are not paginated in the list view.
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [AuthenticationEnforcedPermission, permissions.AllowAny]
     serializer_class = OrgUnitTreeSerializer
 
     def get_queryset(self):

@@ -46,6 +46,6 @@ export const useSaveOverrideStep = () => {
         mutationFn: postOverrideStep,
         invalidateQueryKey: 'budget',
         snackSuccessMessage: MESSAGES.budgetEventCreated,
-        showSucessSnackBar: false,
+        showSuccessSnackBar: false,
     });
 };

@@ -54,7 +54,9 @@ const defaults = {
     pageSize: 20,
     page: 1,
 };
-const getVrfList = (params: FormattedApiParams): Promise<VRF[]> => {
+const getVrfList = (
+    params: FormattedApiParams,
+): Promise<{ results: VRF[] }> => {
     const queryString = new URLSearchParams(params).toString();
     return getRequest(`${apiUrl}?${queryString}`);
 };
@@ -81,6 +83,26 @@ export const useGetVrfList = (
             keepPreviousData: true,
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
+        },
+    });
+};
+
+export const useGetVrfListByRound = (
+    roundId: string,
+): UseQueryResult<any, any> => {
+    const apiParams = useApiParams({ round_id: roundId });
+    return useSnackQuery({
+        queryKey: ['getVrfListByRound', roundId],
+        queryFn: () => getVrfList(apiParams),
+        options: {
+            select: data => {
+                if (!data) return [];
+                return data.results;
+            },
+            keepPreviousData: false,
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
+            enabled: Boolean(roundId),
         },
     });
 };
@@ -113,11 +135,19 @@ export const useGetCountriesOptions = (
     }, [countries, isFetching]);
 };
 
-export const useCampaignDropDowns = (
-    countryId?: number,
-    campaign?: string,
-    vaccine?: string,
-): CampaignDropdowns => {
+type UseCampaignDropdownsParams = {
+    countryId?: number;
+    campaign?: string;
+    vaccine?: string;
+    rounds?: number;
+};
+
+export const useCampaignDropDowns = ({
+    countryId,
+    campaign,
+    vaccine,
+    rounds: rndsParams,
+}: UseCampaignDropdownsParams): CampaignDropdowns => {
     const options: Options = {
         enabled: Boolean(countryId),
         countries: Number.isSafeInteger(countryId) ? `${countryId}` : undefined,
@@ -136,6 +166,7 @@ export const useCampaignDropDowns = (
             .filter(
                 c => c.separate_scopes_per_round || (c.scopes ?? []).length > 0,
             )
+
             .map(c => ({
                 label: c.obr_name,
                 value: c.obr_name,
@@ -170,8 +201,9 @@ export const useCampaignDropDowns = (
             vaccines,
             rounds,
             isFetching,
+            rndsParams,
         };
-    }, [data, vaccine, isFetching, campaign]);
+    }, [data, vaccine, isFetching, campaign, rndsParams]);
 };
 
 const getVrfDetails = (id?: string) => {
@@ -215,19 +247,10 @@ const createFormDataRequest = (
         formData.append(key, converted_value);
     });
 
-    const init: Record<string, unknown> = {
-        method,
-        body: formData,
-        signal,
-        headers: {
-            'Accept-Language': moment.locale(),
-        },
-    };
-
     if (Object.keys(fileData).length > 0) {
         Object.entries(fileData).forEach(([key, value]) => {
-            if (key === 'files' && Array.isArray(value) && value.length > 0) {
-                formData.append('document', value[0]); // Use 'document' key
+            if (key === 'files' && Array.isArray(value)) {
+                formData.append('file', value[0]); // Use 'file' key
             } else if (Array.isArray(value)) {
                 value.forEach((blob, index) => {
                     formData.append(`${key}[${index}]`, blob);
@@ -236,6 +259,26 @@ const createFormDataRequest = (
                 formData.append(key, value);
             }
         });
+    }
+    const isFileDeleted =
+        Array.isArray(fileData?.files) && fileData?.files?.length === 0;
+    const body = isFileDeleted
+        ? JSON.stringify({ ...data, file: null })
+        : formData;
+
+    const init: Record<string, unknown> = {
+        method,
+        body,
+        signal,
+        headers: {
+            'Accept-Language': moment.locale(),
+        },
+    };
+    if (isFileDeleted) {
+        init.headers = {
+            ...(init.headers as Record<string, string>),
+            'Content-Type': 'application/json',
+        };
     }
 
     return iasoFetch(url, init).then(response => response.json());
@@ -256,9 +299,7 @@ export const saveVrf = (
         ? Object.fromEntries(
               Object.entries(vrf).filter(
                   ([key, value]) =>
-                      value !== undefined &&
-                      value !== null &&
-                      key !== 'document',
+                      value !== undefined && value !== null && key !== 'file',
               ),
           )
         : {};
@@ -276,10 +317,10 @@ export const saveVrf = (
         data: filteredParams,
     };
 
-    if (vrf?.document) {
+    if (vrf?.file) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
         const { files, ...data } = filteredParams;
-        const fileData = { files: vrf.document };
+        const fileData = { files: vrf.file };
         requestBody.data = data;
         requestBody.fileData = fileData;
     }

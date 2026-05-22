@@ -93,7 +93,7 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         )
         cls.angola_region_to_update.calculate_paths()
 
-        # Angola pyramid to compare with (3 org units).
+        # Angola pyramid to compare with (5 org units).
 
         cls.angola_country_to_compare_with = m.OrgUnit.objects.create(
             parent=None,
@@ -143,6 +143,19 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
             name="Facility",
             org_unit_type=cls.org_unit_type_facility,
             validation_status=m.OrgUnit.VALIDATION_VALID,
+            opening_date=datetime.date(2024, 11, 28),
+            closed_date=datetime.date(2026, 11, 28),
+            geom=cls.multi_polygon,
+            simplified_geom=cls.multi_polygon,
+        )
+
+        cls.angola_facility_without_source_ref_to_compare_with = m.OrgUnit.objects.create(
+            parent=cls.angola_district_to_compare_with,
+            version=cls.source_version_to_compare_with,
+            source_ref="",  # Org units without `source_ref` should be ignored.
+            name="Facility without source ref",
+            org_unit_type=cls.org_unit_type_facility,
+            validation_status=m.OrgUnit.VALIDATION_NEW,
             opening_date=datetime.date(2024, 11, 28),
             closed_date=datetime.date(2026, 11, 28),
             geom=cls.multi_polygon,
@@ -261,10 +274,86 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
             f"'validation_status': '{m.OrgUnit.VALIDATION_VALID}', "
             "'top_org_unit': None, "
             f"'org_unit_types': [{self.org_unit_type_country.pk}], "
+            "'org_unit_group': None, "
             f"'version_ref': {self.source_version_to_compare_with.pk}, "
             f"'validation_status_ref': '{m.OrgUnit.VALIDATION_VALID}', "
             "'top_org_unit_ref': None, "
             f"'org_unit_types_ref': [{self.org_unit_type_country.pk}], "
+            "'org_unit_group_ref': None, "
+            "'ignore_groups': True, "
+            "'show_deleted_org_units': False, "
+            "'field_names': ['name']"
+            "}"
+        )
+        self.assertEqual(data_source_sync.diff_config, expected_diff_config)
+
+        self.assertEqual(data_source_sync.count_create, 0)
+        self.assertEqual(data_source_sync.count_update, 1)
+
+    def test_create_json_diff_with_group_filtering(self):
+        """
+        Test that `create_json_diff()` works as expected when filtering with group ids.
+        """
+        # Change the name.
+        self.angola_country_to_compare_with.name = "Angola new"
+        self.angola_country_to_compare_with.save()
+
+        # Make other changes that will not be picked up by the differ.
+        self.angola_region_to_compare_with.name = "new name"
+        self.angola_region_to_compare_with.save()
+        self.angola_district_to_compare_with.name = "new name"
+        self.angola_district_to_compare_with.save()
+
+        # Make sure only the country is using the group_a2.
+        self.angola_district_to_compare_with.groups.set([])
+
+        data_source_sync = m.DataSourceVersionsSynchronization.objects.create(
+            name="New synchronization",
+            source_version_to_update=self.source_version_to_update,
+            source_version_to_compare_with=self.source_version_to_compare_with,
+            json_diff=None,
+            account=self.account,
+            created_by=self.user,
+        )
+        self.assertIsNone(data_source_sync.json_diff)
+        self.assertEqual(data_source_sync.diff_config, "")
+
+        data_source_sync.create_json_diff(
+            source_version_to_update_validation_status=m.OrgUnit.VALIDATION_VALID,
+            source_version_to_update_org_unit_group=self.group_a1,
+            source_version_to_compare_with_validation_status=m.OrgUnit.VALIDATION_VALID,
+            source_version_to_compare_with_org_unit_group=self.group_a2,
+            ignore_groups=True,
+            field_names=["name"],
+        )
+        data_source_sync.refresh_from_db()
+
+        json_diff = json.loads(data_source_sync.json_diff)
+
+        comparisons = json_diff[0]["comparisons"]
+        expected_comparisons = [
+            {
+                "field": "name",
+                "before": "Angola",
+                "after": "Angola new",
+                "status": "modified",
+                "distance": None,
+            }
+        ]
+        self.assertEqual(comparisons, expected_comparisons)
+
+        expected_diff_config = (
+            "{"
+            f"'version': {self.source_version_to_update.pk}, "
+            f"'validation_status': '{m.OrgUnit.VALIDATION_VALID}', "
+            "'top_org_unit': None, "
+            "'org_unit_types': None, "
+            f"'org_unit_group': {self.group_a1.pk}, "
+            f"'version_ref': {self.source_version_to_compare_with.pk}, "
+            f"'validation_status_ref': '{m.OrgUnit.VALIDATION_VALID}', "
+            "'top_org_unit_ref': None, "
+            "'org_unit_types_ref': None, "
+            f"'org_unit_group_ref': {self.group_a2.pk}, "
             "'ignore_groups': True, "
             "'show_deleted_org_units': False, "
             "'field_names': ['name']"
@@ -277,9 +366,7 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
 
     def test_create_change_requests(self):
         """
-        Test that `create_change_requests()` produces 3 change requests:
-        - 2 change requests to modify existing org units
-        - 1 change request to create a new org unit
+        Test that `create_change_requests()` produces the right number of change requests.
         """
         # Changes at the country level.
         self.angola_country_to_compare_with.name = "Angola new"
@@ -287,7 +374,6 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         self.angola_country_to_compare_with.closed_date = datetime.date(2026, 11, 28)
         self.angola_country_to_compare_with.save()
         # Changes at the region level.
-        self.angola_region_to_compare_with.parent = None
         self.angola_region_to_compare_with.opening_date = datetime.date(2025, 11, 28)
         self.angola_region_to_compare_with.closed_date = datetime.date(2026, 11, 28)
         self.angola_region_to_compare_with.save()
@@ -466,3 +552,33 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         self.assertEqual(new_angola_facility_org_unit.source_ref, "id-4")
         self.assertEqual(new_angola_facility_org_unit.geom, self.multi_polygon)
         self.assertEqual(new_angola_facility_org_unit.simplified_geom, self.multi_polygon)
+
+        # No change request should have been generated for org units without `source_ref`.
+        self.assertEqual(
+            0,
+            m.OrgUnitChangeRequest.objects.filter(
+                org_unit=self.angola_facility_without_source_ref_to_compare_with
+            ).count(),
+        )
+
+    def test_parent_modification(self):
+        # Simulate a parent modification.
+        self.angola_facility_to_compare_with.parent = self.angola_country_to_compare_with
+        self.angola_facility_to_compare_with.save()
+
+        data_source_sync = m.DataSourceVersionsSynchronization.objects.create(
+            name="Parent modification test",
+            source_version_to_update=self.source_version_to_update,
+            source_version_to_compare_with=self.source_version_to_compare_with,
+            json_diff=None,
+            account=self.account,
+            created_by=self.user,
+        )
+
+        data_source_sync.create_json_diff()
+        data_source_sync.synchronize_source_versions()
+
+        angola_facility_change_request = m.OrgUnitChangeRequest.objects.get(
+            org_unit__source_ref="id-4", data_source_synchronization=data_source_sync
+        )
+        self.assertEqual(angola_facility_change_request.new_parent, self.angola_country_to_update)

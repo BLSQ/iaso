@@ -14,6 +14,8 @@ type Props = {
     disabled?: boolean;
     onChange?: (_keyValue: string, value: any) => void;
     isLoading?: boolean;
+    onBlur?: () => void;
+    onFocus?: () => void;
 };
 
 export const SingleSelect: FunctionComponent<Props> = ({
@@ -22,6 +24,8 @@ export const SingleSelect: FunctionComponent<Props> = ({
     field,
     form,
     onChange,
+    onFocus,
+    onBlur,
     disabled = false,
     clearable = true,
     withMarginTop = false,
@@ -53,6 +57,8 @@ export const SingleSelect: FunctionComponent<Props> = ({
             }}
             errors={hasError ? [get(form.errors, field.name)] : []}
             loading={isLoading}
+            onFocus={onFocus}
+            onBlur={onBlur}
         />
     );
 };

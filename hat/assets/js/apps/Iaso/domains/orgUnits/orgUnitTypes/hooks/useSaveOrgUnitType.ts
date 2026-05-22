@@ -24,7 +24,10 @@ export const useSaveOrgUnitType = (): UseMutationResult => {
             data.id
                 ? patchOrgUniType(data)
                 : postOrgUnitType(data as OrgunitType),
-        invalidateQueryKey: ['paginated-orgunit-types'],
+        invalidateQueryKey: [
+            'paginated-orgunit-types',
+            'orgunittypes-dropdown',
+        ],
         ignoreErrorCodes,
     });
 };

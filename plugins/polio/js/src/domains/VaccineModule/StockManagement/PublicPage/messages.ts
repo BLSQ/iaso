@@ -65,7 +65,7 @@ const MESSAGES = defineMessages({
     },
     unreadable_label: {
         id: 'iaso.polio.label.unreadable_label',
-        defaultMessage: 'Unreadable Label',
+        defaultMessage: 'Unreadable label',
     },
     physical_inventory_add: {
         id: 'iaso.polio.label.physical_inventory_add',

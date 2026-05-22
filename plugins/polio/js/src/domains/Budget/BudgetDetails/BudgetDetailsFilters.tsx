@@ -1,8 +1,8 @@
+import React, { FunctionComponent } from 'react';
 import { Box, Grid, useMediaQuery, useTheme } from '@mui/material';
 import { UrlParams, useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
-import { FilterButton } from '../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { SearchButton } from '../../../../../../../hat/assets/js/apps/Iaso/components/SearchButton';
 import { useFilterState } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import MESSAGES from '../../../constants/messages';
@@ -71,9 +71,9 @@ export const BudgetDetailsFilters: FunctionComponent<Props> = ({
                 </Grid>
                 <Grid container item xs={12} md={8} justifyContent="flex-end">
                     <Box mt={2} mb={isXSLayout ? 2 : 0}>
-                        <FilterButton
+                        <SearchButton
                             disabled={!filtersUpdated}
-                            onFilter={handleSearch}
+                            onSearch={handleSearch}
                             size={buttonSize}
                         />
                     </Box>

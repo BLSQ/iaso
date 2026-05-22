@@ -1,13 +1,15 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status as http_status, viewsets
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission
 from iaso.api.tasks.serializers import TaskSerializer
 from iaso.models.payments import PaymentLot
+from iaso.permissions.core_permissions import CORE_PAYMENTS_PERMISSION
 from iaso.tasks.payments_bulk_update import payments_bulk_update
 
 
+@extend_schema(tags=["Payments", "Tasks"])
 class PaymentsBulkUpdate(viewsets.ViewSet):
     """Bulk update Payments
 
@@ -16,7 +18,7 @@ class PaymentsBulkUpdate(viewsets.ViewSet):
     as they happen, instead of using update() or bulk_update() to modify the DB and log the changes separately.
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_PAYMENTS_PERMISSION)]
 
     def create(self, request):
         select_all = request.data.get("select_all", False)

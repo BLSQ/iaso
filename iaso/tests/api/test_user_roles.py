@@ -1,6 +1,8 @@
 from django.contrib.auth.models import Group, Permission
+from rest_framework import status
 
 from iaso import models as m
+from iaso.permissions.core_permissions import CORE_USERS_ROLES_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -20,7 +22,9 @@ class UserRoleAPITestCase(APITestCase):
         account.default_version = sw_version
         account.save()
 
-        cls.user = cls.create_user_with_profile(username="yoda", account=account, permissions=["iaso_user_roles"])
+        cls.user = cls.create_user_with_profile(
+            username="yoda", account=account, permissions=[CORE_USERS_ROLES_PERMISSION]
+        )
         cls.user_with_no_permissions = cls.create_user_with_profile(username="userNoPermission", account=account)
 
         cls.permission = Permission.objects.create(
@@ -37,6 +41,9 @@ class UserRoleAPITestCase(APITestCase):
 
         cls.permission_not_allowable = Permission.objects.create(
             name="admin permission", content_type_id=1, codename="admin_permission1"
+        )
+        cls.permission_not_allowable2 = Permission.objects.create(
+            name="admin permission", content_type_id=1, codename="admin_permission2"
         )
         cls.group = Group.objects.create(name=str(account.id) + "user role")
 
@@ -56,6 +63,20 @@ class UserRoleAPITestCase(APITestCase):
         self.assertEqual(r["name"], payload["name"])
         self.assertIsNotNone(r["id"])
         self.assertEqual(r["editable_org_unit_type_ids"], [self.org_unit_type.id])
+
+    def test_create_user_role_no_allowable_permissions(self):
+        self.client.force_authenticate(self.user)
+
+        payload = {
+            "name": "New user role name",
+            "permissions": [self.permission_not_allowable.codename, self.permission_not_allowable2.codename],
+        }
+        response = self.client.post("/api/userroles/", data=payload, format="json")
+
+        result = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("permissions", result)
+        expected_error_message = "Invalid permission codenames: admin_permission1, admin_permission2"
+        self.assertIn(expected_error_message, result["permissions"])
 
     def test_create_user_role_without_name(self):
         self.client.force_authenticate(self.user)
@@ -146,7 +167,7 @@ class UserRoleAPITestCase(APITestCase):
 
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(r["name"], payload["name"])
-        self.assertEqual(r["editable_org_unit_type_ids"], [self.org_unit_type.id, new_org_unit_type.id])
+        self.assertCountEqual(r["editable_org_unit_type_ids"], [self.org_unit_type.id, new_org_unit_type.id])
 
     def test_partial_update_no_permission(self):
         self.client.force_authenticate(self.user_with_no_permissions)
@@ -166,6 +187,7 @@ class UserRoleAPITestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
         expected_name = self.user_role.group.name.removeprefix(f"{self.account.id}_")
         self.assertEqual(r["name"], expected_name)
+        self.assertEqual(self.group.name, f"{self.account.id}_user role modified")
 
     def test_partial_update_permissions_modification(self):
         self.client.force_authenticate(self.user)
@@ -185,17 +207,18 @@ class UserRoleAPITestCase(APITestCase):
     def test_partial_update_not_allowable_permissions_modification(self):
         self.client.force_authenticate(self.user)
 
+        invalid_perms = [self.permission_not_allowable.codename, self.permission_not_allowable2.codename]
+
         payload = {
             "name": self.user_role.group.name,
-            "permissions": [self.permission_not_allowable.codename],
+            "permissions": invalid_perms,
         }
         response = self.client.put(f"/api/userroles/{self.user_role.id}/", data=payload, format="json")
 
-        r = self.assertJSONResponse(response, 404)
-        self.assertEqual(
-            r["detail"],
-            "Not found.",
-        )
+        result = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("permissions", result)
+        expected_error_message = "Invalid permission codenames: admin_permission1, admin_permission2"
+        self.assertIn(expected_error_message, result["permissions"])
 
     def test_delete_user_role(self):
         self.client.force_authenticate(self.user)

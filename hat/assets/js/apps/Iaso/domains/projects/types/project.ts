@@ -1,12 +1,14 @@
-import { FeatureFlag } from './featureFlag';
+import { ProjectFeatureFlag } from './featureFlag';
 
 export type Project = {
-    app_id: string;
-    feature_flags: Array<FeatureFlag>;
+    app_id?: string;
+    feature_flags?: Array<FeatureFlag>;
     name: string;
+    description?: string;
     id: number | string | null | undefined;
     updated_at?: number;
     needs_authentication?: boolean;
     old_app_id?: string | null | undefined;
     created_at?: number;
+    color?: string;
 };

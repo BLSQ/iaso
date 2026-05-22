@@ -1,6 +1,7 @@
-import { useRedirectTo } from 'bluesquare-components';
 import { useCallback } from 'react';
+import { useRedirectTo } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
+import { createSearchParamsWithArray } from 'Iaso/libs/utils';
 import snackMessages from '../../../components/snackBars/messages';
 import { baseUrls } from '../../../constants/urls';
 import { getRequest } from '../../../libs/Api';
@@ -53,7 +54,6 @@ export const useLinkOrgUnitToReferenceSubmission = ({
 };
 
 type FormOrgUnitTypes = {
-    // eslint-disable-next-line camelcase
     org_unit_type_ids: number[];
     period_type: string | null;
     id: number;
@@ -69,12 +69,12 @@ export type FormDef = {
 export const useGetFormDefForInstance = (
     formId: number | string | undefined,
 ): UseQueryResult<FormDef, Error> => {
+    const queryString = createSearchParamsWithArray({
+        fields: ['org_unit_type_ids', 'period_type'].join(','),
+    }).toString();
     return useSnackQuery(
-        ['form', formId, 'org_unit_types'],
-        () =>
-            getRequest(
-                `/api/forms/${formId}/?fields=org_unit_type_ids,period_type`,
-            ),
+        ['forms', formId, 'org_unit_types'],
+        () => getRequest(`/api/forms/${formId}/?${queryString}`),
         snackMessages.fetchFormError,
         {
             enabled: Boolean(formId),

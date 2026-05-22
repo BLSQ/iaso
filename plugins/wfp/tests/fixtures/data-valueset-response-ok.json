@@ -1,0 +1,50 @@
+{
+    "status": "OK",
+    "message": "Import was successful.",
+    "response": {
+        "status": "SUCCESS",
+        "conflicts": [],
+        "description": "Import process completed successfully",
+        "importCount": {
+            "imported": 4,
+            "updated": 0,
+            "ignored": 0,
+            "deleted": 0
+        },
+        "responseType": "ImportSummary",
+        "importOptions": {
+            "async": false,
+            "force": false,
+            "dryRun": false,
+            "sharing": false,
+            "idSchemes": {},
+            "mergeMode": "REPLACE",
+            "skipAudit": false,
+            "skipCache": false,
+            "reportMode": "FULL",
+            "strictPeriods": false,
+            "importStrategy": "CREATE_AND_UPDATE",
+            "mergeDataValues": false,
+            "skipLastUpdated": false,
+            "firstRowIsHeader": true,
+            "skipExistingCheck": false,
+            "skipNotifications": false,
+            "strictDataElements": false,
+            "datasetAllowsPeriods": false,
+            "strictDataSetLocking": false,
+            "ignoreEmptyCollection": false,
+            "skipPatternValidation": false,
+            "strictDataSetApproval": false,
+            "strictOrganisationUnits": false,
+            "strictDataSetInputPeriods": false,
+            "requireCategoryOptionCombo": false,
+            "strictCategoryOptionCombos": false,
+            "requireAttributeOptionCombo": false,
+            "strictAttributeOptionCombos": false
+        },
+        "dataSetComplete": "false",
+        "rejectedIndexes": []
+    },
+    "httpStatus": "OK",
+    "httpStatusCode": 200
+}

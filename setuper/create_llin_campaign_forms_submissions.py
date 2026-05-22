@@ -51,7 +51,10 @@ def create_form_submissions(account_name, iaso_client, form, orgunit):
 
 def create_org_units_submissions(account_name, iaso_client, facility_type_id, form):
     limit = 20
-    orgUnits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": facility_type_id})["orgunits"]
+    orgUnits = iaso_client.get(
+        "/api/orgunits/",
+        params={"limit": limit, "orgUnitTypeId": facility_type_id, "fields": "id,longitude,latitude,altitude"},
+    )["orgunits"]
 
     for orgUnit in orgUnits:
         create_form_submissions(account_name, iaso_client, form, orgUnit)
@@ -86,7 +89,7 @@ def new_llin_forms():
 def llin_forms(iaso_client, account_name):
     forms = new_llin_forms()
     project_id = iaso_client.get("/api/projects/")["projects"][0]["id"]
-    org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
+    org_unit_types = iaso_client.get("/api/v2/orgunittypes/?fields=id,name")["orgUnitTypes"]
     org_unit_type_id = [
         out["id"] for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF"
     ]

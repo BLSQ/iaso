@@ -4,17 +4,20 @@ import typing
 from datetime import timedelta
 
 from django.utils.timezone import now
+from drf_spectacular.utils import extend_schema
 
 
 logger = logging.getLogger(__name__)
 from rest_framework import permissions, serializers, status
+from rest_framework.response import Response
 
-from iaso.dhis2.datavalue_exporter import DataValueExporter, InstanceExportError  # type: ignore
+from iaso.api.instances.filters import parse_instance_filters
+from iaso.api.tasks.serializers import TaskSerializer
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
-from iaso.models import KILLED, QUEUED, ExportRequest
+from iaso.models import KILLED, QUEUED, ExportRequest, Task
+from iaso.tasks.dhis2_submission_exporter import process_export_request
 
 from .common import ModelViewSet
-from .instance_filters import parse_instance_filters
 
 
 class ExportRequestSerializer(serializers.ModelSerializer):
@@ -37,8 +40,7 @@ class ExportRequestSerializer(serializers.ModelSerializer):
         return parse_instance_filters(self.context["request"].data)
 
     def create(self, validated_data: typing.MutableMapping):
-        # FIXME: Temporary fix till we reimplement this in the new task system, timeout old queued requests.
-        REQUEST_TIMEOUT_S = 15 * 60  # 15 minutes
+        REQUEST_TIMEOUT_S = 60  # 1 minutes
         export_requests = ExportRequest.objects.filter(status=QUEUED).filter(
             queued_at__lt=now() - timedelta(seconds=REQUEST_TIMEOUT_S)
         )
@@ -57,27 +59,25 @@ class ExportRequestSerializer(serializers.ModelSerializer):
             selection = dict()
             selection["selected_ids"] = self.context["request"].data.get("selected_ids", None)
             selection["unselected_ids"] = self.context["request"].data.get("unselected_ids", None)
-            return ExportRequestBuilder().build_export_request(
+            export_request = ExportRequestBuilder().build_export_request(
                 filters=validated_data,
                 launcher=user,
                 force_export=force_export,
                 selection=selection,
             )
+            return export_request
+
         except Exception as e:
             # warn the client will use this as part of the translation key
             raise serializers.ValidationError({"code": type(e).__name__, "message": str(e)})
 
     def update(self, export_request, validated_data):
-        try:
-            DataValueExporter().export_instances(export_request)
-        except InstanceExportError as e:
-            # IA-2497 change "PUT" to not return 500.
-            res = serializers.ValidationError({"code": type(e).__name__, "message": str(e)})
-            res.status_code = status.HTTP_409_CONFLICT
-            raise res
-        return export_request
+        res = serializers.ValidationError({"code": "unsupported", "message": "no more supported"})
+        res.status_code = status.HTTP_409_CONFLICT
+        raise res
 
 
+@extend_schema(tags=["Export requests"])
 class ExportRequestsViewSet(ModelViewSet):
     """Export requests API
 
@@ -101,3 +101,16 @@ class ExportRequestsViewSet(ModelViewSet):
         profile = self.request.user.iaso_profile
 
         return queryset.filter(launcher__iaso_profile__account=profile.account)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        export_request = serializer.save()
+        user = request.user
+
+        task: Task = process_export_request(export_request_id=export_request.id, user=user)
+
+        return Response(
+            {"task": TaskSerializer(instance=task).data},
+            status=status.HTTP_201_CREATED,
+        )

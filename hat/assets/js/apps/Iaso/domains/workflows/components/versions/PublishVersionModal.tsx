@@ -1,17 +1,13 @@
 import React, { FunctionComponent } from 'react';
-
 import {
     useSafeIntl,
     ConfirmCancelModal,
     makeFullModal,
 } from 'bluesquare-components';
-
-import { PublishButton, PublishIconButton } from '../ModalButtons';
-
-import { WorkflowVersion } from '../../types';
 import { useUpdateWorkflowVersion } from '../../hooks/requests/useUpdateWorkflowVersion';
-
 import MESSAGES from '../../messages';
+import { WorkflowVersion } from '../../types';
+import { PublishButton, PublishIconButton } from '../ModalButtons';
 
 type Props = {
     isOpen: boolean;

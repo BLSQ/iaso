@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { computeScopeCounts, determineLqasImDates } from '../utils';
 import { Campaign } from '../../../../constants/types';
+import { computeScopeCounts, determineLqasImDates } from '../utils';
 
 export const useLqasImMapHeaderData = ({
     campaign,

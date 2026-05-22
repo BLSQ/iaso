@@ -1,50 +1,45 @@
-import React, {
-    FunctionComponent,
-    useState,
-    useMemo,
-    useCallback,
-} from 'react';
-import { Box, Grid } from '@mui/material';
+import React, { useState, useMemo, useCallback } from 'react';
+import Add from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Settings';
+import { Box, Button, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import {
     commonStyles,
-    Table,
     useSafeIntl,
     selectionInitialState,
     setTableSelection,
-    LoadingSpinner,
     useRedirectTo,
 } from 'bluesquare-components';
 
-import EditIcon from '@mui/icons-material/Settings';
+import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
+import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
+import { baseUrls } from 'Iaso/constants/urls';
+import { CreateUserDialog } from 'Iaso/domains/users/components/CreateUserDialog';
+import { makeUrlWithParams } from 'Iaso/libs/utils';
+import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
+import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
+import * as Permission from '../../utils/permissions';
+import { Selection } from '../orgUnits/types/selection';
+import { Profile } from '../teams/types/profile';
 import Filters from './components/Filters';
-import { AddUsersDialog } from './components/UsersDialog';
 
-import { baseUrls } from '../../constants/urls';
+import { UsersMultiActionsDialog } from './components/UsersMultiActionsDialog';
+import { useUsersTableColumns } from './config';
+import { useBulkSaveProfiles } from './hooks/useBulkSaveProfiles';
+import { useCreateExportMobileSetup } from './hooks/useCreateExportMobileSetup';
+import { useDeleteProfile } from './hooks/useDeleteProfile';
 import {
     useGetProfilesApiParams,
     useGetProfiles,
 } from './hooks/useGetProfiles';
-import { useDeleteProfile } from './hooks/useDeleteProfile';
 import { useSaveProfile } from './hooks/useSaveProfile';
-import { useCreateExportMobileSetup } from './hooks/useCreateExportMobileSetup';
 
-import { usersTableColumns } from './config';
 import MESSAGES from './messages';
 
-import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
-import { BulkImportUsersDialog } from './components/BulkImportDialog/BulkImportDialog';
-import { useCurrentUser } from '../../utils/usersUtils';
-
-import { Selection } from '../orgUnits/types/selection';
-import { Profile } from '../teams/types/profile';
-import { UsersMultiActionsDialog } from './components/UsersMultiActionsDialog';
-import { useBulkSaveProfiles } from './hooks/useBulkSaveProfiles';
-import * as Permission from '../../utils/permissions';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
+import { userHasPermission } from './utils';
 
 const baseUrl = baseUrls.users;
 
@@ -57,10 +52,14 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-export const Users: FunctionComponent = () => {
+export const Users = () => {
     const params = useParamsObject(baseUrls.users) as unknown as Params;
     const classes: Record<string, string> = useStyles();
     const currentUser = useCurrentUser();
+    const canBypassProjectRestrictions = userHasPermission(
+        Permission.USERS_ADMIN,
+        currentUser,
+    );
     const { formatMessage } = useSafeIntl();
     const redirectTo = useRedirectTo();
 
@@ -109,10 +108,27 @@ export const Users: FunctionComponent = () => {
         fetchingProfiles || deletingProfile || savingProfile || savingProfiles;
 
     const apiParams = useGetProfilesApiParams(params);
+    const columns = useUsersTableColumns({
+        deleteProfile,
+        params,
+        currentUser,
+        saveProfile,
+        exportMobileSetup,
+        canBypassProjectRestrictions,
+    });
+
+    const exportCsvURL = makeUrlWithParams(`/api/profiles/export-csv/`, {
+        ...apiParams?.apiParams,
+        managedUsersOnly: apiParams?.apiParams?.managedUsersOnly ?? 'true',
+    });
+
+    const exportXlsxURL = makeUrlWithParams(`/api/profiles/export-xlsx/`, {
+        ...apiParams?.apiParams,
+        managedUsersOnly: apiParams?.apiParams?.managedUsersOnly ?? 'true',
+    });
 
     return (
         <>
-            {isLoading && <LoadingSpinner />}
             <UsersMultiActionsDialog
                 open={multiActionPopupOpen}
                 closeDialog={() => setMultiActionPopupOpen(false)}
@@ -121,14 +137,15 @@ export const Users: FunctionComponent = () => {
                 saveMulti={(saveData: Record<string, any>) =>
                     bulkSave({ ...saveData, ...params })
                 }
+                canBypassProjectRestrictions={canBypassProjectRestrictions}
             />
-            <TopBar
-                title={formatMessage(MESSAGES.users)}
-                displayBackButton={false}
-            />
+            <TopBar title={formatMessage(MESSAGES.users)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                {multiActionPopupOpen && 'SHOW MODALE'}
-                <Filters baseUrl={baseUrl} params={params} />
+                <Filters
+                    baseUrl={baseUrl}
+                    params={params}
+                    canBypassProjectRestrictions={canBypassProjectRestrictions}
+                />
                 <DisplayIfUserHasPerm
                     permissions={[
                         Permission.USERS_ADMIN,
@@ -142,41 +159,45 @@ export const Users: FunctionComponent = () => {
                         alignItems="center"
                         className={classes.marginTop}
                     >
-                        <AddUsersDialog
+                        <CreateUserDialog
                             titleMessage={MESSAGES.create}
-                            saveProfile={saveProfile}
                             allowSendEmailInvitation
                             iconProps={{
                                 dataTestId: 'add-user-button',
                             }}
+                            canBypassProjectRestrictions={
+                                canBypassProjectRestrictions
+                            }
                         />
                         <Box ml={2}>
                             {/* @ts-ignore */}
-                            <BulkImportUsersDialog />
+                            <Button
+                                color="primary"
+                                variant="contained"
+                                className={classes.button}
+                                href={`/dashboard/${baseUrls.usersBulkCreate}`}
+                            >
+                                <Add className={classes.buttonIcon} />
+                                {formatMessage(MESSAGES.createFromFile)}
+                            </Button>
                         </Box>
                         <DownloadButtonsComponent
-                            csvUrl={`${apiParams.url}&csv=true`}
-                            xlsxUrl={`${apiParams.url}&xlsx=true`}
+                            csvUrl={exportCsvURL}
+                            xlsxUrl={exportXlsxURL}
                             disabled={isLoading}
                         />
                     </Grid>
                 </DisplayIfUserHasPerm>
-                <Table
-                    data={data?.profiles ?? []}
+                <TableWithDeepLink
+                    data={data?.results ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={[{ id: 'user__username', desc: false }]}
-                    columns={usersTableColumns({
-                        formatMessage,
-                        deleteProfile,
-                        params,
-                        currentUser,
-                        saveProfile,
-                        exportMobileSetup,
-                    })}
+                    columns={columns}
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}
                     params={params}
                     extraProps={{
+                        loading: isLoading,
                         pageSize: params.pageSize,
                         search: params.search,
                     }}
@@ -188,6 +209,9 @@ export const Users: FunctionComponent = () => {
                     setTableSelection={(selectionType, items, totalCount) =>
                         handleTableSelection(selectionType, items, totalCount)
                     }
+                    columnSelectorEnabled
+                    columnSelectorButtonType="button"
+                    columnSelectorButtonDisabled={isLoading || !data?.count}
                 />
             </Box>
         </>

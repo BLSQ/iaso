@@ -1,7 +1,7 @@
 import { UseQueryResult } from 'react-query';
-import { DropdownOptions } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { useSnackQuery } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { getRequest } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import { useSnackQuery } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { DropdownOptions } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 export type ReasonForDelay = 'INITIAL_DATA' | string;
 

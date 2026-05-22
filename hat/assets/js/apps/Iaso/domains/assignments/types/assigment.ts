@@ -2,10 +2,9 @@ import { Shape } from '../../orgUnits/types/shapes';
 
 export type AssignmentParams = {
     planningId: string;
-    team?: string;
-    baseOrgunitType?: string;
-    parentOrgunitType?: string;
-    tab?: string;
+    tab: 'list' | 'map';
+    pageSize?: string;
+    page?: string;
     order?: string;
     search?: string;
 };

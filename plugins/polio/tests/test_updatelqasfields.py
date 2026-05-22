@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from iaso import models as m
 from iaso.test import APITestCase
 from plugins.polio.models import Campaign, Round
+from plugins.polio.permissions import POLIO_PERMISSION
 
 
 class UpdateLqasFieldsTestCase(APITestCase):
@@ -34,7 +35,7 @@ class UpdateLqasFieldsTestCase(APITestCase):
             version=cls.source_version,
         )
         cls.country_org_unit_2.save()
-        cls.user = cls.create_user_with_profile(username="test user", account=account, permissions=["iaso_polio"])
+        cls.user = cls.create_user_with_profile(username="test user", account=account, permissions=[POLIO_PERMISSION])
         cls.user.iaso_profile.org_units.set([cls.country_org_unit_1])
         cls.round1_start = (datetime.now() - timedelta(days=42)).date()
         cls.round1_end = (datetime.now() - timedelta(days=39)).date()

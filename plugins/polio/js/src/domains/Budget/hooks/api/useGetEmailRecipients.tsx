@@ -5,7 +5,7 @@ import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/l
 const getRecipentTeams = (ids: number[]) => {
     if (ids.length === 0) return [];
     const query = ids.join();
-    return getRequest(`/api/microplanning/teams/?id__in=${query}`);
+    return getRequest(`/api/teams/?id__in=${query}`);
 };
 
 export const useGetRecipientTeams = (

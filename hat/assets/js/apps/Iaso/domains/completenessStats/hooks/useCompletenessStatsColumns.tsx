@@ -1,24 +1,24 @@
 import React, { useMemo } from 'react';
+import { ArrowUpward, AccountTree } from '@mui/icons-material';
 import {
     IconButton as IconButtonComponent,
     useSafeIntl,
     Column,
 } from 'bluesquare-components';
-import { ArrowUpward, AccountTree } from '@mui/icons-material';
 
-import MESSAGES from '../messages';
-import { userHasOneOfPermissions } from '../../users/utils';
-import { useCurrentUser } from '../../../utils/usersUtils';
 import { baseUrls } from '../../../constants/urls';
+import * as Permission from '../../../utils/permissions';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import { userHasOneOfPermissions } from '../../users/utils';
+import { DescendantsCell } from '../components/DescendantsCell';
+import { ItselfCell } from '../components/ItselfCell';
+import MESSAGES from '../messages';
 import {
     CompletenessApiResponse,
     CompletenessRouterParams,
     FormDesc,
 } from '../types';
-import * as Permission from '../../../utils/permissions';
 import { useGetParentPageUrl } from '../utils';
-import { DescendantsCell } from '../components/DescendantsCell';
-import { ItselfCell } from '../components/ItselfCell';
 
 export const useCompletenessStatsColumns = (
     params: CompletenessRouterParams,
@@ -64,17 +64,7 @@ export const useCompletenessStatsColumns = (
                     <>{settings.row.original.parent_org_unit?.name ?? '--'}</>
                 ),
             },
-            // {
-            //     // Uncomment for debug
-            //     Header: 'DEBUG',
-            //     id: 'form_stats',
-            //     accessor: 'form_stats',
-            //     sortable: false,
-            //     Cell: settings => JSON.stringify(settings.value),
-            // },
         ];
-        // Add column and sub columns per form
-        // console.dir(completenessStats);
         if (completenessStats?.forms) {
             columns = columns.concat(
                 completenessStats.forms.map((form: FormDesc): Column => {
@@ -126,7 +116,9 @@ export const useCompletenessStatsColumns = (
                 const formStats = settings.row.original.form_stats;
                 const orgunitId = settings.row.original.org_unit.id;
                 const hasFormSubmissions = Object.values(formStats).some(
-                    (stat: any) => stat.itself_has_instances > 0,
+                    (stat: any) =>
+                        stat.itself_has_instances > 0 ||
+                        stat.descendants_ok > 0,
                 );
                 const childrenPageUrl = getParentPageUrl(
                     settings.row.original.org_unit?.id,
@@ -155,7 +147,7 @@ export const useCompletenessStatsColumns = (
                         {hasSubmissionPermission && hasFormSubmissions && (
                             <IconButtonComponent
                                 id={`form-link-${settings.row.original.id}`}
-                                url={`/${baseUrls.instances}/accountId/${params.accountId}/page/1/levels/${orgunitId}`}
+                                url={`/${baseUrls.instances}/accountId/${params.accountId}/page/1/levels/${orgunitId}/isSearchActive/true`}
                                 icon="remove-red-eye"
                                 tooltipMessage={MESSAGES.viewInstances}
                             />

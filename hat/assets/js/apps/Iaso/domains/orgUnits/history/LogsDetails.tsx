@@ -1,17 +1,17 @@
 import React, { FunctionComponent } from 'react';
+import Alert from '@mui/lab/Alert';
+import { Container, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     LoadingSpinner,
     LinkWithLocation,
     commonStyles,
     useSafeIntl,
 } from 'bluesquare-components';
-import { Container, Grid } from '@mui/material';
-import Alert from '@mui/lab/Alert';
-import { makeStyles } from '@mui/styles';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useGetLogDetails } from 'Iaso/hooks/useGetLogDetails';
 import LogCompareComponent from './LogCompareComponent';
-import MESSAGES from './messages';
-import { useGetLogDetails } from '../../../hooks/useGetLogDetails';
-import { baseUrls } from '../../../constants/urls';
+import { MESSAGES } from './messages';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

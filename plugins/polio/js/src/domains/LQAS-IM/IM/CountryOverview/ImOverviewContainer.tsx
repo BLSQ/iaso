@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { Box, Divider, Paper } from '@mui/material';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { ConvertedLqasImData, IMType, Side } from '../../../../constants/types';
+import { Campaign, Side } from '../../../../constants/types';
 import { baseUrls } from '../../../../constants/urls';
 import { LIST, MAP } from '../../shared/constants';
 import { useMapShapes } from '../../shared/hooks/api/useMapShapes';
@@ -9,16 +9,17 @@ import { useLqasImMapHeaderData } from '../../shared/hooks/useLqasImMapHeaderDat
 import { LqasImMapHeader } from '../../shared/Map/LqasImMapHeader';
 import { LqasImTabs } from '../../shared/Tabs/LqasImTabs';
 import { useLqasImTabState } from '../../shared/Tabs/useLqasImTabState';
+import { ConvertedLqasImData, IMType } from '../../types';
 import { getLqasImMapLayer } from '../utils';
 import { ImCountryListOverview } from './ImCountryListOverview';
 import { ImCountryMap } from './ImCountryMap';
 import { ImSummary } from './ImSummary';
 
 type Props = {
-    round: number;
-    campaign: string;
-    campaigns: Array<unknown>;
-    country: string;
+    round: number | undefined | string;
+    campaign?: string;
+    campaigns: Array<Campaign>;
+    countryId?: number;
     data: Record<string, ConvertedLqasImData>;
     isFetching: boolean;
     debugData: Record<string, unknown> | null | undefined;
@@ -31,10 +32,10 @@ type Props = {
 };
 
 export const ImOverviewContainer: FunctionComponent<Props> = ({
-    round,
+    round: roundProp,
     campaign,
     campaigns,
-    country,
+    countryId,
     data,
     isFetching,
     debugData,
@@ -45,13 +46,15 @@ export const ImOverviewContainer: FunctionComponent<Props> = ({
     side,
     params,
 }) => {
-    const baseUrl = baseUrls[type];
+    const round =
+        typeof roundProp === 'string' ? parseInt(roundProp, 10) : roundProp;
+    // check on type because url uses legacy `imHH` code.
+    const baseUrl = type === 'imIHH' ? baseUrls.imHH : baseUrls[type];
     const { tab, handleChangeTab } = useLqasImTabState({
         baseUrl,
         params,
         side,
     });
-    const countryId = parseInt(country, 10);
     const { shapes, isFetchingGeoJson, regionShapes, isFetchingRegions } =
         useMapShapes(countryId);
 

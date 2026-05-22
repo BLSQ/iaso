@@ -29,8 +29,7 @@ def setup_registry(account_name, iaso_client):
         "label_keys": [],
     }
 
-    form = iaso_client.post("/api/forms/", json=data)
-    form_id = form["id"]
+    form_id = iaso_client.post("/api/forms/", json=data)["id"]
 
     # associate it's form version and upload xlsform
 
@@ -40,12 +39,14 @@ def setup_registry(account_name, iaso_client):
 
     form_version = iaso_client.post("/api/formversions/", files=form_files, data=data)
 
-    ou_type = iaso_client.get(f"/api/v2/orgunittypes/{health_area_type_id}/")
-    ou_type["reference_forms_ids"] = [form["id"]]
+    ou_type = iaso_client.get(
+        f"/api/v2/orgunittypes/{health_area_type_id}/?fields=id,reference_forms_ids,allow_creating_sub_unit_types,allow_creating_sub_unit_type_ids,sub_unit_types,sub_unit_type_ids,project_ids,projects"
+    )
+    ou_type["reference_forms_ids"] = [form_id]
     ou_type["allow_creating_sub_unit_type_ids"] = [p["id"] for p in ou_type["allow_creating_sub_unit_types"]]
     ou_type["sub_unit_type_ids"] = [p["id"] for p in ou_type["sub_unit_types"]]
     ou_type["project_ids"] = [p["id"] for p in ou_type["projects"]]
-    resp = iaso_client.put(f"/api/v2/orgunittypes/{health_area_type_id}/", json=ou_type)
+    resp = iaso_client.patch(f"/api/v2/orgunittypes/{health_area_type_id}/", json=ou_type)
     print(resp)
     ou_type = iaso_client.get(f"/api/v2/orgunittypes/{health_area_type_id}/")
     print(ou_type)

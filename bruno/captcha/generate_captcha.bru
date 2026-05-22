@@ -1,0 +1,20 @@
+meta {
+  name: generate_captcha
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{HOST}}/api/captcha/refresh/
+  body: none
+  auth: none
+}
+
+headers {
+  x-requested-with: XMLHttpRequest
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -8,6 +8,7 @@ export type ThemeConfig = {
     LOGO_PATH: string;
     FAVICON_PATH: string;
     SHOW_NAME_WITH_LOGO: 'yes' | 'no';
+    HIDE_BASIC_NAV_ITEMS: 'yes' | 'no';
 };
 
 const defaultContextValue: ThemeConfig = {
@@ -18,6 +19,7 @@ const defaultContextValue: ThemeConfig = {
     LOGO_PATH: '',
     FAVICON_PATH: '',
     SHOW_NAME_WITH_LOGO: 'yes',
+    HIDE_BASIC_NAV_ITEMS: 'no',
 };
 
 export const ThemeConfigContext =

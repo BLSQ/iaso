@@ -1,9 +1,22 @@
-import React, { useState, FunctionComponent, ReactElement } from 'react';
+import React, {
+    useState,
+    FunctionComponent,
+    ReactElement,
+    ReactNode,
+} from 'react';
 
-import { Paper, Divider, Typography, Grid, Collapse, Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
+import {
+    Paper,
+    Divider,
+    Typography,
+    Grid,
+    Collapse,
+    Box,
+    PaperProps,
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -19,6 +32,7 @@ const useStyles = makeStyles(theme => ({
         [theme.breakpoints.down('md')]: {
             fontSize: '1.4rem',
         },
+        textTransform: 'capitalize',
     },
     paperTitle: {
         padding: theme.spacing(2),
@@ -55,9 +69,9 @@ type Props = {
     iconButtonProps?: Record<string, any>;
     showHeader?: boolean;
     className?: string;
-    elevation?: number;
-};
-export const WidgetPaper: FunctionComponent<Props> = ({
+    children?: ReactNode;
+} & Omit<PaperProps, 'classes' | 'children'>;
+export const WidgetPaper = ({
     IconButton,
     iconButtonProps,
     title,
@@ -68,8 +82,8 @@ export const WidgetPaper: FunctionComponent<Props> = ({
     showHeader = true,
     isExpanded = true,
     className = '',
-    elevation = 1,
-}) => {
+    ...props
+}: Props) => {
     const classes: Record<string, string> = useStyles();
     const [open, setOpen] = useState(isExpanded);
     const handleClick = () => {
@@ -78,11 +92,7 @@ export const WidgetPaper: FunctionComponent<Props> = ({
         }
     };
     return (
-        <Paper
-            elevation={elevation}
-            className={`${classes.root} ${className}`}
-            id={id}
-        >
+        <Paper className={`${classes.root} ${className}`} id={id} {...props}>
             {showHeader && (
                 <div className={classes.paperTitle}>
                     <Grid xs={IconButton ? 10 : 12} item>

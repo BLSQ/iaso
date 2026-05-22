@@ -18,17 +18,18 @@ import {
 } from 'bluesquare-components';
 import moment from 'moment';
 
-import { baseUrls } from '../../../constants/urls';
-import { getCookie } from '../../../utils/cookies';
+import { baseUrls } from 'Iaso/constants/urls';
+import { findDescriptor } from 'Iaso/domains/instances/utils/questions';
+import { getCookie } from 'Iaso/utils/cookies';
 
 import {
     apiDateFormat,
     apiDateTimeFormat,
     getFromDateString,
     getToDateString,
-} from '../../../utils/dates';
+} from 'Iaso/utils/dates';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import * as Permission from '../../../utils/permissions';
-import { useCurrentUser } from '../../../utils/usersUtils';
 import { Form, PossibleField } from '../../forms/types/forms';
 import { Selection } from '../../orgUnits/types/selection';
 import { getLatestOrgUnitLevelId } from '../../orgUnits/utils';
@@ -41,7 +42,7 @@ import ExportInstancesDialogComponent from '../components/ExportInstancesDialogC
 
 import { LinkReferenceInstancesModalComponent } from '../components/InstanceReferenceSubmission/LinkReferenceInstancesComponent';
 import { PushGpsModalComponent } from '../components/PushInstanceGps/PushGpsDialogComponent';
-import instancesTableColumns from '../config';
+import { useInstancesTableColumns } from '../config';
 import { INSTANCE_METAS_FIELDS } from '../constants';
 import MESSAGES from '../messages';
 import { Instance, ShortFile } from '../types/instance';
@@ -139,10 +140,12 @@ const labelLocales: Locales = {
     ],
 };
 
+export type LocaleCode = 'en' | 'fr' | 'es' | 'pt';
+
 const localizeLabel = (field: Field): string => {
     // Localize a label. Sometimes a label may be a string, that is somewhat json but not totally
     // sometime it's already a Mapping.
-    const locale: string = getCookie('django_language') ?? 'en';
+    const locale: LocaleCode = getCookie('django_language') ?? 'en';
     let localeOptions: Record<string, string> = { [field.name]: field.name };
 
     if (typeof field === 'object') {
@@ -175,7 +178,9 @@ const localizeLabel = (field: Field): string => {
         localeOptions = field;
     }
 
-    const localeKey = labelLocales[locale].find(key => localeOptions[key]);
+    const localeKey = labelLocales[locale].find(
+        (key: string) => localeOptions[key],
+    );
     return localeKey ? localeOptions[localeKey] : field.name;
 };
 /**
@@ -208,7 +213,7 @@ export const formatLabel = (field: Field): string => {
 
 const renderValue = (settings: Setting<Instance>, c: VisibleColumn) => {
     const { key } = c;
-    // eslint-disable-next-line camelcase
+
     const { file_content } = settings.row.original;
     const value = file_content[key];
 
@@ -231,7 +236,6 @@ const renderValue = (settings: Setting<Instance>, c: VisibleColumn) => {
 };
 
 export const useInstancesColumns = (
-    // eslint-disable-next-line default-param-last
     getActionCell: RenderCell = settings => (
         <ActionTableColumnComponent settings={settings} />
     ),
@@ -239,10 +243,7 @@ export const useInstancesColumns = (
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
-    const metasColumns = useMemo(
-        () => [...instancesTableColumns(formatMessage)],
-        [formatMessage],
-    );
+    const metasColumns = useInstancesTableColumns();
     const InstancesColumns = useMemo(() => {
         let tableColumns: Column[] = [];
         metasColumns.forEach(c => {
@@ -331,19 +332,17 @@ export const useGetInstancesVisibleColumns = ({
     columns?: string,
     possibleFields?: PossibleField[],
 ) => VisibleColumn[]) => {
-    const { formatMessage } = useSafeIntl();
     const activeOrders: string[] = useMemo(
         () => (order || defaultOrder).split(','),
         [defaultOrder, order],
     );
+    const instancesTableColumns = useInstancesTableColumns();
     const getInstancesVisibleColumns = useCallback(
         (columns?: string, possibleFields?: PossibleField[]) => {
             const columnsNames: string[] = columns ? columns.split(',') : [];
             const metasColumns: PossibleColumn[] = [
-                ...instancesTableColumns(formatMessage).filter(
-                    c => c.accessor !== 'actions',
-                ),
-            ];
+                ...instancesTableColumns.filter(c => c.accessor !== 'actions'),
+            ] as PossibleColumn[];
             const newColumns: VisibleColumn[] = metasColumns.map(c => ({
                 key: c.accessor,
                 label: c.Header,
@@ -367,7 +366,7 @@ export const useGetInstancesVisibleColumns = ({
             }
             return newColumns;
         },
-        [activeOrders, formatMessage],
+        [activeOrders, instancesTableColumns],
     );
     return getInstancesVisibleColumns;
 };
@@ -395,7 +394,7 @@ const getDefaultCols = (
 };
 
 type UseInstanceVisibleColumnsArgs = {
-    formDetails: Form;
+    formDetails: Partial<Form>;
     formIds: string[];
     instanceMetasFields?: InstanceMetasField[];
     labelKeys: string[];
@@ -455,20 +454,24 @@ export const useInstanceVisibleColumns = ({
 };
 
 export const getInstancesFilesList = (instances?: Instance[]): ShortFile[] => {
-    const filesList: ShortFile[] = [];
-    instances?.forEach(i => {
-        if (i.files?.length > 0) {
-            i.files?.forEach(path => {
-                const file = {
-                    itemId: i.id,
-                    createdAt: i.created_at,
-                    path: `${path}`,
-                };
-                filesList.push(file);
-            });
-        }
-    });
-    return filesList;
+    return (
+        instances?.flatMap(
+            i =>
+                i.files?.map(path => {
+                    const descriptor = findDescriptor(i, path);
+                    return {
+                        itemId: i.id,
+                        createdAt: i.created_at,
+                        path: `${path}`,
+                        submittedAt: i.created_at,
+                        formName: i.form_name,
+                        questionName: descriptor?.label,
+                        questionId: descriptor?.name,
+                        orgUnit: i.org_unit,
+                    } as ShortFile;
+                }) || [],
+        ) || []
+    );
 };
 
 type SelectionAction = {
@@ -483,7 +486,7 @@ type SelectionAction = {
 export const useSelectionActions = (
     filters: Record<string, string>,
     setForceRefresh: () => void,
-    // eslint-disable-next-line default-param-last
+
     isUnDeleteAction = false,
     classes: Record<string, string>,
 ): SelectionAction[] => {
@@ -495,13 +498,15 @@ export const useSelectionActions = (
 
     return useMemo(() => {
         const assignReferenceSubmissions: SelectionAction = {
-            icon: newSelection => {
+            icon: (newSelection, resetSelection) => {
                 return (
                     <LinkReferenceInstancesModalComponent
                         selection={newSelection}
                         iconProps={{
                             iconDisabled: newSelection.selectCount === 0,
                         }}
+                        resetSelection={resetSelection}
+                        filters={filters}
                     />
                 );
             },
@@ -516,6 +521,7 @@ export const useSelectionActions = (
                 <PushGpsModalComponent
                     selection={newSelection}
                     iconProps={{ iconDisabled: newSelection.selectCount === 0 }}
+                    filters={filters}
                 />
             ),
             label: formatMessage(MESSAGES.pushGpsToOrgUnits),
@@ -587,9 +593,11 @@ export const useSelectionActions = (
             actions.push(
                 exportAction,
                 deleteAction,
-                pushGpsAction,
                 assignReferenceSubmissions,
             );
+            if (userHasPermission(Permission.ORG_UNITS, currentUser)) {
+                actions.push(pushGpsAction);
+            }
         }
         return actions;
     }, [
@@ -614,7 +622,7 @@ const asBackendStatus = status => {
 };
 
 export const getFilters = (
-    params: Record<string, string>,
+    params: Record<string, string | undefined>,
 ): Record<string, string> => {
     const allFilters = {
         withLocation: params.withLocation,
@@ -641,6 +649,10 @@ export const getFilters = (
         modificationDateTo: getToDateString(params.modificationDateTo, false),
         sentDateFrom: getFromDateString(params.sentDateFrom, false),
         sentDateTo: getToDateString(params.sentDateTo, false),
+        referenceInstances:
+            params.referenceInstances && params.referenceInstances !== 'all'
+                ? params.referenceInstances
+                : undefined,
     };
     const filters = {};
     Object.keys(allFilters).forEach(k => {
@@ -680,7 +692,7 @@ export const getExportUrl = (
 };
 
 export const getEndpointUrl = (
-    params: Record<string, string>,
+    params: Record<string, string | undefined>,
     toExport: boolean,
     exportType = 'csv',
     asSmallDict = false,
@@ -702,16 +714,35 @@ export const getEndpointUrl = (
     );
 };
 
+type FileType = 'image_only' | 'video_only' | 'document_only' | 'other_only';
+
 export const getFileUrl = (
     params: Record<string, string>,
     rowsPerPage: number,
     page: number,
+    type: FileType,
 ): string => {
-    const urlParams = {
-        limit: rowsPerPage,
+    const urlParams: Record<string, string> = {
+        limit: `${rowsPerPage}`,
         // Django pagination start at 1 but Material UI at 0
-        page: page + 1,
+        page: `${page + 1}`,
         ...getFilters(params),
     };
+    if (type === 'image_only') {
+        urlParams.image_only = 'true';
+    } else if (type === 'video_only') {
+        urlParams.video_only = 'true';
+    } else if (type === 'document_only') {
+        urlParams.document_only = 'true';
+    } else if (type === 'other_only') {
+        urlParams.other_only = 'true';
+    }
     return getTableUrl('instances/attachments', urlParams);
+};
+
+export const getFileCountUrl = (params: Record<string, string>): string => {
+    const urlParams = {
+        ...getFilters(params),
+    };
+    return getTableUrl('instances/attachments_count', urlParams);
 };

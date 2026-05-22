@@ -1,8 +1,9 @@
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import { Box } from '@mui/material';
 import 'leaflet/dist/leaflet.css';
-import React, { FunctionComponent, useMemo, useState } from 'react';
 import { MapContainer, TileLayer } from 'react-leaflet';
-import { MappedCampaign } from '../types';
+import { CloseTooltipOnMoveStart } from 'Iaso/utils/map/mapUtils';
+import { CalendarParams, MappedCampaign } from '../types';
 import { CalendarMapContainer } from './CalendarMapContainer';
 import { defaultViewport } from './constants';
 import { useMergedShapes, useShapes } from './hooks';
@@ -12,9 +13,11 @@ type Props = {
     isPdf?: boolean;
     loadingCampaigns: boolean;
     campaigns: MappedCampaign[];
+    params: CalendarParams;
 };
 
 export const CalendarMap: FunctionComponent<Props> = ({
+    params,
     campaigns,
     loadingCampaigns,
     isPdf = false,
@@ -28,7 +31,9 @@ export const CalendarMap: FunctionComponent<Props> = ({
         isLoadingShapes,
         roundsDict,
     } = useShapes(selection, campaigns, loadingCampaigns);
+
     const { mergedShapes, isLoadingMergedShapes } = useMergedShapes({
+        params,
         campaigns,
         roundsDict,
         selection,
@@ -44,6 +49,7 @@ export const CalendarMap: FunctionComponent<Props> = ({
                 zoom={defaultViewport.zoom}
                 scrollWheelZoom={false}
             >
+                <CloseTooltipOnMoveStart />
                 <TileLayer
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

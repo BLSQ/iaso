@@ -46,7 +46,7 @@ export const getStyle =
         return isHidden ? classes.hiddenRow : '';
     };
 
-export const useBudgetColumns = (isUserPolioBudgetAdmin: boolean): Column[] => {
+export const useBudgetColumns = (isUserPolioBudgetAdmin: boolean, params: any, count: number): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         const cols = [
@@ -103,6 +103,8 @@ export const useBudgetColumns = (isUserPolioBudgetAdmin: boolean): Column[] => {
                                 <DeleteBudgetProcessModal
                                     iconProps={{}}
                                     budgetProcess={settings.row.original}
+                                    params={params}
+                                    count={count}
                                 />
                             )}
                         </>

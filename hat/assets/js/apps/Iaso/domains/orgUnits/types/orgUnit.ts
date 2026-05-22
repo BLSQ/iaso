@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { Pagination, UrlParams } from 'bluesquare-components';
 import { GeoJson } from '../../../components/maps/types';
 import { Nullable } from '../../../types/utils';
-import { File, Instance } from '../../instances/types/instance';
+import { Instance } from '../../instances/types/instance';
 import { OrgunitType } from './orgunitTypes';
 import { Shape } from './shapes';
 
@@ -31,6 +31,7 @@ export type OrgunitInititialState = {
     source_id?: number;
     parent?: ParentOrgUnit;
     source_ref?: string;
+    code?: string;
     reference_instance_id?: Nullable<number>;
     opening_date?: Date;
     closed_date?: Date;
@@ -54,6 +55,7 @@ export type OrgUnit = {
     name: string;
     short_name: string;
     id: number;
+    code?: string;
     sub_source: string;
     sub_source_id: string | undefined;
     source_ref: string;
@@ -98,8 +100,9 @@ export type OrgUnitParams = UrlParams & {
     locationLimit: string;
     tab?: string;
     searchTabIndex: string;
-    searchActive?: string;
     searches: string;
+    isClusterActive?: string;
+    fields: string;
 };
 
 export type OrgUnitsApi = {
@@ -113,7 +116,6 @@ type FormStateRequired<T> = {
     value: T;
     errors?: string[];
 };
-
 export type OrgUnitState = {
     id: FormStateRequired<number>;
     name: FormStateRequired<string>;
@@ -124,6 +126,7 @@ export type OrgUnitState = {
     aliases: FormState<string>;
     source_id: FormState<number>;
     source: FormState<string>;
+    code: FormState<string>;
     parent: FormState<OrgUnit>;
     source_ref: FormState<string>;
     creator: FormStateRequired<Record<string, any>>;

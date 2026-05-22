@@ -1,0 +1,28 @@
+meta {
+  name: Get org units
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{HOST}}/api/orgunits/?page={{page}}&limit={{limit}}&validation_status={{validation_status}}&search={{search}}&smallSearch={{smallSearch}}
+  body: json
+  auth: inherit
+}
+
+params:query {
+  page: {{page}}
+  limit: {{limit}}
+  validation_status: {{validation_status}}
+  search: {{search}}
+  smallSearch: {{smallSearch}}
+}
+
+vars:pre-request {
+  page: 1
+  limit: 10
+  optimized: false
+  search: 
+  validation_status: VALID
+  smallSearch: 
+}

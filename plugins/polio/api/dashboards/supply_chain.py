@@ -1,11 +1,11 @@
 from django.db.models import OuterRef, Subquery
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
 
-from hat.menupermissions import models as permission
 from iaso.api.common import ModelViewSet
-from plugins.polio.api.vaccines.permissions import VaccineStockManagementPermission
+from plugins.polio.api.vaccines.permissions import VaccineStockPermission
 from plugins.polio.models import (
     DestructionReport,
     OutgoingStockMovement,
@@ -15,6 +15,11 @@ from plugins.polio.models import (
     VaccineStock,
 )
 from plugins.polio.models.base import Campaign, Round, VaccineStockCalculator
+from plugins.polio.permissions import (
+    POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY_PERMISSION,
+    POLIO_VACCINE_SUPPLY_CHAIN_READ_PERMISSION,
+    POLIO_VACCINE_SUPPLY_CHAIN_WRITE_PERMISSION,
+)
 
 
 class VaccineRequestFormDashboardSerializer(serializers.ModelSerializer):
@@ -130,6 +135,7 @@ class VaccineRequestFormDashboardSerializer(serializers.ModelSerializer):
         return latest_destruction_report.rrt_destruction_report_reception_date if latest_destruction_report else None
 
 
+@extend_schema(tags=["Polio - Dashboards - Vaccine request form"])
 class VaccineRequestFormDashboardViewSet(ModelViewSet):
     """
     GET /api/polio/dashboards/vaccine_request_forms/
@@ -145,9 +151,10 @@ class VaccineRequestFormDashboardViewSet(ModelViewSet):
 
     http_method_names = ["get"]
     permission_classes = [
-        lambda: VaccineStockManagementPermission(
-            admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
-            non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+        lambda: VaccineStockPermission(
+            admin_perm=POLIO_VACCINE_SUPPLY_CHAIN_WRITE_PERMISSION,
+            non_admin_perm=POLIO_VACCINE_SUPPLY_CHAIN_READ_PERMISSION,
+            read_only_perm=POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY_PERMISSION,
         )
     ]
     model = VaccineRequestForm
@@ -158,9 +165,11 @@ class VaccineRequestFormDashboardViewSet(ModelViewSet):
         return super().list(request, *args, **kwargs)
 
     def get_queryset(self):
-        return VaccineRequestForm.objects.filter(
-            campaign__account=self.request.user.iaso_profile.account
-        ).select_related("campaign__country")
+        return (
+            VaccineRequestForm.objects.filter(campaign__account=self.request.user.iaso_profile.account)
+            .select_related("campaign__country")
+            .order_by("id")
+        )
 
 
 class VaccinePreAlertDashboardSerializer(serializers.ModelSerializer):
@@ -169,6 +178,7 @@ class VaccinePreAlertDashboardSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+@extend_schema(tags=["Polio - Dashboards - Pre-Alerts"])
 class PreAlertDashboardViewSet(ModelViewSet):
     """
     GET /api/polio/dashboards/pre_alerts/
@@ -178,9 +188,10 @@ class PreAlertDashboardViewSet(ModelViewSet):
 
     http_method_names = ["get"]
     permission_classes = [
-        lambda: VaccineStockManagementPermission(
-            admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
-            non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+        lambda: VaccineStockPermission(
+            admin_perm=POLIO_VACCINE_SUPPLY_CHAIN_WRITE_PERMISSION,
+            non_admin_perm=POLIO_VACCINE_SUPPLY_CHAIN_READ_PERMISSION,
+            read_only_perm=POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY_PERMISSION,
         )
     ]
     model = VaccinePreAlert
@@ -196,6 +207,7 @@ class VaccineArrivalReportDashboardSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+@extend_schema(tags=["Polio - Dashboards - Vaccine arrival report"])
 class VaccineArrivalReportDashboardViewSet(ModelViewSet):
     """
     GET /api/polio/dashboards/arrival_reports/
@@ -205,9 +217,10 @@ class VaccineArrivalReportDashboardViewSet(ModelViewSet):
 
     http_method_names = ["get"]
     permission_classes = [
-        lambda: VaccineStockManagementPermission(
-            admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
-            non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+        lambda: VaccineStockPermission(
+            admin_perm=POLIO_VACCINE_SUPPLY_CHAIN_WRITE_PERMISSION,
+            non_admin_perm=POLIO_VACCINE_SUPPLY_CHAIN_READ_PERMISSION,
+            read_only_perm=POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY_PERMISSION,
         )
     ]
     model = VaccinePreAlert

@@ -2,6 +2,7 @@ from django.contrib.gis.geos import Point
 from django.utils import timezone
 
 from iaso import models as m
+from iaso.permissions.core_permissions import CORE_COMPLETENESS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -26,7 +27,9 @@ class CompletenessAPITestCase(APITestCase):
         cls.project.unit_types.add(unit_type)
         cls.village_unit_type = unit_type
 
-        cls.user = cls.create_user_with_profile(username="link", account=account, permissions=["iaso_completeness"])
+        cls.user = cls.create_user_with_profile(
+            username="link", account=account, permissions=[CORE_COMPLETENESS_PERMISSION]
+        )
 
         cls.village_1 = m.OrgUnit.objects.create(name="Akkala", org_unit_type=unit_type, version=version)
         cls.village_2 = m.OrgUnit.objects.create(name="Kakariko", org_unit_type=unit_type, version=version)

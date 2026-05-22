@@ -5,6 +5,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Users',
         id: 'iaso.label.users',
     },
+    userDetails: {
+        defaultMessage: 'User details',
+        id: 'iaso.label.userDetails',
+    },
     create: {
         defaultMessage: 'Create user',
         id: 'iaso.users.create',
@@ -37,6 +41,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Email',
         id: 'iaso.label.email',
     },
+    date_joined: {
+        defaultMessage: 'Creation date',
+        id: 'iaso.label.dateJoined',
+    },
     newPassword: {
         defaultMessage: 'New password',
         id: 'iaso.users.newPassword',
@@ -60,6 +68,12 @@ const MESSAGES = defineMessages({
     search: {
         defaultMessage: 'Search',
         id: 'iaso.search',
+    },
+    searchParams: {
+        id: 'iaso.users.searchParams',
+        defaultMessage:
+            // eslint-disable-next-line max-len
+            'Use prefix “refs:” for dhis2 ID search, “ids:” for internal profile ID. You can also search multiple IDs at once, separated by a comma or a space. E.g. “ids: 123456, 654321”, “refs: O6uvpzGd5pu, ImspTQPwCqd”',
     },
     infos: {
         defaultMessage: 'Infos',
@@ -92,6 +106,10 @@ const MESSAGES = defineMessages({
     updateUser: {
         defaultMessage: 'Update user',
         id: 'iaso.users.update',
+    },
+    updateUserPassword: {
+        defaultMessage: 'Update password',
+        id: 'iaso.users.updatePassword',
     },
     deleteUserTitle: {
         id: 'iaso.users.dialog.deleteUserTitle',
@@ -200,9 +218,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.user.label.downloadTemplate',
         defaultMessage: 'Download template',
     },
-    selectCsvFile: {
-        id: 'iaso.user.label.selectCsvFile',
-        defaultMessage: 'Select CSV file',
+    selectFile: {
+        id: 'iaso.user.label.selectFile',
+        defaultMessage: 'Select file',
     },
     uploadError: {
         id: 'iaso.user.label.uploadError',
@@ -510,10 +528,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.selectAllHelperText',
         defaultMessage: 'Leave empty to select all',
     },
-    userAdminOnly: {
-        id: 'iaso.users.userAdminOnly',
-        defaultMessage: 'Can only be edited by user admin',
-    },
     OrgUnitTypeWriteDisableTooltip: {
         id: 'iaso.users.orgUnitTypeWriteDisableTooltip',
         defaultMessage:
@@ -532,6 +546,97 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.multiAccountUserInfoDisabledWarning',
         defaultMessage:
             'This user is a multi-account user. For this user, you can only edit settings specific to this account, such as their permissions.',
+    },
+    invalidEmailFormat: {
+        id: 'iaso.users.invalidEmailFormat',
+        defaultMessage: 'Invalid email format',
+    },
+    viewUser: {
+        id: 'iaso.users.viewUser',
+        defaultMessage: 'View user details',
+    },
+    delete: {
+        id: 'iaso.users.delete',
+        defaultMessage: 'Delete',
+    },
+    passwordMatch: {
+        id: 'iaso.users.password.match',
+        defaultMessage: 'Passwords must match.',
+    },
+    passwordLabel: {
+        id: 'iaso.users.form.fields.password.label',
+        defaultMessage: 'Enter new password',
+    },
+    confirmPasswordLabel: {
+        id: 'iaso.users.form.fields.confirmPassword.label',
+        defaultMessage: 'Confirm new password',
+    },
+    updatePasswordButtonLabel: {
+        defaultMessage: 'Update password',
+        id: 'iaso.users.dialog.updatePassword.triggerButton.label',
+    },
+    userNotFound: {
+        defaultMessage: 'User not found',
+        id: 'iaso.users.detail.404Message',
+    },
+    generalInfo: {
+        defaultMessage: 'General info',
+        id: 'iaso.users.detail.generalInfoBox.title',
+    },
+    color: {
+        defaultMessage: 'Color',
+        id: 'iaso.users.color',
+    },
+    locations: {
+        defaultMessage: 'Locations',
+        id: 'iaso.users.detail.locationsBox.title',
+    },
+    noResultsFound: {
+        defaultMessage: 'No results found.',
+        id: 'iaso.users.noResultsFound',
+    },
+    setDefaultValues: {
+        id: 'iaso.users.bulk.setDefaultValues',
+        defaultMessage: 'Set default values for missing fields',
+    },
+    defaultsInfo: {
+        id: 'iaso.users.bulk.defaultsInfo',
+        defaultMessage:
+            'Defaults apply only when CSV field is empty. CSV values take priority.',
+    },
+    validationFailed: {
+        id: 'iaso.users.bulk.validationFailed',
+        defaultMessage: 'Validation Failed - No Users Created',
+    },
+    fixErrorsAndRetry: {
+        id: 'iaso.users.bulk.fixErrorsAndRetry',
+        defaultMessage:
+            'Fix the {count} error(s) in your file and upload again.',
+    },
+    row: {
+        id: 'iaso.users.bulk.row',
+        defaultMessage: 'Row',
+    },
+    field: {
+        id: 'iaso.users.bulk.field',
+        defaultMessage: 'Field',
+    },
+    errorMessage: {
+        id: 'iaso.users.bulk.errorMessage',
+        defaultMessage: 'Error',
+    },
+    bulkImportDialogDescription: {
+        id: 'iaso.users.bulkImportDialogDescription',
+        defaultMessage:
+            'File must be of type .csv or .xlsx. In case of CSV file, please check the file encoding. It must be in UTF-8 format to be read by Iaso.',
+    },
+    error: {
+        defaultMessage: 'Error',
+        id: 'iaso.users.errorSingleCap',
+    },
+    submit: {
+        defaultMessage: 'Submit',
+        id: 'iaso.users.submit',
     },
 });
 

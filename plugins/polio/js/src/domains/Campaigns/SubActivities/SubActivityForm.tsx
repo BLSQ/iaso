@@ -1,11 +1,11 @@
 import React, { FunctionComponent } from 'react';
-import { Table } from 'bluesquare-components';
 import { Box } from '@mui/material';
-import { Round } from '../../../constants/types';
+import { Table } from 'bluesquare-components';
 import { useTableState } from '../../../../../../../hat/assets/js/apps/Iaso/utils/table';
+import { Round } from '../../../constants/types';
+import { SubActivitiesInfos } from './components/SubActivitiesInfos';
 import { useGetSubActivities } from './hooks/api/useGetSubActivities';
 import { useSubActivitiesColumns } from './hooks/useSubActivitiesColumns';
-import { SubActivitiesInfos } from './components/SubActivitiesInfos';
 
 type Props = { round?: Round };
 

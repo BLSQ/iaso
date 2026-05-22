@@ -6,9 +6,10 @@ from django.db import models, transaction
 from django.db.models import Count, OuterRef, Prefetch, Q, Subquery
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse, StreamingHttpResponse
-from django.utils.translation import gettext as _
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from django.utils import translation
+from django.utils.translation import get_language_from_request, gettext as _
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import filters, permissions, status
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
@@ -17,16 +18,18 @@ from rest_framework.response import Response
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.audit_mixin import AuditMixin
 from hat.audit.models import PAYMENT_API, PAYMENT_LOT_API
-from hat.menupermissions import models as permission
 from iaso.api.common import DropdownOptionsListViewSet, DropdownOptionsSerializer, HasPermission, ModelViewSet
 from iaso.api.payments.filters import (
     payments_lots as payments_lots_filters,
     potential_payments as potential_payments_filters,
 )
+from iaso.api.payments.pagination import PaymentPagination
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.tasks.serializers import TaskSerializer
 from iaso.models import OrgUnitChangeRequest, Payment, PaymentLot, PotentialPayment
 from iaso.models.org_unit import OrgUnit
 from iaso.models.payments import PaymentStatuses
+from iaso.permissions.core_permissions import CORE_PAYMENTS_PERMISSION
 from iaso.tasks.create_payment_lot import create_payment_lot
 from iaso.tasks.payments_bulk_update import mark_payments_as_read
 
@@ -40,6 +43,7 @@ from .serializers import (
 )
 
 
+@extend_schema(tags=["Payment lots"])
 class PaymentLotsViewSet(ModelViewSet):
     """
     # `Payment Lots` API
@@ -78,7 +82,7 @@ class PaymentLotsViewSet(ModelViewSet):
        - else, only the `PaymentLot` is logged, in the `update` method
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_PAYMENTS_PERMISSION)]
     filter_backends = [
         filters.OrderingFilter,
         django_filters.rest_framework.DjangoFilterBackend,
@@ -99,6 +103,13 @@ class PaymentLotsViewSet(ModelViewSet):
     ordering = ["updated_at"]
     serializer_class = PaymentLotSerializer
     http_method_names = ["get", "post", "patch", "head", "options", "trace"]
+    pagination_class = PaymentPagination
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        # Pass expensive to compute and potentially large data to the serializer's context.
+        context["user_org_units"] = self.request.user.iaso_profile.get_hierarchy_for_user().values_list("id")
+        return context
 
     def get_queryset(self):
         payments = (
@@ -108,12 +119,17 @@ class PaymentLotsViewSet(ModelViewSet):
         )
         queryset = PaymentLot.objects.filter(id__in=payments)
 
-        change_requests_prefetch = Prefetch(
-            "payments__change_requests",
-            queryset=OrgUnitChangeRequest.objects.all(),
-            to_attr="prefetched_change_requests",
+        payments_prefetch = Prefetch(
+            "payments",
+            queryset=Payment.objects.select_related("user__iaso_profile").prefetch_related(
+                Prefetch(
+                    "change_requests",
+                    queryset=OrgUnitChangeRequest.objects.select_related("org_unit"),
+                    to_attr="prefetched_change_requests",
+                )
+            ),
         )
-        queryset = queryset.prefetch_related("payments", change_requests_prefetch)
+        queryset = queryset.prefetch_related(payments_prefetch)
 
         change_requests_count = (
             OrgUnitChangeRequest.objects.filter(payment__payment_lot=OuterRef("pk"))
@@ -137,43 +153,45 @@ class PaymentLotsViewSet(ModelViewSet):
             change_requests_count=Coalesce(Subquery(change_requests_count, output_field=models.IntegerField()), 0),
             payments_count=Coalesce(Subquery(payments_count, output_field=models.IntegerField()), 0),
         )
-        queryset = queryset.filter(created_by__iaso_profile__account=self.request.user.iaso_profile.account).distinct()
+        queryset = (
+            queryset.filter(created_by__iaso_profile__account=self.request.user.iaso_profile.account)
+            .select_related("created_by__iaso_profile", "task")
+            .distinct()
+        )
 
         return queryset
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
                 name="user",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="A comma-separated list of User IDs associated with the payment lots creation",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 name="status",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="A comma-separated list of the possible payment lot status",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 name="parent_id",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="The ID of the parent organization unit linked to the change requests. This should also include child units.",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 name="created_at_after",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="The start date for when the lots has been created. Format: YYYY-MM-DD",
-                type=openapi.TYPE_STRING,
-                format=openapi.FORMAT_DATE,
+                type=OpenApiTypes.DATE,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 name="created_at_before",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="The end date for when the lots has been created. Format: YYYY-MM-DD",
-                type=openapi.TYPE_STRING,
-                format=openapi.FORMAT_DATE,
+                type=OpenApiTypes.DATE,
             ),
         ]
     )
@@ -181,14 +199,14 @@ class PaymentLotsViewSet(ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         return super().list(request, queryset)
 
-    @swagger_auto_schema(
+    @extend_schema(
         responses={status.HTTP_200_OK: PaymentLotSerializer()},
-        manual_parameters=[
-            openapi.Parameter(
+        parameters=[
+            OpenApiParameter(
                 name="mark_payments_as_sent",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="If set to true, all related payments will be marked as sent",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
             ),
         ],
     )
@@ -216,21 +234,24 @@ class PaymentLotsViewSet(ModelViewSet):
                     status=status.HTTP_201_CREATED,
                 )
 
-    @swagger_auto_schema(
-        request_body=PaymentLotCreateSerializer,
+    @extend_schema(
+        request=PaymentLotCreateSerializer,
         responses={status.HTTP_201_CREATED: PaymentLotSerializer()},
     )
     def create(self, request):
-        # with transaction.atomic():
-        # Extract user, name, comment, and potential_payments IDs from request data
         user = self.request.user
         name = request.data.get("name")
         comment = request.data.get("comment")
         potential_payment_ids = request.data.get("potential_payments", [])  # Expecting a list of IDs
-        potential_payment_ids = [int(pp_id) for pp_id in potential_payment_ids]
-        # TODO move this in valdate method
+
+        try:
+            potential_payment_ids = [int(pp_id) for pp_id in potential_payment_ids]
+        except ValueError:
+            raise ValidationError("Expecting `potential_payments` to be a list of IDs.")
+
         if not potential_payment_ids:
-            raise ValidationError("At least one potential payment required")
+            raise ValidationError("At least one potential payment required.")
+
         potential_payments = PotentialPayment.objects.filter(id__in=potential_payment_ids)
         task = create_payment_lot(user=user, name=name, potential_payment_ids=potential_payment_ids, comment=comment)
         # Assign task to potential payments to avoid racing condition when calling potential payments API
@@ -271,6 +292,13 @@ class PaymentLotsViewSet(ModelViewSet):
             )
 
             forms, forms_count_by_payment = self._get_dynamic_form_columns(payments)
+
+            # The frontend is using `ExternalLinkIconButton` which creates a direct browser link,
+            # thus bypassing the default API client that adds the `Accept-Language` header.
+            # So the Django backend defaults to the default "en" setting.
+            # We pass the language in the querystring as a quick solution.
+            language = self.request.GET.get("lang") or get_language_from_request(self.request)
+            translation.activate(language)
 
             if csv_format:
                 return self.retrieve_to_csv(payment_lot, payments, forms, forms_count_by_payment)
@@ -402,11 +430,12 @@ class PaymentLotsViewSet(ModelViewSet):
         return response
 
 
+@extend_schema(tags=["Potential payments"])
 class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
     """
     # `Potential payment` API
 
-    This API allows to list potential payments linked to multiple `OrgUnitChangeRequest` by the same user to be updated and queried.
+    This API allows listing potential payments linked to multiple `OrgUnitChangeRequest` by the same user to be updated and queried.
 
     The Django model that stores "Potential payment" is `PotentialPayment`.
 
@@ -419,7 +448,7 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
 
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_PAYMENTS_PERMISSION)]
     filter_backends = [
         filters.OrderingFilter,
         django_filters.rest_framework.DjangoFilterBackend,
@@ -435,9 +464,6 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
         "user__last_name",
         "user__first_name",
         "user__iaso_profile__phone_number",
-        "created_at",
-        "updated_at",
-        "status",
         "created_by__username",
         "updated_by__username",
         "change_requests_count",
@@ -446,104 +472,103 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
     ordering = ["user__last_name"]
 
     serializer_class = PotentialPaymentSerializer
+    pagination_class = PaymentPagination
 
     results_key = "results"
     http_method_names = ["get", "head", "options", "trace"]
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        # Pass expensive to compute and potentially large data to the serializer's context.
+        context["user_org_units"] = self.request.user.iaso_profile.get_hierarchy_for_user().values_list("id")
+        return context
+
     def get_queryset(self):
         queryset = (
-            PotentialPayment.objects.prefetch_related("change_requests")
-            .prefetch_related("change_requests__org_unit")
+            PotentialPayment.objects.prefetch_related("change_requests__org_unit")
+            .select_related("user__iaso_profile", "payment_lot")
             .filter(change_requests__created_by__iaso_profile__account=self.request.user.iaso_profile.account)
             # Filter out potential payments already linked to a task as this means there's a task running converting them into Payment
             .filter(task__isnull=True)
+            .annotate(change_requests_count=Count("change_requests"))
             .distinct()
         )
-
-        queryset = queryset.annotate(change_requests_count=Count("change_requests"))
-
         return queryset
 
     def calculate_new_potential_payments(self):
-        users_with_change_requests = (
-            OrgUnitChangeRequest.objects.filter(status=OrgUnitChangeRequest.Statuses.APPROVED)
-            .values("created_by")
-            .annotate(num_requests=Count("created_by"))
-            .filter(num_requests__gt=0)
+        change_requests = OrgUnitChangeRequest.objects.filter(
+            created_by__iaso_profile__account=self.request.user.iaso_profile.account,
+            status=OrgUnitChangeRequest.Statuses.APPROVED,
+            payment__isnull=True,
+            # Filter out potential payments with task as they are being converted to payments
+            potential_payment__task__isnull=True,
         )
 
-        for user in users_with_change_requests:
-            change_requests = OrgUnitChangeRequest.objects.filter(
-                created_by_id=user["created_by"],
-                status=OrgUnitChangeRequest.Statuses.APPROVED,
-                payment__isnull=True,
-                # Filter out potential payments with task as they are being converted to payments
-                potential_payment__task__isnull=True,
-            )
-            if change_requests.exists():
-                potential_payment, created = PotentialPayment.objects.get_or_create(
-                    user_id=user["created_by"],
-                )
-                for change_request in change_requests:
-                    change_request.potential_payment = potential_payment
-                    change_request.save()
-                potential_payment.save()
+        cache = {}
+        for change_request in change_requests:
+            user_id = change_request.created_by_id
+            try:
+                change_request.potential_payment_id = cache[user_id]
+            except KeyError:
+                potential_payment, _ = PotentialPayment.objects.get_or_create(user_id=user_id)
+                change_request.potential_payment_id = potential_payment.pk
+                cache[user_id] = potential_payment.pk
 
-    @swagger_auto_schema(auto_schema=None)
+        OrgUnitChangeRequest.objects.bulk_update(change_requests, ["potential_payment"])
+
+    @extend_schema(exclude=True)
     def retrieve(self, request, *args, **kwargs):
         raise NotFound("Retrieve operation is not allowed.")
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
                 name="users",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="A comma-separated list of User IDs associated with the payments",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 name="user_roles",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="A comma-separated list of User Role IDs associated with the payments",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 name="parent_id",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="The ID of the parent organization unit linked to the change requests. This should also include child units.",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 name="change_requests__created_at_after",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="The start date for when the change request has been validated. Format: YYYY-MM-DD",
-                type=openapi.TYPE_STRING,
-                format=openapi.FORMAT_DATE,
+                type=OpenApiTypes.DATE,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 name="change_requests__created_at_before",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="The end date for when the change request has been validated. Format: YYYY-MM-DD",
-                type=openapi.TYPE_STRING,
-                format=openapi.FORMAT_DATE,
+                type=OpenApiTypes.DATE,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 name="select_all",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="Select all potential payments from the query",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 name="selected_ids",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="A comma-separated list of Potential Payments IDs selected to return from the query",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 name="unselected_ids",
-                in_=openapi.TYPE_STRING,
+                location=OpenApiParameter.QUERY,
                 description="A comma-separated list of Potential Payments IDs to exlude from the query",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
             ),
         ]
     )
@@ -554,11 +579,12 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
         return super().list(request, queryset)
 
 
+@extend_schema(tags=["Payments"])
 class PaymentsViewSet(ModelViewSet):
     """
     # `Payment` API
 
-    This API allows to list and update Payments.
+    This API allows listing and updating Payments.
 
     When updating, the status of the linked `PaymentLot` is recalculated and updated if necessary.
 
@@ -575,7 +601,14 @@ class PaymentsViewSet(ModelViewSet):
     http_method_names = ["patch", "get", "options"]
     results_key = "results"
     serializer_class = PaymentSerializer
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
+    pagination_class = PaymentPagination
+    permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_PAYMENTS_PERMISSION)]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        # Pass expensive to compute and potentially large data to the serializer's context.
+        context["user_org_units"] = self.request.user.iaso_profile.get_hierarchy_for_user().values_list("id")
+        return context
 
     def get_queryset(self) -> models.QuerySet:
         user = self.request.user
@@ -618,8 +651,9 @@ class PaymentsViewSet(ModelViewSet):
             return Response(serializer.data)
 
 
+@extend_schema(tags=["Payments"])
 class PaymentOptionsViewSet(DropdownOptionsListViewSet):
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [AuthenticationEnforcedPermission, IsAuthenticatedOrReadOnly]
     http_method_names = ["get"]
     serializer = DropdownOptionsSerializer
     choices = PaymentStatuses

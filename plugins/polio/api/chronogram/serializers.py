@@ -1,9 +1,9 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from hat.menupermissions import models as iaso_permission
-from iaso.api.common import DynamicFieldsModelSerializer
+from dynamic_fields.serializer import DynamicFieldsModelSerializerBackwardCompatibleMixin
 from plugins.polio.models import Campaign, Chronogram, ChronogramTask, ChronogramTemplateTask, Round
+from plugins.polio.permissions import POLIO_CHRONOGRAM_PERMISSION, POLIO_CHRONOGRAM_RESTRICTED_WRITE_PERMISSION
 
 
 class UserNestedSerializer(serializers.ModelSerializer):
@@ -14,16 +14,16 @@ class UserNestedSerializer(serializers.ModelSerializer):
         fields = ["id", "username", "full_name"]
 
 
-class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
+class ChronogramTaskSerializer(DynamicFieldsModelSerializerBackwardCompatibleMixin, serializers.ModelSerializer):
     def get_fields(self, *args, **kwargs):
         fields = super().get_fields(*args, **kwargs)
         user = getattr(self.context.get("request", {}), "user", None)
 
-        if user and user.has_perm(iaso_permission.POLIO_CHRONOGRAM):
+        if user and user.has_perm(POLIO_CHRONOGRAM_PERMISSION.full_name()):
             return fields
 
         # Restrict writable fields for the `POLIO_CHRONOGRAM_RESTRICTED_WRITE` permission.
-        if user and user.has_perm(iaso_permission.POLIO_CHRONOGRAM_RESTRICTED_WRITE):
+        if user and user.has_perm(POLIO_CHRONOGRAM_RESTRICTED_WRITE_PERMISSION.full_name()):
             allowed_fields = ["status", "user_in_charge", "comment"]
             read_only_fields = [field for field in fields if field not in allowed_fields]
             for field in read_only_fields:
@@ -85,7 +85,7 @@ class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSe
         }
 
 
-class ChronogramSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
+class ChronogramSerializer(DynamicFieldsModelSerializerBackwardCompatibleMixin, serializers.ModelSerializer):
     campaign_obr_name = serializers.CharField(source="round.campaign.obr_name")
     round_number = serializers.CharField(source="round.number")
     round_start_date = serializers.CharField(source="round.started_at")
@@ -127,7 +127,9 @@ class ChronogramSerializer(DynamicFieldsModelSerializer, serializers.ModelSerial
         }
 
 
-class ChronogramTemplateTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
+class ChronogramTemplateTaskSerializer(
+    DynamicFieldsModelSerializerBackwardCompatibleMixin, serializers.ModelSerializer
+):
     class Meta:
         model = ChronogramTemplateTask
         fields = [

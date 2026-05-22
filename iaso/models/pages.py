@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from iaso.models import Account
+from iaso.models import Account, UserRole
 
 
 RAW = "RAW"
@@ -26,6 +26,7 @@ class Page(models.Model):
     name = models.TextField(null=False, blank=False)
     content = models.TextField(null=True, blank=True)
     users = models.ManyToManyField(User, related_name="pages", blank=True)
+    user_roles = models.ManyToManyField(UserRole, related_name="pages", blank=True)
     needs_authentication = models.BooleanField(default=True)
     slug = models.SlugField(max_length=1000, unique=True)
     account = models.ForeignKey(Account, on_delete=models.PROTECT, blank=True, null=True)

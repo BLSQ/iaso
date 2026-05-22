@@ -1,11 +1,10 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import EditIcon from '@mui/icons-material/Settings';
 import { Box, Tooltip, IconButton } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { useRedirectTo, useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
-
 import MESSAGES from '../../../../constants/messages';
-import { PolioCreateEditDialog as CreateEditDialog } from '../../../Campaigns/MainDialog/CreateEditDialog';
+import { baseUrls } from '../../../../constants/urls';
 
 type Props = {
     campaign: {
@@ -23,7 +22,12 @@ const styles: SxStyles = {
 };
 
 const EditCampaignCell: FunctionComponent<Props> = ({ campaign }) => {
-    const [dialogOpen, setDialogOpen] = useState(false);
+    const redirectTo = useRedirectTo();
+    const onClick = useCallback(() => {
+        redirectTo(
+            `${baseUrls.campaignDetails}/campaignId/${campaign.original.id}/`,
+        );
+    }, [campaign.original.id, redirectTo]);
 
     const { formatMessage } = useSafeIntl();
     return (
@@ -35,19 +39,11 @@ const EditCampaignCell: FunctionComponent<Props> = ({ campaign }) => {
                 TransitionProps={{ style: { marginBottom: '0' } }}
             >
                 <Box>
-                    <IconButton
-                        onClick={() => setDialogOpen(true)}
-                        size="small"
-                    >
+                    <IconButton onClick={onClick} size="small">
                         <EditIcon />
                     </IconButton>
                 </Box>
             </Tooltip>
-            <CreateEditDialog
-                campaignId={campaign.original.id}
-                isOpen={dialogOpen}
-                onClose={() => setDialogOpen(false)}
-            />
         </Box>
     );
 };

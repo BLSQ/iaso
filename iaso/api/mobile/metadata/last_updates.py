@@ -1,17 +1,19 @@
 from django.db.models import Max
 from django.shortcuts import get_object_or_404
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import permissions, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.query_params import APP_ID
 from iaso.models import Form, FormVersion, OrgUnit, OrgUnitType, Project
 
 
+@extend_schema(tags=["Metadata last updates", "Mobile"])
 class LastUpdatesViewSet(ViewSet):
     """Metadata Last Updates
 
@@ -22,25 +24,25 @@ class LastUpdatesViewSet(ViewSet):
     `GET /api/mobile/metadata/lastupdates/?app_id=some.app.id`
     """
 
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [AuthenticationEnforcedPermission, permissions.IsAuthenticatedOrReadOnly]
     http_method_names = ["get", "head", "options"]
     lookup_url_kwarg = [APP_ID]
 
-    app_id_param = openapi.Parameter(
+    app_id_param = OpenApiParameter(
         name=APP_ID,
-        in_=openapi.IN_QUERY,
+        location=OpenApiParameter.QUERY,
         required=True,
         description="Application id",
-        type=openapi.TYPE_STRING,
+        type=OpenApiTypes.STR,
     )
 
-    @swagger_auto_schema(
+    @extend_schema(
         responses={
             200: "provides the latest updated dates",
             400: f"parameter '{APP_ID}' was not provided",
             404: "project for given app id doesn't exist",
         },
-        manual_parameters=[app_id_param],
+        parameters=[app_id_param],
     )
     def list(self, request: Request):
         app_id = request.query_params.get(APP_ID)

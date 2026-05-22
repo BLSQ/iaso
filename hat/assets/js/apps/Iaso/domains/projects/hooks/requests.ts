@@ -11,32 +11,45 @@ import { Project } from '../types/project';
 type ProjectApi = {
     projects: Array<Project>;
 };
-const getProjects = (): Promise<ProjectApi> => {
-    return getRequest('/api/projects/');
+const getProjects = (
+    canBypassProjectRestrictions = false,
+): Promise<ProjectApi> => {
+    let url = '/api/projects/';
+    if (canBypassProjectRestrictions) {
+        url = '/api/projects/?bypass_restrictions=1';
+    }
+    return getRequest(url);
 };
 
 export const useGetProjectsDropdownOptions = (
     asString = true,
+    canBypassProjectRestrictions = false,
 ): UseQueryResult<DropdownOptions<any>[], Error> => {
     const queryClient = useQueryClient();
     const queryKey: any[] = ['projects-dropdown'];
-    return useSnackQuery(queryKey, () => getProjects(), undefined, {
-        staleTime: 1000 * 60 * 15, // in MS
-        cacheTime: 1000 * 60 * 5,
-        retry: false,
-        onError: () => {
-            queryClient.setQueryData('projects-dropdown', { projects: [] });
+    return useSnackQuery(
+        queryKey,
+        () => getProjects(canBypassProjectRestrictions),
+        undefined,
+        {
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
+            retry: false,
+            onError: () => {
+                queryClient.setQueryData('projects-dropdown', { projects: [] });
+            },
+            select: data => {
+                if (!data) return [];
+                return data.projects.map(project => {
+                    return {
+                        value: asString ? project.id?.toString() : project.id,
+                        label: project.name,
+                        color: project.color,
+                    };
+                });
+            },
         },
-        select: data => {
-            if (!data) return [];
-            return data.projects.map(project => {
-                return {
-                    value: asString ? project.id?.toString() : project.id,
-                    label: project.name,
-                };
-            });
-        },
-    });
+    );
 };
 
 export const useGetProjectsPaginated = (
@@ -84,5 +97,5 @@ export const useSave = (): UseMutationResult =>
                 : postRequest('/api/apps/', body),
         undefined,
         undefined,
-        ['projects-paginated'],
+        ['projects-paginated', 'projects-dropdown'],
     );

@@ -1,11 +1,11 @@
+import React, { ReactNode, useCallback } from 'react';
 import { Box, InputLabel, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { FormControl, IconButton, useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
-import React, { ReactNode, useCallback } from 'react';
 import { OrgUnit } from '../../types/orgUnit';
-import { TruncatedTrees } from './TruncatedTrees';
 import { MESSAGES } from './messages';
+import { TruncatedTrees } from './TruncatedTrees';
 
 const styles = theme => ({
     placeholder: {
@@ -124,6 +124,7 @@ const OrgUnitTreeviewPicker: React.FC<Props> = ({
                         key="input-label"
                         shrink={selectedItems.size > 0}
                         required={required}
+                        disabled={disabled}
                         className={`${classnames(
                             classes.inputLabel,
                             selectedItems.size > 0 && classes.shrinkInputLabel,

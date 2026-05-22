@@ -1,17 +1,17 @@
-import React, { FunctionComponent } from 'react';
-
+import React, { FunctionComponent, useCallback } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, Grid, IconButton, Paper, Popper } from '@mui/material';
 import {
     getTableUrl,
     textPlaceholder,
+    useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
-
 import { CsvButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/CsvButton';
 import { SxStyles } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { useIsLoggedIn } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../../../constants/messages';
+import { baseUrls } from '../../../../constants/urls';
 import { CalendarRound, MappedCampaign } from '../types';
 
 const groupsForCampaignRound = (campaign, round) => {
@@ -50,7 +50,6 @@ type Props = {
     handleClose: () => void;
     open: boolean;
     anchorEl: HTMLElement | undefined;
-    setDialogOpen: (open: boolean) => void;
     round: CalendarRound;
 };
 
@@ -59,12 +58,12 @@ export const RoundPopper: FunctionComponent<Props> = ({
     handleClose,
     open,
     anchorEl,
-    setDialogOpen,
     round,
 }) => {
     const { formatMessage, formatNumber } = useSafeIntl();
     // We don't want to show the edit button if there is no connected user
     const isLogged = useIsLoggedIn();
+    const redirectTo = useRedirectTo();
     const id = open ? `campaign-popover-${campaign.id}-${round.id}` : undefined;
     const groupIds = groupsForCampaignRound(campaign, round).join(',');
     const urlParams = {
@@ -75,6 +74,11 @@ export const RoundPopper: FunctionComponent<Props> = ({
         'polio/campaigns/csv_campaign_scopes_export',
         urlParams,
     );
+    const goToCampaign = useCallback(() => {
+        redirectTo(
+            `${baseUrls.campaignDetails}/campaignId/${campaign.original.id}/`,
+        );
+    }, [campaign.original.id, redirectTo]);
     return (
         <Popper id={id} open={open} anchorEl={anchorEl} sx={styles.popper}>
             <Paper elevation={1}>
@@ -130,7 +134,7 @@ export const RoundPopper: FunctionComponent<Props> = ({
                             )}
                             {isLogged && (
                                 <Button
-                                    onClick={() => setDialogOpen(true)}
+                                    onClick={goToCampaign}
                                     size="small"
                                     color="primary"
                                     sx={styles.editButton}

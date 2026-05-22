@@ -2,6 +2,7 @@ import csv
 
 from django.db.models import TextField, UUIDField, Value
 from django.http import HttpResponse, JsonResponse
+from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
 
 from iaso.api.common import CONTENT_TYPE_CSV
@@ -23,6 +24,7 @@ def org_unit_as_array(o):
     return res
 
 
+@extend_schema(tags=["Polio - Org units per campaign"])
 class OrgUnitsPerCampaignViewset(viewsets.ViewSet):
     def list(self, request):
         org_unit_type = request.GET.get("org_unit_type_id", None)

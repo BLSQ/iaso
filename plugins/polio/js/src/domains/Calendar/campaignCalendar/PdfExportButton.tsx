@@ -1,9 +1,9 @@
 import React, { FunctionComponent, useCallback } from 'react';
-import { Button } from '@mui/material';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import domToPdf from 'dom-to-pdf';
-import { useSafeIntl } from 'bluesquare-components';
+import { Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { useSafeIntl } from 'bluesquare-components';
+import domToPdf from 'dom-to-pdf';
 import MESSAGES from '../../../constants/messages';
 
 const pageWidth = 1980;

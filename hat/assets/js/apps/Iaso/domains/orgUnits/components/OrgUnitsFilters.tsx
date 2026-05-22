@@ -14,17 +14,17 @@ import {
     commonStyles,
     useSafeIntl,
     useSkipEffectOnMount,
+    DatePicker,
 } from 'bluesquare-components';
 
+import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
+
+import { getColor } from 'Iaso/hooks/useGetColors';
+import { DropdownOptionsWithOriginal } from 'Iaso/types/utils';
+import { dateFormat } from 'Iaso/utils/dates';
+import { LocationLimit } from 'Iaso/utils/map/LocationLimit';
 import DatesRange from '../../../components/filters/DatesRange';
-import { ColorPicker } from '../../../components/forms/ColorPicker';
 import InputComponent from '../../../components/forms/InputComponent';
-
-import { getChipColors } from '../../../constants/chipColors';
-
-import { DropdownOptionsWithOriginal } from '../../../types/utils';
-import { LocationLimit } from '../../../utils/map/LocationLimit';
-import { useCurrentUser } from '../../../utils/usersUtils';
 import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
 import { useGetDataSources } from '../hooks/requests/useGetDataSources';
 import { useGetGroupDropdown } from '../hooks/requests/useGetGroups';
@@ -33,7 +33,7 @@ import { useGetOrgUnitValidationStatus } from '../hooks/utils/useGetOrgUnitValid
 import { useInstancesOptions } from '../hooks/utils/useInstancesOptions';
 import MESSAGES from '../messages';
 import { useGetOrgUnitTypesDropdownOptions } from '../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
-import { DataSource } from '../types/dataSources';
+import { DataSource, Version } from '../types/dataSources';
 import { Search } from '../types/search';
 import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from './TreeView/requests';
@@ -50,6 +50,7 @@ type Props = {
     setSearches: React.Dispatch<React.SetStateAction<[Search]>>;
     currentTab: string;
     setHasLocationLimitError: React.Dispatch<React.SetStateAction<boolean>>;
+    colors: string[];
 };
 
 const retrieveSourceFromVersionId = (
@@ -59,7 +60,9 @@ const retrieveSourceFromVersionId = (
     const idAsNumber =
         typeof versionId === 'string' ? parseInt(versionId, 10) : versionId;
     const result = dataSources.find(dataSource =>
-        dataSource.original.versions.some(version => version.id === idAsNumber),
+        dataSource.original.versions.some(
+            (version: DataSource) => version.id === idAsNumber,
+        ),
     );
     return result?.original.id;
 };
@@ -79,6 +82,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     setHasLocationLimitError,
     locationLimit,
     setLocationLimit,
+    colors,
 }) => {
     // STATES
     const [dataSourceId, setDataSourceId] = useState<number | undefined>(
@@ -179,7 +183,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     );
 
     const handleLocationLimitChange = useCallback(
-        (key: string, value: number) => {
+        (_: string, value: number) => {
             setLocationLimit(value);
         },
         [setLocationLimit],
@@ -188,10 +192,9 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
 
     const currentColor = filters?.color
         ? `#${filters.color}`
-        : getChipColors(searchIndex);
+        : getColor(searchIndex, colors);
 
     // HOOKS
-    const currentUser = useCurrentUser();
     const instancesOptions = useInstancesOptions();
     const getVersionLabel = useGetVersionLabel(dataSources);
     const classes: Record<string, string> = useStyles();
@@ -230,14 +233,15 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dataSourceId, dataSources, filters?.version]);
 
-
     const versionsDropDown = useMemo(() => {
         if (!dataSources || !dataSourceId) return [];
         return (
             dataSources
                 .filter(src => src.original?.id === dataSourceId)[0]
-                ?.original?.versions.sort((a, b) => a.number - b.number)
-                .map(version => ({
+                ?.original?.versions.sort(
+                    (a: Version, b: Version) => a.number - b.number,
+                )
+                .map((version: Version) => ({
                     label: getVersionLabel(version.id),
                     value: version.id.toString(),
                 })) ?? []
@@ -287,7 +291,19 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     options={dataSources}
                     loading={isFetchingDataSources}
                 />
-
+                <Box mt={2}>
+                    <DatePicker
+                        label={formatMessage(MESSAGES.openDate)}
+                        clearMessage={MESSAGES.clear}
+                        currentDate={filters.open_date || null}
+                        onChange={date => {
+                            handleChange(
+                                'open_date',
+                                date ? date.format(dateFormat) : null,
+                            );
+                        }}
+                    />
+                </Box>
                 {!showAdvancedSettings && (
                     <Typography
                         className={classes.advancedSettings}

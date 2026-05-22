@@ -1,7 +1,7 @@
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from drf_yasg.utils import no_body, swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -9,11 +9,12 @@ from rest_framework.response import Response
 import iaso.api.workflows.serializers as ser
 import iaso.api.workflows.utils as utils
 
-from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission, ModelViewSet
 from iaso.models import WorkflowVersion
+from iaso.permissions.core_permissions import CORE_WORKFLOW_PERMISSION
 
 
+@extend_schema(tags=["Workflow versions"])
 class WorkflowVersionViewSet(ModelViewSet):
     """Workflow API
     GET /api/workflowversions/
@@ -22,7 +23,7 @@ class WorkflowVersionViewSet(ModelViewSet):
     Else returns a paginated list of all the workflow versions.
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.WORKFLOW)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_WORKFLOW_PERMISSION)]
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
     ordering_fields = ["name", "created_at", "updated_at", "id", "status"]
     serializer_class = ser.WorkflowVersionDetailSerializer
@@ -33,7 +34,7 @@ class WorkflowVersionViewSet(ModelViewSet):
     filterset_fields = {"workflow__entity_type": ["exact"], "status": ["exact"], "id": ["exact"]}
     http_method_names = ["get", "post", "patch", "delete"]
 
-    @swagger_auto_schema(request_body=no_body)
+    @extend_schema(request=None)
     @action(detail=True, methods=["post"])
     def copy(self, request, **kwargs):
         """POST /api/workflowversions/{version_id}/copy
@@ -46,7 +47,7 @@ class WorkflowVersionViewSet(ModelViewSet):
         serialized_data = ser.WorkflowVersionSerializer(new_vw).data
         return Response(serialized_data)
 
-    @swagger_auto_schema(request_body=ser.WorkflowPartialUpdateSerializer)
+    @extend_schema(request=ser.WorkflowPartialUpdateSerializer)
     def partial_update(self, request, *args, **kwargs):
         version_id = request.query_params.get("version_id", kwargs.get("version_id"))
         wv_orig = get_object_or_404(WorkflowVersion, pk=version_id)
@@ -57,7 +58,7 @@ class WorkflowVersionViewSet(ModelViewSet):
         serialized_data = ser.WorkflowVersionSerializer(res).data
         return Response(serialized_data)
 
-    @swagger_auto_schema(request_body=ser.WorkflowPostSerializer)
+    @extend_schema(request=ser.WorkflowPostSerializer)
     def create(self, request, *args, **kwargs):
         """POST /api/workflowversions/
         Create a new empty and DRAFT workflow version for the workflow connected to Entity Type 'entity_type_id'

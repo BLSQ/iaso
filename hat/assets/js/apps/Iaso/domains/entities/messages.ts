@@ -1,13 +1,13 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
-    beneficiaries: {
-        id: 'iaso.label.beneficiaries',
-        defaultMessage: 'Beneficiaries',
+    entities: {
+        id: 'iaso.label.entities',
+        defaultMessage: 'Entities',
     },
-    beneficiary: {
-        id: 'iaso.label.beneficiary',
-        defaultMessage: 'Beneficiary',
+    entity: {
+        id: 'iaso.label.entity',
+        defaultMessage: 'Entity',
     },
     lastVisit: {
         id: 'iaso.entities.lastVisit',
@@ -125,9 +125,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Details',
         id: 'iaso.entities.label.details',
     },
-    beneficiaryInfo: {
-        defaultMessage: 'Beneficiary information',
-        id: 'iaso.entities.label.beneficiaryInfo',
+    entityInfo: {
+        defaultMessage: 'Entity information',
+        id: 'iaso.entities.label.entityInfo',
     },
     uuid: {
         defaultMessage: 'Uuid',
@@ -139,7 +139,7 @@ const MESSAGES = defineMessages({
     },
     orgUnit: {
         id: 'iaso.instance.org_unit',
-        defaultMessage: 'Org unit',
+        defaultMessage: 'Org Unit',
     },
     title: {
         defaultMessage: 'Entities',
@@ -207,11 +207,11 @@ const MESSAGES = defineMessages({
     },
     'org_unit.name': {
         id: 'iaso.instance.org_unit',
-        defaultMessage: 'Org unit',
+        defaultMessage: 'Org Unit',
     },
     OrgUnitName: {
         id: 'iaso.instance.org_unit',
-        defaultMessage: 'Org unit',
+        defaultMessage: 'Org Unit',
     },
     form: {
         id: 'iaso.instance.form',
@@ -257,6 +257,34 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.queryBuilder',
         defaultMessage: 'Search in submitted fields',
     },
+    confirm: {
+        id: 'blsq.queryBuilder.confirm',
+        defaultMessage: 'Confirm',
+    },
+    queryTab: {
+        id: 'blsq.queryBuilder.queryTab',
+        defaultMessage: 'Query',
+    },
+    jsonTab: {
+        id: 'blsq.queryBuilder.jsonTab',
+        defaultMessage: 'Json',
+    },
+    selectForm: {
+        id: 'iaso.entities.selectForm',
+        defaultMessage: 'Select a form',
+    },
+    addForm: {
+        id: 'iaso.entities.addForm',
+        defaultMessage: 'Add a form',
+    },
+    searchToSeeEntities: {
+        id: 'iaso.entities.searchToSeeEntities',
+        defaultMessage: 'Click "Search" button to see entities',
+    },
+    results: {
+        id: 'iaso.label.resultsLower',
+        defaultMessage: 'result(s)',
+    }
 });
 
 export default MESSAGES;

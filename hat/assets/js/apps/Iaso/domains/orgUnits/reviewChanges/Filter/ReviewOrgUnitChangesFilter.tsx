@@ -11,28 +11,27 @@ import {
     InputWithInfos,
     useRedirectToReplace,
     useSafeIntl,
+    AsyncSelect,
 } from 'bluesquare-components';
 
-import { DisplayIfUserHasPerm } from '../../../../components/DisplayIfUserHasPerm';
-import { FilterButton } from '../../../../components/FilterButton';
+import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
+import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
+import { SearchButton } from 'Iaso/components/SearchButton';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
+import { useCheckBoxFilter, useFilterState } from 'Iaso/hooks/useFilterState';
+import { DropdownOptions } from 'Iaso/types/utils';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import DatesRange from '../../../../components/filters/DatesRange';
-import { AsyncSelect } from '../../../../components/forms/AsyncSelect';
 import InputComponent from '../../../../components/forms/InputComponent';
-import { baseUrls } from '../../../../constants/urls';
-import { useFilterState } from '../../../../hooks/useFilterState';
-import { DropdownOptions } from '../../../../types/utils';
 import * as Permission from '../../../../utils/permissions';
-import { useCurrentUser } from '../../../../utils/usersUtils';
 import {
     useGetDataSourceVersionsSynchronizationDropdown,
     useSearchDataSourceVersionsSynchronization,
 } from '../../../dataSources/hooks/useGetDataSourceVersionsSynchronizationDropdown';
 import { useDefaultSourceVersion } from '../../../dataSources/utils';
-import { getUsersDropDown } from '../../../instances/hooks/requests/getUsersDropDown';
-import { useGetProfilesDropdown } from '../../../instances/hooks/useGetProfilesDropdown';
 import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
 import { useGetUserRolesDropDown } from '../../../userRoles/hooks/requests/useGetUserRoles';
-import { useGetForms } from '../../../workflows/hooks/requests/useGetForms';
 import { OrgUnitTreeviewModal } from '../../components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../components/TreeView/requests';
 import { useGetDataSources } from '../../hooks/requests/useGetDataSources';
@@ -81,8 +80,8 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     const { data: initialOrgUnit } = useGetOrgUnit(params.parent_id);
     const { data: orgUnitTypeOptions, isLoading: isLoadingTypes } =
         useGetOrgUnitTypesDropdownOptions();
-    const { data: forms, isFetching: isLoadingForms } = useGetForms();
-    const { data: selectedUsers } = useGetProfilesDropdown(filters.userIds);
+    const { data: formOptions, isFetching: isLoadingForms } =
+        useGetFormsDropdownOptions();
     const { data: userRoles, isFetching: isFetchingUserRoles } =
         useGetUserRolesDropDown();
 
@@ -92,11 +91,10 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         usePaymentStatusOptions();
 
     const updateParams = (paramsToUpdate, selectedVersion) => {
-        const newParams = {
+        return {
             ...paramsToUpdate,
             source_version_id: selectedVersion,
         };
-        return newParams;
     };
 
     // Redirect to default version
@@ -125,14 +123,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     const [dataSource, setDataSource] = useState<string>(
         sourceParam || defaultSourceVersion?.source?.id.toString(),
     );
-    const formOptions = useMemo(
-        () =>
-            forms?.map(form => ({
-                label: form.name,
-                value: form.id,
-            })) || [],
-        [forms],
-    );
+
     // Get the initial data source id
     const initialDataSource = useMemo(
         () =>
@@ -189,9 +180,76 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         ],
         [formatMessage],
     );
-    const handleChangeUsers = useCallback(
+
+    const requestedFieldsOptions = useMemo(
+        () => [
+            {
+                label: formatMessage(MESSAGES.name),
+                value: 'name',
+            },
+            {
+                label: formatMessage(MESSAGES.parent),
+                value: 'parent',
+            },
+            {
+                label: formatMessage(MESSAGES.orgUnitType),
+                value: 'org_unit_type',
+            },
+            {
+                label: formatMessage(MESSAGES.openingDate),
+                value: 'opening_date',
+            },
+            {
+                label: formatMessage(MESSAGES.closingDate),
+                value: 'closed_date',
+            },
+            {
+                label: formatMessage(MESSAGES.location),
+                value: 'location',
+            },
+            {
+                label: formatMessage(MESSAGES.groups),
+                value: 'groups',
+            },
+            {
+                label: formatMessage(MESSAGES.multiReferenceInstancesLabel),
+                value: 'reference_instances',
+            },
+        ],
+        [formatMessage],
+    );
+
+    const kindOptions = useMemo(
+        () => [
+            {
+                label: formatMessage(MESSAGES.orgUnitCreation),
+                value: 'org_unit_creation',
+            },
+            {
+                label: formatMessage(MESSAGES.orgUnitChange),
+                value: 'org_unit_change',
+            },
+        ],
+        [formatMessage],
+    );
+
+    // Convert comma-separated string to array for multi-select component.
+    const requestedFieldsValue = useMemo(() => {
+        if (!filters.requested_fields) return [];
+        return filters.requested_fields
+            .split(',')
+            .filter(field => field.trim() !== '');
+    }, [filters.requested_fields]);
+
+    const handleChangeRequestedFields = useCallback(
         (keyValue, newValue) => {
-            const joined = newValue?.map(r => r.value)?.join(',');
+            if (!newValue || newValue.length === 0) {
+                handleChange(keyValue, null);
+                return;
+            }
+            const joined = Array.isArray(newValue)
+                ? newValue.join(',')
+                : newValue;
             handleChange(keyValue, joined);
         },
         [handleChange],
@@ -225,7 +283,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     // handle dataSource and sourceVersion change
     const handleDataSourceVersionChange = useCallback(
         (key, newValue) => {
-            let selectedVersion = null;
+            let selectedVersion;
             if (key === 'source') {
                 setDataSource(newValue);
                 const selectedSource = dataSources?.filter(
@@ -288,6 +346,15 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         }
     }, [selectedVersionId]);
 
+    const {
+        checkBoxValue: softDeleted,
+        handleCheckboxChange: handleSoftDeleted,
+    } = useCheckBoxFilter({
+        initialValue: filters.is_soft_deleted === 'true',
+        handleChange,
+        keyValue: 'is_soft_deleted',
+    });
+
     return (
         <Grid container spacing={2}>
             <Grid item xs={12} md={4} lg={3}>
@@ -312,6 +379,16 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     onChange={handleChange}
                     options={statusOptions}
                     labelString={formatMessage(MESSAGES.status)}
+                />
+                <InputComponent
+                    type="select"
+                    multi
+                    clearable
+                    keyValue="kind"
+                    value={filters.kind}
+                    onChange={handleChange}
+                    options={kindOptions}
+                    labelString={formatMessage(MESSAGES.kind)}
                 />
                 <InputComponent
                     type="select"
@@ -377,6 +454,18 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                 </Box>
             </Grid>
             <Grid item xs={12} md={4} lg={3}>
+                <InputWithInfos
+                    infos={formatMessage(MESSAGES.searchOrgUnitInfos)}
+                >
+                    <InputComponent
+                        type="text"
+                        clearable
+                        keyValue="org_unit"
+                        value={filters.org_unit}
+                        onChange={handleChange}
+                        labelString={formatMessage(MESSAGES.orgUnit)}
+                    />
+                </InputWithInfos>
                 <Box id="ou-tree-input">
                     <OrgUnitTreeviewModal
                         toggleOnLabelClick={false}
@@ -412,6 +501,16 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     type="select"
                     multi
                     clearable
+                    keyValue="requested_fields"
+                    value={requestedFieldsValue}
+                    onChange={handleChangeRequestedFields}
+                    options={requestedFieldsOptions}
+                    labelString={formatMessage(MESSAGES.requestedFields)}
+                />
+                <InputComponent
+                    type="select"
+                    multi
+                    clearable
                     keyValue="forms"
                     value={filters.forms}
                     onChange={handleChange}
@@ -419,40 +518,13 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     loading={isLoadingForms}
                     labelString={formatMessage(MESSAGES.forms)}
                 />
-                <DisplayIfUserHasPerm
-                    permissions={[
-                        Permission.SOURCE_WRITE,
-                        Permission.ORG_UNITS_CHANGE_REQUESTS_CONFIGURATION,
-                        Permission.ORG_UNITS,
-                    ]}
-                    strict
-                >
-                    <Box mt={2}>
-                        <AsyncSelect
-                            keyValue="data_source_synchronization_id"
-                            clearable
-                            label={MESSAGES.dataSourceVersionsSynchronization}
-                            value={dataSourceVersionsSynchronization ?? ''}
-                            loading={isLoadingDataSourceVersionsSynchronization}
-                            onChange={
-                                handleChangeDataSourceVersionsSynchronization
-                            }
-                            debounceTime={500}
-                            fetchOptions={fetchSynchronizationOptions}
-                        />
-                    </Box>
-                </DisplayIfUserHasPerm>
             </Grid>
             <Grid item xs={12} md={4} lg={3}>
                 <Box mt={2}>
-                    <AsyncSelect
+                    <UserAsyncSelect
                         keyValue="userIds"
-                        label={MESSAGES.user}
-                        value={selectedUsers ?? ''}
-                        onChange={handleChangeUsers}
-                        debounceTime={500}
-                        multi
-                        fetchOptions={input => getUsersDropDown(input)}
+                        handleChange={handleChange}
+                        filterUsers={filters.userIds}
                     />
                 </Box>
                 <InputComponent
@@ -483,6 +555,29 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                         },
                     ]}
                 />
+                <DisplayIfUserHasPerm
+                    permissions={[
+                        Permission.SOURCE_WRITE,
+                        Permission.ORG_UNITS_CHANGE_REQUESTS_CONFIGURATION,
+                        Permission.ORG_UNITS,
+                    ]}
+                    strict
+                >
+                    <Box mt={2}>
+                        <AsyncSelect
+                            keyValue="data_source_synchronization_id"
+                            clearable
+                            label={MESSAGES.dataSourceVersionsSynchronization}
+                            value={dataSourceVersionsSynchronization ?? ''}
+                            loading={isLoadingDataSourceVersionsSynchronization}
+                            onChange={
+                                handleChangeDataSourceVersionsSynchronization
+                            }
+                            debounceTime={500}
+                            fetchOptions={fetchSynchronizationOptions}
+                        />
+                    </Box>
+                </DisplayIfUserHasPerm>
                 {modules.includes(PAYMENTS_MODULE) && (
                     <InputComponent
                         label={MESSAGES.location}
@@ -522,10 +617,17 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     labelFrom={MESSAGES.createdDateFrom}
                     labelTo={MESSAGES.createdDateTo}
                 />
-                <Box mt={2} display="flex" justifyContent="flex-end">
-                    <FilterButton
+                <InputComponent
+                    keyValue="is_soft_deleted"
+                    onChange={handleSoftDeleted}
+                    value={softDeleted}
+                    type="checkbox"
+                    label={MESSAGES.isSoftDeleted}
+                />
+                <Box mt={2} mb={2} display="flex" justifyContent="flex-end">
+                    <SearchButton
                         disabled={!filtersUpdated}
-                        onFilter={handleSearch}
+                        onSearch={handleSearch}
                     />
                 </Box>
             </Grid>

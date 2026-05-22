@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useCallback, useEffect } from 'react';
 import { Box } from '@mui/material';
 import {
     AddButton,
@@ -7,15 +8,18 @@ import {
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import React, { FunctionComponent, useCallback } from 'react';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import { NumberInput, TextInput } from '../../../../../components/Inputs';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import { VaccineForStock } from '../../../../../constants/types';
-import { dosesPerVial } from '../../../SupplyChain/hooks/utils';
+import { useGetVrfListByRound } from '../../../SupplyChain/hooks/api/vrf';
 import { useCampaignOptions, useSaveEarmarked } from '../../hooks/api';
 import MESSAGES from '../../messages';
-import { useEarmarkOptions } from './dropdownOptions';
+import { DosesPerVialDropdown } from '../../types';
+import {
+    useAvailablePresentations,
+    useEarmarkOptions,
+} from './dropdownOptions';
 import { useEarmarkValidation } from './validation';
 
 type Props = {
@@ -26,6 +30,8 @@ type Props = {
     countryName: string;
     vaccine: VaccineForStock;
     vaccineStockId: string;
+    dosesOptions?: DosesPerVialDropdown;
+    defaultDosesPerVial: number | undefined;
 };
 
 export const CreateEditEarmarked: FunctionComponent<Props> = ({
@@ -35,9 +41,13 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
     countryName,
     vaccine,
     vaccineStockId,
+    dosesOptions,
+    defaultDosesPerVial,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveEarmarked();
+
+    const hasFixedDosesPerVial = Boolean(defaultDosesPerVial);
     const validationSchema = useEarmarkValidation();
     const formik = useFormik<any>({
         initialValues: {
@@ -49,23 +59,34 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
             temporary_campaign_name: earmark?.temporary_campaign_name,
             vials_earmarked: earmark?.vials_earmarked || 0,
             doses_earmarked: earmark?.doses_earmarked || 0,
+            doses_per_vial: earmark?.doses_per_vial || defaultDosesPerVial,
             vaccine_stock: vaccineStockId,
         },
         onSubmit: values => save(values),
         validationSchema,
     });
+
     const { setFieldValue, setFieldTouched } = formik;
 
     const { campaignOptions, isFetching, roundNumberOptions } =
-        useCampaignOptions(countryName, formik.values.campaign);
+        useCampaignOptions(
+            countryName,
+            formik.values.campaign,
+            formik.values.round_number,
+        );
 
+    const selectedRound = roundNumberOptions.find(
+        round => round.value === formik.values.round_number,
+    );
     const earmarkTypeOptions = useEarmarkOptions();
+    const availableDosesPresentations = useAvailablePresentations(
+        dosesOptions,
+        earmark,
+    );
 
     const handleVialsChange = useCallback(
         value => {
-            const conversionRate = dosesPerVial[vaccine];
             setFieldValue('vials_earmarked', value);
-            setFieldValue('doses_earmarked', value * conversionRate);
             setFieldTouched('vials_earmarked', true);
         },
         [setFieldTouched, setFieldValue, vaccine],
@@ -76,7 +97,19 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
         titleMessage,
     )} ${formatMessage(MESSAGES.earmarked)}`;
     const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
-
+    const { data: vrfList } = useGetVrfListByRound(selectedRound?.original?.id);
+    const quantityOrdered = vrfList?.reduce(
+        (acc, vrf) => acc + (vrf.quantities_ordered_in_doses || 0),
+        0,
+    );
+    const isNewEarmark = !earmark?.id;
+    const hasQuantityOrdered = quantityOrdered && quantityOrdered > 0;
+    // https://bluesquare.atlassian.net/browse/POLIO-1924
+    useEffect(() => {
+        if (hasQuantityOrdered && isNewEarmark) {
+            handleVialsChange(quantityOrdered);
+        }
+    }, [hasQuantityOrdered, isNewEarmark, handleVialsChange, quantityOrdered]);
     return (
         <FormikProvider value={formik}>
             <ConfirmCancelModal
@@ -132,6 +165,16 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
                         name="vials_earmarked"
                         component={NumberInput}
                         onChange={handleVialsChange}
+                        required
+                    />
+                </Box>
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.doses_per_vial)}
+                        name="doses_per_vial"
+                        component={SingleSelect}
+                        options={availableDosesPresentations}
+                        disabled={hasFixedDosesPerVial}
                         required
                     />
                 </Box>

@@ -1,55 +1,55 @@
 import React, {
     FunctionComponent,
-    useState,
-    useMemo,
     useCallback,
+    useMemo,
+    useState,
 } from 'react';
-import { GeoJSON, MapContainer, Pane, ScaleControl } from 'react-leaflet';
+import { ArrowUpwardOutlined } from '@mui/icons-material';
 import { Box, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { ArrowUpwardOutlined } from '@mui/icons-material';
 import {
     commonStyles,
-    LoadingSpinner,
     IconButton,
+    LoadingSpinner,
 } from 'bluesquare-components';
-import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
-import { PopupComponent as Popup } from './Popup';
+import L from 'leaflet';
+import { GeoJSON, MapContainer, Pane, ScaleControl } from 'react-leaflet';
+import { useGetLegend } from 'Iaso/components/LegendBuilder/Legend';
+import { ScaleThreshold } from 'Iaso/components/LegendBuilder/types';
+import { CustomTileLayer } from 'Iaso/components/maps/tools/CustomTileLayer';
+import { CustomZoomControl } from 'Iaso/components/maps/tools/CustomZoomControl';
+import { Tile } from 'Iaso/components/maps/tools/TilesSwitchControl';
 
+import {
+    Bounds,
+    circleColorMarkerOptions,
+    CloseTooltipOnMoveStart,
+    getEffectiveThreshold,
+    getOrgUnitsBounds,
+} from 'Iaso/utils/map/mapUtils';
 import CircleMarkerComponent from '../../../components/maps/markers/CircleMarkerComponent';
 
 import tiles from '../../../constants/mapTiles';
 
 import {
+    AssignmentsResult,
+    useGetAssignments,
+} from '../../assignments/hooks/requests/useGetAssignments';
+import MESSAGES from '../messages';
+import {
     CompletenessMapStats,
     CompletenessRouterParams,
     FormStat,
 } from '../types';
-import {
-    circleColorMarkerOptions,
-    Bounds,
-    getEffectiveThreshold,
-    getOrgUnitsBounds,
-} from '../../../utils/map/mapUtils';
-
-import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
-import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
-
-import { getDirectLegend, MapLegend } from './MapLegend';
-import { useGetLegend } from '../../../components/LegendBuilder/Legend';
-import { CompletenessSelect } from './CompletenessSelect';
-
-import MESSAGES from '../messages';
 
 import { useGetParentPageUrl } from '../utils';
-import {
-    AssignmentsResult,
-    useGetAssignments,
-} from '../../assignments/hooks/requests/useGetAssignments';
-import { ScaleThreshold } from '../../../components/LegendBuilder/types';
+import { CompletenessSelect } from './CompletenessSelect';
+import { getDirectLegend, MapLegend } from './MapLegend';
+
+import { PopupComponent as Popup } from './Popup';
 
 const defaultViewport = {
-    center: [1, 20],
+    center: L.latLng(1, 20),
     zoom: 3.25,
 };
 
@@ -61,8 +61,8 @@ type Props = {
     threshold?: ScaleThreshold;
 };
 
-const boundsOptions = {
-    padding: [50, 50],
+const boundsOptions: L.FitBoundsOptions = {
+    padding: L.point(50, 50),
     maxZoom: 12,
 };
 
@@ -212,18 +212,16 @@ export const Map: FunctionComponent<Props> = ({
 
                 <MapContainer
                     key={parentLocation?.id}
-                    isLoading={isLoading}
                     maxZoom={currentTile.maxZoom}
                     style={{ height: '80vh' }}
                     center={defaultViewport.center}
                     zoom={defaultViewport.zoom}
                     scrollWheelZoom={false}
                     zoomControl={false}
-                    contextmenu
-                    refocusOnMap={false}
                     bounds={bounds}
                     boundsOptions={boundsOptions}
                 >
+                    <CloseTooltipOnMoveStart />
                     <ScaleControl imperial={false} />
                     <CustomTileLayer
                         currentTile={currentTile}
@@ -235,16 +233,17 @@ export const Map: FunctionComponent<Props> = ({
                         fitOnLoad
                     />
                     <Pane name="parent">
-                        {parentLocation?.has_geo_json && (
-                            <GeoJSON
-                                data={parentLocation.geo_json}
-                                // @ts-ignore
-                                style={() => ({
-                                    color: 'grey',
-                                    fillOpacity: 0,
-                                })}
-                            />
-                        )}
+                        {parentLocation?.has_geo_json &&
+                            parentLocation.geo_json && (
+                                <GeoJSON
+                                    data={parentLocation.geo_json}
+                                    // @ts-ignore
+                                    style={() => ({
+                                        color: 'grey',
+                                        fillOpacity: 0,
+                                    })}
+                                />
+                            )}
                     </Pane>
                     <Pane name="shapes">
                         {shapes.map(shape => {
@@ -253,6 +252,9 @@ export const Map: FunctionComponent<Props> = ({
                             const color =
                                 getLegendColor(getPercent(stats), shape.id) ||
                                 theme.palette.primary.main;
+                            if (!shape.geo_json) {
+                                return null;
+                            }
                             return (
                                 <GeoJSON
                                     key={`${shape.id}-${params.showDirectCompleteness}`}

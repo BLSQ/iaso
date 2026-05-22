@@ -9,6 +9,7 @@ export type DropdownOptionsWithOriginal<T, O = Record<any, any>> = {
     label: string;
     value: T;
     original: O;
+    color?: string;
 };
 export type ValidationError = Record<string, string> | null | undefined;
 export type GenericObject = Record<string, any>;

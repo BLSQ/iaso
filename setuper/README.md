@@ -89,3 +89,9 @@ Once the script has run, you can log in to your server using the account name as
        You will need to add param `-n <name>`:
 
            python3 setuper.py -n ThisNameWasCarefullyChosen
+   
+   - If you want create a main org unit on the new account, 
+        
+       You will need to add param `--create_main_org_unit`:
+
+           python3 setuper.py --create_main_org_unit

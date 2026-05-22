@@ -1,10 +1,10 @@
-import React, { FunctionComponent, useCallback, ChangeEvent } from 'react';
-import { Paper, Radio, RadioGroup, FormControlLabel } from '@mui/material';
+import React, { ChangeEvent, FunctionComponent, useCallback } from 'react';
+import { FormControlLabel, Paper, Radio, RadioGroup } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useSafeIntl, useRedirectToReplace } from 'bluesquare-components';
-import { CompletenessRouterParams } from '../types';
-import { baseUrls } from '../../../constants/urls';
+import { useRedirectToReplace, useSafeIntl } from 'bluesquare-components';
+import { baseUrls } from 'Iaso/constants/urls';
 import MESSAGES from '../messages';
+import { CompletenessRouterParams } from '../types';
 
 const useStyles = makeStyles(theme => ({
     root: {

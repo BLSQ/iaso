@@ -1,18 +1,34 @@
+import React, {
+    FunctionComponent,
+    SetStateAction,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    Dispatch,
+    useState,
+} from 'react';
 import { Grid, useTheme } from '@mui/material';
 import { pink } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
 import 'leaflet-draw';
-import React, {
-    FunctionComponent,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from 'react';
+import { Map as LeafletMap } from 'leaflet';
+
+import L from 'leaflet';
 import { GeoJSON, MapContainer, Pane, ScaleControl } from 'react-leaflet';
+import { ExtendedDataSource } from 'Iaso/domains/orgUnits/requests';
+import { CloseTooltipOnMoveStart } from 'Iaso/utils/map/mapUtils';
+import { DisplayIfUserHasPerm } from '../../../../../components/DisplayIfUserHasPerm';
 import { MapLegend } from '../../../../../components/maps/MapLegend';
+
+import 'leaflet-draw/dist/leaflet.draw.css';
+import { CustomTileLayer } from '../../../../../components/maps/tools/CustomTileLayer';
+import { CustomZoomControl } from '../../../../../components/maps/tools/CustomZoomControl';
+import { Tile } from '../../../../../components/maps/tools/TilesSwitchControl';
+import { InnerDrawer } from '../../../../../components/nav/InnerDrawer/Index';
+import tiles from '../../../../../constants/mapTiles';
+import { useFormState } from '../../../../../hooks/form';
 import setDrawMessages from '../../../../../utils/map/drawMapMessages';
 import {
     getleafletGeoJson,
@@ -20,38 +36,29 @@ import {
     mapOrgUnitByLocation,
     orderOrgUnitTypeByDepth,
 } from '../../../../../utils/map/mapUtils';
-import FormsFilterComponent from '../../../../forms/components/FormsFilterComponent';
-import OrgUnitTypeFilterComponent from '../OrgUnitTypeFilterComponent';
+import * as Permission from '../../../../../utils/permissions';
+import { useCurrentUser } from '../../../../../utils/usersUtils';
+import { FormsFilterComponent } from '../../../../forms/components/FormsFilterComponent';
+import { userHasPermission } from '../../../../users/utils';
 import MESSAGES from '../../../messages';
-import OrgUnitPopupComponent from '../../OrgUnitPopupComponent';
 import OrgunitOptionSaveComponent from '../../OrgunitOptionSaveComponent';
+import OrgUnitPopupComponent from '../../OrgUnitPopupComponent';
 import SourcesFilterComponent from '../../SourcesFilterComponent';
 import EditOrgUnitOptionComponent from '../EditOrgUnitOptionComponent';
 import { OrgUnitsMapComments } from '../OrgUnitComments/OrgUnitsMapComments';
-
-import 'leaflet-draw/dist/leaflet.draw.css';
-import { DisplayIfUserHasPerm } from '../../../../../components/DisplayIfUserHasPerm';
-import { CustomTileLayer } from '../../../../../components/maps/tools/CustomTileLayer';
-import { CustomZoomControl } from '../../../../../components/maps/tools/CustomZoomControl';
-import { Tile } from '../../../../../components/maps/tools/TilesSwitchControl';
-import { InnerDrawer } from '../../../../../components/nav/InnerDrawer/Index';
-import tiles from '../../../../../constants/mapTiles';
-import { useFormState } from '../../../../../hooks/form';
-import * as Permission from '../../../../../utils/permissions';
-import { useCurrentUser } from '../../../../../utils/usersUtils';
-import { userHasPermission } from '../../../../users/utils';
+import OrgUnitTypeFilterComponent from '../OrgUnitTypeFilterComponent';
+import { buttonsInitialState } from './constants';
 import { CurrentOrgUnitMarker } from './CurrentOrgUnitMarker';
 import { FormsMarkers } from './FormsMarkers';
+import { getBounds } from './getBounds';
 import { OrgUnitTypesSelectedShapes } from './OrgUnitTypesSelectedShapes';
 import { SelectedMarkers } from './SelectedMarkers';
 import { SourcesSelectedShapes } from './SourcesSelectedShapes';
-import { buttonsInitialState } from './constants';
 import { MappedOrgUnit } from './types';
-import { useGetBounds } from './useGetBounds';
 import { getAncestorWithGeojson, initialState } from './utils';
 
 export const zoom = 5;
-export const padding = [75, 75];
+export const padding = L.point(75, 75);
 export const clusterSize = 25;
 export const orgunitsPane = 'org-units';
 
@@ -64,8 +71,8 @@ const useStyles = makeStyles({
 
 type Props = {
     loadingSelectedSources?: boolean;
-    sourcesSelected?: any[];
-    setSourcesSelected: () => void;
+    sourcesSelected?: ExtendedDataSource[];
+    setSourcesSelected: Dispatch<SetStateAction<ExtendedDataSource[]>>;
     currentOrgUnit: any;
     saveOrgUnit: () => void;
     resetOrgUnit: () => void;
@@ -95,7 +102,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     const classes: Record<string, string> = useStyles();
     const theme = useTheme();
     const currentUser = useCurrentUser();
-    const map: any = useRef();
+    const map = useRef<LeafletMap | null>(null);
     // These 2 refs are needed because we need to initialize the EditableGroups only once, but we need the map to be ready
     // and we can't predict exactly how many renders that will require
     const didLocationInitialize = useRef(false);
@@ -135,12 +142,21 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         state.locationGroup.value,
         state.catchmentGroup.value,
     ]);
-    const bounds = useGetBounds({
-        orgUnit: currentOrgUnit,
-        locationGroup: state.locationGroup.value,
-        catchmentGroup: state.catchmentGroup.value,
-        ancestorWithGeoJson: state.ancestorWithGeoJson.value,
-    });
+    const bounds = useMemo(
+        () =>
+            getBounds({
+                orgUnit: currentOrgUnit,
+                locationGroup: state.locationGroup.value,
+                catchmentGroup: state.catchmentGroup.value,
+                ancestorWithGeoJson: state.ancestorWithGeoJson.value,
+            }),
+        [
+            currentOrgUnit,
+            state.locationGroup.value,
+            state.catchmentGroup.value,
+            state.ancestorWithGeoJson.value,
+        ],
+    );
 
     const toggleEditShape = useCallback(
         keyName => {
@@ -418,6 +434,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                             orgUnitTypesSelected={
                                 state.orgUnitTypesSelected.value
                             }
+                            map={map}
                             setOrgUnitTypesSelected={outypes => {
                                 setStateField('orgUnitTypesSelected', outypes);
                             }}
@@ -432,6 +449,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                                 currentOrgUnit={currentOrgUnit}
                                 formsSelected={state.formsSelected.value}
                                 setFormsSelected={handleFormFilter}
+                                map={map}
                             />
                         </DisplayIfUserHasPerm>
                     </>
@@ -504,10 +522,9 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                     zoom={zoom}
                     zoomControl={false}
                     keyboard={false}
-                    whenCreated={mapInstance => {
-                        map.current = mapInstance;
-                    }}
+                    ref={map}
                 >
+                    <CloseTooltipOnMoveStart />
                     <CustomZoomControl
                         bounds={bounds}
                         boundsOptions={{ padding }}
@@ -563,21 +580,21 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                         </>
                     )}
                     {/* Markers section  */}
-                    <>
-                        <SelectedMarkers
-                            data={mappedOrgUnitTypesSelected}
-                            updateOrgUnitLocation={updateOrgUnitLocation}
-                        />
-                        <SelectedMarkers
-                            data={mappedSourcesSelected}
-                            updateOrgUnitLocation={updateOrgUnitLocation}
-                        />
 
-                        <FormsMarkers
-                            forms={state.formsSelected.value}
-                            updateOrgUnitLocation={updateOrgUnitLocation}
-                        />
-                    </>
+                    <SelectedMarkers
+                        data={mappedOrgUnitTypesSelected}
+                        updateOrgUnitLocation={updateOrgUnitLocation}
+                    />
+                    <SelectedMarkers
+                        data={mappedSourcesSelected}
+                        updateOrgUnitLocation={updateOrgUnitLocation}
+                    />
+
+                    <FormsMarkers
+                        forms={state.formsSelected.value}
+                        updateOrgUnitLocation={updateOrgUnitLocation}
+                    />
+
                     {hasMarker && (
                         <CurrentOrgUnitMarker
                             isEdit={state.currentOption.value === 'edit'}

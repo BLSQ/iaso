@@ -11,6 +11,7 @@ from django.db.models import Max, Min
 from django.http import HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from drf_spectacular.utils import extend_schema
 from pandas import DataFrame
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -286,6 +287,7 @@ def get_forma_scope_df(campaigns):
     return all_scopes
 
 
+@extend_schema(tags=["Polio - Form stocks", "v2"])
 class FormAStocksViewSetV2(viewsets.ViewSet):
     """
     Endpoint used to transform Vaccine Stocks data from existing ODK forms stored in ONA.

@@ -1,8 +1,11 @@
+from unittest.mock import Mock
+
+from django.http import QueryDict
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory
 
 from iaso import models as m
-from iaso.api.forms import FormSerializer
+from iaso.api.forms.serializers import FormSerializer
 
 
 class FormsSerializerTestCase(TestCase):
@@ -22,7 +25,7 @@ class FormsSerializerTestCase(TestCase):
 
     def test_should_serialize_a_form(self):
         request = APIRequestFactory().get("/")
-        request.query_params = {}
+        request.query_params = QueryDict(mutable=True)
         serializer = FormSerializer(self.form, context={"request": request})
 
         expected_data = {
@@ -68,7 +71,33 @@ class FormsSerializerTestCase(TestCase):
             ],
             "legend_threshold": self.form.legend_threshold,
             "change_request_mode": self.form.change_request_mode,
+            "validation_workflow": None,
         }
 
         with self.assertNumQueries(8):
             self.assertEqual(serializer.data, expected_data)
+
+    def test_get_possible_fields_with_latest_version_filters_by_supported_types(self):
+        """
+        Test that `get_possible_fields_with_latest_version()` only returns fields with supported types.
+        """
+        mock_form = Mock()
+        mock_form.possible_fields = [
+            {"name": "field1", "type": "text"},  # supported
+            {"name": "field2", "type": "number"},  # supported
+            {"name": "field3", "type": "photo"},  # not supported
+            {"name": "field4", "type": "select"},  # not supported
+            {"name": "field5", "type": "integer"},  # supported
+            {"name": "field6", "type": None},  # supported
+        ]
+        mock_form.latest_version = None  # No latest version to keep the test simple.
+
+        result = FormSerializer.get_possible_fields_with_latest_version(mock_form)
+
+        expected_fields = [
+            {"name": "field1", "type": "text"},
+            {"name": "field2", "type": "number"},
+            {"name": "field5", "type": "integer"},
+            {"name": "field6", "type": None},
+        ]
+        self.assertEqual(result, expected_fields)

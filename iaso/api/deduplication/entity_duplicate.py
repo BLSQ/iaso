@@ -12,22 +12,26 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.utils.text import slugify
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import permissions, serializers, status, viewsets
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
+from rest_framework import permissions, serializers, status
 from rest_framework.decorators import action
-from rest_framework.request import Request
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 import iaso.api.deduplication.filters as dedup_filters  # type: ignore
 import iaso.models.base as base
 
 from hat.audit.models import ENTITY_DUPLICATE_MERGE, log_modification
-from hat.menupermissions import models as permission
-from iaso.api.common import HasPermission, Paginator
+from iaso.api.common import HasPermission, ModelViewSet
+from iaso.api.deduplication.serializers import BulkIgnoreRequestSerializer
 from iaso.api.workflows.serializers import find_question_by_name
 from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyzis, EntityType, Form, Instance
 from iaso.models.deduplication import ValidationStatus  # type: ignore
+from iaso.permissions.core_permissions import (
+    CORE_ENTITIES_DUPLICATES_READ_PERMISSION,
+    CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION,
+)
 from iaso.utils.emoji import fix_emoji
 
 
@@ -171,13 +175,14 @@ def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: D
     root = _xmlfile_to_element(att1.file)
 
     for field_name, e_id in merge_def.items():
-        the_val = lookup[e_id].json[field_name]
-        try:
-            the_field = root.find(".//" + field_name)
-            if the_field is not None:
-                the_field.text = the_val
-        except Exception as e:
-            logger.exception("Error updating xml field %s: %s", field_name, e)
+        the_val = lookup[e_id].json.get(field_name, None)
+        if the_val is not None:
+            try:
+                the_field = root.find(".//" + field_name)
+                if the_field is not None:
+                    the_field.text = the_val
+            except Exception as e:
+                logger.exception("Error updating xml field %s: %s", field_name, e)
 
     entity_uuid = root.find("entityUuid")
     if entity_uuid is not None:
@@ -221,7 +226,7 @@ def copy_instance(inst: Instance, new_entity: Entity):
         meta_instance_id.text = "uuid:" + str(new_uuid)
 
     new_xml_string = ET.tostring(root, encoding="utf-8", xml_declaration=False)
-    new_xml_content = ContentFile(new_xml_string.decode("utf-8"))
+    new_xml_content = ContentFile(new_xml_string)  # .decode("utf-8")
 
     new_inst.pk = None
     new_inst.entity = new_entity
@@ -386,20 +391,23 @@ class EntityDuplicatePostSerializer(serializers.Serializer):
         }
 
 
-duplicate_detail_entities_param = openapi.Parameter(
+duplicate_detail_entities_param = OpenApiParameter(
     name="entities",
-    in_=openapi.IN_QUERY,
-    description="Comma separeted list of 2 entities ids to to retrieve the duplicate about",
-    type=openapi.TYPE_STRING,
+    location=OpenApiParameter.QUERY,
+    description="Comma separated list of 2 entity ids to retrieve the duplicate about",
     required=True,
+    type=OpenApiTypes.STR,
 )
 
 
-class EntityDuplicateViewSet(viewsets.GenericViewSet):
-    """Entity Duplicates API
-    GET /api/entityduplicates/ : Provides an API to retrieve potentially duplicated entities.
-    GET /api/entityduplicates/<pk>/ : Provides an API to retrieve details about a potential duplicate
-    POST /api/entityduplicates/ : Provides an API to merge duplicate entities or to ignore the match
+@extend_schema(tags=["Entity duplicates"])
+class EntityDuplicateViewSet(ModelViewSet):
+    """
+    Entity Duplicates API.
+
+    - `GET /api/entityduplicates/` retrieve potentially duplicated entities
+    - `GET /api/entityduplicates/<pk>/` retrieve details about a potential duplicate
+    - `POST /api/entityduplicates/` merge duplicate entities or ignore the match
     """
 
     filter_backends = [
@@ -410,6 +418,7 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
         dedup_filters.EntityIdFilterBackend,
         dedup_filters.EntitySearchFilterBackend,
         dedup_filters.AlgorithmFilterBackend,
+        dedup_filters.AnalyzeFilterBackend,
         dedup_filters.EntityTypeFilterBackend,
         dedup_filters.SimilarityFilterBackend,
         dedup_filters.FormFilterBackend,
@@ -417,41 +426,25 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
         dedup_filters.StartEndDateFilterBackend,
         dedup_filters.CustomOrderingFilter,
         DjangoFilterBackend,
-        # filters.OrderingFilter,
     ]
 
-    ordering_fields = ["created_at", "similarity_score", "id", "similarity_star"]
-    remove_results_key_if_paginated = False
-    results_key = "results"
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.ENTITIES_DUPLICATE_READ)]  # type: ignore
-    serializer_class = EntityDuplicateSerializer
     model = EntityDuplicate
-    pagination_class = Paginator
-
-    def list(self, request: Request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        if not self.remove_results_key_if_paginated:
-            return Response(data={self.results_key: serializer.data}, content_type="application/json")
-        return Response(data=serializer.data, content_type="application/json")
+    ordering_fields = ["created_at", "similarity_score", "id", "similarity_star"]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_ENTITIES_DUPLICATES_READ_PERMISSION)]
+    serializer_class = EntityDuplicateSerializer
 
     def get_queryset(self):
         user_account = self.request.user.iaso_profile.account
-        initial_queryset = EntityDuplicate.objects.filter(entity1__account=user_account, entity2__account=user_account)
-        return initial_queryset
+        return EntityDuplicate.objects.filter_for_account(user_account)
 
-    @swagger_auto_schema(manual_parameters=[duplicate_detail_entities_param])
+    @extend_schema(parameters=[duplicate_detail_entities_param])
     @action(detail=False, methods=["get"], url_path="detail", pagination_class=None, filter_backends=[])
     def detail_view(self, request):
         """
-        GET /api/entityduplicates/detail/?entities=A,B
-        Provides an API to retrieve details about a potential duplicate
+        Retrieve details about a potential duplicate.
+
+        `GET /api/entityduplicates/detail/?entities=A,B`
+
         For all the 'fields' of the analyzis it will return
         {
         "the_field": {
@@ -474,31 +467,34 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
         So basically it returns an array of those objects
         """
         try:
-            entities = request.GET.get("entities", None)
-            if entities is None:
-                raise ValueError("entities parameter is required")
-            entities = entities.split(",")
-            duplicate = (
-                self.get_queryset()
-                .filter(
-                    Q(entity1__pk=entities[0], entity2__pk=entities[1])
-                    | Q(entity1__pk=entities[1], entity2__pk=entities[0])
-                )
-                .first()
+            entities = request.GET.get("entities", "").split(",")
+            entity1_id = int(entities[0])
+            entity2_id = int(entities[1])
+        except ValueError:
+            raise ValidationError(
+                "Entities parameter is required and must be a comma separated list of 2 entities IDs."
             )
-        except:
-            return Response(status=status.HTTP_404_NOT_FOUND, data={"error": "entity duplicate not found"})
+
+        duplicate = (
+            self.get_queryset()
+            .filter(
+                Q(entity1__pk=entity1_id, entity2__pk=entity2_id) | Q(entity1__pk=entity2_id, entity2__pk=entity1_id)
+            )
+            .first()
+        )
+
+        if not duplicate:
+            return Response(status=status.HTTP_404_NOT_FOUND, data={"error": "Entity duplicate not found."})
 
         # we need to create the expected answer from all the fields
         # we need to get the fields from the analyze
         analyze = duplicate.analyze
-        fields = analyze.metadata["fields"]
         entity_type_id = analyze.metadata["entity_type_id"]
 
         try:
             et = EntityType.objects.get(pk=int(entity_type_id))
         except EntityType.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND, data={"error": "entitytype not found"})
+            return Response(status=status.HTTP_404_NOT_FOUND, data={"error": "EntityType not found."})
 
         fields_data = []
 
@@ -515,17 +511,13 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
                     continue
                 if is_UUID(e1_val):
                     continue
-                e1_type = type(e1_val).__name__
             except:
                 e1_val = "Not Found"
-                e1_type = "Not Found"
 
             try:
                 e2_val = e2_json[the_q["name"]]
-                e2_type = type(e2_val).__name__
             except:
                 e2_val = "Not Found"
-                e2_type = "Not Found"
 
             fields_data.append(
                 {
@@ -551,13 +543,13 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
         version1 = duplicate.entity1.attributes.get_form_version()
         version2 = duplicate.entity2.attributes.get_form_version()
 
-        if version1 is None:
+        if not version1:
             return Response(
                 status=status.HTTP_404_NOT_FOUND,
                 data={"error": f"No form version for attibutes of entity {duplicate.entity1.pk}"},
             )
 
-        if version2 is None:
+        if not version2:
             return Response(
                 status=status.HTTP_404_NOT_FOUND,
                 data={"error": f"No form version for attibutes of entity {duplicate.entity2.pk}"},
@@ -571,7 +563,7 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
 
         return JsonResponse(return_data, safe=False)
 
-    @swagger_auto_schema(request_body=EntityDuplicatePostSerializer(many=False))
+    @extend_schema(request=EntityDuplicatePostSerializer)
     def create(self, request, pk=None, *args, **kwargs):
         """
         POST /api/entityduplicates/
@@ -584,7 +576,7 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
                 "key2": "entity1_id",
                 "key3": "entity2_id",
                 ...
-            }
+            },
             "ignore": true | false,
             "reason": "optional reason"
         }
@@ -600,3 +592,17 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
         return_data = EntityDuplicatePostAnswerSerializer(res).data
 
         return Response(return_data)
+
+    @action(
+        methods=["POST"], detail=False, permission_classes=[HasPermission(CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION)]
+    )
+    def bulk_ignore(self, request, pk=None, *args, **kwargs):
+        serializer = BulkIgnoreRequestSerializer(data=request.data, context=self.get_serializer_context())
+        serializer.is_valid(raise_exception=True)
+        queryset = self.filter_queryset(self.get_queryset()).filter(validation_status=ValidationStatus.PENDING)
+        if serializer.validated_data["select_all"]:
+            queryset = queryset.exclude(id__in=request.data.get("unselected_ids"))
+        else:
+            queryset = queryset.filter(id__in=request.data.get("selected_ids"))
+        queryset.update(validation_status=ValidationStatus.IGNORED)
+        return Response(status=status.HTTP_204_NO_CONTENT)

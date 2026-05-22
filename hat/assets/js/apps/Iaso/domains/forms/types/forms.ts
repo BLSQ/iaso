@@ -1,3 +1,4 @@
+import { JSONValue } from 'Iaso/domains/instances/utils/jsonLogicParse';
 import { ScaleThreshold } from '../../../components/LegendBuilder/types';
 
 type FeatureFlag = {
@@ -51,7 +52,8 @@ export type FieldType =
     | 'calculate'
     | 'acknowledge'
     | 'hidden'
-    | 'xml-external';
+    | 'xml-external'
+    | 'boolean';
 
 export type PossibleField = {
     label: string;
@@ -81,8 +83,15 @@ export type Form = {
     single_per_period: boolean;
     periods_before_allowed: number;
     periods_after_allowed: number;
-    latest_form_version: string;
-    instances_count: number;
+    latest_form_version?: {
+        id: number;
+        version_id: string;
+        file: string | null;
+        xls_file: string | null;
+        created_at: string;
+        updated_at: string;
+    } | null;
+    instances_count?: number;
     instance_updated_at: string;
     created_at: string;
     updated_at: string;
@@ -119,6 +128,24 @@ export type FormParams = {
     attachmentsOrder?: string;
     attachmentsPageSize?: string;
     attachmentsPage?: string;
+    predefinedFiltersOrder?: string;
+    predefinedFiltersPageSize?: string;
+    predefinedFiltersPage?: string;
+};
+
+export type FormPredefinedFilter = {
+    id: number;
+    form_id: number;
+    name: string;
+    short_name: string;
+    json_logic: JSONValue;
+    created_at: number;
+    updated_at: number;
+};
+export type FormPredefinedFilterForm = {
+    name?: string;
+    short_name?: string;
+    json_logic?: JSONValue;
 };
 type Errors = string[];
 
@@ -157,4 +184,17 @@ export type FormDataType = {
     label_keys: FieldError<string[]>;
     legend_threshold?: FieldError<ScaleThreshold>;
     change_request_mode: FieldError<ChangeRequestModeType>;
+    validation_workflow?: FieldError<number>;
+};
+export type FormsParams = {
+    pageSize: string;
+    order: string;
+    page: string;
+    search?: string;
+    showDeleted?: string;
+    onlyDeleted?: string;
+    planning?: string;
+    projectsIds?: string;
+    fields?: string;
+    orgUnitId: string;
 };

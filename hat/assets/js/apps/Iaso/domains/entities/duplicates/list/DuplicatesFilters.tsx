@@ -1,28 +1,26 @@
 import React, { FunctionComponent, useEffect, useMemo } from 'react';
 import { Box, Grid } from '@mui/material';
-import { FilterButton } from '../../../../components/FilterButton';
-import DatesRange from '../../../../components/filters/DatesRange';
-import InputComponent from '../../../../components/forms/InputComponent';
-import { baseUrls } from '../../../../constants/urls';
+import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
+import { SearchButton } from 'Iaso/components/SearchButton';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import {
     useCheckBoxFilter,
     useFilterState,
     useMultiTreeviewFilterState,
-} from '../../../../hooks/useFilterState';
-import { OrgUnitTreeviewModal } from '../../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
-import MESSAGES from '../messages';
-import { useGetTeamsDropdown } from '../../../teams/hooks/requests/useGetTeams';
-import { TeamType } from '../../../teams/constants';
-import { useGetFormsOptions } from '../../../completenessStats/hooks/api/useGetFormsOptions';
-import { usePossibleFieldsDropdown } from '../../../forms/hooks/useGetPossibleFields';
+} from 'Iaso/hooks/useFilterState';
+import { PaginationParams } from 'Iaso/types/general';
+import DatesRange from '../../../../components/filters/DatesRange';
+import InputComponent from '../../../../components/forms/InputComponent';
 import FullStarsSvg from '../../../../components/stars/FullStarsSvgComponent';
-import { DuplicatesGETParams } from '../hooks/api/useGetDuplicates';
-import { PaginationParams } from '../../../../types/general';
-import {
-    useGetBeneficiaryTypesDropdown,
-    useGetUsersDropDown,
-} from '../../hooks/requests';
+import { usePossibleFieldsDropdown } from '../../../forms/hooks/useGetPossibleFields';
+import { OrgUnitTreeviewModal } from '../../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import { TeamType } from '../../../teams/constants';
+import { useGetTeamsDropdown } from '../../../teams/hooks/requests/useGetTeams';
 import { ALGORITHM_DROPDOWN } from '../../constants';
+import { useGetEntityTypesDropdown } from '../../hooks/requests';
+import { DuplicatesGETParams } from '../hooks/api/useGetDuplicates';
+import MESSAGES from '../messages';
 
 type Params = PaginationParams & DuplicatesGETParams;
 
@@ -74,14 +72,14 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
         useGetTeamsDropdown({
             type: TeamType.TEAM_OF_USERS,
         });
-    const { data: usersDropdown, isFetching: isFetchingUsers } =
-        useGetUsersDropDown();
 
     const { data: entityTypesDropdown, isFetching: isFetchingEntityTypes } =
-        useGetBeneficiaryTypesDropdown();
+        useGetEntityTypesDropdown();
 
     const { data: formsDropdown, isFetching: isFetchingForms } =
-        useGetFormsOptions(['possible_fields']);
+        useGetFormsDropdownOptions({
+            extraFields: ['possible_fields'],
+        });
 
     const selectedForm = useMemo(() => {
         return (formsDropdown as any[])
@@ -153,16 +151,15 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                     />
                 </Grid>
                 <Grid item xs={12} md={3}>
-                    <InputComponent
-                        type="select"
-                        keyValue="submitter"
-                        value={filters.submitter}
-                        onChange={handleChange}
-                        onEnterPressed={handleSearch}
-                        label={MESSAGES.submitter}
-                        options={usersDropdown}
-                        loading={isFetchingUsers}
-                    />
+                    <Box mt={2}>
+                        <UserAsyncSelect
+                            keyValue="submitter"
+                            handleChange={handleChange}
+                            filterUsers={filters.submitter}
+                            multi={false}
+                            label={MESSAGES.submitter}
+                        />
+                    </Box>
                 </Grid>
                 <Grid item xs={12} md={3}>
                     <InputComponent
@@ -185,6 +182,7 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                         label={MESSAGES.similarity}
                         options={similarityDropdown}
                         renderOption={(props, option) => {
+                            // @ts-ignore
                             const label = props.label || option.label;
                             return (
                                 <div {...props}>
@@ -262,9 +260,9 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
             {/* line 4 */}
             <Grid container item xs={12} justifyContent="flex-end" spacing={2}>
                 <Box mb={2} mt={2}>
-                    <FilterButton
+                    <SearchButton
                         disabled={!filtersUpdated}
-                        onFilter={handleSearch}
+                        onSearch={handleSearch}
                     />
                 </Box>
             </Grid>

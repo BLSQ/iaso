@@ -1,32 +1,9 @@
-import { Table, TableBody, TableRow, TableCell } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent, useMemo } from 'react';
+import { Table, TableBody } from '@mui/material';
+import { WidgetPaperRow as Row } from '../../../components/papers/WidgetPaperRow';
 import { useSafeIntl } from 'bluesquare-components';
 import { getLabelsAndValues } from '../utils';
 import { DataSource } from '../types/dataSources';
-
-const useStyles = makeStyles(theme => ({
-    leftCell: {
-        // @ts-ignore
-        borderRight: `1px solid ${theme.palette.ligthGray.border}`,
-        fontWeight: 'bold',
-    },
-}));
-
-type RowProps = {
-    field: { label: string; value: any };
-};
-
-const Row: FunctionComponent<RowProps> = ({ field }) => {
-    const { label, value } = field;
-    const classes = useStyles();
-    return (
-        <TableRow>
-            <TableCell className={classes.leftCell}>{label}</TableCell>
-            <TableCell>{value}</TableCell>
-        </TableRow>
-    );
-};
 
 type Props = {
     dataSource?: DataSource;

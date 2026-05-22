@@ -1,7 +1,7 @@
+import React, { FunctionComponent } from 'react';
 import { Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import MESSAGES from '../../../../constants/messages';
 import { LIST, MAP } from '../constants';
 

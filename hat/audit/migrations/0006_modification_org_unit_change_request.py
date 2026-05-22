@@ -7,7 +7,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0236_auto_20231012_0955"),
+        ("iaso", "0001_squashed_0343_importgpkg_default_valid"),
         ("audit", "0005_alter_modification_user"),
     ]
 

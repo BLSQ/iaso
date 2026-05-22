@@ -6,8 +6,8 @@ export const formatInitialSelectedIds = (
     orgUnits: OrgUnit | OrgUnit[] | undefined,
 ): string[] | string => {
     if (!orgUnits) return [];
-    if (!Array.isArray(orgUnits)) return orgUnits.id.toString();
-    return orgUnits.map(orgUnit => orgUnit.id.toString());
+    if (!Array.isArray(orgUnits)) return orgUnits?.id?.toString();
+    return orgUnits.map(orgUnit => orgUnit?.id?.toString());
 };
 
 export const tooltip = (orgUnit: OrgUnit, icon: ReactElement): ReactElement => (

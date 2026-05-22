@@ -1,17 +1,13 @@
-import { Box, Grid } from '@mui/material';
 import React, { FunctionComponent } from 'react';
-
+import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-
 import InputComponent from '../../../../components/forms/InputComponent';
-import MESSAGES from '../../messages';
-
 import { DropdownOptions } from '../../../../types/utils';
-
+import MESSAGES from '../../messages';
 import { ReferenceForm } from '../../types';
 
 type Props = {
-    handleChangeTargetVersion: (_, value: string) => void;
+    handleChangeTargetVersion: (_: any, value: string) => void;
     targetVersion: string;
     targetVersionsDropdownOptions: DropdownOptions<string>[];
     referenceForm?: ReferenceForm;

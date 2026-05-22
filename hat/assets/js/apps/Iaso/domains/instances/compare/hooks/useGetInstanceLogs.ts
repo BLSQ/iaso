@@ -2,13 +2,12 @@ import moment from 'moment';
 import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery, useSnackQueries } from '../../../../libs/apiHooks';
+import { DropdownOptions } from '../../../../types/utils';
 import {
     InstanceLogDetail,
     InstanceLogsDetail,
     InstanceLogData,
-    FormDescriptor,
 } from '../../types/instance';
-import { DropdownOptions } from '../../../../types/utils';
 
 import MESSAGES from '../messages';
 
@@ -64,26 +63,4 @@ export const useGetInstanceLogDetail = (
             },
         })),
     );
-};
-
-const getVersion = (
-    formId: string | undefined,
-): Promise<Record<string, any>> => {
-    return getRequest(`/api/formversions/?form_id=${formId}&fields=descriptor`);
-};
-export const useGetFormDescriptor = (
-    formId?: string,
-): UseQueryResult<Record<string, any> | undefined, Error> => {
-    const queryKey: any[] = ['instanceDescriptor'];
-    return useSnackQuery({
-        queryKey,
-        queryFn: () => getVersion(formId),
-        options: {
-            enabled: Boolean(formId),
-            select: (data: FormDescriptor | undefined) => {
-                if (!data) return data;
-                return data.form_versions[0]?.descriptor;
-            },
-        },
-    });
 };

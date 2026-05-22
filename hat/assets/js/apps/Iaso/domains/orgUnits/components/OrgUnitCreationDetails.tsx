@@ -1,13 +1,14 @@
-import moment from 'moment';
 import React, { FunctionComponent, ReactNode } from 'react';
-import { Table, TableBody, TableRow, TableCell } from '@mui/material';
 import GpsFixedIcon from '@mui/icons-material/GpsFixed';
 import GpsOffIcon from '@mui/icons-material/GpsOff';
+import { Table, TableBody, TableRow, TableCell } from '@mui/material';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
+import { textPlaceholder } from 'bluesquare-components';
+import moment from 'moment';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
-import { OrgUnit } from '../types/orgUnit';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../messages';
+import { OrgUnit } from '../types/orgUnit';
 
 type RowProps = {
     label: string | ReactNode;
@@ -25,7 +26,7 @@ const Row: FunctionComponent<RowProps> = ({ label, value, dataTestId }) => {
 };
 
 type Props = {
-    orgUnit: OrgUnit;
+    orgUnit: Partial<OrgUnit>;
     params: Record<string, any>;
 };
 
@@ -43,11 +44,14 @@ export const OrgUnitCreationDetails: FunctionComponent<Props> = ({
 
     const latitudeLongitude =
         orgUnit.latitude && orgUnit.longitude ? latitude + longitude : false;
-    const orgUnitCreatedAt = moment.unix(orgUnit.created_at).format('LTS');
-    const orgUnitUpdatedAt = moment.unix(orgUnit.updated_at).format('LTS');
+    const orgUnitCreatedAt = orgUnit.created_at
+        ? moment.unix(orgUnit.created_at).format('LTS')
+        : '-';
+    const orgUnitUpdatedAt = orgUnit.updated_at
+        ? moment.unix(orgUnit.updated_at).format('LTS')
+        : '-';
     const isNewOrgunit = params.orgUnitId === '0';
     const { account } = useCurrentUser();
-
     return (
         <>
             {!orgUnit && <LoadingSpinner absolute />}
@@ -56,10 +60,23 @@ export const OrgUnitCreationDetails: FunctionComponent<Props> = ({
                 <Table size="medium">
                     <TableBody>
                         <Row
+                            label={formatMessage(MESSAGES.ID)}
+                            value={orgUnit.id ?? textPlaceholder}
+                            dataTestId="orgunit-id"
+                        />
+                        <Row
                             label={formatMessage(MESSAGES.source)}
                             value={
                                 orgUnit.source ??
                                 account.default_version?.data_source.name
+                            }
+                            dataTestId="source"
+                        />
+                        <Row
+                            label={formatMessage(MESSAGES.sourceVersion)}
+                            value={
+                                orgUnit.version ??
+                                account.default_version?.number
                             }
                             dataTestId="source"
                         />

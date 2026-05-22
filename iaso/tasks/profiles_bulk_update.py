@@ -3,20 +3,119 @@ from typing import List, Optional
 
 from django.contrib.auth.models import User
 from django.db import transaction
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import PermissionDenied
 
 from beanstalk_worker import task_decorator
 from hat.audit import models as audit_models
 from hat.audit.audit_logger import AuditLogger
-from hat.menupermissions import models as permission
-from hat.menupermissions.models import CustomPermissionSupport
-from iaso.api.microplanning import AuditTeamSerializer
 from iaso.api.profiles.audit import ProfileAuditLogger
-from iaso.api.profiles.profiles import get_filtered_profiles
+from iaso.api.teams.serializers import AuditTeamSerializer
 from iaso.models import OrgUnit, Profile, Project, Task, UserRole
-from iaso.models.microplanning import Team, TeamType
+from iaso.models.team import Team, TeamType
+from iaso.permissions.core_permissions import (
+    CORE_TEAMS_PERMISSION,
+    CORE_USERS_ADMIN_PERMISSION,
+    CORE_USERS_MANAGED_PERMISSION,
+)
+from iaso.permissions.utils import raise_error_if_user_lacks_admin_permission
+from iaso.utils import search_by_ids_refs
+
+
+def get_filtered_profiles(
+    queryset: QuerySet[Profile],
+    user: Optional[User],
+    search: Optional[str] = None,
+    perms: Optional[List[str]] = None,
+    location: Optional[str] = None,
+    org_unit_type: Optional[str] = None,
+    parent_ou: Optional[bool] = False,
+    children_ou: Optional[bool] = False,
+    projects: Optional[List[int]] = None,
+    user_roles: Optional[List[int]] = None,
+    teams: Optional[List[int]] = None,
+    managed_users_only: Optional[bool] = False,
+    ids: Optional[str] = None,
+) -> QuerySet[Profile]:
+    if search:
+        if search.startswith("ids:"):
+            queryset = queryset.filter(id__in=search_by_ids_refs.parse_ids("ids:", search))
+        elif search.startswith("refs:"):
+            queryset = queryset.filter(dhis2_id__in=search_by_ids_refs.parse_ids("refs:", search))
+        else:
+            queryset = queryset.filter(
+                Q(user__username__icontains=search)
+                | Q(user__tenant_user__main_user__username__icontains=search)
+                | Q(user__first_name__icontains=search)
+                | Q(user__last_name__icontains=search)
+            ).distinct()
+
+    if perms:
+        queryset = queryset.filter(user__user_permissions__codename__in=perms).distinct()
+
+    if location and not (parent_ou or children_ou):
+        queryset = queryset.filter(
+            user__iaso_profile__org_units__pk=location,
+        ).distinct()
+
+    parent: Optional[OrgUnit] = None
+    if (parent_ou and location) or (children_ou and location):
+        ou = get_object_or_404(OrgUnit, pk=location)
+        if parent_ou and ou.parent is not None:
+            parent = ou.parent
+
+        org_unit_filter = Q(user__iaso_profile__org_units__pk=location)
+
+        if parent_ou and not children_ou:
+            if parent:
+                org_unit_filter |= Q(user__iaso_profile__org_units__pk=parent.pk)
+            queryset = queryset.filter(org_unit_filter).distinct()
+
+        elif children_ou and not parent_ou:
+            descendant_ous = OrgUnit.objects.hierarchy(ou)
+            org_unit_filter |= Q(user__iaso_profile__org_units__in=descendant_ous)
+            queryset = queryset.filter(org_unit_filter).distinct()
+
+        elif parent_ou and children_ou:
+            descendant_ous = OrgUnit.objects.hierarchy(ou)
+            org_unit_filter |= Q(user__iaso_profile__org_units__in=descendant_ous)
+            if parent:
+                org_unit_filter |= Q(user__iaso_profile__org_units__pk=parent.pk)
+            queryset = queryset.filter(org_unit_filter).distinct()
+
+    if org_unit_type:
+        if org_unit_type == "unassigned":
+            queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=None).distinct()
+        else:
+            queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=org_unit_type).distinct()
+
+    if projects:
+        queryset = queryset.filter(user__iaso_profile__projects__pk__in=projects).distinct()
+
+    if user_roles:
+        queryset = queryset.filter(user__iaso_profile__user_roles__pk__in=user_roles).distinct()
+
+    if teams:
+        queryset = queryset.filter(user__teams__id__in=teams).distinct()
+
+    if ids:
+        queryset = queryset.filter(user__id__in=ids.split(","))
+    if managed_users_only:
+        if not user:
+            raise Exception("User cannot be 'None' when filtering on managed users only")
+        if user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()):
+            queryset = queryset  # no filter needed
+        elif user.has_perm(CORE_USERS_MANAGED_PERMISSION.full_name()):
+            managed_org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all()).values_list(
+                "id", flat=True
+            )
+            if managed_org_units and len(managed_org_units) > 0:
+                queryset = queryset.filter(user__iaso_profile__org_units__id__in=managed_org_units)
+            queryset = queryset.exclude(user=user)
+        else:
+            queryset = Profile.objects.none()
+    return queryset
 
 
 class TeamAuditLogger(AuditLogger):
@@ -52,99 +151,60 @@ def update_single_profile_from_bulk(
     org_units_to_be_removed = []
 
     user_has_project_restrictions = hasattr(user, "iaso_profile") and bool(user.iaso_profile.projects_ids)
-    user_has_perm_users_admin = user.has_perm(permission.USERS_ADMIN)
-    editable_org_unit_type_ids = (
-        user.iaso_profile.get_editable_org_unit_type_ids() if not user_has_perm_users_admin else set()
-    )
+    user_has_perm_users_admin = user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name())
 
-    if teams_id_added and not user.has_perm(permission.TEAMS):
-        raise PermissionDenied(f"User without the permission {permission.TEAMS} cannot add users to team")
+    if teams_id_added and not user.has_perm(CORE_TEAMS_PERMISSION.full_name()):
+        raise PermissionDenied(f"User without the permission {CORE_TEAMS_PERMISSION} cannot add users to team")
 
-    if teams_id_removed and not user.has_perm(permission.TEAMS):
-        raise PermissionDenied(f"User without the permission {permission.TEAMS} cannot remove users to team")
+    if teams_id_removed and not user.has_perm(CORE_TEAMS_PERMISSION.full_name()):
+        raise PermissionDenied(f"User without the permission {CORE_TEAMS_PERMISSION} cannot remove users to team")
 
     if roles_id_added:
         for role_id in roles_id_added:
             role = get_object_or_404(UserRole, id=role_id, account_id=account_id)
             if role.account.id == account_id:
-                if not user_has_perm_users_admin:
-                    for p in role.group.permissions.all():
-                        CustomPermissionSupport.assert_right_to_assign(user, p.codename)
+                role_permission_names = role.group.permissions.values_list("codename", flat=True)
+                raise_error_if_user_lacks_admin_permission(user, role_permission_names)
                 roles_to_be_added.append(role)
 
     if roles_id_removed:
         for role_id in roles_id_removed:
             role = get_object_or_404(UserRole, id=role_id, account_id=account_id)
             if role.account.id == account_id:
-                if not user_has_perm_users_admin:
-                    for p in role.group.permissions.all():
-                        CustomPermissionSupport.assert_right_to_assign(user, p.codename)
                 roles_to_be_removed.append(role)
 
     if projects_ids_added:
         if not user_has_perm_users_admin:
             raise PermissionDenied(
-                f"User with permission {permission.USERS_MANAGED} cannot changed project attributions"
+                f"User with permission {CORE_USERS_ADMIN_PERMISSION} cannot changed project attributions"
             )
-        if user_has_project_restrictions:
-            authorized_projects_ids = [id_ for id_ in projects_ids_added if id_ in user.iaso_profile.projects_ids]
-            projects_to_be_added = Project.objects.filter(pk__in=authorized_projects_ids, account_id=account_id)
-        else:
-            projects_to_be_added = Project.objects.filter(pk__in=projects_ids_added, account_id=account_id)
+        projects_to_be_added = Project.objects.filter(pk__in=projects_ids_added, account_id=account_id)
 
     if projects_ids_removed:
         if not user_has_perm_users_admin:
             raise PermissionDenied(
-                f"User with permission {permission.USERS_MANAGED} cannot changed project attributions"
+                f"User with permission {CORE_USERS_ADMIN_PERMISSION} cannot changed project attributions"
             )
-        if user_has_project_restrictions:
-            authorized_projects_ids = [id_ for id_ in projects_ids_removed if id_ in user.iaso_profile.projects_ids]
-            projects_to_be_removed = Project.objects.filter(pk__in=authorized_projects_ids, account_id=account_id)
-        else:
-            projects_to_be_removed = Project.objects.filter(pk__in=projects_ids_removed, account_id=account_id)
+        projects_to_be_removed = Project.objects.filter(pk__in=projects_ids_removed, account_id=account_id)
 
     if location_ids_added:
         for location_id in location_ids_added:
             if managed_org_units and (not user_has_perm_users_admin) and (location_id not in managed_org_units):
                 raise PermissionDenied(
-                    f"User with permission {permission.USERS_MANAGED} cannot change OrgUnits outside of their own "
+                    f"User with permission {CORE_USERS_ADMIN_PERMISSION} cannot change OrgUnits outside of their own "
                     f"health pyramid"
                 )
             org_unit = OrgUnit.objects.select_related("org_unit_type").get(pk=location_id)
-            if (
-                not user_has_perm_users_admin
-                and org_unit.org_unit_type_id
-                and editable_org_unit_type_ids
-                and not user.iaso_profile.has_org_unit_write_permission(
-                    org_unit.org_unit_type_id, editable_org_unit_type_ids
-                )
-            ):
-                raise PermissionDenied(
-                    f"User with permission {permission.USERS_MANAGED} cannot change the org unit {org_unit.name} "
-                    f"because he does not have rights on the following org unit type: {org_unit.org_unit_type.name}"
-                )
             org_units_to_be_added.append(org_unit)
 
     if location_ids_removed:
         for location_id in location_ids_removed:
             if managed_org_units and (not user_has_perm_users_admin) and (location_id not in managed_org_units):
                 raise PermissionDenied(
-                    f"User with permission {permission.USERS_MANAGED} cannot change OrgUnits outside of their own "
+                    f"User with permission {CORE_USERS_ADMIN_PERMISSION} cannot change OrgUnits outside of their own "
                     f"health pyramid"
                 )
             org_unit = OrgUnit.objects.select_related("org_unit_type").get(pk=location_id)
-            if (
-                not user_has_perm_users_admin
-                and org_unit.org_unit_type_id
-                and editable_org_unit_type_ids
-                and not user.iaso_profile.has_org_unit_write_permission(
-                    org_unit.org_unit_type_id, editable_org_unit_type_ids
-                )
-            ):
-                raise PermissionDenied(
-                    f"User with permission {permission.USERS_MANAGED} cannot change the org unit {org_unit.name} "
-                    f"because he does not have rights on the following org unit type: {org_unit.org_unit_type.name}"
-                )
             org_units_to_be_removed.append(org_unit)
 
     # Update
@@ -266,7 +326,7 @@ def profiles_bulk_update(
     # FIXME Task don't handle rollback properly if task is killed by user or other error
     with transaction.atomic():
         managed_org_units = None
-        if user and not user.has_perm(permission.USERS_ADMIN):
+        if user and not user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()):
             managed_org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all()).values_list(
                 "id", flat=True
             )

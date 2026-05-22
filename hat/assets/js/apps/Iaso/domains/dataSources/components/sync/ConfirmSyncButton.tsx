@@ -116,7 +116,9 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
         setIsPreviewDone(false);
         setIsLoading(false);
         setSyncName(undefined);
+        setSyncId(undefined);
         setJsonDiffResult(undefined);
+        setErrors([]);
     }, []);
 
     const handleOnConfirm = useCallback(

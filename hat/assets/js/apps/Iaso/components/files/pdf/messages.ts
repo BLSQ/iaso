@@ -45,14 +45,16 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.fileScanSafeIconTooltip',
     },
     fileScanInfectedIconTooltip: {
-        defaultMessage:
-            'This file contains a virus',
+        defaultMessage: 'This file contains a virus',
         id: 'iaso.label.fileScanInfectedIconTooltip',
     },
     fileScanPendingIconTooltip: {
-        defaultMessage:
-            'This file has not been scanned',
+        defaultMessage: 'This file has not been scanned',
         id: 'iaso.label.fileScanPendingIconTooltip',
+    },
+    delete: {
+        id: 'iaso.label.delete',
+        defaultMessage: 'Delete',
     },
 });
 

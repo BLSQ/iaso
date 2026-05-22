@@ -1,46 +1,27 @@
 import { UseQueryResult } from 'react-query';
 
+import { createSearchParamsWithArray } from 'Iaso/libs/utils';
 import { getRequest } from '../../../../../libs/Api';
 import { useSnackQuery } from '../../../../../libs/apiHooks';
 
 import { usePossibleFields } from '../../../../forms/hooks/useGetPossibleFields';
+import { useGetForm } from '../../../../forms/requests';
 import { Form, PossibleField } from '../../../../forms/types/forms';
-
-export const useGetForm = (
-    formId: number | undefined,
-    enabled: boolean,
-    fields?: string | undefined,
-    appId?: string,
-): UseQueryResult<Form, Error> => {
-    const queryKey: any[] = ['form', formId];
-    let url = `/api/forms/${formId}`;
-    if (fields) {
-        url += `/?fields=${fields}`;
-        if (appId) {
-            url += `&app_id=${appId}`;
-        }
-    } else if (appId) {
-        url += `/?app_id=${appId}`;
-    }
-    return useSnackQuery({
-        queryKey,
-        queryFn: () => getRequest(url),
-        options: {
-            retry: false,
-            enabled,
-        },
-    });
-};
 
 export const useGetForms = (
     enabled: boolean,
     fields?: string[] | undefined,
 ): UseQueryResult<Form[], Error> => {
-    const apiUrl = '/api/forms/?fields=id,name,latest_form_version';
-    const url = fields ? `${apiUrl},${fields.join(',')}` : apiUrl;
+    const queryString = createSearchParamsWithArray({
+        fields:
+            fields ??
+            ['id', 'name', 'latest_form_version', 'form_id'].join(','),
+        order: 'name',
+    }).toString();
 
+    const url = `/api/forms/?${queryString}`;
     return useSnackQuery({
-        queryKey: ['forms'],
+        queryKey: ['entitiesForms', 'forms'],
         queryFn: () => getRequest(url),
         options: {
             staleTime: 60000,
@@ -67,7 +48,11 @@ export const useGetFormForEntityType = ({
     const { data: currentForm, isFetching: isFetchingForm } = useGetForm(
         formId,
         enabled && Boolean(formId),
-        'possible_fields_with_latest_version,name,latest_form_version',
+        [
+            'possible_fields_with_latest_version',
+            'name',
+            'latest_form_version',
+        ].join(','),
     );
     return {
         ...usePossibleFields(

@@ -5,7 +5,6 @@ import { SubactivityCell } from '../cells/SubactivityCell';
 import { MappedCampaign, SubActivity } from '../types';
 import {
     addRemainingEmptyCells,
-    getEmptyCellBetweenTwoDates,
     drawEmptyFirstCells,
     isDateInRange,
 } from './index';
@@ -70,98 +69,50 @@ const addSubactivityCell = ({
     return result;
 };
 
-const getSubActivitiesRow = (
-    originalCells: ReactElement[],
-    subActivities: SubActivity[],
+export const getSubActivitiesRow = (
+    subActivity: SubActivity,
     firstMonday: Moment,
     lastSunday: Moment,
     currentWeekIndex: number,
     campaign: MappedCampaign,
 ): ReactElement[] => {
     // First order subActivities by start date and filter out subActivities that are not in range
-    let cells = [...originalCells];
-    if (subActivities.length > 0) {
-        // Draw cells before first subActivity
-        const firstSubActivity = subActivities[0];
-        if (firstMonday.isBefore(firstSubActivity.start_date, 'day')) {
-            const emptyCells = drawEmptyFirstCells({
-                startDate: firstSubActivity.start_date.clone(),
-                firstMonday,
-                currentWeekIndex,
-                id: campaign.id,
-            });
-            cells.push(...emptyCells);
-        }
-        // loop into subActivities
-        subActivities.forEach((subActivity, index) => {
-            const startInRange = subActivity.start_date
-                ? isDateInRange(
-                      subActivity.start_date.clone(),
-                      firstMonday,
-                      lastSunday,
-                  )
-                : false;
-            const endInRange = subActivity.end_date
-                ? isDateInRange(
-                      subActivity.end_date.clone(),
-                      firstMonday,
-                      lastSunday,
-                  )
-                : false;
-            // Draw subactivity
-            cells = addSubactivityCell({
-                cells,
-                subActivity,
-                firstMonday,
-                lastSunday,
-                startInRange,
-                endInRange,
-                campaign,
-            });
-            // Draw cells after subActivity
-            const nextSubActivity = subActivities[index + 1];
-            if (nextSubActivity) {
-                const nextStartDate = nextSubActivity?.start_date.clone();
-                const emptyBetweenCells = getEmptyCellBetweenTwoDates(
-                    subActivity.end_date.clone(),
-                    nextStartDate,
-                    cells,
-                    currentWeekIndex,
-                );
-                cells.push(...emptyBetweenCells);
-            }
-        });
-
-        // Draw cells after last subActivity
-        cells = addRemainingEmptyCells({
-            cells,
-            dateUntilNextRound:
-                subActivities[subActivities.length - 1].end_date.clone(),
-            lastSunday,
-            campaign,
-            currentWeekIndex,
-        });
-    }
-
-    return cells;
-};
-
-export const getSubActivitiesCells = (
-    campaign: MappedCampaign,
-    subActivities: SubActivity[],
-    currentWeekIndex: number,
-    firstMonday: Moment,
-    lastSunday: Moment,
-): ReactElement[] => {
     let cells: ReactElement[] = [];
-
-    cells = getSubActivitiesRow(
+    // Draw cells before first subActivity
+    if (firstMonday.isBefore(subActivity.start_date, 'day')) {
+        const emptyCells = drawEmptyFirstCells({
+            startDate: subActivity.start_date.clone(),
+            firstMonday,
+            currentWeekIndex,
+            id: campaign.id,
+        });
+        cells.push(...emptyCells);
+    }
+    const startInRange = subActivity.start_date
+        ? isDateInRange(subActivity.start_date.clone(), firstMonday, lastSunday)
+        : false;
+    const endInRange = subActivity.end_date
+        ? isDateInRange(subActivity.end_date.clone(), firstMonday, lastSunday)
+        : false;
+    // Draw subactivity
+    cells = addSubactivityCell({
         cells,
-        subActivities,
+        subActivity,
         firstMonday,
         lastSunday,
-        currentWeekIndex,
+        startInRange,
+        endInRange,
         campaign,
-    );
+    });
+
+    // Draw cells after last subActivity
+    cells = addRemainingEmptyCells({
+        cells,
+        dateUntilNextRound: subActivity.end_date.clone(),
+        lastSunday,
+        campaign,
+        currentWeekIndex,
+    });
+
     return cells;
 };

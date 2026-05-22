@@ -52,3 +52,12 @@ export type StockVariationParams = {
     earmarkedPage?: string; // number as string
     earmarkedOrder?: string;
 };
+
+export type DosesPerVialDropdownItem = {
+    label: string;
+    value: number;
+    doses_available: number;
+    unusable_doses: number;
+};
+
+export type DosesPerVialDropdown = DosesPerVialDropdownItem[];

@@ -2,12 +2,12 @@
 
 from django.db import migrations
 
-from hat.menupermissions.constants import MODULES
 from iaso.models import Account
+from iaso.modules import MODULES
 
 
 def add_modules_to_accounts(apps, schema_editor):
-    modules = [module["codename"] for module in MODULES]
+    modules = [module.codename for module in MODULES]
     account = apps.get_model("iaso", "Account")
     all_accounts = account.objects.all()
     for account in all_accounts:

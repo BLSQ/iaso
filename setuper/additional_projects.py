@@ -1,3 +1,5 @@
+import random
+
 from create_llin_campaign_forms_submissions import llin_forms
 
 
@@ -71,7 +73,7 @@ def get_project_ids(created_or_updated_projects, iaso_client):
 
 
 def update_org_unit_types_with_new_projects(iaso_client, project_ids):
-    org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
+    org_unit_types = iaso_client.get("/api/v2/orgunittypes/?fields=id,projects")["orgUnitTypes"]
     updated_types = []
     for org_unit_type in org_unit_types:
         linked_project_ids = [project["id"] for project in org_unit_type["projects"]]
@@ -101,6 +103,8 @@ def create_projects(account_name, iaso_client):
     flags = iaso_client.get("/api/featureflags/")
 
     for project in projects:
+        project_color = random.choice(["#ef5350", "#ffca28", "#8d6e63"])
+        project["color"] = project_color
         project["linked_forms"] = None
         project["feature_flags"] = [flag for flag in flags["featureflags"] if flag["code"] in project["feature_flags"]]
         new_project = iaso_client.post("/api/apps/", json=project)
@@ -120,8 +124,16 @@ def link_forms_to_new_projects(projects, forms, iaso_client):
 
         if len(form_to_link_to_project) > 0:
             current_form = form_to_link_to_project[0]
-            current_form["project_ids"] = project_ids
-            iaso_client.patch(f"/api/forms/{current_form['id']}/", json=current_form)
+            form_to_update = {
+                "project_ids": project_ids,
+                "name": current_form["name"],
+                "org_unit_type_ids": current_form["org_unit_type_ids"],
+            }
+            iaso_client.patch(
+                f"/api/forms/{current_form['id']}/",
+                json=form_to_update,
+                params={"fields": "project_ids,name,org_unit_type_ids"},
+            )
 
 
 def forms_mapper(projects, iaso_client, account_name):
@@ -136,6 +148,7 @@ def link_new_projects_to_main_data_source(account_name, iaso_client):
     projects = iaso_client.get(f"/api/projects/?app_id={account_name}")["projects"]
     projects_mapped = projects_mapper(account_name)
     all_projects = []
+
     for project in projects_mapped:
         current_project = [
             current_project for current_project in projects if project["name"] == current_project["name"]

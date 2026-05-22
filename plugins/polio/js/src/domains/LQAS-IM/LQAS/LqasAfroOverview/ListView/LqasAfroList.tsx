@@ -25,7 +25,7 @@ import MESSAGES from '../../../../../constants/messages';
 import { useStyles } from '../../../../../styles/theme';
 import { TableText } from '../../../../Campaigns/Scope/Scopes/TableText';
 import { TablePlaceHolder } from '../../../../Campaigns/Scope/Scopes/TablePlaceHolder';
-import { AfroMapParams, Side } from '../types';
+import { AfroMapParams } from '../types';
 import {
     useAfroMapShapes,
     useGetZoomedInShapes,
@@ -35,6 +35,8 @@ import { LqasAfroOverviewContext } from '../Context/LqasAfroOverviewContext';
 import { HasLocationIcon } from '../../../shared/HasLocationIcon';
 import { IN_SCOPE } from '../../../shared/constants';
 import { LQAS_FAIL, LQAS_PASS } from '../../constants';
+import { Side } from '../../../../../constants/types';
+import { baseUrls } from '../../../../../constants/urls';
 
 type SortFocus =
     | 'DISTRICT'
@@ -46,8 +48,9 @@ type SortFocus =
     | 'ROUND';
 
 type Props = {
-    params: AfroMapParams;
+    params: AfroMapParams & { accountId: string };
     side: Side;
+    currentUrl: string;
 };
 
 const useTableStyle = makeStyles(theme => {
@@ -69,7 +72,12 @@ const useTableStyle = makeStyles(theme => {
     };
 });
 
-export const LqasAfroList: FunctionComponent<Props> = ({ params, side }) => {
+export const LqasAfroList: FunctionComponent<Props> = ({
+    params,
+    side,
+    currentUrl,
+}) => {
+    const isEmbedded = currentUrl === baseUrls.embeddedLqasAfroPath;
     const classes: Record<string, string> = useStyles();
     const tableClasses: Record<string, string> = useTableStyle();
     const { bounds } = useContext(LqasAfroOverviewContext);
@@ -93,6 +101,7 @@ export const LqasAfroList: FunctionComponent<Props> = ({ params, side }) => {
             params,
             selectedRound,
             side,
+            isEmbedded,
         });
 
     const { data: districtShapes, isFetching: isFetchingDistricts } =
@@ -103,6 +112,7 @@ export const LqasAfroList: FunctionComponent<Props> = ({ params, side }) => {
             params,
             selectedRound,
             side,
+            isEmbedded,
         });
 
     const shapesToDisplay = useMemo(() => {

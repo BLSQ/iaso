@@ -1,5 +1,5 @@
-import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent } from 'react';
+import { makeStyles } from '@mui/styles';
 import { convertValueIfDate } from '../../../../components/Cells/DateTimeCell';
 import { DuplicationAlgorithm } from '../types';
 

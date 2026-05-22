@@ -1,24 +1,31 @@
 import React, { FunctionComponent, useState, useMemo, useContext } from 'react';
 import { MapContainer } from 'react-leaflet';
 
+import { CloseTooltipOnMoveStart } from 'Iaso/utils/map/mapUtils';
+import { CustomTileLayer } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomZoomControl';
+import { Tile } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/TilesSwitchControl';
 import TILES from '../../../../../../../../../hat/assets/js/apps/Iaso/constants/mapTiles';
 
-import { CustomTileLayer } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomTileLayer';
-import { Tile } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/TilesSwitchControl';
-import { LqasAfroMapPanesContainer } from './LqasAfroMapPanesContainer';
-import { AfroMapParams, Side } from '../types';
-import { LqasAfroMapLegend } from './LqasAfroMapLegend';
+import { Side } from '../../../../../../src/constants/types';
 import { defaultViewport } from '../../../../Calendar/campaignCalendar/map/constants';
 import { LqasAfroOverviewContext } from '../Context/LqasAfroOverviewContext';
+import { AfroMapParams } from '../types';
+import { LqasAfroMapLegend } from './LqasAfroMapLegend';
+import { LqasAfroMapPanesContainer } from './LqasAfroMapPanesContainer';
 
 type Props = {
-    params: AfroMapParams;
+    params: AfroMapParams & { accountId: string };
     side: Side;
+    currentUrl: string;
 };
 
-export const LqasAfroMap: FunctionComponent<Props> = ({ params, side }) => {
-    const { bounds, setBounds } = useContext(LqasAfroOverviewContext);
+export const LqasAfroMap: FunctionComponent<Props> = ({
+    params,
+    side,
+    currentUrl,
+}) => {
+    const { bounds } = useContext(LqasAfroOverviewContext);
     const [currentTile, setCurrentTile] = useState<Tile>(TILES.osm);
     const defaultCenter = useMemo(
         () =>
@@ -46,15 +53,12 @@ export const LqasAfroMap: FunctionComponent<Props> = ({ params, side }) => {
             style={{
                 height: '65vh',
             }}
-            // @ts-ignore
             center={defaultCenter}
-            zoom={defaultZoom}
+            zoom={Number(defaultZoom)}
             zoomControl={false}
             scrollWheelZoom={false}
-            whenCreated={mapInstance => {
-                setBounds(mapInstance.getBounds());
-            }}
         >
+            <CloseTooltipOnMoveStart />
             <LqasAfroMapLegend displayedShape={displayedShape} />
             <CustomTileLayer
                 currentTile={currentTile}
@@ -66,7 +70,11 @@ export const LqasAfroMap: FunctionComponent<Props> = ({ params, side }) => {
                     bounds={bounds}
                 />
             )}
-            <LqasAfroMapPanesContainer params={params} side={side} />
+            <LqasAfroMapPanesContainer
+                params={params}
+                side={side}
+                currentUrl={currentUrl}
+            />
         </MapContainer>
     );
 };

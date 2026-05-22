@@ -1,4 +1,5 @@
-import { Box } from '@mui/material';
+import React, { FocusEventHandler, ReactNode, useMemo, useState } from 'react';
+import { Box, SxProps } from '@mui/material';
 import {
     ArrayFieldInput,
     BaseCountryData,
@@ -16,7 +17,6 @@ import {
     translateOptions,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { FocusEventHandler, ReactNode, useMemo, useState } from 'react';
 import { useLocale } from '../../domains/app/contexts/LocaleContext';
 import MESSAGES from '../../domains/forms/messages';
 import {
@@ -45,7 +45,7 @@ export type NumberInputOptions = {
     max?: number;
     decimalScale?: number;
     decimalSeparator?: '.' | ',';
-    thousandSeparator?: '.' | ',';
+    thousandSeparator?: '.' | ',' | ' ';
     thousandsGroupStyle?: 'thousand' | 'lakh' | 'wan';
 };
 
@@ -99,7 +99,7 @@ export type InputComponentProps = {
         max?: number;
         decimalScale?: number;
         decimalSeparator?: '.' | ',';
-        thousandSeparator?: '.' | ',';
+        thousandSeparator?: '.' | ',' | ' ';
     };
     phoneInputOptions?: PhoneInputOptions;
     setFieldError?: (keyValue: string, message: string) => void;
@@ -110,6 +110,7 @@ export type InputComponentProps = {
     dataTestId?: string;
     placeholder?: string;
     debounceTime?: number;
+    wrapperSx?: SxProps;
 };
 
 const useLocalizedNumberInputOptions = (
@@ -169,6 +170,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
     debounceTime = 0,
     dataTestId,
     placeholder,
+    wrapperSx = {},
 }) => {
     const [displayPassword, setDisplayPassword] = useState(false);
     const { formatMessage } = useSafeIntl();
@@ -180,10 +182,15 @@ const InputComponent: React.FC<InputComponentProps> = ({
     };
     const inputValue =
         value === null || typeof value === 'undefined' ? '' : value;
-    const labelText =
-        typeof labelString === 'string'
-            ? labelString
-            : formatMessage(label || MESSAGES[keyValue]);
+    let labelText = '';
+    if (labelString && typeof labelString === 'string') {
+        labelText = labelString;
+    } else if (label) {
+        labelText = formatMessage(label);
+    } else if (MESSAGES[keyValue]) {
+        labelText = formatMessage(MESSAGES[keyValue]);
+    }
+
     const renderInput = () => {
         switch (type) {
             case 'email':
@@ -282,6 +289,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         returnFullObject={returnFullObject}
                         dataTestId={dataTestId}
                         placeholder={placeholder}
+                        onBlur={onBlur}
                     />
                 );
             case 'arrayInput':
@@ -357,7 +365,11 @@ const InputComponent: React.FC<InputComponentProps> = ({
                 return null;
         }
     };
-    return <Box mt={withMarginTop ? 2 : 0}>{renderInput()}</Box>;
+    return (
+        <Box mt={withMarginTop ? 2 : 0} sx={wrapperSx}>
+            {renderInput()}
+        </Box>
+    );
 };
 
 export default InputComponent;

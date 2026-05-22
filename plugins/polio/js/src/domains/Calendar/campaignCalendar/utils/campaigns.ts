@@ -245,11 +245,13 @@ export const mapCampaigns = (
             original: c,
             isPreventive: c.is_preventive,
             isTest: c.is_test,
-            onHold: c.on_hold,
+            onHold: c.on_hold || Boolean(rounds.find(rnd => rnd.on_hold)),
+            isPlanned: c.is_planned,
             separateScopesPerRound: c.separate_scopes_per_round,
             scopes: c.scopes,
             subActivities: displayedSubActivities,
             hasSubActivities: displayedSubActivities.length > 0,
+            layout: c.layout,
         };
     });
 };

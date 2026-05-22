@@ -60,6 +60,7 @@ const addCellsBeforeRound = ({
                 colSpan={campaignDays}
                 weeksCount={previousRound.weeksCount || 0}
                 periodType={periodType}
+                round={round}
             />,
         );
     }
@@ -172,6 +173,7 @@ const addBufferCell = ({
                 colSpan={roundInterval}
                 weeksCount={round.weeksCount || 0}
                 periodType={periodType}
+                round={round}
             />,
         );
     }

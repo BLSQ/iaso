@@ -7,7 +7,7 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.models import Account, DataSource, OrgUnit, OrgUnitType, Project, SourceVersion
-from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION, CORE_ORG_UNITS_READ_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -369,3 +369,227 @@ class FHIRLocationAPITestCase(APITestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_user_with_read_only_permission_can_access(self):
+        """Test that users with iaso_org_units_read can access the read-only FHIR API"""
+        user_read_only = self.create_user_with_profile(
+            username="read_only_user", account=self.account, permissions=[CORE_ORG_UNITS_READ_PERMISSION]
+        )
+        self.client.force_authenticate(user=user_read_only)
+
+        list_response = self.client.get(reverse("fhir-location-list"))
+        self.assertEqual(list_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(list_response.json()["total"], 4)
+
+        detail_response = self.client.get(reverse("fhir-location-detail", kwargs={"pk": self.country.id}))
+        self.assertEqual(detail_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(detail_response.json()["id"], str(self.country.id))
+
+    def test_superuser_can_access_without_org_units_permission(self):
+        """Superusers can access the FHIR API without org unit permissions."""
+        superuser = self.create_user_with_profile(
+            username="superuser", account=self.account, permissions=[], is_superuser=True
+        )
+        self.client.force_authenticate(user=superuser)
+
+        list_response = self.client.get(reverse("fhir-location-list"))
+        self.assertEqual(list_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(list_response.json()["total"], 4)
+
+        detail_response = self.client.get(reverse("fhir-location-detail", kwargs={"pk": self.country.id}))
+        self.assertEqual(detail_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(detail_response.json()["id"], str(self.country.id))
+
+        metadata_response = self.client.get(reverse("fhir-location-metadata"))
+        self.assertEqual(metadata_response.status_code, status.HTTP_200_OK)
+
+
+class FHIRLocationAuthorizationTestCase(APITestCase):
+    """Authorization tests for cross-account isolation and profile-scoped org unit access."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.account = Account.objects.create(name="Primary Health System")
+        cls.other_account = Account.objects.create(name="Other Health System")
+
+        cls.data_source = DataSource.objects.create(name="Primary Data Source")
+        cls.source_version = SourceVersion.objects.create(data_source=cls.data_source, number=1)
+        cls.account.default_version = cls.source_version
+        cls.account.save()
+
+        cls.other_data_source = DataSource.objects.create(name="Other Data Source")
+        cls.other_source_version = SourceVersion.objects.create(data_source=cls.other_data_source, number=1)
+        cls.other_account.default_version = cls.other_source_version
+        cls.other_account.save()
+
+        cls.project = Project.objects.create(name="Primary Project", app_id="primary.project", account=cls.account)
+        cls.other_project = Project.objects.create(name="Other Project", app_id="other.project", account=cls.other_account)
+        cls.data_source.projects.add(cls.project)
+        cls.other_data_source.projects.add(cls.other_project)
+
+        cls.country_type = OrgUnitType.objects.create(name="Country", short_name="CTRY", depth=0, category="COUNTRY")
+        cls.region_type = OrgUnitType.objects.create(name="Region", short_name="REG", depth=1, category="REGION")
+        cls.project.unit_types.add(cls.country_type, cls.region_type)
+        cls.other_project.unit_types.add(cls.country_type, cls.region_type)
+
+        cls.country = OrgUnit.objects.create(
+            name="Primary Country",
+            org_unit_type=cls.country_type,
+            version=cls.source_version,
+            validation_status=OrgUnit.VALIDATION_VALID,
+        )
+        cls.region = OrgUnit.objects.create(
+            name="Primary Region",
+            org_unit_type=cls.region_type,
+            parent=cls.country,
+            version=cls.source_version,
+            validation_status=OrgUnit.VALIDATION_VALID,
+        )
+        cls.sibling_country = OrgUnit.objects.create(
+            name="Sibling Country",
+            org_unit_type=cls.country_type,
+            version=cls.source_version,
+            validation_status=OrgUnit.VALIDATION_VALID,
+        )
+        cls.other_country = OrgUnit.objects.create(
+            name="Other Account Country",
+            org_unit_type=cls.country_type,
+            version=cls.other_source_version,
+            validation_status=OrgUnit.VALIDATION_VALID,
+        )
+
+        for org_unit in (cls.country, cls.region, cls.sibling_country, cls.other_country):
+            org_unit.calculate_paths()
+            org_unit.save()
+
+        cls.user = cls.create_user_with_profile(
+            username="primary_user", account=cls.account, permissions=[CORE_ORG_UNITS_PERMISSION]
+        )
+        cls.other_account_user = cls.create_user_with_profile(
+            username="other_account_user", account=cls.other_account, permissions=[CORE_ORG_UNITS_PERMISSION]
+        )
+        cls.scoped_user = cls.create_user_with_profile(
+            username="scoped_user",
+            account=cls.account,
+            permissions=[CORE_ORG_UNITS_PERMISSION],
+            org_units=[cls.region],
+        )
+
+    def _assert_not_found_operation_outcome(self, response, expected_id):
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        data = response.json()
+        self.assertEqual(data["resourceType"], "OperationOutcome")
+        self.assertEqual(data["issue"][0]["code"], "not-found")
+        self.assertIn(str(expected_id), data["issue"][0]["details"]["text"])
+
+    def test_cross_account_retrieve_returns_not_found(self):
+        """Users cannot retrieve org units belonging to another account."""
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(reverse("fhir-location-detail", kwargs={"pk": self.other_country.id}))
+        self._assert_not_found_operation_outcome(response, self.other_country.id)
+
+    def test_cross_account_list_excludes_other_account_org_units(self):
+        """List results are limited to the authenticated user's account."""
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(reverse("fhir-location-list"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        data = response.json()
+        self.assertEqual(data["total"], 3)
+        location_ids = {entry["resource"]["id"] for entry in data["entry"]}
+        self.assertEqual(location_ids, {str(self.country.id), str(self.region.id), str(self.sibling_country.id)})
+
+    def test_cross_account_children_returns_not_found(self):
+        """Users cannot access children of org units belonging to another account."""
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(reverse("fhir-location-children", kwargs={"pk": self.other_country.id}))
+        self._assert_not_found_operation_outcome(response, self.other_country.id)
+
+    def test_other_account_user_cannot_retrieve_primary_account_org_unit(self):
+        """Reverse cross-account isolation: other account user gets 404 on primary org units."""
+        self.client.force_authenticate(user=self.other_account_user)
+
+        response = self.client.get(reverse("fhir-location-detail", kwargs={"pk": self.country.id}))
+        self._assert_not_found_operation_outcome(response, self.country.id)
+
+    def test_profile_scoped_user_can_access_own_hierarchy(self):
+        """Users restricted to a profile org unit can access it and its descendants."""
+        self.client.force_authenticate(user=self.scoped_user)
+
+        region_response = self.client.get(reverse("fhir-location-detail", kwargs={"pk": self.region.id}))
+        self.assertEqual(region_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(region_response.json()["id"], str(self.region.id))
+
+        list_response = self.client.get(reverse("fhir-location-list"))
+        self.assertEqual(list_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(list_response.json()["total"], 1)
+        self.assertEqual(list_response.json()["entry"][0]["resource"]["id"], str(self.region.id))
+
+    def test_profile_scoped_user_cannot_retrieve_parent_org_unit(self):
+        """Profile-scoped users cannot access org units outside their assigned hierarchy."""
+        self.client.force_authenticate(user=self.scoped_user)
+
+        response = self.client.get(reverse("fhir-location-detail", kwargs={"pk": self.country.id}))
+        self._assert_not_found_operation_outcome(response, self.country.id)
+
+    def test_profile_scoped_user_cannot_retrieve_sibling_branch(self):
+        """Profile-scoped users cannot access sibling org unit branches in the same account."""
+        self.client.force_authenticate(user=self.scoped_user)
+
+        response = self.client.get(reverse("fhir-location-detail", kwargs={"pk": self.sibling_country.id}))
+        self._assert_not_found_operation_outcome(response, self.sibling_country.id)
+
+    def test_profile_scoped_user_children_out_of_scope_parent_returns_not_found(self):
+        """Profile-scoped users cannot use the children endpoint on out-of-scope parents."""
+        self.client.force_authenticate(user=self.scoped_user)
+
+        response = self.client.get(reverse("fhir-location-children", kwargs={"pk": self.country.id}))
+        self._assert_not_found_operation_outcome(response, self.country.id)
+
+    def test_unrestricted_user_can_access_full_account_tree(self):
+        """Users without profile org unit restrictions see all org units in their account."""
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(reverse("fhir-location-list"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["total"], 3)
+
+        children_response = self.client.get(reverse("fhir-location-children", kwargs={"pk": self.country.id}))
+        self.assertEqual(children_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(children_response.json()["total"], 1)
+        self.assertEqual(children_response.json()["entry"][0]["resource"]["id"], str(self.region.id))
+
+    def test_superuser_bypasses_profile_org_unit_scoping(self):
+        """Superusers see the full account tree even when profile org units are set."""
+        superuser = self.create_user_with_profile(
+            username="superuser",
+            account=self.account,
+            permissions=[],
+            org_units=[self.region],
+            is_superuser=True,
+        )
+        self.client.force_authenticate(user=superuser)
+
+        list_response = self.client.get(reverse("fhir-location-list"))
+        self.assertEqual(list_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(list_response.json()["total"], 3)
+
+        country_response = self.client.get(reverse("fhir-location-detail", kwargs={"pk": self.country.id}))
+        self.assertEqual(country_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(country_response.json()["id"], str(self.country.id))
+
+    def test_superuser_still_cannot_access_other_account_org_units(self):
+        """Superuser status does not bypass account-level data isolation."""
+        superuser = self.create_user_with_profile(
+            username="primary_superuser",
+            account=self.account,
+            permissions=[],
+            is_superuser=True,
+        )
+        self.client.force_authenticate(user=superuser)
+
+        response = self.client.get(reverse("fhir-location-detail", kwargs={"pk": self.other_country.id}))
+        self._assert_not_found_operation_outcome(response, self.other_country.id)

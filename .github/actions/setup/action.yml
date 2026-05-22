@@ -23,3 +23,6 @@ runs:
       run: |
           mv docker-compose.yml docker-compose.bak.yml
           cp docker/prod/docker-compose.prod.yml docker-compose.yml
+        
+          mv .platform .platform.bak
+          cp -r docker/prod/.platform .platform

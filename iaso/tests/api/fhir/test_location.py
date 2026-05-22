@@ -423,7 +423,9 @@ class FHIRLocationAuthorizationTestCase(APITestCase):
         cls.other_account.save()
 
         cls.project = Project.objects.create(name="Primary Project", app_id="primary.project", account=cls.account)
-        cls.other_project = Project.objects.create(name="Other Project", app_id="other.project", account=cls.other_account)
+        cls.other_project = Project.objects.create(
+            name="Other Project", app_id="other.project", account=cls.other_account
+        )
         cls.data_source.projects.add(cls.project)
         cls.other_data_source.projects.add(cls.other_project)
 

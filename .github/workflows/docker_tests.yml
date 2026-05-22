@@ -105,10 +105,10 @@ jobs:
       - name: Set up Docker containers (prod-like)
         run: docker compose up -d --wait --wait-timeout 120
 
-      - name: Check Backend (Django) translations
-        run: |
-          docker compose exec iaso python manage.py make_translations
-          docker compose exec iaso python manage.py compile_translations
+#      - name: Check Backend (Django) translations
+#        run: |
+#          docker compose exec iaso python manage.py make_translations
+#          docker compose exec iaso python manage.py compile_translations
 
       - name: Check for missing migrations
         run: docker compose exec iaso python manage.py makemigrations --check

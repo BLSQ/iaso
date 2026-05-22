@@ -12,6 +12,7 @@ import logging
 from django.http import Http404
 from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -27,6 +28,7 @@ from .serializers import FHIRLocationSerializer
 logger = logging.getLogger(__name__)
 
 
+@extend_schema(tags=["FHIR"])
 class FHIRLocationViewSet(viewsets.ReadOnlyModelViewSet):
     """
     FHIR Location API ViewSet for OrgUnits

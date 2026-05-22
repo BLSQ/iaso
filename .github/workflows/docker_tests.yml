@@ -82,6 +82,10 @@ jobs:
     services:
       postgres:
         image: postgis/postgis:16-3.5
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.RDS_DB_NAME }}
         ports:
           - 5432:5432
         # needed because the postgres container does not provide a health check
@@ -126,6 +130,10 @@ jobs:
     services:
       postgres:
         image: postgis/postgis:16-3.5
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.RDS_DB_NAME }}
         ports:
           - 5432:5432
         # needed because the postgres container does not provide a health check

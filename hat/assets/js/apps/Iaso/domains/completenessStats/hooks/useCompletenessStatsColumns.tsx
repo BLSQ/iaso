@@ -64,17 +64,7 @@ export const useCompletenessStatsColumns = (
                     <>{settings.row.original.parent_org_unit?.name ?? '--'}</>
                 ),
             },
-            // {
-            //     // Uncomment for debug
-            //     Header: 'DEBUG',
-            //     id: 'form_stats',
-            //     accessor: 'form_stats',
-            //     sortable: false,
-            //     Cell: settings => JSON.stringify(settings.value),
-            // },
         ];
-        // Add column and sub columns per form
-        // console.dir(completenessStats);
         if (completenessStats?.forms) {
             columns = columns.concat(
                 completenessStats.forms.map((form: FormDesc): Column => {
@@ -126,7 +116,9 @@ export const useCompletenessStatsColumns = (
                 const formStats = settings.row.original.form_stats;
                 const orgunitId = settings.row.original.org_unit.id;
                 const hasFormSubmissions = Object.values(formStats).some(
-                    (stat: any) => stat.itself_has_instances > 0,
+                    (stat: any) =>
+                        stat.itself_has_instances > 0 ||
+                        stat.descendants_ok > 0,
                 );
                 const childrenPageUrl = getParentPageUrl(
                     settings.row.original.org_unit?.id,

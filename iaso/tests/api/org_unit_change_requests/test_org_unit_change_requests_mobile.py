@@ -168,10 +168,14 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
             form_version=self.form_version_1,
             project=None,
         )
-        change_request.new_reference_instances.set([self.instance_1, instance.pk])
-        self.assertEqual(change_request.new_reference_instances.count(), 2)
-        self.assertEqual(change_request.new_reference_instances.first().project, self.project_a)
-        self.assertEqual(change_request.new_reference_instances.all()[1].project, None)
+        change_request.new_reference_instances.set([self.instance_1, instance])
+        instance.refresh_from_db()
+        new_reference_instances = list(change_request.new_reference_instances.order_by("pk").distinct())
+        self.assertEqual(len(new_reference_instances), 2)
+        self.assertEqual(new_reference_instances[0].project, self.project_a)
+        self.assertIsNone(new_reference_instances[1].project)
+        self.assertIsNotNone(change_request.new_reference_instances.filter(pk=self.instance_1.pk).first())
+        self.assertIsNotNone(change_request.new_reference_instances.filter(pk=instance.pk).first())
 
         self.client.force_authenticate(self.user)
 

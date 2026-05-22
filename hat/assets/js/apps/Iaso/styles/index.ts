@@ -13,10 +13,18 @@ export const getOverriddenTheme = (theme, themeConfig) => {
     const primaryContrastText = primaryColor.isDark() ? '#fff' : '#000';
     const secondaryContrastText = secondaryColor.isDark() ? '#fff' : '#000';
     const warningContrastText = warningColor.isDark() ? '#fff' : '#000';
+
     return {
         ...theme,
         palette: {
             ...theme.palette,
+            background: {
+                ...theme.palette.background,
+                grey: theme.palette.grey[400],
+                warning: theme.palette.warning.main,
+                error: theme.palette.error.main,
+                success: theme.palette.success.main,
+            },
             primary: {
                 contrastText: primaryContrastText,
                 dark: primaryColor.darken(0.2).hex(),
@@ -35,6 +43,10 @@ export const getOverriddenTheme = (theme, themeConfig) => {
                 ...theme.palette.warning,
                 contrastText: warningContrastText,
                 background: warningColor.lighten(0.8).hex(),
+            },
+            success: {
+                ...theme.palette.success,
+                contrastText: '#fff',
             },
         },
         typography: {

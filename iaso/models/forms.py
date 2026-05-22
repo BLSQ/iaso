@@ -188,6 +188,9 @@ class Form(SoftDeletableModel):
         "ValidationWorkflow", null=True, blank=True, on_delete=models.SET_NULL, related_name="%(class)s_set"
     )
 
+    class Meta:
+        ordering = ["id"]
+
     @property
     def latest_version(self):
         # attribute filled by queryset.with_latest_version() on FormQuerySet

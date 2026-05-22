@@ -285,3 +285,59 @@ class DataSourcesAPITestCase(APITestCase):
         self.client.force_authenticate(self.jim)
         response = self.client.get("/api/datasources/dropdown/?order=name")
         self.assertJSONResponse(response, 403)
+
+    def test_datasource_update_can_unset_read_only(self):
+        self.client.force_authenticate(self.joe)
+        self.data_source.read_only = True
+        self.data_source.save()
+        data = {
+            "id": self.data_source.id,
+            "name": self.data_source.name,
+            "read_only": False,
+            "credentials": None,
+            "description": self.data_source.description,
+            "created_at": None,
+            "updated_at": None,
+            "default_version": None,
+            "tree_config_status_fields": self.data_source.tree_config_status_fields,
+            "projects": None,
+            "versions": None,
+            "url": None,
+        }
+
+        response = self.client.put(f"/api/datasources/{self.data_source.id}/", format="json", data=data)
+        json_response = self.assertJSONResponse(response, 200)
+
+        self.assertFalse(json_response["read_only"])
+        self.data_source.refresh_from_db()
+        self.assertFalse(self.data_source.read_only)
+
+        response = self.client.get(f"/api/datasources/{self.data_source.id}/")
+        json_response = self.assertJSONResponse(response, 200)
+        self.assertFalse(json_response["read_only"])
+
+    def test_datasource_update_without_read_only_does_not_alter_it(self):
+        self.client.force_authenticate(self.joe)
+        self.data_source.read_only = True
+        self.data_source.save()
+
+        data = {
+            "id": self.data_source.id,
+            "name": self.data_source.name,
+            "credentials": None,
+            "description": self.data_source.description,
+            "created_at": None,
+            "updated_at": None,
+            "default_version": None,
+            "tree_config_status_fields": self.data_source.tree_config_status_fields,
+            "projects": None,
+            "versions": None,
+            "url": None,
+        }
+
+        response = self.client.put(f"/api/datasources/{self.data_source.id}/", format="json", data=data)
+        json_response = self.assertJSONResponse(response, 200)
+
+        self.assertTrue(json_response["read_only"])
+        self.data_source.refresh_from_db()
+        self.assertTrue(self.data_source.read_only)

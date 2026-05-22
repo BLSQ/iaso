@@ -11,7 +11,7 @@ class ValidationNodeTemplateAPIUpdateTestCase(BaseApiTestCase):
         super().setUp()
         self.project = Project.objects.create(name="project", account=self.account)
         self.account_2 = Account.objects.create(name="account_2")
-        self.enable_validation_workflow_feature_flag(self.account, self.account_2)
+        self.add_validation_workflow_module(self.account, self.account_2)
 
         self.group = Group.objects.create(name="Group")
         self.other_group = Group.objects.create(name="Group 2")
@@ -77,7 +77,6 @@ class ValidationNodeTemplateAPIUpdateTestCase(BaseApiTestCase):
             data={
                 "name": "test",
                 "description": "desc",
-                "color": "#ffffff",
                 "can_skip_previous_nodes": True,
                 "roles_required": [self.user_role.pk],
             },
@@ -92,7 +91,6 @@ class ValidationNodeTemplateAPIUpdateTestCase(BaseApiTestCase):
         self.assertEqual(self.node.name, "test")
         self.assertEqual(self.node.slug, "first-node")
         self.assertEqual(self.node.description, "desc")
-        self.assertEqual(self.node.color, "#FFFFFF")
         self.assertTrue(self.node.can_skip_previous_nodes)
         self.assertEqual(list(self.node.roles_required.all()), [self.user_role])
 
@@ -184,7 +182,7 @@ class ValidationNodeTemplateAPIUpdateTestCase(BaseApiTestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(10):
+        with self.assertNumQueries(9):
             res = self.client.put(
                 reverse(
                     "validation_node_templates-detail",

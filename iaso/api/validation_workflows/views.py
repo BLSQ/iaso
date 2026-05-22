@@ -7,20 +7,26 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 
 from iaso.api.common import ModelViewSet
+from iaso.api.common.permissions import HasModulePermission
 from iaso.api.validation_workflows.filters import ValidationWorkflowListFilter
 from iaso.api.validation_workflows.pagination import ValidationWorkflowPagination
-from iaso.api.validation_workflows.permissions import HasAccountFeatureFlag, HasValidationWorkflowPermission
+from iaso.api.validation_workflows.permissions import HasValidationWorkflowPermission
 from iaso.api.validation_workflows.serializers.create import ValidationWorkflowCreateSerializer
 from iaso.api.validation_workflows.serializers.dropdown import ValidationWorkflowDropdownSerializer
 from iaso.api.validation_workflows.serializers.list import ValidationWorkflowListSerializer
 from iaso.api.validation_workflows.serializers.retrieve import ValidationWorkflowRetrieveSerializer
 from iaso.api.validation_workflows.serializers.update import ValidationWorkflowUpdateSerializer
 from iaso.models import ValidationWorkflow
+from iaso.modules import MODULE_VALIDATION_WORKFLOW
 
 
 @extend_schema(tags=["Validation workflows"])
 class ValidationWorkflowViewSet(ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasValidationWorkflowPermission, HasAccountFeatureFlag]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasValidationWorkflowPermission,
+        HasModulePermission(MODULE_VALIDATION_WORKFLOW),
+    ]
     filter_backends = [OrderingFilter, DjangoFilterBackend]
     pagination_class = ValidationWorkflowPagination
     http_method_names = ["get", "post", "put", "patch", "delete"]

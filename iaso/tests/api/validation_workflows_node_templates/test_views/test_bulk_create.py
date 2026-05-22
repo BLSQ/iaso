@@ -12,7 +12,7 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
         super().setUp()
         self.project = Project.objects.create(name="project", account=self.account)
         self.account_2 = Account.objects.create(name="account_2")
-        self.enable_validation_workflow_feature_flag(self.account, self.account_2)
+        self.add_validation_workflow_module(self.account, self.account_2)
 
         self.group = Group.objects.create(name="Group")
         self.user_role = UserRole.objects.create(group=self.group, account=self.account)
@@ -91,12 +91,10 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
             data=[
                 {
                     "name": "First node",
-                    "color": "#740d54",
                     "description": "Here we should check something",
                 },
                 {
                     "name": "First-node",
-                    "color": "#fdd75b",
                     "can_skip_previous_nodes": True,
                     "roles_required": [self.user_role.pk],
                 },
@@ -135,7 +133,7 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(19):
+        with self.assertNumQueries(18):
             res = self.client.post(
                 reverse(
                     "validation_node_templates-bulk",
@@ -144,13 +142,11 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
                 data=[
                     {
                         "name": "First node",
-                        "color": "#740d54",
                         "description": "Here we should check something",
                     },
-                    {"name": "Second node", "color": "#fdd75a"},
+                    {"name": "Second node"},
                     {
                         "name": "Last node",
-                        "color": "#fdd75b",
                         "can_skip_previous_nodes": True,
                         "roles_required": [self.user_role.pk],
                     },
@@ -172,12 +168,10 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
             data=[
                 {
                     "name": "First node",
-                    "color": "#740d54",
                     "description": "Here we should check something",
                 },
                 {
                     "name": "First-node",
-                    "color": "#fdd75b",
                     "can_skip_previous_nodes": True,
                     "roles_required": [self.user_role.pk],
                 },
@@ -202,13 +196,11 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
             data=[
                 {
                     "name": "First node",
-                    "color": "#740d54",
                     "description": "Here we should check something",
                 },
-                {"name": "Second node", "color": "#fdd75a"},
+                {"name": "Second node"},
                 {
                     "name": "Last node",
-                    "color": "#fdd75b",
                     "can_skip_previous_nodes": True,
                     "roles_required": [self.user_role.pk],
                 },
@@ -223,7 +215,6 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
         third_node = ValidationNodeTemplate.objects.get(slug="last-node")
 
         # first node
-        self.assertEqual(first_node.color, "#740D54")
         self.assertEqual(first_node.name, "First node")
         self.assertEqual(first_node.description, "Here we should check something")
         self.assertEqual(first_node.workflow, self.validation_workflow)
@@ -233,7 +224,6 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
         self.assertEqual(list(first_node.next_node_templates.values_list("pk", flat=True)), [second_node.pk])
 
         # second node
-        self.assertEqual(second_node.color, "#FDD75A")
         self.assertEqual(second_node.name, "Second node")
         self.assertEqual(second_node.description, "")
         self.assertEqual(second_node.workflow, self.validation_workflow)
@@ -243,7 +233,6 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
         self.assertEqual(list(second_node.next_node_templates.values_list("pk", flat=True)), [third_node.pk])
 
         # third node
-        self.assertEqual(third_node.color, "#FDD75B")
         self.assertEqual(third_node.name, "Last node")
         self.assertEqual(third_node.description, "")
         self.assertEqual(third_node.workflow, self.validation_workflow)
@@ -262,13 +251,11 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
             data=[
                 {
                     "name": "First node",
-                    "color": "#740d54",
                     "description": "Here we should check something",
                 },
-                {"name": "Second node", "color": "#fdd75a"},
+                {"name": "Second node"},
                 {
                     "name": "First node",
-                    "color": "#fdd75b",
                     "can_skip_previous_nodes": True,
                     "roles_required": [self.user_role.pk],
                 },
@@ -288,13 +275,11 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
             data=[
                 {
                     "name": "First node",
-                    "color": "#740d54",
                     "description": "Here we should check something",
                 },
-                {"name": "Second node", "color": "#fdd75a"},
+                {"name": "Second node"},
                 {
                     "name": "Third node",
-                    "color": "#fdd75b",
                     "can_skip_previous_nodes": True,
                     "roles_required": [self.user_role.pk],
                 },

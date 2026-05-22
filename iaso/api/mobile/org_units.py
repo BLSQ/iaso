@@ -17,7 +17,7 @@ from rest_framework.fields import SerializerMethodField
 from rest_framework.response import Response
 
 from iaso.api.common import ModelViewSet, Paginator, TimestampField, safe_api_import
-from iaso.api.instances.instances import InstanceFileSerializer
+from iaso.api.instances.serializers import InstanceFileAttachmentSerializer
 from iaso.api.org_units import import_org_units
 from iaso.api.permission_checks import (
     AuthenticationEnforcedPermission,
@@ -65,7 +65,7 @@ class ReferenceInstancesFilter(django_filters.rest_framework.FilterSet):
 class ReferenceInstancesSerializer(serializers.ModelSerializer):
     created_at = TimestampField(read_only=True, source="source_created_at_with_fallback")
     updated_at = TimestampField(read_only=True, source="source_updated_at_with_fallback")
-    instance_files = InstanceFileSerializer(many=True, read_only=True, source="instancefile_set")
+    instance_files = InstanceFileAttachmentSerializer(many=True, read_only=True, source="instancefile_set")
 
     class Meta:
         model = Instance

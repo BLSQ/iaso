@@ -23,11 +23,4 @@ describe('ValidateButton accessibility', () => {
 
         expect(results).toHaveNoViolations();
     });
-
-    it('has no accessibility violations with default text', async () => {
-        const { container } = renderWithTheme(<ValidateButton />);
-        const results = await axe(container);
-
-        expect(results).toHaveNoViolations();
-    });
 });

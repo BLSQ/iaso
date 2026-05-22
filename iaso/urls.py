@@ -70,7 +70,7 @@ from .api.forms.views_mobile import MobileFormViewSet
 from .api.group_sets.views import GroupSetsViewSet
 from .api.groups.views import GroupsViewSet
 from .api.hesabu_descriptors import HesabuDescriptorsViewSet
-from .api.instances.instances import InstancesViewSet
+from .api.instances.views import InstancesViewSet
 from .api.instances.views_mobile import InstancesMobileViewSet
 from .api.links import LinkViewSet
 from .api.logs import LogsViewSet
@@ -110,7 +110,7 @@ from .api.permissions.permissions import PermissionsViewSet
 from .api.profiles.views import ProfilesViewSet
 from .api.projects import ProjectsViewSet
 from .api.reports import ReportsViewSet
-from .api.setup_account import SetupAccountViewSet
+from .api.setup_account.views import SetupAccountViewSet
 from .api.source_versions import SourceVersionViewSet
 from .api.stocks.views import (
     StockItemRuleViewSet,

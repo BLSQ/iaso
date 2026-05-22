@@ -8,7 +8,7 @@ from iaso.tests.api.validation_workflows.test_views.common import BaseValidation
 class ValidationWorkflowAPIDeleteTestCase(BaseValidationWorkflowAPITestCase):
     def setUp(self):
         super().setUp()
-        self.enable_validation_workflow_feature_flag(self.account)
+        self.add_validation_workflow_module(self.account)
 
         self.validation_workflow = ValidationWorkflow.objects.create(
             name="Name 1",
@@ -33,7 +33,7 @@ class ValidationWorkflowAPIDeleteTestCase(BaseValidationWorkflowAPITestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(5):
             res = self.client.delete(
                 reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug})
             )

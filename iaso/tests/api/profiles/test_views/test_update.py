@@ -872,3 +872,58 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": jim.id}), data=data, format="json")
 
         self.assertJSONResponse(response, 200)
+
+    def test_me_endpoint_updates_own_first_last_name_and_email(self):
+        """A user with no admin permission can update their own name and email via `/me/`."""
+        # `jom` has no permissions at all (see common.py).
+        self.client.force_authenticate(self.jom)
+        new_data = {
+            "first_name": "Jom",
+            "last_name": "Doe",
+            "email": "jom@example.org",
+        }
+        response = self.client.patch(reverse("profiles-detail", kwargs={"pk": PK_ME}), data=new_data, format="json")
+        self.assertJSONResponse(response, 200)
+
+        self.jom.refresh_from_db()
+        self.assertEqual(self.jom.first_name, "Jom")
+        self.assertEqual(self.jom.last_name, "Doe")
+        self.assertEqual(self.jom.email, "jom@example.org")
+
+    def test_me_endpoint_persists_user_and_profile_fields_in_one_patch(self):
+        """A single PATCH writes both `User` fields (e.g. `first_name`) and `Profile` fields (e.g. `language`)."""
+        self.client.force_authenticate(self.jom)
+        new_data = {"first_name": "Jom", "language": "en"}
+        response = self.client.patch(reverse("profiles-detail", kwargs={"pk": PK_ME}), data=new_data, format="json")
+        self.assertJSONResponse(response, 200)
+
+        self.jom.refresh_from_db()
+        self.jom.iaso_profile.refresh_from_db()
+        self.assertEqual(self.jom.first_name, "Jom")
+        self.assertEqual(self.jom.iaso_profile.language, "en")
+
+    def test_me_endpoint_rejects_invalid_email(self):
+        self.client.force_authenticate(self.jom)
+        response = self.client.patch(
+            reverse("profiles-detail", kwargs={"pk": PK_ME}),
+            data={"email": "not-an-email"},
+            format="json",
+        )
+        self.assertJSONResponse(response, 400)
+
+    def test_me_endpoint_ignores_fields_outside_the_self_service_allow_list(self):
+        """`PATCH /api/profiles/me/` silently drops fields not in its allow-list, so a user cannot self-grant permissions."""
+        self.client.force_authenticate(self.jom)
+        self.assertEqual(self.jom.user_permissions.count(), 0)
+        response = self.client.patch(
+            reverse("profiles-detail", kwargs={"pk": PK_ME}),
+            data={
+                "first_name": "Jom",
+                "user_permissions": [CORE_USERS_ADMIN_PERMISSION.codename],
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, 200)
+        self.jom.refresh_from_db()
+        self.assertEqual(self.jom.first_name, "Jom")
+        self.assertEqual(self.jom.user_permissions.count(), 0)

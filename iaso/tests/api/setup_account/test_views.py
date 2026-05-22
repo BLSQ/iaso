@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.contrib.auth.models import Permission, User
 from rest_framework import status
 
@@ -678,7 +680,7 @@ class SetupAccountApiTestCase(APITestCase):
 
     def get_serializer_instance(self):
         """Helper method to get a serializer instance for testing"""
-        from iaso.api.setup_account import SetupAccountSerializer
+        from iaso.api.setup_account.serializers import SetupAccountSerializer
 
         return SetupAccountSerializer()
 
@@ -1350,3 +1352,57 @@ class SetupAccountApiTestCase(APITestCase):
 
         new_user = User.objects.get(username="unittest_username")
         self.assertTrue(new_user.check_password("a"))
+
+    @patch("iaso.api.setup_account.views.logger")
+    def test_400_does_not_log(self, mock_logger):
+        # to avoid sentry catching error on 400
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "Zelda",
+            "user_username": "unittest_username",
+            "password": self.password,
+            "email_invitation": False,
+        }
+
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        mock_logger.error.assert_not_called()
+
+    @patch("iaso.api.setup_account.views.logger")
+    @patch("iaso.models.Account.objects.create")
+    def test_500_does_log(self, mock_account_create, mock_logger):
+        # so sentry catches it
+
+        self.client.raise_request_exception = False
+        mock_account_create.side_effect = Exception("Boum")
+
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": self.password,
+            "email_invitation": False,
+            "modules": self.MODULES,
+        }
+
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        args, kwargs = mock_logger.error.call_args
+
+        self.assertEqual(
+            args[0],
+            "Account setup failed: unittest_account by user zelda: Boum",
+        )
+
+        self.assertEqual(
+            kwargs["extra"]["audit_data"]["status"],
+            "error",
+        )
+
+        self.assertEqual(
+            kwargs["extra"]["audit_data"]["error_message"],
+            "Boum",
+        )

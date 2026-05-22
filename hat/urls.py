@@ -13,7 +13,7 @@ from django.urls import include, path
 from django.views.generic import RedirectView, TemplateView
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
-from iaso.auth.views import IasoPasswordResetView
+from iaso.auth.views import IasoLogoutView, IasoPasswordResetView
 from iaso.views import ModelDataView, health, health_clamav, page, robots_txt
 
 
@@ -81,16 +81,21 @@ else:
 
     urlpatterns += [
         path("robots.txt", robots_txt),
-        path("", RedirectView.as_view(pattern_name="dashboard:home_iaso", permanent=False), name="index"),
+        path(
+            "",
+            RedirectView.as_view(pattern_name=settings.ROOT_REDIRECT_PATTERN_NAME, permanent=False),
+            name="index",
+        ),
         path("_health/", health),
         path("_health", health),  # same without slash otherwise AWS complain about redirect
         path("health/", health),  # alias since current apache config hide _health/
         path("health-clamav/", health_clamav),
         path("admin/", admin.site.urls),
         path("api/", include("iaso.urls")),
+        path("api/etl/", include(("iaso.urls_etl", "api-etl"), namespace="api-etl")),
         path("pages/<page_slug>/", page, name="pages"),
         path("i18n/", include("django.conf.urls.i18n")),
-        path("logout-iaso", auth.views.LogoutView.as_view(next_page="/login/"), name="logout-iaso"),
+        path("logout-iaso", IasoLogoutView.as_view(), name="logout-iaso"),
         path(
             "forgot-password/",
             IasoPasswordResetView.as_view(

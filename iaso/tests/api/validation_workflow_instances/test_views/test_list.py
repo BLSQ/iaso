@@ -7,6 +7,7 @@ from rest_framework import status
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
 from iaso.models import Account, Form, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
 from iaso.models.common import ValidationWorkflowArtefactStatus
+from iaso.modules import MODULE_VALIDATION_WORKFLOW
 from iaso.permissions.core_permissions import CORE_SUBMISSIONS_PERMISSION, CORE_VALIDATION_WORKFLOW_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
@@ -52,16 +53,16 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
         self.validation_workflow.form_set.add(self.form)
 
         self.first_vf_first_node = ValidationNodeTemplate.objects.create(
-            name="First node", workflow=self.validation_workflow, color="#ffffff"
+            name="First node", workflow=self.validation_workflow
         )
         self.first_vf_second_node = ValidationNodeTemplate.objects.create(
-            name="Second node", workflow=self.validation_workflow, color="#ffffff"
+            name="Second node", workflow=self.validation_workflow
         )
         self.first_vf_second_node.roles_required.add(self.user_role)
         self.first_vf_second_node.previous_node_templates.add(self.first_vf_first_node)
 
         self.first_vf_third_node = ValidationNodeTemplate.objects.create(
-            name="Third node", workflow=self.validation_workflow, color="#ffffff", can_skip_previous_nodes=True
+            name="Third node", workflow=self.validation_workflow, can_skip_previous_nodes=True
         )
         self.first_vf_third_node.previous_node_templates.add(self.first_vf_second_node)
 
@@ -77,16 +78,16 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
         self.other_validation_workflow.form_set.add(self.other_form)
 
         self.second_vf_first_node = ValidationNodeTemplate.objects.create(
-            name="First node", workflow=self.other_validation_workflow, color="#ffffff"
+            name="First node", workflow=self.other_validation_workflow
         )
         self.second_vf_second_node = ValidationNodeTemplate.objects.create(
-            name="Second node", workflow=self.other_validation_workflow, color="#ffffff"
+            name="Second node", workflow=self.other_validation_workflow
         )
         self.second_vf_second_node.roles_required.add(self.user_role)
         self.second_vf_second_node.previous_node_templates.add(self.second_vf_first_node)
 
         self.second_vf_third_node = ValidationNodeTemplate.objects.create(
-            name="Third node", workflow=self.other_validation_workflow, color="#ffffff", can_skip_previous_nodes=True
+            name="Third node", workflow=self.other_validation_workflow, can_skip_previous_nodes=True
         )
         self.second_vf_third_node.previous_node_templates.add(self.second_vf_second_node)
         self.second_vf_third_node.roles_required.add(self.user_role)
@@ -109,6 +110,16 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
             project=self.other_project,
             uuid=str(uuid.uuid4()),
         )
+        self.add_validation_workflow_module(self.account)
+
+    @staticmethod
+    def add_validation_workflow_module(*accounts):
+        for account in accounts:
+            account_modules = account.modules or []
+            if MODULE_VALIDATION_WORKFLOW not in account_modules:
+                account_modules.append(MODULE_VALIDATION_WORKFLOW.codename)
+                account.modules = account_modules
+                account.save()
 
     def assertValidVFInstanceListData(self, data, expected_length):
         self.assertValidListData(list_data=data, expected_length=expected_length, paginated=True, results_key="results")

@@ -10,6 +10,12 @@ from typing import Any, Dict, List
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
+from iaso.api.fhir.constants import (
+    DEFAULT_PHYSICAL_TYPE,
+    FHIR_STATUS_CHOICES,
+    PHYSICAL_TYPE_MAPPING,
+    REVERSE_STATUS_MAPPING,
+)
 from iaso.models import OrgUnit
 
 
@@ -63,7 +69,7 @@ class FHIRLocationSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.DictField())
     def get_meta(self, obj: OrgUnit) -> Dict[str, Any]:
-        meta = {"versionId": "1", "profile": ["http://hl7.org/fhir/StructureDefinition/Location"]}
+        meta = {"versionId": "1", "profile": ["https://hl7.org/fhir/StructureDefinition/Location"]}
         if obj.updated_at:
             meta["lastUpdated"] = obj.updated_at.isoformat()
         return meta
@@ -78,31 +84,28 @@ class FHIRLocationSerializer(serializers.ModelSerializer):
             identifiers.append(
                 {
                     "use": "official",
-                    "system": f"http://openiaso.com/org-unit/{data_source_name}/source-ref",
+                    "system": f"https://openiaso.com/org-unit/{data_source_name}/source-ref",
                     "value": obj.source_ref,
                 }
             )
 
         # UUID identifier
         if obj.uuid:
-            identifiers.append({"use": "secondary", "system": "http://openiaso.com/org-unit/uuid", "value": obj.uuid})
+            identifiers.append({"use": "secondary", "system": "https://openiaso.com/org-unit/uuid", "value": obj.uuid})
 
         # Alias identifiers
         if obj.aliases:
             for alias in obj.aliases:
-                identifiers.append({"use": "secondary", "system": "http://openiaso.com/org-unit/alias", "value": alias})
+                identifiers.append(
+                    {"use": "secondary", "system": "https://openiaso.com/org-unit/alias", "value": alias}
+                )
 
         return identifiers
 
-    @extend_schema_field(serializers.ChoiceField(choices=["active", "inactive", "suspended"]))
+    @extend_schema_field(serializers.ChoiceField(choices=FHIR_STATUS_CHOICES, default="active"))
     def get_status(self, obj: OrgUnit) -> str:
         """Map OrgUnit validation status to FHIR Location status"""
-        status_mapping = {
-            OrgUnit.VALIDATION_NEW: "inactive",
-            OrgUnit.VALIDATION_VALID: "active",
-            OrgUnit.VALIDATION_REJECTED: "suspended",
-        }
-        return status_mapping.get(obj.validation_status, "active")
+        return REVERSE_STATUS_MAPPING.get(obj.validation_status, "active")
 
     @extend_schema_field(serializers.ChoiceField(choices=["instance"]))
     def get_mode(self, obj: OrgUnit) -> str:
@@ -117,7 +120,7 @@ class FHIRLocationSerializer(serializers.ModelSerializer):
             {
                 "coding": [
                     {
-                        "system": "http://openiaso.com/org-unit-type",
+                        "system": "https://openiaso.com/org-unit-type",
                         "code": obj.org_unit_type.short_name,
                         "display": obj.org_unit_type.name,
                     }
@@ -130,17 +133,8 @@ class FHIRLocationSerializer(serializers.ModelSerializer):
     def get_physicalType(self, obj: OrgUnit) -> Dict[str, Any]:
         if not obj.org_unit_type or not obj.org_unit_type.category:
             return {}
-
-        # Map OrgUnit type categories to FHIR physical type codes
-        physical_type_mapping = {
-            "COUNTRY": "co",  # Country
-            "REGION": "area",  # Area
-            "DISTRICT": "area",  # Area
-            "HF": "bu",  # Building
-        }
-
-        code = physical_type_mapping.get(obj.org_unit_type.category, "si")
-        return {"coding": [{"system": "http://terminology.hl7.org/CodeSystem/location-physical-type", "code": code}]}
+        code = PHYSICAL_TYPE_MAPPING.get(obj.org_unit_type.category, DEFAULT_PHYSICAL_TYPE)
+        return {"coding": [{"system": "https://terminology.hl7.org/CodeSystem/location-physical-type", "code": code}]}
 
     @extend_schema_field(serializers.DictField(child=serializers.FloatField()))
     def get_position(self, obj: OrgUnit) -> Dict[str, float]:
@@ -174,12 +168,12 @@ class FHIRLocationSerializer(serializers.ModelSerializer):
         if obj.closed_date:
             return {
                 "coding": [
-                    {"system": "http://terminology.hl7.org/CodeSystem/v2-0116", "code": "C", "display": "Closed"}
+                    {"system": "https://terminology.hl7.org/CodeSystem/v2-0116", "code": "C", "display": "Closed"}
                 ]
             }
         if obj.opening_date:
             return {
-                "coding": [{"system": "http://terminology.hl7.org/CodeSystem/v2-0116", "code": "O", "display": "Open"}]
+                "coding": [{"system": "https://terminology.hl7.org/CodeSystem/v2-0116", "code": "O", "display": "Open"}]
             }
         return {}
 
@@ -190,7 +184,7 @@ class FHIRLocationSerializer(serializers.ModelSerializer):
         # Validation status extension
         extensions.append(
             {
-                "url": "http://openiaso.com/fhir/StructureDefinition/org-unit-validation-status",
+                "url": "https://openiaso.com/fhir/StructureDefinition/org-unit-validation-status",
                 "valueCode": obj.validation_status,
             }
         )
@@ -199,7 +193,7 @@ class FHIRLocationSerializer(serializers.ModelSerializer):
         if obj.org_unit_type and obj.org_unit_type.depth is not None:
             extensions.append(
                 {
-                    "url": "http://openiaso.com/fhir/StructureDefinition/org-unit-type-depth",
+                    "url": "https://openiaso.com/fhir/StructureDefinition/org-unit-type-depth",
                     "valueInteger": obj.org_unit_type.depth,
                 }
             )
@@ -208,7 +202,7 @@ class FHIRLocationSerializer(serializers.ModelSerializer):
         if obj.version:
             extensions.append(
                 {
-                    "url": "http://openiaso.com/fhir/StructureDefinition/source-version",
+                    "url": "https://openiaso.com/fhir/StructureDefinition/source-version",
                     "valueString": str(obj.version.number),
                 }
             )
@@ -217,7 +211,7 @@ class FHIRLocationSerializer(serializers.ModelSerializer):
         if obj.opening_date:
             extensions.append(
                 {
-                    "url": "http://openiaso.com/fhir/StructureDefinition/opening-date",
+                    "url": "https://openiaso.com/fhir/StructureDefinition/opening-date",
                     "valueDate": obj.opening_date.isoformat(),
                 }
             )
@@ -226,48 +220,9 @@ class FHIRLocationSerializer(serializers.ModelSerializer):
         if obj.closed_date:
             extensions.append(
                 {
-                    "url": "http://openiaso.com/fhir/StructureDefinition/closed-date",
+                    "url": "https://openiaso.com/fhir/StructureDefinition/closed-date",
                     "valueDate": obj.closed_date.isoformat(),
                 }
             )
 
         return extensions
-
-
-class FHIRBundleSerializer(serializers.Serializer):
-    """
-    Serializer for FHIR Bundle resources containing Location entries
-    """
-
-    resourceType = serializers.CharField(default="Bundle", read_only=True)
-    id = serializers.CharField(read_only=True)
-    meta = serializers.DictField(read_only=True)
-    type = serializers.CharField(default="searchset", read_only=True)
-    total = serializers.IntegerField(read_only=True)
-    link = serializers.ListField(child=serializers.DictField(), read_only=True)
-    entry = serializers.ListField(child=serializers.DictField(), read_only=True)
-
-
-class FHIROperationOutcomeSerializer(serializers.Serializer):
-    """
-    Serializer for FHIR OperationOutcome resources (errors)
-    """
-
-    resourceType = serializers.CharField(default="OperationOutcome", read_only=True)
-    issue = serializers.ListField(child=serializers.DictField(), read_only=True)
-
-
-class FHIRCapabilityStatementSerializer(serializers.Serializer):
-    """
-    Serializer for FHIR CapabilityStatement resource
-    """
-
-    resourceType = serializers.CharField(default="CapabilityStatement", read_only=True)
-    status = serializers.CharField(default="active", read_only=True)
-    date = serializers.CharField(read_only=True)
-    publisher = serializers.CharField(default="Iaso", read_only=True)
-    kind = serializers.CharField(default="instance", read_only=True)
-    software = serializers.DictField(read_only=True)
-    fhirVersion = serializers.CharField(default="4.0.1", read_only=True)
-    format = serializers.ListField(default=["json"], read_only=True)
-    rest = serializers.ListField(child=serializers.DictField(), read_only=True)

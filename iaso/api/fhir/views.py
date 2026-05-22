@@ -7,14 +7,15 @@ that maps Iaso OrgUnit objects to FHIR Location resources.
 Reference: https://build.fhir.org/location.html
 """
 
+import datetime
 import logging
 
 from django.http import Http404
-from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
 from iaso.models import OrgUnit
@@ -50,6 +51,25 @@ class FHIRLocationViewSet(viewsets.ReadOnlyModelViewSet):
     search_fields = ["name"]
     pagination_class = FHIRPaginator
 
+    def get_object(self):
+        try:
+            return super().get_object()
+        except Http404:
+            response = Response(
+                {
+                    "resourceType": "OperationOutcome",
+                    "issue": [
+                        {
+                            "severity": "error",
+                            "code": "not-found",
+                            "details": {"text": f"Location with id '{self.kwargs.get('pk')}' not found"},
+                        }
+                    ],
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+            raise NotFound(detail=response.data)
+
     def get_queryset(self):
         return (
             OrgUnit.objects.filter_for_user(self.request.user)
@@ -57,52 +77,19 @@ class FHIRLocationViewSet(viewsets.ReadOnlyModelViewSet):
             .prefetch_related("groups")
         )
 
-    def retrieve(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data)
-        except Http404:
-            error_response = {
-                "resourceType": "OperationOutcome",
-                "issue": [
-                    {
-                        "severity": "error",
-                        "code": "not-found",
-                        "details": {"text": f"Location with id '{kwargs.get('pk')}' not found"},
-                    }
-                ],
-            }
-            return Response(error_response, status=status.HTTP_404_NOT_FOUND)
-
     @action(detail=True, methods=["get"])
     def children(self, request, pk=None):
-        try:
-            parent_org_unit = self.get_object()
-            children_queryset = self.get_queryset().children(parent_org_unit)
+        parent_org_unit = self.get_object()
+        queryset = self.get_queryset().children(parent_org_unit)
 
-            page = self.paginate_queryset(children_queryset)
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
             serializer = self.get_serializer(page, many=True)
+            return self.paginator.get_paginated_response(serializer.data, bundle_id=f"children-{pk}")
 
-            # Use the Location list URL as the base for child resource URLs
-            location_base_url = request.build_absolute_uri(reverse("fhir-location-list")).rstrip("/")
-            bundle = self.paginator.get_fhir_bundle(
-                serializer.data, bundle_id=f"children-{pk}", base_url=location_base_url
-            )
-            return Response(bundle)
-
-        except Http404:
-            error_response = {
-                "resourceType": "OperationOutcome",
-                "issue": [
-                    {
-                        "severity": "error",
-                        "code": "not-found",
-                        "details": {"text": f"Location with id '{pk}' not found"},
-                    }
-                ],
-            }
-            return Response(error_response, status=status.HTTP_404_NOT_FOUND)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     @action(detail=False, methods=["get"])
     def metadata(self, request):
@@ -110,7 +97,7 @@ class FHIRLocationViewSet(viewsets.ReadOnlyModelViewSet):
         capability = {
             "resourceType": "CapabilityStatement",
             "status": "active",
-            "date": "2024-01-01",
+            "date": datetime.datetime.today().strftime("%Y-%m-%d"),
             "publisher": "Iaso",
             "kind": "instance",
             "software": {"name": "Iaso FHIR Location API", "version": "1.0.0"},
@@ -126,7 +113,7 @@ class FHIRLocationViewSet(viewsets.ReadOnlyModelViewSet):
                             "operation": [
                                 {
                                     "name": "children",
-                                    "definition": "http://openiaso.com/fhir/OperationDefinition/Location-children",
+                                    "definition": "https://openiaso.com/fhir/OperationDefinition/Location-children",
                                 }
                             ],
                             "searchParam": [

@@ -1,3 +1,5 @@
+from django.urls import reverse
+from django.utils.timezone import now
 from rest_framework import pagination
 from rest_framework.response import Response
 
@@ -10,13 +12,12 @@ class FHIRPaginator(pagination.LimitOffsetPagination):
     offset_query_description = "The initial index from which to return the results."
     max_limit = 100
 
-    def get_paginated_response(self, data):
-        base_url = self.request.build_absolute_uri().split("?")[0].rstrip("/")
-        return Response(self.get_fhir_bundle(data, base_url=base_url))
+    def get_paginated_response(self, data, bundle_id="search-results"):
+        return Response(self.get_fhir_bundle(data, bundle_id=bundle_id))
 
-    def get_fhir_bundle(self, data, bundle_id="search-results", base_url=None):
+    def get_fhir_bundle(self, data, bundle_id, base_url=None):
         if base_url is None:
-            base_url = self.request.build_absolute_uri().split("?")[0].rstrip("/")
+            base_url = self.request.build_absolute_uri(reverse("fhir-location-list"))
 
         links = [{"relation": "self", "url": self.request.build_absolute_uri()}]
         next_link = self.get_next_link()
@@ -37,7 +38,7 @@ class FHIRPaginator(pagination.LimitOffsetPagination):
         return {
             "resourceType": "Bundle",
             "id": bundle_id,
-            "meta": {"lastUpdated": "2024-01-01T00:00:00Z"},
+            "meta": {"lastUpdated": now().isoformat()},
             "type": "searchset",
             "total": self.count,
             "link": links,

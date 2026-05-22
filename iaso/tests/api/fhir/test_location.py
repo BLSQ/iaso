@@ -206,7 +206,7 @@ class FHIRLocationAPITestCase(APITestCase):
         self.assertEqual(location_type["text"], "Health Facility")
 
         coding = location_type["coding"][0]
-        self.assertEqual(coding["system"], "http://openiaso.com/org-unit-type")
+        self.assertEqual(coding["system"], "https://openiaso.com/org-unit-type")
         self.assertEqual(coding["code"], "HF")
         self.assertEqual(coding["display"], "Health Facility")
 

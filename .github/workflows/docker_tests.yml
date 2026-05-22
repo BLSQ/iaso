@@ -131,29 +131,36 @@ jobs:
 
   frontend_tests:
     runs-on: ubuntu-24.04
-    needs: build
-    services:
-      postgres:
-        image: postgis/postgis:16-3.5
-        env:
-          POSTGRES_USER: ${{ env.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ env.RDS_DB_NAME }}
-        ports:
-          - 5432:5432
-        # needed because the postgres container does not provide a health check
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    needs: config
     steps:
       - name: Check out repository code
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - name: Setup
-        uses: ./.github/actions/setup
+      - name: Use node.js 22.18.0
+        uses: actions/setup-node@v4
         with:
-          docker_username: ${{ secrets.DOCKER_USERNAME }}
-          docker_password: ${{ secrets.DOCKER_PASSWORD }}
+          node-version: '22.18.0'
+          cache: npm
+
+      - name: upgrade npm
+        run: |
+          npm install --global npm@11.13.0
+
+      - name: Environment info
+        run: |
+          node --version
+          npm --version
+
+      - name: npm install and test
+        run: |
+          npm ci
+          npm test
+
+      - name: Check Frontend (JS/React) translations
+        run: |
+          python scripts/update_trads.py
 
       - name: Set up Docker containers (prod-like)
         run: docker compose up -d --wait --wait-timeout 120

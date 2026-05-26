@@ -173,6 +173,30 @@ class ProjectsAPITestCase(APITestCase):
             response.json(), m.FeatureFlag.objects.count() - len(excluded_feature_flags)
         )
 
+    def test_feature_flags_except_no_activated_modules_filters_mobile_stock_without_stock_module(self):
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(
+            "/api/featureflags/except_no_activated_modules/", headers={"Content-Type": "application/json"}
+        )
+        self.assertJSONResponse(response, 200)
+
+        feature_flag_codes = [flag["code"] for flag in response.json()["featureflags"]]
+        self.assertNotIn("MOBILE_STOCK", feature_flag_codes)
+
+    def test_feature_flags_except_no_activated_modules_shows_mobile_stock_with_stock_module(self):
+        account = self.jane.iaso_profile.account
+        account.modules = ["STOCK_MANAGEMENT"]
+        account.save()
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(
+            "/api/featureflags/except_no_activated_modules/", headers={"Content-Type": "application/json"}
+        )
+        self.assertJSONResponse(response, 200)
+
+        feature_flag_codes = [flag["code"] for flag in response.json()["featureflags"]]
+        self.assertIn("MOBILE_STOCK", feature_flag_codes)
+
     def test_feature_flags_filter_mobile_no_org_unit_without_flag(self):
         """Test that MOBILE_NO_ORG_UNIT is filtered out when account doesn't have SHOW_MOBILE_NO_ORGUNIT_PROJECT_FEATURE_FLAG"""
         # Create the MOBILE_NO_ORG_UNIT feature flag if it doesn't exist

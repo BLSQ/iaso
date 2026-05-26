@@ -1036,6 +1036,18 @@ wheels = [
 ]
 
 [[package]]
+name = "django-test-migrations"
+version = "1.4.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/cd/28/e0d78605a48aea56a64c75baacfb10f3cbb33f699dadc3d0e8fc08009c85/django_test_migrations-1.4.0.tar.gz", hash = "sha256:f0c9c92864ed27d0c9a582e92056637e91227f54bd868a50cb9a1726668c563e", size = 20311, upload-time = "2024-06-28T19:55:19.296Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/54/60/11c792485df2cc242bb13ab167dcd3cc1ff1d943bcb235b8320dd71c6bf6/django_test_migrations-1.4.0-py3-none-any.whl", hash = "sha256:294dff98f6d43d020d4046b971bac5339e7c71458a35e9ad6450c388fe16ed6b", size = 25211, upload-time = "2024-06-28T19:55:17.734Z" },
+]
+
+[[package]]
 name = "django-timezone-field"
 version = "7.2.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1766,6 +1778,7 @@ dev = [
     { name = "django-querycount" },
     { name = "django-sslserver" },
     { name = "django-stubs" },
+    { name = "django-test-migrations" },
     { name = "djangorestframework-stubs" },
     { name = "locust" },
     { name = "lxml-stubs" },
@@ -1885,6 +1898,7 @@ dev = [
     { name = "django-querycount", specifier = "==0.8.3" },
     { name = "django-sslserver", specifier = "==0.22" },
     { name = "django-stubs", specifier = "==4.2.7" },
+    { name = "django-test-migrations", specifier = "==1.4.0" },
     { name = "djangorestframework-stubs", specifier = "==1.10.0" },
     { name = "locust", specifier = "==2.20.0" },
     { name = "lxml-stubs", specifier = "==0.4.0" },

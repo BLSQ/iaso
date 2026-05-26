@@ -165,6 +165,31 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         self.assertEqual(response.status_code, 200)
 
+        response_data = response.json()
+        self.assertIn("nfc_cards", response_data)
+        self.assertEqual(response_data["nfc_cards"], 0)
+
+    def test_retrieve_entity_without_permission_hides_nfc_cards(self):
+        restricted_user = self.create_user_with_profile(
+            username="restricted",
+            account=self.account,
+            # This user doesn't have the CORE_STORAGE_PERMISSION which is required to see nfc_cards
+            permissions=[CORE_ENTITIES_PERMISSION],
+        )
+        self.client.force_authenticate(restricted_user)
+
+        entity = Entity.objects.create(
+            name="Top Secret Client",
+            entity_type=self.entity_type,
+            account=self.account,
+        )
+
+        response = self.client.get(f"/api/entities/{entity.pk}/")
+        self.assertEqual(response.status_code, 200)
+
+        response_data = response.json()
+        self.assertNotIn("nfc_cards", response_data)
+
     def test_list_entities_search_filter(self):
         """
         Test the 'search' filter of /api/entities

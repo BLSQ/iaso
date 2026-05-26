@@ -255,7 +255,7 @@ lines-between-types = 1
 omit = [
     "plugins/*/migrations/*",
     "plugins/*/tests/*",
-    "*/migrations/*",  
+    "*/migrations/*",
     "iaso/tests/*"
 ]
 
@@ -269,6 +269,7 @@ dev = [
     "coverage==7.10.6",  # https://coverage.readthedocs.io
     "django-debug-toolbar==4.4.2",  # https://github.com/jazzband/django-debug-toolbar/tags
     "django-querycount==0.8.3",  # https://github.com/bradmontgomery/django-querycount/tags
+    "django-test-migrations==1.4.0", # https://github.com/wemake-services/django-test-migrations/releases
     "django-sslserver==0.22",  # https://pypi.org/project/django-sslserver/
     "django-stubs==4.2.7",  # https://github.com/typeddjango/django-stubs/tags
     "djangorestframework-stubs==1.10.0",  # https://github.com/typeddjango/djangorestframework-stubs/tags

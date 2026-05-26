@@ -161,7 +161,7 @@ describe('useFormAUiState', () => {
             expect(state.showTemporaryStatusField).toBe(true);
         });
 
-        it('allows reception date and file even when current status is still temporary', () => {
+        it('locks date/file/comment when completion_only and still temporary', () => {
             const state = render({
                 isNew: false,
                 editAccess: EDIT_ACCESS_COMPLETION_ONLY,
@@ -170,9 +170,9 @@ describe('useFormAUiState', () => {
                 withinEditWindow: false,
             });
 
-            expect(state.canEditReceptionDate).toBe(true);
-            expect(state.canEditFile).toBe(true);
-            expect(state.canEditComment).toBe(true);
+            expect(state.canEditReceptionDate).toBe(false);
+            expect(state.canEditFile).toBe(false);
+            expect(state.canEditComment).toBe(false);
             expect(state.showTemporaryStatusField).toBe(true);
         });
 

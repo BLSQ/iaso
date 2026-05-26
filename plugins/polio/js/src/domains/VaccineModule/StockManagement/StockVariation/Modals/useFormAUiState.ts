@@ -38,7 +38,7 @@ export const useFormAUiState = ({
             wasOriginallyTemporary &&
             editAccess === EDIT_ACCESS_COMPLETION_ONLY;
         const canEditCompletionFields =
-            canEditAllFields || canCompleteTemporary;
+            canEditAllFields || (canCompleteTemporary && !isTemporary);
 
         // Status toggle is allowed when:
         //  - creating a new form (setting initial status)

@@ -294,8 +294,61 @@ describe('CreateEditFormA', () => {
             ).toBeDisabled();
             expect(screen.getByTestId('select-doses_per_vial')).toBeDisabled();
 
-            // Comment remains editable even in completion-only mode
+            // Completion fields locked while still temporary
+            expect(screen.getByTestId('text-comment')).toBeDisabled();
+            expect(
+                screen.getByTestId('date-form_a_reception_date'),
+            ).toBeDisabled();
+            expect(screen.getByTestId('document-upload')).toHaveAttribute(
+                'aria-disabled',
+                'true',
+            );
+        });
+
+        it('unlocks completion fields when toggling to received in completion_only mode', async () => {
+            const user = userEvent.setup();
+            render(
+                <CreateEditFormA
+                    {...baseProps}
+                    formA={{
+                        ...temporaryFormA,
+                        edit_access: EDIT_ACCESS_COMPLETION_ONLY,
+                    }}
+                />,
+            );
+
+            // Fields locked while temporary
+            expect(screen.getByTestId('text-comment')).toBeDisabled();
+            expect(
+                screen.getByTestId('date-form_a_reception_date'),
+            ).toBeDisabled();
+
+            // Toggle to received
+            await act(async () => {
+                await user.click(screen.getByLabelText('Temporary Form A'));
+            });
+
+            await waitFor(() => {
+                expect(
+                    screen.getByLabelText('Temporary Form A'),
+                ).not.toBeChecked();
+            });
+
+            // Completion fields now enabled
             expect(screen.getByTestId('text-comment')).not.toBeDisabled();
+            expect(
+                screen.getByTestId('date-form_a_reception_date'),
+            ).not.toBeDisabled();
+            expect(screen.getByTestId('document-upload')).toHaveAttribute(
+                'aria-disabled',
+                'false',
+            );
+
+            // Non-completion fields still locked
+            expect(screen.getByTestId('date-report_date')).toBeDisabled();
+            expect(
+                screen.getByTestId('number-usable_vials_used'),
+            ).toBeDisabled();
         });
 
         it('locks vials when originally temporary and still temporary', () => {

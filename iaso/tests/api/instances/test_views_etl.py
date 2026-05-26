@@ -6,7 +6,6 @@ from iaso.models import (
     Account,
     Form,
     OrgUnit,
-    OrgUnitChangeRequest,
     Project,
     ValidationNodeTemplate,
     ValidationWorkflow,
@@ -77,15 +76,6 @@ class ETLInstanceTestCase(SwaggerTestCaseMixin, APITestCase):
         )
         ValidationWorkflowEngine.start(self.vf, self.john_doe, self.instance_1)
 
-        # setup orgunit change request
-        OrgUnitChangeRequest.objects.create(
-            org_unit=self.ou_1, status=OrgUnitChangeRequest.Statuses.APPROVED, created_by=self.john_wick
-        )
-
-        OrgUnitChangeRequest.objects.create(
-            org_unit=self.ou_1, status=OrgUnitChangeRequest.Statuses.REJECTED, created_by=self.john_wick
-        )
-
     def assertValidData(self, data, expected_length):
         self.assertValidListData(list_data=data, results_key="results", expected_length=expected_length, paginated=True)
         self.assertResponseCompliantToSwagger(data, "PaginatedETLInstanceListList")
@@ -136,11 +126,11 @@ class ETLInstanceTestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(10):
+        with self.assertNumQueries(9):
             # 1-2: PERMISSIONS
             # 3-5: queryset filter
-            # 6-8: serializer
-            # 8-10: get_and_save_json_of_xml method
+            # 6-7: serializer
+            # 8-9: get_and_save_json_of_xml method
             res = self.client.get(reverse("api-etl:instances-list"))
 
         self.assertJSONResponse(res, status.HTTP_200_OK)
@@ -156,21 +146,9 @@ class ETLInstanceTestCase(SwaggerTestCaseMixin, APITestCase):
         first_instance = res_data["results"][0]
         self.assertEqual(first_instance["id"], self.instance_1.pk)
         self.assertEqual(first_instance["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING)
-        self.assertEqual(first_instance["org_unit_validation_status"], OrgUnitChangeRequest.Statuses.REJECTED)
         self.assertIsNotNone(first_instance["file_url"])
         self.assertIsNotNone(first_instance["file_content"])
         self.assertEqual(first_instance["form_id"], self.form_1.pk)
-
-        org_unit = first_instance["org_unit"]
-
-        self.assertEqual(org_unit["id"], self.ou_1.pk)
-        self.assertEqual(org_unit["name"], "ou_1")
-        self.assertIsNone(org_unit["parent_id"])
-        self.assertIsNone(org_unit["org_unit_type_id"])
-        self.assertEqual(org_unit["validation_status"], "NEW")
-        self.assertIsNone(org_unit["aliases"])
-        self.assertIsNotNone(org_unit["created_at"])
-        self.assertIsNotNone(org_unit["updated_at"])
 
         history = first_instance["history"]
 
@@ -211,21 +189,9 @@ class ETLInstanceTestCase(SwaggerTestCaseMixin, APITestCase):
         second_instance = res_data["results"][1]
         self.assertEqual(second_instance["id"], self.instance_2.pk)
         self.assertEqual(second_instance["general_validation_status"], "")
-        self.assertEqual(second_instance["org_unit_validation_status"], "")
         self.assertIsNotNone(second_instance["file_url"])
         self.assertIsNotNone(second_instance["file_content"])
         self.assertEqual(second_instance["form_id"], self.form_2.pk)
-
-        org_unit = second_instance["org_unit"]
-
-        self.assertEqual(org_unit["id"], self.ou_2.pk)
-        self.assertEqual(org_unit["name"], "ou_2")
-        self.assertEqual(org_unit["parent_id"], self.ou_1.pk)
-        self.assertIsNone(org_unit["org_unit_type_id"])
-        self.assertEqual(org_unit["validation_status"], "NEW")
-        self.assertIsNone(org_unit["aliases"])
-        self.assertIsNotNone(org_unit["created_at"])
-        self.assertIsNotNone(org_unit["updated_at"])
 
         history = second_instance["history"]
 
@@ -236,15 +202,6 @@ class ETLInstanceTestCase(SwaggerTestCaseMixin, APITestCase):
         self.client.force_authenticate(self.john_wick)
 
         self.instance_1.file = None
-        self.instance_1.save()
-
-        res = self.client.get(reverse("api-etl:instances-list"))
-        self.assertJSONResponse(res, status.HTTP_200_OK)
-
-    def test_instance_without_org_unit(self):
-        self.client.force_authenticate(self.john_wick)
-
-        self.instance_1.org_unit = None
         self.instance_1.save()
 
         res = self.client.get(reverse("api-etl:instances-list"))

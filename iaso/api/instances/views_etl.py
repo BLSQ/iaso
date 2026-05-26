@@ -10,7 +10,7 @@ from iaso.api.instances.pagination import ETLInstancePagination
 from iaso.api.instances.permissions import HasInstanceETLPermission
 from iaso.api.instances.serializers import ETLInstanceListSerializer
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
-from iaso.models import Instance, OrgUnitChangeRequest, ValidationNode
+from iaso.models import Instance, ValidationNode
 
 
 @extend_schema(tags=["ETL"])
@@ -26,7 +26,7 @@ class ETLInstanceViewSet(CustomPaginationListModelMixin, GenericViewSet):
         return (
             Instance.objects.filter_for_user(user=self.request.user)
             .filter_on_user_projects(user=self.request.user)
-            .select_related("form", "org_unit", "org_unit__org_unit_type")
+            .select_related("form")
             .prefetch_related(
                 Prefetch(
                     "validationnode_set",
@@ -51,14 +51,7 @@ class ETLInstanceViewSet(CustomPaginationListModelMixin, GenericViewSet):
                     )
                     .order_by("-updated_at"),
                     to_attr="prefeteched_validationnode_set",
-                ),
-                Prefetch(
-                    "org_unit__orgunitchangerequest_set",
-                    queryset=OrgUnitChangeRequest.objects.only("updated_at", "status", "id", "org_unit_id").order_by(
-                        "-updated_at"
-                    ),
-                    to_attr="prefetched_org_unit_changerequest_set",
-                ),
+                )
             )
             .only(
                 "id",
@@ -66,15 +59,5 @@ class ETLInstanceViewSet(CustomPaginationListModelMixin, GenericViewSet):
                 "general_validation_status",
                 "file",
                 "form_id",
-                "org_unit__name",
-                "org_unit__id",
-                "org_unit__parent_id",
-                "org_unit__org_unit_type__name",
-                "org_unit__org_unit_type_id",
-                "org_unit__validation_status",
-                "org_unit__location",
-                "org_unit__created_at",
-                "org_unit__updated_at",
-                "org_unit__aliases",
             )
         )

@@ -3,41 +3,7 @@ from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer
 from iaso.api.validation_workflows.serializers.common import UserDisplayNameField
-from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest, ValidationNode
-
-
-class NestedOrgUnitSerializer(ModelSerializer):
-    org_unit_type_name = serializers.CharField(read_only=True, source="org_unit_type.name")
-    latitude = serializers.FloatField(read_only=True, source="location.y")
-    longitude = serializers.FloatField(read_only=True, source="location.x")
-    altitude = serializers.FloatField(read_only=True, source="location.z")
-
-    class Meta:
-        model = OrgUnit
-        fields = [
-            "name",
-            "id",
-            "parent_id",
-            "org_unit_type_id",
-            "org_unit_type_name",
-            "validation_status",
-            "created_at",
-            "updated_at",
-            "latitude",
-            "longitude",
-            "altitude",
-            "aliases",
-        ]
-        extra_kwargs = {
-            "name": {"read_only": True},
-            "id": {"read_only": True},
-            "parent_id": {"read_only": True},
-            "org_unit_type_id": {"read_only": True},
-            "validation_status": {"read_only": True},
-            "created_at": {"read_only": True},
-            "updated_at": {"read_only": True},
-            "aliases": {"read_only": True},
-        }
+from iaso.models import Instance, ValidationNode
 
 
 class NestedHistorySerializer(ModelSerializer):
@@ -61,19 +27,15 @@ class NestedHistorySerializer(ModelSerializer):
 class ETLInstanceListSerializer(ModelSerializer):
     file_content = serializers.SerializerMethodField()
     file_url = serializers.SerializerMethodField()
-    org_unit = NestedOrgUnitSerializer(read_only=True)
     history = serializers.SerializerMethodField()
-    org_unit_validation_status = serializers.SerializerMethodField()
 
     class Meta:
         model = Instance
         fields = [
             "id",
             "general_validation_status",
-            "org_unit_validation_status",
             "file_url",
             "file_content",
-            "org_unit",
             "history",
             "form_id",
         ]
@@ -96,9 +58,3 @@ class ETLInstanceListSerializer(ModelSerializer):
     @extend_schema_field(NestedHistorySerializer(many=True))
     def get_history(self, obj):
         return NestedHistorySerializer(obj.prefeteched_validationnode_set, many=True).data
-
-    @extend_schema_field(serializers.ChoiceField(choices=OrgUnitChangeRequest.Statuses, allow_blank=True))
-    def get_org_unit_validation_status(self, obj):
-        if obj.org_unit and getattr(obj.org_unit, "prefetched_org_unit_changerequest_set", None):
-            return next(iter(obj.org_unit.prefetched_org_unit_changerequest_set)).status
-        return ""

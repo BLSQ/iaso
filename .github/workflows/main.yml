@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Use node.js 22.18.0
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22.18.0'
           cache: npm
@@ -70,11 +70,11 @@ jobs:
       packages: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Determining version ${{ github.ref_name }}
         id: version
         run: |
@@ -91,7 +91,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push Docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           push: true
           tags: ${{ steps.version.outputs.IMAGE_TAG }}

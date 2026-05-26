@@ -43,9 +43,7 @@ export const useFormAUiState = ({
         // Status toggle is allowed when:
         //  - creating a new form (setting initial status)
         //  - completing a temporary form (temp → received, any time)
-        //  - within the edit window with full access (received → temp reversal)
-        // Post-window received → temporary is blocked server-side; disable the
-        // toggle so the user isn't offered an impossible transition.
+        //  - within the edit window with full access (including received ↔ temp)
         //
         // showTemporaryStatusField hides the checkbox entirely for regular RECEIVED
         // forms past the window (instead of showing a permanently disabled control).

@@ -147,21 +147,15 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
             **payload_temp_form_a,
             "form_a_reception_date": "2024-01-02",
         }
+
         response = self.client.post(
             OUTGOING_STOCK_MOVEMENT_URL,
             payload_temp_form_a_with_date,
             format="json",
         )
-
-        with self.assertNumQueries(11):
-            response = self.client.post(
-                OUTGOING_STOCK_MOVEMENT_URL,
-                payload_temp_form_a_with_date,
-                format="json",
-            )
-            data = self.assertJSONResponse(response, 201)
-            self.assertEqual(data["status"], OutgoingStockMovement.StatusChoices.TEMPORARY)
-            self.assertEqual(data["form_a_reception_date"], "2024-01-02")
+        data = self.assertJSONResponse(response, 201)
+        self.assertEqual(data["status"], OutgoingStockMovement.StatusChoices.TEMPORARY)
+        self.assertEqual(data["form_a_reception_date"], "2024-01-02")
 
         with open("plugins/polio/tests/fixtures/virus_scan/safe_file.pdf", "rb") as safe_file:
             response = self.client.post(

@@ -40,7 +40,7 @@ describe('useFormAUiState', () => {
             expect(state.showTemporaryStatusField).toBe(true);
         });
 
-        it('locks reception date and file when status is temporary', () => {
+        it('allows reception date and file when status is temporary', () => {
             const state = render({
                 isNew: true,
                 editAccess: EDIT_ACCESS_FULL,
@@ -51,8 +51,8 @@ describe('useFormAUiState', () => {
 
             expect(state.isTemporary).toBe(true);
             expect(state.canEditStatus).toBe(true);
-            expect(state.canEditReceptionDate).toBe(false);
-            expect(state.canEditFile).toBe(false);
+            expect(state.canEditReceptionDate).toBe(true);
+            expect(state.canEditFile).toBe(true);
             // Vials remain editable on new forms (wasOriginallyTemporary = false)
             expect(state.canEditVials).toBe(true);
             expect(state.showTemporaryStatusField).toBe(true);
@@ -80,7 +80,7 @@ describe('useFormAUiState', () => {
             expect(state.showTemporaryStatusField).toBe(true);
         });
 
-        it('locks reception/file when temporary, locks vials when originally temporary', () => {
+        it('allows reception/file when temporary', () => {
             const state = render({
                 isNew: false,
                 editAccess: EDIT_ACCESS_FULL,
@@ -90,8 +90,8 @@ describe('useFormAUiState', () => {
             });
 
             expect(state.isTemporary).toBe(true);
-            expect(state.canEditReceptionDate).toBe(false);
-            expect(state.canEditFile).toBe(false);
+            expect(state.canEditReceptionDate).toBe(true);
+            expect(state.canEditFile).toBe(true);
             expect(state.canEditVials).toBe(false);
             expect(state.showTemporaryStatusField).toBe(true);
         });
@@ -161,7 +161,7 @@ describe('useFormAUiState', () => {
             expect(state.showTemporaryStatusField).toBe(true);
         });
 
-        it('locks reception date and file when current status is still temporary', () => {
+        it('allows reception date and file even when current status is still temporary', () => {
             const state = render({
                 isNew: false,
                 editAccess: EDIT_ACCESS_COMPLETION_ONLY,
@@ -170,9 +170,8 @@ describe('useFormAUiState', () => {
                 withinEditWindow: false,
             });
 
-            expect(state.canEditReceptionDate).toBe(false);
-            expect(state.canEditFile).toBe(false);
-            // Comment remains editable even in temporary state
+            expect(state.canEditReceptionDate).toBe(true);
+            expect(state.canEditFile).toBe(true);
             expect(state.canEditComment).toBe(true);
             expect(state.showTemporaryStatusField).toBe(true);
         });

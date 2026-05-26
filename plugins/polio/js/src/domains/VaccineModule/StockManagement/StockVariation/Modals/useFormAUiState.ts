@@ -63,13 +63,13 @@ export const useFormAUiState = ({
             showTemporaryStatusField,
             canEditCampaignAndRound: canEditAllFields,
             canEditReportDate: canEditAllFields,
-            canEditReceptionDate: !isTemporary && canEditCompletionFields,
+            canEditReceptionDate: canEditCompletionFields,
             canEditVials:
                 canEditAllFields &&
                 (!wasOriginallyTemporary || currentStatus === RECEIVED),
             canEditDosesPerVial: canEditAllFields,
             canEditComment: canEditCompletionFields,
-            canEditFile: !isTemporary && canEditCompletionFields,
+            canEditFile: canEditCompletionFields,
         };
     }, [currentStatus, editAccess, isNew, originalStatus, withinEditWindow]);
 };

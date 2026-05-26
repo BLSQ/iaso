@@ -44,7 +44,7 @@ def reverse_migrate_missions_to_forms(apps, schema_editor):
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("iaso", "0369_instance_parent_artefact_for_validation_and_more"),
+        ("iaso", "0389_alter_account_modules"),
     ]
 
     operations = [
@@ -157,4 +157,8 @@ class Migration(migrations.Migration):
             field=models.ManyToManyField(blank=True, related_name="plannings", to="iaso.mission"),
         ),
         migrations.RunPython(migrate_forms_to_missions, reverse_migrate_missions_to_forms),
+        migrations.RemoveField(
+            model_name="planning",
+            name="forms",
+        ),
     ]

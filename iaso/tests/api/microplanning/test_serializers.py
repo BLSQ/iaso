@@ -10,6 +10,7 @@ from iaso.api.microplanning.serializers import (
 )
 from iaso.models import OrgUnit
 from iaso.tests.api.microplanning.test_setup import PlanningSerializersTestBase
+from iaso.utils.colors import COLOR_CHOICES, DEFAULT_COLOR
 
 
 class PlanningSerializersTestCase(PlanningSerializersTestBase):
@@ -31,7 +32,46 @@ class PlanningSerializersTestCase(PlanningSerializersTestBase):
             {
                 "id": self.planning.id,
                 "name": "planning_1",
-                "forms": [self.form_1.id, self.form_2.id],
+                "missions": [
+                    {
+                        "id": self.mission_1.id,
+                        "name": self.mission_1.name,
+                        "mission_type": self.mission_1.mission_type,
+                        "mission_forms": [
+                            {
+                                "id": self.mission_form_1.id,
+                                "form": {"id": self.form_1.id, "name": self.form_1.name},
+                                "min_cardinality": self.mission_form_1.min_cardinality,
+                                "max_cardinality": self.mission_form_1.max_cardinality,
+                            },
+                        ],
+                        "org_unit_type": None,
+                        "org_unit_min_cardinality": None,
+                        "org_unit_max_cardinality": None,
+                        "entity_type": None,
+                        "entity_min_cardinality": None,
+                        "entity_max_cardinality": None,
+                    },
+                    {
+                        "id": self.mission_2.id,
+                        "name": self.mission_2.name,
+                        "mission_type": self.mission_2.mission_type,
+                        "mission_forms": [
+                            {
+                                "id": self.mission_form_2.id,
+                                "form": {"id": self.form_2.id, "name": self.form_2.name},
+                                "min_cardinality": self.mission_form_2.min_cardinality,
+                                "max_cardinality": self.mission_form_2.max_cardinality,
+                            }
+                        ],
+                        "org_unit_type": None,
+                        "org_unit_min_cardinality": None,
+                        "org_unit_max_cardinality": None,
+                        "entity_type": None,
+                        "entity_min_cardinality": None,
+                        "entity_max_cardinality": None,
+                    },
+                ],
                 "description": "A test planning",
                 "published_at": None,
                 "started_at": "2025-01-01",

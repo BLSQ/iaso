@@ -52,14 +52,18 @@ class PlanningSerializersTestBase(APITestCase):
             mission_type=MissionType.FORM_FILLING,
             created_by=self.user_1,
         )
-        MissionForm.objects.create(mission=self.mission_1, form=self.form_1, min_cardinality=1, max_cardinality=1)
+        self.mission_form_1 = MissionForm.objects.create(
+            mission=self.mission_1, form=self.form_1, min_cardinality=1, max_cardinality=1
+        )
         self.mission_2 = Mission.objects.create(
             name="mission_form_2",
             account=self.account_1,
             mission_type=MissionType.FORM_FILLING,
             created_by=self.user_1,
         )
-        MissionForm.objects.create(mission=self.mission_2, form=self.form_2, min_cardinality=1, max_cardinality=1)
+        self.mission_form_2 = MissionForm.objects.create(
+            mission=self.mission_2, form=self.form_2, min_cardinality=1, max_cardinality=1
+        )
         self.planning.missions.set([self.mission_1, self.mission_2])
         self.planning.target_org_unit_types.set([self.org_unit_type_child])
         self.planning_sampling_result = PlanningSamplingResult.objects.create(

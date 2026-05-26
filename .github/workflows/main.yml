@@ -16,29 +16,36 @@ env:
     IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-    test_js:
+    frontend_tests:
         runs-on: ubuntu-24.04
         steps:
-            - uses: actions/checkout@v4
+            - name: Check out repository code
+              uses: actions/checkout@v6
+
             - name: Use node.js 22.18.0
               uses: actions/setup-node@v4
               with:
                   node-version: '22.18.0'
                   cache: npm
+
             - name: upgrade npm
               run: |
                   npm install --global npm@11.13.0
+
             - name: Environment info
               run: |
                   node --version
                   npm --version
+
             - name: npm install and test
               run: |
                   npm ci
                   npm test
+
             - name: Check Frontend (JS/React) translations
               run: |
                   python scripts/update_trads.py
+
             - name: Slack notification
               uses: rtCamp/action-slack-notify@v2
               env:
@@ -51,7 +58,9 @@ jobs:
                   SLACK_FOOTER: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
                   MSG_MINIMAL: true
               if: failure()
+
     build-and-push-image:
+      # TODO: this job has to be completely updated and should call the new prod image
         runs-on: ubuntu-24.04
         permissions:
             contents: read
@@ -87,7 +96,8 @@ jobs:
                   file: docker/bundle/Dockerfile
                   cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
                   cache-to: type=registry,ref=ghcr.io/blsq/iaso:buildcache,mode=max
-    test_python:
+
+    backend_tests:
         runs-on: ubuntu-24.04
         services:
             postgres:
@@ -100,75 +110,54 @@ jobs:
                     - 5432:5432
                 # needed because the postgres container does not provide a health check
                 options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        env:
+          DEBUG: true
+          DJANGO_SETTINGS_MODULE: hat.settings
+          PLUGINS: polio,wfp,wfp_auth
+          RDS_DB_NAME: github_actions
+          SECRET_KEY: secret
+          RDS_HOSTNAME: localhost
+          RDS_PASSWORD: postgres
+          RDS_PORT: 5432
+          RDS_USERNAME: postgres
         steps:
-            - uses: actions/checkout@v4
+            - name: Check out repository code
+              uses: actions/checkout@v6
+
             - name: Install Python 3.9
-              uses: actions/setup-python@v5
+              uses: actions/setup-python@v6
               with:
-                  python-version: 3.9
+                  python-version-file: "pyproject.toml"
+
             - name: Install GDAL and gettext
               run: sudo apt-get update && sudo apt install gdal-bin gettext
-            - uses: actions/cache@v4
-              id: cache-venv
+
+            - name: Install uv with caching
+              uses: astral-sh/setup-uv@v8.1.0
               with:
-                  path: ./venv/
-                  # The cache key depends on requirements.txt
-                  key: ${{ runner.os }}-venv-${{ hashFiles('**/requirements*.txt') }}
-                  restore-keys: |
-                      ${{ runner.os }}-venv-
-                  # Build a virtualenv, but only if it doesn't already exist
-            - run:
-                  python -v && python -m venv ./venv && . ./venv/bin/activate && pip install -U pip &&
-                  pip install -r requirements-dev.txt
-              if: steps.cache-venv.outputs.cache-hit != 'true'
+                enable-cache: true
+
+            - name: Install backend dependencies
+              run: uv sync --locked --all-extras --dev
+
             - name: Environment info
-              run: |
-                  pip list
-            - name: Check formatting with ruff
-              # https://docs.astral.sh/ruff/integrations/#github-actions
-              run: |
-                  . ./venv/bin/activate && ruff check --output-format=github . && ruff format --check
+              run: uv tree --all-groups
+
             - name: Check Backend (Django) translations
               run: |
-                  . ./venv/bin/activate
-                  python manage.py make_translations
-                  python manage.py compile_translations
-              env:
-                  RDS_DB_NAME: github_actions
-                  SECRET_KEY: secret
-                  DEBUG: true
-                  DJANGO_SETTINGS_MODULE: hat.settings
-                  RDS_PASSWORD: postgres
-                  RDS_HOSTNAME: localhost
-                  RDS_PORT: 5432
-                  RDS_USERNAME: postgres
-                  CACHE: false
-                  DEV_SERVER: true
-                  PLUGINS: polio,wfp,wfp_auth
+                  uv run python --version
+                  uv run python manage.py make_translations
+                  uv run python manage.py compile_translations
+
+            - name: Check for missing migrations
+              run: uv run python manage.py makemigrations --check
+
             - name: Django tests
               run: |
-                  . ./venv/bin/activate &&  python manage.py migrate
-                  . ./venv/bin/activate &&  python manage.py createcachetable
-                  # check we don't have missing migration
-                  . ./venv/bin/activate &&  python manage.py makemigrations --check
-                  . ./venv/bin/activate &&  python -W "ignore" manage.py test
-              env:
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  AWS_STORAGE_BUCKET_NAME: iaso-dev
-                  CACHE: false
-                  DEBUG: true
-                  DEFAULT_FILE_STORAGE: storages.backends.s3boto3.S3Boto3Storage
-                  DEV_SERVER: true
-                  DJANGO_SETTINGS_MODULE: hat.settings
-                  IASO_ENVIRONMENT: development
-                  PLUGINS: polio,wfp,wfp_auth
-                  RDS_DB_NAME: github_actions
-                  RDS_HOSTNAME: localhost
-                  RDS_PASSWORD: postgres
-                  RDS_PORT: 5432
-                  RDS_USERNAME: postgres
-                  SECRET_KEY: secret
+                  uv run python manage.py migrate
+                  uv run python manage.py createcachetable
+                  uv run python -W "ignore" manage.py test
+
             - name: Slack notification
               uses: rtCamp/action-slack-notify@v2
               env:
@@ -181,3 +170,21 @@ jobs:
                   SLACK_FOOTER: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
                   MSG_MINIMAL: true
               if: failure()
+
+    backend_lint_and_format:
+      runs-on: ubuntu-24.04
+      steps:
+        - name: Check out repository code
+          uses: actions/checkout@v6
+
+        - name: Install ruff
+          uses: astral-sh/ruff-action@v4.0.0
+          with:
+            args: "--version"
+            version: "0.9.6"
+
+        - name: Linting with ruff
+          run: ruff check --output-format=github .
+
+        - name: Formatting with ruff
+          run: ruff format --check .

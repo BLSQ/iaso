@@ -1,195 +1,193 @@
 name: Iaso Automated CI testing
 # This workflow run automatically for every PR on github it checks the syntax and launch the tests.
 on:
-    pull_request:
-        types: [opened, synchronize, ready_for_review]
-    push:
-        # Run On push (or merge) on develop.  This populates the cache and avoid the issue where we have undetected migrations
-        # conflict following subsequent merge
-        branches:
-            - develop
+  pull_request:
+    types: [ opened, synchronize, ready_for_review ]
+  push:
+    # Run On push (or merge) on develop.  This populates the cache and avoid the issue where we have undetected migrations
+    # conflict following subsequent merge
+    branches:
+      - develop
 concurrency:
-    group: ${{ github.workflow }}-${{ github.ref }}
-    cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 env:
-    REGISTRY: ghcr.io
-    IMAGE_NAME: ${{ github.repository }}
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-    frontend_tests:
-        runs-on: ubuntu-24.04
-        steps:
-            - name: Check out repository code
-              uses: actions/checkout@v6
+  frontend_tests:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v6
 
-            - name: Use node.js 22.18.0
-              uses: actions/setup-node@v4
-              with:
-                  node-version: '22.18.0'
-                  cache: npm
+      - name: Use node.js 22.18.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.18.0'
+          cache: npm
 
-            - name: upgrade npm
-              run: |
-                  npm install --global npm@11.13.0
+      - name: upgrade npm
+        run: |
+          npm install --global npm@11.13.0
 
-            - name: Environment info
-              run: |
-                  node --version
-                  npm --version
+      - name: Environment info
+        run: |
+          node --version
+          npm --version
 
-            - name: npm install and test
-              run: |
-                  npm ci
-                  npm test
+      - name: npm install and test
+        run: |
+          npm ci
+          npm test
 
-            - name: Check ESLint
-              run: npm run show-lint-problems
+      - name: Check ESLint
+        run: npm run show-lint-problems
 
-            - name: Check Frontend (JS/React) translations
-              run: |
-                  python scripts/update_trads.py
+      - name: Check Frontend (JS/React) translations
+        run: |
+            python scripts/update_trads.py
 
-            - name: Slack notification
-              uses: rtCamp/action-slack-notify@v2
-              env:
-                  SLACK_USERNAME: ${{ github.workflow }}
-                  SLACK_ICON_EMOJI: ':robot_face:'
-                  SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-                  SLACK_CHANNEL: iaso-dev
-                  SLACK_COLOR: ${{ job.status }}
-                  SLACK_TITLE: ${{ format('Job {0} failed on {1}', github.job, github.ref) }}
-                  SLACK_FOOTER: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
-                  MSG_MINIMAL: true
-              if: failure()
-
-    build-and-push-image:
-      # TODO: this job has to be completely updated and should call the new prod image
-        runs-on: ubuntu-24.04
-        permissions:
-            contents: read
-            packages: write
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
-            - name: Set up Docker Buildx
-              uses: docker/setup-buildx-action@v3
-            - name: Determining version ${{ github.ref_name }}
-              id: version
-              run: |
-                  export GITHUB_BRANCH=${GITHUB_REF##*heads/}
-                  echo $GITHUB_BRANCH
-                  git describe --tags
-                  export VERSION_NAME=$(git describe --tags)--$GITHUB_BRANCH
-                  echo "::set-output name=VERSION_NAME::$VERSION_NAME"
-                  echo "::set-output name=PROD_BUILD_IMAGE_TAG::${{ env.REGISTRY }}/blsq/iaso:$GITHUB_SHA"
-            - name: Log in to the Container registry
-              uses: docker/login-action@v3
-              with:
-                  registry: ${{ env.REGISTRY }}
-                  username: ${{ github.actor }}
-                  password: ${{ secrets.GITHUB_TOKEN }}
-            - name: Build and push Docker image
-              uses: docker/build-push-action@v6
-              with:
-                  push: true
-                  tags: ${{ steps.version.outputs.IMAGE_TAG }}
-                  target: dev
-                  file: docker/bundle/Dockerfile
-                  cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
-                  cache-to: type=registry,ref=ghcr.io/blsq/iaso:buildcache,mode=max
-
-    backend_tests:
-        runs-on: ubuntu-24.04
-        services:
-            postgres:
-                image: postgis/postgis:16-3.5
-                env:
-                    POSTGRES_USER: postgres
-                    POSTGRES_PASSWORD: postgres
-                    POSTGRES_DB: github_actions
-                ports:
-                    - 5432:5432
-                # needed because the postgres container does not provide a health check
-                options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      - name: Slack notification
+        uses: rtCamp/action-slack-notify@v2
         env:
-          DEBUG: true
-          DJANGO_SETTINGS_MODULE: hat.settings
-          PLUGINS: polio,wfp,wfp_auth
-          RDS_DB_NAME: github_actions
-          SECRET_KEY: secret
-          RDS_HOSTNAME: localhost
-          RDS_PASSWORD: postgres
-          RDS_PORT: 5432
-          RDS_USERNAME: postgres
-        steps:
-            - name: Check out repository code
-              uses: actions/checkout@v6
+          SLACK_USERNAME: ${{ github.workflow }}
+          SLACK_ICON_EMOJI: ':robot_face:'
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: iaso-dev
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: ${{ format('Job {0} failed on {1}', github.job, github.ref) }}
+          SLACK_FOOTER: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
+          MSG_MINIMAL: true
+        if: failure()
 
-            - name: Install Python 3.9
-              uses: actions/setup-python@v6
-              with:
-                  python-version-file: "pyproject.toml"
+  build-and-push-image:
+    # TODO: this job has to be completely updated and should call the new prod image
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Determining version ${{ github.ref_name }}
+        id: version
+        run: |
+          export GITHUB_BRANCH=${GITHUB_REF##*heads/}
+          echo $GITHUB_BRANCH
+          git describe --tags
+          export VERSION_NAME=$(git describe --tags)--$GITHUB_BRANCH
+          echo "::set-output name=VERSION_NAME::$VERSION_NAME"
+          echo "::set-output name=PROD_BUILD_IMAGE_TAG::${{ env.REGISTRY }}/blsq/iaso:$GITHUB_SHA"
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: ${{ steps.version.outputs.IMAGE_TAG }}
+          target: dev
+          file: docker/bundle/Dockerfile
+          cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
+          cache-to: type=registry,ref=ghcr.io/blsq/iaso:buildcache,mode=max
 
-            - name: Install GDAL and gettext
-              run: sudo apt-get update && sudo apt install gdal-bin gettext
+  backend_tests:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgis/postgis:16-3.5
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: github_actions
+        ports:
+          - 5432:5432
+        # needed because the postgres container does not provide a health check
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      DEBUG: true
+      DJANGO_SETTINGS_MODULE: hat.settings
+      PLUGINS: polio,wfp,wfp_auth
+      RDS_DB_NAME: github_actions
+      SECRET_KEY: secret
+      RDS_HOSTNAME: localhost
+      RDS_PASSWORD: postgres
+      RDS_PORT: 5432
+      RDS_USERNAME: postgres
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v6
 
-            - name: Install uv with caching
-              uses: astral-sh/setup-uv@v8.1.0
-              with:
-                enable-cache: true
-                cache-dependency-glob: "uv.lock"
+      - name: Install Python 3.9
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: "pyproject.toml"
 
-            - name: Install backend dependencies
-              run: uv sync --locked
+      - name: Install GDAL and gettext
+        run: sudo apt-get update && sudo apt install gdal-bin gettext
 
-            - name: Environment info
-              run: uv tree --all-groups
+      - name: Install uv and setup cache
+        uses: astral-sh/setup-uv@v8.1.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
 
-            - name: Check Backend (Django) translations
-              run: |
-                  uv run python --version
-                  uv run python manage.py make_translations
-                  uv run python manage.py compile_translations
+      - name: Install backend dependencies
+        run: uv sync --locked
 
-            - name: Check for missing migrations
-              run: uv run python manage.py makemigrations --check
+      - name: Environment info
+        run: uv tree --all-groups
 
-            - name: Django tests
-              run: |
-                  uv run python manage.py migrate
-                  uv run python manage.py createcachetable
-                  uv run python -W "ignore" manage.py test --parallel auto
-                  # --parallel: run the suite across one process per CPU core (see IA-5186)
+      - name: Check Backend (Django) translations
+        run: |
+          uv run python manage.py make_translations
+          uv run python manage.py compile_translations
 
-            - name: Slack notification
-              uses: rtCamp/action-slack-notify@v2
-              env:
-                  SLACK_USERNAME: ${{ github.workflow }}
-                  SLACK_ICON_EMOJI: ':robot_face:'
-                  SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-                  SLACK_CHANNEL: iaso-dev
-                  SLACK_COLOR: ${{ job.status }}
-                  SLACK_TITLE: ${{ format('Job {0} failed on {1}', github.job, github.ref) }}
-                  SLACK_FOOTER: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
-                  MSG_MINIMAL: true
-              if: failure()
+      - name: Check for missing migrations
+        run: uv run python manage.py makemigrations --check
 
-    backend_lint_and_format:
-      runs-on: ubuntu-24.04
-      steps:
-        - name: Check out repository code
-          uses: actions/checkout@v6
+      - name: Django tests
+        run: |
+          uv run python manage.py migrate
+          uv run python manage.py createcachetable
+          uv run python -W "ignore" manage.py test
 
-        - name: Install ruff
-          uses: astral-sh/ruff-action@v4.0.0
-          with:
-            args: "--version"
-            version: "0.9.6"
+      - name: Slack notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_USERNAME: ${{ github.workflow }}
+          SLACK_ICON_EMOJI: ':robot_face:'
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: iaso-dev
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: ${{ format('Job {0} failed on {1}', github.job, github.ref) }}
+          SLACK_FOOTER: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
+          MSG_MINIMAL: true
+        if: failure()
 
-        - name: Linting with ruff
-          run: ruff check --output-format=github .
+  backend_lint_and_format:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v6
 
-        - name: Formatting with ruff
-          run: ruff format --check .
+      - name: Install ruff
+        uses: astral-sh/ruff-action@v4.0.0
+        with:
+          args: "--version"
+          version: "0.9.6"
+
+      - name: Linting with ruff
+        run: ruff check --output-format=github .
+
+      - name: Formatting with ruff
+        run: ruff format --check .

@@ -152,25 +152,16 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
             payload_temp_form_a_with_date,
             format="json",
         )
-        data = self.assertJSONResponse(response, 400)
-        self.assertHasError(
-            data,
-            "form_a_reception_date",
-            "form_a_reception_date must be empty when status is temporary",
-        )
 
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(11):
             response = self.client.post(
                 OUTGOING_STOCK_MOVEMENT_URL,
                 payload_temp_form_a_with_date,
                 format="json",
             )
-            data = self.assertJSONResponse(response, 400)
-            self.assertHasError(
-                data,
-                "form_a_reception_date",
-                "form_a_reception_date must be empty when status is temporary",
-            )
+            data = self.assertJSONResponse(response, 201)
+            self.assertEqual(data["status"], OutgoingStockMovement.StatusChoices.TEMPORARY)
+            self.assertEqual(data["form_a_reception_date"], "2024-01-02")
 
         with open("plugins/polio/tests/fixtures/virus_scan/safe_file.pdf", "rb") as safe_file:
             response = self.client.post(
@@ -181,8 +172,9 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
                 },
                 format="multipart",
             )
-        data = self.assertJSONResponse(response, 400)
-        self.assertHasError(data, "file", "file cannot be provided when status is temporary")
+        data = self.assertJSONResponse(response, 201)
+        self.assertEqual(data["status"], OutgoingStockMovement.StatusChoices.TEMPORARY)
+        self.assertIsNotNone(data["file"])
 
         payload_received_form_a = {
             **payload_temp_form_a,
@@ -484,7 +476,7 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
         data = self.assertJSONResponse(response, 400)
         self.assertIn("error", data)
 
-    def test_received_to_temporary_transition_clears_file_and_reception_date(self):
+    def test_received_to_temporary_transition_preserves_file_and_reception_date(self):
         self.client.force_authenticate(self.user_rw_perms)
 
         with open("plugins/polio/tests/fixtures/virus_scan/safe_file.pdf", "rb") as safe_file:
@@ -514,8 +506,8 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
         )
         data = self.assertJSONResponse(response, 200)
         self.assertEqual(data["status"], "temporary")
-        self.assertIsNone(data["form_a_reception_date"])
-        self.assertIsNone(data["file"])
+        self.assertEqual(data["form_a_reception_date"], "2024-01-02")
+        self.assertIsNotNone(data["file"])
 
     def test_form_a_reception_date_required_when_switching_temporary_to_received(self):
         self.client.force_authenticate(self.user_rw_perms)

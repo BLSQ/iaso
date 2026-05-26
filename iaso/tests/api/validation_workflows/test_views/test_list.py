@@ -10,7 +10,7 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
     def setUp(self):
         super().setUp()
         self.account_2 = Account.objects.create(name="account_2")
-        self.enable_validation_workflow_feature_flag(self.account, self.account_2)
+        self.add_validation_workflow_module(self.account, self.account_2)
 
         self.form = Form.objects.create(name="form")
         Instance.objects.create(name="instance", form=self.form)
@@ -166,7 +166,7 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
     def test_search_num_queries_with_parameters_and_one_search_result(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(5):
             res = self.client.get(
                 reverse("validation_workflows-list"), data={"name": "name", "forms": [self.form.pk, self.form_3.pk]}
             )
@@ -176,7 +176,7 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
     def test_search_num_queries_without_parameters_and_multiple_search_results(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(5):
             self.client.force_authenticate(self.john_wick)
             res = self.client.get(reverse("validation_workflows-list"))
             res_json = self.assertJSONResponse(res, 200)

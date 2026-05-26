@@ -5,7 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { describe, expect } from 'vitest';
 import { ValidationWorkflowInstances } from 'Iaso/domains/validationWorkflowInstances';
 import { apiDateTimeFormat } from 'Iaso/utils/dates';
-import { SUBMISSION_VALIDATION_WORKFLOW } from 'Iaso/utils/featureFlags';
+import { VALIDATION_WORKFLOW_MODULE } from 'Iaso/utils/modules';
 import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
 import { renderWithThemeAndIntlProvider } from '../../../tests/helpers';
 import { currentUserFactory } from '../../factories/users';
@@ -54,7 +54,7 @@ describe('Validation workflow list UI integration test', () => {
             permissions: [VALIDATION_WORKFLOWS],
             account: {
                 id: 22,
-                feature_flags: [SUBMISSION_VALIDATION_WORKFLOW],
+                modules: [VALIDATION_WORKFLOW_MODULE],
             },
         });
         mockCurrentUser.mockReturnValue(currentUser);

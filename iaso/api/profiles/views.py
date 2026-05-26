@@ -51,7 +51,7 @@ from iaso.api.profiles.serializers import (
     ProfileUserFallbackRetrieveSerializer,
 )
 from iaso.api.profiles.serializers.dropdown import ProfileDropdownSerializer
-from iaso.api.profiles.serializers.update import ProfileMeUpdateSerializer, ProfileUpdatePasswordSerializer
+from iaso.api.profiles.serializers.update import BaseProfileUpdateSerializer, ProfileUpdatePasswordSerializer
 from iaso.mail.branding import core_email_branding_context
 from iaso.models import OrgUnit, Profile, TenantUser, UserRole
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
@@ -76,7 +76,7 @@ class ProfilesViewSet(ModelViewSet):
     GET /api/profiles/export-csv/
     GET /api/profiles/export-xlsx/
     POST /api/profiles/
-    PATCH /api/profiles/me => current user, can only set language field
+    PATCH /api/profiles/me => current user (language, home page, name, email)
     PATCH /api/profiles/<id>
     DELETE /api/profiles/<id>
     DELETE /api/profiles/me => current user
@@ -113,7 +113,7 @@ class ProfilesViewSet(ModelViewSet):
             return ProfileListSerializer
         if self.action in ["update", "partial_update"]:
             if self.kwargs.get(self.lookup_url_kwarg or self.lookup_field, "") == PK_ME:
-                return ProfileMeUpdateSerializer
+                return BaseProfileUpdateSerializer
             return ProfileUpdateSerializer
         if self.action in ["update_password"]:
             return ProfileUpdatePasswordSerializer

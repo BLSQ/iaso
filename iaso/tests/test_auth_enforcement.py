@@ -1,7 +1,7 @@
 import re
 
 from django.test import Client, TestCase, override_settings
-from django.urls import get_resolver
+from django.urls import URLPattern, URLResolver, get_resolver
 from rest_framework import status
 
 
@@ -74,9 +74,6 @@ PUBLIC_ENDPOINTS = {
     # okish
     ("/sync/form_upload/", "POST"),
 }
-
-
-from django.urls import URLPattern, URLResolver, get_resolver
 
 
 CONVERTER_SAMPLES = {

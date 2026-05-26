@@ -65,9 +65,17 @@ class NestedAccountSerializer(ModelSerializer):
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
     feature_flags = serializers.SlugRelatedField(many=True, read_only=True, slug_field="code")
-    user_manual_path = serializers.ReadOnlyField(default=settings.USER_MANUAL_PATH)
-    forum_path = serializers.ReadOnlyField(default=settings.FORUM_PATH)
+    user_manual_path = serializers.SerializerMethodField()
+    forum_path = serializers.SerializerMethodField()
     default_version = NestedDefaultVersionSerializer(read_only=True)
+
+    @extend_schema_field(OpenApiTypes.STR)
+    def get_user_manual_path(self, obj):
+        return obj.user_manual_path or settings.USER_MANUAL_PATH
+
+    @extend_schema_field(OpenApiTypes.STR)
+    def get_forum_path(self, obj):
+        return obj.forum_path or settings.FORUM_PATH
 
     class Meta:
         model = Account

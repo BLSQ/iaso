@@ -12,7 +12,7 @@ class NestedValidationNodeTemplateSerializer(ModelSerializer):
 
     class Meta:
         model = ValidationNodeTemplate
-        fields = ["slug", "name", "description", "color", "roles_required", "can_skip_previous_nodes"]
+        fields = ["slug", "name", "description", "roles_required", "can_skip_previous_nodes"]
 
 
 class NestedFormSerializer(ModelSerializer):

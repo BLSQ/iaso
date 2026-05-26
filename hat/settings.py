@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 import importlib
 import os
 import sys
+import tempfile
 
 from datetime import timedelta
 from typing import Any, Dict
@@ -64,6 +65,7 @@ DNS_DOMAIN = env.str("DNS_DOMAIN", default="localhost:8081")
 TESTING = env.bool("TESTING", default=False)
 IN_TESTS = len(sys.argv) > 1 and sys.argv[1] == "test"
 PLUGINS = env.list("PLUGINS", default=[], delimiter=",")
+ROOT_REDIRECT_PATTERN_NAME = env.str("ROOT_REDIRECT_PATTERN_NAME", default="dashboard:home_iaso")
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -458,6 +460,9 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/login/"
+# Extra paths IasoLogoutView accepts as ?next=... (in addition to the default).
+LOGOUT_NEXT_ALLOWED_PATHS = env.list("LOGOUT_NEXT_ALLOWED_PATHS", default=[], delimiter=",")
 
 AUTH_CLASSES = [
     "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -502,6 +507,7 @@ SPECTACULAR_SETTINGS = {
     "TAGS": [
         {"name": "Mobile", "description": "Endpoints used by the mobile application"},
         {"name": "v2", "description": "Version 2 of the API"},
+        {"name": "FHIR", "description": "FHIR R4 compliant endpoints for health data interoperability"},
     ],
     "SWAGGER_UI_SETTINGS": {  # see https://swagger.io/docs/open-source-tools/swagger-ui/usage/configuration/
         "defaultModelsExpandDepth": 0,  # collapsing schemas by default
@@ -625,6 +631,13 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "iaso/static"),
     os.path.join(BASE_DIR, "hat/assets/webpack"),
 ]
+for plugin_name in PLUGINS:
+    plugin_name = (plugin_name or "").strip()
+    if not plugin_name:
+        continue
+    plugin_static = os.path.join(BASE_DIR, "plugins", plugin_name, "static")
+    if os.path.isdir(plugin_static):
+        STATICFILES_DIRS.append(plugin_static)
 
 # Javascript/CSS Files:
 WEBPACK_LOADER = {
@@ -898,6 +911,7 @@ for plugin_name in PLUGINS:
         )
         INSTALLED_APPS.append(f"plugins.{plugin_name}")
 
+XLSFORM_VALIDATOR_TEMP_DIR = tempfile.gettempdir()
 INSTALLED_APPS.append("dynamic_fields")
 
 # Making sure that files are not stored on disk while running tests

@@ -38,6 +38,7 @@ import SupervisorAccount from '@mui/icons-material/SupervisorAccount';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import { ThemeConfigContext } from 'Iaso/domains/app/contexts/ThemeConfigContext';
+import { VALIDATION_WORKFLOW_MODULE } from 'Iaso/utils/modules';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
 import EntitySvg from '../components/svg/Entity';
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
@@ -60,7 +61,6 @@ import {
     SHOW_DEV_FEATURES,
     SHOW_DHIS2_LINK,
     SHOW_PAGES,
-    SUBMISSION_VALIDATION_WORKFLOW,
 } from '../utils/featureFlags';
 import { useCurrentUser, User } from '../utils/usersUtils';
 import MESSAGES from './messages';
@@ -482,7 +482,7 @@ export const useMenuItems = (): MenuItems => {
 
     // add feature flags
     if (
-        hasFeatureFlag(currentUser, SUBMISSION_VALIDATION_WORKFLOW) &&
+        userHasAccessToModule(VALIDATION_WORKFLOW_MODULE, currentUser) &&
         !basicItems.find(item => item.key === 'validation-workflows')
     ) {
         basicItems.push({

@@ -11,7 +11,7 @@ class ValidationNodeTemplateAPIListTestCase(BaseApiTestCase):
         super().setUp()
         self.project = Project.objects.create(name="project", account=self.account)
         self.account_2 = Account.objects.create(name="account_2")
-        self.enable_validation_workflow_feature_flag(self.account, self.account_2)
+        self.add_validation_workflow_module(self.account, self.account_2)
 
         self.group = Group.objects.create(name=f"{self.account.id}_Group")
         self.user_role = UserRole.objects.create(group=self.group, account=self.account)
@@ -45,7 +45,6 @@ class ValidationNodeTemplateAPIListTestCase(BaseApiTestCase):
         self.second_node = ValidationNodeTemplate.objects.create(
             name="Second node",
             workflow=self.validation_workflow,
-            color="#ffffff",
             description="some description",
             can_skip_previous_nodes=True,
         )
@@ -109,7 +108,7 @@ class ValidationNodeTemplateAPIListTestCase(BaseApiTestCase):
     def test_number_queries(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(5):
             res = self.client.get(
                 reverse(
                     "validation_node_templates-list",
@@ -136,7 +135,7 @@ class ValidationNodeTemplateAPIListTestCase(BaseApiTestCase):
 
         self.assertValidListData(list_data=res_data, results_key="results", expected_length=3)
 
-        fields = ["slug", "name", "description", "color", "roles_required", "can_skip_previous_nodes"]
+        fields = ["slug", "name", "description", "roles_required", "can_skip_previous_nodes"]
 
         for data in res_data["results"]:
             for field in fields:

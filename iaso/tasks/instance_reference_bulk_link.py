@@ -8,7 +8,7 @@ from django.http import QueryDict
 
 from beanstalk_worker import task_decorator
 from hat.audit import models as audit_models
-from iaso.api.instances.instance_filters import parse_instance_filters
+from iaso.api.instances.filters import parse_instance_filters
 from iaso.api.tasks.utils.link_unlink_allowed_actions import AllowedActions
 from iaso.models import Instance, Task
 from iaso.models.org_unit import OrgUnitReferenceInstance

@@ -17,6 +17,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'App ID',
         id: 'iaso.projects.appId',
     },
+    description: {
+        defaultMessage: 'Description',
+        id: 'iaso.projects.description',
+    },
     needsAuthentication: {
         defaultMessage: 'Requires Authentication',
         id: 'iaso.projects.needsAuthentication',

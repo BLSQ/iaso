@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 class AppSerializer(ProjectSerializer):
     APP_ID = "app_id"
     COLOR = "color"
+    DESCRIPTION = "description"
     FEATURE_FLAGS = "projectfeatureflags_set"
     FORMS = "forms"
     NAME = "name"
@@ -29,6 +30,7 @@ class AppSerializer(ProjectSerializer):
             "id",
             "name",
             "app_id",
+            "description",
             "forms",
             "feature_flags",
             "needs_authentication",
@@ -80,12 +82,14 @@ class AppSerializer(ProjectSerializer):
         account = request.user.iaso_profile.account
 
         name = validated_data.get(self.NAME, None)
+        description = validated_data.get(self.DESCRIPTION, "")
         forms = validated_data.get(self.FORMS, None)
         feature_flags = validated_data.get(self.FEATURE_FLAGS, None)
         color = validated_data.get(self.COLOR, DEFAULT_COLOR)
 
         new_app.app_id = app_id
         new_app.name = name
+        new_app.description = description
         new_app.account = account
         new_app.color = color
 
@@ -100,11 +104,14 @@ class AppSerializer(ProjectSerializer):
         forms = validated_data.pop(self.FORMS, None)
         app_id = validated_data.pop(self.APP_ID, None)
         name = validated_data.pop(self.NAME, None)
+        description = validated_data.get(self.DESCRIPTION, "")
         color = validated_data.pop(self.COLOR, None)
         if app_id is not None:
             instance.app_id = app_id
         if name is not None:
             instance.name = name
+        if validated_data.get(self.DESCRIPTION, None) is not None:
+            instance.description = description
         if color is not None:
             instance.color = color
 

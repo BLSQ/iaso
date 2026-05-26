@@ -57,6 +57,7 @@ from .api.entities.views import EntityViewSet
 from .api.entity_types import EntityTypeViewSet
 from .api.export_requests import ExportRequestsViewSet
 from .api.feature_flags import FeatureFlagViewSet
+from .api.fhir.views import FHIRLocationViewSet
 from .api.form_ai.views import (
     form_ai_chat,
     form_ai_download,
@@ -71,7 +72,7 @@ from .api.forms.views_mobile import MobileFormViewSet
 from .api.group_sets.views import GroupSetsViewSet
 from .api.groups.views import GroupsViewSet
 from .api.hesabu_descriptors import HesabuDescriptorsViewSet
-from .api.instances.instances import InstancesViewSet
+from .api.instances.views import InstancesViewSet
 from .api.instances.views_mobile import InstancesMobileViewSet
 from .api.links import LinkViewSet
 from .api.logs import LogsViewSet
@@ -111,7 +112,7 @@ from .api.permissions.permissions import PermissionsViewSet
 from .api.profiles.views import ProfilesViewSet
 from .api.projects import ProjectsViewSet
 from .api.reports import ReportsViewSet
-from .api.setup_account import SetupAccountViewSet
+from .api.setup_account.views import SetupAccountViewSet
 from .api.source_versions import SourceVersionViewSet
 from .api.stocks.views import (
     StockItemRuleViewSet,
@@ -294,9 +295,7 @@ router.register(
     basename="validation_workflow_nodes",
 )
 router.register(r"mobile/validation-workflows", ValidationWorkflowMobileViewSet, basename="mobile_validation_workflows")
-router.register(
-    r"validation-workflows/instance", ValidationWorkflowInstanceViewSet, basename="validation_workflow_instances"
-)
+router.register(r"fhir/Location", FHIRLocationViewSet, basename="fhir-location")
 router.registry.extend(plugins_router.registry)
 
 if settings.TEST_MODE:

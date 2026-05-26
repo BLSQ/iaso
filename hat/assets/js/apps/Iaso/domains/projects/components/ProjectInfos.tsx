@@ -17,6 +17,7 @@ type Form = {
 export type ProjectForm = {
     id?: Form;
     app_id: Form;
+    description: Form;
     name: Form;
     feature_flags: {
         value: Array<ProjectFeatureFlag> | undefined;
@@ -65,6 +66,14 @@ const ProjectInfos: FunctionComponent<Props> = ({
                 type="text"
                 label={MESSAGES.appId}
                 required
+            />
+            <InputComponent
+                keyValue="description"
+                onChange={(key, value) => setFieldValue(key, value)}
+                value={currentProject.description.value}
+                errors={currentProject.description.errors}
+                type="textarea"
+                label={MESSAGES.description}
             />
             <Box mt={2}>
                 <ColorPicker

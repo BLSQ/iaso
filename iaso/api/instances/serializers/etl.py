@@ -8,10 +8,10 @@ from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 
 
 class NestedOrgUnitSerializer(ModelSerializer):
-    org_unit_type_name = serializers.CharField(read_only=True, source="org_unit_type.name")
-    latitude = serializers.FloatField(read_only=True, source="location.y")
-    longitude = serializers.FloatField(read_only=True, source="location.x")
-    altitude = serializers.FloatField(read_only=True, source="location.z")
+    org_unit_type_name = serializers.CharField(read_only=True, source="org_unit_type.name", allow_null=True)
+    latitude = serializers.FloatField(read_only=True, source="location.y", allow_null=True)
+    longitude = serializers.FloatField(read_only=True, source="location.x", allow_null=True)
+    altitude = serializers.FloatField(read_only=True, source="location.z", allow_null=True)
 
     class Meta:
         model = OrgUnit

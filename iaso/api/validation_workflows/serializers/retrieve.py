@@ -8,7 +8,7 @@ from iaso.models import Form, ValidationNodeTemplate, ValidationWorkflow
 
 
 class NestedValidationNodeTemplateSerializer(ModelSerializer):
-    roles_required = UserRoleNameSerializer(read_only=True, many=True)
+    roles_required = UserRoleNameSerializer(read_only=True, many=True, allow_null=True)
 
     class Meta:
         model = ValidationNodeTemplate
@@ -27,8 +27,8 @@ class ValidationWorkflowRetrieveSerializer(ModelSerializer):
     updated_by = UserDisplayNameField()
     created_by = UserDisplayNameField()
 
-    forms = NestedFormSerializer(many=True, read_only=True, source="form_set")
-    node_templates = serializers.SerializerMethodField(read_only=True)
+    forms = NestedFormSerializer(many=True, read_only=True, source="form_set", allow_null=True)
+    node_templates = serializers.SerializerMethodField(read_only=True, allow_null=True)
 
     class Meta:
         model = ValidationWorkflow
@@ -44,7 +44,7 @@ class ValidationWorkflowRetrieveSerializer(ModelSerializer):
             "node_templates",
         ]
 
-    @extend_schema_field(NestedValidationNodeTemplateSerializer(many=True))
+    @extend_schema_field(NestedValidationNodeTemplateSerializer(many=True, allow_null=True))
     def get_node_templates(self, obj):
         nodes = list(getattr(obj, "_prefetched_objects_cache", {}).get("node_templates", obj.node_templates.all()))
 

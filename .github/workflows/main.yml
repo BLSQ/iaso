@@ -141,7 +141,7 @@ jobs:
                 enable-cache: true
 
             - name: Install backend dependencies
-              run: uv sync --locked --all-extras --dev
+              run: uv sync --locked
 
             - name: Environment info
               run: uv tree --all-groups

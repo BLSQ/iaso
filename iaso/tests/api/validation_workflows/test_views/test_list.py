@@ -206,7 +206,7 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
 class ValidationWorkflowAPISwaggerListTestCase(SwaggerTestCaseMixin, BaseValidationWorkflowAPITestCase):
     def setUp(self):
         super().setUp()
-        self.enable_validation_workflow_feature_flag(self.account)
+        self.add_validation_workflow_module(self.account)
 
         self.form = Form.objects.create(name="form")
         Instance.objects.create(name="instance", form=self.form)

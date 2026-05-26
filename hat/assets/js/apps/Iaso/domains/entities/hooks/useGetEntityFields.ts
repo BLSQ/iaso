@@ -39,21 +39,24 @@ export const useGetEntityFields = (entity: Entity | undefined) => {
         formDescriptors,
     );
 
-    const staticFields: Field[] = useMemo(
-        () => [
-            {
+    const staticFields: Field[] = useMemo(() => {
+        const fields: Field[] = [];
+
+        if (entity?.nfc_cards !== undefined) {
+            fields.push({
                 label: formatMessage(MESSAGES.nfcCards),
-                value: `${entity?.nfc_cards ?? 0}`,
+                value: `${entity.nfc_cards}`,
                 key: 'nfcCards',
-            },
-            {
-                label: formatMessage(MESSAGES.uuid),
-                value: entity?.uuid ? `${entity.uuid}` : '--',
-                key: 'uuid',
-            },
-        ],
-        [entity?.nfc_cards, entity?.uuid, formatMessage],
-    );
+            });
+        }
+        fields.push({
+            label: formatMessage(MESSAGES.uuid),
+            value: entity?.uuid ? `${entity.uuid}` : '--',
+            key: 'uuid',
+        });
+
+        return fields;
+    }, [entity?.nfc_cards, entity?.uuid, formatMessage]);
 
     return {
         isLoading: !entity || detailFields.length !== dynamicFields.length,

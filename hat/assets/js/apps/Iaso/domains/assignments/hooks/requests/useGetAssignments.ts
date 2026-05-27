@@ -48,6 +48,5 @@ export const useGetAssignments = (
                 allAssignments: data,
             };
         },
-        staleTime: Infinity,
     });
 };

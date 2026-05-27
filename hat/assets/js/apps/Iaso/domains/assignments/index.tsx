@@ -16,6 +16,14 @@ import { smallInputOverrides } from 'Iaso/styles';
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { useGetFormsDropdownOptions } from '../forms/hooks/useGetFormsDropdownOptions';
+import { filterOrgUnitTypesByForms } from '../forms/utils';
+import {
+    OrgUnitTypeHierarchy,
+    OrgUnitTypeHierarchyDropdownValue,
+    useGetOrgUnitTypesHierarchy,
+} from '../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { flattenOrgUnitTypeHierarchy } from '../orgUnits/orgUnitTypes/utils';
 import { useGetPlanningDetails } from '../plannings/hooks/requests/useGetPlanningDetails';
 import { Planning } from '../plannings/types';
 import { useGetTeam } from '../teams/hooks/requests/useGetTeams';
@@ -38,18 +46,61 @@ export const Assignments: FunctionComponent = () => {
         undefined,
     );
     const [search, setSearch] = useState<string | undefined>(params.search);
+    const [selectedOrgUnitType, setSelectedOrgUnitType] = useState<
+        OrgUnitTypeHierarchyDropdownValue[]
+    >([]);
     const [selectedTeam, setSelectedTeam] = useState<SubTeam | undefined>(
         undefined,
     );
     const { formatMessage } = useSafeIntl();
 
     const { planningId } = params;
+
+    const onSuccessPlanning = useCallback(
+        (data: Planning) => {
+            if (selectedOrgUnitType.length === 0) {
+                const targetOrgUnitTypes =
+                    data.target_org_unit_type_details ?? [];
+                setSelectedOrgUnitType(
+                    targetOrgUnitTypes.map(target => ({
+                        value: target.id,
+                        label: target.name,
+                        original: target as unknown as OrgUnitTypeHierarchy,
+                    })),
+                );
+            }
+        },
+        [selectedOrgUnitType],
+    );
+
     const {
         data: planning,
     }: {
         data?: Planning;
         isLoading: boolean;
-    } = useGetPlanningDetails(planningId);
+    } = useGetPlanningDetails(planningId, onSuccessPlanning);
+    const { data: formsDropdown } = useGetFormsDropdownOptions({
+        extraFields: ['project_ids', 'org_unit_type_ids'],
+    });
+
+    // Flatten `sub_unit_types` tree (not `depth`). Array index = map draw / z-index order.
+    const selectOrgUnitTypes = useCallback(
+        (data: OrgUnitTypeHierarchy) => {
+            const orgUnitTypes = flattenOrgUnitTypeHierarchy(
+                data?.sub_unit_types || [],
+            );
+            return filterOrgUnitTypesByForms(
+                orgUnitTypes,
+                formsDropdown,
+                planning?.forms,
+            );
+        },
+        [formsDropdown, planning?.forms],
+    );
+    const { data: orgUniTypeList } = useGetOrgUnitTypesHierarchy(
+        planning?.org_unit_details?.org_unit_type,
+        selectOrgUnitTypes,
+    );
 
     const goBack = useGoBack(baseUrls.planning);
 
@@ -193,6 +244,9 @@ export const Assignments: FunctionComponent = () => {
                                 planning={planning}
                                 canAssign={canAssign}
                                 params={params}
+                                orgUniTypeList={orgUniTypeList}
+                                selectedOrgUnitType={selectedOrgUnitType}
+                                setSelectedOrgUnitType={setSelectedOrgUnitType}
                             />
                         )}
                         {tab === 'list' && (

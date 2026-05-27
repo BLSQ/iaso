@@ -82,8 +82,9 @@ jobs:
       - name: Determine branch name and commit SHA
         id: vars
         run: |
-          echo "branch=${GITHUB_REF##*heads/}" >> $GITHUB_OUTPUT
-          echo "image_tags=${GITHUB_REF##*heads/},${GITHUB_SHA}" >> $GITHUB_OUTPUT
+          BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF##*refs/heads/}}"
+          echo "branch=${BRANCH}" >> $GITHUB_OUTPUT
+          echo "image_tags=${BRANCH},${GITHUB_SHA}" >> $GITHUB_OUTPUT
 
   build-and-push-image:
     needs: config

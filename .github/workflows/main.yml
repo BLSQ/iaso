@@ -90,7 +90,6 @@ jobs:
 
       - name: Build and push docker image
         uses: ./.github/workflows/docker_build.yml
-        secrets: inherit
         with:
           branch: ${{ github.ref_name }}
           image_tags: ${{ steps.vars.outputs.BRANCH_NAME }},${{ steps.vars.outputs.COMMIT_SHA }}

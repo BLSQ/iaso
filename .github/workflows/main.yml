@@ -73,29 +73,25 @@ jobs:
           MSG_MINIMAL: true
         if: failure()
 
-  build-and-push-image:
-    # TODO: this job has to be completely updated and should call the new prod image
+  config:
     runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-      packages: write
+    outputs:
+      branch: ${{ steps.vars.outputs.branch }}
+      image_tags: ${{ steps.vars.outputs.image_tags }}
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
       - name: Determine branch name and commit SHA
         id: vars
         run: |
-          echo "BRANCH_NAME=${GITHUB_REF##*heads/}" >> $GITHUB_OUTPUT
-          echo "COMMIT_SHA=${GITHUB_SHA}" >> $GITHUB_OUTPUT
+          echo "branch=${GITHUB_REF##*heads/}" >> $GITHUB_OUTPUT
+          echo "image_tags=${GITHUB_REF##*heads/},${GITHUB_SHA}" >> $GITHUB_OUTPUT
 
-      - name: Build and push docker image
-        uses: ./.github/workflows/docker_build.yml
-        with:
-          branch: ${{ github.ref_name }}
-          image_tags: ${{ steps.vars.outputs.BRANCH_NAME }},${{ steps.vars.outputs.COMMIT_SHA }}
+  build-and-push-image:
+    needs: config
+    uses: ./.github/workflows/docker_build.yml
+    secrets: inherit
+    with:
+      branch: ${{ needs.config.outputs.branch }}
+      image_tags: ${{ needs.config.outputs.image_tags }}
 
   backend_tests:
     runs-on: ubuntu-24.04

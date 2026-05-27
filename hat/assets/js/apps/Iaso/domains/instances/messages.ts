@@ -850,6 +850,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'This feature is disabled for your account',
         id: 'iaso.label.featureDisabled',
     },
+    moduleDisabled: {
+        defaultMessage:
+            'The related module(s) are not activated for your account.',
+        id: 'iaso.label.moduleDisabled',
+    },
     missingPermissions: {
         defaultMessage:
             'Missing one of the following permission(s): {permissions}',

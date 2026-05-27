@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 import importlib
 import os
 import sys
+import tempfile
 
 from datetime import timedelta
 from typing import Any, Dict
@@ -459,6 +460,9 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/login/"
+# Extra paths IasoLogoutView accepts as ?next=... (in addition to the default).
+LOGOUT_NEXT_ALLOWED_PATHS = env.list("LOGOUT_NEXT_ALLOWED_PATHS", default=[], delimiter=",")
 
 AUTH_CLASSES = [
     "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -478,6 +482,7 @@ REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_METADATA_CLASS": "hat.api.metadata.IasoMetadata",
     "PAGE_SIZE": None,
+    "SERVE_INCLUDE_SCHEMA": False,
     "ORDERING_PARAM": "order",
     "DEFAULT_THROTTLE_RATES": {"anon": "200/day"},
     "DEFAULT_RENDERER_CLASSES": (
@@ -502,14 +507,16 @@ SPECTACULAR_SETTINGS = {
     "TAGS": [
         {"name": "Mobile", "description": "Endpoints used by the mobile application"},
         {"name": "v2", "description": "Version 2 of the API"},
+        {"name": "FHIR", "description": "FHIR R4 compliant endpoints for health data interoperability"},
     ],
     "SWAGGER_UI_SETTINGS": {  # see https://swagger.io/docs/open-source-tools/swagger-ui/usage/configuration/
         "defaultModelsExpandDepth": 0,  # collapsing schemas by default
         "docExpansion": "list",  # put this to "none" if you want all the sections to be collapsed by default
         "tagsSorter": "alpha",  # sorting tags by alphanumeric
+        "displayOperationId": bool(DEBUG),
     },
     "DISABLE_ERRORS_AND_WARNINGS": env.bool("DRF_SPECTACULAR_DISABLE_ERRORS_AND_WARNINGS", default=True),
-    "COMPONENT_NO_READ_ONLY_REQUIRED": True,
+    "COMPONENT_SPLIT_REQUEST": True,
 }
 
 REST_FRAMEWORK_SERIALIZER_FIELDS_MAPPINGS = {
@@ -904,7 +911,7 @@ for plugin_name in PLUGINS:
         )
         INSTALLED_APPS.append(f"plugins.{plugin_name}")
 
-XLSFORM_VALIDATOR_TEMP_DIR = "/tmp"
+XLSFORM_VALIDATOR_TEMP_DIR = tempfile.gettempdir()
 INSTALLED_APPS.append("dynamic_fields")
 
 # Making sure that files are not stored on disk while running tests
@@ -928,3 +935,6 @@ SETUPER_SANDBOX_PASSWORD = env.str("SETUPER_SANDBOX_PASSSWORD", default="distric
 
 # Form AI
 FORM_AI_MODEL = env.str("FORM_AI_MODEL", default="claude-opus-4-7")
+
+# TEST MODE
+TEST_MODE = env.bool("TEST_MODE", default=False)

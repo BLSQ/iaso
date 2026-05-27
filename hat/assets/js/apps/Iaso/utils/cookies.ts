@@ -1,3 +1,5 @@
+import { LocaleCode } from 'Iaso/domains/instances/utils';
+
 export const setCookie = (name, value, days, sameSite = 'Lax') => {
     let expires;
     const sameSiteString =
@@ -14,7 +16,7 @@ export const setCookie = (name, value, days, sameSite = 'Lax') => {
     document.cookie = `${name}=${value}${expires}; path=/; SameSite=${sameSiteString};`;
 };
 
-export const getCookie = name => {
+export const getCookie = (name): LocaleCode | null => {
     const nameEQ = `${name}=`;
     const cookiesArray = document.cookie
         .split(';')
@@ -25,7 +27,7 @@ export const getCookie = name => {
         return null;
     }
     const cookie = cookiesArray[0];
-    return cookie.substring(nameEQ.length, cookie.length);
+    return cookie.substring(nameEQ.length, cookie.length) as LocaleCode;
 };
 
 export const eraseCookie = name => {

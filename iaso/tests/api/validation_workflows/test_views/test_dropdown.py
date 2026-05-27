@@ -106,7 +106,7 @@ class ValidationWorkflowAPIDropdownTestCase(ValidationWorkflowAPIListTestCase):
     def test_search_num_queries_with_parameters_and_one_search_result(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(4):
+        with self.assertNumQueries(3):
             res = self.client.get(
                 reverse("validation_workflows-dropdown"), data={"name": "name", "forms": [self.form.pk, self.form_3.pk]}
             )
@@ -116,7 +116,7 @@ class ValidationWorkflowAPIDropdownTestCase(ValidationWorkflowAPIListTestCase):
     def test_search_num_queries_without_parameters_and_multiple_search_results(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(4):
+        with self.assertNumQueries(3):
             self.client.force_authenticate(self.john_wick)
             res = self.client.get(reverse("validation_workflows-dropdown"))
             res_json = self.assertJSONResponse(res, 200)

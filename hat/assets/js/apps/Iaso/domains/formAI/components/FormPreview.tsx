@@ -41,12 +41,15 @@ export const FormPreview: FunctionComponent<Props> = ({
                     {
                         type: 'load-form-xml',
                         xml: latestXml.current,
+                        submitDisabledMessage: formatMessage(
+                            MESSAGES.previewSubmitUnavailable,
+                        ),
                     },
                     '*',
                 );
             }, 500);
         }
-    }, []);
+    }, [formatMessage]);
 
     const showIframe = Boolean(xformXml);
 

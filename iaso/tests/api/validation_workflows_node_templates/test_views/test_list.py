@@ -11,7 +11,7 @@ class ValidationNodeTemplateAPIListTestCase(BaseApiTestCase):
         super().setUp()
         self.project = Project.objects.create(name="project", account=self.account)
         self.account_2 = Account.objects.create(name="account_2")
-        self.enable_validation_workflow_feature_flag(self.account, self.account_2)
+        self.add_validation_workflow_module(self.account, self.account_2)
 
         self.group = Group.objects.create(name=f"{self.account.id}_Group")
         self.user_role = UserRole.objects.create(group=self.group, account=self.account)
@@ -108,7 +108,7 @@ class ValidationNodeTemplateAPIListTestCase(BaseApiTestCase):
     def test_number_queries(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(5):
             res = self.client.get(
                 reverse(
                     "validation_node_templates-list",

@@ -23,25 +23,56 @@ export default defineConfig({
     plugins: [react(), tsconfigPaths()],
     test: {
         globals: true,
+        hookTimeout: 150_000,
         environment: 'jsdom',
-        include: [
-            'hat/assets/js/**/*.test.{ts,tsx}',
-            'hat/assets/js/__tests__/integration/**/*.integration.test.{ts,tsx}',
-            'plugins/**/js/**/*.test.{ts,tsx}',
-        ],
-        setupFiles: ['./hat/assets/js/tests/setup.ts'],
-        exclude: [
-            ...configDefaults.exclude,
-            '**/build/',
-            '**/dist/',
-            '**/*.min.js',
-            '**/playwright/**',
-        ],
+        env: {
+            // to avoid clashing with django debug
+            DEBUG: process.env?.VITEST_DEBUG ?? '',
+        },
+        setupFiles: ['./hat/assets/js/tests/setup.ts', 'dotenv/config'],
         coverage: {
             provider: 'v8',
             include: ['apps/**'],
             reporter: ['text', 'json', 'html'],
         },
+        projects: [
+            {
+                extends: true,
+                test: {
+                    name: 'unit',
+                    include: [
+                        'hat/assets/js/**/*.test.{ts,tsx}',
+                    ],
+                    exclude: [
+                        ...configDefaults.exclude, '**/build/', '**/dist/', '**/*.min.js', '**/playwright/**', 'hat/assets/js/__tests__/**',
+                    ],
+                },
+            },
+            {
+                extends: true,
+                test: {
+                    name: 'integration',
+                    include: [
+                        'hat/assets/js/__tests__/integration/*.test.{ts,tsx}',
+                    ],
+                    exclude: [
+                        ...configDefaults.exclude, '**/build/', '**/dist/', '**/*.min.js', '**/playwright/**',
+                    ],
+                },
+            },
+            {
+                extends: true,
+                test: {
+                    name: 'api-e2e',
+                    include: [
+                        'hat/assets/js/__tests__/api/*.test.{ts,tsx}',
+                    ],
+                    exclude: [
+                        ...configDefaults.exclude, '**/build/', '**/dist/', '**/*.min.js', '**/playwright/**',
+                    ],
+                },
+            },
+        ],
     },
     resolve: {
         alias: {

@@ -24,7 +24,7 @@ class NestedDataSourceSerializer(ModelSerializer):
 
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
-    url = serializers.CharField(source="credentials__url", read_only=True, allow_null=True)
+    url = serializers.CharField(source="credentials.url", read_only=True, allow_null=True)
 
     class Meta:
         model = DataSource

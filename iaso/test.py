@@ -191,6 +191,13 @@ class SwaggerTestCaseMixin(BaseAPITestCase):
                     schema["type"] = [t, "null"]
                 elif isinstance(t, list) and "null" not in t:
                     schema["type"] = t + ["null"]
+                elif "allOf" in schema:
+                    schema["anyOf"] = [
+                        {"type": "null"},
+                        {"allOf": schema["allOf"]},
+                    ]
+                    schema.pop("allOf", None)
+
                 schema.pop("nullable", None)
 
             for v in schema.get("properties", {}).values():

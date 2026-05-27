@@ -77,7 +77,7 @@ class TestAccountAPISetDefaultVersion(APITestCase):
                 reverse("accounts-set-default-version", kwargs={"pk": self.account.pk}),
                 {"default_version": self.ghi_version.pk},
             )
-            self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertJSONResponse(res, status.HTTP_204_NO_CONTENT)
 
     def test_happy_path(self):
         self.client.force_authenticate(self.jane_doe)
@@ -85,7 +85,7 @@ class TestAccountAPISetDefaultVersion(APITestCase):
             reverse("accounts-set-default-version", kwargs={"pk": self.account.pk}),
             {"default_version": self.ghi_version.pk},
         )
-        self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertJSONResponse(res, status.HTTP_204_NO_CONTENT)
 
         self.account.refresh_from_db()
         self.assertEqual(self.account.default_version.id, self.ghi_version.id)

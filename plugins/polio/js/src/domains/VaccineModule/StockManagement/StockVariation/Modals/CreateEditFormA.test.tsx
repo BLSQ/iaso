@@ -265,15 +265,15 @@ describe('CreateEditFormA', () => {
             ).not.toBeDisabled();
         });
 
-        it('disables reception date and file when status is temporary', () => {
+        it('enables reception date and file when status is temporary', () => {
             render(<CreateEditFormA {...baseProps} formA={temporaryFormA} />);
 
             expect(
                 screen.getByTestId('date-form_a_reception_date'),
-            ).toBeDisabled();
+            ).not.toBeDisabled();
             expect(screen.getByTestId('document-upload')).toHaveAttribute(
                 'aria-disabled',
-                'true',
+                'false',
             );
         });
 
@@ -294,8 +294,61 @@ describe('CreateEditFormA', () => {
             ).toBeDisabled();
             expect(screen.getByTestId('select-doses_per_vial')).toBeDisabled();
 
-            // Comment remains editable even in completion-only mode
+            // Completion fields locked while still temporary
+            expect(screen.getByTestId('text-comment')).toBeDisabled();
+            expect(
+                screen.getByTestId('date-form_a_reception_date'),
+            ).toBeDisabled();
+            expect(screen.getByTestId('document-upload')).toHaveAttribute(
+                'aria-disabled',
+                'true',
+            );
+        });
+
+        it('unlocks completion fields when toggling to received in completion_only mode', async () => {
+            const user = userEvent.setup();
+            render(
+                <CreateEditFormA
+                    {...baseProps}
+                    formA={{
+                        ...temporaryFormA,
+                        edit_access: EDIT_ACCESS_COMPLETION_ONLY,
+                    }}
+                />,
+            );
+
+            // Fields locked while temporary
+            expect(screen.getByTestId('text-comment')).toBeDisabled();
+            expect(
+                screen.getByTestId('date-form_a_reception_date'),
+            ).toBeDisabled();
+
+            // Toggle to received
+            await act(async () => {
+                await user.click(screen.getByLabelText('Temporary Form A'));
+            });
+
+            await waitFor(() => {
+                expect(
+                    screen.getByLabelText('Temporary Form A'),
+                ).not.toBeChecked();
+            });
+
+            // Completion fields now enabled
             expect(screen.getByTestId('text-comment')).not.toBeDisabled();
+            expect(
+                screen.getByTestId('date-form_a_reception_date'),
+            ).not.toBeDisabled();
+            expect(screen.getByTestId('document-upload')).toHaveAttribute(
+                'aria-disabled',
+                'false',
+            );
+
+            // Non-completion fields still locked
+            expect(screen.getByTestId('date-report_date')).toBeDisabled();
+            expect(
+                screen.getByTestId('number-usable_vials_used'),
+            ).toBeDisabled();
         });
 
         it('locks vials when originally temporary and still temporary', () => {
@@ -313,30 +366,19 @@ describe('CreateEditFormA', () => {
                 screen.getByTestId('number-usable_vials_used'),
             ).toBeDisabled();
         });
-
-        it('unlocks vials when originally temporary but switched to received', () => {
-            render(
-                <CreateEditFormA
-                    {...baseProps}
-                    formA={{
-                        ...receivedFormA,
-                        status: TEMPORARY,
-                        edit_access: EDIT_ACCESS_FULL,
-                    }}
-                />,
-            );
-
-            // Originally temporary, still temporary → vials locked
-            expect(
-                screen.getByTestId('number-usable_vials_used'),
-            ).toBeDisabled();
-        });
     });
 
     describe('temporary toggle', () => {
-        it('checking temporary on a new form clears reception date and file', async () => {
+        it('checking temporary on a new form preserves reception date and keeps fields enabled', async () => {
             const user = userEvent.setup();
             render(<CreateEditFormA {...baseProps} />);
+
+            // Set a reception date before toggling
+            const dateField = screen.getByTestId('date-form_a_reception_date');
+            await act(async () => {
+                await user.clear(dateField);
+                await user.type(dateField, '2025-07-10');
+            });
 
             const checkbox = screen.getByLabelText('Temporary Form A');
             expect(checkbox).not.toBeChecked();
@@ -349,16 +391,20 @@ describe('CreateEditFormA', () => {
                 expect(screen.getByLabelText('Temporary Form A')).toBeChecked();
             });
 
+            // Date value preserved and fields remain enabled
             expect(
                 screen.getByTestId('date-form_a_reception_date'),
-            ).toBeDisabled();
+            ).toHaveValue('2025-07-10');
+            expect(
+                screen.getByTestId('date-form_a_reception_date'),
+            ).not.toBeDisabled();
             expect(screen.getByTestId('document-upload')).toHaveAttribute(
                 'aria-disabled',
-                'true',
+                'false',
             );
         });
 
-        it('shows warning when toggling persisted received → temporary with existing values', async () => {
+        it('toggling received → temporary directly applies without confirmation modal', async () => {
             const user = userEvent.setup();
             render(<CreateEditFormA {...baseProps} formA={receivedFormA} />);
 
@@ -371,72 +417,18 @@ describe('CreateEditFormA', () => {
             });
 
             await waitFor(() => {
-                expect(
-                    screen.getByTestId('temporary-form-a-status-warning'),
-                ).toBeInTheDocument();
-            });
-        });
-
-        it('applies toggle after confirming warning', async () => {
-            const user = userEvent.setup();
-            render(<CreateEditFormA {...baseProps} formA={receivedFormA} />);
-
-            await act(async () => {
-                await user.click(screen.getByLabelText('Temporary Form A'));
-            });
-
-            await waitFor(() => {
-                expect(
-                    screen.getByTestId('temporary-form-a-status-warning'),
-                ).toBeInTheDocument();
-            });
-
-            await act(async () => {
-                await user.click(
-                    screen.getByTestId(
-                        'temporary-form-a-status-warning-confirm',
-                    ),
-                );
-            });
-
-            await waitFor(() => {
-                expect(
-                    screen.queryByTestId('temporary-form-a-status-warning'),
-                ).not.toBeInTheDocument();
                 expect(screen.getByLabelText('Temporary Form A')).toBeChecked();
             });
-        });
 
-        it('cancelling warning keeps status unchanged', async () => {
-            const user = userEvent.setup();
-            render(<CreateEditFormA {...baseProps} formA={receivedFormA} />);
+            // No confirmation modal shown
+            expect(
+                screen.queryByTestId('temporary-form-a-status-warning'),
+            ).not.toBeInTheDocument();
 
-            await act(async () => {
-                await user.click(screen.getByLabelText('Temporary Form A'));
-            });
-
-            await waitFor(() => {
-                expect(
-                    screen.getByTestId('temporary-form-a-status-warning'),
-                ).toBeInTheDocument();
-            });
-
-            await act(async () => {
-                await user.click(
-                    screen.getByTestId(
-                        'temporary-form-a-status-warning-cancel',
-                    ),
-                );
-            });
-
-            await waitFor(() => {
-                expect(
-                    screen.queryByTestId('temporary-form-a-status-warning'),
-                ).not.toBeInTheDocument();
-                expect(
-                    screen.getByLabelText('Temporary Form A'),
-                ).not.toBeChecked();
-            });
+            // Reception date and file values preserved
+            expect(
+                screen.getByTestId('date-form_a_reception_date'),
+            ).toHaveValue('2025-06-05');
         });
     });
 
@@ -506,6 +498,55 @@ describe('CreateEditFormA', () => {
             expect(payload).not.toHaveProperty('report_date');
             expect(payload).not.toHaveProperty('form_a_reception_date');
             expect(payload).not.toHaveProperty('usable_vials_used');
+        });
+
+        it('creates temporary form with reception date and file in payload', async () => {
+            const user = userEvent.setup();
+            render(<CreateEditFormA {...baseProps} />);
+
+            // Check temporary
+            await act(async () => {
+                await user.click(screen.getByLabelText('Temporary Form A'));
+            });
+
+            await waitFor(() => {
+                expect(screen.getByLabelText('Temporary Form A')).toBeChecked();
+            });
+
+            // Fill reception date
+            const dateField = screen.getByTestId('date-form_a_reception_date');
+            await act(async () => {
+                await user.clear(dateField);
+                await user.type(dateField, '2025-08-01');
+            });
+
+            // Fill report date (required)
+            const reportDate = screen.getByTestId('date-report_date');
+            await act(async () => {
+                await user.clear(reportDate);
+                await user.type(reportDate, '2025-07-01');
+            });
+
+            await waitFor(() => {
+                expect(
+                    screen.getByTestId('formA-modal-confirm'),
+                ).not.toBeDisabled();
+            });
+
+            await act(async () => {
+                await user.click(screen.getByTestId('formA-modal-confirm'));
+            });
+
+            await waitFor(() => {
+                expect(mockSave).toHaveBeenCalledOnce();
+            });
+
+            const payload = mockSave.mock.calls[0][0];
+            expect(payload).toHaveProperty('status', TEMPORARY);
+            expect(payload).toHaveProperty(
+                'form_a_reception_date',
+                '2025-08-01',
+            );
         });
 
         it('flipping only the status checkbox enables save and sends status in PATCH', async () => {

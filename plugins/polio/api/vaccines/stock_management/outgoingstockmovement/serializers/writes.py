@@ -1,4 +1,4 @@
-from plugins.polio.models import Campaign, OutgoingStockMovement
+from plugins.polio.models import Campaign
 
 
 class OutgoingStockMovementWriteMixin:
@@ -24,16 +24,5 @@ class OutgoingStockMovementWriteMixin:
         campaign = self.extract_campaign_data(validated_data)
         if campaign:
             instance.campaign = campaign
-        next_status = validated_data.get("status", instance.status)
-        is_received_to_temporary = (
-            instance.status == OutgoingStockMovement.StatusChoices.RECEIVED
-            and next_status == OutgoingStockMovement.StatusChoices.TEMPORARY
-        )
-        if is_received_to_temporary:
-            if instance.file:
-                instance.file.delete(save=False)
-            validated_data["file"] = None
-            validated_data["form_a_reception_date"] = None
-        else:
-            self.scan_file_if_exists(validated_data, instance)
+        self.scan_file_if_exists(validated_data, instance)
         return super().update(instance, validated_data)

@@ -27,6 +27,8 @@ on:
 jobs:
   config:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     outputs:
       branch: ${{ steps.vars.outputs.branch }}
       image_tag: ${{ steps.vars.outputs.image_tag }}
@@ -49,13 +51,17 @@ jobs:
     needs: config
     uses: ./.github/workflows/docker_build.yml
     secrets: inherit
+    permissions:
+      contents: read
     with:
       branch: ${{ needs.config.outputs.branch }}
       image_tags: ${{ needs.config.outputs.image_tag }}
 
   deploy:
-    needs: [config, build]
+    needs: [ config, build ]
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     steps:
       - name: Check out repository code
         uses: actions/checkout@v6

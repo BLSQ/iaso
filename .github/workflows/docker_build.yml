@@ -15,6 +15,8 @@ on:
 jobs:
   build_iaso_image:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     steps:
       - name: Check out repository code
         uses: actions/checkout@v6

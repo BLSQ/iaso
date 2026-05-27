@@ -1,3 +1,5 @@
+import copy
+
 from django.contrib.auth.models import User
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
@@ -570,9 +572,53 @@ class BulkDeleteAssignmentSerializer(serializers.Serializer):
         self.fields["team"].queryset = Team.objects.filter_for_user(user)
 
 
-# noinspection PyMethodMayBeStatic
 class MobilePlanningSerializer(serializers.ModelSerializer):
+    "Serialize plannings for mobile and transforms missions into forms to stay backward compatible with older versions"
+
+    def save(self):
+        # ensure that we can't save from here
+        raise NotImplementedError
+
+    created_at = TimestampField()
+    started_at = DateTimestampField()
+    ended_at = DateTimestampField()
+
+    assignments = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Planning
+        fields = [
+            "id",
+            "name",
+            "description",
+            "created_at",
+            "started_at",
+            "ended_at",
+            "assignments",
+        ]
+
+    @staticmethod
+    def get_assignments(planning: Planning):
+        assignments = []
+        # Derive form_ids from missions for backward compatibility
+        planning_form_ids = set()
+        for mission in planning.missions.all():
+            planning_form_ids.update(mission.mission_forms.values_list("form_id", flat=True))
+
+        for a in planning.assignment_set.all():
+            out_set = set(a.org_unit.org_unit_type.form_set.values_list("id", flat=True))
+            intersection = out_set.intersection(planning_form_ids)
+            assignments.append({"org_unit_id": a.org_unit_id, "form_ids": intersection})
+        return assignments
+
+
+class MobilePlanningV2Serializer(serializers.ModelSerializer):
     "Only used to serialize for mobile"
+
+    created_at = TimestampField()
+    started_at = DateTimestampField()
+    ended_at = DateTimestampField()
+    assignments = serializers.SerializerMethodField()
 
     def save(self):
         # ensure that we can't save from here
@@ -590,32 +636,36 @@ class MobilePlanningSerializer(serializers.ModelSerializer):
             "assignments",
         ]
 
-    created_at = TimestampField()
-    started_at = DateTimestampField()
-    ended_at = DateTimestampField()
-
-    assignments = serializers.SerializerMethodField()
-
-    def get_assignments(self, planning: Planning):
-        user = self.context["request"].user
-        r = []
-        # Derive form_ids from missions for backward compatibility
-        planning_form_ids = set()
-        for mission in planning.missions.prefetch_related("mission_forms").all():
-            planning_form_ids.update(mission.mission_forms.values_list("form_id", flat=True))
-
-        forms_per_ou_type = {}
-        for out in OrgUnitType.objects.filter(projects__account=user.iaso_profile.account):
-            out_set = set(out.form_set.values_list("id", flat=True))
-            intersection = out_set.intersection(planning_form_ids)
-            forms_per_ou_type[out.id] = intersection
-
-        for a in planning.assignment_set.filter(deleted_at__isnull=True).filter(user=user).prefetch_related("org_unit"):
-            # TODO: investigate type error on next line
-            r.append(
-                {"org_unit_id": a.org_unit_id, "form_ids": forms_per_ou_type.get(a.org_unit.org_unit_type_id, set())}
-            )  # type: ignore
-        return r
+    @staticmethod
+    def get_assignments(planning: Planning):
+        assignments = []
+        for a in planning.assignment_set.all():
+            missions = []
+            for m in planning.missions.all():
+                if m.mission_type == MissionType.FORM_FILLING:
+                    # We assign the mission only if there is a match between the OUT's forms and the mission's forms
+                    out_set = set(a.org_unit.org_unit_type.form_set.values_list("id", flat=True))
+                    intersection = out_set.intersection(m.mission_forms.values_list("form_id", flat=True))
+                    if len(intersection) > 0:
+                        # Only keep the forms that are in the OUT
+                        mc = copy.deepcopy(m)
+                        mc.mission_forms = list(filter(lambda x: x.form_id in intersection, m.mission_forms))
+                        missions.append(m)
+                elif m.mission_type == MissionType.ORG_UNIT_AND_FORM:
+                    # We need to filter on OrgUnit which are parent of the type
+                    m_out = m.org_unit_type.id
+                    if a.org_unit.org_unit_type.sub_unit_types_id.contains(m_out):
+                        missions.append(m)
+                elif m.mission_type == MissionType.ENTITY_AND_FORM:
+                    # We always assign entities as there are no enforcement on entities and OrgUnit types.
+                    missions.append(m)
+                else:
+                    raise NotImplementedError("Unknown mission type")
+            if len(missions) > 0:
+                assignments.append(
+                    {"org_unit_id": a.org_unit_id, "missions": NestedMissionSerializer(missions, many=True).data}
+                )
+        return assignments
 
 
 class PlanningOrgUnitSerializer(serializers.ModelSerializer):

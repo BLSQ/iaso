@@ -14,6 +14,8 @@ def migrate_forms_to_missions(apps, schema_editor):
 
     for planning in Planning.objects.prefetch_related("forms").all():
         account = planning.project.account
+        if not account:
+            continue
         for form in planning.forms.all():
             mission = Mission.objects.create(
                 name=form.name,
@@ -33,12 +35,12 @@ def migrate_forms_to_missions(apps, schema_editor):
 def reverse_migrate_missions_to_forms(apps, schema_editor):
     """Reverse: convert FORM_FILLING missions back to Planning.forms."""
     Planning = apps.get_model("iaso", "Planning")
-    MissionForm = apps.get_model("iaso", "MissionForm")
 
-    for planning in Planning.objects.prefetch_related("missions").all():
-        for mission in planning.missions.filter(mission_type="FORM_FILLING"):
-            for mf in MissionForm.objects.filter(mission=mission):
-                planning.forms.add(mf.form)
+    for planning in Planning.objects.prefetch_related("missions").prefetch_related("forms").all():
+        for mission in planning.missions.filter(mission_type="FORM_FILLING").prefetch_related("mission_forms").all():
+            for mf in mission.mission_forms.all():
+                if mf.form not in planning.forms.all():
+                    planning.forms.add(mf.form)
 
 
 class Migration(migrations.Migration):

@@ -85,7 +85,7 @@ from .api.microplanning.views import (
     PlanningSamplingResultViewSet,
     PlanningViewSet,
 )
-from .api.microplanning.views_mobile import MobilePlanningViewSet
+from .api.microplanning.views_mobile import MobilePlanningV2ViewSet, MobilePlanningViewSet
 from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
 from .api.mobile.entity import MobileEntityDeletedViewSet, MobileEntityViewSet
 from .api.mobile.entity_type import MobileEntityTypesViewSet
@@ -242,6 +242,7 @@ router.register(r"microplanning/plannings", PlanningViewSet, basename="planning"
 router.register(r"microplanning/assignments", AssignmentViewSet, basename="assignments")
 router.register(r"microplanning/samplings", PlanningSamplingResultViewSet, basename="planning-sampling-results")
 router.register(r"mobile/plannings", MobilePlanningViewSet, basename="mobileplanning")
+router.register(r"v2/mobile/plannings", MobilePlanningV2ViewSet, basename="mobileplanning")
 router.register(r"storages", StorageViewSet, basename="storage")
 router.register(r"mobile/storages?/logs", StorageLogViewSet, basename="storagelogs")
 router.register(r"mobile/storages?/blacklisted", StorageBlacklistedViewSet, basename="storageblacklisted")

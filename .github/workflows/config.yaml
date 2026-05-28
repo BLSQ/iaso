@@ -30,29 +30,24 @@ jobs:
       image_tags: ${{ steps.image_tags.outputs.image_tags }}
 
     steps:
-      - name: Determine ticket code (slug) from branch name
+      - name: Determine ticket code (slug) from PR title or branch name. Warn if not found
         id: slug
-        env:
-          BRANCH: ${{ inputs.branch }}
-          PR_TITLE: ${{ inputs.pr_title }}
-        run: |
-          ticket_code=$(echo "${BRANCH}" | grep -Eo '[a-zA-Z_]+(-|_|:|\ )[1-9][0-9]*')
-          if [ -z "${ticket_code}" ]; then
-            echo "Unable to parse ticket code (slug) from branch name ${BRANCH}. Trying PR title ${PR_TITLE}"
-            ticket_code=$(echo "${PR_TITLE}" | grep -Eo '[a-zA-Z_]+-[1-9][0-9]*')
-          fi
-          echo "slug=${ticket_code}" >> $GITHUB_OUTPUT
-
-      - name: Warn on PR if ticket code not found
-        if: steps.slug.outputs.slug == ''
         env:
           GH_TOKEN: ${{ github.token }}
           BRANCH: ${{ inputs.branch }}
           PR_TITLE: ${{ inputs.pr_title }}
         run: |
-          gh pr comment "${{ github.event.pull_request.number }}" \
-            --repo "${{ github.repository }}" \
-            --body "⚠️ **[WARN] Ticket code in PR title (\`${PR_TITLE}\`) not found**. Image will not be tagged with a ticket code (slug)."
+          ticket_code=$(echo "${PR_TITLE}" | grep -Eo '[a-zA-Z_]+-[1-9][0-9]*')
+          if [ -z "${ticket_code}" ]; then
+            echo "Unable to parse ticket code (slug) from PR title ${PR_TITLE}. Trying branch name ${BRANCH}"
+            ticket_code=$(echo "${BRANCH}" | grep -Eo '[a-zA-Z_]+(-|_|:|\ )[1-9][0-9]*')  
+            if [ -z "${ticket_code}" ]; then
+              gh pr comment "${{ github.event.pull_request.number }}" \
+                --repo "${{ github.repository }}" \
+                --body "⚠️ **[WARN] Ticket code in PR title (\`${PR_TITLE}\`) not found**. \nTried unsuccessfully to parse from branch (\`${BRANCH}\`). \nImage will not be tagged with a ticket code (slug)."
+            fi
+          fi
+          echo "slug=${ticket_code}" >> $GITHUB_OUTPUT
 
       - name: Determine short sha from github commit sha
         id: short_sha

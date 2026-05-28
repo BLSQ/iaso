@@ -84,21 +84,13 @@ jobs:
 #          echo "branch=${BRANCH}" >> $GITHUB_OUTPUT
 #          echo "image_tags=${BRANCH},${GITHUB_SHA}" >> $GITHUB_OUTPUT
 
+
+  # outputs: slug, short_sha, image_tags
   config:
     uses: ./.github/workflows/config.yaml
     with:
       branch: ${{ github.head_ref || github.ref_name }}
       pr_title: ${{ github.event.pull_request.title }}
-
-  test_tags:
-    runs-on: ubuntu-24.04
-    needs: config
-    steps:
-      - name: test
-        run: |
-          echo "image tags: ${{ needs.config.outputs.image_tags }}"
-          echo "short_sha: ${{ needs.config.outputs.short_sha }}"
-          echo "slug: ${{ needs.config.outputs.slug }}"
 
   build-and-push-image:
     needs: config

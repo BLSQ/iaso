@@ -3,6 +3,7 @@ import { OrgUnitTypeHierarchyDropdownValue } from 'Iaso/domains/orgUnits/orgUnit
 import { Planning } from 'Iaso/domains/plannings/types';
 import { PlanningOrgUnits } from 'Iaso/domains/plannings/types';
 import { isValidCoordinate } from 'Iaso/utils/map/mapUtils';
+import { SubTeam, User } from '../teams/types/team';
 import { AssignmentsResult } from './types/assigment';
 
 export const defaultViewport = {
@@ -71,4 +72,25 @@ export const filterOrgUnits = (
             ?.filter(ou => isOuAssigned(ou, assignments))
             .filter(ou => isOrgunitVisible(ou, selectedOrgUnitType)),
     };
+};
+
+export const assignmentsCountForUser = (
+    user: User,
+    assignments?: AssignmentsResult,
+) => {
+    return (
+        assignments?.allAssignments?.filter(
+            assignment => assignment.user === user.id,
+        ).length || 0
+    );
+};
+export const countTeams = (
+    subTeam: SubTeam,
+    assignments?: AssignmentsResult,
+) => {
+    return (
+        assignments?.allAssignments?.filter(
+            assignment => assignment.team === subTeam.id,
+        ).length || 0
+    );
 };

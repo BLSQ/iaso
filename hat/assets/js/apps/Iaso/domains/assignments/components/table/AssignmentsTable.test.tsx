@@ -4,7 +4,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { baseUrls } from 'Iaso/constants/urls';
 import { PaginatedPlanningOrgUnit } from 'Iaso/domains/plannings/types';
 import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers';
-import { AssignmentsTable } from '../AssignmentsTable';
+import { AssignmentsTable } from './AssignmentsTable';
 
 const captureTableProps = vi.fn();
 

@@ -39,6 +39,8 @@ import { AssignmentsResult } from './types/assigment';
 import { AssignmentParams } from './types/assigment';
 
 export const Assignments: FunctionComponent = () => {
+    const goBack = useGoBack(baseUrls.planning);
+    const redirectToReplace = useRedirectToReplace();
     const params: AssignmentParams = useParamsObject(
         baseUrls.assignments,
     ) as unknown as AssignmentParams;
@@ -52,6 +54,12 @@ export const Assignments: FunctionComponent = () => {
     const [selectedTeam, setSelectedTeam] = useState<SubTeam | undefined>(
         undefined,
     );
+    const { tab, handleChangeTab } = useTabs<'list' | 'map'>({
+        params: params as Record<string, Optional<string>>,
+        defaultTab: (params?.tab ?? 'map') as 'list' | 'map',
+        baseUrl: baseUrls.assignments,
+    });
+
     const { formatMessage } = useSafeIntl();
 
     const { planningId } = params;
@@ -72,6 +80,12 @@ export const Assignments: FunctionComponent = () => {
         },
         [selectedOrgUnitType],
     );
+    const handleSearch = useCallback(() => {
+        redirectToReplace(baseUrls.assignments, {
+            ...params,
+            search,
+        });
+    }, [params, search, redirectToReplace]);
 
     const {
         data: planning,
@@ -83,7 +97,6 @@ export const Assignments: FunctionComponent = () => {
         extraFields: ['project_ids', 'org_unit_type_ids'],
     });
 
-    // Flatten `sub_unit_types` tree (not `depth`). Array index = map draw / z-index order.
     const selectOrgUnitTypes = useCallback(
         (data: OrgUnitTypeHierarchy) => {
             const orgUnitTypes = flattenOrgUnitTypeHierarchy(
@@ -97,17 +110,10 @@ export const Assignments: FunctionComponent = () => {
         },
         [formsDropdown, planning?.forms],
     );
-    const { data: orgUniTypeList } = useGetOrgUnitTypesHierarchy(
-        planning?.org_unit_details?.org_unit_type,
-        selectOrgUnitTypes,
-    );
-
-    const goBack = useGoBack(baseUrls.planning);
 
     const { data: rootTeam, isLoading: isLoadingRootTeam } = useGetTeam(
         planning?.team_details?.id,
     );
-
     const {
         data: assignments,
         isLoading: isLoadingAssignments,
@@ -123,20 +129,12 @@ export const Assignments: FunctionComponent = () => {
         selectedTeam,
     });
     const { mutateAsync: deleteAssignments } = useBulkDeleteAssignments();
+    const { data: orgUniTypeList } = useGetOrgUnitTypesHierarchy(
+        planning?.org_unit_details?.org_unit_type,
+        selectOrgUnitTypes,
+    );
 
-    const { tab, handleChangeTab } = useTabs<'list' | 'map'>({
-        params: params as Record<string, Optional<string>>,
-        defaultTab: (params?.tab ?? 'map') as 'list' | 'map',
-        baseUrl: baseUrls.assignments,
-    });
     const canAssign = Boolean(selectedUser || selectedTeam);
-    const redirectToReplace = useRedirectToReplace();
-    const handleSearch = useCallback(() => {
-        redirectToReplace(baseUrls.assignments, {
-            ...params,
-            search,
-        });
-    }, [params, search, redirectToReplace]);
     return (
         <>
             <TopBar

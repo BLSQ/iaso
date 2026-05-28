@@ -17,6 +17,9 @@ export const MapShape: FunctionComponent<Props> = ({
     getAssignmentColor,
     opacity = 0.8,
 }) => {
+    if (!ou.geo_json) {
+        return null;
+    }
     return (
         <GeoJSON
             key={ou.id}

@@ -31,6 +31,7 @@ import {
 } from '../../../teams/hooks/requests/useGetPlanningOrgUnits';
 // import { parentColor } from '../constants/colors';
 import { defaultHeight } from '../../constants/ui';
+import { useGetParentOrgUnits } from '../../hooks/requests/useGetParentOrgUnits';
 import { AssignmentsResult } from '../../types/assigment';
 import { AssignmentParams } from '../../types/assigment';
 import {
@@ -197,8 +198,12 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
     }, [orgUniTypeList, planning?.target_org_unit_type_details]);
 
     // Fetch here org units for parent org unit types, with root org unit as parent, valid,
+    const { data: parentOrgUnits } = useGetParentOrgUnits({
+        orgUniParentId: rootOrgUnit?.id,
+        orgUnitTypeIds: parentOrgUnitTypes?.map(ou => ou.value),
+    });
     // eslint-disable-next-line no-console
-    console.log(parentOrgUnitTypes, 'parentOrgUnitTypes');
+    console.log(parentOrgUnits, 'parentOrgUnits');
 
     const targetOrgUnitsShapes: FilterOrgUnitsResult = useMemo(
         () =>

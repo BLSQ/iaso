@@ -97,7 +97,7 @@ export type SamplingResult = {
 export type PlanningOrgUnits = {
     id: number;
     name: string;
-    geo_json: GeoJson;
+    geo_json?: GeoJson;
     has_geo_json: boolean;
     latitude: number;
     longitude: number;

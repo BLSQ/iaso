@@ -17,7 +17,7 @@ import { User } from 'Iaso/domains/teams/types/team';
 import { useSaveProfile } from 'Iaso/domains/users/hooks/useSaveProfile';
 import { SxStyles } from 'Iaso/types/general';
 import getDisplayName from 'Iaso/utils/usersUtils';
-import { AssignmentsResult } from '../../hooks/requests/useGetAssignments';
+import { AssignmentsResult } from '../../types/assigment';
 import { AssigneeRow } from './AssigneeRow';
 
 const defaultHeight = '80vh';
@@ -132,7 +132,9 @@ export const TeamTable: FunctionComponent<Props> = ({
                                         subTeam => (
                                             <AssigneeRow
                                                 key={subTeam.id}
-                                                radioGroupName={assigneeRadioGroupName}
+                                                radioGroupName={
+                                                    assigneeRadioGroupName
+                                                }
                                                 isActive={
                                                     selectedTeam?.id ===
                                                     subTeam.id
@@ -164,7 +166,9 @@ export const TeamTable: FunctionComponent<Props> = ({
                                         .map(user => (
                                             <AssigneeRow
                                                 key={user.id}
-                                                radioGroupName={assigneeRadioGroupName}
+                                                radioGroupName={
+                                                    assigneeRadioGroupName
+                                                }
                                                 isActive={
                                                     selectedUser?.id === user.id
                                                 }

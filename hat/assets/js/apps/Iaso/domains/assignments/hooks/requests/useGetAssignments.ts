@@ -4,15 +4,10 @@ import { useSnackQuery } from '../../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../../libs/utils';
 import { Team } from '../../../teams/types/team';
 import { ASSIGNMENTS_API_URL } from '../../constants/api';
-import { AssignmentApi } from '../../types/assigment';
+import { AssignmentApi, AssignmentsResult } from '../../types/assigment';
 
 type Option = {
     planning: string | undefined;
-};
-
-export type AssignmentsResult = {
-    assignments: AssignmentApi[];
-    allAssignments: AssignmentApi[];
 };
 
 const getAssignments = async (options: Option): Promise<AssignmentApi[]> => {

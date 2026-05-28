@@ -7,11 +7,11 @@ import {
     tableDefaults,
 } from 'Iaso/domains/teams/hooks/requests/useGetPlanningOrgUnits';
 import { SxStyles } from 'Iaso/types/general';
-import { PaginatedPlanningOrgUnit } from '../../plannings/types';
-import { SubTeam, User } from '../../teams/types/team';
-import { defaultHeight } from '../constants/ui';
-import { useGetColumns } from '../hooks/useGetColumns';
-import { AssignmentParams } from '../types/assigment';
+import { PaginatedPlanningOrgUnit } from '../../../plannings/types';
+import { SubTeam, User } from '../../../teams/types/team';
+import { defaultHeight } from '../../constants/ui';
+import { useGetColumns } from '../../hooks/useGetColumns';
+import { AssignmentParams } from '../../types/assigment';
 
 const tableScrollMaxHeight = `calc(${defaultHeight} - 70px)`;
 

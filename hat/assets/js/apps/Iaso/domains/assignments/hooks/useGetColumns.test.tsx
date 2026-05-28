@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { AssignmentCell } from '../components/AssignmentCell';
+import { AssignmentCell } from '../components/table/AssignmentCell';
 import { useGetColumns } from './useGetColumns';
 
 vi.mock('bluesquare-components', async importOriginal => {

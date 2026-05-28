@@ -19,7 +19,7 @@ import {
     OrgUnitTypeHierarchyDropdownValue,
     OrgUnitTypeHierarchyDropdownValues,
 } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
-import MESSAGES from '../messages';
+import MESSAGES from '../../messages';
 
 const useStyles = makeStyles(theme => ({
     root: {

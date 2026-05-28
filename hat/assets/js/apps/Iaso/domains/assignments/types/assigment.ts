@@ -43,4 +43,7 @@ export type SaveAssignmentQuery =
           user?: number | null;
       };
 
-export type AssignmentsApi = AssignmentApi[];
+export type AssignmentsResult = {
+    assignments: AssignmentApi[];
+    allAssignments: AssignmentApi[];
+};

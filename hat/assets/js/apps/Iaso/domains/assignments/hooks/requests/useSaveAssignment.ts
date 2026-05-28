@@ -6,7 +6,7 @@ import { useSnackMutation } from '../../../../libs/apiHooks';
 import { SubTeam, User } from '../../../teams/types/team';
 import { ASSIGNMENTS_API_URL } from '../../constants/api';
 import { SaveAssignmentQuery } from '../../types/assigment';
-import { AssignmentsResult } from './useGetAssignments';
+import { AssignmentsResult } from '../../types/assigment';
 
 export const saveAssignment = async (
     body: SaveAssignmentQuery,

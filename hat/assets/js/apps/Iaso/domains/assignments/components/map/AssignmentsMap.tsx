@@ -2,15 +2,12 @@ import React, {
     Dispatch,
     FunctionComponent,
     SetStateAction,
-    useCallback,
     useMemo,
     useState,
 } from 'react';
 import { Box } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
-import L from 'leaflet';
 import { MapContainer, GeoJSON, ScaleControl, Pane } from 'react-leaflet';
-import CircleMarkerComponent from 'Iaso/components/maps/markers/CircleMarkerComponent';
 import { CustomTileLayer } from 'Iaso/components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from 'Iaso/components/maps/tools/CustomZoomControl';
 import { Tile } from 'Iaso/components/maps/tools/TilesSwitchControl';
@@ -24,20 +21,26 @@ import { MapToolTip } from 'Iaso/domains/registry/components/map/MapTooltip';
 import { Team } from 'Iaso/domains/teams/types/team';
 import {
     Bounds,
-    circleColorMarkerOptions,
     CloseTooltipOnMoveStart,
     getOrgUnitsBounds,
-    isValidCoordinate,
 } from 'Iaso/utils/map/mapUtils';
-import { Planning, PlanningOrgUnits } from '../../plannings/types';
+import { Planning } from '../../../plannings/types';
 import {
     useGetPlanningOrgUnitsChildren,
     useGetPlanningOrgUnitsRoot,
-} from '../../teams/hooks/requests/useGetPlanningOrgUnits';
+} from '../../../teams/hooks/requests/useGetPlanningOrgUnits';
 // import { parentColor } from '../constants/colors';
-import { defaultHeight } from '../constants/ui';
-import { AssignmentsResult } from '../hooks/requests/useGetAssignments';
-import { AssignmentParams } from '../types/assigment';
+import { defaultHeight } from '../../constants/ui';
+import { AssignmentsResult } from '../../types/assigment';
+import { AssignmentParams } from '../../types/assigment';
+import {
+    filterOrgUnits,
+    getValidShapes,
+    getValidLocations,
+    defaultViewport,
+    boundsOptions,
+    FilterOrgUnitsResult,
+} from '../../utils';
 import { MapLegend } from './MapLegend';
 import { MapLocation } from './MapLocation';
 import { MapShape } from './MapShape';
@@ -152,32 +155,6 @@ type Props = {
     >;
 };
 
-const defaultViewport = {
-    center: L.latLng(1, 20),
-    zoom: 3.25,
-};
-const boundsOptions: L.FitBoundsOptions = {
-    padding: L.point(25, 25),
-    maxZoom: 12,
-};
-
-const getValidShapes = (orgUnits?: PlanningOrgUnits[], planning?: Planning) => {
-    return orgUnits?.filter(
-        ou =>
-            ou.has_geo_json &&
-            planning?.target_org_unit_type_details?.some(
-                t => t.id === ou.org_unit_type_id,
-            ),
-    );
-};
-
-const getValidLocations = (orgUnits?: PlanningOrgUnits[]) => {
-    return (
-        orgUnits?.filter(ou => isValidCoordinate(ou.latitude, ou.longitude)) ??
-        []
-    );
-};
-
 export const AssignmentsMap: FunctionComponent<Props> = ({
     planningId,
     rootTeam,
@@ -194,10 +171,14 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
     setSelectedOrgUnitType,
 }) => {
     const getAssignmentColor = useGetAssignmentColor(assignments, rootTeam);
+
     const { data: childrenOrgUnits, isLoading: isLoadingChildrenOrgUnits } =
         useGetPlanningOrgUnitsChildren(planningId, params);
     const { data: rootOrgUnit, isLoading: isLoadingRootOrgUnit } =
         useGetPlanningOrgUnitsRoot(planningId);
+
+    const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
+
     const bounds: Bounds | undefined = useMemo(
         () =>
             childrenOrgUnits &&
@@ -205,7 +186,6 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
             getOrgUnitsBounds([...childrenOrgUnits, rootOrgUnit]),
         [childrenOrgUnits, rootOrgUnit],
     );
-    const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
 
     const parentOrgUnitTypes = useMemo(() => {
         return orgUniTypeList?.filter(
@@ -215,50 +195,30 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                 ),
         );
     }, [orgUniTypeList, planning?.target_org_unit_type_details]);
+
     // Fetch here org units for parent org unit types, with root org unit as parent, valid,
+    // eslint-disable-next-line no-console
     console.log(parentOrgUnitTypes, 'parentOrgUnitTypes');
-    const isOuAssigned = useCallback(
-        (ou: PlanningOrgUnits) => {
-            const assignment = assignments?.allAssignments?.find(
-                a => a.org_unit === ou.id,
-            );
-            return Boolean(assignment?.user || assignment?.team);
-        },
-        [assignments?.allAssignments],
+
+    const targetOrgUnitsShapes: FilterOrgUnitsResult = useMemo(
+        () =>
+            filterOrgUnits(
+                getValidShapes(childrenOrgUnits, planning) ?? [],
+                assignments,
+                selectedOrgUnitType,
+            ),
+        [childrenOrgUnits, planning, assignments, selectedOrgUnitType],
     );
 
-    const isOrgunitVisible = useCallback(
-        (ou: PlanningOrgUnits) => {
-            return selectedOrgUnitType.some(
-                t => t.value === ou.org_unit_type_id,
-            );
-        },
-        [selectedOrgUnitType],
+    const targetOrgUnitsLocations: FilterOrgUnitsResult = useMemo(
+        () =>
+            filterOrgUnits(
+                getValidLocations(childrenOrgUnits) ?? [],
+                assignments,
+                selectedOrgUnitType,
+            ),
+        [childrenOrgUnits, assignments, selectedOrgUnitType],
     );
-
-    const filterOrgUnits = useCallback(
-        (orgUnits: PlanningOrgUnits[]) => {
-            return {
-                unassigned: orgUnits
-                    ?.filter(ou => !isOuAssigned(ou))
-                    .filter(ou => isOrgunitVisible(ou)),
-                assigned: orgUnits
-                    ?.filter(ou => isOuAssigned(ou))
-                    .filter(ou => isOrgunitVisible(ou)),
-            };
-        },
-        [isOrgunitVisible, isOuAssigned],
-    );
-
-    const targetOrgUnitsShapes = useMemo(() => {
-        const shapes = getValidShapes(childrenOrgUnits, planning);
-        return filterOrgUnits(shapes ?? []);
-    }, [childrenOrgUnits, planning, filterOrgUnits]);
-
-    const targetOrgUnitsLocations = useMemo(() => {
-        const locations = getValidLocations(childrenOrgUnits);
-        return filterOrgUnits(locations ?? []);
-    }, [childrenOrgUnits, filterOrgUnits]);
 
     const isLoading =
         isLoadingChildrenOrgUnits ||
@@ -266,6 +226,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
         isLoadingAssignments ||
         isLoadingRootOrgUnit ||
         isSaving;
+
     return (
         <Box position="relative">
             {isLoading && <LoadingSpinner />}

@@ -28,14 +28,14 @@ import { useGetPlanningDetails } from '../plannings/hooks/requests/useGetPlannin
 import { Planning } from '../plannings/types';
 import { useGetTeam } from '../teams/hooks/requests/useGetTeams';
 import { SubTeam, User } from '../teams/types/team';
-import { AssignmentsMap } from './components/AssignmentsMap';
-import { AssignmentsTable } from './components/AssignmentsTable';
+import { AssignmentsMap } from './components/map/AssignmentsMap';
+import { AssignmentsTable } from './components/table/AssignmentsTable';
 import { TeamTable } from './components/teams/TeamTable';
 import { useBulkDeleteAssignments } from './hooks/requests/useBulkDeleteAssignments';
 import { useGetAssignments } from './hooks/requests/useGetAssignments';
-import { AssignmentsResult } from './hooks/requests/useGetAssignments';
 import { useSaveAssignment } from './hooks/requests/useSaveAssignment';
 import MESSAGES from './messages';
+import { AssignmentsResult } from './types/assigment';
 import { AssignmentParams } from './types/assigment';
 
 export const Assignments: FunctionComponent = () => {

@@ -41,7 +41,9 @@ jobs:
           if [ -z "${ticket_code}" ]; then
             echo "Unable to parse ticket code (slug) from PR title ${PR_TITLE}. Trying branch name ${BRANCH}"
             ticket_code=$(echo "${BRANCH}" | grep -Eo '[a-zA-Z_]+(-|_|:|\ )[1-9][0-9]*')  
-            if [ -z "${ticket_code}" ]; then
+            # Only post PR comment when running in a pull_request context.
+            # On push events (e.g. merge to develop), there's no PR number, so gh pr comment would fail.
+            if [ -z "${ticket_code}" ] && [ -n "${{ github.event.pull_request.number }}" ]; then
               gh pr comment "${{ github.event.pull_request.number }}" \
                 --repo "${{ github.repository }}" \
                 --body "⚠️ **[WARN] Ticket code in PR title (\`${PR_TITLE}\`) not found**. \nTried unsuccessfully to parse from branch (\`${BRANCH}\`). \nImage will not be tagged with a ticket code (slug)."

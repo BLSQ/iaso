@@ -119,29 +119,38 @@ const getRandomOrgUnitWriteType = () => {
     };
 };
 
-const randomUser = {
-    user_name: faker.internet.username(),
-    first_name: faker.person.firstName(),
-    last_name: faker.person.lastName(),
-    email: faker.internet.email(),
-    language: randomLanguage(),
-    organization: faker.company.name(),
-    phone_number: faker.phone.number(),
-    home_page: faker.internet.url(),
-    color: faker.color.rgb({ format: 'hex' }),
-    projects: [getRandomProject(), getRandomProject()],
-    org_units: [getRandomOrgUnit(), getRandomOrgUnit()],
-    user_roles_permissions: [getRandomUserRole(), getRandomUserRole()],
-    permissions: ['iaso_completeness', 'iaso_mappings'],
-    editable_org_unit_types: [
-        getRandomOrgUnitWriteType(),
-        getRandomOrgUnitWriteType(),
-    ],
+const getRandomUser = () => {
+    return {
+        user_name: faker.internet.username(),
+        first_name: faker.person.firstName(),
+        last_name: faker.person.lastName(),
+        email: faker.internet.email(),
+        language: randomLanguage(),
+        organization: faker.company.name(),
+        phone_number: faker.phone.number(),
+        home_page: faker.internet.url(),
+        color: faker.color.rgb({ format: 'hex' }),
+        projects: [getRandomProject(), getRandomProject()],
+        org_units: [getRandomOrgUnit(), getRandomOrgUnit()],
+        user_roles_permissions: [getRandomUserRole(), getRandomUserRole()],
+        permissions: ['iaso_completeness', 'iaso_mappings'],
+        editable_org_unit_types: [
+            getRandomOrgUnitWriteType(),
+            getRandomOrgUnitWriteType(),
+        ],
+    };
 };
 
 // actual tests
 
 describe('User detail view integration test', () => {
+    beforeAll(() => {
+        faker.seed(1);
+    });
+    afterAll(() => {
+        faker.seed(Date.now());
+    });
+
     beforeEach(() => {
         vi.clearAllMocks();
         mockIsSaveProfileLoading.mockReturnValue(false);
@@ -151,6 +160,8 @@ describe('User detail view integration test', () => {
     });
 
     it('loads and displays user details when userId is provided', () => {
+        const randomUser = getRandomUser();
+
         mockUseGetProfile.mockReturnValue({
             data: randomUser,
             isLoading: false,

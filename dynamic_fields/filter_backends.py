@@ -39,7 +39,7 @@ class DynamicFieldsFilterBackend(BaseFilterBackend):
         if serializer_class:
             valid = serializer_class.get_valid_options()
             invalid = set(values) - set(valid)
-            if invalid and "__all__" not in valid:
+            if invalid:
                 raise ValidationError(f"Invalid dynamic fields: {invalid}")
 
         return queryset

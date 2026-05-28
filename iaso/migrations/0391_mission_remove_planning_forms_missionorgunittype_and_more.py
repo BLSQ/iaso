@@ -46,7 +46,7 @@ def reverse_migrate_missions_to_forms(apps, schema_editor):
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("iaso", "0389_alter_account_modules"),
+        ("iaso", "0390_add_stock_management_feature_flag_category"),
     ]
 
     operations = [

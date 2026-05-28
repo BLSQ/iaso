@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib.gis import admin
 
 from iaso.models import MetricType, MetricValue
 

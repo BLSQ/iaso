@@ -4,7 +4,7 @@ from django.db.models import JSONField
 from django.db.models.functions import ExtractMonth, ExtractYear
 from django.http import HttpRequest
 
-from iaso.admin.base import IasoJSONEditorWidget
+from iaso.admin.utils import IasoJSONEditorWidget
 
 from .models import Beneficiary, Dhis2SyncResults, Journey, MonthlyStatistics, ScreeningData, Step, Visit
 from .tasks import (

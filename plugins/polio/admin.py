@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 from translated_fields import TranslatedFieldAdmin
 
-from iaso.admin import IasoJSONEditorWidget
+from iaso.admin.utils import IasoJSONEditorWidget
 from plugins.polio.api.vaccines.supply_chain import validate_rounds_and_campaign
 from plugins.polio.models.base import VaccineStockHistory
 

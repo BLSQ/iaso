@@ -1,13 +1,43 @@
-from django.contrib import admin
-from django.contrib.auth.models import User
-
-from .base import IasoJSONEditorWidget  # noqa: F401
-from .metric_admin import *
-from .openhexa_admin import *
-from .user_admin import UserAdmin
-
-
-# unregister old user admin
-admin.site.unregister(User)
-# register new user admin
-admin.site.register(User, UserAdmin)
+from . import (  # noqa: F401
+    account,
+    algorithms,
+    bulk_create_user_csv_file,
+    data_source,
+    data_store,
+    deduplication,
+    devices,
+    entities,
+    export_logs,
+    export_requests,
+    export_statuses,
+    external_credentials,
+    feature_flags,
+    form_ai,
+    form_version,
+    forms,
+    groups,
+    instances,
+    json_config,
+    links,
+    mappings,
+    metric,
+    microplanning,
+    openhexa,
+    org_unit_change_request_configuration,
+    org_unit_type,
+    org_units,
+    pages,
+    payments,
+    profiles,
+    project,
+    reports,
+    stocks,
+    storages,
+    tasks,
+    teams,
+    tenant_user,
+    user,
+    user_roles,
+    validation_node,
+    workflow,
+)

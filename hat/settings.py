@@ -240,6 +240,7 @@ INSTALLED_APPS += [
     "phonenumber_field",
     "axes",
     "captcha",
+    "django_admin_action_forms",
 ]
 
 if USE_CELERY:

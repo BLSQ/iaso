@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.db import models
 
-from iaso.admin import IasoJSONEditorWidget
+from iaso.admin.utils import IasoJSONEditorWidget
 
 from .models import Modification
 

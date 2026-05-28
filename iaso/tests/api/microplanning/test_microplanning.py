@@ -16,7 +16,15 @@ from iaso.api.microplanning.serializers import (
     PlanningWriteSerializer,
 )
 from iaso.models import Account, DataSource, Form, Group, OrgUnit, OrgUnitType, SourceVersion, Task
-from iaso.models.microplanning import Assignment, Mission, MissionForm, MissionType, Planning, PlanningSamplingResult
+from iaso.models.microplanning import (
+    Assignment,
+    Mission,
+    MissionForm,
+    MissionOrgUnitType,
+    MissionType,
+    Planning,
+    PlanningSamplingResult,
+)
 from iaso.models.team import Team
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
 from iaso.test import APITestCase
@@ -1396,7 +1404,7 @@ class AssignmentAPITestCase(APITestCase):
         source = DataSource.objects.create(name="Source de test")
         source.projects.add(project1)
         version = SourceVersion.objects.create(data_source=source, number=1)
-        org_unit_type = OrgUnitType.objects.create(name="test type")
+        cls.org_unit_type = org_unit_type = OrgUnitType.objects.create(name="test type")
         project = account.project_set.first()
         org_unit_type.projects.add(project)
         cls.root_org_unit = root_org_unit = OrgUnit.objects.create(version=version, org_unit_type=org_unit_type)
@@ -2124,16 +2132,37 @@ class AssignmentAPITestCase(APITestCase):
         p5.assignment_set.create(org_unit=self.child3, user=self.user)
         p5.assignment_set.create(org_unit=self.child4, user=self.user)
 
+        p6 = Planning.objects.create(
+            project=self.project1,
+            name="planning6",
+            team=self.team1,
+            org_unit=self.root_org_unit,
+            started_at="2025-01-10",
+            ended_at="2025-01-10",
+        )
+        p6.assignment_set.create(org_unit=self.child1, user=self.user)
+        mission = Mission.objects.create(
+            name="mission3",
+            account=self.account,
+            mission_type=MissionType.ORG_UNIT_AND_FORM,
+            org_unit_type=MissionOrgUnitType.objects.create(
+                org_unit_type=self.org_unit_type,
+                min_cardinality=2,
+                max_cardinality=4,
+            ),
+        )
+        p6.missions.set([mission])
+
         plannings = Planning.objects.filter(assignment__user=self.user).distinct()
         Planning.objects.update(published_at=now())
-        self.assertEqual(plannings.count(), 4)
+        self.assertEqual(plannings.count(), 5)
 
         self.client.force_authenticate(self.user)
 
         response = self.client.get("/api/v2/mobile/plannings/", format="json")
         r = self.assertJSONResponse(response, 200)
         plannings = r["plannings"]
-        self.assertEqual(len(plannings), 2)
+        self.assertEqual(len(plannings), 3)
         # planning 1
         p1 = plannings[0]
         self.assertEqual(p1["name"], "planning1")
@@ -2207,6 +2236,32 @@ class AssignmentAPITestCase(APITestCase):
                         },
                     ],
                 },
+            ],
+        )
+
+        p3 = plannings[2]
+        self.assertEqual(p3["name"], "planning6")
+        self.assertEqual(len(p3["assignments"]), 1)
+        self.assertEqual(
+            p3["assignments"],
+            [
+                {
+                    "org_unit_id": self.child1.id,
+                    "missions": [
+                        {
+                            "id": mission.id,
+                            "mission_forms": [],
+                            "mission_type": "ORG_UNIT_AND_FORM",
+                            "name": mission.name,
+                            "org_unit_type": {
+                                "id": self.org_unit_type.id,
+                                "name": "test type",
+                            },
+                            "org_unit_min_cardinality": 2,
+                            "org_unit_max_cardinality": 4,
+                        }
+                    ],
+                }
             ],
         )
 

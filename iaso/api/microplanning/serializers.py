@@ -711,8 +711,11 @@ class MobilePlanningV2Serializer(serializers.ModelSerializer):
                         missions.append(mc)
                 elif m.mission_type == MissionType.ORG_UNIT_AND_FORM:
                     # We need to filter on OrgUnit which are parent of the type
-                    m_out = m.org_unit_type.id
-                    if a.org_unit.org_unit_type.sub_unit_types_id.contains(m_out):
+                    m_out = m.org_unit_type.org_unit_type.id
+                    if (
+                        m_out == a.org_unit.org_unit_type.id
+                        or m_out in a.org_unit.org_unit_type.sub_unit_types.values_list("id", flat=True)
+                    ):
                         missions.append(NestedMissionSerializer(m).data)
                 elif m.mission_type == MissionType.ENTITY_AND_FORM:
                     # We always assign entities as there are no enforcement on entities and OrgUnit types.

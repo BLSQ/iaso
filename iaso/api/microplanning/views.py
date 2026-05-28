@@ -184,7 +184,10 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             self.queryset.filter_for_user(user)
             .select_related("project", "org_unit", "team", "selected_sampling_result")
             .prefetch_related(
-                "target_org_unit_types", "missions", "missions__mission_forms__form", "missions__org_unit_type",
+                "target_org_unit_types",
+                "missions",
+                "missions__mission_forms__form",
+                "missions__org_unit_type",
                 "missions__entity_type",
             )
             .annotate(assignments_count=Count("assignment", filter=Q(assignment__deleted_at__isnull=True)))

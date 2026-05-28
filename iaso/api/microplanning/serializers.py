@@ -1,5 +1,3 @@
-import copy
-
 from django.contrib.auth.models import User
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
@@ -648,23 +646,23 @@ class MobilePlanningV2Serializer(serializers.ModelSerializer):
                     intersection = out_set.intersection(m.mission_forms.values_list("form_id", flat=True))
                     if len(intersection) > 0:
                         # Only keep the forms that are in the OUT
-                        mc = copy.deepcopy(m)
-                        mc.mission_forms = list(filter(lambda x: x.form_id in intersection, m.mission_forms))
-                        missions.append(m)
+                        mc = NestedMissionSerializer(m).data
+                        mc["mission_forms"] = list(
+                            filter(lambda x: x["form"]["id"] in intersection, mc["mission_forms"])
+                        )
+                        missions.append(mc)
                 elif m.mission_type == MissionType.ORG_UNIT_AND_FORM:
                     # We need to filter on OrgUnit which are parent of the type
                     m_out = m.org_unit_type.id
                     if a.org_unit.org_unit_type.sub_unit_types_id.contains(m_out):
-                        missions.append(m)
+                        missions.append(NestedMissionSerializer(m).data)
                 elif m.mission_type == MissionType.ENTITY_AND_FORM:
                     # We always assign entities as there are no enforcement on entities and OrgUnit types.
-                    missions.append(m)
+                    missions.append(NestedMissionSerializer(m).data)
                 else:
                     raise NotImplementedError("Unknown mission type")
             if len(missions) > 0:
-                assignments.append(
-                    {"org_unit_id": a.org_unit_id, "missions": NestedMissionSerializer(missions, many=True).data}
-                )
+                assignments.append({"org_unit_id": a.org_unit_id, "missions": missions})
         return assignments
 
 

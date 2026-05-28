@@ -1415,7 +1415,26 @@ class AssignmentAPITestCase(APITestCase):
         cls.child5 = OrgUnit.objects.create(
             version=version, parent=root_org_unit, name="child4", org_unit_type=org_unit_type
         )
-        OrgUnit.objects.create(version=version, parent=root_org_unit, name="child2")
+        # OrgUnit.objects.create(version=version, parent=root_org_unit, name="child2")
+
+        cls.form1 = Form.objects.create(name="form1")
+        cls.form2 = Form.objects.create(name="form2")
+        cls.form1.projects.add(project1)
+        cls.form1.org_unit_types.add(org_unit_type)
+        cls.form2.projects.add(project1)
+        cls.form2.org_unit_types.add(org_unit_type)
+        cls.mission1 = Mission.objects.create(
+            name="mission1",
+            account=account,
+            mission_type=MissionType.FORM_FILLING,
+        )
+        MissionForm.objects.create(mission=cls.mission1, form=cls.form1, min_cardinality=1, max_cardinality=1)
+        cls.mission2 = Mission.objects.create(
+            name="mission2",
+            account=account,
+            mission_type=MissionType.FORM_FILLING,
+        )
+        MissionForm.objects.create(mission=cls.mission2, form=cls.form2, min_cardinality=1, max_cardinality=1)
 
         cls.planning = Planning.objects.create(
             project=project1,
@@ -2067,10 +2086,172 @@ class AssignmentAPITestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r["plannings"]), 0)
 
+    def test_query_mobile_v2(self):
+        p = Planning.objects.create(
+            project=self.project1,
+            name="planning2",
+            team=self.team1,
+            org_unit=self.root_org_unit,
+            started_at="2025-01-01",
+            ended_at="2025-01-10",
+            published_at="2025-01-01",
+        )
+        p.missions.set([self.mission1, self.mission2])
+        p.assignment_set.create(org_unit=self.child1, user=self.user)
+        p.assignment_set.create(org_unit=self.child2, user=self.user)
+
+        # This one should not be returned because started_at is None
+        p4 = Planning.objects.create(
+            project=self.project1,
+            name="planning4",
+            team=self.team1,
+            org_unit=self.root_org_unit,
+            started_at=None,
+            ended_at="2025-01-10",
+        )
+        p4.assignment_set.create(org_unit=self.child3, user=self.user)
+        p4.assignment_set.create(org_unit=self.child4, user=self.user)
+
+        # This one should not be returned because ended_at is None
+        p5 = Planning.objects.create(
+            project=self.project1,
+            name="planning5",
+            team=self.team1,
+            org_unit=self.root_org_unit,
+            started_at="2025-01-10",
+            ended_at=None,
+        )
+        p5.assignment_set.create(org_unit=self.child3, user=self.user)
+        p5.assignment_set.create(org_unit=self.child4, user=self.user)
+
+        plannings = Planning.objects.filter(assignment__user=self.user).distinct()
+        Planning.objects.update(published_at=now())
+        self.assertEqual(plannings.count(), 4)
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get("/api/v2/mobile/plannings/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        plannings = r["plannings"]
+        self.assertEqual(len(plannings), 2)
+        # planning 1
+        p1 = plannings[0]
+        self.assertEqual(p1["name"], "planning1")
+        self.assertEqual(len(p1["assignments"]), 0)
+
+        p2 = plannings[1]
+        self.assertEqual(p2["name"], "planning2")
+        self.assertEqual(len(p2["assignments"]), 2)
+        self.assertEqual(
+            p2["assignments"],
+            [
+                {
+                    "org_unit_id": self.child1.id,
+                    "missions": [
+                        {
+                            "id": self.mission1.id,
+                            "entity_type": None,
+                            "entity_max_cardinality": None,
+                            "entity_min_cardinality": None,
+                            "mission_forms": [
+                                {
+                                    "form": {"id": self.form1.id, "name": self.form1.name},
+                                    "id": self.mission1.mission_forms.all()[0].id,
+                                    "max_cardinality": 1,
+                                    "min_cardinality": 1,
+                                }
+                            ],
+                            "mission_type": "FORM_FILLING",
+                            "name": self.mission1.name,
+                            "org_unit_max_cardinality": None,
+                            "org_unit_min_cardinality": None,
+                            "org_unit_type": None,
+                        },
+                        {
+                            "id": self.mission2.id,
+                            "entity_type": None,
+                            "entity_max_cardinality": None,
+                            "entity_min_cardinality": None,
+                            "mission_forms": [
+                                {
+                                    "form": {"id": self.form2.id, "name": self.form2.name},
+                                    "id": self.mission2.mission_forms.all()[0].id,
+                                    "max_cardinality": 1,
+                                    "min_cardinality": 1,
+                                }
+                            ],
+                            "mission_type": "FORM_FILLING",
+                            "name": self.mission2.name,
+                            "org_unit_max_cardinality": None,
+                            "org_unit_min_cardinality": None,
+                            "org_unit_type": None,
+                        },
+                    ],
+                },
+                {
+                    "org_unit_id": self.child2.id,
+                    "missions": [
+                        {
+                            "id": self.mission1.id,
+                            "entity_type": None,
+                            "entity_max_cardinality": None,
+                            "entity_min_cardinality": None,
+                            "mission_forms": [
+                                {
+                                    "form": {"id": self.form1.id, "name": self.form1.name},
+                                    "id": self.mission1.mission_forms.all()[0].id,
+                                    "max_cardinality": 1,
+                                    "min_cardinality": 1,
+                                }
+                            ],
+                            "mission_type": "FORM_FILLING",
+                            "name": self.mission1.name,
+                            "org_unit_max_cardinality": None,
+                            "org_unit_min_cardinality": None,
+                            "org_unit_type": None,
+                        },
+                        {
+                            "id": self.mission2.id,
+                            "entity_type": None,
+                            "entity_max_cardinality": None,
+                            "entity_min_cardinality": None,
+                            "mission_forms": [
+                                {
+                                    "form": {"id": self.form2.id, "name": self.form2.name},
+                                    "id": self.mission2.mission_forms.all()[0].id,
+                                    "max_cardinality": 1,
+                                    "min_cardinality": 1,
+                                }
+                            ],
+                            "mission_type": "FORM_FILLING",
+                            "name": self.mission2.name,
+                            "org_unit_max_cardinality": None,
+                            "org_unit_min_cardinality": None,
+                            "org_unit_type": None,
+                        },
+                    ],
+                },
+            ],
+        )
+
+        # user without any assignment, should get no planning
+        user = self.create_user_with_profile(username="user2", account=self.account)
+        self.client.force_authenticate(user)
+
+        response = self.client.get("/api/v2/mobile/plannings/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r["plannings"]), 0)
+
     def test_query_mobile_get(self):
         self.client.force_authenticate(self.user)
         Planning.objects.update(published_at=now())
         response = self.client.get(f"/api/mobile/plannings/{self.planning.id}/", format="json")
+        self.assertEqual(response.status_code, 200)
+
+    def test_query_mobile_get_v2(self):
+        self.client.force_authenticate(self.user)
+        Planning.objects.update(published_at=now())
+        response = self.client.get(f"/api/v2/mobile/plannings/{self.planning.id}/", format="json")
         self.assertEqual(response.status_code, 200)
 
     def test_query_mobile_no_modification(self):
@@ -2086,4 +2267,13 @@ class AssignmentAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 403)
 
         response = self.client.post("/api/mobile/plannings/", data={}, format="json")
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.delete(f"/api/v2/mobile/plannings/{self.planning.id}/", format="json")
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.patch(f"/api/v2/mobile/plannings/{self.planning.id}/", format="json")
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.post("/api/v2/mobile/plannings/", data={}, format="json")
         self.assertEqual(response.status_code, 403)

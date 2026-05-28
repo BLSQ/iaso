@@ -45,7 +45,9 @@ class MobilePlanningViewSet(ModelViewSet):
                 # We have to filter on FORM_FILLING only because this was the only type of missions before
                 Prefetch(
                     lookup="missions",
-                    queryset=Mission.objects.filter(type=MissionType.FORM_FILLING).prefetch_related("mission_forms"),
+                    queryset=Mission.objects.filter(mission_type=MissionType.FORM_FILLING).prefetch_related(
+                        "mission_forms"
+                    ),
                 ),
             )
             .distinct()
@@ -83,10 +85,12 @@ class MobilePlanningV2ViewSet(ModelViewSet):
                     .select_related("org_unit", "org_unit__org_unit_type")
                     .prefetch_related("org_unit__org_unit_type__form_set"),
                 ),
-                "missions",
-                "mission_forms",
-                "forms",
+                Prefetch(
+                    "missions",
+                    queryset=Mission.objects.all()
+                    .select_related("org_unit_type", "entity_type")
+                    .prefetch_related("mission_forms", "forms"),
+                ),
             )
-            .select_related("org_unit_type", "entity")
             .distinct()
         )

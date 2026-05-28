@@ -5,8 +5,8 @@ from iaso.test import IasoMigratorTestCase
 
 class Test0390DirectMigration(IasoMigratorTestCase):
     migrate_from = ("iaso", "0389_alter_account_modules")
-    migrate_to = ("iaso", "0390_create_mission_model")
-    num_queries = 48
+    migrate_to = ("iaso", "0390_mission_remove_planning_forms_missionorgunittype_and_more")
+    num_queries = 52
 
     def prepare(self):
         Account = self.old_state.apps.get_model("iaso", "Account")
@@ -71,9 +71,9 @@ class Test0390DirectMigration(IasoMigratorTestCase):
 
 
 class Test0390ReverseMigration(IasoMigratorTestCase):
-    num_queries = 37
+    num_queries = 47
 
-    migrate_from = ("iaso", "0390_create_mission_model")
+    migrate_from = ("iaso", "0390_mission_remove_planning_forms_missionorgunittype_and_more")
     migrate_to = ("iaso", "0389_alter_account_modules")
 
     def prepare(self):

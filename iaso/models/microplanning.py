@@ -62,18 +62,14 @@ class Mission(SoftDeletableModel):
     forms = models.ManyToManyField(Form, blank=True, through="MissionForm", related_name="missions")
 
     # For ORG_UNIT_AND_FORM
-    org_unit_type = models.ForeignKey(
-        OrgUnitType, on_delete=models.PROTECT, null=True, blank=True, related_name="missions"
+    org_unit_type = models.OneToOneField(
+        "MissionOrgUnitType", on_delete=models.CASCADE, null=True, blank=True, related_name="missions"
     )
-    org_unit_min_cardinality = models.PositiveIntegerField(null=True, blank=True)
-    org_unit_max_cardinality = models.PositiveIntegerField(null=True, blank=True)
 
     # For ENTITY_AND_FORM
-    entity_type = models.ForeignKey(
-        EntityType, on_delete=models.PROTECT, null=True, blank=True, related_name="missions"
+    entity_type = models.OneToOneField(
+        "MissionEntityType", on_delete=models.CASCADE, null=True, blank=True, related_name="missions"
     )
-    entity_min_cardinality = models.PositiveIntegerField(null=True, blank=True)
-    entity_max_cardinality = models.PositiveIntegerField(null=True, blank=True)
 
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -97,6 +93,36 @@ class MissionForm(models.Model):
     )
     max_cardinality = models.PositiveIntegerField(
         null=True, blank=True, help_text="Maximum number of times this form can be filled (null = unlimited)"
+    )
+
+
+class MissionOrgUnitType(models.Model):
+    """Contains the information for the ORG_UNIT_AND_FORM mission type"""
+
+    class Meta:
+        ordering = ("id",)
+
+    org_unit_type = models.ForeignKey(OrgUnitType, on_delete=models.CASCADE, related_name="mission_org_unit_type")
+    min_cardinality = models.PositiveIntegerField(
+        default=1, help_text="Minimum number of times this OrgUnit Type should be created"
+    )
+    max_cardinality = models.PositiveIntegerField(
+        null=True, blank=True, help_text="Maximum number of times this OrgUnit should be created (null = unlimited)"
+    )
+
+
+class MissionEntityType(models.Model):
+    """Contains the information for the ENTITY_AND_FORM mission type"""
+
+    class Meta:
+        ordering = ("id",)
+
+    entity_type = models.ForeignKey(EntityType, on_delete=models.CASCADE, related_name="mission_entity_type")
+    min_cardinality = models.PositiveIntegerField(
+        default=1, help_text="Minimum number of times this Entity Type should be created"
+    )
+    max_cardinality = models.PositiveIntegerField(
+        null=True, blank=True, help_text="Maximum number of times this Entity Type should be created (null = unlimited)"
     )
 
 

@@ -2150,9 +2150,6 @@ class AssignmentAPITestCase(APITestCase):
                     "missions": [
                         {
                             "id": self.mission1.id,
-                            "entity_type": None,
-                            "entity_max_cardinality": None,
-                            "entity_min_cardinality": None,
                             "mission_forms": [
                                 {
                                     "form": {"id": self.form1.id, "name": self.form1.name},
@@ -2163,15 +2160,9 @@ class AssignmentAPITestCase(APITestCase):
                             ],
                             "mission_type": "FORM_FILLING",
                             "name": self.mission1.name,
-                            "org_unit_max_cardinality": None,
-                            "org_unit_min_cardinality": None,
-                            "org_unit_type": None,
                         },
                         {
                             "id": self.mission2.id,
-                            "entity_type": None,
-                            "entity_max_cardinality": None,
-                            "entity_min_cardinality": None,
                             "mission_forms": [
                                 {
                                     "form": {"id": self.form2.id, "name": self.form2.name},
@@ -2182,9 +2173,6 @@ class AssignmentAPITestCase(APITestCase):
                             ],
                             "mission_type": "FORM_FILLING",
                             "name": self.mission2.name,
-                            "org_unit_max_cardinality": None,
-                            "org_unit_min_cardinality": None,
-                            "org_unit_type": None,
                         },
                     ],
                 },
@@ -2193,9 +2181,6 @@ class AssignmentAPITestCase(APITestCase):
                     "missions": [
                         {
                             "id": self.mission1.id,
-                            "entity_type": None,
-                            "entity_max_cardinality": None,
-                            "entity_min_cardinality": None,
                             "mission_forms": [
                                 {
                                     "form": {"id": self.form1.id, "name": self.form1.name},
@@ -2206,15 +2191,9 @@ class AssignmentAPITestCase(APITestCase):
                             ],
                             "mission_type": "FORM_FILLING",
                             "name": self.mission1.name,
-                            "org_unit_max_cardinality": None,
-                            "org_unit_min_cardinality": None,
-                            "org_unit_type": None,
                         },
                         {
                             "id": self.mission2.id,
-                            "entity_type": None,
-                            "entity_max_cardinality": None,
-                            "entity_min_cardinality": None,
                             "mission_forms": [
                                 {
                                     "form": {"id": self.form2.id, "name": self.form2.name},
@@ -2225,9 +2204,6 @@ class AssignmentAPITestCase(APITestCase):
                             ],
                             "mission_type": "FORM_FILLING",
                             "name": self.mission2.name,
-                            "org_unit_max_cardinality": None,
-                            "org_unit_min_cardinality": None,
-                            "org_unit_type": None,
                         },
                     ],
                 },

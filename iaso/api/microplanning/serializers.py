@@ -8,8 +8,17 @@ from iaso.api.common import (
     TimestampField,
 )
 from iaso.api.teams.serializers import NestedTeamSerializer
-from iaso.models import EntityType, Form, Group, OrgUnit, OrgUnitType, Project, Task
-from iaso.models.microplanning import Assignment, Mission, MissionForm, MissionType, Planning, PlanningSamplingResult
+from iaso.models import EntityType, Form, Group, Mission, OrgUnit, OrgUnitType, Project, Task
+from iaso.models.microplanning import (
+    Assignment,
+    Mission,
+    MissionEntityType,
+    MissionForm,
+    MissionOrgUnitType,
+    MissionType,
+    Planning,
+    PlanningSamplingResult,
+)
 from iaso.models.org_unit import OrgUnitQuerySet
 from iaso.models.team import Team
 
@@ -78,8 +87,12 @@ class MissionFormWriteSerializer(serializers.Serializer):
 
 class MissionReadSerializer(serializers.ModelSerializer):
     mission_forms = MissionFormSerializer(many=True, read_only=True)
-    org_unit_type = NestedOrgUnitTypeSerializer(read_only=True)
-    entity_type = NestedEntityTypeSerializer(read_only=True)
+    org_unit_type = NestedOrgUnitTypeSerializer(read_only=True, source="org_unit_type.org_unit_type")
+    entity_type = NestedEntityTypeSerializer(read_only=True, source="entity_type.entity_type")
+    org_unit_min_cardinality = serializers.IntegerField(read_only=True, source="org_unit_type.min_cardinality")
+    org_unit_max_cardinality = serializers.IntegerField(read_only=True, source="org_unit_type.max_cardinality")
+    entity_min_cardinality = serializers.IntegerField(read_only=True, source="entity_type.min_cardinality")
+    entity_max_cardinality = serializers.IntegerField(read_only=True, source="entity_type.max_cardinality")
 
     class Meta:
         model = Mission
@@ -104,6 +117,16 @@ class MissionReadSerializer(serializers.ModelSerializer):
 
 class MissionWriteSerializer(serializers.ModelSerializer):
     mission_forms = MissionFormWriteSerializer(many=True, required=False)
+    org_unit_type = serializers.PrimaryKeyRelatedField(
+        required=False, source="org_unit_type.org_unit_type", queryset=OrgUnitType.objects
+    )
+    org_unit_min_cardinality = serializers.IntegerField(required=False, source="org_unit_type.min_cardinality")
+    org_unit_max_cardinality = serializers.IntegerField(required=False, source="org_unit_type.max_cardinality")
+    entity_type = serializers.PrimaryKeyRelatedField(
+        required=False, source="entity_type.entity_type", queryset=EntityType.objects
+    )
+    entity_min_cardinality = serializers.IntegerField(required=False, source="entity_type.min_cardinality")
+    entity_max_cardinality = serializers.IntegerField(required=False, source="entity_type.max_cardinality")
 
     class Meta:
         model = Mission
@@ -128,9 +151,9 @@ class MissionWriteSerializer(serializers.ModelSerializer):
         self.fields["org_unit_type"].queryset = OrgUnitType.objects.filter(projects__account=account).distinct()
         self.fields["entity_type"].queryset = EntityType.objects.filter(account=account)
 
-    def _validate_cardinality(self, attrs, errors, prefix):
-        min_val = attrs.get(f"{prefix}_min_cardinality")
-        max_val = attrs.get(f"{prefix}_max_cardinality")
+    def _validate_cardinality(self, object, errors, prefix):
+        min_val = object["min_cardinality"]
+        max_val = object["max_cardinality"]
         if min_val is not None and max_val is not None and min_val > max_val:
             errors[f"{prefix}_min_cardinality"] = "min must be ≤ max"
 
@@ -149,12 +172,14 @@ class MissionWriteSerializer(serializers.ModelSerializer):
         elif mission_type == MissionType.ORG_UNIT_AND_FORM:
             if not validated_data.get("org_unit_type"):
                 errors["org_unit_type"] = "Required for ORG_UNIT_AND_FORM missions."
-            self._validate_cardinality(validated_data, errors, "org_unit")
+            else:
+                self._validate_cardinality(object=validated_data.get("org_unit_type"), errors=errors, prefix="org_unit")
 
         elif mission_type == MissionType.ENTITY_AND_FORM:
             if not validated_data.get("entity_type"):
                 errors["entity_type"] = "Required for ENTITY_AND_FORM missions."
-            self._validate_cardinality(validated_data, errors, "entity")
+            else:
+                self._validate_cardinality(object=validated_data.get("entity_type"), errors=errors, prefix="entity")
 
         if errors:
             raise serializers.ValidationError(errors)
@@ -173,13 +198,42 @@ class MissionWriteSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         mission_forms_data = validated_data.pop("mission_forms", [])
+        org_unit_type = validated_data.pop("org_unit_type", None)
+        entity_type = validated_data.pop("entity_type", None)
         mission = super().create(validated_data)
+        if org_unit_type:
+            mission.org_unit_type = MissionOrgUnitType.objects.create(**org_unit_type)
+        if entity_type:
+            mission.entity_type = MissionEntityType.objects.create(**entity_type)
+        if org_unit_type or entity_type:
+            mission.save()
         self._save_mission_forms(mission, mission_forms_data)
         return mission
 
     def update(self, instance, validated_data):
         mission_forms_data = validated_data.pop("mission_forms", None)
+        org_unit_type = validated_data.pop("org_unit_type", None)
+        entity_type = validated_data.pop("entity_type", None)
         mission = super().update(instance, validated_data)
+        updated = False
+        if org_unit_type:
+            if instance.org_unit_type:
+                instance.org_unit_type = MissionOrgUnitType.objects.update(**org_unit_type)
+            else:
+                mission.org_unit_type = MissionOrgUnitType.objects.create(**org_unit_type)
+                updated = True
+        elif instance.org_unit_type:
+            instance.org_unit_type.delete()
+        if entity_type:
+            if instance.entity_type:
+                instance.entity_type = MissionOrgUnitType.objects.update(**entity_type)
+            else:
+                mission.entity_type = MissionEntityType.objects.create(**entity_type)
+                updated = True
+        elif instance.entity_type:
+            instance.entity_type.delete()
+        if updated:
+            mission.save()
         if mission_forms_data is not None:
             self._save_mission_forms(mission, mission_forms_data)
         return mission
@@ -195,8 +249,12 @@ class NestedMissionSerializer(serializers.ModelSerializer):
     """Lightweight serializer for embedding in PlanningReadSerializer."""
 
     mission_forms = MissionFormSerializer(many=True, read_only=True)
-    org_unit_type = NestedOrgUnitTypeSerializer(read_only=True)
-    entity_type = NestedEntityTypeSerializer(read_only=True)
+    org_unit_type = NestedOrgUnitTypeSerializer(read_only=True, source="org_unit_type.org_unit_type")
+    org_unit_min_cardinality = serializers.IntegerField(read_only=True, source="org_unit_type.min_cardinality")
+    org_unit_max_cardinality = serializers.IntegerField(read_only=True, source="org_unit_type.max_cardinality")
+    entity_type = NestedEntityTypeSerializer(read_only=True, source="entity_type.entity_type")
+    entity_min_cardinality = serializers.IntegerField(read_only=True, source="entity_type.min_cardinality")
+    entity_max_cardinality = serializers.IntegerField(read_only=True, source="entity_type.max_cardinality")
 
     class Meta:
         model = Mission

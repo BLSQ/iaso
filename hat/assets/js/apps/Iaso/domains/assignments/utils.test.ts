@@ -43,9 +43,21 @@ describe('assignments utils', () => {
                 target_org_unit_type_details: [{ id: 2, name: 'Area' }],
             } as any;
             const orgUnits = [
-                createOrgUnit({ id: 1, has_geo_json: true, org_unit_type_id: 2 }),
-                createOrgUnit({ id: 2, has_geo_json: false, org_unit_type_id: 2 }),
-                createOrgUnit({ id: 3, has_geo_json: true, org_unit_type_id: 3 }),
+                createOrgUnit({
+                    id: 1,
+                    has_geo_json: true,
+                    org_unit_type_id: 2,
+                }),
+                createOrgUnit({
+                    id: 2,
+                    has_geo_json: false,
+                    org_unit_type_id: 2,
+                }),
+                createOrgUnit({
+                    id: 3,
+                    has_geo_json: true,
+                    org_unit_type_id: 3,
+                }),
             ];
 
             const result = getValidShapes(orgUnits, planning);
@@ -87,7 +99,9 @@ describe('assignments utils', () => {
             const ou = createOrgUnit({ id: 7 });
             const assignments = {
                 assignments: [],
-                allAssignments: [createAssignment({ org_unit: 7, user: 0, team: 0 })],
+                allAssignments: [
+                    createAssignment({ org_unit: 7, user: 0, team: 0 }),
+                ],
             };
 
             expect(isOuAssigned(ou, assignments as any)).toBe(false);
@@ -112,8 +126,14 @@ describe('assignments utils', () => {
 
     describe('filterOrgUnits', () => {
         it('splits org units into assigned and unassigned, filtered by selected type', () => {
-            const visibleAssigned = createOrgUnit({ id: 1, org_unit_type_id: 2 });
-            const visibleUnassigned = createOrgUnit({ id: 2, org_unit_type_id: 2 });
+            const visibleAssigned = createOrgUnit({
+                id: 1,
+                org_unit_type_id: 2,
+            });
+            const visibleUnassigned = createOrgUnit({
+                id: 2,
+                org_unit_type_id: 2,
+            });
             const hiddenType = createOrgUnit({ id: 3, org_unit_type_id: 9 });
             const assignments = {
                 assignments: [],

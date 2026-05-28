@@ -42,7 +42,8 @@ class DynamicFieldsModelSerializerMixin(serializers.Serializer):
         else:
             filtered_fields = params_fields
 
-        fields = {k: v for k, v in fields.items() if k in filtered_fields}
+        if filtered_fields != "__all__":
+            fields = {k: v for k, v in fields.items() if k in filtered_fields}
         return fields
 
     def to_representation(self, instance):

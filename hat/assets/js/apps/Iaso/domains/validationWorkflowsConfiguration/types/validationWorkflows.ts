@@ -1,4 +1,5 @@
 import { PaginatedResponse } from 'Iaso/domains/validationWorkflowsConfiguration/types/common';
+// import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows';
 
 export type ValidationWorkflowListResponseItem = {
     slug: string;
@@ -40,10 +41,14 @@ export type ValidationWorkflowRetrieveResponseItem = {
 };
 
 export type ValidationWorkflowRetrieveResponseItemWithOrderedNodes = Omit<
+    // ValidationWorkflowRetrieve,
     ValidationWorkflowRetrieveResponseItem,
     'node_templates'
 > & {
-    node_templates?: (NestedNodeTemplate & {
+    node_templates?: (Pick<
+        ValidationWorkflowRetrieveResponseItem,
+        'node_templates'
+    > & {
         id: number;
         order: number;
     })[];

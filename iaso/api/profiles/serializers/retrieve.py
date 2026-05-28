@@ -24,7 +24,7 @@ class NestedDataSourceSerializer(ModelSerializer):
 
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
-    url = serializers.CharField(source="credentials__url", read_only=True)
+    url = serializers.CharField(source="credentials__url", read_only=True, allow_null=True)
 
     class Meta:
         model = DataSource
@@ -65,9 +65,17 @@ class NestedAccountSerializer(ModelSerializer):
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
     feature_flags = serializers.SlugRelatedField(many=True, read_only=True, slug_field="code")
-    user_manual_path = serializers.ReadOnlyField(default=settings.USER_MANUAL_PATH)
-    forum_path = serializers.ReadOnlyField(default=settings.FORUM_PATH)
+    user_manual_path = serializers.SerializerMethodField()
+    forum_path = serializers.SerializerMethodField()
     default_version = NestedDefaultVersionSerializer(read_only=True)
+
+    @extend_schema_field(OpenApiTypes.STR)
+    def get_user_manual_path(self, obj):
+        return obj.user_manual_path or settings.USER_MANUAL_PATH
+
+    @extend_schema_field(OpenApiTypes.STR)
+    def get_forum_path(self, obj):
+        return obj.forum_path or settings.FORUM_PATH
 
     class Meta:
         model = Account
@@ -237,7 +245,7 @@ class ProfileRetrieveSerializer(ModelSerializer):
     user_roles_permissions = NestedUserRoleSerializer(many=True, read_only=True, source="get_ordered_user_roles")
 
     country_code = serializers.SerializerMethodField()
-    phone_number = serializers.CharField(source="phone_number.as_e164", read_only=True)
+    phone_number = serializers.CharField(source="phone_number.as_e164", read_only=True, allow_null=True)
 
     projects = NestedProjectSerializer(many=True, read_only=True, source="get_ordered_projects")
 

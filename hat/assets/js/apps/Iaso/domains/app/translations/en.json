@@ -1433,6 +1433,7 @@
     "iaso.projets.featureflag.category.PLA": "Planning",
     "iaso.projets.featureflag.category.REO": "Refresh options",
     "iaso.projets.featureflag.category.SPO": "Specific options",
+    "iaso.projets.featureflag.category.STM": "Stock management",
     "iaso.projets.featureflag.check_position_for_forms": "Mobile: Enforce users are within reach of the org unit before starting the form",
     "iaso.projets.featureflag.data_collection": "Mobile: Show data collection screen",
     "iaso.projets.featureflag.entity": "Mobile: Show entities screen",

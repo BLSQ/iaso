@@ -13,6 +13,7 @@ class FeatureFlagQuerySet(models.QuerySet):
         "DAV",
         "ENT",
         "PLA",
+        "STM",
         "SPO",
         "NA",
     ]
@@ -33,6 +34,7 @@ class FeatureFlag(models.Model):
         DATA_VALIDATION = "DAV", _("Data Validation")
         ENTITIES = "ENT", _("Entities")
         PLANNING = "PLA", _("Planning")
+        STOCK_MANAGEMENT = "STM", _("Stock management")
         SPECIFIC_OPTIONS = "SPO", _("Specific options")
         NA = "NA", _("Not specified")
 
@@ -42,6 +44,7 @@ class FeatureFlag(models.Model):
     FORMS_AUTO_UPLOAD = "FORMS_AUTO_UPLOAD"
     LIMIT_OU_DOWNLOAD_TO_ROOTS = "LIMIT_OU_DOWNLOAD_TO_ROOTS"
     HOME_OFFLINE = "HOME_OFFLINE"
+    MOBILE_STOCK = "MOBILE_STOCK"
 
     FEATURE_FLAGS = {
         (INSTANT_EXPORT, "Instant export", _("Immediate export of instances to DHIS2")),

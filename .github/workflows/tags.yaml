@@ -1,0 +1,42 @@
+name: Parse IASO Tags
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        description: Branch name
+        required: true
+        type: string
+      pr_title:
+        description: PR Title
+        required: true
+        type: string
+    outputs:
+      slug:
+        description: Parsed ticket code (slug)
+        value: ${{ jobs.parse_tags.outputs.slug }}
+      short_sha:
+        description: Short Git commit SHA
+        value: ${{ jobs.parse_tags.outputs.short_sha }}
+jobs:
+  parse_tags:
+    runs-on: ubuntu-24.04
+    outputs:
+      slug: ${{ steps.tags.outputs.slug }}
+      short_sha: ${{ steps.tags.outputs.short_sha }}
+
+    steps:
+      - name: Parse tags
+        id: tags
+        env:
+          BRANCH: ${{ inputs.branch }}
+          PR_TITLE: ${{ inputs.pr_title }}
+        run: |
+          ticket_code=$(echo "${BRANCH}" | grep -Eo '[a-zA-Z_]+(-|_|:|\ )[1-9][0-9]*')
+          if [ -z "${ticket_code}" ]; then
+            echo "Unable to parse ticket code (slug) from branch name ${BRANCH}. Trying PR title ${PR_TITLE}"
+            ticket_code=$(echo "${PR_TITLE}" | grep -Eo '[a-zA-Z_]+-[1-9][0-9]*')
+          fi
+          echo "slug=${ticket_code}" >> $GITHUB_OUTPUT
+          echo "short_sha=${GITHUB_SHA:0:12}" >> $GITHUB_OUTPUT
+          echo "[DEBUG] Parsed tags for CI >> $GITHUB_OUTPUT"

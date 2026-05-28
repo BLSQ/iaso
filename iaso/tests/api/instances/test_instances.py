@@ -26,6 +26,7 @@ from iaso.permissions.core_permissions import (
     CORE_FORMS_PERMISSION,
     CORE_ORG_UNITS_PERMISSION,
     CORE_SOURCE_PERMISSION,
+    CORE_STORAGE_PERMISSION,
     CORE_SUBMISSIONS_PERMISSION,
     CORE_SUBMISSIONS_UPDATE_PERMISSION,
 )
@@ -1970,6 +1971,39 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertEqual(instance.entity, entity)
         self.assertEqual(entity.entity_type, entity_type)
         self.assertEqual(entity.account, self.star_wars)
+
+    def test_retrieve_instance_with_entity_hides_nfc_cards_without_permission(self):
+        """GET /api/instances/<id>/ hides nfc_cards from entity if user lacks CORE_STORAGE_PERMISSION"""
+        entity_type = m.EntityType.objects.create(account=self.star_wars)
+        entity = m.Entity.objects.create(name="Test Entity", entity_type=entity_type, account=self.star_wars)
+
+        self.instance_1.entity = entity
+        self.instance_1.save()
+
+        user_with_storage = self.create_user_with_profile(
+            username="user_with_storage",
+            account=self.star_wars,
+            permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_STORAGE_PERMISSION],
+        )
+        user_with_storage.iaso_profile.org_units.set([self.jedi_council_corruscant])
+
+        self.client.force_authenticate(user_with_storage)
+        response = self.client.get(f"/api/instances/{self.instance_1.pk}/")
+
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+        self.assertIn("entity", response_data)
+        self.assertIn("nfc_cards", response_data["entity"])
+
+        self.yoda.iaso_profile.org_units.set([self.jedi_council_corruscant])
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(f"/api/instances/{self.instance_1.pk}/")
+
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+        self.assertIn("entity", response_data)
+        self.assertNotIn("nfc_cards", response_data["entity"])
 
     def test_assign_form_version_id_on_save(self):
         instance_uuid = str(uuid4())

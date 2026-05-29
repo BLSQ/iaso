@@ -1,7 +1,8 @@
+import { useMemo } from 'react';
 import { UseQueryResult } from 'react-query';
 import { PlanningOrgUnits } from 'Iaso/domains/plannings/types';
 import { getRequest } from 'Iaso/libs/Api';
-import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { useSnackQueries } from 'Iaso/libs/apiHooks';
 
 export type ParentOrgUnit = PlanningOrgUnits & {
     org_unit_type_name: string;
@@ -27,26 +28,37 @@ type ApiParams = {
     orgUnitTypeId?: string;
 };
 
+export type UseGetParentOrgUnitsResult = UseQueryResult<
+    ParentOrgUnit[],
+    Error
+>[];
+
 export const useGetParentOrgUnits = ({
     orgUniParentId,
     orgUnitTypeIds,
-}: Props): UseQueryResult<ParentOrgUnit[], Error> => {
-    const apiParams: ApiParams = {
-        limit: '10000',
-        validation_status: 'VALID',
-        asLocation: 'true',
-        orgUnitParentId: orgUniParentId ? `${orgUniParentId}` : undefined,
-        orgUnitTypeId: orgUnitTypeIds?.join(',') || undefined,
-    };
-    const queryString = new URLSearchParams(apiParams).toString();
-    return useSnackQuery({
-        queryKey: ['assignments-parent-org-units', queryString],
-        queryFn: () => getRequest(`/api/orgunits/?${queryString}`),
-        options: {
-            staleTime: Infinity,
-            keepPreviousData: true,
-            enabled: Boolean(orgUniParentId && orgUnitTypeIds),
-            select: data => data?.orgUnits || [],
-        },
-    });
+}: Props): UseGetParentOrgUnitsResult => {
+    const queries = useMemo(() => {
+        return orgUnitTypeIds?.map(outId => {
+            const apiParams: ApiParams = {
+                limit: '10000',
+                validation_status: 'VALID',
+                asLocation: 'true',
+                orgUnitParentId: orgUniParentId
+                    ? `${orgUniParentId}`
+                    : undefined,
+                orgUnitTypeId: `${outId}`,
+            };
+            const queryString = new URLSearchParams(apiParams).toString();
+            return {
+                queryKey: ['assignments-parent-org-units', queryString],
+                queryFn: () => getRequest(`/api/orgunits/?${queryString}`),
+                options: {
+                    staleTime: Infinity,
+                    keepPreviousData: true,
+                    enabled: Boolean(orgUniParentId && outId),
+                },
+            };
+        });
+    }, [orgUniParentId, orgUnitTypeIds]);
+    return useSnackQueries(queries ?? []) as UseGetParentOrgUnitsResult;
 };

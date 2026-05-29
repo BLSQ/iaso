@@ -48,7 +48,7 @@ export const Assignments: FunctionComponent = () => {
         undefined,
     );
     const [search, setSearch] = useState<string | undefined>(params.search);
-    const [selectedOrgUnitType, setSelectedOrgUnitType] = useState<
+    const [selectedOrgUnitTypes, setSelectedOrgUnitTypes] = useState<
         OrgUnitTypeHierarchyDropdownValue[]
     >([]);
     const [selectedTeam, setSelectedTeam] = useState<SubTeam | undefined>(
@@ -66,10 +66,10 @@ export const Assignments: FunctionComponent = () => {
 
     const onSuccessPlanning = useCallback(
         (data: Planning) => {
-            if (selectedOrgUnitType.length === 0) {
+            if (selectedOrgUnitTypes.length === 0) {
                 const targetOrgUnitTypes =
                     data.target_org_unit_type_details ?? [];
-                setSelectedOrgUnitType(
+                setSelectedOrgUnitTypes(
                     targetOrgUnitTypes.map(target => ({
                         value: target.id,
                         label: target.name,
@@ -78,7 +78,7 @@ export const Assignments: FunctionComponent = () => {
                 );
             }
         },
-        [selectedOrgUnitType],
+        [selectedOrgUnitTypes],
     );
     const handleSearch = useCallback(() => {
         redirectToReplace(baseUrls.assignments, {
@@ -243,8 +243,10 @@ export const Assignments: FunctionComponent = () => {
                                 canAssign={canAssign}
                                 params={params}
                                 orgUniTypeList={orgUniTypeList}
-                                selectedOrgUnitType={selectedOrgUnitType}
-                                setSelectedOrgUnitType={setSelectedOrgUnitType}
+                                selectedOrgUnitTypes={selectedOrgUnitTypes}
+                                setSelectedOrgUnitTypes={
+                                    setSelectedOrgUnitTypes
+                                }
                             />
                         )}
                         {tab === 'list' && (

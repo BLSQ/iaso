@@ -2,6 +2,7 @@ import React, {
     Dispatch,
     FunctionComponent,
     SetStateAction,
+    useCallback,
     useMemo,
     useState,
 } from 'react';
@@ -17,6 +18,7 @@ import {
     OrgUnitTypeHierarchyDropdownValue,
     OrgUnitTypeHierarchyDropdownValues,
 } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { PlanningOrgUnits } from 'Iaso/domains/plannings/types';
 import { MapToolTip } from 'Iaso/domains/registry/components/map/MapTooltip';
 import { Team } from 'Iaso/domains/teams/types/team';
 import {
@@ -29,9 +31,7 @@ import {
     useGetPlanningOrgUnitsChildren,
     useGetPlanningOrgUnitsRoot,
 } from '../../../teams/hooks/requests/useGetPlanningOrgUnits';
-// import { parentColor } from '../constants/colors';
 import { defaultHeight } from '../../constants/ui';
-import { useGetParentOrgUnits } from '../../hooks/requests/useGetParentOrgUnits';
 import { AssignmentsResult } from '../../types/assigment';
 import { AssignmentParams } from '../../types/assigment';
 import {
@@ -45,6 +45,7 @@ import {
 import { MapLegend } from './MapLegend';
 import { MapLocation } from './MapLocation';
 import { MapShape } from './MapShape';
+import { ParentOrgUnits } from './ParentOrgUnits';
 
 /**
  * Assignments map – layer stack & pane specification
@@ -92,7 +93,6 @@ import { MapShape } from './MapShape';
  * `index.tsx` via `flattenOrgUnitTypeHierarchy` → `filterOrgUnitTypesByForms`,
  * producing `orgUniTypeList` in natural tree order (parent before descendants).
  * Each entry's position is its **hierarchy index** for map drawing / parent z-index.
- * `MapLegend` reverses a copy of that list for display only. Do not use `depth`.
  *
  * Only **parent** layers use a zIndex range (20 slots: 210–229). All org units of the
  * same target category share a single pane zIndex regardless of type. Stack parent
@@ -127,7 +127,7 @@ import { MapShape } from './MapShape';
  */
 
 /** @see block comment above – reserved zIndex values for future panes */
-const MAP_PANE_Z_INDEX = {
+export const MAP_PANE_Z_INDEX = {
     rootShape: 200,
     /** 20-slot range for parent types ordered by `orgUniTypeList` hierarchy index */
     parentShapesMin: 210,
@@ -150,8 +150,8 @@ type Props = {
     planning?: Planning;
     params: AssignmentParams;
     orgUniTypeList?: OrgUnitTypeHierarchyDropdownValues;
-    selectedOrgUnitType: OrgUnitTypeHierarchyDropdownValue[];
-    setSelectedOrgUnitType: Dispatch<
+    selectedOrgUnitTypes: OrgUnitTypeHierarchyDropdownValue[];
+    setSelectedOrgUnitTypes: Dispatch<
         SetStateAction<OrgUnitTypeHierarchyDropdownValue[]>
     >;
 };
@@ -168,8 +168,8 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
     planning,
     params,
     orgUniTypeList,
-    selectedOrgUnitType,
-    setSelectedOrgUnitType,
+    selectedOrgUnitTypes,
+    setSelectedOrgUnitTypes,
 }) => {
     const getAssignmentColor = useGetAssignmentColor(assignments, rootTeam);
 
@@ -188,31 +188,14 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
         [childrenOrgUnits, rootOrgUnit],
     );
 
-    const parentOrgUnitTypes = useMemo(() => {
-        return orgUniTypeList?.filter(
-            ou =>
-                !planning?.target_org_unit_type_details?.some(
-                    t => t.id === ou.value,
-                ),
-        );
-    }, [orgUniTypeList, planning?.target_org_unit_type_details]);
-
-    // Fetch here org units for parent org unit types, with root org unit as parent, valid,
-    const { data: parentOrgUnits } = useGetParentOrgUnits({
-        orgUniParentId: rootOrgUnit?.id,
-        orgUnitTypeIds: parentOrgUnitTypes?.map(ou => ou.value),
-    });
-    // eslint-disable-next-line no-console
-    console.log(parentOrgUnits, 'parentOrgUnits');
-
     const targetOrgUnitsShapes: FilterOrgUnitsResult = useMemo(
         () =>
             filterOrgUnits(
                 getValidShapes(childrenOrgUnits, planning) ?? [],
                 assignments,
-                selectedOrgUnitType,
+                selectedOrgUnitTypes,
             ),
-        [childrenOrgUnits, planning, assignments, selectedOrgUnitType],
+        [childrenOrgUnits, planning, assignments, selectedOrgUnitTypes],
     );
 
     const targetOrgUnitsLocations: FilterOrgUnitsResult = useMemo(
@@ -220,9 +203,17 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
             filterOrgUnits(
                 getValidLocations(childrenOrgUnits) ?? [],
                 assignments,
-                selectedOrgUnitType,
+                selectedOrgUnitTypes,
             ),
-        [childrenOrgUnits, assignments, selectedOrgUnitType],
+        [childrenOrgUnits, assignments, selectedOrgUnitTypes],
+    );
+
+    const handleClickParentOrgUnit = useCallback(
+        (orgUnit: PlanningOrgUnits) => {
+            // eslint-disable-next-line no-console
+            console.log('orgUnit', orgUnit);
+        },
+        [],
     );
 
     const isLoading =
@@ -237,9 +228,9 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
             {isLoading && <LoadingSpinner />}
             {orgUniTypeList && planning && (
                 <MapLegend
-                    orgUniTypeList={[...(orgUniTypeList ?? [])].reverse()}
-                    selectedOrgUnitType={selectedOrgUnitType}
-                    setSelectedOrgUnitType={setSelectedOrgUnitType}
+                    orgUniTypeList={orgUniTypeList}
+                    selectedOrgUnitTypes={selectedOrgUnitTypes}
+                    setSelectedOrgUnitTypes={setSelectedOrgUnitTypes}
                 />
             )}
             <MapContainer
@@ -280,7 +271,14 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                         </GeoJSON>
                     </Pane>
                 )}
-                {/* TODO: parent-org-units-shapes (MAP_PANE_Z_INDEX.parentShapes*) */}
+                <ParentOrgUnits
+                    orgUniTypeList={orgUniTypeList}
+                    planning={planning}
+                    selectedOrgUnitTypes={selectedOrgUnitTypes}
+                    rootOrgUnit={rootOrgUnit}
+                    canAssign={canAssign}
+                    handleClick={handleClickParentOrgUnit}
+                />
                 <Pane
                     name="target-org-units-shapes-unassigned"
                     style={{

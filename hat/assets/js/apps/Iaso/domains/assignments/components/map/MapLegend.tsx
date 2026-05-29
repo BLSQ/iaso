@@ -52,22 +52,22 @@ export type Legend = {
 
 type Props = {
     orgUniTypeList: OrgUnitTypeHierarchyDropdownValues;
-    selectedOrgUnitType: OrgUnitTypeHierarchyDropdownValue[];
-    setSelectedOrgUnitType: Dispatch<
+    selectedOrgUnitTypes: OrgUnitTypeHierarchyDropdownValue[];
+    setSelectedOrgUnitTypes: Dispatch<
         SetStateAction<OrgUnitTypeHierarchyDropdownValue[]>
     >;
 };
 
 export const MapLegend: FunctionComponent<Props> = ({
     orgUniTypeList,
-    selectedOrgUnitType,
-    setSelectedOrgUnitType,
+    selectedOrgUnitTypes,
+    setSelectedOrgUnitTypes,
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const handleToggle = useCallback(
         (orgUnitType: OrgUnitTypeHierarchyDropdownValue) => {
-            setSelectedOrgUnitType(current => {
+            setSelectedOrgUnitTypes(current => {
                 const isSelected = current.some(
                     ou => ou.value === orgUnitType.value,
                 );
@@ -77,7 +77,7 @@ export const MapLegend: FunctionComponent<Props> = ({
                 return [...current, orgUnitType];
             });
         },
-        [setSelectedOrgUnitType],
+        [setSelectedOrgUnitTypes],
     );
 
     return (
@@ -100,7 +100,7 @@ export const MapLegend: FunctionComponent<Props> = ({
                             control={
                                 <Checkbox
                                     size="small"
-                                    checked={selectedOrgUnitType.some(
+                                    checked={selectedOrgUnitTypes.some(
                                         selected => selected.value === ou.value,
                                     )}
                                     onChange={() => handleToggle(ou)}

@@ -47,14 +47,10 @@ jobs:
             # On push events (e.g. merge to develop), there's no PR number, so gh pr comment would fail.
             
             if [ -z "${ticket_code}" ] && [ -n "${{ github.event.pull_request.number }}" ]; then
+              BODY=$(printf "⚠️ **[WARN] Ticket code in PR title (\`%s\`) not found**.\nTried unsuccessfully to parse from branch (\`%s\`).\nImage will not be tagged with a ticket code (slug)." "${PR_TITLE}" "${BRANCH}")
               gh pr comment "${{ github.event.pull_request.number }}" \
                 --repo "${{ github.repository }}" \
-                --body "$(cat <<EOF
-⚠️ **[WARN] Ticket code in PR title (\`${PR_TITLE}\`) not found**.
-Tried unsuccessfully to parse from branch (\`${BRANCH}\`).
-Image will not be tagged with a ticket code (slug).
-EOF
-)"
+                --body "${BODY}"
             fi
 
           fi

@@ -1,10 +1,10 @@
 name: deploy_docker_manual
 
-on:
-  push:
-    branches:
-      - IA-4812-clean-and-optimize-c-is-to-build-images-for-deployment
-      - IA-4812-clean-and-optimize-c-is-to-build-images-for-deployment-rebase
+# on:
+#   push:
+#     branches:
+#       - IA-4812-clean-and-optimize-c-is-to-build-images-for-deployment
+#       - IA-4812-clean-and-optimize-c-is-to-build-images-for-deployment-rebase
   workflow_dispatch:
     inputs:
       branch:

@@ -1,6 +1,6 @@
 services:
     iaso:
-      image: blsq/iaso:${IMAGE_TAG:-latest}
+      image: blsq/iaso:${PROD_BUILD_IMAGE_TAG:-latest}
       ## If you want to run the prod docker compose locally
       ## Comment the image line and uncomment the build line
       # build:

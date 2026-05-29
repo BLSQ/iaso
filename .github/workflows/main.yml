@@ -74,20 +74,6 @@ jobs:
           MSG_MINIMAL: true
         if: failure()
 
-#  config:
-#    runs-on: ubuntu-24.04
-#    outputs:
-#      branch: ${{ steps.vars.outputs.branch }}
-#      image_tags: ${{ steps.vars.outputs.image_tags }}
-#    steps:
-#      - name: Determine branch name and commit SHA
-#        id: vars
-#        run: |
-#          BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF##*refs/heads/}}"
-#          echo "branch=${BRANCH}" >> $GITHUB_OUTPUT
-#          echo "image_tags=${BRANCH},${GITHUB_SHA}" >> $GITHUB_OUTPUT
-
-
   # outputs: slug, short_sha, image_tags
   config:
     uses: ./.github/workflows/config.yaml

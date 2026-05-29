@@ -49,7 +49,12 @@ jobs:
             if [ -z "${ticket_code}" ] && [ -n "${{ github.event.pull_request.number }}" ]; then
               gh pr comment "${{ github.event.pull_request.number }}" \
                 --repo "${{ github.repository }}" \
-                --body "⚠️ **[WARN] Ticket code in PR title (\`${PR_TITLE}\`) not found**. \nTried unsuccessfully to parse from branch (\`${BRANCH}\`). \nImage will not be tagged with a ticket code (slug)."
+                --body "$(cat <<EOF
+⚠️ **[WARN] Ticket code in PR title (\`${PR_TITLE}\`) not found**.
+Tried unsuccessfully to parse from branch (\`${BRANCH}\`).
+Image will not be tagged with a ticket code (slug).
+EOF
+)"
             fi
 
           fi

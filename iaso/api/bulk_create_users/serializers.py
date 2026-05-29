@@ -325,6 +325,7 @@ class BulkCreateUserSerializer(BulkCreateUserSerializerFileMixin, ModelSerialize
                             "text/plain",
                             "application/vnd.ms-excel",
                             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            "application/zip",
                         ]
                     ),
                     FileExtensionValidator(allowed_extensions=["csv", "xlsx", "xls"]),

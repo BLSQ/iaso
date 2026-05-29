@@ -20,6 +20,10 @@ class ModelViewSet(
     pass
 
 
+class ReadOnlyModelViewSet(RetrieveModelMixin, CustomPaginationListModelMixin, GenericViewSet):
+    pass
+
+
 class EtlModelViewset(ModelViewSet):
     """
     Sub class of ModelViewset that enforces the presence of pagination queryparams for GET requests.

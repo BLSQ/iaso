@@ -29,13 +29,13 @@ describe('ListItemSecondaryText', () => {
         id: 1,
         status: 'ACCEPTED',
         updated_by: 'John Doe',
-        updated_at: '2024-01-01T10:00:00Z',
+        updated_at: '2024-01-01T10:00:00',
         comment: 'Looks good',
         user_can_do_actions: false,
         node_template_slug: 'node-slug',
         order: 1,
         name: 'Node 1',
-        created_at: '2024-01-01T09:00:00Z',
+        created_at: '2024-01-01T09:00:00',
     };
 
     it('renders pending text for most recent UNKNOWN item', () => {

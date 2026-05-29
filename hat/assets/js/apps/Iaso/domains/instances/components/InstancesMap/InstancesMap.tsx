@@ -19,14 +19,14 @@ import {
     defaultZoom,
     getLatLngBounds,
 } from '../../../../utils/map/mapUtils';
-import { Instance } from '../../types/instance';
+import { InstanceLocation } from '../../types/instance';
 import { InstancePopup } from '../InstancePopUp/InstancePopUp';
 import { useShowWarning } from './useShowWarning';
 
 const boundsOptions: L.FitBoundsOptions = { padding: L.point(50, 50) };
 
 type Props = {
-    instances: Instance[];
+    instances: InstanceLocation[];
     fetching: boolean;
 };
 

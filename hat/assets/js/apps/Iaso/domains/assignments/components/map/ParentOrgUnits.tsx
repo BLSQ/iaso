@@ -82,7 +82,7 @@ export const ParentOrgUnits: FunctionComponent<Props> = ({
             })
             .filter(query => Boolean(query));
     }, [parentOrgUnitsQueries]);
-    const { data: colors } = useGetColors(true);
+    const { data: colors } = useGetColors();
     return parentOrgUnitTypes?.map((out, index) => {
         const zIndex = MAP_PANE_Z_INDEX.parentShapesMin + out.originalIndex;
         const queryResult = parentOrgUnitsQueries?.[index];

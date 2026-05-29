@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useCallback, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Box, Button, Grid, Typography, Tabs, Tab } from '@mui/material';
@@ -97,20 +102,6 @@ export const Assignments: FunctionComponent = () => {
         extraFields: ['project_ids', 'org_unit_type_ids'],
     });
 
-    const selectOrgUnitTypes = useCallback(
-        (data: OrgUnitTypeHierarchy) => {
-            const orgUnitTypes = flattenOrgUnitTypeHierarchy(
-                data?.sub_unit_types || [],
-            );
-            return filterOrgUnitTypesByForms(
-                orgUnitTypes,
-                formsDropdown,
-                planning?.forms,
-            );
-        },
-        [formsDropdown, planning?.forms],
-    );
-
     const { data: rootTeam, isLoading: isLoadingRootTeam } = useGetTeam(
         planning?.team_details?.id,
     );
@@ -129,10 +120,19 @@ export const Assignments: FunctionComponent = () => {
         selectedTeam,
     });
     const { mutateAsync: deleteAssignments } = useBulkDeleteAssignments();
-    const { data: orgUniTypeList } = useGetOrgUnitTypesHierarchy(
+    const { data: orgUnitTypesHierarchy } = useGetOrgUnitTypesHierarchy(
         planning?.org_unit_details?.org_unit_type,
-        selectOrgUnitTypes,
     );
+    const orgUniTypeList = useMemo(() => {
+        const orgUnitTypes = flattenOrgUnitTypeHierarchy(
+            orgUnitTypesHierarchy?.sub_unit_types || [],
+        );
+        return filterOrgUnitTypesByForms(
+            orgUnitTypes,
+            formsDropdown,
+            planning?.forms,
+        );
+    }, [orgUnitTypesHierarchy, formsDropdown, planning?.forms]);
 
     const canAssign = Boolean(selectedUser || selectedTeam);
     return (

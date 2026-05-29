@@ -17,7 +17,7 @@ on:
       tag:
         description: Tag to deploy
         required: false
-        default: latest
+        default: develop-test
       slack_channel:
         description: Slack Channel for notification (iasops by default)
         required: false
@@ -44,20 +44,14 @@ jobs:
           DEFAULT_SLACK_CHANNEL: cloud-alerts
         run: |
           echo "branch=${{ github.event.inputs.branch || github.ref_name || env.DEFAULT_GIT_REFERENCE }}" >> $GITHUB_OUTPUT
-          echo "image_tag=${{ github.event.inputs.tag || 'latest' }}" >> $GITHUB_OUTPUT
+          INPUT_TAG="${{ github.event.inputs.tag }}"
+          SHORT_SHA="${GITHUB_SHA:0:12}"
+          echo "image_tag=${INPUT_TAG:-${SHORT_SHA}}" >> $GITHUB_OUTPUT
           echo "environment=${{ github.event.inputs.environment || env.DEFAULT_ENVIRONMENT }}" >> $GITHUB_OUTPUT
           echo "slack_channel=${{ github.event.inputs.slack_channel || env.DEFAULT_SLACK_CHANNEL }}" >> $GITHUB_OUTPUT
 
-  build:
-    needs: config
-    uses: ./.github/workflows/docker_build.yml
-    secrets: inherit
-    with:
-      branch: ${{ needs.config.outputs.branch }}
-      image_tags: ${{ needs.config.outputs.image_tag }}
-
   deploy:
-    needs: [ config, build ]
+    needs: [ config ]
     runs-on: ubuntu-24.04
     steps:
       - name: Check out repository code
@@ -65,17 +59,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v4
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Get version name
-        id: version
-        run: |
-          git describe --tags
-          echo "VERSION_NAME=$(git describe --tags --match "v[[:digit:]]*")" >> $GITHUB_OUTPUT
 
       - name: Slack deployment start
         uses: rtCamp/action-slack-notify@v2
@@ -85,7 +68,7 @@ jobs:
           SLACK_COLOR: ""
           SLACK_USERNAME: ${{ needs.config.outputs.environment }}
           SLACK_ICON_EMOJI: ":robot_face:"
-          SLACK_TITLE: Started deployment of ${{ steps.version.outputs.VERSION_NAME }} on ${{ needs.config.outputs.environment }} ...
+          SLACK_TITLE: Started deployment of ${{ needs.config.outputs.image_tag }} on ${{ needs.config.outputs.environment }} ...
           SLACK_FOOTER: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
           MSG_MINIMAL: true
 
@@ -98,15 +81,19 @@ jobs:
            | | / ___ \ ___) | |_| |
           |___/_/   \_\____/ \___/
           ------------------------
-          Deploying ${{ steps.version.outputs.VERSION_NAME }} to ${{ needs.config.outputs.environment }}
+          Deploying ${{ needs.config.outputs.image_tag }} to ${{ needs.config.outputs.environment }}
           $(date)
           "
 
-      - name: Tag image ${{ needs.config.outputs.image_tag }}
+      - name: Verify image exists on Docker Hub
         run: |
-          docker pull blsq/iaso:${{ needs.config.outputs.image_tag }}
-          docker tag blsq/iaso:${{ needs.config.outputs.image_tag }} blsq/iaso:${{ steps.version.outputs.VERSION_NAME }}
-          docker push blsq/iaso:${{ steps.version.outputs.VERSION_NAME }}
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://hub.docker.com/v2/repositories/blsq/iaso/tags/${{ needs.config.outputs.image_tag }}")
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::Image blsq/iaso:${{ needs.config.outputs.image_tag }} not found on Docker Hub"
+            exit 1
+          fi
+          echo "Image blsq/iaso:${{ needs.config.outputs.image_tag }} found"
 
       - name: Swap to prod docker config
         run: |
@@ -126,10 +113,10 @@ jobs:
           echo "Remove dev eb extensions from git stage"
           git rm -r --cached --quiet .ebextensions
 
-      - name: Set up Python 3.14
+      - name: Set up Python 3.13
         uses: actions/setup-python@v5
         with:
-          python-version: 3.14
+          python-version: 3.13
 
       - name: Setup beanstalk
         run: |
@@ -139,8 +126,8 @@ jobs:
       - name: Deploy to beanstalk (Docker) using scripts/eb_deploy.py
         run: python scripts/eb_deploy.py ${{ needs.config.outputs.environment }}
         env:
-          IMAGE_TAG: ${{ steps.version.outputs.VERSION_NAME }}
-          VERSION_NAME: ${{ steps.version.outputs.VERSION_NAME }}
+          PROD_BUILD_IMAGE_TAG: ${{ needs.config.outputs.image_tag }}
+          VERSION_NAME: ${{ needs.config.outputs.image_tag }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: "eu-central-1"
@@ -153,7 +140,7 @@ jobs:
           SLACK_COLOR: ${{ job.status }}
           SLACK_USERNAME: ${{ needs.config.outputs.environment }}
           SLACK_ICON_EMOJI: ":robot_face:"
-          SLACK_TITLE: Iaso ${{ steps.version.outputs.VERSION_NAME }} successfully deployed on ${{ needs.config.outputs.environment }}
+          SLACK_TITLE: Iaso ${{ needs.config.outputs.image_tag }} successfully deployed on ${{ needs.config.outputs.environment }}
           SLACK_MESSAGE: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
           SLACK_FOOTER: "-"
           MSG_MINIMAL: true
@@ -167,7 +154,7 @@ jobs:
           SLACK_USERNAME: ${{ needs.config.outputs.environment }}
           SLACK_COLOR: ${{ job.status }}
           SLACK_ICON_EMOJI: ":robot_face:"
-          SLACK_TITLE: Deployment failure Iaso ${{ steps.version.outputs.VERSION_NAME }} - ${{ needs.config.outputs.environment }}
+          SLACK_TITLE: Deployment failure Iaso ${{ needs.config.outputs.image_tag }} - ${{ needs.config.outputs.environment }}
           SLACK_MESSAGE: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
           SLACK_FOOTER: "-"
           MSG_MINIMAL: true

@@ -12,16 +12,18 @@ from rest_framework.test import APIRequestFactory
 
 from iaso import models as m
 from iaso.api.org_unit_change_requests.serializers import (
-    InstanceForChangeRequestSerializer,
-    MobileOrgUnitChangeRequestListSerializer,
     OrgUnitChangeRequestBulkDeleteSerializer,
     OrgUnitChangeRequestBulkReviewSerializer,
     OrgUnitChangeRequestListSerializer,
     OrgUnitChangeRequestRetrieveSerializer,
     OrgUnitChangeRequestReviewSerializer,
     OrgUnitChangeRequestWriteSerializer,
+)
+from iaso.api.org_unit_change_requests.serializers.misc import (
+    InstanceForChangeRequestSerializer,
     OrgUnitForChangeRequestSerializer,
 )
+from iaso.api.org_unit_change_requests.serializers.mobile import MobileOrgUnitChangeRequestListSerializer
 from iaso.models import OrgUnitChangeRequest
 from iaso.models.payments import PaymentStatuses
 from iaso.test import TestCase

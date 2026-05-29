@@ -9,7 +9,7 @@ from rest_framework.mixins import ListModelMixin
 from iaso.api.org_unit_change_requests.filters import MobileOrgUnitChangeRequestListFilter
 from iaso.api.org_unit_change_requests.pagination import OrgUnitChangeRequestPagination
 from iaso.api.org_unit_change_requests.permissions import HasOrgUnitsChangeRequestPermission
-from iaso.api.org_unit_change_requests.serializers import MobileOrgUnitChangeRequestListSerializer
+from iaso.api.org_unit_change_requests.serializers.mobile import MobileOrgUnitChangeRequestListSerializer
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest
 

@@ -11,6 +11,7 @@ class CurrentAccountDefault:
 class UserDisplayNameField(serializers.CharField):
     def __init__(self, **kwargs):
         kwargs["read_only"] = True
+        kwargs["allow_blank"] = True
         super().__init__(**kwargs)
 
     def to_representation(self, value):

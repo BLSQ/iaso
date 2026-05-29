@@ -32,7 +32,7 @@ describe('SubmissionAccordion', () => {
         submission: baseSubmission,
         order: 1,
         isMostRecent: false,
-        createdAt: '2024-01-01T10:00:00Z',
+        createdAt: '2024-01-01T10:00:00',
         createdBy: 'John Doe',
         instanceId: 123,
     };

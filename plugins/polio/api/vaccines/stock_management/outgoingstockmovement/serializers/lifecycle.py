@@ -10,14 +10,7 @@ from .constants import VALIDATE_FORM_A_LIFECYCLE_CONTEXT_KEY
 
 
 class OutgoingStockMovementFormALifecycleMixin:
-    def _validate_editable_fields_based_on_status(self, status_value, form_a_reception_date, uploaded_file):
-        if status_value == OutgoingStockMovement.StatusChoices.TEMPORARY and form_a_reception_date is not None:
-            raise serializers.ValidationError(
-                {"form_a_reception_date": "form_a_reception_date must be empty when status is temporary"}
-            )
-        if status_value == OutgoingStockMovement.StatusChoices.TEMPORARY and uploaded_file:
-            raise serializers.ValidationError({"file": "file cannot be provided when status is temporary"})
-
+    def _validate_editable_fields_based_on_status(self, status_value, form_a_reception_date):
         if status_value == OutgoingStockMovement.StatusChoices.RECEIVED and form_a_reception_date is None:
             raise serializers.ValidationError(
                 {"form_a_reception_date": "form_a_reception_date is required when status is received"}
@@ -86,25 +79,14 @@ class OutgoingStockMovementFormALifecycleMixin:
         if self.context.get(VALIDATE_FORM_A_LIFECYCLE_CONTEXT_KEY):
             current_status = self.instance.status if self.instance else None
             current_form_a_reception_date = self.instance.form_a_reception_date if self.instance else None
-            current_file = self.instance.file if self.instance else None
 
             status_value = validated_data.get("status", current_status)
-            is_received_to_temporary = (
-                self.instance is not None
-                and current_status == OutgoingStockMovement.StatusChoices.RECEIVED
-                and status_value == OutgoingStockMovement.StatusChoices.TEMPORARY
-            )
             form_a_reception_date = validated_data.get("form_a_reception_date", current_form_a_reception_date)
-            uploaded_file = validated_data.get("file", current_file)
-            if is_received_to_temporary:
-                # Transition normalization: received -> temporary clears reception metadata.
-                form_a_reception_date = None
-                uploaded_file = None
             # Validation precedence:
-            # 1) lifecycle compatibility (temporary vs received field rules)
+            # 1) lifecycle compatibility (received requires reception date)
             # 2) temporary vials immutability
             # 3) temporary post-window completion-field allowlist
-            self._validate_editable_fields_based_on_status(status_value, form_a_reception_date, uploaded_file)
+            self._validate_editable_fields_based_on_status(status_value, form_a_reception_date)
             self._enforce_temporary_vials_immutability(data, status_value)
             self._validate_temporary_after_window_allowed_fields(status_value)
 

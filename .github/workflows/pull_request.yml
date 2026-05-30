@@ -1,5 +1,4 @@
 name: Iaso Automated CI testing on pull requests
-# This workflow run automatically for every PR on github it checks the syntax and launch the tests.
 
 on:
   pull_request:
@@ -9,51 +8,17 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
-
-permissions:
-  contents: read
-  pull-requests: write
-
 jobs:
-  # outputs: slug, short_sha, image_tags
   config:
-    runs-on: ubuntu-24.04
-    name: config
-    outputs:
-      slug: ${{ steps.config.outputs.slug }}
-      short_sha: ${{ steps.config.outputs.short_sha }}
-      image_tags: ${{ steps.config.outputs.image_tags }}
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v6
-
-      - name: Set PR variables (slug, short_sha, image_tags)
-        uses: ./.github/actions/config/
-        id: config
-        with:
-          branch: ${{ github.head_ref || github.ref_name }}
-          pr_title: ${{ github.event.pull_request.title }}
+    uses: ./.github/workflows/wc_config.yml
+    with:
+      branch: ${{ github.head_ref || github.ref_name }}
+      pr_title: ${{ github.event.pull_request.title }}
 
   build_and_push_image:
-    runs-on: ubuntu-24.04
-    name: build and push docker image
     needs: config
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v6
-
-      - name: Build and push docker image
-        uses: ./.github/actions/docker_build/
-        with:
-          branch: ${{ github.head_ref || github.ref_name }}
-          image_tags: ${{ needs.config.outputs.image_tags }}
-          docker_username: ${{ secrets.DOCKER_USERNAME }}
-          docker_password: ${{ secrets.DOCKER_PASSWORD }}
-
-#  test:
-#    uses: ./.github/actions/test/
-
-
+    uses: ./.github/workflows/wc_docker_build.yml
+    with:
+      branch: ${{ github.head_ref || github.ref_name }}
+      image_tags: ${{ needs.config.outputs.image_tags }}
+    secrets: inherit

@@ -1,4 +1,4 @@
-name: Iaso Automated CI testing on pull requests
+name: Iaso Automated CI on pull requests
 
 on:
   pull_request:

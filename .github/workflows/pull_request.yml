@@ -15,6 +15,8 @@ permissions:
 jobs:
   config:
     uses: ./.github/workflows/wc_config.yml
+    permissions:
+      pull-requests: write
     with:
       branch: ${{ github.head_ref || github.ref_name }}
       pr_title: ${{ github.event.pull_request.title }}

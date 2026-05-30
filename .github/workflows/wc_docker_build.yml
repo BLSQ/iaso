@@ -11,11 +11,6 @@ on:
         description: Branch to build
         required: true
         type: string
-    secrets:
-      docker_username:
-        required: true
-      docker_password:
-        required: true
 
 jobs:
   docker_build:

@@ -21,7 +21,7 @@ jobs:
   # outputs: slug, short_sha, image_tags
   config:
     runs-on: ubuntu-24.04
-    name: Prepares PR variables (slug, short_sha, image_tags) for downstream jobs
+    name: Config
     steps:
       - name: Check out repository code
         uses: actions/checkout@v6
@@ -33,13 +33,19 @@ jobs:
           branch: ${{ github.head_ref || github.ref_name }}
           pr_title: ${{ github.event.pull_request.title }}
 
-#  build-and-push-image:
-#    needs: config
-#    uses: ./.github/actions/docker_build/
-#    secrets: inherit
-#    with:
-#      branch: ${{ github.head_ref || github.ref_name }}
-#      image_tags: ${{ needs.config.outputs.image_tags }}
+  build_and_push_image:
+    runs-on: ubuntu-24.04
+    name: Build and push docker image
+    needs: config
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v6
+
+      - name: Build and push docker image
+        uses: ./.github/actions/docker_build/
+        with:
+          branch: ${{ github.head_ref || github.ref_name }}
+          image_tags: ${{ needs.config.outputs.image_tags }}
 
 #  test:
 #    uses: ./.github/actions/test/

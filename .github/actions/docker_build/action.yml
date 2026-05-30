@@ -10,11 +10,8 @@ inputs:
     required: true
     type: string
 
-jobs:
-  build_iaso_image:
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
+runs:
+    using: "composite"
     steps:
       - name: Check out repository code
         uses: actions/checkout@v6
@@ -29,6 +26,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Building IASO image based on branch ${{ inputs.branch }}
+        shell: bash
         run: |
           echo "
            ___    _    ____   ___
@@ -43,6 +41,7 @@ jobs:
 
       - name: Format image tags
         id: tags
+        shell: bash
         env:
           INPUT_TAGS: ${{ inputs.image_tags }}
         run: |

@@ -21,7 +21,7 @@ jobs:
   # outputs: slug, short_sha, image_tags
   config:
     runs-on: ubuntu-24.04
-    name: Config
+    name: config
     steps:
       - name: Check out repository code
         uses: actions/checkout@v6
@@ -35,7 +35,7 @@ jobs:
 
   build_and_push_image:
     runs-on: ubuntu-24.04
-    name: Build and push docker image
+    name: build and push docker image
     needs: config
     steps:
       - name: Check out repository code

@@ -28,6 +28,6 @@ jobs:
     secrets: inherit
 
   tests:
-    uses: ./.github/workflows/wc_test.yml
+    uses: ./.github/workflows/wc_tests.yml
     with:
       branch: ${{ github.head_ref || github.ref_name }}

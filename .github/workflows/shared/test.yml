@@ -73,14 +73,14 @@ jobs:
 
   # outputs: slug, short_sha, image_tags
   config:
-    uses: ./.github/workflows/config.yaml
+    uses: ./.github/workflows/shared/config.yml
     with:
       branch: ${{ github.head_ref || github.ref_name }}
       pr_title: ${{ github.event.pull_request.title }}
 
   build-and-push-image:
     needs: config
-    uses: ./.github/workflows/docker_build.yml
+    uses: ./.github/workflows/shared/docker_build.yml
     secrets: inherit
     with:
       branch: ${{ github.head_ref || github.ref_name }}

@@ -1,0 +1,39 @@
+name: Iaso Automated CI testing on pull requests
+# This workflow run automatically for every PR on github it checks the syntax and launch the tests.
+
+on:
+  pull_request:
+    types: [ opened, synchronize, ready_for_review, edited ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  # outputs: slug, short_sha, image_tags
+  config:
+    uses: ./.github/actions/config/
+    with:
+      branch: ${{ github.head_ref || github.ref_name }}
+      pr_title: ${{ github.event.pull_request.title }}
+
+#  build-and-push-image:
+#    needs: config
+#    uses: ./.github/actions/docker_build/
+#    secrets: inherit
+#    with:
+#      branch: ${{ github.head_ref || github.ref_name }}
+#      image_tags: ${{ needs.config.outputs.image_tags }}
+
+#  test:
+#    uses: ./.github/actions/test/
+
+

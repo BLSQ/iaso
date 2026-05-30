@@ -1,51 +1,46 @@
 name: Parse Iaso Tags (short sha, image_tags, slug/ticket code)
 
-on:
-  workflow_call:
-    inputs:
-      branch:
-        description: PR Branch name
-        required: true
-        type: string
-      pr_title:
-        description: PR Title
-        required: true
-        type: string
-    outputs:
-      slug:
-        description: Parsed ticket code (slug)
-        value: ${{ jobs.config.outputs.slug }}
-      short_sha:
-        description: Short git commit SHA
-        value: ${{ jobs.config.outputs.short_sha }}
-      image_tags:
-        description: Image tags (comma separated)
-        value: ${{ jobs.config.outputs.image_tags }}
-jobs:
-  config:
-    runs-on: ubuntu-24.04
-    outputs:
-      slug: ${{ steps.slug.outputs.slug }}
-      short_sha: ${{ steps.short_sha.outputs.short_sha }}
-      image_tags: ${{ steps.image_tags.outputs.image_tags }}
+inputs:
+  branch:
+    description: PR Branch name
+    required: true
+    type: string
+  pr_title:
+    description: PR Title
+    required: true
+    type: string
 
-    steps:
+outputs:
+  slug:
+    description: Parsed ticket code (slug)
+    value: ${{ jobs.slug.outputs.slug }}
+  short_sha:
+    description: Short git commit SHA
+    value: ${{ jobs.short_sha.outputs.short_sha }}
+  image_tags:
+    description: Image tags (comma separated)
+    value: ${{ jobs.image_tags.outputs.image_tags }}
+
+runs:
+  using: "composite"
+  steps:
       - name: Determine ticket code (slug) from PR title or branch name. Warn if not found
         id: slug
         env:
           GH_TOKEN: ${{ github.token }}
           BRANCH: ${{ inputs.branch }}
           PR_TITLE: ${{ inputs.pr_title }}
+        shell: bash
         run: |
           ticket_code=$(echo "${PR_TITLE}" | grep -Eo '[a-zA-Z_]+-[1-9][0-9]*' || true)
           if [ -z "${ticket_code}" ]; then
             echo "Unable to parse ticket code (slug) from PR title ${PR_TITLE}. Trying branch name ${BRANCH}"
-            
+          
             ticket_code=$(echo "${BRANCH}" | grep -Eo '[a-zA-Z_]+(-|_|:|\ )[1-9][0-9]*' || true)  
-            
+          
             # Only post PR comment when running in a pull_request context.
             # On push events (e.g. merge to develop), there's no PR number, so gh pr comment would fail.
-            
+          
             if [ -z "${ticket_code}" ] && [ -n "${{ github.event.pull_request.number }}" ]; then
               BODY=$(printf "⚠️ **[WARN] Ticket code in PR title (\`%s\`) not found**.\nTried unsuccessfully to parse from branch (\`%s\`).\nImage will not be tagged with a ticket code (slug)." "${PR_TITLE}" "${BRANCH}")
               gh pr comment "${{ github.event.pull_request.number }}" \
@@ -59,10 +54,12 @@ jobs:
 
       - name: Determine short sha from github commit sha
         id: short_sha
+        shell: bash
         run: echo "short_sha=${GITHUB_SHA:0:12}" >> $GITHUB_OUTPUT
 
       - name: Output PR image tags
         id: image_tags
+        shell: bash
         env:
           SLUG: ${{ steps.slug.outputs.slug }}
           SHORT_SHA: ${{ steps.short_sha.outputs.short_sha }}

@@ -1,19 +1,12 @@
-name: Iaso Automated CI testing
-# This workflow run automatically for every PR on github it checks the syntax and launch the tests.
-on:
-  pull_request:
-    types: [ opened, synchronize, ready_for_review, edited ]
-  push:
-    # Run On push (or merge) on develop.  This populates the cache and avoid the issue where we have undetected migrations
-    # conflict following subsequent merge
-    branches:
-      - develop-test
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+name: Iaso CI testing
+# This workflow can run all backend and frontend tests
+
+inputs:
+  branch:
+    description: Branch to test
+    required: true
+    type: string
+
 permissions:
   contents: read
   pull-requests: write

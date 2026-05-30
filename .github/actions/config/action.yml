@@ -13,13 +13,13 @@ inputs:
 outputs:
   slug:
     description: Parsed ticket code (slug)
-    value: ${{ jobs.slug.outputs.slug }}
+    value: ${{ steps.slug.outputs.slug }}
   short_sha:
     description: Short git commit SHA
-    value: ${{ jobs.short_sha.outputs.short_sha }}
+    value: ${{ steps.short_sha.outputs.short_sha }}
   image_tags:
     description: Image tags (comma separated)
-    value: ${{ jobs.image_tags.outputs.image_tags }}
+    value: ${{ steps.image_tags.outputs.image_tags }}
 
 runs:
   using: "composite"

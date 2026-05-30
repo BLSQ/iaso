@@ -1,15 +1,15 @@
 name: Iaso CI testing
 # This workflow can run all backend and frontend tests
 
-inputs:
-  branch:
-    description: Branch to test
-    required: true
-    type: string
+on:
+  workflow_call:
+    branch:
+      description: Branch to test
+      required: true
+      type: string
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
   frontend_tests:
@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.branch }}
 
       - name: Use node.js 22.18.0
         uses: actions/setup-node@v6
@@ -67,21 +69,6 @@ jobs:
           MSG_MINIMAL: true
         if: failure()
 
-  # outputs: slug, short_sha, image_tags
-  config:
-    uses: ./.github/workflows/shared/config.yml
-    with:
-      branch: ${{ github.head_ref || github.ref_name }}
-      pr_title: ${{ github.event.pull_request.title }}
-
-  build-and-push-image:
-    needs: config
-    uses: ./.github/workflows/shared/docker_build.yml
-    secrets: inherit
-    with:
-      branch: ${{ github.head_ref || github.ref_name }}
-      image_tags: ${{ needs.config.outputs.image_tags }}
-
   backend_tests:
     runs-on: ubuntu-24.04
     services:
@@ -109,6 +96,8 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.branch }}
 
       - name: Install Python 3.9
         uses: actions/setup-python@v6
@@ -165,6 +154,8 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.branch }}
 
       - name: Install ruff
         uses: astral-sh/ruff-action@v4.0.0

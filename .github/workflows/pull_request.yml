@@ -17,6 +17,7 @@ jobs:
     uses: ./.github/workflows/wc_config.yml
     permissions:
       pull-requests: write
+      contents: read
     with:
       branch: ${{ github.head_ref || github.ref_name }}
       pr_title: ${{ github.event.pull_request.title }}

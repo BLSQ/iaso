@@ -3,10 +3,11 @@ name: Iaso CI testing
 
 on:
   workflow_call:
-    branch:
-      description: Branch to test
-      required: true
-      type: string
+    inputs:
+      branch:
+        description: Branch to test
+        required: true
+        type: string
 
 permissions:
   contents: read

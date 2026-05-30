@@ -46,6 +46,8 @@ jobs:
         with:
           branch: ${{ github.head_ref || github.ref_name }}
           image_tags: ${{ needs.config.outputs.image_tags }}
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_password: ${{ secrets.DOCKER_PASSWORD }}
 
 #  test:
 #    uses: ./.github/actions/test/

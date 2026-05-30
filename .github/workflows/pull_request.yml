@@ -20,10 +20,18 @@ permissions:
 jobs:
   # outputs: slug, short_sha, image_tags
   config:
-    uses: ./.github/actions/config/
-    with:
-      branch: ${{ github.head_ref || github.ref_name }}
-      pr_title: ${{ github.event.pull_request.title }}
+    runs-on: ubuntu-24.04
+    name: Prepares PR variables (slug, short_sha, image_tags) for downstream jobs
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v6
+
+      - name: Set PR variables (slug, short_sha, image_tags)
+        uses: ./.github/actions/config/
+        id: config
+        with:
+          branch: ${{ github.head_ref || github.ref_name }}
+          pr_title: ${{ github.event.pull_request.title }}
 
 #  build-and-push-image:
 #    needs: config

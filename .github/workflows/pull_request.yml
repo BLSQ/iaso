@@ -8,6 +8,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   config:
     uses: ./.github/workflows/wc_config.yml
@@ -22,3 +26,8 @@ jobs:
       branch: ${{ github.head_ref || github.ref_name }}
       image_tags: ${{ needs.config.outputs.image_tags }}
     secrets: inherit
+
+  tests:
+    uses: ./.github/workflows/wc_test.yml
+    with:
+      branch: ${{ github.head_ref || github.ref_name }}

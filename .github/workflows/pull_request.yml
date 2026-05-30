@@ -22,6 +22,10 @@ jobs:
   config:
     runs-on: ubuntu-24.04
     name: config
+    outputs:
+      slug: ${{ steps.config.outputs.slug }}
+      short_sha: ${{ steps.config.outputs.short_sha }}
+      image_tags: ${{ steps.config.outputs.image_tags }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v6

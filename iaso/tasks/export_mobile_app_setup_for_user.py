@@ -60,6 +60,8 @@ logger = logging.getLogger(__name__)
 SERVER = f"https://{settings.DNS_DOMAIN}"
 
 DEFAULT_PAGE_SIZE = 1000
+MAX_RETRIES = 5
+RETRY_DELAY = 30
 
 
 @task_decorator(task_name="export_mobile_app_setup")
@@ -362,7 +364,7 @@ def _get_resource(iaso_client, call, zipf, app_id, feature_flags, options, task,
 # The URL is potentially an S3 signed URL, thus containing query params with
 # an AWS key, signature etc.
 # For this reason, we use `urlparse` to easily get a clean path without query params.
-def _requests_get(url, headers=None, max_retries=3, delay=10):
+def _requests_get(url, headers=None, max_retries=MAX_RETRIES, delay=RETRY_DELAY):
     """Wraps requests.get with retry."""
     for attempt in range(max_retries):
         try:

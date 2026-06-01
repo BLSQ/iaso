@@ -48,9 +48,7 @@ class ChronogramFiltersTestCase(APITestCase):
         )
 
         # Campaign on hold.
-        cls.campaign_on_hold = Campaign.objects.create(
-            obr_name="On Hold Campaign", account=cls.account, on_hold=True
-        )
+        cls.campaign_on_hold = Campaign.objects.create(obr_name="On Hold Campaign", account=cls.account, on_hold=True)
         cls.campaign_on_hold.campaign_types.add(cls.polio_type)
         cls.round_on_hold_campaign = Round.objects.create(
             number=1, campaign=cls.campaign_on_hold, started_at=TODAY.date()
@@ -60,16 +58,12 @@ class ChronogramFiltersTestCase(APITestCase):
         )
 
         # Round on hold (campaign not on hold).
-        cls.campaign_round_on_hold = Campaign.objects.create(
-            obr_name="Round On Hold Campaign", account=cls.account
-        )
+        cls.campaign_round_on_hold = Campaign.objects.create(obr_name="Round On Hold Campaign", account=cls.account)
         cls.campaign_round_on_hold.campaign_types.add(cls.polio_type)
         cls.round_on_hold = Round.objects.create(
             number=1, campaign=cls.campaign_round_on_hold, started_at=TODAY.date(), on_hold=True
         )
-        cls.chronogram_round_on_hold = Chronogram.objects.create(
-            round=cls.round_on_hold, created_by=cls.user
-        )
+        cls.chronogram_round_on_hold = Chronogram.objects.create(round=cls.round_on_hold, created_by=cls.user)
 
     def test_filter_for_power_bi(self):
         queryset = filter_for_power_bi(Chronogram.objects.all())

@@ -21,6 +21,7 @@ from iaso.api.common import (
     ReadOnlyOrHasPermission,
 )
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
+from iaso.api.query_params import ORG_UNIT_PARENT_ID
 from iaso.models.microplanning import Assignment, Planning
 from iaso.models.org_unit import OrgUnit
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
@@ -110,6 +111,12 @@ class PlanningOrgunitsViewSet(GenericViewSet):
             raise ValidationError({"planning": [_("Planning is missing sampling group or target org unit scope")]})
 
         queryset = queryset.filter(validation_status=OrgUnit.VALIDATION_VALID).order_by("id")
+
+        org_unit_parent_id = self.request.query_params.get(ORG_UNIT_PARENT_ID)
+        if org_unit_parent_id and action in ("children", "children_paginated"):
+            parent = get_object_or_404(base_queryset, pk=org_unit_parent_id)
+            queryset = queryset.hierarchy(parent).exclude(pk=org_unit_parent_id)
+
         if action == "children_paginated":
             queryset = queryset.prefetch_related(
                 Prefetch(

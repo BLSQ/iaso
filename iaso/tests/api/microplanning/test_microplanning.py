@@ -925,6 +925,106 @@ class PlanningTestCase(APITestCase):
         self.assertEqual(ids, [child.id])
         self.assertTrue(r[0]["has_geo_json"])
 
+    def test_planning_orgunits_children_filter_by_org_unit_parent_id(self):
+        """orgUnitParentId returns planning org units that are direct or indirect descendants of the parent."""
+        self.client.force_authenticate(self.user)
+        parent_type = OrgUnitType.objects.create(name="Region type")
+        parent_type.projects.add(self.project1)
+        district_type = OrgUnitType.objects.create(name="District type")
+        district_type.projects.add(self.project1)
+        child_type = OrgUnitType.objects.create(name="Health post type")
+        child_type.projects.add(self.project1)
+
+        polygon = Polygon(((0, 0), (0, 1), (1, 1), (0, 0)), srid=4326)
+        multipolygon = MultiPolygon(polygon, srid=4326)
+
+        root = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="root-ou",
+            org_unit_type=parent_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        district_a = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="district-a",
+            parent=root,
+            org_unit_type=district_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        district_b = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="district-b",
+            parent=root,
+            org_unit_type=district_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        child_a1 = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="child-a1",
+            parent=district_a,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        child_a2 = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="child-a2",
+            parent=district_a,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        child_b1 = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="child-b1",
+            parent=district_b,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+
+        planning = Planning.objects.create(
+            project=self.project1,
+            name="planning-orgunits-parent-filter",
+            team=self.team1,
+            org_unit=root,
+            started_at="2025-01-01",
+            ended_at="2025-01-02",
+        )
+        planning.target_org_unit_types.set([child_type])
+
+        base = f"/api/microplanning/plannings/{planning.id}/orgunits/children/"
+        unfiltered = self.assertJSONResponse(self.client.get(base, format="json"), 200)
+        self.assertCountEqual(
+            [ou["id"] for ou in unfiltered],
+            [child_a1.id, child_a2.id, child_b1.id],
+        )
+
+        filtered_a = self.assertJSONResponse(
+            self.client.get(f"{base}?orgUnitParentId={district_a.id}", format="json"),
+            200,
+        )
+        self.assertCountEqual([ou["id"] for ou in filtered_a], [child_a1.id, child_a2.id])
+
+        filtered_b = self.assertJSONResponse(
+            self.client.get(f"{base}?orgUnitParentId={district_b.id}", format="json"),
+            200,
+        )
+        self.assertEqual([ou["id"] for ou in filtered_b], [child_b1.id])
+
+        paginated_url = (
+            f"/api/microplanning/plannings/{planning.id}/orgunits/children-paginated/"
+            f"?limit=50&page=1&orgUnitParentId={district_a.id}"
+        )
+        paginated = self.assertJSONResponse(self.client.get(paginated_url, format="json"), 200)
+        self.assertCountEqual(
+            [ou["id"] for ou in paginated["results"]],
+            [child_a1.id, child_a2.id],
+        )
+
     def test_planning_orgunits_children_search_by_name(self):
         self.client.force_authenticate(self.user)
         parent_type = OrgUnitType.objects.create(name="Parent type search")

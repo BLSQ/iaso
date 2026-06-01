@@ -28,6 +28,7 @@ import { defaultHeight } from '../../constants/ui';
 import { AssignmentsResult } from '../../types/assigment';
 import { AssignmentParams } from '../../types/assigment';
 import { defaultViewport, boundsOptions } from '../../utils';
+import { BulkAssignDialog } from '../BulkAssignDialog';
 import { MapTools } from './MapTools';
 import { ParentOrgUnits } from './ParentOrgUnits';
 import { TargetOrgUnits } from './TargetOrgUnits';
@@ -128,12 +129,17 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
     selectedOrgUnitTypes,
     setSelectedOrgUnitTypes,
 }) => {
-    const { data: childrenOrgUnits, isLoading: isLoadingChildrenOrgUnits } =
+    const { data: childrenOrgUnits, isFetching: isLoadingChildrenOrgUnits } =
         useGetPlanningOrgUnitsChildren(planningId, params);
-    const { data: rootOrgUnit, isLoading: isLoadingRootOrgUnit } =
+    const { data: rootOrgUnit, isFetching: isLoadingRootOrgUnit } =
         useGetPlanningOrgUnitsRoot(planningId);
 
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
+    const [selectedParentOrgUnit, setSelectedParentOrgUnit] = useState<
+        PlanningOrgUnits | undefined
+    >(undefined);
+    const [showBulkAssignDialog, setShowBulkAssignDialog] =
+        useState<boolean>(false);
 
     const bounds: Bounds | undefined = useMemo(
         () =>
@@ -145,11 +151,16 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
 
     const handleClickParentOrgUnit = useCallback(
         (orgUnit: PlanningOrgUnits) => {
-            // eslint-disable-next-line no-console
-            console.log('orgUnit', orgUnit);
+            setSelectedParentOrgUnit(orgUnit);
+            setShowBulkAssignDialog(true);
         },
         [],
     );
+
+    const handleCloseBulkAssignDialog = useCallback(() => {
+        setSelectedParentOrgUnit(undefined);
+        setShowBulkAssignDialog(false);
+    }, []);
 
     const isLoading =
         isLoadingChildrenOrgUnits ||
@@ -160,6 +171,13 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
 
     return (
         <Box position="relative">
+            {showBulkAssignDialog && (
+                <BulkAssignDialog
+                    open={showBulkAssignDialog}
+                    onClose={handleCloseBulkAssignDialog}
+                    selectedParentOrgUnit={selectedParentOrgUnit}
+                />
+            )}
             {isLoading && <LoadingSpinner />}
             <MapContainer
                 key={planning?.id}

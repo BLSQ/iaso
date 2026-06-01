@@ -13,7 +13,6 @@ export const useGetPlanningDetails = (
         options: {
             enabled: Boolean(planningId),
             retry: false,
-            staleTime: Infinity,
             cacheTime: 60000,
             onSuccess,
         },

@@ -42,7 +42,6 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Check if image blsq/iaso:${{ inputs.image_tag }} exists on Docker Hub
-        shell: bash
         run: |
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
             "https://hub.docker.com/v2/repositories/blsq/iaso/tags/${{ inputs.image_tag }}")
@@ -80,7 +79,7 @@ jobs:
            | | / ___ \ ___) | |_| |
           |___/_/   \_\____/ \___/
           ------------------------
-          Deploying ${{ inputs.image_tag }} to ${{ inputs.environment }}
+          Deploying ${{ inputs.image_tag }} to ${{ inputs.environment }}, using branch ${{ inputs.branch }}
           $(date)
           "
 

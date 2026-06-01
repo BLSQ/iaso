@@ -1,27 +1,25 @@
-name: deploy_docker_manual
+name: Deploy IASO docker
 
 on:
-  push:
-    branches:
-      - develop-test
-  workflow_dispatch:
+  workflow_call:
     inputs:
       branch:
         description: Branch to deploy
         required: true
-        default: main
+        type: string
       environment:
         description: playground, staging, demo or prod for worker and web or exact Env name like iaso-stg-worker. Using `upgrade` for now to test
         required: true
-        default: upgrade
-      tag:
-        description: Tag to deploy
-        required: false
-        default: latest
+        type: string
+      image_tag:
+        description: Tag to deploy (without the "blsq/iaso:" prefix, e.g. "develop", "IA-4856", or "v2026.06.01")
+        required: true
+        type: string
       slack_channel:
         description: Slack Channel for notification (iasops by default)
         required: false
         default: cloud-alerts
+        type: string
 
 permissions:
   contents: read
@@ -31,51 +29,35 @@ jobs:
   config:
     runs-on: ubuntu-24.04
     outputs:
-      branch: ${{ steps.vars.outputs.branch }}
-      image_tag: ${{ steps.vars.outputs.image_tag }}
-      environment: ${{ steps.vars.outputs.environment }}
       slack_channel: ${{ steps.vars.outputs.slack_channel }}
     steps:
       - name: Set configs
         id: vars
         env:
-          DEFAULT_GIT_REFERENCE: main
-          DEFAULT_ENVIRONMENT: upgrade
           DEFAULT_SLACK_CHANNEL: cloud-alerts
         run: |
-          echo "branch=${{ github.event.inputs.branch || github.ref_name || env.DEFAULT_GIT_REFERENCE }}" >> $GITHUB_OUTPUT
-          echo "image_tag=${{ github.event.inputs.tag || 'latest' }}" >> $GITHUB_OUTPUT
-          echo "environment=${{ github.event.inputs.environment || env.DEFAULT_ENVIRONMENT }}" >> $GITHUB_OUTPUT
           echo "slack_channel=${{ github.event.inputs.slack_channel || env.DEFAULT_SLACK_CHANNEL }}" >> $GITHUB_OUTPUT
 
-  build:
-    needs: config
-    uses: ./.github/workflows/shared/docker_build.yml
-    secrets: inherit
-    with:
-      branch: ${{ needs.config.outputs.branch }}
-      image_tags: ${{ needs.config.outputs.image_tag }}
+  check_image:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check if image blsq/iaso:${{ inputs.image_tag }} exists on Docker Hub
+        shell: bash
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://hub.docker.com/v2/repositories/blsq/iaso/tags/${{ inputs.image_tag }}")
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::Image blsq/iaso:${{ inputs.image_tag }} not found on Docker Hub"
+            exit 1
+          fi
+          echo "Image blsq/iaso:${{ inputs.image_tag }} found"
 
   deploy:
-    needs: [ config, build ]
+    needs: [ config, check_image ]
     runs-on: ubuntu-24.04
     steps:
       - name: Check out repository code
         uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v4
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Get version name
-        id: version
-        run: |
-          git describe --tags
-          echo "VERSION_NAME=$(git describe --tags --match "v[[:digit:]]*")" >> $GITHUB_OUTPUT
 
       - name: Slack deployment start
         uses: rtCamp/action-slack-notify@v2
@@ -98,15 +80,9 @@ jobs:
            | | / ___ \ ___) | |_| |
           |___/_/   \_\____/ \___/
           ------------------------
-          Deploying ${{ steps.version.outputs.VERSION_NAME }} to ${{ needs.config.outputs.environment }}
+          Deploying ${{ inputs.image_tag }} to ${{ inputs.environment }}
           $(date)
           "
-
-      - name: Tag image ${{ needs.config.outputs.image_tag }}
-        run: |
-          docker pull blsq/iaso:${{ needs.config.outputs.image_tag }}
-          docker tag blsq/iaso:${{ needs.config.outputs.image_tag }} blsq/iaso:${{ steps.version.outputs.VERSION_NAME }}
-          docker push blsq/iaso:${{ steps.version.outputs.VERSION_NAME }}
 
       - name: Swap to prod docker config
         run: |
@@ -137,7 +113,7 @@ jobs:
           pip install awsebcli==3.27.1 botocore==1.42.92 boto3==1.42.92
 
       - name: Deploy to beanstalk (Docker) using scripts/eb_deploy.py
-        run: python scripts/eb_deploy.py ${{ needs.config.outputs.environment }}
+        run: python scripts/eb_deploy.py ${{ inputs.environment }}
         env:
           IMAGE_TAG: ${{ steps.version.outputs.VERSION_NAME }}
           VERSION_NAME: ${{ steps.version.outputs.VERSION_NAME }}

@@ -125,7 +125,7 @@ class InstancesViewSet(viewsets.ViewSet):
                     )
                 ),
             )
-        return queryset
+        return queryset.filter(form__deleted_at__isnull=True)
 
     def _get_filtered_attachments_queryset(self, request):
         """Helper method to get filtered attachments queryset with common logic"""

@@ -822,6 +822,26 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidInstanceListData(response.json(), 3)
 
+    def test_instance_list_excludes_instances_of_soft_deleted_forms(self):
+        """GET /instances/ should not return instances whose form has been soft-deleted."""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(f"/api/instances/?form_id={self.form_1.pk}")
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 4)
+
+        self.form_1.delete()
+
+        response = self.client.get(f"/api/instances/?form_id={self.form_1.pk}")
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 0)
+
+        self.form_1.restore()
+
+        response = self.client.get(f"/api/instances/?form_id={self.form_1.pk}")
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 4)
+
     def test_instance_details_retrieve(self):
         """
         GET /instances/{instanceid}/ shouldn't have N+1 queries with deep org unit hierarchy.

@@ -1,8 +1,9 @@
-name: Iaso pull requests
+name: Iaso develop branch
 
 on:
-  pull_request:
-    types: [ opened, synchronize, ready_for_review, edited ]
+  push:
+    branches:
+      - develop
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -19,14 +20,14 @@ jobs:
       pull-requests: write
       contents: read
     with:
-      branch: ${{ github.head_ref || github.ref_name }}
+      branch: develop
       pr_title: ${{ github.event.pull_request.title }}
 
   build_and_push_image:
     needs: config
     uses: ./.github/workflows/wc_docker_build.yml
     with:
-      branch: ${{ github.head_ref || github.ref_name }}
+      branch: develop
       image_tags: ${{ needs.config.outputs.image_tags }}
     secrets: inherit
 
@@ -34,3 +35,13 @@ jobs:
     uses: ./.github/workflows/wc_tests.yml
     with:
       branch: ${{ github.head_ref || github.ref_name }}
+
+  deploy_on_staging:
+    needs: [ build_and_push_image, tests ]
+    uses: ./.github/workflows/wc_docker_deploy.yml
+    with:
+      branch: develop
+      environment: staging
+      image_tag: develop
+#      slack_channel: iasops
+    secrets: inherit

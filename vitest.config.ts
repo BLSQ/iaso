@@ -42,9 +42,15 @@ export default defineConfig({
                     name: 'unit',
                     include: [
                         'hat/assets/js/**/*.test.{ts,tsx}',
+                        'plugins/polio/js/**/*.test.{ts,tsx}',
                     ],
                     exclude: [
-                        ...configDefaults.exclude, '**/build/', '**/dist/', '**/*.min.js', '**/playwright/**', 'hat/assets/js/__tests__/**',
+                        ...configDefaults.exclude,
+                        '**/build/',
+                        '**/dist/',
+                        '**/*.min.js',
+                        '**/playwright/**',
+                        'hat/assets/js/__tests__/**',
                     ],
                 },
             },
@@ -56,7 +62,11 @@ export default defineConfig({
                         'hat/assets/js/__tests__/integration/*.test.{ts,tsx}',
                     ],
                     exclude: [
-                        ...configDefaults.exclude, '**/build/', '**/dist/', '**/*.min.js', '**/playwright/**',
+                        ...configDefaults.exclude,
+                        '**/build/',
+                        '**/dist/',
+                        '**/*.min.js',
+                        '**/playwright/**',
                     ],
                 },
             },
@@ -64,11 +74,13 @@ export default defineConfig({
                 extends: true,
                 test: {
                     name: 'api-e2e',
-                    include: [
-                        'hat/assets/js/__tests__/api/*.test.{ts,tsx}',
-                    ],
+                    include: ['hat/assets/js/__tests__/api/*.test.{ts,tsx}'],
                     exclude: [
-                        ...configDefaults.exclude, '**/build/', '**/dist/', '**/*.min.js', '**/playwright/**',
+                        ...configDefaults.exclude,
+                        '**/build/',
+                        '**/dist/',
+                        '**/*.min.js',
+                        '**/playwright/**',
                     ],
                 },
             },

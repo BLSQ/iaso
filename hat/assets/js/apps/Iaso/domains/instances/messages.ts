@@ -410,6 +410,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Edit the created on device date',
         id: 'iaso.instance.instanceEditSourceCreatedAt',
     },
+    instanceEditCreatedBy: {
+        defaultMessage: 'Edit the created by user',
+        id: 'iaso.instance.instanceEditCreatedBy',
+    },
     instanceReAssignAction: {
         defaultMessage: 'Edit attached OrgUnit or period',
         id: 'iaso.instance.instanceReAssignAction',

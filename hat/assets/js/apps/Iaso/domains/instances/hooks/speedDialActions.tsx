@@ -40,6 +40,9 @@ export const useBaseActions = (
     const EditSourceCreatedAtDialog = useFindCustomComponent(
         'instances.edit_source_created_at',
     );
+    const EditCreatedByDialog = useFindCustomComponent(
+        'instances.edit_created_by',
+    );
     return useMemo(() => {
         return [
             {
@@ -88,8 +91,27 @@ export const useBaseActions = (
                 ),
                 disabled: currentInstance && currentInstance.deleted,
             },
+            {
+                id: 'instanceEditCreatedBy',
+                icon: (
+                    // @ts-ignore
+                    <EditCreatedByDialog
+                        titleMessage={MESSAGES.instanceEditCreatedBy}
+                        confirmMessage={MESSAGES.ok}
+                        currentInstance={currentInstance}
+                        onCreateOrReAssign={reassignInstance}
+                    />
+                ),
+                disabled: currentInstance && currentInstance.deleted,
+            },
         ];
-    }, [EditSourceCreatedAtDialog, currentInstance, formDef, reassignInstance]);
+    }, [
+        EditSourceCreatedAtDialog,
+        EditCreatedByDialog,
+        currentInstance,
+        formDef,
+        reassignInstance,
+    ]);
 };
 
 export const useEditLocationWithGpsAction = (

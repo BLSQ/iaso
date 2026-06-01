@@ -660,6 +660,7 @@ class InstancesViewSet(viewsets.ViewSet):
         log_modification(original, instance, INSTANCE_API, user=request.user)
         return Response(instance.as_full_model())
 
+    @transaction.atomic
     def patch(self, request, pk=None):
         original = get_object_or_404(self.get_queryset(), pk=pk)
         instance = get_object_or_404(self.get_queryset(), pk=pk)

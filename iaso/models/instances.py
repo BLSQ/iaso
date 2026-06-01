@@ -770,6 +770,7 @@ class Instance(ValidationWorkflowArtefact):
             "deleted": self.deleted,
             "created_by": (
                 {
+                    "id": self.created_by.id,
                     "username": self.created_by.username,
                     "first_name": self.created_by.first_name,
                     "last_name": self.created_by.last_name,

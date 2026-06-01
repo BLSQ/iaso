@@ -3,7 +3,7 @@ name: Iaso develop branch
 on:
   push:
     branches:
-      - develop
+      - develop-test
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

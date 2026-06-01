@@ -4,7 +4,8 @@ import logging
 import dhis2
 import requests
 
-from django.db.models import Count, Prefetch
+from django.db.models import Count, IntegerField, OuterRef, Prefetch, Subquery
+from django.db.models.functions import Coalesce
 from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
 from rest_framework.decorators import action
@@ -290,23 +291,45 @@ class DataSourceViewSet(ModelViewSet):
         project_ids = self.request.GET.get("project_ids")
         name = self.request.GET.get("name", None)
 
+        version_org_units_subquery = (
+            OrgUnit.objects.filter(version=OuterRef("pk"))
+            .values("version")
+            .annotate(c=Count("id"))
+            .values("c")
+        )
+
         versions_prefetch = Prefetch(
             "versions",
-            queryset=SourceVersion.objects.filter(data_source__projects__account=profile.account).annotate(
-                annotated_org_units_count=Count("orgunit")
+            queryset=SourceVersion.objects.filter(data_source__projects__account=profile.account)
+            .distinct()
+            .annotate(
+                annotated_org_units_count=Coalesce(
+                    Subquery(version_org_units_subquery, output_field=IntegerField()), 0
+                )
             ),
+        )
+
+        default_version_org_units_subquery = (
+            OrgUnit.objects.filter(version=OuterRef("default_version"))
+            .values("version")
+            .annotate(c=Count("id"))
+            .values("c")
         )
 
         sources = (
             DataSource.objects.select_related("default_version", "credentials")
             .prefetch_related("projects", versions_prefetch)
             .filter(projects__account=profile.account)
-            .annotate(annotated_org_units_count=Count("default_version__orgunit"))
+            .annotate(
+                annotated_org_units_count=Coalesce(
+                    Subquery(default_version_org_units_subquery, output_field=IntegerField()), 0
+                )
+            )
             .distinct()
         )
 
         if filter_empty_versions:
-            sources = sources.annotate(version_count=Count("versions")).filter(version_count__gt=0)
+            sources = sources.annotate(version_count=Count("versions", distinct=True)).filter(version_count__gt=0)
         if name:
             sources = sources.filter(name__icontains=name)
         if project_ids:

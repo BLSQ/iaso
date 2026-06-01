@@ -1,7 +1,7 @@
 import django_filters
 
 from dateutil.relativedelta import relativedelta
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -51,6 +51,7 @@ class ChronogramFilter(django_filters.rest_framework.FilterSet):
         field_name="round__campaign__country", queryset=countries, label=_("Country")
     )
     on_time = django_filters.BooleanFilter(field_name="annotated_is_on_time", label=_("On time"))
+    on_hold = django_filters.BooleanFilter(method="get_is_on_hold", label=_("On hold"))
     search = django_filters.CharFilter(
         field_name="round__campaign__obr_name", lookup_expr="icontains", label=_("Search")
     )
@@ -67,6 +68,11 @@ class ChronogramFilter(django_filters.rest_framework.FilterSet):
         if value and value.lower() in ["1", "true"]:
             return filter_for_power_bi(queryset)
         return queryset
+
+    def get_is_on_hold(self, queryset, _, value):
+        if value == False:
+            return queryset.filter(Q(round__campaign__on_hold=False) & Q(round__on_hold=False))
+        return queryset.filter(Q(round__campaign__on_hold=True) | Q(round__on_hold=True))
 
 
 class ChronogramTaskFilter(django_filters.rest_framework.FilterSet):

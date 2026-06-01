@@ -95,6 +95,10 @@ class ChronogramSerializer(DynamicFieldsModelSerializerBackwardCompatibleMixin, 
     tasks = ChronogramTaskSerializer(many=True, read_only=True)
     created_by = UserNestedSerializer(read_only=True)
     updated_by = UserNestedSerializer(read_only=True)
+    is_on_hold = serializers.SerializerMethodField(read_only=True)
+
+    def get_is_on_hold(self, chronogram):
+        return chronogram.round.campaign.on_hold or chronogram.round.on_hold
 
     class Meta:
         model = Chronogram
@@ -111,6 +115,7 @@ class ChronogramSerializer(DynamicFieldsModelSerializerBackwardCompatibleMixin, 
             "created_by",
             "updated_at",
             "updated_by",
+            "is_on_hold",
         ]
         default_fields = [
             "id",
@@ -120,6 +125,7 @@ class ChronogramSerializer(DynamicFieldsModelSerializerBackwardCompatibleMixin, 
             "is_on_time",
             "num_task_delayed",
             "percentage_of_completion",
+            "is_on_hold",
         ]
         extra_kwargs = {
             "created_at": {"read_only": True},

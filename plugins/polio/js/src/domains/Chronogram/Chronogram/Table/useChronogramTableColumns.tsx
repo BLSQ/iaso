@@ -6,11 +6,11 @@ import {
     DateTimeCellRfc,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
+import * as Permission from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 import { baseUrls } from '../../../../constants/urls';
 
 import MESSAGES from '../messages';
 import { DeleteChronogram } from '../Modals/DeleteChronogramModal';
-import * as Permission from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 
 export const useChronogramTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -39,9 +39,18 @@ export const useChronogramTableColumns = (): Column[] => {
                 Cell: DateCell,
             },
             {
-                Header: formatMessage(MESSAGES.labelIsOnTime),
+                Header: formatMessage(MESSAGES.labelIsOnHold),
                 id: 'annotated_is_on_time',
                 accessor: 'is_on_time',
+                Cell: settings =>
+                    settings.row.original.is_on_hold
+                        ? formatMessage(MESSAGES.yes)
+                        : formatMessage(MESSAGES.no),
+            },
+            {
+                Header: formatMessage(MESSAGES.labelIsOnTime),
+                id: 'is_on_hold',
+                accessor: 'is_on_hold',
                 Cell: settings =>
                     settings.row.original.is_on_time
                         ? formatMessage(MESSAGES.yes)

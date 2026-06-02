@@ -160,3 +160,11 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
             return queryset
 
         return apply_org_unit_search(queryset, value, "org_unit__")
+
+
+class ETLOrgUnitChangeRequestFilter(django_filters.rest_framework.FilterSet):
+    ids = NumberInFilter(field_name="id", widget=CSVWidget, label=_("IDs (comma-separated)"))
+
+    class Meta:
+        model = OrgUnitChangeRequest
+        fields = []

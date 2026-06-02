@@ -9,6 +9,10 @@ from django.utils import timezone
 from plugins.polio import models as pm
 from plugins.polio.models import OutgoingStockMovement
 from plugins.polio.models.base import VaccineStockCalculator
+from plugins.polio.permissions import (
+    POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY_PERMISSION,
+    POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION,
+)
 from plugins.polio.tests.vaccine_stocks_setup_data import VaccineStockManagementAPITestBase
 
 
@@ -119,6 +123,42 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
         response = self.client.delete(f"{OUTGOING_STOCK_MOVEMENT_URL}{osm_id}/")
         self.assertEqual(response.status_code, 204)
 
+    def test_non_admin_patch_allowed_when_user_also_has_read_only_perm(self):
+        """Non-admin edit access must win over read-only when both are assigned."""
+        user = self.create_user_with_profile(
+            username="user_read_and_read_only",
+            account=self.account,
+            permissions=[
+                POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION,
+                POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY_PERMISSION,
+            ],
+        )
+        self.client.force_authenticate(user)
+
+        response = self.client.post(
+            OUTGOING_STOCK_MOVEMENT_URL,
+            {
+                "campaign": self.campaign.obr_name,
+                "vaccine_stock": self.vaccine_stock.id,
+                "status": "temporary",
+                "report_date": "2024-01-01",
+                "usable_vials_used": 50,
+                "lot_numbers": ["LOT1"],
+                "round": self.campaign_round_1.id,
+                "comment": "Temporary draft",
+                "doses_per_vial": 20,
+            },
+            format="json",
+        )
+        form_a_id = self.assertJSONResponse(response, 201)["id"]
+
+        response = self.client.patch(
+            f"{OUTGOING_STOCK_MOVEMENT_URL}{form_a_id}/",
+            {"comment": "Updated within window"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+
     def test_outgoing_stock_movement_temporary_lifecycle_validation(self):
         self.client.force_authenticate(self.user_rw_perms)
 
@@ -147,30 +187,15 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
             **payload_temp_form_a,
             "form_a_reception_date": "2024-01-02",
         }
+
         response = self.client.post(
             OUTGOING_STOCK_MOVEMENT_URL,
             payload_temp_form_a_with_date,
             format="json",
         )
-        data = self.assertJSONResponse(response, 400)
-        self.assertHasError(
-            data,
-            "form_a_reception_date",
-            "form_a_reception_date must be empty when status is temporary",
-        )
-
-        with self.assertNumQueries(2):
-            response = self.client.post(
-                OUTGOING_STOCK_MOVEMENT_URL,
-                payload_temp_form_a_with_date,
-                format="json",
-            )
-            data = self.assertJSONResponse(response, 400)
-            self.assertHasError(
-                data,
-                "form_a_reception_date",
-                "form_a_reception_date must be empty when status is temporary",
-            )
+        data = self.assertJSONResponse(response, 201)
+        self.assertEqual(data["status"], OutgoingStockMovement.StatusChoices.TEMPORARY)
+        self.assertEqual(data["form_a_reception_date"], "2024-01-02")
 
         with open("plugins/polio/tests/fixtures/virus_scan/safe_file.pdf", "rb") as safe_file:
             response = self.client.post(
@@ -181,8 +206,9 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
                 },
                 format="multipart",
             )
-        data = self.assertJSONResponse(response, 400)
-        self.assertHasError(data, "file", "file cannot be provided when status is temporary")
+        data = self.assertJSONResponse(response, 201)
+        self.assertEqual(data["status"], OutgoingStockMovement.StatusChoices.TEMPORARY)
+        self.assertIsNotNone(data["file"])
 
         payload_received_form_a = {
             **payload_temp_form_a,
@@ -484,7 +510,7 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
         data = self.assertJSONResponse(response, 400)
         self.assertIn("error", data)
 
-    def test_received_to_temporary_transition_clears_file_and_reception_date(self):
+    def test_received_to_temporary_transition_preserves_file_and_reception_date(self):
         self.client.force_authenticate(self.user_rw_perms)
 
         with open("plugins/polio/tests/fixtures/virus_scan/safe_file.pdf", "rb") as safe_file:
@@ -514,8 +540,8 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
         )
         data = self.assertJSONResponse(response, 200)
         self.assertEqual(data["status"], "temporary")
-        self.assertIsNone(data["form_a_reception_date"])
-        self.assertIsNone(data["file"])
+        self.assertEqual(data["form_a_reception_date"], "2024-01-02")
+        self.assertIsNotNone(data["file"])
 
     def test_form_a_reception_date_required_when_switching_temporary_to_received(self):
         self.client.force_authenticate(self.user_rw_perms)

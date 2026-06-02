@@ -87,6 +87,8 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                         label={MESSAGES.filterLabelCampaign}
                     />
                 </Grid>
+            </Grid>
+            <Grid container spacing={2}>
                 <Grid item xs={12} md={3} lg={3}>
                     <InputComponent
                         type="select"
@@ -98,14 +100,32 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                         label={MESSAGES.filterLabelOnTime}
                     />
                 </Grid>
-            </Grid>
-            <Grid container item justifyContent="flex-end">
-                <Box mt={2}>
-                    <SearchButton
-                        disabled={!filtersUpdated}
-                        onSearch={handleSearch}
+                <Grid item xs={12} md={3} lg={3}>
+                    <InputComponent
+                        type="select"
+                        clearable
+                        keyValue="on_hold"
+                        value={filters.on_hold}
+                        onChange={handleChange}
+                        options={onTimeOptions}
+                        label={MESSAGES.labelIsOnHold}
                     />
-                </Box>
+                </Grid>
+                <Grid item xs={12} md={6} lg={6}>
+                    <Box
+                        display="flex"
+                        justifyContent="flex-end"
+                        mt={2}
+                        alignItems="center"
+                        alignContent="center"
+                        textAlign="center"
+                    >
+                        <SearchButton
+                            disabled={!filtersUpdated}
+                            onSearch={handleSearch}
+                        />
+                    </Box>
+                </Grid>
             </Grid>
             <DisplayIfUserHasPerm permissions={[Permission.POLIO_CHRONOGRAM]}>
                 <Grid container item justifyContent="flex-end" mt={4}>

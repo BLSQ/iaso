@@ -26,13 +26,7 @@ import {
 } from '../../../../../components/Inputs';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import { Vaccine } from '../../../../../constants/types';
-import {
-    EDIT_ACCESS_FULL,
-    RECEIVED,
-    RECEIVED_TO_TEMPORARY,
-    SESSION_TEMPORARY,
-    TEMPORARY,
-} from '../../constants';
+import { EDIT_ACCESS_FULL, RECEIVED, TEMPORARY } from '../../constants';
 import { useCampaignOptions, useSaveFormA } from '../../hooks/api';
 import MESSAGES from '../../messages';
 import { DosesPerVialDropdown } from '../../types';
@@ -40,10 +34,6 @@ import { FormAFormValues } from '../types';
 import { useAvailablePresentations } from './dropdownOptions';
 import { useFormAUiState } from './useFormAUiState';
 import { useFormAValidation } from './validation';
-
-type StatusConfirmDirection =
-    | typeof RECEIVED_TO_TEMPORARY
-    | typeof SESSION_TEMPORARY;
 
 type Props = {
     formA?: any;
@@ -124,8 +114,6 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
         validationSchema,
     });
     const { setFieldTouched, setFieldValue, setValues } = formik;
-    const [temporaryStatusWarningType, setTemporaryStatusWarningType] =
-        useState<StatusConfirmDirection | null>(null);
     const [withCustomObr, setWithCustomObr] = useState<boolean>(
         Boolean(formA?.alternative_campaign),
     );
@@ -161,65 +149,12 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
     }, [setFieldValue]);
 
     const applyTemporaryToggle = useCallback(
-        (checked: boolean) => {
-            // setFieldValue does not touch fields; mark status touched so the
-            // "must have something touched" save-button gate (allowConfirm) clears
-            // even when the user only flips the temporary checkbox.
+        (_key: string | null, checked: boolean) => {
             setFieldTouched('status', true, false);
-            if (checked) {
-                setFieldValue('status', TEMPORARY);
-                setFieldValue('form_a_reception_date', undefined);
-                setFieldValue('file', undefined);
-            } else {
-                setFieldValue('status', RECEIVED);
-            }
+            setFieldValue('status', checked ? TEMPORARY : RECEIVED);
         },
         [setFieldTouched, setFieldValue],
     );
-
-    const handleTemporaryToggle = useCallback(
-        (_key: string | null, isSwitchingToTemporary: boolean) => {
-            const currentStatus = formik.values.status;
-            const hasCompletionValues = Boolean(
-                formik.values.form_a_reception_date || formik.values.file,
-            );
-
-            const needsTemporaryConfirm =
-                isSwitchingToTemporary &&
-                currentStatus === RECEIVED &&
-                hasCompletionValues;
-
-            const wasSavedAsReceived = !isNew && originalStatus === RECEIVED;
-
-            if (needsTemporaryConfirm) {
-                setTemporaryStatusWarningType(
-                    wasSavedAsReceived
-                        ? RECEIVED_TO_TEMPORARY
-                        : SESSION_TEMPORARY,
-                );
-                return;
-            }
-
-            applyTemporaryToggle(isSwitchingToTemporary);
-        },
-        [
-            applyTemporaryToggle,
-            formik.values.file,
-            formik.values.form_a_reception_date,
-            formik.values.status,
-            isNew,
-            originalStatus,
-        ],
-    );
-
-    const handleConfirmStatusChange = useCallback(() => {
-        applyTemporaryToggle(true);
-        setTemporaryStatusWarningType(null);
-    }, [applyTemporaryToggle]);
-
-    const handleCancelStatusChange = () => {
-        setTemporaryStatusWarningType(null);
-    };
 
     // Make sure the form does not have values for both campaign(+round) and alternative_campaign
     useEffect(() => {
@@ -242,29 +177,9 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
         formik.values.alternative_campaign,
     ]);
     useSkipEffectUntilValue(formik.values.campaign, resetOnCampaignChange);
-    const warningMessage =
-        temporaryStatusWarningType === RECEIVED_TO_TEMPORARY
-            ? formatMessage(MESSAGES.received_to_temporary_warning)
-            : formatMessage(MESSAGES.temporary_toggle_unsaved_warning);
 
     return (
         <FormikProvider value={formik}>
-            {temporaryStatusWarningType && (
-                <ConfirmCancelModal
-                    open
-                    closeDialog={handleCancelStatusChange}
-                    onClose={handleCancelStatusChange}
-                    id="temporary-form-a-status-warning"
-                    dataTestId="temporary-form-a-status-warning"
-                    titleMessage={MESSAGES.temporary_status_change_title}
-                    onConfirm={handleConfirmStatusChange}
-                    onCancel={handleCancelStatusChange}
-                    confirmMessage={MESSAGES.save}
-                    cancelMessage={MESSAGES.cancel}
-                >
-                    {warningMessage}
-                </ConfirmCancelModal>
-            )}
             <ConfirmCancelModal
                 titleMessage={title}
                 onConfirm={() => formik.handleSubmit()}
@@ -287,7 +202,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                                 <InputComponent
                                     type="checkbox"
                                     keyValue="status"
-                                    onChange={handleTemporaryToggle}
+                                    onChange={applyTemporaryToggle}
                                     labelString={formatMessage(
                                         MESSAGES.temporary_form_a,
                                     )}

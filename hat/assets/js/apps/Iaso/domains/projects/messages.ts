@@ -17,6 +17,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'App ID',
         id: 'iaso.projects.appId',
     },
+    description: {
+        defaultMessage: 'Description',
+        id: 'iaso.projects.description',
+    },
     needsAuthentication: {
         defaultMessage: 'Requires Authentication',
         id: 'iaso.projects.needsAuthentication',
@@ -56,6 +60,10 @@ const MESSAGES = defineMessages({
     featureFlag_PLA: {
         defaultMessage: 'Planning',
         id: 'iaso.projets.featureflag.category.PLA',
+    },
+    featureFlag_STM: {
+        defaultMessage: 'Stock management',
+        id: 'iaso.projets.featureflag.category.STM',
     },
     featureFlag_SPO: {
         defaultMessage: 'Specific options',
@@ -386,7 +394,7 @@ const MESSAGES = defineMessages({
     },
     mobile_stock: {
         id: 'iaso.projets.featureflag.tooltip.mobile_stock',
-        defaultMessage: 'Mobile: Enable stock managementg',
+        defaultMessage: 'Mobile: Enable stock management',
     },
     mobile_hide_closed_org_unit: {
         id: 'iaso.projets.featureflag.tooltip.mobile_hide_closed_org_unit',

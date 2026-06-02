@@ -12,7 +12,7 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
         super().setUp()
         self.project = Project.objects.create(name="project", account=self.account)
         self.account_2 = Account.objects.create(name="account_2")
-        self.enable_validation_workflow_feature_flag(self.account, self.account_2)
+        self.add_validation_workflow_module(self.account, self.account_2)
 
         self.group = Group.objects.create(name="Group")
         self.other_group = Group.objects.create(name="Group 2")
@@ -363,7 +363,7 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(13):
+        with self.assertNumQueries(12):
             res = self.client.put(
                 reverse(
                     "validation_node_templates-bulk",

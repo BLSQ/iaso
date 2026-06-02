@@ -217,8 +217,8 @@ class FormVersionPreviewSerializer(serializers.Serializer):
                 previous_version=previous_form_version.version_id if previous_form_version is not None else None,
             )
         except parsing.ParsingError as e:
-            logger.exception("Failed to parse XLS form during preview validation")
-            raise serializers.ValidationError({"xls_file": "Invalid XLS form content."})
+            logger.warning("Failed to parse XLS form during preview validation: %s", e)
+            raise serializers.ValidationError({"xls_file": str(e)})
 
         data["survey"] = survey
         data["previous_form_version"] = previous_form_version

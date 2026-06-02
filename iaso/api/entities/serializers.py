@@ -3,6 +3,7 @@ from rest_framework import serializers
 from iaso.api.common import EXPORTS_DATETIME_FORMAT
 from iaso.models import Entity, Group, OrgUnit
 from iaso.models.storage import StorageDevice
+from iaso.permissions.core_permissions import CORE_STORAGE_PERMISSION
 
 
 class EntityTypeColumnSerializer(serializers.Serializer):
@@ -199,6 +200,13 @@ class EntitySerializer(serializers.ModelSerializer):
         source="get_pending_duplicate_ids", child=serializers.IntegerField(), read_only=True, default=[]
     )
     nfc_cards = serializers.SerializerMethodField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+
+        if request and not request.user.has_perm(CORE_STORAGE_PERMISSION.full_name()):
+            self.fields.pop("nfc_cards", None)
 
     def get_attributes(self, entity: Entity):
         if entity.attributes:

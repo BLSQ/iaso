@@ -3,6 +3,7 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.models import Account, TenantUser
+from iaso.permissions.core_permissions import CORE_ACCOUNT_MANAGEMENT_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
@@ -15,10 +16,16 @@ class TestAccountCustomTranslations(SwaggerTestCaseMixin, APITestCase):
         )
         self.other_account = Account.objects.create(name="other account")
         self.another_account = Account.objects.create(name="another account")
-        self.john_wick = self.create_user_with_profile(username="johnwick", account=self.another_account)
+        self.john_wick = self.create_user_with_profile(
+            username="johnwick", account=self.another_account, permissions=[CORE_ACCOUNT_MANAGEMENT_PERMISSION]
+        )
 
-        self.jane_doe = self.create_user_with_profile(username="janedoe", account=self.account)
-        self.john_doe = self.create_user_with_profile(username="johndoe", account=self.other_account)
+        self.jane_doe = self.create_user_with_profile(
+            username="janedoe", account=self.account, permissions=[CORE_ACCOUNT_MANAGEMENT_PERMISSION]
+        )
+        self.john_doe = self.create_user_with_profile(
+            username="johndoe", account=self.other_account, permissions=[CORE_ACCOUNT_MANAGEMENT_PERMISSION]
+        )
         # multi tenant account
 
         # Create a main user without profile
@@ -61,7 +68,9 @@ class TestAccountCustomTranslations(SwaggerTestCaseMixin, APITestCase):
     def test_num_queries(self):
         self.client.force_authenticate(self.jane_doe)
 
-        with self.assertNumQueries(1):
+        with self.assertNumQueries(3):
+            # 1-2: PERMISSION
+            # 3: SELECT OBJECT
             res = self.client.get(reverse("accounts-custom-translations", kwargs={"pk": self.account.pk}))
         self.assertJSONResponse(res, status.HTTP_200_OK)
 

@@ -14,11 +14,9 @@ from iaso.utils.models.encrypted_text_field import EncryptedTextField
 MODULE_CHOICES = ((module.codename, module.name) for module in MODULES)
 
 
-class AccountFeatureFlag(models.Model):
+class AccountFeatureFlag(CreatedAndUpdatedModel):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=255, primary_key=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.name} ({self.code})"

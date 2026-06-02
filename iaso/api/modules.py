@@ -2,9 +2,10 @@ from django.contrib.auth.models import Permission
 from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
 
+from iaso.api.common.permissions import HasPermission
 from iaso.models import Account, Profile
 from iaso.modules import MODULES
-from iaso.permissions.core_permissions import CORE_MODULES_PERMISSION
+from iaso.permissions.core_permissions import CORE_ACCOUNT_MANAGEMENT_PERMISSION, CORE_MODULES_PERMISSION
 
 from .common import ModelViewSet
 
@@ -64,7 +65,10 @@ class ModulesViewSet(ModelViewSet):
     GET /api/modules/
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasModulesPermission]  # type: ignore
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasModulesPermission | HasPermission(CORE_ACCOUNT_MANAGEMENT_PERMISSION),
+    ]  # type: ignore
     serializer_class = ModuleSerializer
     http_method_names = ["get"]
 

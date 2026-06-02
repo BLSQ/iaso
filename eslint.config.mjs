@@ -168,8 +168,8 @@ export default defineConfig([
                 { extensions: ['.js', '.jsx'] },
             ],
 
-            'react/jsx-indent': ['error', 4],
-            'react/jsx-indent-props': ['error', 4],
+            'react/jsx-indent': 'off',
+            'react/jsx-indent-props': 'off',
             'import/no-named-as-default': 'off',
             'react/jsx-one-expression-per-line': 'off',
             'react/jsx-props-no-spreading': 'off',
@@ -343,8 +343,8 @@ export default defineConfig([
                 { extensions: ['.js', '.jsx', '.tsx', '.ts'] },
             ],
 
-            'react/jsx-indent': ['error', 4],
-            'react/jsx-indent-props': ['error', 4],
+            'react/jsx-indent': 'off',
+            'react/jsx-indent-props': 'off',
             'react/jsx-one-expression-per-line': 'off',
             'react/jsx-props-no-spreading': 'off',
             'react/jsx-wrap-multilines': 'off',

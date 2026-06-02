@@ -7,9 +7,11 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.mixins import RetrieveModelMixin, UpdateModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.status import HTTP_204_NO_CONTENT
 from rest_framework.viewsets import GenericViewSet
 
 from iaso.api.accounts.pagination import AccountPagination
+from iaso.api.accounts.serializers.ai_api_key import AccountRetrieveAIApiKeySerializer, AccountUpdateAIApiKeySerializer
 from iaso.api.accounts.serializers.custom_translations import AccountCustomTranslationsSerializer
 from iaso.api.accounts.serializers.list import AccountListSerializer
 from iaso.api.accounts.serializers.retrieve import AccountRetrieveSerializer
@@ -19,13 +21,15 @@ from iaso.api.accounts.serializers.switch import AccountSwitchSerializer
 from iaso.api.accounts.serializers.update import AccountUpdateSerializer
 from iaso.api.common import HasPermission
 from iaso.api.common.mixin import CustomPaginationListModelMixin
+from iaso.api.common.permissions import HasModulePermission
 from iaso.models import Account
-from iaso.permissions.core_permissions import CORE_SOURCE_PERMISSION
+from iaso.modules import MODULE_FORM_AI
+from iaso.permissions.core_permissions import CORE_ACCOUNT_MANAGEMENT_PERMISSION, CORE_SOURCE_PERMISSION
 
 
 @extend_schema(tags=["Account"])
 class AccountViewSet(CustomPaginationListModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
-    http_method_names = ["get", "options", "patch", "put", "head", "trace", "post"]
+    http_method_names = ["get", "options", "patch", "put", "head", "trace", "post", "delete"]
     pagination_class = AccountPagination
     filter_backends = [OrderingFilter]
     ordering = ["id"]
@@ -33,8 +37,19 @@ class AccountViewSet(CustomPaginationListModelMixin, RetrieveModelMixin, UpdateM
     @property
     def permission_classes(self):
         if self.action == "set_default_version":
-            return [IsAuthenticated, HasPermission(CORE_SOURCE_PERMISSION)]
-        return [IsAuthenticated]
+            return [
+                IsAuthenticated,
+                HasPermission(CORE_SOURCE_PERMISSION),
+            ]
+        if self.action in ["switch", "me"]:
+            return [IsAuthenticated]
+        if self.action in ["ai_api_key", "update_ai_api_key", "delete_ai_api_key"]:
+            return [
+                IsAuthenticated,
+                HasPermission(CORE_ACCOUNT_MANAGEMENT_PERMISSION),
+                HasModulePermission(MODULE_FORM_AI),
+            ]
+        return [IsAuthenticated, HasPermission(CORE_ACCOUNT_MANAGEMENT_PERMISSION)]
 
     def get_serializer_class(self):
         if self.action == "retrieve":
@@ -51,13 +66,17 @@ class AccountViewSet(CustomPaginationListModelMixin, RetrieveModelMixin, UpdateM
             return AccountCustomTranslationsSerializer
         if self.action == "me":
             return AccountRetrieveCurrentSerializer
+        if self.action == "ai_api_key":
+            return AccountRetrieveAIApiKeySerializer
+        if self.action == "update_ai_api_key":
+            return AccountUpdateAIApiKeySerializer
         raise NotImplementedError(f"Serializer not implemented for {self.action}")
 
     def get_queryset(self):
         if not getattr(self.request, "user", None):
             return Account.objects.none()
 
-        qs = Account.objects.filter_for_user(self.request.user).distinct("id")
+        qs = Account.objects.filter_for_user(self.request.user).distinct()
         if self.action == "list":
             qs = qs.only("id", "name", "created_at", "updated_at")
         if self.action == "custom_translations":
@@ -65,16 +84,13 @@ class AccountViewSet(CustomPaginationListModelMixin, RetrieveModelMixin, UpdateM
         if self.action == "switch":
             qs = qs.only("id")
         if self.action == "retrieve":
-            qs = qs.only(
-                "id",
-                "name",
-                "created_at",
-                "user_manual_path",
-                "forum_path",
-                "modules",
-                "enforce_password_validation",
-                "anthropic_api_key",
+            qs = qs.prefetch_related("feature_flags").only(
+                "id", "name", "created_at", "user_manual_path", "forum_path", "modules", "enforce_password_validation"
             )
+        if self.action == "ai_api_key":
+            qs = qs.only("id", "anthropic_api_key")
+        if self.action in ["update_ai_api_key", "delete_ai_api_key"]:
+            qs = qs.only("id")
         if self.action == "me":
             qs = qs.select_related(
                 "default_version", "default_version__data_source", "default_version__data_source__credentials"
@@ -144,7 +160,28 @@ class AccountViewSet(CustomPaginationListModelMixin, RetrieveModelMixin, UpdateM
         if not instance:
             raise NotFound
 
-        # other_accounts_qs = Account.objects.filter_for_user(self.request.user).distinct("id").exclude(id=request.user.iaso_profile.account_id)
-
         serializer = self.get_serializer(instance=instance, other_account_qs=other_account_qs)
         return Response(serializer.data)
+
+    @action(detail=True, methods=["GET"], url_path="ai-api-key")
+    def ai_api_key(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    @extend_schema(responses={204: None})
+    @ai_api_key.mapping.put
+    def update_ai_api_key(self, request, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @extend_schema(responses={204: None})
+    @ai_api_key.mapping.delete
+    def delete_ai_api_key(self, request, **kwargs):
+        instance = self.get_object()
+        instance.anthropic_api_key = None
+        instance.save()
+        return Response(status=HTTP_204_NO_CONTENT)

@@ -6,7 +6,7 @@ type Props = Omit<
     FormControlLabelProps,
     'label' | 'id' | 'checked' | 'onChange' | 'name' | 'control' | 'value'
 > & {
-    label: string;
+    label?: string;
     field?: Record<string, any>;
     onChange?: (value: boolean) => void;
 };

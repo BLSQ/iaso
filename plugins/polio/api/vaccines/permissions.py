@@ -175,7 +175,9 @@ class VaccineStockEarmarkPermission(permissions.BasePermission):
                     "update_arrival_reports",
                     "delete_arrival_reports",
                 ]:
-                    return True  # There are multiple objects in one request for those so this is checked in the serializer
+                    return (
+                        True  # There are multiple objects in one request for those so this is checked in the serializer
+                    )
                 return is_within_management_edit_window(
                     getattr(obj, self.datetime_field),
                     days_open=self.days_open,

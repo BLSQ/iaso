@@ -1,7 +1,11 @@
 import { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 
-import { userHasPermission } from 'Iaso/domains/users/utils';
+import {
+    userHasAccessToModule,
+    userHasPermission,
+} from 'Iaso/domains/users/utils';
+import { MODULE_EXTERNAL_STORAGE } from 'Iaso/utils/modules';
 import { STORAGES } from 'Iaso/utils/permissions';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { useGetFormDescriptor } from '../../forms/fields/hooks/useGetFormDescriptor';
@@ -42,12 +46,17 @@ export const useGetEntityFields = (entity: Entity | undefined) => {
         possibleFields,
         formDescriptors,
     );
+
+    const hasExternalStorageAccess = userHasAccessToModule(
+        MODULE_EXTERNAL_STORAGE,
+        currentUser,
+    );
     const hasPermission = userHasPermission(STORAGES, currentUser);
 
     const staticFields: Field[] = useMemo(() => {
         const fields: Field[] = [];
 
-        if (hasPermission) {
+        if (hasExternalStorageAccess && hasPermission) {
             fields.push({
                 label: formatMessage(MESSAGES.nfcCards),
                 value: `${entity?.nfc_cards ?? 0}`,
@@ -61,7 +70,13 @@ export const useGetEntityFields = (entity: Entity | undefined) => {
         });
 
         return fields;
-    }, [entity?.nfc_cards, entity?.uuid, formatMessage, hasPermission]);
+    }, [
+        entity?.nfc_cards,
+        entity?.uuid,
+        formatMessage,
+        hasExternalStorageAccess,
+        hasPermission,
+    ]);
 
     return {
         isLoading: !entity || detailFields.length !== dynamicFields.length,

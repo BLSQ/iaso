@@ -1,6 +1,6 @@
 import typing
 
-from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.files.uploadedfile import UploadedFile
 from drf_spectacular.utils import extend_schema
 from rest_framework import parsers, serializers, status
 from rest_framework.exceptions import NotFound
@@ -41,7 +41,7 @@ class FormAttachmentSerializer(serializers.ModelSerializer):
 
     def validate(self, data: typing.MutableMapping):
         form: Form = data["form"]
-        file: InMemoryUploadedFile = data.get("file", None)
+        file: UploadedFile | None = data.get("file")
         if form is None:
             raise serializers.ValidationError("Form cannot be null")
 
@@ -65,7 +65,7 @@ class FormAttachmentSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         form: Form = validated_data["form"]
-        file: InMemoryUploadedFile = validated_data["file"]
+        file: UploadedFile = validated_data["file"]
 
         scan_result, scan_timestamp = scan_uploaded_file_for_virus(file)
         try:

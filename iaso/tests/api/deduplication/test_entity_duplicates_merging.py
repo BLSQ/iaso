@@ -1,8 +1,12 @@
+"""Entity merging tests."""
+
 from http import HTTPStatus
 from uuid import uuid4
 
 from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import UploadedFile
 
+from beanstalk_worker.services import TestTaskService
 from iaso import models as m
 from iaso.models.deduplication import ValidationStatus
 from iaso.permissions.core_permissions import (
@@ -12,35 +16,44 @@ from iaso.permissions.core_permissions import (
 from iaso.test import APITestCase
 
 
-# TODO: move some tests from ./test_entities_deduplication.py to here to break up the files
-
-
-class EntityDuplicatesFixAPITestCase(APITestCase):
+class EntityDuplicatesMergingAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        account = m.Account.objects.create(name="Test Account")
-        cls.account = account
-        cls.project = m.Project.objects.create(name="Test Project", account=account, app_id="test.app")
+        cls.account = m.Account.objects.create(name="Test Account")
+        cls.project = m.Project.objects.create(name="Test Project", account=cls.account, app_id="test.app")
+
+        cls.org_unit_type = m.OrgUnitType.objects.create(name="Org Unit Type", short_name="ou_type")
+        cls.default_orgunit = m.OrgUnit.objects.create(
+            name="Default Org Unit",
+            org_unit_type=cls.org_unit_type,
+        )
+
         cls.user = cls.create_user_with_profile(
             username="test_user",
-            account=account,
+            account=cls.account,
             permissions=[
                 CORE_ENTITIES_DUPLICATES_READ_PERMISSION,
                 CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION,
             ],
+            org_units=[cls.default_orgunit],
         )
 
-        cls.entity_type = m.EntityType.objects.create(name="Test Entity Type")
         cls.form = m.Form.objects.create(
             name="Test Form",
             possible_fields=[
                 {"name": "name", "label": "Name", "type": "text"},
                 {"name": "age", "label": "Age", "type": "integer"},
+                {"name": "Prenom", "label": "Prenom", "type": "text"},
+                {"name": "Nom", "label": "Nom", "type": "text"},
+                {"name": "height_cm__decimal__", "label": "height", "type": "decimal"},
+                {"name": "_height_cm__decimal__", "label": "height2", "type": "decimal"},
             ],
         )
         cls.project.forms.add(cls.form)
-        cls.entity_type.reference_form = cls.form
-        cls.entity_type.save()
+
+        cls.entity_type = m.EntityType.objects.create(
+            name="Test Entity Type", reference_form=cls.form, account=cls.account
+        )
 
         cls.form_version = m.FormVersion.objects.create(form=cls.form, version_id="2020010101")
 
@@ -54,6 +67,8 @@ class EntityDuplicatesFixAPITestCase(APITestCase):
             xml_content = f"""<data>
                 <name>Entity {i}</name>
                 <age>{20 + i}</age>
+                <Prenom>Same</Prenom>
+                <Nom>Name</Nom>
                 <entityUuid>{uuid4()}</entityUuid>
                 <meta><instanceID>uuid:{uuid4()}</instanceID></meta>
             </data>"""
@@ -61,13 +76,19 @@ class EntityDuplicatesFixAPITestCase(APITestCase):
                 form=cls.form,
                 form_version=cls.form_version,
                 project=cls.project,
-                json={"name": f"Entity {i}", "age": 20 + i, "_version": "2020010101"},
+                json={
+                    "name": f"Entity {i}",
+                    "age": 20 + i,
+                    "Prenom": "Same",
+                    "Nom": "Name",
+                    "_version": "2020010101",
+                },
                 file=ContentFile(xml_content.encode("utf-8"), name=f"test_{i}.xml"),
             )
             entity = m.Entity.objects.create(
                 name=f"Entity {i}",
                 entity_type=cls.entity_type,
-                account=account,
+                account=cls.account,
                 attributes=instance,
                 uuid=uuid4(),
             )
@@ -127,7 +148,6 @@ class EntityDuplicatesFixAPITestCase(APITestCase):
     def test_detail_view_with_merged_entities(self):
         self.client.force_authenticate(self.user)
 
-        # First merge them
         payload = {
             "entity1_id": self.entities[0].pk,
             "entity2_id": self.entities[1].pk,
@@ -135,7 +155,6 @@ class EntityDuplicatesFixAPITestCase(APITestCase):
         }
         self.client.post("/api/entityduplicates/", data=payload, format="json")
 
-        # Now try to view the detail of the merged pair
         response = self.client.get(
             f"/api/entityduplicates/detail/?entities={self.entities[0].pk},{self.entities[1].pk}"
         )
@@ -146,7 +165,6 @@ class EntityDuplicatesFixAPITestCase(APITestCase):
     def test_list_view_includes_merged_duplicates(self):
         self.client.force_authenticate(self.user)
 
-        # Merge them
         payload = {
             "entity1_id": self.entities[0].pk,
             "entity2_id": self.entities[1].pk,
@@ -159,3 +177,117 @@ class EntityDuplicatesFixAPITestCase(APITestCase):
         data = self.assertJSONResponse(response, HTTPStatus.OK)
         # Should find at least the merged one
         self.assertTrue(any(d["id"] == self.dup1.id for d in data["results"]))
+
+    def test_merge_entity_duplicate(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": self.entity_type.id,
+                "fields": ["Prenom", "Nom"],
+                "algorithm": "levenshtein",
+                "parameters": [],
+            },
+            format="json",
+        )
+
+        task_service = TestTaskService()
+        task_service.run_all()
+
+        duplicate = m.EntityDuplicate.objects.first()
+
+        self.assertEqual(duplicate.validation_status, ValidationStatus.PENDING)
+
+        entity1 = duplicate.entity1
+        entity2 = duplicate.entity2
+
+        merged_data = {i: entity1.id for i in ["Nom", "Prenom", "height_cm__decimal__", "_height_cm__decimal__"]}
+
+        response = self.client.post(
+            "/api/entityduplicates/",
+            data={"merge": merged_data, "entity1_id": entity1.id, "entity2_id": entity2.id},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+
+        self.assertIn("entity1_id", response_data)
+        self.assertIn("entity2_id", response_data)
+        self.assertIn("ignored", response_data)
+        self.assertIn("new_entity_id", response_data)
+
+        # entity1_id should be the same as entity1.id
+        self.assertEqual(response_data["entity1_id"], entity1.id)
+        # entity2_id should be the same as entity2.id
+        self.assertEqual(response_data["entity2_id"], entity2.id)
+        # ignore should be True
+        self.assertEqual(response_data["ignored"], False)
+
+        # Verify DB updates were correctly done
+        entity1.refresh_from_db()
+        entity2.refresh_from_db()
+        self.assertIsNotNone(entity1.deleted_at)
+        self.assertIsNotNone(entity2.deleted_at)
+        self.assertEqual(entity1.merged_to_id, response_data["new_entity_id"])
+        self.assertEqual(entity2.merged_to_id, response_data["new_entity_id"])
+
+    # WC2-532 Merge entities with instance containing emoji
+    def test_merge_entity_duplicate_with_emoji(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": self.entity_type.id,
+                "fields": ["Prenom", "Nom"],
+                "algorithm": "levenshtein",
+                "parameters": [],
+            },
+            format="json",
+        )
+
+        task_service = TestTaskService()
+        task_service.run_all()
+
+        duplicate = m.EntityDuplicate.objects.first()
+
+        self.assertEqual(duplicate.validation_status, ValidationStatus.PENDING)
+
+        entity1 = duplicate.entity1
+        entity2 = duplicate.entity2
+
+        # Now add a form instance with an emoji to entity1
+        with open("iaso/tests/fixtures/submission_with_emoji.xml", "rb") as xml_file:
+            instance = m.Instance.objects.create(
+                entity=entity1,
+                form=self.form,
+                org_unit=self.default_orgunit,
+                file=UploadedFile(xml_file),
+            )
+        json_instance = instance.get_and_save_json_of_xml()
+        # make sure the emoji is there
+        self.assertEqual(json_instance["prevous_muac_color"], "🟡Yellow")
+
+        merged_data = {i: entity1.id for i in duplicate.analyze.metadata["fields"]}
+
+        response = self.client.post(
+            "/api/entityduplicates/",
+            data={"merge": merged_data, "entity1_id": entity1.id, "entity2_id": entity2.id},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+
+        # Verify DB updates were correctly done
+        entity1.refresh_from_db()
+        entity2.refresh_from_db()
+        self.assertIsNotNone(entity1.deleted_at)
+        self.assertIsNotNone(entity2.deleted_at)
+        self.assertEqual(entity1.merged_to_id, response_data["new_entity_id"])
+        self.assertEqual(entity2.merged_to_id, response_data["new_entity_id"])
+
+        merged = entity1.merged_to
+        self.assertEqual(merged.instances.count(), 2)  # reference form + emoji form
+        self.assertEqual(merged.instances.last().json["prevous_muac_color"], "🟡Yellow")

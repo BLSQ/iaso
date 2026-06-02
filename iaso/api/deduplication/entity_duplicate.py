@@ -355,8 +355,6 @@ class EntityDuplicatePostSerializer(serializers.Serializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        """Entity merging endpoint."""
-
         e1 = validated_data["entity1"]
         e2 = validated_data["entity2"]
         user = self.context.get("request").user
@@ -650,6 +648,10 @@ class EntityDuplicateViewSet(ModelViewSet):
         }
         in the body
         Provides an API to merge duplicate entities or to ignore the match
+
+        When merging, a new entity is created with merged attributes and a full set of copied Instances.
+
+        This is used when the ENTITY_DUPLICATES_SOFT_DELETE feature flag is disabled.
         """
 
         serializer = EntityDuplicatePostSerializer(data=request.data, context={"request": request})

@@ -1,6 +1,9 @@
 import { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 
+import { userHasPermission } from 'Iaso/domains/users/utils';
+import { STORAGES } from 'Iaso/utils/permissions';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { useGetFormDescriptor } from '../../forms/fields/hooks/useGetFormDescriptor';
 import { useGetPossibleFields } from '../../forms/hooks/useGetPossibleFields';
 import MESSAGES from '../messages';
@@ -11,6 +14,7 @@ import { useGetFields } from './useGetFields';
 
 export const useGetEntityFields = (entity: Entity | undefined) => {
     const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
 
     const { data: entityTypes } = useGetEntityTypesDropdown();
     const { possibleFields } = useGetPossibleFields(
@@ -38,14 +42,15 @@ export const useGetEntityFields = (entity: Entity | undefined) => {
         possibleFields,
         formDescriptors,
     );
+    const hasPermission = userHasPermission(STORAGES, currentUser);
 
     const staticFields: Field[] = useMemo(() => {
         const fields: Field[] = [];
 
-        if (entity?.nfc_cards !== undefined) {
+        if (hasPermission) {
             fields.push({
                 label: formatMessage(MESSAGES.nfcCards),
-                value: `${entity.nfc_cards}`,
+                value: `${entity?.nfc_cards ?? 0}`,
                 key: 'nfcCards',
             });
         }
@@ -56,7 +61,7 @@ export const useGetEntityFields = (entity: Entity | undefined) => {
         });
 
         return fields;
-    }, [entity?.nfc_cards, entity?.uuid, formatMessage]);
+    }, [entity?.nfc_cards, entity?.uuid, formatMessage, hasPermission]);
 
     return {
         isLoading: !entity || detailFields.length !== dynamicFields.length,

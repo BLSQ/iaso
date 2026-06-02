@@ -7,7 +7,6 @@ import uuid
 from datetime import timedelta
 
 import pytz
-from iaso.modules import MODULE_EXTERNAL_STORAGE
 import time_machine
 
 from django.core.files import File
@@ -19,6 +18,7 @@ from iaso import models as m
 from iaso.api.common import EXPORTS_DATETIME_FORMAT
 from iaso.models import Entity, EntityType, FormVersion, Instance, Project
 from iaso.models.deduplication import ValidationStatus
+from iaso.modules import MODULE_EXTERNAL_STORAGE
 from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION, CORE_STORAGE_PERMISSION
 from iaso.tests.api.entities.common_base_with_setup import EntityAPITestCase
 

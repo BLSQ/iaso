@@ -31,7 +31,7 @@ from iaso.api.entities.serializers import (
 )
 from iaso.models import Entity, EntityDuplicate, EntityType, Instance
 from iaso.models.deduplication import ValidationStatus
-from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION
+from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION, CORE_STORAGE_PERMISSION
 
 
 logger = getLogger(__name__)
@@ -86,6 +86,16 @@ class EntityViewSet(ModelViewSet):
         context = super().get_serializer_context()
         context["entity_type_columns"] = self.entity_type_columns
         return context
+
+    def get_serializer(self, *args, **kwargs):
+        serializer = super().get_serializer(*args, **kwargs)
+
+        if not self.request.user.has_perm(CORE_STORAGE_PERMISSION.full_name()):
+            actual_serializer = serializer.child if hasattr(serializer, "child") else serializer
+
+            actual_serializer.fields.pop("nfc_cards", None)
+
+        return serializer
 
     def get_renderer_context(self):
         context = super().get_renderer_context()
@@ -224,7 +234,8 @@ class EntityViewSet(ModelViewSet):
     def retrieve(self, request, pk=None):
         queryset = Entity.objects.filter_for_user(self.request.user).distinct()
         entity = get_object_or_404(queryset, pk=pk)
-        return Response(self.get_serializer(entity, many=False).data)
+        serializer = self.get_serializer(entity, many=False)
+        return Response(serializer.data)
 
     def list(self, request: Request, *args, **kwargs):
         renderer = request.accepted_renderer
@@ -268,4 +279,5 @@ class EntityViewSet(ModelViewSet):
             audit_source=ENTITY_API,
             user=request.user,
         )
-        return Response(self.get_serializer(entity, many=False).data)
+        serializer = self.get_serializer(entity, many=False)
+        return Response(serializer.data)

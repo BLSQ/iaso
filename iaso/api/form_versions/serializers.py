@@ -141,7 +141,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializerBackwardCompatible):
                 previous_version=previous_form_version.version_id if previous_form_version is not None else None,
             )
         except parsing.ParsingError as e:
-            raise serializers.ValidationError({"xls_file": str(e)})
+            raise serializers.ValidationError({"xls_file": "Invalid XLS form content: " + str(e)})
 
         # validate that form_id stays constant across versions
         if form.form_id is not None and survey.form_id != form.form_id:
@@ -218,7 +218,7 @@ class FormVersionPreviewSerializer(serializers.Serializer):
             )
         except parsing.ParsingError as e:
             logger.warning("Failed to parse XLS form during preview validation: %s", e)
-            raise serializers.ValidationError({"xls_file": str(e)})
+            raise serializers.ValidationError({"xls_file": "Invalid XLS form content: " + str(e)})
 
         data["survey"] = survey
         data["previous_form_version"] = previous_form_version

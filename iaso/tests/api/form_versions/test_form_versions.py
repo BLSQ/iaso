@@ -412,7 +412,9 @@ class FormsVersionAPITestCase(APITestCase):
             )
         self.assertJSONResponse(response, 400)
         self.assertHasError(
-            response.json(), "xls_file", "Invalid XLS file: Parsed version should be greater than previous version."
+            response.json(),
+            "xls_file",
+            "Invalid XLS form content: Invalid XLS file: Parsed version should be greater than previous version.",
         )
 
     def test_form_versions_create_invalid_xls_file(self):
@@ -430,7 +432,7 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertHasError(
             response.json(),
             "xls_file",
-            "Invalid XLS file: The survey sheet is either empty or missing important column headers.",
+            "Invalid XLS form content: Invalid XLS file: The survey sheet is either empty or missing important column headers.",
         )
 
     def test_form_versions_create_no_xls_file(self):

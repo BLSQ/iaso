@@ -106,8 +106,11 @@ class InstancesViewSet(viewsets.ViewSet):
 
     def _filter_response_for_permissions(self, response):
         f"""Remove nfc_cards from entity data if user doesn't have "{CORE_STORAGE_PERMISSION}" ."""
+        account = self.request.user.iaso_profile.account
+        has_module = "EXTERNAL_STORAGE" in account.modules
+        has_perms = self.request.user.has_perm(CORE_STORAGE_PERMISSION.full_name())
 
-        if not self.request.user.has_perm(CORE_STORAGE_PERMISSION.full_name()):
+        if not has_perms or not has_module:
             entity = response.get("entity", None)
             if isinstance(entity, dict) and "nfc_cards" in entity:
                 entity.pop("nfc_cards", None)

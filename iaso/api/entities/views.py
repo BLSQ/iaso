@@ -89,10 +89,12 @@ class EntityViewSet(ModelViewSet):
 
     def get_serializer(self, *args, **kwargs):
         serializer = super().get_serializer(*args, **kwargs)
+        account = self.request.user.iaso_profile.account
+        has_module = "EXTERNAL_STORAGE" in account.modules
+        has_perm = self.request.user.has_perm(CORE_STORAGE_PERMISSION.full_name())
 
-        if not self.request.user.has_perm(CORE_STORAGE_PERMISSION.full_name()):
+        if not has_perm or not has_module:
             actual_serializer = serializer.child if hasattr(serializer, "child") else serializer
-
             actual_serializer.fields.pop("nfc_cards", None)
 
         return serializer

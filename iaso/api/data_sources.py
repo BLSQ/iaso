@@ -292,10 +292,7 @@ class DataSourceViewSet(ModelViewSet):
         name = self.request.GET.get("name", None)
 
         version_org_units_subquery = (
-            OrgUnit.objects.filter(version=OuterRef("pk"))
-            .values("version")
-            .annotate(c=Count("id"))
-            .values("c")
+            OrgUnit.objects.filter(version=OuterRef("pk")).values("version").annotate(c=Count("id")).values("c")
         )
 
         versions_prefetch = Prefetch(
@@ -303,9 +300,7 @@ class DataSourceViewSet(ModelViewSet):
             queryset=SourceVersion.objects.filter(data_source__projects__account=profile.account)
             .distinct()
             .annotate(
-                annotated_org_units_count=Coalesce(
-                    Subquery(version_org_units_subquery, output_field=IntegerField()), 0
-                )
+                annotated_org_units_count=Coalesce(Subquery(version_org_units_subquery, output_field=IntegerField()), 0)
             ),
         )
 

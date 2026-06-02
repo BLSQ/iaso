@@ -26,6 +26,7 @@ def is_worksheet_exluded(worksheet, exclusions_list):
         worksheet.is_hidden
         or worksheet.title.lower() in WORKSHEET_EXCLUSION_LIST
         or worksheet.title.lower().startswith("sheet")
+        or worksheet.title.lower().startswith("synt_")
         or (worksheet.title in exclusions)
     )
 

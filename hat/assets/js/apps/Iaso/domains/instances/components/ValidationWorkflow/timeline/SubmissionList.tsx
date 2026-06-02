@@ -8,55 +8,49 @@ import { AvatarTimeline } from './AvatarTimeline';
 type SubmissionListProps = {
     totalSteps: number;
     instanceId: number;
-    isMostRecent: boolean;
     timeline: Timeline[];
 };
 
 export const SubmissionList = ({
     timeline,
     totalSteps,
-    isMostRecent,
     instanceId,
 }: SubmissionListProps) => {
     return (
         <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
-            {timeline
-                ?.filter(
-                    timelineItem =>
-                        timelineItem.type !== 'NEXT_BYPASS' ||
-                        timelineItem.user_can_do_actions,
-                )
-                ?.map(timelineItem => {
-                    return (
-                        <ListItem
-                            alignItems="flex-start"
-                            key={timelineItem.id}
-                            sx={{
-                                bgcolor: 'background.paper',
-                                border: '1px solid',
-                                borderColor: 'divider',
-                                boxShadow: 1,
-                            }}
-                        >
-                            <ListItemAvatar>
-                                <AvatarTimeline
-                                    status={timelineItem.status}
-                                    type={timelineItem.type}
-                                />
-                            </ListItemAvatar>
-                            <ListItemText
-                                primary={`${timelineItem.name} (${timelineItem.order}/${totalSteps})`}
-                                secondary={
-                                    <ListItemSecondaryText
-                                        timelineItem={timelineItem}
-                                        isMostRecent={isMostRecent}
-                                        instanceId={instanceId}
-                                    />
+            {timeline?.map(timelineItem => {
+                return (
+                    <ListItem
+                        alignItems="flex-start"
+                        key={timelineItem.id}
+                        sx={{
+                            bgcolor: 'background.paper',
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            boxShadow: 1,
+                        }}
+                    >
+                        <ListItemAvatar>
+                            <AvatarTimeline
+                                status={timelineItem.status}
+                                type={timelineItem.type}
+                                userCanDoActions={
+                                    timelineItem.user_can_do_actions
                                 }
-                            ></ListItemText>
-                        </ListItem>
-                    );
-                })}
+                            />
+                        </ListItemAvatar>
+                        <ListItemText
+                            primary={`${timelineItem.name} (${timelineItem.order}/${totalSteps})`}
+                            secondary={
+                                <ListItemSecondaryText
+                                    timelineItem={timelineItem}
+                                    instanceId={instanceId}
+                                />
+                            }
+                        ></ListItemText>
+                    </ListItem>
+                );
+            })}
         </List>
     );
 };

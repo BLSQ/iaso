@@ -1,6 +1,6 @@
 import React, { ReactElement, useMemo } from 'react';
 import { Box, Switch } from '@mui/material';
-import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import { Column, Setting, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { baseUrls } from '../../constants/urls';
 import { EditProjectDialog } from './components/CreateEditProjectDialog';
 
@@ -31,6 +31,30 @@ export const useColumns = (
                 accessor: 'app_id',
                 Cell: settings => {
                     return settings.row.original.app_id;
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.description),
+                accessor: 'description',
+                width: 300,
+                Cell: ({ row: { original: project } }: Setting<Project>) => {
+                    const { description } = project;
+                    if (!description) return textPlaceholder;
+
+                    return (
+                        <Box
+                            title={description}
+                            sx={{
+                                maxWidth: 300,
+                                mx: 'auto',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                            }}
+                        >
+                            {description}
+                        </Box>
+                    );
                 },
             },
             {

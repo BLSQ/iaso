@@ -18,6 +18,10 @@ class DynamicFieldsModelSerializerMixin(serializers.Serializer):
             meta_default_fields = getattr(cls.Meta, settings.DYNAMIC_FIELDS_DEFAULT_FIELDS_META_PARAM, [])
         else:
             meta_default_fields = meta_all_fields
+
+        if meta_all_fields == "__all__":
+            meta_all_fields = list(cls().fields.keys())
+
         return {"meta_default": meta_default_fields, "meta_all_fields": meta_all_fields}
 
     @classmethod
@@ -38,7 +42,8 @@ class DynamicFieldsModelSerializerMixin(serializers.Serializer):
         else:
             filtered_fields = params_fields
 
-        fields = {k: v for k, v in fields.items() if k in filtered_fields}
+        if filtered_fields != "__all__":
+            fields = {k: v for k, v in fields.items() if k in filtered_fields}
         return fields
 
     def to_representation(self, instance):

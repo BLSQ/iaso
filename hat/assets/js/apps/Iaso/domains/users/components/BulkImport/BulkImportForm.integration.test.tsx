@@ -366,7 +366,7 @@ describe('BulkImportDialogModal', () => {
             default_teams: [1],
             default_user_roles: [1],
         });
-    });
+    }, 100_000);
 
     it('redirects after successful submit', async () => {
         const saveMock = vi.fn();

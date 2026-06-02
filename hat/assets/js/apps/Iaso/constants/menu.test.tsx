@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { VALIDATION_WORKFLOW_MODULE } from 'Iaso/utils/modules';
 import { currentUserFactory } from '../../../__tests__/factories/users';
-import { SUBMISSION_VALIDATION_WORKFLOW } from '../utils/featureFlags';
 import { useCurrentUser } from '../utils/usersUtils';
 import { useMenuItems } from './menu';
 
@@ -31,13 +31,13 @@ vi.mock('../domains/home/hooks/useGetOrgunitsExtraPath', () => ({
 
 const mockUseCurrentUser = vi.mocked(useCurrentUser);
 
-const createMockUser = (featureFlags: string[] = []) => {
+const createMockUser = (modules: string[] = []) => {
     return currentUserFactory.build({
         is_staff: true,
         is_superuser: true,
         account: {
-            feature_flags: featureFlags,
-            modules: [],
+            feature_flags: [],
+            modules: modules,
             default_version: {
                 data_source: {
                     url: null,
@@ -51,14 +51,14 @@ const renderUseMenuItems = () => renderHook(() => useMenuItems());
 const getValidationWorkflowEntry = (menuItems: any[]) =>
     menuItems.find(item => item.key === 'validation-workflows');
 
-describe('useMenuItems - SUBMISSION_VALIDATION_WORKFLOW', () => {
+describe('useMenuItems - VALIDATION_WORKFLOW_MODULE', () => {
     beforeEach(() => {
         vi.clearAllMocks();
     });
 
-    it('adds the validation workflow entry to the menu when the feature flag is enabled', () => {
+    it('adds the validation workflow entry to the menu when the module is enabled', () => {
         mockUseCurrentUser.mockReturnValue(
-            createMockUser([SUBMISSION_VALIDATION_WORKFLOW]),
+            createMockUser([VALIDATION_WORKFLOW_MODULE]),
         );
 
         const { result } = renderUseMenuItems();
@@ -71,7 +71,7 @@ describe('useMenuItems - SUBMISSION_VALIDATION_WORKFLOW', () => {
         });
     });
 
-    it('does not add the validation workflow entry to the menu when the feature flag is disabled', () => {
+    it('does not add the validation workflow entry to the menu when the module is disabled', () => {
         mockUseCurrentUser.mockReturnValue(createMockUser([]));
 
         const { result } = renderUseMenuItems();

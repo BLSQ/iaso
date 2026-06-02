@@ -19,7 +19,12 @@ class AppsAPITestCase(APITestCase):
     def setUpTestData(cls):
         account = m.Account.objects.create(name="Global Health Initiative")
         cls.yoda = cls.create_user_with_profile(username="yoda", account=account, permissions=[CORE_FORMS_PERMISSION])
-        cls.project_1 = m.Project.objects.create(name="Project 1", account=account, app_id="org.ghi.p1")
+        cls.project_1 = m.Project.objects.create(
+            name="Project 1",
+            account=account,
+            app_id="org.ghi.p1",
+            description="Project 1 description",
+        )
         cls.project_2 = m.Project.objects.create(
             name="Project 2", account=account, app_id="org.ghi.p2", min_version=1234
         )
@@ -190,6 +195,7 @@ class AppsAPITestCase(APITestCase):
         candidate_app = {
             "name": "This is a new app",
             "app_id": "com.this.is.new.app",
+            "description": "A helpful app description",
             "feature_flags": [{"id": self.flag_1.id, "name": self.flag_1.name, "code": self.flag_1.code}],
             "needs_authentication": False,
         }
@@ -198,6 +204,7 @@ class AppsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 201)
         response_data = response.json()
         self.assertValidAppData(response_data)
+        self.assertEqual("A helpful app description", response_data["description"])
         self.assertEqual(1, len(response_data["feature_flags"]))
 
     def test_app_cant_create_app_with_existing_id(self):
@@ -230,6 +237,22 @@ class AppsAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response = self.client.post("/api/apps/", candidate_app, format="json")
         self.assertJSONResponse(response, 201)
+
+    def test_app_create_ok_without_description(self):
+        candidate_app = {
+            "name": "This is a new app",
+            "app_id": "com.this.is.new.app",
+            "feature_flags": [],
+            "needs_authentication": False,
+        }
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post("/api/apps/", candidate_app, format="json")
+        response_data = response.json()
+        self.assertValidAppData(response_data)
+        self.assertEqual("", response_data["description"])
+
+        project = m.Project.objects.get(app_id=candidate_app["app_id"])
+        self.assertEqual("", project.description)
 
     def test_app_create_auto_commit_require_auth_ok_with_auth(self):
         candidate_app = {
@@ -272,6 +295,7 @@ class AppsAPITestCase(APITestCase):
     def test_app_update_and_commit_require_auth_ok_with_auth(self):
         candidate_app = {
             "name": "This is a newly updated app",
+            "description": "Updated app description",
             "feature_flags": [{"id": self.flag_1.id, "name": self.flag_1.name, "code": self.flag_1.code}],
             "needs_authentication": True,
         }
@@ -280,6 +304,7 @@ class AppsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         response_data = response.json()
         self.assertValidAppData(response_data)
+        self.assertEqual("Updated app description", response_data["description"])
         self.assertGreaterEqual(2, len(response_data["feature_flags"]))
         self.assertTrue(FeatureFlag.REQUIRE_AUTHENTICATION in list(ff["code"] for ff in response_data["feature_flags"]))
 
@@ -523,6 +548,7 @@ class AppsAPITestCase(APITestCase):
     def assertValidAppData(self, app_data: typing.Mapping) -> None:
         self.assertHasField(app_data, "id", str)
         self.assertHasField(app_data, "name", str)
+        self.assertHasField(app_data, "description", str)
         self.assertHasField(app_data, "feature_flags", list)
         self.assertHasField(app_data, "min_version", int, optional=True)
         self.assertHasField(app_data, "needs_authentication", bool)

@@ -565,7 +565,7 @@ const MESSAGES = defineMessages({
     GPSWarning: {
         id: 'iaso.orgUnits.GPSWarning',
         defaultMessage:
-            'GPS coordinates will NOT be updated for org units that already have coordinates or a shape',
+            'In case of multiple submissions for the same org unit, the average will be taken into account',
     },
     multiReferenceInstancesLabel: {
         id: 'iaso.orgUnits.MultiReferenceInstancesLabel',

@@ -7,9 +7,10 @@ from rest_framework import status
 
 from iaso.api.validation_workflows.constants import DEFAULT_COLOR, MOBILE_STATUS_TO_COLOR
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
-from iaso.models import Account, AccountFeatureFlag, Form, Project, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import Account, Form, Project, ValidationNodeTemplate, ValidationWorkflow
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
+from iaso.modules import MODULE_VALIDATION_WORKFLOW
 from iaso.test import APITestCase
 
 
@@ -19,7 +20,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.other_account = Account.objects.create(name="account2")
         self.another_account = Account.objects.create(name="account3")
 
-        self.enable_validation_workflow_feature_flag(self.account, self.other_account)
+        self.add_validation_workflow_module(self.account, self.other_account)
         self.john_doe = self.create_user_with_profile(
             username="user.without.feature.flag", account=self.another_account, first_name="User", last_name="NoFlag"
         )
@@ -46,7 +47,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
 
         self.third_node = ValidationNodeTemplate.objects.create(name="Third node", workflow=self.validation_workflow)
         self.third_node.previous_node_templates.add(self.second_node)
-        self.form = Form.objects.create(name="Form")
+        self.form = Form.objects.create(name="Form", label_keys=["A", "C", "E"])
         self.other_form = Form.objects.create(name="Form 2")
 
         self.validation_workflow.form_set.set([self.form, self.other_form])
@@ -61,6 +62,12 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
             form=self.form,
             project=self.project,
             uuid=str(uuid.uuid4()),
+            json={
+                "A": "Item A",
+                "B": "Item B",
+                "C": "Item C",
+                "D": "Item D",
+            },
         )
 
         self.other_instance = self.create_form_instance(
@@ -70,12 +77,13 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         )
 
     @staticmethod
-    def enable_validation_workflow_feature_flag(*accounts):
-        feature_flag = AccountFeatureFlag.objects.get(
-            code="SUBMISSION_VALIDATION_WORKFLOW",
-        )
+    def add_validation_workflow_module(*accounts):
         for account in accounts:
-            account.feature_flags.add(feature_flag)
+            account_modules = account.modules or []
+            if MODULE_VALIDATION_WORKFLOW not in account_modules:
+                account_modules.append(MODULE_VALIDATION_WORKFLOW.codename)
+                account.modules = account_modules
+                account.save()
 
     def setup_start(self):
         ValidationWorkflowEngine.start(self.validation_workflow, self.john_wick, self.instance)
@@ -116,7 +124,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.client.force_authenticate(self.john_doe)
         res = self.client.get(reverse("mobile_validation_workflows-list"))
         res_data = self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(res_data["detail"], "This feature is disabled for your account.")
+        self.assertEqual(res_data["detail"], "The related module(s) are not activated for your account.")
 
         self.client.force_authenticate(self.john_wick)
         res = self.client.get(reverse("mobile_validation_workflows-list"))
@@ -291,6 +299,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.assertEqual(instance_data["validation_status"], ValidationWorkflowArtefactStatus.PENDING)
         self.assertIsNone(instance_data["rejection_comment"])
         self.assertEqual(instance_data["name"], self.form.name)
+        self.assertEqual(instance_data["display_name"], "Item A Item C")
 
         self.assertHasField(instance_data, "created_at", float)
         self.assertHasField(instance_data, "updated_at", float)
@@ -336,6 +345,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.assertEqual(instance_data["validation_status"], ValidationWorkflowArtefactStatus.APPROVED)
         self.assertIsNone(instance_data["rejection_comment"])
         self.assertEqual(instance_data["name"], self.form.name)
+        self.assertEqual(instance_data["display_name"], "Item A Item C")
 
         self.assertHasField(instance_data, "created_at", float)
         self.assertHasField(instance_data, "updated_at", float)
@@ -397,6 +407,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.assertEqual(instance_data["validation_status"], ValidationWorkflowArtefactStatus.APPROVED)
         self.assertIsNone(instance_data["rejection_comment"])
         self.assertEqual(instance_data["name"], self.form.name)
+        self.assertEqual(instance_data["display_name"], "Item A Item C")
 
         self.assertHasField(instance_data, "created_at", float)
         self.assertHasField(instance_data, "updated_at", float)
@@ -460,6 +471,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.assertEqual(instance_data["validation_status"], ValidationWorkflowArtefactStatus.REJECTED)
         self.assertEqual(instance_data["rejection_comment"], "Nope")
         self.assertEqual(instance_data["name"], self.form.name)
+        self.assertEqual(instance_data["display_name"], "Item A Item C")
 
         self.assertHasField(instance_data, "created_at", float)
         self.assertHasField(instance_data, "updated_at", float)
@@ -517,6 +529,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.assertEqual(instance_data["validation_status"], ValidationWorkflowArtefactStatus.PENDING)
         self.assertIsNone(instance_data["rejection_comment"])
         self.assertEqual(instance_data["name"], self.form.name)
+        self.assertEqual(instance_data["display_name"], "Item A Item C")
 
         self.assertHasField(instance_data, "created_at", float)
         self.assertHasField(instance_data, "updated_at", float)
@@ -576,7 +589,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
         self.setup_approve()
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(5):
             # 1: PERM
             # 3 ORGUNIT
             # 4-5: QUERYSET + FILTER

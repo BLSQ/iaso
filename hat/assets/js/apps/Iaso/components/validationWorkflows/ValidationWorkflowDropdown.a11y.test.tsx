@@ -16,10 +16,6 @@ const { mockUserHasPermission } = vi.hoisted(() => {
     return { mockUserHasPermission: vi.fn() };
 });
 
-vi.mock('Iaso/domains/users/utils', () => ({
-    userHasPermission: mockUserHasPermission,
-}));
-
 const { mockUseGetWorkflowOptions } = vi.hoisted(() => {
     return { mockUseGetWorkflowOptions: vi.fn() };
 });
@@ -28,15 +24,16 @@ vi.mock('Iaso/domains/validationWorkflowsConfiguration/api/Get', () => ({
     useGetWorkflowOptions: mockUseGetWorkflowOptions,
 }));
 
-const { mockHasFeatureFlag } = vi.hoisted(() => {
-    return { mockHasFeatureFlag: vi.fn() };
+const { mockUserHasAccessToModule } = vi.hoisted(() => {
+    return { mockUserHasAccessToModule: vi.fn() };
 });
 
-vi.mock('Iaso/utils/featureFlags', async () => {
-    const actual = await vi.importActual('Iaso/utils/featureFlags');
+vi.mock('Iaso/domains/users/utils', async () => {
+    const actual = await vi.importActual('Iaso/domains/users/utils');
     return {
         ...actual,
-        hasFeatureFlag: mockHasFeatureFlag,
+        userHasPermission: mockUserHasPermission,
+        userHasAccessToModule: mockUserHasAccessToModule,
     };
 });
 
@@ -44,7 +41,7 @@ describe('ValidationWorkflowDropdown accessibility', () => {
     it('has no accessibility violations', async () => {
         mockCurrentUser.mockReturnValue({ id: 1 });
         mockUserHasPermission.mockReturnValue(true);
-        mockHasFeatureFlag.mockReturnValue(true);
+        mockUserHasAccessToModule.mockReturnValue(true);
 
         mockUseGetWorkflowOptions.mockReturnValue({
             data: [{ label: 'A', value: 'a' }],

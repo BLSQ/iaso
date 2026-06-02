@@ -17,7 +17,7 @@ export const DEFAULT_TEAMS_COLUMNS = [
     'name',
     'project_details',
     'type',
-    'users_details',
+    'members_count',
 ];
 
 export const NON_SELECTABLE_COLUMNS = ['actions', 'selection'];

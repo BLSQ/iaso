@@ -1,3 +1,5 @@
+from typing import Optional
+
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
@@ -43,12 +45,14 @@ class MobileValidationWorkflowListSerializer(ModelSerializer):
     rejection_comment = serializers.SerializerMethodField(read_only=True)
     updated_at = serializers.SerializerMethodField(label="Timestamp of the last update (history)", read_only=True)
     name = serializers.CharField(read_only=True, source="form.name")
+    display_name = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Instance
         fields = [
             "instance_id",
             "name",
+            "display_name",
             "validation_status",
             "rejection_comment",
             "created_at",
@@ -77,3 +81,12 @@ class MobileValidationWorkflowListSerializer(ModelSerializer):
     def get_updated_at(self, obj):
         updated_at = getattr(obj.validationnode_set.all().order_by("-updated_at").first(), "updated_at", None)
         return updated_at.timestamp() if updated_at else None
+
+    @extend_schema_field({"type": "string", "nullable": True})
+    def get_display_name(self, obj: Instance) -> Optional[str]:
+        form = obj.form
+        label_keys = form.label_keys
+        if not label_keys or not obj.json:
+            return None
+        values = [str(obj.json[k]) if k in obj.json else None for k in label_keys]
+        return " ".join([x for x in values if x is not None])

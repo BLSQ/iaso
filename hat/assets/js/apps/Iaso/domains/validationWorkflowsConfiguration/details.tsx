@@ -21,6 +21,7 @@ import { AddNode } from './components/CreateEditNode/CreateEditNode';
 import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
 import { useSortableTableState } from './hooks/useSortableTableState';
 import MESSAGES from './messages';
+// import { useCustomApiValidationWorkflowsRetrieve } from '../api/Get';
 
 const useStyles = makeStyles((theme: any) => {
     return {
@@ -51,6 +52,8 @@ export const ValidationWorkflowConfigurationDetail = () => {
     const goBack = useGoBack();
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
+    // const { data: workflow, isFetching: isLoading } =
+    //     useCustomApiValidationWorkflowsRetrieve(params.slug);
     const { data: workflow, isFetching: isLoading } = useGetWorkflowDetails(
         params.slug,
     );

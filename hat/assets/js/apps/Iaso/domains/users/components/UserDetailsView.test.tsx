@@ -136,7 +136,7 @@ vi.mock('@mui/lab', () => ({
 }));
 
 // fake data
-const randomUser = {
+const getRandomUser = () => ({
     user_name: faker.internet.username(),
     first_name: faker.person.firstName(),
     last_name: faker.person.lastName(),
@@ -147,7 +147,7 @@ const randomUser = {
     home_page: faker.internet.url(),
     date_joined: faker.date.past().toISOString(),
     color: faker.color.rgb({ format: 'hex' }),
-};
+});
 
 let projectCounter = 0;
 const getRandomProject = () => {
@@ -254,6 +254,7 @@ describe('UsersDetailView unit tests', () => {
             title: string;
             sectionDataTestId: string;
         }) => {
+            const randomUser = getRandomUser();
             mockIsSaveProfileLoading.mockReturnValue(true);
             mockUseGetProfile.mockReturnValue({
                 data: randomUser,
@@ -273,6 +274,7 @@ describe('UsersDetailView unit tests', () => {
     );
 
     it('renders correctly user general info', () => {
+        const randomUser = getRandomUser();
         mockUseGetProfile
             .mockReturnValueOnce({
                 data: null,
@@ -503,6 +505,7 @@ describe('UsersDetailView unit tests', () => {
     });
 
     it('does not show delete button for own profile', () => {
+        const randomUser = getRandomUser();
         mockUseGetProfile.mockReturnValue({
             data: randomUser,
             isLoading: false,
@@ -519,6 +522,7 @@ describe('UsersDetailView unit tests', () => {
     });
 
     it('shows delete button for admin on other user', () => {
+        const randomUser = getRandomUser();
         mockUseGetProfile.mockReturnValue({
             data: randomUser,
             isLoading: false,
@@ -536,6 +540,7 @@ describe('UsersDetailView unit tests', () => {
     });
 
     it('hides delete button for non admin on other user', () => {
+        const randomUser = getRandomUser();
         mockUseGetProfile.mockReturnValue({
             data: randomUser,
             isLoading: false,

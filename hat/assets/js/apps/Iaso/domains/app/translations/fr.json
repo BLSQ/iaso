@@ -1107,7 +1107,7 @@
     "iaso.orgUnits.fitToOutBounds": "Ajuster la carte aux enfants",
     "iaso.orgUnits.forms.noData": "Aucun formulaire",
     "iaso.orgUnits.formsHelperText": "Soumissions du formulaire",
-    "iaso.orgUnits.GPSWarning": "Les coordonnées GPS ne seront PAS mises à jour pour les unités d'org qui ont déjà des données géographiques",
+    "iaso.orgUnits.GPSWarning": "En cas de soumissions multiples pour une même unité organisationnelle, c'est la moyenne qui sera prise en compte",
     "iaso.orgUnits.infos": "Infos",
     "iaso.orgUnits.instances_count": "Nombre de soumissions",
     "iaso.orgUnits.missingGeolocation": "Aucune unité d'organisation trouvée avec une localisation",

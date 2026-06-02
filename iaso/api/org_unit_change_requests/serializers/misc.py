@@ -8,7 +8,6 @@ from rest_framework import serializers
 from hat.audit.audit_logger import AuditLogger
 from hat.audit.models import ORG_UNIT_CHANGE_REQUEST_API
 from iaso.api.common import TimestampField
-from iaso.api.mobile.org_units import ReferenceInstancesSerializer
 from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest, OrgUnitType
 from iaso.models.payments import PaymentStatuses
 from iaso.utils import geojson_queryset
@@ -92,42 +91,6 @@ class OrgUnitForChangeRequestSerializer(serializers.ModelSerializer):
 
     def get_groups(self, obj: OrgUnitChangeRequest):
         return [{"id": group.id, "name": group.name} for group in obj.groups.all()]
-
-
-class MobileOrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
-    """
-    Used to list many `OrgUnitChangeRequest` instances for mobile.
-    """
-
-    org_unit_id = serializers.IntegerField(source="org_unit.id")
-    org_unit_uuid = serializers.UUIDField(source="org_unit.uuid")
-    new_location = ThreeDimPointField()
-    created_at = TimestampField()
-    updated_at = TimestampField()
-    new_reference_instances = ReferenceInstancesSerializer(many=True)
-
-    class Meta:
-        model = OrgUnitChangeRequest
-        fields = [
-            "id",
-            "uuid",
-            "org_unit_id",
-            "org_unit_uuid",
-            "status",
-            "approved_fields",
-            "rejection_comment",
-            "created_at",
-            "updated_at",
-            "new_parent_id",
-            "new_name",
-            "new_org_unit_type_id",
-            "new_groups",
-            "new_location",
-            "new_location_accuracy",
-            "new_opening_date",
-            "new_closed_date",
-            "new_reference_instances",
-        ]
 
 
 class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):

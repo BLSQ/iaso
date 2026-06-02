@@ -5,7 +5,8 @@ export const useCampaignTabs = ({ formik, selectedCampaign }) => {
     const tabs = usePolioDialogTabs(formik, selectedCampaign);
     const [selectedTab, setSelectedTab] = useState<number>(0);
 
-    const ActiveForm = tabs[selectedTab].form;
+    const safeSelectedTab = selectedTab < tabs.length ? selectedTab : 0;
+    const ActiveForm = tabs[safeSelectedTab].form;
     const handleChangeTab = useCallback(
         (_event, newValue) => {
             setSelectedTab(newValue);
@@ -18,7 +19,7 @@ export const useCampaignTabs = ({ formik, selectedCampaign }) => {
             tabs,
             ActiveForm,
             handleChangeTab,
-            selectedTab,
+            selectedTab: safeSelectedTab,
         };
-    }, [tabs, ActiveForm, handleChangeTab, selectedTab]);
+    }, [tabs, ActiveForm, handleChangeTab, safeSelectedTab]);
 };

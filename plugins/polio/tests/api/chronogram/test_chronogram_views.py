@@ -389,6 +389,7 @@ class ChronogramViewSetTestCase(APITestCase):
                     "is_on_time": True,
                     "num_task_delayed": 0,
                     "percentage_of_completion": {"BEFORE": 0, "DURING": 0, "AFTER": 0},
+                    "is_on_hold": False,
                 },
             )
 

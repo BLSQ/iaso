@@ -109,6 +109,7 @@
     "iaso.polio.chronogram.details.title": "Chronogram for {campaignName} Round {round_number} - Start: {round_start_date}",
     "iaso.polio.chronogram.filter.label.campaign": "Campaign",
     "iaso.polio.chronogram.filter.label.country": "Country",
+    "iaso.polio.chronogram.filter.label.on_hold": "On hold",
     "iaso.polio.chronogram.filter.label.on_time": "On time",
     "iaso.polio.chronogram.filter.label.search": "Search",
     "iaso.polio.chronogram.label.campaign": "Campaign",

@@ -42,7 +42,7 @@ export type Timeline = {
         | 'NEW_VERSION'
         | 'SUBMISSION';
     updated_by?: string;
-    type: 'NEXT_BYPASS' | 'TIMELINE';
+    type: 'NEXT_BYPASS' | 'TIMELINE' | 'NEXT_STEP';
     user_can_do_actions: boolean;
     order: number;
 };

@@ -137,17 +137,11 @@ describe('SubmissionAccordion', () => {
 
     it('passes correct props to SubmissionList', () => {
         renderWithThemeAndIntlProvider(
-            <SubmissionAccordion
-                {...defaultProps}
-                totalSteps={7}
-                isMostRecent={true}
-            />,
+            <SubmissionAccordion {...defaultProps} totalSteps={7} />,
         );
 
         expect(
-            screen.getByText(
-                /SubmissionList - totalSteps: 7 - mostRecent: true/i,
-            ),
+            screen.getByText(/SubmissionList - totalSteps: 7/i),
         ).toBeInTheDocument();
     });
 

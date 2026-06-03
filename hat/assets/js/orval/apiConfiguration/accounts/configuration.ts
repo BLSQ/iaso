@@ -18,6 +18,24 @@ export const acccountsOperations = {
             },
         },
     },
+    apiAccountsMeRetrieve: {
+        query: {
+            options: {
+                staleTime: Infinity,
+                cacheTime: Infinity,
+                keepPreviousData: true,
+            },
+        },
+    },
+    apiAccountsCustomTranslationsRetrieve: {
+        query: {
+            options: {
+                staleTime: Infinity,
+                cacheTime: Infinity,
+                keepPreviousData: true,
+            },
+        },
+    },
 };
 
 export const mutationInvalidates = [
@@ -25,11 +43,16 @@ export const mutationInvalidates = [
         onMutations: ['apiAccountsUpdate'],
         invalidates: [
             'apiAccountsList',
+            'apiAccountsMeRetrieve',
+            { query: 'apiAccountsCustomTranslationsRetrieve', params: ['id'] },
             { query: 'apiAccountsRetrieve', params: ['id'] },
         ],
     },
     {
-        onMutations: ['apiAccountsAiApiKeyUpdate'],
+        onMutations: [
+            'apiAccountsAiApiKeyUpdate',
+            'apiAccountsAiApiKeyDestroy',
+        ],
         invalidates: [{ query: 'apiAccountsAiApiKeyRetrieve', params: ['id'] }],
     },
 ];

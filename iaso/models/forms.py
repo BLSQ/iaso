@@ -406,7 +406,7 @@ class FormAttachment(models.Model):
 
     form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="attachments")
     name = models.TextField(null=False, blank=False)
-    file = models.FileField(upload_to=form_attachment_upload_to)
+    file = models.FileField(upload_to=form_attachment_upload_to, max_length=512)
     file_last_scan = models.DateTimeField(blank=True, null=True)
     file_scan_status = models.CharField(max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING)
     md5 = models.CharField(null=False, blank=False, max_length=32)

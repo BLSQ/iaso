@@ -89,6 +89,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.chronogram.filter.label.on_time',
         defaultMessage: 'On time',
     },
+    labelIsOnHold: {
+        id: 'iaso.polio.chronogram.filter.label.on_hold',
+        defaultMessage: 'On hold',
+    },
     linkToChronogramTemplateTask: {
         id: 'iaso.polio.chronogram.link_to_chronogram_template_task',
         defaultMessage: 'Edit Default Tasks',

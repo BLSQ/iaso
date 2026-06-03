@@ -9,6 +9,7 @@ from iaso import models as m
 from iaso.test import TestCase
 from plugins.polio.api.chronogram.serializers import (
     ChronogramCreateSerializer,
+    ChronogramSerializer,
     ChronogramTaskSerializer,
     ChronogramTemplateTaskSerializer,
 )
@@ -136,6 +137,186 @@ class ChronogramTaskSerializerTestCase(TestCase):
         self.assertEqual(chronogram_task.comment, "Comment")
         self.assertEqual(chronogram_task.created_by, self.user)
         self.assertEqual(chronogram_task.created_at, TODAY)
+
+
+@time_machine.travel(TODAY, tick=False)
+class ChronogramSerializerTestCase(TestCase):
+    """
+    Test ChronogramSerializer.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.data_source = m.DataSource.objects.create(name="Data Source")
+        cls.source_version = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
+        cls.account = m.Account.objects.create(name="Account", default_version=cls.source_version)
+        cls.user = cls.create_user_with_profile(
+            email="john@polio.org",
+            username="test",
+            first_name="John",
+            last_name="Doe",
+            account=cls.account,
+        )
+
+        cls.campaign = Campaign.objects.create(obr_name="Campaign OBR name", account=cls.account)
+        cls.polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
+        cls.campaign.campaign_types.add(cls.polio_type)
+
+        cls.round = Round.objects.create(number=1, campaign=cls.campaign, started_at=TODAY.date())
+        cls.chronogram = Chronogram.objects.create(round=cls.round, created_by=cls.user)
+        cls.task_before = ChronogramTask.objects.create(
+            period=Period.BEFORE,
+            chronogram=cls.chronogram,
+            description_en="Task before",
+            description_fr="Tâche avant",
+            start_offset_in_days=-5,
+            user_in_charge="John Doe",
+            status=ChronogramTask.Status.DONE,
+        )
+        cls.task_during = ChronogramTask.objects.create(
+            period=Period.DURING,
+            chronogram=cls.chronogram,
+            description_en="Task during",
+            description_fr="Tâche pendant",
+            start_offset_in_days=0,
+            user_in_charge="John Doe",
+        )
+        cls.task_after = ChronogramTask.objects.create(
+            period=Period.AFTER,
+            chronogram=cls.chronogram,
+            description_en="Task after",
+            description_fr="Tâche après",
+            start_offset_in_days=5,
+            user_in_charge="John Doe",
+        )
+
+    def _get_chronogram(self):
+        return Chronogram.objects.select_related("round__campaign", "created_by", "updated_by").get(
+            pk=self.chronogram.pk
+        )
+
+    def test_serialize_default_fields(self):
+        chronogram = self._get_chronogram()
+        serializer = ChronogramSerializer(chronogram)
+        data = serializer.data
+        self.assertEqual(
+            set(data.keys()),
+            {
+                "id",
+                "campaign_obr_name",
+                "round_number",
+                "round_start_date",
+                "is_on_time",
+                "num_task_delayed",
+                "percentage_of_completion",
+                "is_on_hold",
+            },
+        )
+
+    def test_serialize_all_fields(self):
+        chronogram = self._get_chronogram()
+        serializer = ChronogramSerializer(chronogram, fields=":all")
+        data = serializer.data
+        self.assertEqual(
+            set(data.keys()),
+            {
+                "id",
+                "campaign_obr_name",
+                "round_number",
+                "round_start_date",
+                "is_on_time",
+                "num_task_delayed",
+                "percentage_of_completion",
+                "tasks",
+                "created_at",
+                "created_by",
+                "updated_at",
+                "updated_by",
+                "is_on_hold",
+            },
+        )
+
+    def test_serialize_campaign_and_round_fields(self):
+        chronogram = self._get_chronogram()
+        serializer = ChronogramSerializer(chronogram)
+        data = serializer.data
+        self.assertEqual(data["campaign_obr_name"], "Campaign OBR name")
+        self.assertEqual(data["round_number"], "1")
+        self.assertEqual(data["round_start_date"], str(TODAY.date()))
+
+    def test_serialize_is_on_time_true_when_no_delayed_tasks(self):
+        chronogram = self._get_chronogram()
+        serializer = ChronogramSerializer(chronogram)
+        self.assertTrue(serializer.data["is_on_time"])
+        self.assertEqual(serializer.data["num_task_delayed"], 0)
+
+    def test_serialize_percentage_of_completion(self):
+        chronogram = self._get_chronogram()
+        serializer = ChronogramSerializer(chronogram)
+        self.assertEqual(
+            serializer.data["percentage_of_completion"],
+            {"BEFORE": 100, "DURING": 0, "AFTER": 0},
+        )
+
+    def test_serialize_tasks_included_with_all_fields(self):
+        chronogram = self._get_chronogram()
+        serializer = ChronogramSerializer(chronogram, fields=":all")
+        self.assertEqual(len(serializer.data["tasks"]), 3)
+
+    def test_serialize_created_by(self):
+        chronogram = self._get_chronogram()
+        serializer = ChronogramSerializer(chronogram, fields=":all")
+        self.assertEqual(
+            serializer.data["created_by"],
+            {"id": self.user.pk, "username": "test", "full_name": "John Doe"},
+        )
+
+    def test_serialize_updated_by_none(self):
+        chronogram = self._get_chronogram()
+        serializer = ChronogramSerializer(chronogram, fields=":all")
+        self.assertIsNone(serializer.data["updated_by"])
+
+    def test_is_on_hold_false_when_neither_campaign_nor_round_on_hold(self):
+        chronogram = self._get_chronogram()
+        serializer = ChronogramSerializer(chronogram)
+        self.assertFalse(serializer.data["is_on_hold"])
+
+    def test_is_on_hold_true_when_campaign_on_hold(self):
+        self.campaign.on_hold = True
+        self.campaign.save()
+
+        chronogram = self._get_chronogram()
+        serializer = ChronogramSerializer(chronogram)
+        self.assertTrue(serializer.data["is_on_hold"])
+
+        self.campaign.on_hold = False
+        self.campaign.save()
+
+    def test_is_on_hold_true_when_round_on_hold(self):
+        self.round.on_hold = True
+        self.round.save()
+
+        chronogram = self._get_chronogram()
+        serializer = ChronogramSerializer(chronogram)
+        self.assertTrue(serializer.data["is_on_hold"])
+
+        self.round.on_hold = False
+        self.round.save()
+
+    def test_is_on_hold_true_when_both_on_hold(self):
+        self.campaign.on_hold = True
+        self.campaign.save()
+        self.round.on_hold = True
+        self.round.save()
+
+        chronogram = self._get_chronogram()
+        serializer = ChronogramSerializer(chronogram)
+        self.assertTrue(serializer.data["is_on_hold"])
+
+        self.campaign.on_hold = False
+        self.campaign.save()
+        self.round.on_hold = False
+        self.round.save()
 
 
 @time_machine.travel(TODAY, tick=False)

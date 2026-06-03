@@ -1,6 +1,6 @@
 import typing
 
-from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.files.uploadedfile import UploadedFile
 from drf_spectacular.utils import extend_schema
 from rest_framework import parsers, serializers, status
 from rest_framework.exceptions import NotFound
@@ -9,6 +9,7 @@ from rest_framework.response import Response
 
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.models import Form, FormAttachment, Project
+from iaso.models.forms import form_attachment_upload_to
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.utils.encryption import calculate_md5
 from iaso.utils.virus_scan.clamav import scan_uploaded_file_for_virus
@@ -40,6 +41,7 @@ class FormAttachmentSerializer(serializers.ModelSerializer):
 
     def validate(self, data: typing.MutableMapping):
         form: Form = data["form"]
+        file: UploadedFile | None = data.get("file")
         if form is None:
             raise serializers.ValidationError("Form cannot be null")
 
@@ -48,11 +50,22 @@ class FormAttachmentSerializer(serializers.ModelSerializer):
         if not permission_checker.has_object_permission(self.context["request"], self.context["view"], form):
             raise serializers.ValidationError({"form_id": "Invalid form id"})
 
+        if file:
+            dummy_instance = FormAttachment(form=form)
+            expected_path = form_attachment_upload_to(dummy_instance, file.name)
+
+            if len(expected_path) > 512:
+                raise serializers.ValidationError(
+                    {
+                        "file": f"The generated file path is too long ({len(expected_path)} characters). Please use a shorter file name."
+                    }
+                )
+
         return data
 
     def create(self, validated_data):
         form: Form = validated_data["form"]
-        file: InMemoryUploadedFile = validated_data["file"]
+        file: UploadedFile = validated_data["file"]
 
         scan_result, scan_timestamp = scan_uploaded_file_for_virus(file)
         try:

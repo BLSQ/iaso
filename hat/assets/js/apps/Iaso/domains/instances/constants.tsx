@@ -41,7 +41,7 @@ export const INSTANCE_MAP_METAS_FIELDS = [
         key: 'org_unit_type_name',
         type: 'info',
         renderValue: data => {
-            return data.org_unit.org_unit_type.name;
+            return data.org_unit?.org_unit_type?.name;
         },
     },
     {
@@ -273,7 +273,7 @@ export const INSTANCE_METAS_FIELDS = [
         key: 'last_modified_by',
         type: 'info',
         getLabelKey: data => {
-            return data.deleted? 'deleted_by' : 'last_modified_by';
+            return data.deleted ? 'deleted_by' : 'last_modified_by';
         },
     },
     {
@@ -281,7 +281,7 @@ export const INSTANCE_METAS_FIELDS = [
         render: value => displayDateFromTimestamp(value),
         type: 'info',
         getLabelKey: data => {
-            return data.deleted? 'deleted_at' : 'updated_at';
+            return data.deleted ? 'deleted_at' : 'updated_at';
         },
     },
 ];

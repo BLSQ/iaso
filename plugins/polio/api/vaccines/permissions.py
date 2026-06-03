@@ -76,10 +76,7 @@ class VaccineStockPermission(permissions.BasePermission):
         if request.user.has_perm(self.admin_perm.full_name()):
             return True
 
-        # Users with read-only permission can only read
-        if request.user.has_perm(self.read_only_perm.full_name()):
-            return request.method in ["GET", "HEAD", "OPTIONS"]
-
+        # Non-admin before read-only: users with both can still edit within the window.
         if request.user.has_perm(self.non_admin_perm.full_name()):
             # Users with non-admin permission can add entries
             if request.method in ["GET", "HEAD", "OPTIONS", "POST"]:
@@ -102,6 +99,9 @@ class VaccineStockPermission(permissions.BasePermission):
                 ):
                     return True
                 return self._allow_after_window_edit(request, view, obj)
+
+        if request.user.has_perm(self.read_only_perm.full_name()):
+            return request.method in ["GET", "HEAD", "OPTIONS"]
 
         return False
 
@@ -162,32 +162,32 @@ class VaccineStockEarmarkPermission(permissions.BasePermission):
         if request.user.has_perm(self.admin_perm.full_name()):
             return True
 
-        # Users with read-only permission can only read
+        # Non-admin before read-only: users with both can still edit within the window.
+        if request.user.has_perm(self.non_admin_perm.full_name()):
+            if request.method in ["GET", "HEAD", "OPTIONS", "POST"]:
+                return True
+            if request.method in ["PUT", "PATCH", "DELETE"]:
+                if view.action in [
+                    "add_pre_alerts",
+                    "update_pre_alerts",
+                    "delete_pre_alerts",
+                    "add_arrival_reports",
+                    "update_arrival_reports",
+                    "delete_arrival_reports",
+                ]:
+                    return (
+                        True  # There are multiple objects in one request for those so this is checked in the serializer
+                    )
+                return is_within_management_edit_window(
+                    getattr(obj, self.datetime_field),
+                    days_open=self.days_open,
+                )
+
         if request.user.has_perm(self.read_only_perm.full_name()):
             return request.method in ["GET", "HEAD", "OPTIONS"]
 
         # Users without any permission can read anything
         if request.method in ["GET", "HEAD", "OPTIONS"]:
             return True
-
-        # Users with non-admin permission can add entries
-        if request.method in ["POST"] and request.user.has_perm(self.non_admin_perm.full_name()):
-            return True
-
-        # For edit/delete, check if object is less than a week old and the use has at least the non-admin permission
-        if request.method in ["PUT", "PATCH", "DELETE"] and request.user.has_perm(self.non_admin_perm.full_name()):
-            if view.action in [
-                "add_pre_alerts",
-                "update_pre_alerts",
-                "delete_pre_alerts",
-                "add_arrival_reports",
-                "update_arrival_reports",
-                "delete_arrival_reports",
-            ]:
-                return True  # There are multiple objects in one request for those so this is checked in the serializer
-            return is_within_management_edit_window(
-                getattr(obj, self.datetime_field),
-                days_open=self.days_open,
-            )
 
         return False

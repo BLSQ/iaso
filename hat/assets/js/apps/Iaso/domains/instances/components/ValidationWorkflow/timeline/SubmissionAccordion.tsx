@@ -142,7 +142,6 @@ export const SubmissionAccordion = ({
                 <SubmissionList
                     timeline={submission.timeline}
                     totalSteps={totalSteps}
-                    isMostRecent={isMostRecent}
                     instanceId={instanceId}
                 />
             </AccordionDetails>

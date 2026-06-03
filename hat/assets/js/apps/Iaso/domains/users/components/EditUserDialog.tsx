@@ -107,6 +107,9 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
                     (userRole: UserRole | number) =>
                         (userRole as UserRole)?.id ?? userRole,
                 );
+            } else if (key === 'phone_number') {
+                const userRecord = user as Record<string, { value: unknown }>;
+                currentUser[key] = userRecord[key]?.value ?? '';
             } else {
                 const userRecord = user as Record<string, { value: unknown }>;
                 currentUser[key] = userRecord[key]?.value;

@@ -66,7 +66,7 @@ from iaso.models import (
 )
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.forms import CR_MODE_IF_REFERENCE_FORM
-from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_STORAGE_PERMISSION
 from iaso.utils.date_and_time import timestamp_to_datetime
 from iaso.utils.models.common import check_instance_bulk_gps_push, check_instance_reference_bulk_link, get_creator_name
 
@@ -126,6 +126,18 @@ class InstancesViewSet(viewsets.ViewSet):
                 ),
             )
         return queryset
+
+    def _filter_response_for_permissions(self, response):
+        f"""Remove nfc_cards from entity data if user doesn't have "{CORE_STORAGE_PERMISSION}" ."""
+        account = self.request.user.iaso_profile.account
+        has_module = "EXTERNAL_STORAGE" in account.modules
+        has_perms = self.request.user.has_perm(CORE_STORAGE_PERMISSION.full_name())
+
+        if not has_perms or not has_module:
+            entity = response.get("entity", None)
+            if isinstance(entity, dict) and "nfc_cards" in entity:
+                entity.pop("nfc_cards", None)
+        return response
 
     def _get_filtered_attachments_queryset(self, request):
         """Helper method to get filtered attachments queryset with common logic"""
@@ -637,6 +649,7 @@ class InstancesViewSet(viewsets.ViewSet):
             instance.org_unit._prefetched_ancestors = ancestors_dict
 
         response = instance.as_full_model(with_entity=True)
+        response = self._filter_response_for_permissions(response)
 
         # Logs(history) of all instance locks
         response["instance_locks"] = InstanceLockSerializer(all_instance_locks, many=True).data

@@ -353,7 +353,6 @@ class EntityDuplicatePostSerializer(serializers.Serializer):
             "reason": data.get("reason", ""),
         }
 
-    @transaction.atomic
     def create(self, validated_data):
         e1 = validated_data["entity1"]
         e2 = validated_data["entity2"]
@@ -630,6 +629,7 @@ class EntityDuplicateViewSet(ModelViewSet):
         return JsonResponse(return_data, safe=False)
 
     @extend_schema(request=EntityDuplicatePostSerializer)
+    @transaction.atomic
     def create(self, request, pk=None, *args, **kwargs):
         """
         POST /api/entityduplicates/

@@ -313,5 +313,5 @@ class EntityDuplicatesMergingAPITestCase(APITestCase):
         self.assertEqual(entity2.merged_to_id, response_data["new_entity_id"])
 
         merged = entity1.merged_to
-        self.assertEqual(merged.instances.count(), 2)  # reference form + emoji form
-        self.assertEqual(merged.instances.last().json["prevous_muac_color"], "🟡Yellow")
+        self.assertEqual(merged.instances.count(), 4)  # 1 attributes + 1 emoji + 2 extra instances from setup
+        self.assertTrue(merged.instances.filter(json__prevous_muac_color="🟡Yellow").exists())

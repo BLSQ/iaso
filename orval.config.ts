@@ -81,13 +81,13 @@ const createConfig = (project: string, tags: string[] | RegExp[], mutationInvali
                     },
                 },
             },
-            mock: {generators: [{
+            mock: {
                 type: 'msw',
                 preferredContentType: 'application/json',
                 delay: () => process.env?.MSW_DELAY ? parseInt(process.env.MSW_DELAY) : 0,
                 delayFunctionLazyExecute: true,
                 arrayMin: 1,
-            }]},
+            },
             target: './endpoints',
             schemas: {
                 type: 'zod',

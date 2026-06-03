@@ -23,6 +23,7 @@ We will primarily rely on the following tools:
   - [Generating new files](#generating-new-files)
   - [Integrating React Query hooks](#integrating-react-query-hooks)
   - [Using zod schemas](#using-zod-schemas)
+  - [Integrating with formik](#integrating-with-formik)
   - [Testing](#testing)
     - [Integration testing (without a backend)](#integration-testing-without-a-backend)
     - [E2E Tests](#e2e-tests)
@@ -306,6 +307,65 @@ useApiValidationWorkflowsRetrieve(slug, {...otherQueryOptions})
 ### Using zod schemas 
 
 WIP
+
+### Integrating with formik
+
+Each generated endpoints comed with zod schemas that we can reuse into formik. 
+In order to achieve this, we'll use [zod-formik-adapter](#https://github.com/robertLichtnow/zod-formik-adapter) that allows us to convert zod schemas to formik compatible validation schemas.
+
+There is also a wrapper utility function `withFormikSubmitAsync` that you can use in the formik `save` method to automatically display errors from the backend.
+
+Here under an example:
+
+```typescript
+
+import React from 'react';
+import { Alert, Box } from '@mui/material';
+import {
+    ConfirmCancelModal,
+    makeFullModal,
+    useSafeIntl,
+} from 'bluesquare-components';
+import { Field, FormikProvider, useFormik } from 'formik';
+import { toFormikValidationSchema } from 'zod-formik-adapter';
+import {
+    AccountUpdateAIApiKeyRequest,
+    useApiAccountsAiApiKeyUpdate,
+} from 'Iaso/api/accounts';
+import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
+import PasswordInput from 'Iaso/components/forms/PasswordInput';
+import MESSAGES from 'Iaso/domains/accounts/messages';
+import { withFormikSubmitAsync } from 'Iaso/utils/forms';
+
+type Props = {
+    accountId: number;
+    isOpen: boolean;
+    closeDialog: () => void;
+};
+
+const EditAIApiKeyModal = ({ accountId, isOpen, closeDialog }: Props) => {
+    const { formatMessage } = useSafeIntl();
+    const { mutateAsync: saveAIApiKey } = useApiAccountsAiApiKeyUpdate({
+        mutation: {
+            ignoreErrorCodes: [400],
+        },
+    });
+    const formik = useFormik({
+        initialValues: {},
+        validationSchema: toFormikValidationSchema(
+            AccountUpdateAIApiKeyRequest,
+        ),
+        onSubmit: withFormikSubmitAsync(values =>
+            saveAIApiKey({
+                id: accountId,
+                data: values as AccountUpdateAIApiKeyRequest,
+            }),
+        ),
+    });
+    ...
+
+```
+
 
 ### Testing
 

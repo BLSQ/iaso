@@ -7,7 +7,7 @@
  */
 import { faker } from '@faker-js/faker';
 
-import { HttpResponse, http } from 'msw';
+import { HttpResponse, delay, http } from 'msw';
 import type { RequestHandlerOptions } from 'msw';
 
 import type {
@@ -113,6 +113,13 @@ export const getApiAccountFeatureFlagsListMockHandler = (
     return http.get(
         '*/api/account-feature-flags/',
         async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+            await delay(
+                (() =>
+                    process.env?.MSW_DELAY
+                        ? parseInt(process.env.MSW_DELAY)
+                        : 0)(),
+            );
+
             return HttpResponse.json(
                 overrideResponse !== undefined
                     ? typeof overrideResponse === 'function'
@@ -139,6 +146,13 @@ export const getApiAccountFeatureFlagsDropdownListMockHandler = (
     return http.get(
         '*/api/account-feature-flags/dropdown/',
         async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+            await delay(
+                (() =>
+                    process.env?.MSW_DELAY
+                        ? parseInt(process.env.MSW_DELAY)
+                        : 0)(),
+            );
+
             return HttpResponse.json(
                 overrideResponse !== undefined
                     ? typeof overrideResponse === 'function'

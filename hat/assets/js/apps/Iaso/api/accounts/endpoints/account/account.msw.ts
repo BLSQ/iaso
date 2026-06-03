@@ -7,7 +7,7 @@
  */
 import { faker } from '@faker-js/faker';
 
-import { HttpResponse, http } from 'msw';
+import { HttpResponse, delay, http } from 'msw';
 import type { RequestHandlerOptions } from 'msw';
 
 import { ModulesEnum } from '../../models';
@@ -312,6 +312,13 @@ export const getApiAccountsListMockHandler = (
     return http.get(
         '*/api/accounts/',
         async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+            await delay(
+                (() =>
+                    process.env?.MSW_DELAY
+                        ? parseInt(process.env.MSW_DELAY)
+                        : 0)(),
+            );
+
             return HttpResponse.json(
                 overrideResponse !== undefined
                     ? typeof overrideResponse === 'function'
@@ -336,6 +343,13 @@ export const getApiAccountsRetrieveMockHandler = (
     return http.get(
         '*/api/accounts/:id/',
         async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+            await delay(
+                (() =>
+                    process.env?.MSW_DELAY
+                        ? parseInt(process.env.MSW_DELAY)
+                        : 0)(),
+            );
+
             return HttpResponse.json(
                 overrideResponse !== undefined
                     ? typeof overrideResponse === 'function'
@@ -360,6 +374,12 @@ export const getApiAccountsUpdateMockHandler = (
     return http.put(
         '*/api/accounts/:id/',
         async (info: Parameters<Parameters<typeof http.put>[1]>[0]) => {
+            await delay(
+                (() =>
+                    process.env?.MSW_DELAY
+                        ? parseInt(process.env.MSW_DELAY)
+                        : 0)(),
+            );
             if (typeof overrideResponse === 'function') {
                 await overrideResponse(info);
             }
@@ -381,6 +401,12 @@ export const getApiAccountsPartialUpdateMockHandler = (
     return http.patch(
         '*/api/accounts/:id/',
         async (info: Parameters<Parameters<typeof http.patch>[1]>[0]) => {
+            await delay(
+                (() =>
+                    process.env?.MSW_DELAY
+                        ? parseInt(process.env.MSW_DELAY)
+                        : 0)(),
+            );
             if (typeof overrideResponse === 'function') {
                 await overrideResponse(info);
             }
@@ -402,6 +428,13 @@ export const getApiAccountsAiApiKeyRetrieveMockHandler = (
     return http.get(
         '*/api/accounts/:id/ai-api-key/',
         async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+            await delay(
+                (() =>
+                    process.env?.MSW_DELAY
+                        ? parseInt(process.env.MSW_DELAY)
+                        : 0)(),
+            );
+
             return HttpResponse.json(
                 overrideResponse !== undefined
                     ? typeof overrideResponse === 'function'
@@ -426,6 +459,12 @@ export const getApiAccountsAiApiKeyUpdateMockHandler = (
     return http.put(
         '*/api/accounts/:id/ai-api-key/',
         async (info: Parameters<Parameters<typeof http.put>[1]>[0]) => {
+            await delay(
+                (() =>
+                    process.env?.MSW_DELAY
+                        ? parseInt(process.env.MSW_DELAY)
+                        : 0)(),
+            );
             if (typeof overrideResponse === 'function') {
                 await overrideResponse(info);
             }
@@ -447,6 +486,12 @@ export const getApiAccountsAiApiKeyDestroyMockHandler = (
     return http.delete(
         '*/api/accounts/:id/ai-api-key/',
         async (info: Parameters<Parameters<typeof http.delete>[1]>[0]) => {
+            await delay(
+                (() =>
+                    process.env?.MSW_DELAY
+                        ? parseInt(process.env.MSW_DELAY)
+                        : 0)(),
+            );
             if (typeof overrideResponse === 'function') {
                 await overrideResponse(info);
             }
@@ -468,6 +513,13 @@ export const getApiAccountsCustomTranslationsRetrieveMockHandler = (
     return http.get(
         '*/api/accounts/:id/custom-translations/',
         async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+            await delay(
+                (() =>
+                    process.env?.MSW_DELAY
+                        ? parseInt(process.env.MSW_DELAY)
+                        : 0)(),
+            );
+
             return HttpResponse.json(
                 overrideResponse !== undefined
                     ? typeof overrideResponse === 'function'
@@ -492,6 +544,12 @@ export const getApiAccountsSetDefaultVersionUpdateMockHandler = (
     return http.put(
         '*/api/accounts/:id/set-default-version/',
         async (info: Parameters<Parameters<typeof http.put>[1]>[0]) => {
+            await delay(
+                (() =>
+                    process.env?.MSW_DELAY
+                        ? parseInt(process.env.MSW_DELAY)
+                        : 0)(),
+            );
             if (typeof overrideResponse === 'function') {
                 await overrideResponse(info);
             }
@@ -513,6 +571,12 @@ export const getApiAccountsSetDefaultVersionPartialUpdateMockHandler = (
     return http.patch(
         '*/api/accounts/:id/set-default-version/',
         async (info: Parameters<Parameters<typeof http.patch>[1]>[0]) => {
+            await delay(
+                (() =>
+                    process.env?.MSW_DELAY
+                        ? parseInt(process.env.MSW_DELAY)
+                        : 0)(),
+            );
             if (typeof overrideResponse === 'function') {
                 await overrideResponse(info);
             }
@@ -534,6 +598,13 @@ export const getApiAccountsMeRetrieveMockHandler = (
     return http.get(
         '*/api/accounts/me/',
         async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+            await delay(
+                (() =>
+                    process.env?.MSW_DELAY
+                        ? parseInt(process.env.MSW_DELAY)
+                        : 0)(),
+            );
+
             return HttpResponse.json(
                 overrideResponse !== undefined
                     ? typeof overrideResponse === 'function'
@@ -558,6 +629,12 @@ export const getApiAccountsSwitchCreateMockHandler = (
     return http.post(
         '*/api/accounts/switch/',
         async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+            await delay(
+                (() =>
+                    process.env?.MSW_DELAY
+                        ? parseInt(process.env.MSW_DELAY)
+                        : 0)(),
+            );
             if (typeof overrideResponse === 'function') {
                 await overrideResponse(info);
             }

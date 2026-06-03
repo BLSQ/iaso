@@ -408,6 +408,14 @@ export const useApiAccountsUpdateMutationOptions = <
                 queryKey: getApiAccountsListQueryKey(),
             });
             queryClient.invalidateQueries({
+                queryKey: getApiAccountsMeRetrieveQueryKey(),
+            });
+            queryClient.invalidateQueries({
+                queryKey: getApiAccountsCustomTranslationsRetrieveQueryKey(
+                    variables.id,
+                ),
+            });
+            queryClient.invalidateQueries({
                 queryKey: getApiAccountsRetrieveQueryKey(variables.id),
             });
         }
@@ -929,15 +937,19 @@ export const apiAccountsAiApiKeyDestroy = async (
 export const useApiAccountsAiApiKeyDestroyMutationOptions = <
     TError = unknown,
     TContext = unknown,
->(options?: {
-    mutation?: UseMutationOptions<
-        Awaited<ReturnType<typeof apiAccountsAiApiKeyDestroy>>,
-        TError,
-        { id: number; params?: ApiAccountsAiApiKeyDestroyParams },
-        TContext
-    >;
-    request?: SecondParameter<typeof customFetchInstance>;
-}): UseMutationOptions<
+>(
+    queryClient: QueryClient,
+    options?: {
+        mutation?: UseMutationOptions<
+            Awaited<ReturnType<typeof apiAccountsAiApiKeyDestroy>>,
+            TError,
+            { id: number; params?: ApiAccountsAiApiKeyDestroyParams },
+            TContext
+        >;
+        skipInvalidation?: boolean;
+        request?: SecondParameter<typeof customFetchInstance>;
+    },
+): UseMutationOptions<
     Awaited<ReturnType<typeof apiAccountsAiApiKeyDestroy>>,
     TError,
     { id: number; params?: ApiAccountsAiApiKeyDestroyParams },
@@ -961,9 +973,23 @@ export const useApiAccountsAiApiKeyDestroyMutationOptions = <
         return apiAccountsAiApiKeyDestroy(id, params, requestOptions);
     };
 
+    const onSuccess = (
+        data: Awaited<ReturnType<typeof apiAccountsAiApiKeyDestroy>>,
+        variables: { id: number; params?: ApiAccountsAiApiKeyDestroyParams },
+        context: TContext | undefined,
+    ) => {
+        if (!options?.skipInvalidation) {
+            queryClient.invalidateQueries({
+                queryKey: getApiAccountsAiApiKeyRetrieveQueryKey(variables.id),
+            });
+        }
+        mutationOptions?.onSuccess?.(data, variables, context);
+    };
+
     const customOptions = useCustomMutationOptions({
         ...mutationOptions,
         mutationFn,
+        onSuccess,
     });
 
     return customOptions;
@@ -985,6 +1011,7 @@ export const useApiAccountsAiApiKeyDestroy = <
         { id: number; params?: ApiAccountsAiApiKeyDestroyParams },
         TContext
     >;
+    skipInvalidation?: boolean;
     request?: SecondParameter<typeof customFetchInstance>;
 }): UseMutationResult<
     Awaited<ReturnType<typeof apiAccountsAiApiKeyDestroy>>,
@@ -992,7 +1019,13 @@ export const useApiAccountsAiApiKeyDestroy = <
     { id: number; params?: ApiAccountsAiApiKeyDestroyParams },
     TContext
 > => {
-    return useMutation(useApiAccountsAiApiKeyDestroyMutationOptions(options));
+    const backupQueryClient = useQueryClient();
+    return useMutation(
+        useApiAccountsAiApiKeyDestroyMutationOptions(
+            backupQueryClient,
+            options,
+        ),
+    );
 };
 export const getApiAccountsCustomTranslationsRetrieveUrl = (
     id: number,

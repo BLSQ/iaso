@@ -125,7 +125,7 @@ class InstancesViewSet(viewsets.ViewSet):
                     )
                 ),
             )
-        return queryset
+        return queryset.filter(form__deleted_at__isnull=True)
 
     def _filter_response_for_permissions(self, response):
         f"""Remove nfc_cards from entity data if user doesn't have "{CORE_STORAGE_PERMISSION}" ."""

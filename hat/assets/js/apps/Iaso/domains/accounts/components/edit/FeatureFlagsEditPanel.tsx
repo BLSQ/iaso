@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableRow } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { Field } from 'formik';
 import { ApiAccountFeatureFlagsDropdownListQueryResult } from 'Iaso/api/accountFeatureFlags';
-import { ArrayCheckboxInput } from 'Iaso/components/forms/ArrayChecboxInput';
+import { ArrayCheckboxInput } from 'Iaso/components/forms/ArrayCheckboxInput';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import MESSAGES from '../../messages';
 

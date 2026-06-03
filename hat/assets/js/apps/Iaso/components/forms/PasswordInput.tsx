@@ -6,14 +6,17 @@ type Props = {
     field?: Record<string, any>;
     form?: Record<string, any>;
     label?: string;
-    multiline?: boolean;
-} & Omit<TextFieldProps, 'type'>;
+} & Omit<
+    TextFieldProps,
+    'type' | 'multiline' | 'value' | 'error' | 'helperText' | 'fullWidth'
+>;
 
 const PasswordInput = ({
     field = {},
     form = {},
     label = '',
-    multiline = false,
+    size = 'medium',
+    variant = 'outlined',
     ...props
 }: Props) => {
     const value = field.value || '';
@@ -29,12 +32,12 @@ const PasswordInput = ({
         <TextField
             fullWidth
             label={label}
-            variant="outlined"
-            size="medium"
-            type={'password'}
+            variant={variant}
+            size={size}
             {...props}
             {...field}
-            multiline={multiline}
+            type={'password'}
+            multiline={false}
             value={value}
             error={displayError}
             helperText={displayError && get(form.errors, field.name)}

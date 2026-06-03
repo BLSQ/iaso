@@ -139,7 +139,7 @@ This ensures that:
 * your endpoint response matches the documented schema
 * regressions are caught early in backend tests
 
-### Utilities 
+### Utilities
 
 A Django management command is available to automatically generate an OpenAPI schema file.
 

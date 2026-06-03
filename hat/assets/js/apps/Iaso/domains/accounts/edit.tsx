@@ -55,10 +55,12 @@ export const AccountsEdit = () => {
     }, [data]);
     const redirectTo = useRedirectTo();
 
+    const redirectBackUrl: string = `${baseUrls.accountsDetail}/id/${params.id}/`;
+
     const { mutateAsync: save } = useApiAccountsUpdate({
         mutation: {
             onSuccess: () => {
-                redirectTo(`${baseUrls.accountsDetail}/id/${params.id}/`);
+                redirectTo(redirectBackUrl);
             },
             ignoreErrorCodes: [400],
         },
@@ -82,7 +84,11 @@ export const AccountsEdit = () => {
     if (generalLoading) {
         return (
             <>
-                <TopBar title={formatMessage(MESSAGES.editAccount)} />
+                <TopBar
+                    title={formatMessage(MESSAGES.editAccount)}
+                    goBack={() => redirectTo(redirectBackUrl)}
+                    displayBackButton
+                />
                 <LoadingSpinner />
             </>
         );
@@ -93,7 +99,11 @@ export const AccountsEdit = () => {
 
     return (
         <>
-            <TopBar title={formatMessage(MESSAGES.editAccount)} />
+            <TopBar
+                title={formatMessage(MESSAGES.editAccount)}
+                goBack={() => redirectTo(redirectBackUrl)}
+                displayBackButton
+            />
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 <FormikProvider value={formik}>
                     {formik.status && (
@@ -102,13 +112,13 @@ export const AccountsEdit = () => {
                         </Alert>
                     )}
                     <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
+                        <Grid item xs={12} md={6}>
                             <GeneralInfoEditPanel />
                             <FeatureFlagsEditPanel
                                 accountFeatureFlags={accountFeatureFlags}
                             />
                         </Grid>
-                        <Grid item xs={12} sm={6}>
+                        <Grid item xs={12} md={6}>
                             <ModulesEditPanel modules={modulesData} />
                         </Grid>
                         <Grid

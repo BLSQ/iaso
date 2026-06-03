@@ -1,18 +1,18 @@
 import React from 'react';
-import { Box } from '@mui/material';
-import { BoxProps } from '@mui/material/Box/Box';
+import { Grid, GridProps } from '@mui/material';
 
 type TabPanelProps = {
     children?: React.ReactNode;
     index: string;
     value: string;
-} & Omit<BoxProps, 'role' | 'hidden' | 'id' | 'aria-labelledby'>;
+} & Omit<GridProps, 'role' | 'hidden' | 'id' | 'aria-labelledby'>;
 
 export const CustomTabPanel = (props: TabPanelProps) => {
     const { children, value, index, ...other } = props;
 
     return (
-        <Box
+        <Grid
+            container
             role="tabpanel"
             hidden={value !== index}
             id={`account-tabpanel-${index}`}
@@ -20,6 +20,6 @@ export const CustomTabPanel = (props: TabPanelProps) => {
             {...other}
         >
             {value === index && children}
-        </Box>
+        </Grid>
     );
 };

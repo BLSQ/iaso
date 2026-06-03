@@ -6,6 +6,7 @@ import {
     commonStyles,
     LinkButton,
     LoadingSpinner,
+    useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
 import { useApiAccountFeatureFlagsDropdownList } from 'Iaso/api/accountFeatureFlags';
@@ -78,10 +79,17 @@ const AccountsDetails = () => {
         setTab(newValue);
     };
 
+    const baseRedirectUrl = `${baseUrls.accounts}`;
+    const redirectTo = useRedirectTo();
+
     if (generalLoading) {
         return (
             <>
-                <TopBar title={formatMessage(MESSAGES.accounts)} />
+                <TopBar
+                    title={formatMessage(MESSAGES.accounts)}
+                    displayBackButton
+                    goBack={() => redirectTo(baseRedirectUrl)}
+                />
                 <LoadingSpinner />
             </>
         );
@@ -93,7 +101,11 @@ const AccountsDetails = () => {
 
     return (
         <>
-            <TopBar title={formatMessage(MESSAGES.accounts)} />
+            <TopBar
+                title={formatMessage(MESSAGES.accounts)}
+                displayBackButton
+                goBack={() => redirectTo(baseRedirectUrl)}
+            />
 
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 <Grid container spacing={2} direction={'column'}>
@@ -130,13 +142,9 @@ const AccountsDetails = () => {
                         <CustomTabPanel
                             index={'general'}
                             value={tab}
-                            sx={{
-                                display: 'flex',
-                                flexDirection: 'row',
-                                gap: 2,
-                            }}
+                            spacing={2}
                         >
-                            <Grid xs={12} sm={6}>
+                            <Grid xs={12} md={6} item>
                                 <GeneralInfoPanel
                                     accountId={accountId}
                                     account={account}
@@ -148,7 +156,7 @@ const AccountsDetails = () => {
                                     account={account}
                                 />
                             </Grid>
-                            <Grid xs={12} sm={6}>
+                            <Grid xs={12} md={6} item>
                                 <ModulePanel
                                     accountId={accountId}
                                     account={account}

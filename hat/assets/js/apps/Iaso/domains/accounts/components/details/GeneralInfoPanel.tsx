@@ -32,33 +32,33 @@ export const GeneralInfoPanel = ({ accountId, account, AIApiKey }: Props) => {
                 <TableBody>
                     <Row
                         field={{
-                            label: 'Name',
+                            label: formatMessage(MESSAGES.name),
                             value: account.name,
                         }}
                     />
                     <Row
                         field={{
-                            label: 'Created at',
+                            label: formatMessage(MESSAGES.created_at),
                             value: account.created_at,
                         }}
                     />
 
                     <Row
                         field={{
-                            label: 'User Manual Path',
+                            label: formatMessage(MESSAGES.userManualPath),
                             value: account?.user_manual_path,
                         }}
                     />
                     <Row
                         field={{
-                            label: 'Forum path',
+                            label: formatMessage(MESSAGES.forumPath),
                             value: account?.forum_path,
                         }}
                     />
                     {userHasAccessToModule('FORM_AI', user) && (
                         <Row
                             field={{
-                                label: 'Anthropic api key',
+                                label: formatMessage(MESSAGES.anthropicAPIKey),
                                 value: (
                                     <Box
                                         sx={{
@@ -95,11 +95,17 @@ export const GeneralInfoPanel = ({ accountId, account, AIApiKey }: Props) => {
                     )}
                     <Row
                         field={{
-                            label: 'Force strong password',
+                            label: formatMessage(MESSAGES.forceStrongPassword),
                             value: account?.enforce_password_validation ? (
-                                <CheckIcon color={'success'} />
+                                <CheckIcon
+                                    color={'success'}
+                                    aria-label={formatMessage(MESSAGES.yes)}
+                                />
                             ) : (
-                                <ClearIcon color={'error'} />
+                                <ClearIcon
+                                    color={'error'}
+                                    aria-label={formatMessage(MESSAGES.no)}
+                                />
                             ),
                         }}
                     />

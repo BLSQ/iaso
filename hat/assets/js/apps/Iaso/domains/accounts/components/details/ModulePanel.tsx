@@ -14,7 +14,8 @@ import { useSafeIntl } from 'bluesquare-components';
 import { ApiAccountsRetrieveQueryResult } from 'Iaso/api/accounts';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import MESSAGES from '../../messages';
-// todo : modules type inference
+
+// todo : modules type inference once generated through orval
 
 type Props = {
     accountId: number;
@@ -35,8 +36,8 @@ export const ModulePanel = ({ accountId, modules, account }: Props) => {
                 <TableHead>
                     <TableRow>
                         <TableCell sx={{ width: 75 }}></TableCell>
-                        <TableCell>Name</TableCell>
-                        <TableCell>Status</TableCell>
+                        <TableCell>{formatMessage(MESSAGES.name)}</TableCell>
+                        <TableCell>{formatMessage(MESSAGES.status)}</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -46,9 +47,9 @@ export const ModulePanel = ({ accountId, modules, account }: Props) => {
                                 <TableCell align={'center'}>
                                     {value === 'FORM_AI' && (
                                         <Tooltip
-                                            title={
-                                                'Make sure to provide an AI api key'
-                                            }
+                                            title={formatMessage(
+                                                MESSAGES.formAIModuleTooltipTitle,
+                                            )}
                                         >
                                             <InfoIcon color="action" />
                                         </Tooltip>
@@ -57,9 +58,19 @@ export const ModulePanel = ({ accountId, modules, account }: Props) => {
                                 <TableCell>{label}</TableCell>
                                 <TableCell>
                                     {account?.modules?.includes(value) ? (
-                                        <CheckIcon color={'success'} />
+                                        <CheckIcon
+                                            color={'success'}
+                                            aria-label={formatMessage(
+                                                MESSAGES.selected,
+                                            )}
+                                        />
                                     ) : (
-                                        <ClearIcon color={'error'} />
+                                        <ClearIcon
+                                            color={'error'}
+                                            aria-label={formatMessage(
+                                                MESSAGES.notSelected,
+                                            )}
+                                        />
                                     )}
                                 </TableCell>
                             </TableRow>

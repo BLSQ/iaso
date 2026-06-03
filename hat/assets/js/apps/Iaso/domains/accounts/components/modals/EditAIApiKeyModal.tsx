@@ -29,10 +29,14 @@ const EditAIApiKeyModal = ({ accountId, isOpen, closeDialog }: Props) => {
         validationSchema: toFormikValidationSchema(
             AccountUpdateAIApiKeyRequest,
         ),
-        onSubmit: values => saveAIApiKey({ id: accountId, data: values }),
+        onSubmit: values =>
+            saveAIApiKey({
+                id: accountId,
+                data: values as AccountUpdateAIApiKeyRequest,
+            }),
     });
 
-    const allowConfirm = formik.isValid && formik.dirty;
+    const allowConfirm = formik.isValid && formik.dirty && !!accountId;
 
     return (
         <FormikProvider value={formik}>
@@ -53,7 +57,7 @@ const EditAIApiKeyModal = ({ accountId, isOpen, closeDialog }: Props) => {
             >
                 <Box>
                     <Field
-                        label={'AI API key'}
+                        label={formatMessage(MESSAGES.aiApiKeyLabel)}
                         name={'anthropic_api_key'}
                         component={PasswordInput}
                         margin={'normal'}

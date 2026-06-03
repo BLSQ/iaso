@@ -113,11 +113,13 @@ const AccountsDetails = () => {
                         <Tabs
                             value={tab}
                             onChange={handleChange}
-                            aria-label="Account tabs"
+                            aria-label={formatMessage(MESSAGES.accountTabs)}
                             sx={{ mb: 3 }}
                         >
                             <Tab
-                                label="General"
+                                label={formatMessage(
+                                    MESSAGES.accountTabGeneralTitle,
+                                )}
                                 {...a11yProps('general')}
                                 value={'general'}
                                 sx={{

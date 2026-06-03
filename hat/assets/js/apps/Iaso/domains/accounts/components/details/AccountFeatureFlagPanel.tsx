@@ -35,8 +35,8 @@ export const AccountFeatureFlagPanel = ({
             <Table>
                 <TableHead>
                     <TableRow>
-                        <TableCell>Name</TableCell>
-                        <TableCell>Status</TableCell>
+                        <TableCell>{formatMessage(MESSAGES.name)}</TableCell>
+                        <TableCell>{formatMessage(MESSAGES.status)}</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -48,9 +48,19 @@ export const AccountFeatureFlagPanel = ({
                                     {account?.feature_flags
                                         ?.map(({ code }) => code)
                                         ?.includes(value) ? (
-                                        <CheckIcon color={'success'} />
+                                        <CheckIcon
+                                            color={'success'}
+                                            aria-label={formatMessage(
+                                                MESSAGES.selected,
+                                            )}
+                                        />
                                     ) : (
-                                        <ClearIcon color={'error'} />
+                                        <ClearIcon
+                                            color={'error'}
+                                            aria-label={formatMessage(
+                                                MESSAGES.notSelected,
+                                            )}
+                                        />
                                     )}
                                 </TableCell>
                             </TableRow>

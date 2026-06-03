@@ -10,7 +10,7 @@ export const GeneralInfoEditPanel = () => {
     const { formatMessage } = useSafeIntl();
 
     return (
-        <WidgetPaper title={'General'}>
+        <WidgetPaper title={formatMessage(MESSAGES.generalInfoTitle)}>
             <Box m={2}>
                 <Field
                     label={formatMessage(MESSAGES.name)}
@@ -20,19 +20,19 @@ export const GeneralInfoEditPanel = () => {
                     margin={'normal'}
                 />
                 <Field
-                    label={'User manual path'}
+                    label={formatMessage(MESSAGES.userManualPath)}
                     name="user_manual_path"
                     component={TextInput}
                     margin={'normal'}
                 />
                 <Field
-                    label={'Forum path'}
+                    label={formatMessage(MESSAGES.forumPath)}
                     name={'forum_path'}
                     component={TextInput}
                     margin={'normal'}
                 />
                 <Field
-                    label={'Force strong password'}
+                    label={formatMessage(MESSAGES.forceStrongPassword)}
                     name={'enforce_password_validation'}
                     component={BooleanInput}
                     margin={'normal'}

@@ -1,18 +1,22 @@
 import React from 'react';
 import { Table, TableBody, TableCell, TableRow } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
 import { Field } from 'formik';
 import { ApiAccountFeatureFlagsDropdownListQueryResult } from 'Iaso/api/accountFeatureFlags';
 import { ArrayCheckboxInput } from 'Iaso/components/forms/ArrayChecboxInput';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
+import MESSAGES from '../../messages';
 
 type Props = {
     accountFeatureFlags?: ApiAccountFeatureFlagsDropdownListQueryResult;
 };
 
 export const FeatureFlagsEditPanel = ({ accountFeatureFlags }: Props) => {
+    const { formatMessage } = useSafeIntl();
+
     return (
         <WidgetPaper
-            title={'Feature flags'}
+            title={formatMessage(MESSAGES.featureFlagsTitle)}
             expandable={true}
             id={'account-feature-flags'}
         >

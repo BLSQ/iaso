@@ -1,13 +1,21 @@
 import React from 'react';
 import { Table, TableBody, TableCell, TableRow } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
 import { Field } from 'formik';
 import { ArrayCheckboxInput } from 'Iaso/components/forms/ArrayChecboxInput';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
+import MESSAGES from '../../messages';
 
 //todo: modules props
 export const ModulesEditPanel = ({ modules }) => {
+    const { formatMessage } = useSafeIntl();
+
     return (
-        <WidgetPaper title={'Modules'} expandable={true} id={'edit-modules'}>
+        <WidgetPaper
+            title={formatMessage(MESSAGES.modulesTitle)}
+            expandable={true}
+            id={'edit-modules'}
+        >
             <Table>
                 <TableBody>
                     {modules?.map(({ value, label }) => {

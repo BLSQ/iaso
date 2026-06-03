@@ -4,7 +4,6 @@ import { makeStyles } from '@mui/styles';
 import {
     commonStyles,
     LoadingSpinner,
-    PageError,
     useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
@@ -16,6 +15,7 @@ import {
     useApiAccountsRetrieve,
     useApiAccountsUpdate,
 } from 'Iaso/api/accounts';
+import Page404 from 'Iaso/components/errors/Page404';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import { FeatureFlagsEditPanel } from 'Iaso/domains/accounts/components/edit/FeatureFlagsEditPanel';
@@ -77,6 +77,8 @@ export const AccountsEdit = () => {
     const generalLoading =
         isLoading || isLoadingModules || isLoadingAccountFeatureFlags;
 
+    const allowConfirm = formik.isValid && formik.dirty && !!accountId;
+
     if (generalLoading) {
         return (
             <>
@@ -86,7 +88,7 @@ export const AccountsEdit = () => {
         );
     }
     if (!generalLoading && !data) {
-        return <PageError errorCode={'404'} iconColor={'error'} />;
+        return <Page404 displayTopBar={true} />;
     }
 
     return (
@@ -123,15 +125,18 @@ export const AccountsEdit = () => {
                                 color={'error'}
                                 href={`/dashboard/${baseUrls.accountsDetail}/id/${params.id}/`}
                             >
-                                Cancel
+                                {formatMessage(MESSAGES.cancel)}
                             </Button>
                             <Button
                                 variant="contained"
                                 type={'submit'}
                                 color={'success'}
-                                onClick={() => formik.handleSubmit()}
+                                disabled={!allowConfirm}
+                                onClick={() =>
+                                    allowConfirm && formik.handleSubmit()
+                                }
                             >
-                                Submit
+                                {formatMessage(MESSAGES.save)}
                             </Button>
                         </Grid>
                     </Grid>

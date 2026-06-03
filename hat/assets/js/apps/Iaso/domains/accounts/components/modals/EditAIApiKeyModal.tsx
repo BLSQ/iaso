@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box } from '@mui/material';
+import { Alert, Box } from '@mui/material';
 import {
     ConfirmCancelModal,
     makeFullModal,
@@ -14,6 +14,7 @@ import {
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import PasswordInput from 'Iaso/components/forms/PasswordInput';
 import MESSAGES from 'Iaso/domains/accounts/messages';
+import { withFormikSubmitAsync } from 'Iaso/utils/forms';
 
 type Props = {
     accountId: number;
@@ -23,17 +24,22 @@ type Props = {
 
 const EditAIApiKeyModal = ({ accountId, isOpen, closeDialog }: Props) => {
     const { formatMessage } = useSafeIntl();
-    const { mutateAsync: saveAIApiKey } = useApiAccountsAiApiKeyUpdate();
+    const { mutateAsync: saveAIApiKey } = useApiAccountsAiApiKeyUpdate({
+        mutation: {
+            ignoreErrorCodes: [400],
+        },
+    });
     const formik = useFormik({
         initialValues: {},
         validationSchema: toFormikValidationSchema(
             AccountUpdateAIApiKeyRequest,
         ),
-        onSubmit: values =>
+        onSubmit: withFormikSubmitAsync(values =>
             saveAIApiKey({
                 id: accountId,
                 data: values as AccountUpdateAIApiKeyRequest,
             }),
+        ),
     });
 
     const allowConfirm = formik.isValid && formik.dirty && !!accountId;
@@ -56,6 +62,11 @@ const EditAIApiKeyModal = ({ accountId, isOpen, closeDialog }: Props) => {
                 cancelMessage={MESSAGES.cancel}
             >
                 <Box>
+                    {formik.status && (
+                        <Alert severity={'error'} sx={{ mb: 2 }}>
+                            {formik.status}
+                        </Alert>
+                    )}
                     <Field
                         label={formatMessage(MESSAGES.aiApiKeyLabel)}
                         name={'anthropic_api_key'}

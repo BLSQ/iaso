@@ -7,6 +7,7 @@ from django.db import models
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils.safestring import mark_safe
+from django.utils.translation import gettext_lazy as _
 from translated_fields import TranslatedFieldAdmin
 
 from iaso.admin import IasoJSONEditorWidget
@@ -15,6 +16,9 @@ from plugins.polio.models.base import VaccineStockHistory
 
 from .budget.models import BudgetProcess, BudgetStep, BudgetStepFile, BudgetStepLink, MailTemplate, WorkflowModel
 from .models import (
+    MISSING_CAMPAIGN_LABEL,
+    ROUND_DEPRECATED_VACCINE_MANAGEMENT_FIELD_NAMES,
+    ROUND_DEPRECATED_VACCINE_MANAGEMENT_HELP,
     Campaign,
     CampaignGroup,
     CampaignType,
@@ -41,6 +45,7 @@ from .models import (
     VaccineRequestForm,
     VaccineStock,
     create_polio_notifications_async,
+    format_round_campaign_obr_name,
 )
 from .models.performance_thresholds import PerformanceThresholds
 
@@ -266,12 +271,83 @@ class EarmarkedStockAdmin(admin.ModelAdmin):
     model = EarmarkedStock
 
 
+_ROUND_EVALUATION_FIELDS = (
+    "mop_up_started_at",
+    "mop_up_ended_at",
+    "im_started_at",
+    "im_ended_at",
+    "lqas_started_at",
+    "lqas_ended_at",
+    "im_percentage_children_missed_in_household",
+    "im_percentage_children_missed_out_household",
+    "im_percentage_children_missed_in_plus_out_household",
+    "awareness_of_campaign_planning",
+    "main_awareness_problem",
+    "lqas_district_passing",
+    "lqas_district_failing",
+)
+
+
 @admin.register(Round)
 class RoundAdmin(admin.ModelAdmin):
-    model = Round
-    raw_id_fields = ("campaign",)
-    list_display = ["campaign", "number"]
-    list_filter = ["campaign"]
+    list_display = ("id", "get_obr_name", "number", "started_at", "ended_at", "on_hold")
+    list_display_links = ("get_obr_name", "number")
+    list_filter = ("campaign", "on_hold")
+    search_fields = ("campaign__obr_name", "number")
+    ordering = ("campaign__obr_name", "number")
+    raw_id_fields = ("campaign", "budget_process")
+    readonly_fields = ("id",) + ROUND_DEPRECATED_VACCINE_MANAGEMENT_FIELD_NAMES
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "campaign",
+                    "number",
+                    "started_at",
+                    "ended_at",
+                    "on_hold",
+                    "is_planned",
+                    "budget_process",
+                    "age_min",
+                    "age_max",
+                    "age_type",
+                    "target_population",
+                    "percentage_covered_target_population",
+                    "doses_requested",
+                    "cost",
+                ),
+            },
+        ),
+        (_("Evaluation (LQAS/IM)"), {"classes": ("collapse",), "fields": _ROUND_EVALUATION_FIELDS}),
+        (
+            _("Preparedness"),
+            {"classes": ("collapse",), "fields": ("preparedness_spreadsheet_url", "preparedness_sync_status")},
+        ),
+        (
+            _("Deprecated – round-level vaccine management"),
+            {
+                "classes": ("collapse",),
+                "description": ROUND_DEPRECATED_VACCINE_MANAGEMENT_HELP,
+                "fields": ROUND_DEPRECATED_VACCINE_MANAGEMENT_FIELD_NAMES,
+            },
+        ),
+    )
+
+    @admin.display(
+        description="Campaign (OBR)",
+        ordering="campaign__obr_name",
+        empty_value=MISSING_CAMPAIGN_LABEL,
+    )
+    def get_obr_name(self, obj):
+        return format_round_campaign_obr_name(obj)
+
+    def get_search_results(self, request, queryset, search_term):
+        queryset, use_distinct = super().get_search_results(request, queryset, search_term)
+        return queryset.select_related("campaign"), use_distinct
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("campaign")
 
 
 @admin.register(ReasonForDelay)
@@ -330,14 +406,13 @@ class NotificationAdmin(admin.ModelAdmin):
 
 @admin.register(VaccineStockHistory)
 class VaccineStockHistoryAdmin(admin.ModelAdmin):
-    list_display = ("get_campaign_name", "get_round_number", "round", "get_vaccine_name", "get_country")
+    list_display = ("get_campaign_name", "get_round_number", "get_vaccine_name", "get_country")
+    autocomplete_fields = ("round",)
     # list_filter = ("get_country", "get_vaccine_name","get_campaign_name")
 
-    @admin.display(description="Campaign name")
+    @admin.display(description="Campaign name", empty_value=MISSING_CAMPAIGN_LABEL)
     def get_campaign_name(self, obj):
-        if obj.round:
-            return obj.round.campaign.obr_name
-        return None
+        return format_round_campaign_obr_name(obj.round)
 
     @admin.display(description="Round number")
     def get_round_number(self, obj):
@@ -358,7 +433,15 @@ class VaccineStockHistoryAdmin(admin.ModelAdmin):
         return None
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related("round", "vaccine_stock", "vaccine_stock__country")
+        return (
+            super()
+            .get_queryset(request)
+            .select_related(
+                "round__campaign",
+                "vaccine_stock",
+                "vaccine_stock__country",
+            )
+        )
 
 
 class RoundAdminInline(admin.TabularInline):
@@ -366,8 +449,15 @@ class RoundAdminInline(admin.TabularInline):
     extra = 0
     show_change_link = True
     can_delete = False
-    fields = ("id", "started_at", "number", "campaign")
-    readonly_fields = ("id", "started_at", "number", "campaign")
+    fields = ("get_obr_name", "number", "started_at", "ended_at", "on_hold")
+    readonly_fields = fields
+
+    @admin.display(description="Campaign (OBR)", empty_value=MISSING_CAMPAIGN_LABEL)
+    def get_obr_name(self, obj):
+        return format_round_campaign_obr_name(obj)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("campaign")
 
 
 class BudgetStepAdminInline(admin.TabularInline):
@@ -397,12 +487,33 @@ class SubActivityScopeInline(admin.StackedInline):
 class SubActivityAdmin(admin.ModelAdmin):
     list_display = (
         "name",
+        "get_campaign_obr_name",
+        "get_round_number",
         "start_date",
         "end_date",
     )
+    list_display_links = ("name",)
+    search_fields = ("name", "round__campaign__obr_name", "round__number")
     fields = ("name", "start_date", "end_date", "round")
-    raw_id_fields = ("round",)
+    autocomplete_fields = ("round",)
     inlines = [SubActivityScopeInline]
+
+    @admin.display(
+        description="Campaign (OBR)",
+        ordering="round__campaign__obr_name",
+        empty_value=MISSING_CAMPAIGN_LABEL,
+    )
+    def get_campaign_obr_name(self, obj):
+        return format_round_campaign_obr_name(obj.round)
+
+    @admin.display(description="Round", ordering="round__number")
+    def get_round_number(self, obj):
+        if obj.round_id and obj.round.number is not None:
+            return obj.round.number
+        return MISSING_CAMPAIGN_LABEL
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("round__campaign")
 
     def save_related(self, request, form, formsets, change):
         for formset in formsets:
@@ -440,7 +551,8 @@ class ChronogramAdmin(TranslatedFieldAdmin, admin.ModelAdmin):
     list_display = ("pk", "obr_name", "created_at")
     list_display_links = ("pk", "obr_name")
     inlines = [ChronogramTaskAdminInline]
-    raw_id_fields = ("round", "created_by", "updated_by")
+    autocomplete_fields = ("round",)
+    raw_id_fields = ("created_by", "updated_by")
     readonly_fields = (
         "created_at",
         "created_by",
@@ -450,9 +562,13 @@ class ChronogramAdmin(TranslatedFieldAdmin, admin.ModelAdmin):
     )
     search_fields = ("pk", "round__campaign__obr_name")
 
-    @admin.display(empty_value="")
+    @admin.display(
+        description="Campaign (OBR)",
+        ordering="round__campaign__obr_name",
+        empty_value=MISSING_CAMPAIGN_LABEL,
+    )
     def obr_name(self, obj):
-        return obj.round.campaign.obr_name
+        return format_round_campaign_obr_name(obj.round)
 
     def get_queryset(self, request):
         return super().get_queryset(request).valid().select_related("round__campaign", "created_by", "updated_by")

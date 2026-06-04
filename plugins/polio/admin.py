@@ -4,6 +4,7 @@ from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin import widgets
 from django.db import models
+from django.db.models import Count
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils.safestring import mark_safe
@@ -45,9 +46,47 @@ from .models import (
     VaccineRequestForm,
     VaccineStock,
     create_polio_notifications_async,
+    format_campaign_country,
+    format_campaign_obr_name,
     format_round_campaign_obr_name,
+    format_vaccine_stock_country,
+    format_vaccine_stock_vaccine,
 )
 from .models.performance_thresholds import PerformanceThresholds
+
+
+class VaccineStockAdminDisplayMixin:
+    @admin.display(description="Country", ordering="vaccine_stock__country__name", empty_value=MISSING_CAMPAIGN_LABEL)
+    def get_country(self, obj):
+        return format_vaccine_stock_country(obj.vaccine_stock)
+
+    @admin.display(description="Vaccine", ordering="vaccine_stock__vaccine", empty_value=MISSING_CAMPAIGN_LABEL)
+    def get_vaccine(self, obj):
+        return format_vaccine_stock_vaccine(obj.vaccine_stock)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("vaccine_stock__country")
+
+
+class CampaignRoundVaccineStockAdminDisplayMixin(VaccineStockAdminDisplayMixin):
+    def _alternate_campaign_name(self, obj):
+        return ""
+
+    @admin.display(description="Campaign (OBR)", ordering="campaign__obr_name", empty_value=MISSING_CAMPAIGN_LABEL)
+    def get_campaign_obr_name(self, obj):
+        return format_campaign_obr_name(
+            obj.campaign if obj.campaign_id else None,
+            non_obr_name=self._alternate_campaign_name(obj),
+        )
+
+    @admin.display(description="Round", ordering="round__number", empty_value=MISSING_CAMPAIGN_LABEL)
+    def get_round_number(self, obj):
+        if obj.round_id and obj.round.number is not None:
+            return obj.round.number
+        return MISSING_CAMPAIGN_LABEL
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("campaign", "round")
 
 
 class IntegratedCampaignsInline(admin.TabularInline):
@@ -234,7 +273,46 @@ class VaccineRequestFormAdmin(admin.ModelAdmin):
     form = VaccineRequestAdminForm
     inlines = [VaccinePreAlertAdminInline, VaccineArrivalReportAdminInline]
     readonly_fields = ["created_at", "updated_at"]
-    list_display = ["campaign", "get_country", "count_pre_alerts", "count_arrival_reports", "created_at"]
+    list_display = (
+        "get_campaign_obr_name",
+        "get_country",
+        "vaccine_type",
+        "vrf_type",
+        "get_pre_alert_count",
+        "get_arrival_report_count",
+        "created_at",
+    )
+    list_display_links = ("get_campaign_obr_name",)
+    search_fields = ("campaign__obr_name", "vaccine_type")
+    list_filter = ("vrf_type", "vaccine_type")
+    raw_id_fields = ("campaign",)
+
+    @admin.display(description="Campaign (OBR)", ordering="campaign__obr_name", empty_value=MISSING_CAMPAIGN_LABEL)
+    def get_campaign_obr_name(self, obj):
+        return format_campaign_obr_name(obj.campaign if obj.campaign_id else None)
+
+    @admin.display(description="Country", ordering="campaign__country__name", empty_value=MISSING_CAMPAIGN_LABEL)
+    def get_country(self, obj):
+        return format_campaign_country(obj.campaign if obj.campaign_id else None)
+
+    @admin.display(description="Pre-alerts")
+    def get_pre_alert_count(self, obj):
+        return getattr(obj, "_pre_alert_count", 0) or 0
+
+    @admin.display(description="Arrival reports")
+    def get_arrival_report_count(self, obj):
+        return getattr(obj, "_arrival_report_count", 0) or 0
+
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .select_related("campaign", "campaign__country")
+            .annotate(
+                _pre_alert_count=Count("vaccineprealert", distinct=True),
+                _arrival_report_count=Count("vaccinearrivalreport", distinct=True),
+            )
+        )
 
     def save_related(self, request, form, formsets, change):
         for formset in formsets:
@@ -252,23 +330,100 @@ class VaccineStockAdmin(admin.ModelAdmin):
 
 
 @admin.register(OutgoingStockMovement)
-class OutgoingStockMovementAdmin(admin.ModelAdmin):
-    model = OutgoingStockMovement
+class OutgoingStockMovementAdmin(CampaignRoundVaccineStockAdminDisplayMixin, admin.ModelAdmin):
+    list_display = (
+        "id",
+        "get_campaign_obr_name",
+        "get_round_number",
+        "get_country",
+        "get_vaccine",
+        "status",
+        "report_date",
+        "created_at",
+    )
+    list_display_links = ("id", "get_campaign_obr_name")
+    search_fields = (
+        "campaign__obr_name",
+        "non_obr_name",
+        "round__number",
+        "vaccine_stock__country__name",
+        "vaccine_stock__vaccine",
+    )
+    list_filter = ("status",)
+    autocomplete_fields = ("round",)
+    raw_id_fields = ("campaign", "vaccine_stock")
+    readonly_fields = ("created_at", "updated_at")
+    date_hierarchy = "report_date"
+
+    def _alternate_campaign_name(self, obj):
+        return obj.non_obr_name
 
 
 @admin.register(DestructionReport)
-class DestructionReport(admin.ModelAdmin):
-    model = DestructionReport
+class DestructionReportAdmin(VaccineStockAdminDisplayMixin, admin.ModelAdmin):
+    list_display = (
+        "id",
+        "get_country",
+        "get_vaccine",
+        "destruction_report_date",
+        "unusable_vials_destroyed",
+        "rrt_destruction_report_reception_date",
+        "created_at",
+    )
+    list_display_links = ("id",)
+    search_fields = ("vaccine_stock__country__name", "vaccine_stock__vaccine", "action")
+    raw_id_fields = ("vaccine_stock",)
+    readonly_fields = ("created_at", "updated_at")
+    date_hierarchy = "destruction_report_date"
 
 
 @admin.register(IncidentReport)
-class IncidentReport(admin.ModelAdmin):
-    model = IncidentReport
+class IncidentReportAdmin(VaccineStockAdminDisplayMixin, admin.ModelAdmin):
+    list_display = (
+        "id",
+        "get_country",
+        "get_vaccine",
+        "stock_correction",
+        "title",
+        "date_of_incident_report",
+        "created_at",
+    )
+    list_display_links = ("id", "title")
+    search_fields = ("vaccine_stock__country__name", "vaccine_stock__vaccine", "title")
+    list_filter = ("stock_correction",)
+    raw_id_fields = ("vaccine_stock",)
+    readonly_fields = ("created_at", "updated_at")
+    date_hierarchy = "date_of_incident_report"
 
 
 @admin.register(EarmarkedStock)
-class EarmarkedStockAdmin(admin.ModelAdmin):
-    model = EarmarkedStock
+class EarmarkedStockAdmin(CampaignRoundVaccineStockAdminDisplayMixin, admin.ModelAdmin):
+    list_display = (
+        "id",
+        "get_campaign_obr_name",
+        "get_round_number",
+        "get_country",
+        "get_vaccine",
+        "earmarked_stock_type",
+        "vials_earmarked",
+        "created_at",
+    )
+    list_display_links = ("id", "get_campaign_obr_name")
+    search_fields = (
+        "campaign__obr_name",
+        "temporary_campaign_name",
+        "round__number",
+        "vaccine_stock__country__name",
+        "vaccine_stock__vaccine",
+    )
+    list_filter = ("earmarked_stock_type",)
+    autocomplete_fields = ("round",)
+    raw_id_fields = ("campaign", "vaccine_stock", "form_a")
+    readonly_fields = ("created_at", "updated_at")
+    date_hierarchy = "created_at"
+
+    def _alternate_campaign_name(self, obj):
+        return obj.temporary_campaign_name
 
 
 _ROUND_EVALUATION_FIELDS = (
@@ -414,23 +569,19 @@ class VaccineStockHistoryAdmin(admin.ModelAdmin):
     def get_campaign_name(self, obj):
         return format_round_campaign_obr_name(obj.round)
 
-    @admin.display(description="Round number")
+    @admin.display(description="Round number", ordering="round__number", empty_value=MISSING_CAMPAIGN_LABEL)
     def get_round_number(self, obj):
-        if obj.round:
+        if obj.round_id and obj.round.number is not None:
             return obj.round.number
-        return None
+        return MISSING_CAMPAIGN_LABEL
 
-    @admin.display(description="Vaccine")
+    @admin.display(description="Vaccine", ordering="vaccine_stock__vaccine", empty_value=MISSING_CAMPAIGN_LABEL)
     def get_vaccine_name(self, obj):
-        if obj.round:
-            return obj.vaccine_stock.vaccine
-        return None
+        return format_vaccine_stock_vaccine(obj.vaccine_stock)
 
-    @admin.display(description="Country")
+    @admin.display(description="Country", ordering="vaccine_stock__country__name", empty_value=MISSING_CAMPAIGN_LABEL)
     def get_country(self, obj):
-        if obj.round:
-            return obj.vaccine_stock.country.name
-        return None
+        return format_vaccine_stock_country(obj.vaccine_stock)
 
     def get_queryset(self, request):
         return (

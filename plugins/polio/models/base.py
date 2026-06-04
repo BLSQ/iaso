@@ -390,6 +390,39 @@ def format_round_campaign_obr_name(round_obj, *, empty=MISSING_CAMPAIGN_LABEL):
     return campaign.obr_name
 
 
+def format_campaign_obr_name(campaign=None, *, non_obr_name="", empty=MISSING_CAMPAIGN_LABEL):
+    """Campaign OBR or alternative name (Form A may use non_obr_name when campaign is unset)."""
+    if campaign is not None:
+        return campaign.obr_name
+    if non_obr_name:
+        return non_obr_name
+    return empty
+
+
+def format_campaign_country(campaign, *, empty=MISSING_CAMPAIGN_LABEL):
+    if campaign is None or not campaign.country_id:
+        return empty
+    country = campaign.country
+    if country is None:
+        return empty
+    return country.name
+
+
+def format_vaccine_stock_country(vaccine_stock, *, empty=MISSING_CAMPAIGN_LABEL):
+    if vaccine_stock is None or not vaccine_stock.country_id:
+        return empty
+    country = vaccine_stock.country
+    if country is None:
+        return empty
+    return country.name
+
+
+def format_vaccine_stock_vaccine(vaccine_stock, *, empty=MISSING_CAMPAIGN_LABEL):
+    if vaccine_stock is None:
+        return empty
+    return vaccine_stock.vaccine
+
+
 ROUND_DEPRECATED_VACCINE_MANAGEMENT_FIELD_NAMES = (
     "date_signed_vrf_received",
     "date_destruction",
@@ -1790,10 +1823,15 @@ class EarmarkedStock(models.Model):
         ]
 
     def __str__(self):
-        if self.campaign and self.round:
-            return f"Earmarked {self.vials_earmarked} vials for {self.campaign.obr_name} Round {self.round.number}"
-        if self.temporary_campaign_name:
-            return f"Earmarked {self.vials_earmarked} vials for ({self.temporary_campaign_name})"
+        campaign_label = format_campaign_obr_name(
+            self.campaign if self.campaign_id else None,
+            non_obr_name=self.temporary_campaign_name,
+            empty="",
+        )
+        if campaign_label and self.round_id and self.round.number is not None:
+            return f"Earmarked {self.vials_earmarked} vials for {campaign_label} Round {self.round.number}"
+        if campaign_label:
+            return f"Earmarked {self.vials_earmarked} vials for {campaign_label}"
         return f"Earmarked {self.vials_earmarked} vials"
 
     @classmethod

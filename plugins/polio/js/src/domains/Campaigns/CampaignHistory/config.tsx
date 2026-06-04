@@ -520,6 +520,7 @@ export const useGetConfig = (): Record<string, any> => {
                         },
                     ],
                 },
+                // deprecated – round-level fields; use vaccine supply chain module
                 {
                     key: 'reporting_delays_hc_to_district',
                 },
@@ -568,6 +569,7 @@ export const useGetConfig = (): Record<string, any> => {
                         },
                     ],
                 },
+                // deprecated – round-level Form A summary; use OutgoingStockMovement
                 {
                     key: 'forma_reception',
                     getLogValue: log => convertDate(log.forma_reception),

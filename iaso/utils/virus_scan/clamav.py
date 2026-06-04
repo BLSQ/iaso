@@ -1,12 +1,15 @@
 import logging
 import os
 import tempfile
+from typing import Union
 
 import clamav_client
 
 from clamav_client.clamd import CommunicationError
 from django.conf import settings
+from django.core.files.base import File
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.db.models.fields.files import FieldFile
 from django.utils import timezone
 
 from iaso.utils.virus_scan.model import VirusScanStatus
@@ -82,6 +85,32 @@ def scan_disk_file_for_virus(file_path: str):
     return _scan_with_clamav(file_path)
 
 
+def scan_stored_file_for_virus(stored_file: Union[FieldFile, File]):
+    """
+    Scan a file from Django storage (local disk, S3, Azure, etc.) using ClamAV.
+
+    The file is downloaded to a temporary file on disk because ClamAV requires a
+    local path. Use this for backfill jobs on models that already have a FileField.
+
+    Args:
+        stored_file: A Django FieldFile or other File opened via storage.
+
+    Returns:
+        tuple: A tuple containing (VirusScanStatus, datetime or None)
+    """
+    logger.info(f"Scanning stored file {stored_file.name} for virus")
+    try:
+        with tempfile.NamedTemporaryFile(mode="wb") as temp_file:
+            with stored_file.open("rb") as file_handle:
+                for chunk in file_handle.chunks():
+                    temp_file.write(chunk)
+            temp_file.flush()
+            return _scan_with_clamav(temp_file.name)
+    except Exception as e:
+        logger.error(f"Could not read stored file {stored_file.name} for scanning - {e}")
+        return VirusScanStatus.ERROR, None
+
+
 def _scan_with_clamav(file_path: str):
     """
     Internal function to perform virus scanning using ClamAV.
@@ -99,7 +128,7 @@ def _scan_with_clamav(file_path: str):
 
     Note:
         This function is internal and should not be called directly.
-        Use scan_uploaded_file_for_virus() or scan_disk_file_for_virus() instead.
+        Use scan_uploaded_file_for_virus(), scan_stored_file_for_virus(), or scan_disk_file_for_virus() instead.
     """
     is_clamav_active = settings.CLAMAV_ACTIVE
     if not is_clamav_active:

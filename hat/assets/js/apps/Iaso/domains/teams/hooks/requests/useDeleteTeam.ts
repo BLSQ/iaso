@@ -15,12 +15,12 @@ export const useDeleteTeam = ({
     params,
     count,
 }: useDeleteArgs): UseMutationResult => {
-    const onSuccessRedirect = useDeleteTableRow({
+    const onSuccess = useDeleteTableRow({
         count,
         params,
         pageKey: 'page',
         pageSizeKey: 'pageSize',
-        invalidateQueries: ['teamsList', 'teamsDropdown'],
+        invalidateQueries: ['teamsList', 'teamsDropdown', 'team'],
         baseUrl: baseUrls.teams,
     });
 
@@ -29,9 +29,7 @@ export const useDeleteTeam = ({
         snackSuccessMessage: MESSAGES.deleteSuccess,
         snackErrorMsg: MESSAGES.deleteError,
         options: {
-            onSuccess: () => {
-                onSuccessRedirect();
-            },
+            onSuccess,
         },
     });
 };

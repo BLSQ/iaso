@@ -59,8 +59,9 @@ export const useDeleteTableRow = ({
             redirectToReplace(baseUrl, newParams);
         }
         if (invalidateQueries) {
-            console.log('invalidateQueries', invalidateQueries);
-            queryClient.invalidateQueries(invalidateQueries);
+            invalidateQueries.forEach(queryKey =>
+                queryClient.invalidateQueries(queryKey),
+            );
         }
         onSuccessCustomAction();
     }, [

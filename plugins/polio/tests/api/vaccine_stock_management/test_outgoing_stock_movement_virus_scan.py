@@ -510,7 +510,14 @@ class OutgoingStockMovementVirusScanAPITestCase(VaccineStockManagementAPITestBas
 
     @override_settings(CLAMAV_ACTIVE=True)
     @patch("clamav_client.get_scanner")
-    def test_create_temporary_outgoing_stock_movement_with_file_is_rejected_before_scan(self, mock_get_scanner):
+    def test_create_temporary_outgoing_stock_movement_with_file_is_scanned(self, mock_get_scanner):
+        mock_scanner = MagicMock()
+        mock_scanner.scan.return_value = MockClamavScanResults(
+            state="OK",
+            details=None,
+            passed=True,
+        )
+        mock_get_scanner.return_value = mock_scanner
         self.client.force_authenticate(self.user_rw_perms)
 
         with open(self.SAFE_FILE_PATH, "rb") as safe_file:
@@ -534,6 +541,5 @@ class OutgoingStockMovementVirusScanAPITestCase(VaccineStockManagementAPITestBas
                 format="multipart",
             )
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("file", response.data)
-        mock_get_scanner.assert_not_called()
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        mock_get_scanner.assert_called_once()

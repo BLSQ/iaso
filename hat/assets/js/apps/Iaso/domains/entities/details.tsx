@@ -7,8 +7,6 @@ import {
     useGoBack,
     useSafeIntl,
 } from 'bluesquare-components';
-import { CsvButton } from '../../components/Buttons/CsvButton';
-import { XlsxButton } from '../../components/Buttons/XslxButton';
 import TopBar from '../../components/nav/TopBarComponent';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';

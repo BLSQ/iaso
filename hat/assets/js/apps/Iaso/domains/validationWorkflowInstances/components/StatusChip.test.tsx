@@ -12,6 +12,13 @@ vi.mock('@mui/material', () => ({
 }));
 
 describe('StatusChip', () => {
+    beforeAll(() => {
+        faker.seed(1);
+    });
+    afterAll(() => {
+        faker.seed(Date.now());
+    });
+
     it('renders APPROVED with success color', () => {
         render(<StatusChip status="APPROVED" />);
 

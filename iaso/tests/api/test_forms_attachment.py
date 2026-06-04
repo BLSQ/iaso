@@ -10,11 +10,12 @@ from django.conf import settings
 from django.core.files import File
 from django.db import connection, reset_queries
 from django.http import HttpResponse
-from django.test import override_settings
+from django.test import RequestFactory, override_settings
 from django.utils.timezone import now
 from rest_framework import status
 
 from iaso import models as m
+from iaso.api.form_attachments import FormAttachmentSerializer
 from iaso.api.query_params import APP_ID
 from iaso.enketo.enketo_url import generate_signed_url
 from iaso.models.forms import form_attachment_upload_to
@@ -502,3 +503,66 @@ class FormAttachmentsAPITestCase(APITestCase):
 
         response = self.client.get(signed_url)
         self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
+
+    def test_form_attachments_create_long_path_success(self):
+        f"""POST {BASE_URL}: long path succeeds after max_length fix"""
+
+        self.client.force_authenticate(self.yoda)
+
+        long_name_form = m.Form.objects.create(
+            name="fiche_de_notifications_des_evenements_indesirable_niveau_aire_de_sante_2026", created_at=self.now
+        )
+        self.project_1.forms.add(long_name_form)
+
+        with open("iaso/tests/fixtures/form_attachments/manifest_empty.xml", "rb") as file:
+            response = self.client.post(
+                BASE_URL,
+                data={"form_id": long_name_form.id, "file": file},
+                format="multipart",
+                headers={"accept": "application/json"},
+            )
+
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        form_attachment_data = response.json()
+        self.assertValidAttachmentData(form_attachment_data)
+        self.assertEqual("manifest_empty.xml", form_attachment_data["name"])
+
+    @patch("iaso.api.form_attachments.HasFormPermission.has_object_permission", return_value=True)
+    def test_form_attachment_serializer_validate_path_length_success(self, mock_permission):
+        """
+        Test that FormAttachmentSerializer validation passes when the generated path is safely under the limit.
+        """
+        with open("iaso/tests/fixtures/form_attachments/manifest_empty.xml", "rb") as raw_file:
+            django_file = File(raw_file, name="manifest_empty.xml")
+
+            data = {"form_id": self.form_1.id, "file": django_file}
+            request = RequestFactory().post("/")
+
+            serializer = FormAttachmentSerializer(data=data, context={"request": request, "view": MagicMock()})
+            self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    @patch("iaso.api.form_attachments.HasFormPermission.has_object_permission", return_value=True)
+    def test_form_attachment_serializer_validate_path_length_raises_error(self, mock_permission):
+        """
+        Test that FormAttachmentSerializer validation fails fast and raises a ValidationError when the path is too long.
+        """
+        long_form = m.Form.objects.create(
+            name="fiche_de_notifications_des_evenements_indesirable_niveau_aire_de_sante_2026_" * 10
+        )
+        self.project_1.forms.add(long_form)
+
+        with open("iaso/tests/fixtures/form_attachments/manifest_empty.xml", "rb") as raw_file:
+            django_file = File(raw_file, name="manifest_empty.xml")
+
+            data = {"form_id": long_form.id, "file": django_file}
+
+            request = RequestFactory().post("/")
+            serializer = FormAttachmentSerializer(data=data, context={"request": request, "view": MagicMock()})
+            self.assertFalse(serializer.is_valid())
+            self.assertIn("file", serializer.errors)
+
+            self.assertIn(
+                "The generated file path is too long",
+                str(serializer.errors),
+                f"Unexpected error message: {serializer.errors}",
+            )

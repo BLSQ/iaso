@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db import connection, transaction
-from django.db.models import Case, Count, F, Prefetch, Q, QuerySet, TextField, Value, When
+from django.db.models import Case, Count, Exists, F, OuterRef, Prefetch, Q, QuerySet, TextField, Value, When
 from django.db.models.functions import Cast, Concat, JSONObject, Replace
 from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.utils.timezone import now
@@ -42,6 +42,7 @@ from iaso.api.instances.serializers import (
     FileTypeSerializer,
     InstanceFileAttachmentSerializer,
     InstanceImportAccuracySerializer,
+    InstanceLocationSerializer,
     InstanceLockSerializer,
     InstanceSerializer,
     UnlockSerializer,
@@ -60,11 +61,12 @@ from iaso.models import (
     InstanceQuerySet,
     OrgUnit,
     OrgUnitChangeRequest,
+    OrgUnitReferenceInstance,
     Project,
 )
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.forms import CR_MODE_IF_REFERENCE_FORM
-from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_STORAGE_PERMISSION
 from iaso.utils.date_and_time import timestamp_to_datetime
 from iaso.utils.models.common import check_instance_bulk_gps_push, check_instance_reference_bulk_link, get_creator_name
 
@@ -97,12 +99,45 @@ class InstancesViewSet(viewsets.ViewSet):
     def get_queryset(self):
         request = self.request
         queryset: InstanceQuerySet = (
-            Instance.objects.order_by("-id")
-            .filter_for_user(request.user)
-            .filter_on_user_projects(user=request.user)
-            .select_related("form", "created_by", "last_modified_by")
+            Instance.objects.order_by("-id").filter_for_user(request.user).filter_on_user_projects(user=request.user)
         )
-        return queryset
+
+        if self.action == "map":
+            queryset = (
+                queryset.exclude(file="")
+                .exclude(device__test_device=True)
+                .filter(location__isnull=False)
+                .only("id", "location")
+            )
+
+        else:
+            queryset = queryset.select_related("form", "created_by", "last_modified_by").annotate(
+                _is_reference_instance=Exists(
+                    OrgUnitReferenceInstance.objects.filter(
+                        org_unit_id=OuterRef("org_unit_id"),
+                        instance_id=OuterRef("pk"),
+                    )
+                ),
+                _is_instance_of_reference_form=Exists(
+                    Form.objects.filter(
+                        id=OuterRef("form_id"),
+                        reference_of_org_unit_types=OuterRef("org_unit__org_unit_type_id"),
+                    )
+                ),
+            )
+        return queryset.filter(form__deleted_at__isnull=True)
+
+    def _filter_response_for_permissions(self, response):
+        f"""Remove nfc_cards from entity data if user doesn't have "{CORE_STORAGE_PERMISSION}" ."""
+        account = self.request.user.iaso_profile.account
+        has_module = "EXTERNAL_STORAGE" in account.modules
+        has_perms = self.request.user.has_perm(CORE_STORAGE_PERMISSION.full_name())
+
+        if not has_perms or not has_module:
+            entity = response.get("entity", None)
+            if isinstance(entity, dict) and "nfc_cards" in entity:
+                entity.pop("nfc_cards", None)
+        return response
 
     def _get_filtered_attachments_queryset(self, request):
         """Helper method to get filtered attachments queryset with common logic"""
@@ -432,8 +467,8 @@ class InstancesViewSet(viewsets.ViewSet):
                     d = instance.as_dict_with_descriptor() if with_descriptor == "true" else instance.as_dict()
                     d["can_user_modify"] = instance.count_lock_applying_to_user == 0
                     d["is_locked"] = instance.count_active_lock > 0
-                    d["is_instance_of_reference_form"] = instance.is_instance_of_reference_form
-                    d["is_reference_instance"] = instance.is_reference_instance
+                    d["is_instance_of_reference_form"] = instance._is_instance_of_reference_form
+                    d["is_reference_instance"] = instance._is_reference_instance
                     return d
 
                 res["instances"] = map(as_dict_formatter, page.object_list)
@@ -514,6 +549,18 @@ class InstancesViewSet(viewsets.ViewSet):
         response = CleaningFileResponse(tmp.name, as_attachment=True, filename="submissions.parquet")
 
         return response
+
+    @action(detail=False, methods=["GET"])
+    def map(self, request):
+        """Return minimal location data for map display.
+        Returns a flat list of {id, latitude, longitude} for all instances with
+        a location that match the given filters. Intentionally not paginated.
+        """
+        filters = parse_instance_filters(request.GET)
+        limit = int(request.GET.get("limit", 3000))
+        queryset = self.get_queryset().for_filters(**filters)[:limit]
+        serializer = InstanceLocationSerializer(queryset, many=True)
+        return Response(serializer.data)
 
     @action(detail=True, permission_classes=PERMISSION_CLASSES_RW, methods=["POST"])
     def add_lock(self, request, pk):
@@ -602,6 +649,7 @@ class InstancesViewSet(viewsets.ViewSet):
             instance.org_unit._prefetched_ancestors = ancestors_dict
 
         response = instance.as_full_model(with_entity=True)
+        response = self._filter_response_for_permissions(response)
 
         # Logs(history) of all instance locks
         response["instance_locks"] = InstanceLockSerializer(all_instance_locks, many=True).data
@@ -610,8 +658,8 @@ class InstancesViewSet(viewsets.ViewSet):
         # To display either the "unlock" or the "lock" icon depending on if the instance is already lock or not
         response["is_locked"] = any(lock.unlocked_by is None for lock in all_instance_locks)
 
-        response["is_instance_of_reference_form"] = instance.is_instance_of_reference_form
-        response["is_reference_instance"] = instance.is_reference_instance
+        response["is_instance_of_reference_form"] = instance._is_instance_of_reference_form
+        response["is_reference_instance"] = instance._is_reference_instance
 
         return Response(response)
 

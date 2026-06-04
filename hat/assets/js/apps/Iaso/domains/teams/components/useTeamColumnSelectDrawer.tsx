@@ -10,7 +10,7 @@ export const DEFAULT_TEAMS_COLUMNS = [
     'name',
     'project_details',
     'type',
-    'users_details',
+    'members_count',
 ];
 
 const HIDDEN_COLUMNS = ['actions', 'selection'];

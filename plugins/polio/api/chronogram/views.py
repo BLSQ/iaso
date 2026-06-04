@@ -62,7 +62,7 @@ class ChronogramViewSet(viewsets.ModelViewSet):
         rounds_ids = Campaign.polio_objects.filter_for_user(user).values_list("rounds", flat=True)
         return (
             Chronogram.objects.valid()
-            .filter(round_id__in=rounds_ids, round__on_hold=False)
+            .filter(round_id__in=rounds_ids)
             .select_related("round__campaign", "created_by", "updated_by")
             .prefetch_related(Prefetch("tasks", queryset=ChronogramTask.objects.valid()))
             .prefetch_related("tasks__created_by", "tasks__updated_by")
@@ -113,7 +113,8 @@ class ChronogramViewSet(viewsets.ModelViewSet):
         Returns all available rounds that can be used to create a new `Chronogram`.
         """
         user_campaigns = Campaign.polio_objects.filter_for_user(self.request.user).filter(
-            country__isnull=False, is_test=False, on_hold=False
+            country__isnull=False,
+            is_test=False,
         )
         already_linked_rounds = (
             Chronogram.objects.valid().filter(round__campaign__in=user_campaigns).values_list("round_id", flat=True)
@@ -141,7 +142,7 @@ class ChronogramTaskViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = ChronogramTaskFilter
     pagination_class = ChronogramPagination
-    permission_classes = [HasChronogramPermission | HasChronogramRestrictedWritePermission]
+    permission_classes = [HasChronogramPermission | HasChronogramRestrictedWritePermission]  # pyright: ignore[reportGeneralTypeIssues]
     serializer_class = ChronogramTaskSerializer
 
     @property

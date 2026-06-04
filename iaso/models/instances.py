@@ -505,12 +505,16 @@ class Instance(ValidationWorkflowArtefact):
 
     @property
     def is_instance_of_reference_form(self) -> bool:
+        if hasattr(self, "_is_instance_of_reference_form"):
+            return self._is_instance_of_reference_form
         if not self.org_unit or not self.org_unit.org_unit_type:
             return False
         return self.org_unit.org_unit_type.reference_forms.filter(id=self.form_id).exists()
 
     @property
     def is_reference_instance(self) -> bool:
+        if hasattr(self, "_is_reference_instance"):
+            return self._is_reference_instance
         if not self.org_unit:
             return False
         return self.org_unit.reference_instances.filter(orgunitreferenceinstance__instance=self).exists()

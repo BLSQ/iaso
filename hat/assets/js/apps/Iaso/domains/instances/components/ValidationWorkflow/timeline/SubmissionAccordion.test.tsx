@@ -32,7 +32,7 @@ describe('SubmissionAccordion', () => {
         submission: baseSubmission,
         order: 1,
         isMostRecent: false,
-        createdAt: '2024-01-01T10:00:00Z',
+        createdAt: '2024-01-01T10:00:00',
         createdBy: 'John Doe',
         instanceId: 123,
     };
@@ -137,17 +137,11 @@ describe('SubmissionAccordion', () => {
 
     it('passes correct props to SubmissionList', () => {
         renderWithThemeAndIntlProvider(
-            <SubmissionAccordion
-                {...defaultProps}
-                totalSteps={7}
-                isMostRecent={true}
-            />,
+            <SubmissionAccordion {...defaultProps} totalSteps={7} />,
         );
 
         expect(
-            screen.getByText(
-                /SubmissionList - totalSteps: 7 - mostRecent: true/i,
-            ),
+            screen.getByText(/SubmissionList - totalSteps: 7/i),
         ).toBeInTheDocument();
     });
 

@@ -29,16 +29,45 @@ describe('ListItemSecondaryText', () => {
         id: 1,
         status: 'ACCEPTED',
         updated_by: 'John Doe',
-        updated_at: '2024-01-01T10:00:00Z',
+        updated_at: '2024-01-01T10:00:00',
         comment: 'Looks good',
         user_can_do_actions: false,
         node_template_slug: 'node-slug',
         order: 1,
         name: 'Node 1',
-        created_at: '2024-01-01T09:00:00Z',
+        created_at: '2024-01-01T09:00:00',
     };
 
-    it('renders pending text for most recent UNKNOWN item', () => {
+    it('renders nothing if type is NEXT_STEP', () => {
+        const { container } = renderWithThemeAndIntlProvider(
+            <ListItemSecondaryText
+                timelineItem={{
+                    ...baseTimelineItem,
+                    type: 'NEXT_STEP',
+                    status: 'UNKNOWN',
+                }}
+                instanceId={123}
+            />,
+        );
+        expect(container.innerHTML).toBe('');
+    });
+
+    it("renders nothing if type is NEXT_BYPASS and user can't do action", () => {
+        const { container } = renderWithThemeAndIntlProvider(
+            <ListItemSecondaryText
+                timelineItem={{
+                    ...baseTimelineItem,
+                    type: 'NEXT_BYPASS',
+                    user_can_do_actions: false,
+                    status: 'UNKNOWN',
+                }}
+                instanceId={123}
+            />,
+        );
+        expect(container.innerHTML).toBe('');
+    });
+
+    it('renders pending text for UNKNOWN item', () => {
         renderWithThemeAndIntlProvider(
             <ListItemSecondaryText
                 timelineItem={{
@@ -63,7 +92,6 @@ describe('ListItemSecondaryText', () => {
                     status: 'UNKNOWN',
                     user_can_do_actions: true,
                 }}
-                isMostRecent={true}
                 instanceId={123}
             />,
         );
@@ -85,7 +113,6 @@ describe('ListItemSecondaryText', () => {
                     status: 'UNKNOWN',
                     user_can_do_actions: true,
                 }}
-                isMostRecent={true}
                 instanceId={123}
             />,
         );
@@ -106,7 +133,6 @@ describe('ListItemSecondaryText', () => {
                     type: 'TIMELINE',
                     status: 'SKIPPED',
                 }}
-                isMostRecent={false}
                 instanceId={123}
             />,
         );
@@ -120,9 +146,8 @@ describe('ListItemSecondaryText', () => {
                 timelineItem={{
                     ...baseTimelineItem,
                     type: 'TIMELINE',
-                    status: 'UNKNOWN',
+                    status: 'APPROVED',
                 }}
-                isMostRecent={false}
                 instanceId={123}
             />,
         );
@@ -138,9 +163,8 @@ describe('ListItemSecondaryText', () => {
                 timelineItem={{
                     ...baseTimelineItem,
                     type: 'TIMELINE',
-                    status: 'UNKNOWN',
+                    status: 'REJECTED',
                 }}
-                isMostRecent={false}
                 instanceId={123}
             />,
         );
@@ -159,7 +183,6 @@ describe('ListItemSecondaryText', () => {
                     status: 'ACCEPTED',
                     comment: '',
                 }}
-                isMostRecent={false}
                 instanceId={123}
             />,
         );
@@ -176,7 +199,6 @@ describe('ListItemSecondaryText', () => {
                     status: 'UNKNOWN',
                     user_can_do_actions: false,
                 }}
-                isMostRecent={true}
                 instanceId={123}
             />,
         );

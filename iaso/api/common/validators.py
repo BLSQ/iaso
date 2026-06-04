@@ -34,6 +34,10 @@ class JSONSchemaFieldValidator:
             raise ValidationError(self.message, code=self.code, params={"error": e.message})
 
 
+# Partial reads mis-detect OOXML (.xlsx) on macOS (often application/octet-stream).
+FILE_TYPE_MAGIC_BUFFER_SIZE = 256 * 1024
+
+
 class FileTypeValidator:
     message = _("Unsupported file type.")
     code = "invalid_file_type"
@@ -50,7 +54,7 @@ class FileTypeValidator:
 
     def __call__(self, value):
         value.seek(0)
-        file_mime_type = magic.from_buffer(value.read(1024), mime=True)
+        file_mime_type = magic.from_buffer(value.read(FILE_TYPE_MAGIC_BUFFER_SIZE), mime=True).lower()
         value.seek(0)
         if file_mime_type not in self.allowed_mimetypes:
             raise ValidationError(code=self.code, message=self.message)

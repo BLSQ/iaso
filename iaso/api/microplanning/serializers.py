@@ -99,6 +99,7 @@ class MissionReadSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
+            "description",
             "account",
             "mission_type",
             "mission_forms",
@@ -133,6 +134,7 @@ class MissionWriteSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
+            "description",
             "mission_type",
             "mission_forms",
             "org_unit_type",
@@ -261,6 +263,7 @@ class NestedMissionSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
+            "description",
             "mission_type",
             "mission_forms",
             "org_unit_type",
@@ -370,7 +373,6 @@ class PlanningWriteSerializer(serializers.ModelSerializer):
 
 class PlanningReadSerializer(serializers.ModelSerializer):
     assignments_count = serializers.SerializerMethodField()
-    missions = NestedMissionSerializer(many=True, read_only=True)
 
     class Meta:
         model = Planning

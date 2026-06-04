@@ -32,34 +32,7 @@ class PlanningSerializersTestCase(PlanningSerializersTestBase):
             {
                 "id": self.planning.id,
                 "name": "planning_1",
-                "missions": [
-                    {
-                        "id": self.mission_1.id,
-                        "name": self.mission_1.name,
-                        "mission_type": self.mission_1.mission_type,
-                        "mission_forms": [
-                            {
-                                "id": self.mission_form_1.id,
-                                "form": {"id": self.form_1.id, "name": self.form_1.name},
-                                "min_cardinality": self.mission_form_1.min_cardinality,
-                                "max_cardinality": self.mission_form_1.max_cardinality,
-                            },
-                        ],
-                    },
-                    {
-                        "id": self.mission_2.id,
-                        "name": self.mission_2.name,
-                        "mission_type": self.mission_2.mission_type,
-                        "mission_forms": [
-                            {
-                                "id": self.mission_form_2.id,
-                                "form": {"id": self.form_2.id, "name": self.form_2.name},
-                                "min_cardinality": self.mission_form_2.min_cardinality,
-                                "max_cardinality": self.mission_form_2.max_cardinality,
-                            }
-                        ],
-                    },
-                ],
+                "missions": [self.mission_1.id, self.mission_2.id],
                 "description": "A test planning",
                 "published_at": None,
                 "started_at": "2025-01-01",

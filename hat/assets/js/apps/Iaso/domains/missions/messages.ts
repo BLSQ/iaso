@@ -13,6 +13,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Name',
         id: 'iaso.label.name',
     },
+    description: {
+        defaultMessage: 'Description',
+        id: 'iaso.projects.description',
+    },
     missionType: {
         defaultMessage: 'Mission type',
         id: 'iaso.missions.label.missionType',

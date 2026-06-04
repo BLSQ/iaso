@@ -62,6 +62,7 @@ class PlanningTestCase(APITestCase):
         MissionForm.objects.create(mission=cls.mission1, form=cls.form1, min_cardinality=1, max_cardinality=1)
         cls.mission2 = Mission.objects.create(
             name="mission2",
+            description="description2",
             account=account,
             mission_type=MissionType.FORM_FILLING,
         )
@@ -2143,6 +2144,7 @@ class AssignmentAPITestCase(APITestCase):
         p6.assignment_set.create(org_unit=self.child1, user=self.user)
         mission = Mission.objects.create(
             name="mission3",
+            description="description3",
             account=self.account,
             mission_type=MissionType.ORG_UNIT_AND_FORM,
             org_unit_type=MissionOrgUnitType.objects.create(
@@ -2189,6 +2191,7 @@ class AssignmentAPITestCase(APITestCase):
                             ],
                             "mission_type": "FORM_FILLING",
                             "name": self.mission1.name,
+                            "description": self.mission1.description,
                         },
                         {
                             "id": self.mission2.id,
@@ -2202,6 +2205,7 @@ class AssignmentAPITestCase(APITestCase):
                             ],
                             "mission_type": "FORM_FILLING",
                             "name": self.mission2.name,
+                            "description": self.mission2.description,
                         },
                     ],
                 },
@@ -2220,6 +2224,7 @@ class AssignmentAPITestCase(APITestCase):
                             ],
                             "mission_type": "FORM_FILLING",
                             "name": self.mission1.name,
+                            "description": self.mission1.description,
                         },
                         {
                             "id": self.mission2.id,
@@ -2233,6 +2238,7 @@ class AssignmentAPITestCase(APITestCase):
                             ],
                             "mission_type": "FORM_FILLING",
                             "name": self.mission2.name,
+                            "description": self.mission2.description,
                         },
                     ],
                 },
@@ -2253,6 +2259,7 @@ class AssignmentAPITestCase(APITestCase):
                             "mission_forms": [],
                             "mission_type": "ORG_UNIT_AND_FORM",
                             "name": mission.name,
+                            "description": mission.description,
                             "org_unit_type": {
                                 "id": self.org_unit_type.id,
                                 "name": "test type",

@@ -46,7 +46,7 @@ def reverse_migrate_missions_to_forms(apps, schema_editor):
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("iaso", "0390_add_stock_management_feature_flag_category"),
+        ("iaso", "0391_alter_formattachment_file"),
     ]
 
     operations = [
@@ -56,6 +56,7 @@ class Migration(migrations.Migration):
                 ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("deleted_at", models.DateTimeField(blank=True, default=None, null=True)),
                 ("name", models.CharField(max_length=200)),
+                ("description", models.CharField(max_length=500, blank=True)),
                 (
                     "mission_type",
                     models.CharField(

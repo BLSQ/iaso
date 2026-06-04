@@ -4,8 +4,8 @@ from iaso.test import IasoMigratorTestCase
 
 
 class Test0390DirectMigration(IasoMigratorTestCase):
-    migrate_from = ("iaso", "0390_add_stock_management_feature_flag_category")
-    migrate_to = ("iaso", "0391_mission_remove_planning_forms_missionorgunittype_and_more")
+    migrate_from = ("iaso", "0391_alter_formattachment_file")
+    migrate_to = ("iaso", "0392_mission_remove_planning_forms_missionorgunittype_and_more")
     num_queries = 52
 
     def prepare(self):
@@ -73,8 +73,8 @@ class Test0390DirectMigration(IasoMigratorTestCase):
 class Test0390ReverseMigration(IasoMigratorTestCase):
     num_queries = 47
 
-    migrate_from = ("iaso", "0391_mission_remove_planning_forms_missionorgunittype_and_more")
-    migrate_to = ("iaso", "0390_add_stock_management_feature_flag_category")
+    migrate_from = ("iaso", "0392_mission_remove_planning_forms_missionorgunittype_and_more")
+    migrate_to = ("iaso", "0391_alter_formattachment_file")
 
     def prepare(self):
         Account = self.old_state.apps.get_model("iaso", "Account")

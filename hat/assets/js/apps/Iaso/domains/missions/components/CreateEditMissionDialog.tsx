@@ -1,14 +1,20 @@
-import React, { FunctionComponent, ReactNode, useCallback, useMemo, useState } from 'react';
-import { Box, Divider, Grid, IconButton, Typography } from '@mui/material';
+import React, {
+    FunctionComponent,
+    ReactNode,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { Box, Divider, Grid, IconButton, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 
+import { useFormState } from 'Iaso/hooks/form';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
-import { useFormState } from '../../../hooks/form';
+import { useGetEntityTypesDropdown } from '../../entities/hooks/requests';
 import { useGetFormsDropdownOptions } from '../../forms/hooks/useGetFormsDropdownOptions';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
-import { useGetEntityTypesDropdown } from '../../entities/hooks/requests';
 import { useSaveMission } from '../hooks/requests/useSaveMission';
 import MESSAGES from '../messages';
 import { Mission, MissionFormEntry } from '../types';
@@ -41,6 +47,7 @@ const buildMissionFormsState = (
 const mapMission = (mission?: Partial<Mission>) => ({
     id: mission?.id ?? null,
     name: mission?.name ?? '',
+    description: mission?.description ?? '',
     mission_type: mission?.mission_type ?? '',
     org_unit_type_id: mission?.org_unit_type?.id ?? null,
     org_unit_min_cardinality: mission?.org_unit_min_cardinality ?? null,
@@ -72,7 +79,9 @@ export const CreateEditMissionDialog: FunctionComponent<Props> = ({
     const { data: entityTypesOptions } = useGetEntityTypesDropdown();
 
     const isCreate = !mission?.id;
-    const titleMessage = isCreate ? MESSAGES.createMission : MESSAGES.editMission;
+    const titleMessage = isCreate
+        ? MESSAGES.createMission
+        : MESSAGES.editMission;
 
     const localizedMissionTypeOptions = useMemo(
         () =>
@@ -100,7 +109,10 @@ export const CreateEditMissionDialog: FunctionComponent<Props> = ({
         [missionForms],
     );
     const availableFormsOptions = useMemo(
-        () => (formsOptions || []).filter(opt => !selectedFormIds.has(Number(opt.value))),
+        () =>
+            (formsOptions || []).filter(
+                opt => !selectedFormIds.has(Number(opt.value)),
+            ),
         [formsOptions, selectedFormIds],
     );
 
@@ -130,15 +142,18 @@ export const CreateEditMissionDialog: FunctionComponent<Props> = ({
     }, []);
 
     const handleFormCardinalityChange = useCallback(
-        (formId: number, field: 'min_cardinality' | 'max_cardinality', value: string) => {
-            const numValue = value === '' || value === null || value === undefined
-                ? null
-                : Number(value);
+        (
+            formId: number,
+            field: 'min_cardinality' | 'max_cardinality',
+            value: string,
+        ) => {
+            const numValue =
+                value === '' || value === null || value === undefined
+                    ? null
+                    : Number(value);
             setMissionForms(prev =>
                 prev.map(mf =>
-                    mf.form_id === formId
-                        ? { ...mf, [field]: numValue }
-                        : mf,
+                    mf.form_id === formId ? { ...mf, [field]: numValue } : mf,
                 ),
             );
         },
@@ -165,6 +180,7 @@ export const CreateEditMissionDialog: FunctionComponent<Props> = ({
         (closeDialog: () => void) => {
             const payload: any = {
                 name: formState.name.value,
+                description: formState.description.value,
                 mission_type: formState.mission_type.value,
                 mission_forms: missionForms.map(mf => ({
                     form_id: mf.form_id,
@@ -177,13 +193,17 @@ export const CreateEditMissionDialog: FunctionComponent<Props> = ({
             }
             if (showOrgUnitType) {
                 payload.org_unit_type = formState.org_unit_type_id.value;
-                payload.org_unit_min_cardinality = formState.org_unit_min_cardinality.value;
-                payload.org_unit_max_cardinality = formState.org_unit_max_cardinality.value;
+                payload.org_unit_min_cardinality =
+                    formState.org_unit_min_cardinality.value;
+                payload.org_unit_max_cardinality =
+                    formState.org_unit_max_cardinality.value;
             }
             if (showEntityType) {
                 payload.entity_type = formState.entity_type_id.value;
-                payload.entity_min_cardinality = formState.entity_min_cardinality.value;
-                payload.entity_max_cardinality = formState.entity_max_cardinality.value;
+                payload.entity_min_cardinality =
+                    formState.entity_min_cardinality.value;
+                payload.entity_max_cardinality =
+                    formState.entity_max_cardinality.value;
             }
 
             saveMission(payload, {
@@ -202,7 +222,15 @@ export const CreateEditMissionDialog: FunctionComponent<Props> = ({
                 },
             });
         },
-        [formState, missionForms, saveMission, resetForm, setFieldErrors, showOrgUnitType, showEntityType],
+        [
+            formState,
+            missionForms,
+            saveMission,
+            resetForm,
+            setFieldErrors,
+            showOrgUnitType,
+            showEntityType,
+        ],
     );
 
     return (
@@ -229,6 +257,14 @@ export const CreateEditMissionDialog: FunctionComponent<Props> = ({
                 type="text"
                 label={MESSAGES.name}
                 required
+            />
+            <InputComponent
+                keyValue="description"
+                onChange={onChange}
+                value={formState.description.value}
+                errors={formState.description.errors}
+                type="text"
+                label={MESSAGES.description}
             />
             <InputComponent
                 keyValue="mission_type"
@@ -258,7 +294,9 @@ export const CreateEditMissionDialog: FunctionComponent<Props> = ({
                                 keyValue="org_unit_min_cardinality"
                                 onChange={onChange}
                                 value={formState.org_unit_min_cardinality.value}
-                                errors={formState.org_unit_min_cardinality.errors}
+                                errors={
+                                    formState.org_unit_min_cardinality.errors
+                                }
                                 type="number"
                                 label={MESSAGES.minCardinality}
                             />
@@ -268,7 +306,9 @@ export const CreateEditMissionDialog: FunctionComponent<Props> = ({
                                 keyValue="org_unit_max_cardinality"
                                 onChange={onChange}
                                 value={formState.org_unit_max_cardinality.value}
-                                errors={formState.org_unit_max_cardinality.errors}
+                                errors={
+                                    formState.org_unit_max_cardinality.errors
+                                }
                                 type="number"
                                 label={MESSAGES.maxCardinality}
                             />
@@ -350,7 +390,11 @@ export const CreateEditMissionDialog: FunctionComponent<Props> = ({
                                 <InputComponent
                                     keyValue={`min_${mf.form_id}`}
                                     onChange={(_k: string, v: string) =>
-                                        handleFormCardinalityChange(mf.form_id, 'min_cardinality', v)
+                                        handleFormCardinalityChange(
+                                            mf.form_id,
+                                            'min_cardinality',
+                                            v,
+                                        )
                                     }
                                     value={mf.min_cardinality}
                                     type="number"
@@ -361,7 +405,11 @@ export const CreateEditMissionDialog: FunctionComponent<Props> = ({
                                 <InputComponent
                                     keyValue={`max_${mf.form_id}`}
                                     onChange={(_k: string, v: string) =>
-                                        handleFormCardinalityChange(mf.form_id, 'max_cardinality', v)
+                                        handleFormCardinalityChange(
+                                            mf.form_id,
+                                            'max_cardinality',
+                                            v,
+                                        )
                                     }
                                     value={mf.max_cardinality}
                                     type="number"

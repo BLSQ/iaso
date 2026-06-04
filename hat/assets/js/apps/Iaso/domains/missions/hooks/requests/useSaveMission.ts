@@ -1,6 +1,6 @@
 import { UseMutationResult } from 'react-query';
-import { patchRequest, postRequest } from '../../../../libs/Api';
-import { useSnackMutation } from '../../../../libs/apiHooks';
+import { patchRequest, postRequest } from 'Iaso/libs/Api';
+import { useSnackMutation } from 'Iaso/libs/apiHooks';
 import { endpoint } from '../../constants';
 
 const postMission = async (body: any) => {

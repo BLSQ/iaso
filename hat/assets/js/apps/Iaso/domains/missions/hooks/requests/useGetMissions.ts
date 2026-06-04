@@ -1,8 +1,8 @@
 import { Pagination } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
-import { getRequest } from '../../../../libs/Api';
-import { useSnackQuery } from '../../../../libs/apiHooks';
-import { makeUrlWithParams } from '../../../../libs/utils';
+import { getRequest } from 'Iaso/libs/Api';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { makeUrlWithParams } from 'Iaso/libs/utils';
 import { endpoint } from '../../constants';
 import { Mission, MissionParams } from '../../types';
 

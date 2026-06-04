@@ -41,7 +41,7 @@ export type Planning = {
     name: string;
     team_details?: PlanningTeamDetails;
     org_unit_details?: PlanningOrgUnitDetails;
-    forms: number[];
+    missions: number[];
     project_details?: PlanningProjectDetails;
     description?: string;
     published_at?: string;

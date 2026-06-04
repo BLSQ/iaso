@@ -1,6 +1,9 @@
 import { UrlParams } from 'bluesquare-components';
 
-export type MissionType = 'FORM_FILLING' | 'ORG_UNIT_AND_FORM' | 'ENTITY_AND_FORM';
+export type MissionType =
+    | 'FORM_FILLING'
+    | 'ORG_UNIT_AND_FORM'
+    | 'ENTITY_AND_FORM';
 
 export type MissionParams = UrlParams & {
     search?: string;
@@ -17,6 +20,7 @@ export type MissionFormEntry = {
 export type Mission = {
     id: number;
     name: string;
+    description: string;
     account: number;
     mission_type: MissionType;
     mission_forms: MissionFormEntry[];

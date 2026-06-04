@@ -14,10 +14,17 @@ from translated_fields import TranslatedFieldAdmin
 from iaso.admin import IasoJSONEditorWidget
 from plugins.polio.api.vaccines.supply_chain import validate_rounds_and_campaign
 from plugins.polio.models.base import VaccineStockHistory
+from plugins.polio.preparedness.display_utils import (
+    MISSING_CAMPAIGN_LABEL,
+    format_campaign_country,
+    format_campaign_obr_name,
+    format_round_campaign_obr_name,
+    format_vaccine_stock_country,
+    format_vaccine_stock_vaccine,
+)
 
 from .budget.models import BudgetProcess, BudgetStep, BudgetStepFile, BudgetStepLink, MailTemplate, WorkflowModel
 from .models import (
-    MISSING_CAMPAIGN_LABEL,
     ROUND_DEPRECATED_VACCINE_MANAGEMENT_FIELD_NAMES,
     ROUND_DEPRECATED_VACCINE_MANAGEMENT_HELP,
     Campaign,
@@ -46,11 +53,6 @@ from .models import (
     VaccineRequestForm,
     VaccineStock,
     create_polio_notifications_async,
-    format_campaign_country,
-    format_campaign_obr_name,
-    format_round_campaign_obr_name,
-    format_vaccine_stock_country,
-    format_vaccine_stock_vaccine,
 )
 from .models.performance_thresholds import PerformanceThresholds
 
@@ -89,6 +91,27 @@ class CampaignRoundVaccineStockAdminDisplayMixin(VaccineStockAdminDisplayMixin):
         return super().get_queryset(request).select_related("campaign", "round")
 
 
+class RoundRelatedAdminDisplayMixin:
+    """Display helpers for models with a ``round`` FK (datelogs, sub-activities, etc.)."""
+
+    @admin.display(
+        description="Campaign (OBR)",
+        ordering="round__campaign__obr_name",
+        empty_value=MISSING_CAMPAIGN_LABEL,
+    )
+    def get_campaign_obr_name(self, obj):
+        return format_round_campaign_obr_name(obj.round)
+
+    @admin.display(description="Round", ordering="round__number", empty_value=MISSING_CAMPAIGN_LABEL)
+    def get_round_number(self, obj):
+        if obj.round_id and obj.round.number is not None:
+            return obj.round.number
+        return MISSING_CAMPAIGN_LABEL
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("round__campaign")
+
+
 class IntegratedCampaignsInline(admin.TabularInline):
     """Inline to show/edit campaigns that integrate into this campaign"""
 
@@ -113,12 +136,41 @@ class IntegratedCampaignsInline(admin.TabularInline):
 
 @admin.register(Campaign)
 class CampaignAdmin(admin.ModelAdmin):
-    raw_id_fields = ("initial_org_unit",)
+    list_display = (
+        "obr_name",
+        "get_country",
+        "virus",
+        "detection_status",
+        "is_test",
+        "on_hold",
+        "is_planned",
+        "updated_at",
+    )
+    list_display_links = ("obr_name",)
+    search_fields = ("obr_name", "epid")
+    list_filter = (
+        "virus",
+        "detection_status",
+        "risk_assessment_status",
+        "budget_status",
+        "campaign_types",
+        "is_test",
+        "on_hold",
+    )
+    raw_id_fields = ("account", "country", "initial_org_unit", "integrated_to")
+    readonly_fields = ("id", "created_at", "updated_at", "geojson")
+    date_hierarchy = "updated_at"
     formfield_overrides = {
         models.ForeignKey: {"widget": widgets.AdminTextInputWidget},
     }
-    list_filter = ["virus", "detection_status", "risk_assessment_status", "budget_status", "campaign_types"]
     inlines = [IntegratedCampaignsInline]
+
+    @admin.display(description="Country", ordering="country__name", empty_value=MISSING_CAMPAIGN_LABEL)
+    def get_country(self, obj):
+        return format_campaign_country(obj)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("country")
 
     # Exclude old budget tool fields
     exclude = (
@@ -209,7 +261,18 @@ class SpreadSheetImportAdmin(admin.ModelAdmin):
 
 @admin.register(CampaignGroup)
 class CampaignGroupAdmin(admin.ModelAdmin):
-    pass
+    list_display = ("name", "get_campaign_count", "created_at", "updated_at")
+    list_display_links = ("name",)
+    search_fields = ("name", "campaigns__obr_name")
+    readonly_fields = ("created_at", "updated_at")
+    autocomplete_fields = ("campaigns",)
+
+    @admin.display(description="Campaigns", ordering="_campaign_count")
+    def get_campaign_count(self, obj):
+        return getattr(obj, "_campaign_count", 0) or 0
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(_campaign_count=Count("campaigns", distinct=True))
 
 
 @admin.register(MailTemplate)
@@ -507,7 +570,10 @@ class RoundAdmin(admin.ModelAdmin):
 
 @admin.register(ReasonForDelay)
 class ReasonForDelayAdmin(admin.ModelAdmin):
-    model = ReasonForDelay
+    search_fields = ("name", "key_name")
+    list_display = ("name", "key_name", "account")
+    list_filter = ("account",)
+    raw_id_fields = ("account",)
 
 
 @admin.register(NotificationImport)
@@ -635,7 +701,7 @@ class SubActivityScopeInline(admin.StackedInline):
 
 
 @admin.register(SubActivity)
-class SubActivityAdmin(admin.ModelAdmin):
+class SubActivityAdmin(RoundRelatedAdminDisplayMixin, admin.ModelAdmin):
     list_display = (
         "name",
         "get_campaign_obr_name",
@@ -648,23 +714,6 @@ class SubActivityAdmin(admin.ModelAdmin):
     fields = ("name", "start_date", "end_date", "round")
     autocomplete_fields = ("round",)
     inlines = [SubActivityScopeInline]
-
-    @admin.display(
-        description="Campaign (OBR)",
-        ordering="round__campaign__obr_name",
-        empty_value=MISSING_CAMPAIGN_LABEL,
-    )
-    def get_campaign_obr_name(self, obj):
-        return format_round_campaign_obr_name(obj.round)
-
-    @admin.display(description="Round", ordering="round__number")
-    def get_round_number(self, obj):
-        if obj.round_id and obj.round.number is not None:
-            return obj.round.number
-        return MISSING_CAMPAIGN_LABEL
-
-    def get_queryset(self, request):
-        return super().get_queryset(request).select_related("round__campaign")
 
     def save_related(self, request, form, formsets, change):
         for formset in formsets:
@@ -774,7 +823,54 @@ class PerformanceThresholdsAdmin(admin.ModelAdmin):
         return PerformanceThresholds.objects_include_deleted.all()
 
 
-admin.site.register(RoundDateHistoryEntry)
+@admin.register(RoundDateHistoryEntry)
+class RoundDateHistoryEntryAdmin(RoundRelatedAdminDisplayMixin, admin.ModelAdmin):
+    list_display = (
+        "id",
+        "get_campaign_obr_name",
+        "get_round_number",
+        "started_at",
+        "ended_at",
+        "previous_started_at",
+        "previous_ended_at",
+        "get_reason_for_delay",
+        "created_at",
+        "get_modified_by",
+    )
+    list_display_links = ("id", "get_campaign_obr_name")
+    search_fields = ("round__campaign__obr_name", "round__number", "reason_for_delay__name")
+    list_filter = ("reason_for_delay__key_name",)
+    autocomplete_fields = ("round", "reason_for_delay")
+    raw_id_fields = ("modified_by",)
+    readonly_fields = (
+        "previous_started_at",
+        "previous_ended_at",
+        "created_at",
+    )
+    date_hierarchy = "created_at"
+
+    @admin.display(
+        description="Reason for delay", ordering="reason_for_delay__name", empty_value=MISSING_CAMPAIGN_LABEL
+    )
+    def get_reason_for_delay(self, obj):
+        if obj.reason_for_delay_id:
+            return obj.reason_for_delay.name
+        return MISSING_CAMPAIGN_LABEL
+
+    @admin.display(description="Modified by", ordering="modified_by__username", empty_value=MISSING_CAMPAIGN_LABEL)
+    def get_modified_by(self, obj):
+        if obj.modified_by_id:
+            return obj.modified_by.get_username()
+        return MISSING_CAMPAIGN_LABEL
+
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .select_related("reason_for_delay", "modified_by")
+        )
+
+
 admin.site.register(CountryUsersGroup)
 admin.site.register(URLCache)
 admin.site.register(CampaignType)

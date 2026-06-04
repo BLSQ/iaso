@@ -44,6 +44,10 @@ from iaso.utils.models.soft_deletable import (
     SoftDeletableModel,
 )
 from iaso.utils.virus_scan.model import ModelWithFile
+from plugins.polio.preparedness.display_utils import (
+    format_campaign_obr_name,
+    format_round_campaign_obr_name,
+)
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
@@ -227,6 +231,13 @@ class RoundDateHistoryEntry(models.Model):
     modified_by = models.ForeignKey("auth.User", on_delete=models.PROTECT, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        if not self.round_id:
+            return f"Round date history {self.pk}"
+        round_label = format_round_campaign_obr_name(self.round, empty="?")
+        number = self.round.number if self.round.number is not None else "?"
+        return f"{round_label} – Round {number} ({self.created_at:%Y-%m-%d})"
+
 
 class ReasonForDelay(SoftDeletableModel):
     name = TranslatedField(models.CharField(_("name"), max_length=200), {"fr": {"blank": True}})
@@ -377,52 +388,6 @@ ROUND_DEPRECATED_VACCINE_MANAGEMENT_HELP = _(
 )
 
 # Round-level summary fields kept for backwards compatibility (campaign history, legacy API).
-MISSING_CAMPAIGN_LABEL = "—"
-
-
-def format_round_campaign_obr_name(round_obj, *, empty=MISSING_CAMPAIGN_LABEL):
-    """OBR name for labels; rounds may exist without a linked campaign (legacy data)."""
-    if round_obj is None or not round_obj.campaign_id:
-        return empty
-    campaign = round_obj.campaign
-    if campaign is None:
-        return empty
-    return campaign.obr_name
-
-
-def format_campaign_obr_name(campaign=None, *, non_obr_name="", empty=MISSING_CAMPAIGN_LABEL):
-    """Campaign OBR or alternative name (Form A may use non_obr_name when campaign is unset)."""
-    if campaign is not None:
-        return campaign.obr_name
-    if non_obr_name:
-        return non_obr_name
-    return empty
-
-
-def format_campaign_country(campaign, *, empty=MISSING_CAMPAIGN_LABEL):
-    if campaign is None or not campaign.country_id:
-        return empty
-    country = campaign.country
-    if country is None:
-        return empty
-    return country.name
-
-
-def format_vaccine_stock_country(vaccine_stock, *, empty=MISSING_CAMPAIGN_LABEL):
-    if vaccine_stock is None or not vaccine_stock.country_id:
-        return empty
-    country = vaccine_stock.country
-    if country is None:
-        return empty
-    return country.name
-
-
-def format_vaccine_stock_vaccine(vaccine_stock, *, empty=MISSING_CAMPAIGN_LABEL):
-    if vaccine_stock is None:
-        return empty
-    return vaccine_stock.vaccine
-
-
 ROUND_DEPRECATED_VACCINE_MANAGEMENT_FIELD_NAMES = (
     "date_signed_vrf_received",
     "date_destruction",
@@ -1341,7 +1306,7 @@ class SpreadSheetImport(models.Model):
 
 class CampaignGroup(SoftDeletableModel):
     def __str__(self):
-        return f"{self.name} {','.join(str(c) for c in self.campaigns.all())}"
+        return self.name
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

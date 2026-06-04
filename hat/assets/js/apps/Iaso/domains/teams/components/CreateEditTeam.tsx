@@ -201,7 +201,9 @@ const CreateEditTeam: FunctionComponent<Props> = ({
                     <UserAsyncSelect
                         keyValue="manager"
                         handleChange={onChange}
-                        filterUsers={`${values.manager}`}
+                        filterUsers={
+                            values.manager ? `${values.manager}` : undefined
+                        }
                         label={MESSAGES.manager}
                         multi={false}
                     />
@@ -258,7 +260,11 @@ const CreateEditTeam: FunctionComponent<Props> = ({
                         <UserAsyncSelect
                             keyValue="users"
                             handleChange={onChange}
-                            filterUsers={values.users.join(',')}
+                            filterUsers={
+                                values.users
+                                    ? values.users.join(',')
+                                    : undefined
+                            }
                             label={MESSAGES.users}
                             multi
                         />

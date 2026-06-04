@@ -1,7 +1,7 @@
 import React from 'react';
-import { Table, TableBody, TableCell, TableRow } from '@mui/material';
+import { Alert, Table, TableBody, TableCell, TableRow } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { Field } from 'formik';
+import { ErrorMessage, Field } from 'formik';
 import { ApiAccountFeatureFlagsDropdownListQueryResult } from 'Iaso/api/accountFeatureFlags';
 import { ArrayCheckboxInput } from 'Iaso/components/forms/ArrayCheckboxInput';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
@@ -20,25 +20,40 @@ export const FeatureFlagsEditPanel = ({ accountFeatureFlags }: Props) => {
             expandable={true}
             id={'account-feature-flags'}
         >
-            <Table>
-                <TableBody>
-                    {accountFeatureFlags?.map(({ value, label }) => {
-                        return (
-                            <TableRow key={value}>
-                                <TableCell>{label}</TableCell>
-                                <TableCell>
-                                    <Field
-                                        component={ArrayCheckboxInput}
-                                        name={'feature_flags'}
-                                        value={value}
-                                        aria-label={label}
-                                    />
-                                </TableCell>
-                            </TableRow>
-                        );
-                    })}
-                </TableBody>
-            </Table>
+            {accountFeatureFlags?.length ? (
+                <>
+                    <ErrorMessage name="feature_flags">
+                        {msg => (
+                            <Alert severity={'error'} sx={{ mb: 2 }}>
+                                {msg}
+                            </Alert>
+                        )}
+                    </ErrorMessage>
+                    <Table>
+                        <TableBody>
+                            {accountFeatureFlags?.map(({ value, label }) => {
+                                return (
+                                    <TableRow key={value}>
+                                        <TableCell>{label}</TableCell>
+                                        <TableCell>
+                                            <Field
+                                                component={ArrayCheckboxInput}
+                                                name={'feature_flags'}
+                                                value={value}
+                                                aria-label={label}
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
+                </>
+            ) : (
+                <Alert severity={'info'} sx={{ mb: 2 }}>
+                    {formatMessage(MESSAGES.noResultsFound)}
+                </Alert>
+            )}
         </WidgetPaper>
     );
 };

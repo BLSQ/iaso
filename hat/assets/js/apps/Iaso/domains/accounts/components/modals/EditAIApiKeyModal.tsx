@@ -30,19 +30,22 @@ const EditAIApiKeyModal = ({ accountId, isOpen, closeDialog }: Props) => {
         },
     });
     const formik = useFormik({
-        initialValues: {},
+        initialValues: {
+            anthropic_api_key: '',
+        },
         validationSchema: toFormikValidationSchema(
             AccountUpdateAIApiKeyRequest,
         ),
         onSubmit: withFormikSubmitAsync(values =>
             saveAIApiKey({
                 id: accountId,
-                data: values as AccountUpdateAIApiKeyRequest,
-            }),
+                data: values,
+            }).then(() => closeDialog()),
         ),
     });
 
-    const allowConfirm = formik.isValid && formik.dirty && !!accountId;
+    const allowConfirm =
+        formik.isValid && formik.dirty && !!accountId && !formik.isSubmitting;
 
     return (
         <FormikProvider value={formik}>
@@ -60,6 +63,7 @@ const EditAIApiKeyModal = ({ accountId, isOpen, closeDialog }: Props) => {
                 }}
                 confirmMessage={MESSAGES.save}
                 cancelMessage={MESSAGES.cancel}
+                closeOnConfirm={false}
             >
                 <Box>
                     {formik.status && (

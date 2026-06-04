@@ -27,7 +27,10 @@ export const GeneralInfoPanel = ({ accountId, account, AIApiKey }: Props) => {
     const user = useCurrentUser();
     const { mutateAsync: deleteAIApiKey } = useApiAccountsAiApiKeyDestroy();
     return (
-        <WidgetPaper title={formatMessage(MESSAGES.generalInfoTitle)}>
+        <WidgetPaper
+            title={formatMessage(MESSAGES.generalInfoTitle)}
+            data-testid={'accounts-general'}
+        >
             <Table>
                 <TableBody>
                     <Row

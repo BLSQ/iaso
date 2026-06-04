@@ -397,6 +397,7 @@ describe(() => {
     server.listen({
       onUnhandledRequest: 'error',
     });
+    faker.seed(1); // if you want "fixed" generated mock data 
   });
 
   afterEach(() => {
@@ -405,11 +406,11 @@ describe(() => {
   });
 
   afterAll(() => {
+    faker.seed(Date.now()); // reset
     server.close();
   });
   beforeEach(() => {
     vi.clearAllMocks();
-    faker.seed(Date.now());
     vi.unstubAllEnvs();
   });
 });
@@ -687,6 +688,13 @@ const NewSchema = BaseSchema.extend({
 ```
 
 This allows you to reuse the generated schema while customizing it for your specific needs.
+
+### When running tests with msw, I want to hide all the logs from network interceptor
+
+In your .env :
+```dotenv
+VITEST_DEBUG="!msw:*"
+```
 
 ---
 

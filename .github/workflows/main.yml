@@ -39,6 +39,9 @@ jobs:
             - name: Check Frontend (JS/React) translations
               run: |
                   python scripts/update_trads.py
+            - name: Check that the orval generated files are up-to-date
+              run: |
+                scripts/check_orval.sh
             - name: Slack notification
               uses: rtCamp/action-slack-notify@v2
               env:

@@ -79,7 +79,8 @@ export const AccountsEdit = () => {
     const generalLoading =
         isLoading || isLoadingModules || isLoadingAccountFeatureFlags;
 
-    const allowConfirm = formik.isValid && formik.dirty && !!accountId;
+    const allowConfirm =
+        formik.isValid && formik.dirty && !!accountId && !formik.isSubmitting;
 
     if (generalLoading) {
         return (

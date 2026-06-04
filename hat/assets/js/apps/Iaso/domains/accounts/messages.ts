@@ -109,6 +109,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'General',
         id: 'iaso.accounts.accountTabs.general.title',
     },
+    noResultsFound: {
+        defaultMessage: 'No results found.',
+        id: 'iaso.accounts.noResultsFound',
+    },
+    additionalInfo: {
+        defaultMessage: 'Additional information',
+        id: 'iaso.accounts.table.header.additionInformation',
+    },
 });
 
 export default MESSAGES;

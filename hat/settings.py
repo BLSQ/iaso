@@ -55,6 +55,9 @@ CSRF_COOKIE_SECURE = env.bool("CSRF_COOKIE_SECURE", default=False)
 SESSION_COOKIE_SECURE = env.bool("SESSION_COOKIE_SECURE", default=False)
 ENABLE_CORS = env.bool("ENABLE_CORS", default=True)
 
+# Trypelim: Allow embedding in an iframe
+X_FRAME_OPTIONS = "SAMEORIGIN"
+
 # This should be the naked domain (no http or https prefix) that is
 # hosting Iaso, this is used when sending out emails that need a link
 # back to the Iaso application.

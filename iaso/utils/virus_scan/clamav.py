@@ -1,6 +1,7 @@
 import logging
 import os
 import tempfile
+
 from typing import Union
 
 import clamav_client

@@ -1,6 +1,7 @@
 import path from 'path';
 
 import { configDefaults, defineConfig } from 'vitest/config';
+import 'dotenv/config';
 
 // @ts-expect-error: workaround for TS2307 with @vitejs/plugin-react
 import react from '@vitejs/plugin-react';
@@ -44,6 +45,18 @@ export default defineConfig({
                         'hat/assets/js/**/*.test.{ts,tsx}',
                     ],
                     exclude: [
+                        ...configDefaults.exclude, '**/build/', '**/dist/', '**/*.min.js', '**/playwright/**', 'hat/assets/js/__tests__/**', '**/*.a11y.test.{ts,tsx}'
+                    ],
+                },
+            },
+            {
+                extends: true,
+                test: {
+                    name: 'a11y',
+                    include: [
+                        'hat/assets/js/**/*.a11y.test.{ts,tsx}',
+                    ],
+                    exclude: [
                         ...configDefaults.exclude, '**/build/', '**/dist/', '**/*.min.js', '**/playwright/**', 'hat/assets/js/__tests__/**',
                     ],
                 },
@@ -53,7 +66,7 @@ export default defineConfig({
                 test: {
                     name: 'integration',
                     include: [
-                        'hat/assets/js/__tests__/integration/*.test.{ts,tsx}',
+                        'hat/assets/js/__tests__/integration/**/*.integration.test.{ts,tsx}',
                     ],
                     exclude: [
                         ...configDefaults.exclude, '**/build/', '**/dist/', '**/*.min.js', '**/playwright/**',

@@ -2,8 +2,9 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
 
-from iaso.models import Account, TenantUser
+from iaso.models import Account, AccountFeatureFlag, TenantUser
 from iaso.modules import MODULE_VALIDATION_WORKFLOW
+from iaso.permissions.core_permissions import CORE_ACCOUNT_MANAGEMENT_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
@@ -12,11 +13,26 @@ class TestAccountRetrieve(SwaggerTestCaseMixin, APITestCase):
         super().setUp()
         self.account = Account.objects.create(name="account")
         self.other_account = Account.objects.create(name="other account", modules=[MODULE_VALIDATION_WORKFLOW.codename])
-        self.another_account = Account.objects.create(name="another account")
-        self.john_wick = self.create_user_with_profile(username="johnwick", account=self.another_account)
 
-        self.jane_doe = self.create_user_with_profile(username="janedoe", account=self.account)
-        self.john_doe = self.create_user_with_profile(username="johndoe", account=self.other_account)
+        self.account.feature_flags.add(AccountFeatureFlag.objects.create(name="test-name-ff-1", code="test-code-ff-1"))
+        self.other_account.feature_flags.add(
+            AccountFeatureFlag.objects.create(name="test-name-ff-2", code="test-code-ff-2")
+        )
+        self.other_account.feature_flags.add(
+            AccountFeatureFlag.objects.create(name="test-name-ff-3", code="test-code-ff-3")
+        )
+
+        self.another_account = Account.objects.create(name="another account")
+        self.john_wick = self.create_user_with_profile(
+            username="johnwick", account=self.another_account, permissions=[CORE_ACCOUNT_MANAGEMENT_PERMISSION]
+        )
+
+        self.jane_doe = self.create_user_with_profile(
+            username="janedoe", account=self.account, permissions=[CORE_ACCOUNT_MANAGEMENT_PERMISSION]
+        )
+        self.john_doe = self.create_user_with_profile(
+            username="johndoe", account=self.other_account, permissions=[CORE_ACCOUNT_MANAGEMENT_PERMISSION]
+        )
         # multi tenant account
 
         # Create a main user without profile
@@ -60,7 +76,7 @@ class TestAccountRetrieve(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(res_data["forum_path"], self.account.forum_path)
         self.assertEqual(res_data["modules"], self.account.modules)
         self.assertEqual(res_data["enforce_password_validation"], self.account.enforce_password_validation)
-        self.assertEqual(res_data["anthropic_api_key"], self.account.anthropic_api_key)
+        self.assertEqual(res_data["feature_flags"], [{"name": "test-name-ff-1", "code": "test-code-ff-1"}])
 
         self.client.force_authenticate(self.jane_doe)
         res = self.client.get(reverse("accounts-detail", kwargs={"pk": self.other_account.pk}))
@@ -74,11 +90,20 @@ class TestAccountRetrieve(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(res_data["forum_path"], self.other_account.forum_path)
         self.assertEqual(res_data["modules"], self.other_account.modules)
         self.assertEqual(res_data["enforce_password_validation"], self.other_account.enforce_password_validation)
-        self.assertEqual(res_data["anthropic_api_key"], self.other_account.anthropic_api_key)
+        self.assertCountEqual(
+            res_data["feature_flags"],
+            [
+                {"name": "test-name-ff-2", "code": "test-code-ff-2"},
+                {"name": "test-name-ff-3", "code": "test-code-ff-3"},
+            ],
+        )
 
     def test_num_queries(self):
         self.client.force_authenticate(self.jane_doe)
-        with self.assertNumQueries(1):
+        with self.assertNumQueries(4):
+            # 1-2 PERM
+            # 3 SELECT
+            # 4 PREFETCH FEATURE_FLAGS
             res = self.client.get(reverse("accounts-detail", kwargs={"pk": self.other_account.pk}))
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data)

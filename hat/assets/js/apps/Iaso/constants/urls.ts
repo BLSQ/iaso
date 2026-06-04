@@ -663,6 +663,18 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'appVersion',
         ],
     },
+    accounts: {
+        url: 'settings/accounts',
+        params: ['accountId', ...paginationPathParams],
+    },
+    accountsDetail: {
+        url: 'settings/accounts/detail',
+        params: ['accountId', 'id'],
+    },
+    accountsEdit: {
+        url: 'settings/accounts/edit',
+        params: ['accountId', 'id'],
+    },
     hidden: { url: 'secret', params: [] },
     error401: { url: '401', params: [] },
     error403: { url: '403', params: [] },
@@ -707,6 +719,9 @@ export const extractParamsConfig = (
 
 // Not super necessary, but it will help the IDE when using baseUrls
 type IasoBaseUrls = {
+    accounts: string;
+    accountsDetail: string;
+    accountsEdit: string;
     setupAccount: string;
     setupAccountSettings: string;
     home: string;

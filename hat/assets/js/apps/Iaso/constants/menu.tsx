@@ -1,6 +1,7 @@
 import React, { useContext, useMemo } from 'react';
 import { InventoryOutlined } from '@mui/icons-material';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
@@ -193,6 +194,12 @@ const menuItems = (
             key: 'pipelines',
             permissions: paths.pipelineListPath.permissions,
             icon: props => <ScienceIcon {...props} />,
+        },
+        {
+            label: formatMessage(MESSAGES.accounts),
+            key: 'accounts',
+            permissions: paths.accountsPath.permissions,
+            icon: props => <AccountBoxIcon {...props} />,
         },
     ];
     if (currentUser.is_staff || currentUser.is_superuser) {

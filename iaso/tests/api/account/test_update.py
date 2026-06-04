@@ -4,29 +4,41 @@ from rest_framework import status
 
 from iaso.models import Account, AccountFeatureFlag, TenantUser
 from iaso.modules import MODULE_VALIDATION_WORKFLOW
+from iaso.permissions.core_permissions import CORE_ACCOUNT_MANAGEMENT_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
 class TestAccountUpdate(SwaggerTestCaseMixin, APITestCase):
     def setUp(self):
         super().setUp()
-        self.account = Account.objects.create(name="account")
-        self.other_account = Account.objects.create(name="other account")
-        self.another_account = Account.objects.create(name="another account")
-        self.john_wick = self.create_user_with_profile(username="johnwick", account=self.another_account)
+        self.account = Account.objects.create(name="account", anthropic_api_key="1234")
+        self.other_account = Account.objects.create(name="other account", anthropic_api_key="1234")
+        self.another_account = Account.objects.create(name="another account", anthropic_api_key="1234")
 
-        self.jane_doe = self.create_user_with_profile(username="janedoe", account=self.account)
-        self.john_doe = self.create_user_with_profile(username="johndoe", account=self.other_account)
+        self.john_wick = self.create_user_with_profile(
+            username="johnwick", account=self.another_account, permissions=[CORE_ACCOUNT_MANAGEMENT_PERMISSION]
+        )
+
+        self.jane_doe = self.create_user_with_profile(
+            username="janedoe", account=self.account, permissions=[CORE_ACCOUNT_MANAGEMENT_PERMISSION]
+        )
+        self.john_doe = self.create_user_with_profile(
+            username="johndoe", account=self.other_account, permissions=[CORE_ACCOUNT_MANAGEMENT_PERMISSION]
+        )
         # multi tenant account
 
         # Create a main user without profile
         main_user = get_user_model().objects.create(username="main_user")
 
         # And 2 account users with profile
-        self.account_user_ghi = self.create_user_with_profile(username="User_A", account=self.account)
+        self.account_user_ghi = self.create_user_with_profile(
+            username="User_A", account=self.account, permissions=[CORE_ACCOUNT_MANAGEMENT_PERMISSION]
+        )
         TenantUser.objects.create(main_user=main_user, account_user=self.account_user_ghi)
         TenantUser.objects.create(main_user=main_user, account_user=self.jane_doe)
-        self.account_user_wha = self.create_user_with_profile(username="User_B", account=self.other_account)
+        self.account_user_wha = self.create_user_with_profile(
+            username="User_B", account=self.other_account, permissions=[CORE_ACCOUNT_MANAGEMENT_PERMISSION]
+        )
         TenantUser.objects.create(main_user=main_user, account_user=self.account_user_wha)
         TenantUser.objects.create(main_user=main_user, account_user=self.john_doe)
 
@@ -41,7 +53,7 @@ class TestAccountUpdate(SwaggerTestCaseMixin, APITestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.jane_doe)
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(5):
             res = self.client.put(
                 reverse("accounts-detail", kwargs={"pk": self.account.pk}),
                 data={
@@ -82,7 +94,6 @@ class TestAccountUpdate(SwaggerTestCaseMixin, APITestCase):
             "forum_path": "forum_path",
             "modules": [MODULE_VALIDATION_WORKFLOW.codename],
             "enforce_password_validation": False,
-            "anthropic_api_key": "1234",
             "custom_translations": {"en": "oops"},
         }
         self.assertValidPutBody(data)
@@ -108,7 +119,6 @@ class TestAccountUpdate(SwaggerTestCaseMixin, APITestCase):
 
         data = {
             "user_manual_path": "user_manual_path",
-            "anthropic_api_key": "1234",
             "custom_translations": {"en": "oops"},
         }
         self.assertValidPatchBody(data)

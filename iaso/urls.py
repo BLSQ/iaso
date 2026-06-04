@@ -21,6 +21,7 @@ from iaso.api.tasks.create.profiles_bulk_update import ProfilesBulkUpdate
 from iaso.api.validation_workflows.views_mobile import ValidationWorkflowMobileViewSet
 from plugins.router import router as plugins_router
 
+from .api.account_feature_flags.views import AccountFeatureFlagViewSet
 from .api.accounts.views import AccountViewSet
 from .api.algorithms import AlgorithmsViewSet
 from .api.algorithms_runs import AlgorithmsRunsViewSet
@@ -185,6 +186,7 @@ router.register(r"devicespositions?", DevicesPositionViewSet, basename="devicesp
 router.register(r"datasources/sync", DataSourceVersionsSynchronizationViewSet, basename="datasources_synchronization")
 router.register(r"datasources", DataSourceViewSet, basename="datasources")
 router.register(r"accounts", AccountViewSet, basename="accounts")
+router.register(r"account-feature-flags", AccountFeatureFlagViewSet, basename="account_feature_flags")
 router.register(r"apitoken", APITokenViewSet, basename="apitoken")
 router.register(r"sourceversions", SourceVersionViewSet, basename="sourceversion")
 router.register(r"links", LinkViewSet, basename="links")

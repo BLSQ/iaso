@@ -1,5 +1,6 @@
 import { mutationInvalidates as validationWorkflowsMutationInvalidates} from './hat/assets/js/orval/apiConfiguration/validationWorkflows/configuration';
 import { createSchemaTransformer, normalizeSchema } from './hat/assets/js/orval/transformer/fakerTransformer';
+import { mutationInvalidates as accountsMutationInvalidates } from './hat/assets/js/orval/apiConfiguration/accounts/configuration';
 
 require('dotenv').config();
 
@@ -62,6 +63,9 @@ const createConfig = (project: string, tags: string[] | RegExp[], mutationInvali
                         optionalQueryClient: true,
                     },
                 },
+                fetch: {
+                    includeHttpResponseReturnType: false,
+                },
                 mutator: {
                     path: '../../../../orval/client/custom-fetch.ts',
                     name: 'customFetchInstance',
@@ -101,6 +105,8 @@ const createConfig = (project: string, tags: string[] | RegExp[], mutationInvali
 };
 
 module.exports = {
+    accounts: createConfig('accounts', ['Account'], accountsMutationInvalidates),
+    accountFeatureFlags: createConfig('accountFeatureFlags', ['Account feature flags'])
     // validationWorkflows: createConfig('validationWorkflows', ['Validation workflows'], validationWorkflowsMutationInvalidates),
     // profiles: createConfig('profiles', ['Profiles'])
 };

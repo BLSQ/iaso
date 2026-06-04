@@ -7,9 +7,17 @@ import { EditTeamModal } from './components/CreateEditTeam';
 import { TypeCell } from './components/TypeCell';
 import { UsersTeamsCell } from './components/UsersTeamsCell';
 import { useDeleteTeam } from './hooks/requests/useDeleteTeam';
+import { TeamList } from './hooks/requests/useGetTeams';
 import MESSAGES from './messages';
+import { TeamParams } from './types/team';
 
-export const useTeamColumns = ({ params, data }): Column[] => {
+export const useTeamColumns = ({
+    params,
+    data,
+}: {
+    params: TeamParams;
+    data?: TeamList;
+}): Column[] => {
     const { mutate: deleteTeam } = useDeleteTeam({
         params,
         count: data?.count ?? 0,
@@ -87,15 +95,6 @@ export const useTeamColumns = ({ params, data }): Column[] => {
                         <EditTeamModal
                             dialogType="edit"
                             id={settings.row.original.id}
-                            name={settings.row.original.name}
-                            description={settings.row.original.description}
-                            manager={settings.row.original.manager}
-                            subTeams={settings.row.original.sub_teams}
-                            project={settings.row.original.project}
-                            type={settings.row.original.type}
-                            users={settings.row.original.users}
-                            parent={settings.row.original.parent}
-                            color={settings.row.original.color}
                             iconProps={{}}
                         />
                         <DeleteDialog

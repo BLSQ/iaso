@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-18 15:02+0000\n"
+"POT-Creation-Date: 2026-06-05 07:16+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -30,6 +30,10 @@ msgstr "Le modèle {value} n'existe pas."
 #: iaso/api/comment.py
 msgid "Invalid value."
 msgstr "Valeur invalide"
+
+#: iaso/api/common/permissions.py
+msgid "This feature is disabled for your account."
+msgstr "Cette fonctionnalité est désactivée pour votre compte."
 
 #: iaso/api/common/permissions.py
 msgid "The related module(s) are not activated for your account."
@@ -520,11 +524,11 @@ msgstr "Les mots de passe doivent correspondre."
 msgid "Set up a password for your new account on {domain}"
 msgstr "Configurer un mot de passe pour votre nouveau compte sur {domain}"
 
-#: iaso/api/setup_account.py
+#: iaso/api/setup_account/serializers.py
 msgid "Email is required when email_invitation is True"
 msgstr "L'email est requis lorsque l'invitation par email est activée"
 
-#: iaso/api/setup_account.py
+#: iaso/api/setup_account/serializers.py
 msgid "Password is required when email_invitation is False"
 msgstr ""
 "Le mot de passe est requis lorsque l'invitation par email est désactivée"
@@ -739,6 +743,10 @@ msgstr "Entités"
 #: iaso/models/feature_flags.py
 msgid "Planning"
 msgstr "Planification"
+
+#: iaso/models/feature_flags.py iaso/permissions/core_permissions.py
+msgid "Stock management"
+msgstr "Management de stock"
 
 #: iaso/models/feature_flags.py
 msgid "Specific options"
@@ -1107,10 +1115,6 @@ msgid "Can change the default version of a data source"
 msgstr "Peut modifier la version par défaut d'une source de données"
 
 #: iaso/permissions/core_permissions.py
-msgid "Stock management"
-msgstr "Management de stock"
-
-#: iaso/permissions/core_permissions.py
 msgid "Storages"
 msgstr "Stockages"
 
@@ -1297,9 +1301,6 @@ msgstr "Virus détecté"
 #: iaso/utils/virus_scan/model.py
 msgid "Error"
 msgstr "Erreur lors de l'analyse"
-
-#~ msgid "This feature is disabled for your account."
-#~ msgstr "Cette fonctionnalité est désactivée pour votre compte."
 
 #~ msgid "Planning id is required in the URL path."
 #~ msgstr "L'ID du planning est requis dans le chemin de l'URL."

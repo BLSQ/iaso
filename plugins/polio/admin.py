@@ -864,11 +864,7 @@ class RoundDateHistoryEntryAdmin(RoundRelatedAdminDisplayMixin, admin.ModelAdmin
         return MISSING_CAMPAIGN_LABEL
 
     def get_queryset(self, request):
-        return (
-            super()
-            .get_queryset(request)
-            .select_related("reason_for_delay", "modified_by")
-        )
+        return super().get_queryset(request).select_related("reason_for_delay", "modified_by")
 
 
 admin.site.register(CountryUsersGroup)

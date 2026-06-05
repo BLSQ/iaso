@@ -16,6 +16,7 @@ import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/h
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
 import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles';
+import { useFindCustomComponent } from '../../../plugins/hooks/customComponents';
 import { useGetPermissionsDropDown } from '../hooks/useGetPermissionsDropdown';
 import MESSAGES from '../messages';
 
@@ -65,7 +66,8 @@ const Filters = ({
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions(true, canBypassProjectRestrictions);
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
-        useGetTeamsDropdown();
+        useGetTeamsDropdown({});
+    const TeamsFilterOverride = useFindCustomComponent('user.teams_filter');
 
     const orgUnitTypeDropdown = useMemo(() => {
         if (!orgUnitTypes?.length) return orgUnitTypes;
@@ -190,18 +192,26 @@ const Filters = ({
                     onEnterPressed={handleSearchUserRoles}
                 />
 
-                <InputComponent
-                    keyValue="teamsIds"
-                    onChange={handleChange}
-                    value={filters.teamsIds}
-                    type="select"
-                    options={teamsDropdown}
-                    label={MESSAGES.teams}
-                    loading={isFetchingTeams}
-                    onEnterPressed={handleSearchPerms}
-                    clearable
-                    multi
-                />
+                {TeamsFilterOverride ? (
+                    <TeamsFilterOverride
+                        value={filters.teamsIds}
+                        onChange={handleChange}
+                        onEnterPressed={handleSearchPerms}
+                    />
+                ) : (
+                    <InputComponent
+                        keyValue="teamsIds"
+                        onChange={handleChange}
+                        value={filters.teamsIds}
+                        type="select"
+                        options={teamsDropdown}
+                        label={MESSAGES.teams}
+                        loading={isFetchingTeams}
+                        onEnterPressed={handleSearchPerms}
+                        clearable
+                        multi
+                    />
+                )}
             </Grid>
             <Grid item xs={12} md={3}>
                 <InputComponent

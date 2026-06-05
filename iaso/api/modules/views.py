@@ -1,6 +1,6 @@
 from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import permissions
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin
@@ -15,7 +15,25 @@ from .serializers.dropdown import ModuleDropdownSerializer
 from .serializers.list import ModuleListSerializer
 
 
-@extend_schema(tags=["Modules"])
+# we need to provide the search param because the filter isn't exactly the right one
+# we could implement a custom filter backend + openApiExtension .. but that's a lot of work
+@extend_schema(
+    tags=["Modules"],
+    parameters=[
+        OpenApiParameter(
+            name="search",
+            type=str,
+            location=OpenApiParameter.QUERY,
+            description="Search module name",
+        ),
+        OpenApiParameter(
+            name="exclude",
+            type=str,
+            location=OpenApiParameter.QUERY,
+            description="Exclude codename",
+        ),
+    ],
+)
 class ModulesViewSet(ListModelMixin, GenericViewSet):
     f"""Modules API
 
@@ -47,6 +65,7 @@ class ModulesViewSet(ListModelMixin, GenericViewSet):
             if not module.related_plugin or module.related_plugin in (settings.PLUGINS or [])
         ]
 
+    @extend_schema(operation_id="api_modules_dropdown_list")
     @action(detail=False, methods=["get"])
     def dropdown(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)

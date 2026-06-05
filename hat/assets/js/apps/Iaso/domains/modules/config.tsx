@@ -1,9 +1,9 @@
 import React, { ReactElement, useMemo } from 'react';
-import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
 import {
     HighlightOffOutlined as NotCheckedIcon,
     CheckCircleOutlineOutlined as CheckedIcon,
 } from '@mui/icons-material';
+import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
 import MESSAGES from './messages';
 
 export const useModulesColumns = (): Column[] => {
@@ -15,22 +15,26 @@ export const useModulesColumns = (): Column[] => {
                 Header: formatMessage(MESSAGES.name),
                 accessor: 'name',
                 id: 'name',
-                Cell: settings => {
-                    return formatMessage(
-                        MESSAGES[settings.row.original.codename.toLowerCase()],
-                    );
-                },
             },
             {
                 Header: formatMessage(MESSAGES.status),
                 resizable: false,
                 sortable: false,
                 Cell: (settings): ReactElement => {
-                    const { account } = settings.row.original;
-                    if (account.length > 0) {
-                        return <CheckedIcon style={{ color: 'green' }} />;
+                    if (settings.row.original?.is_activated_for_user) {
+                        return (
+                            <CheckedIcon
+                                style={{ color: 'green' }}
+                                aria-label={formatMessage(MESSAGES.activated)}
+                            />
+                        );
                     }
-                    return <NotCheckedIcon color="disabled" />;
+                    return (
+                        <NotCheckedIcon
+                            color="disabled"
+                            aria-label={formatMessage(MESSAGES.notActivated)}
+                        />
+                    );
                 },
             },
         ];

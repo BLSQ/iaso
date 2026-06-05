@@ -1,20 +1,24 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { useState } from 'react';
 import { Box, Grid } from '@mui/material';
+import { ApiModulesListParams } from 'Iaso/api/modules';
 import { SearchButton } from 'Iaso/components/SearchButton';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useFilterState } from 'Iaso/hooks/useFilterState';
 import InputComponent from '../../../components/forms/InputComponent';
-import { baseUrls } from '../../../constants/urls';
-import { useFilterState } from '../../../hooks/useFilterState';
 import MESSAGES from '../messages';
-import { ModuleParams } from '../types/modules';
 
 type Props = {
-    params: ModuleParams;
+    params?: ApiModulesListParams;
 };
 
 const baseUrl = baseUrls.modules;
-export const ModulesFilters: FunctionComponent<Props> = ({ params }) => {
+export const ModulesFilters = ({ params }: Props) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState({ baseUrl, params });
+        useFilterState({
+            baseUrl,
+            params: params ?? {},
+            withPagination: false,
+        });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
     return (
         <Grid container spacing={8} justifyContent="flex-end">

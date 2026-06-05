@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ContactSupportIcon from '@mui/icons-material/ContactSupport';
 import ExitIcon from '@mui/icons-material/ExitToApp';
@@ -8,16 +8,15 @@ import { makeStyles } from '@mui/styles';
 import { MENU_HEIGHT_WITHOUT_TABS, useSafeIntl } from 'bluesquare-components';
 import { useFormik } from 'formik';
 import { isEqual } from 'lodash';
+import { ModulesDropdown } from 'Iaso/domains/modules/components/ModulesDropdown';
 import InputComponent from '../../components/forms/InputComponent';
 import TopBar from '../../components/nav/TopBarComponent';
 import {
     useApiErrorValidation,
     useTranslatedErrors,
 } from '../../libs/validation';
-import { DropdownOptions } from '../../types/utils';
 import { commaSeparatedIdsToStringArray } from '../../utils/forms';
 import getDisplayName, { useCurrentUser } from '../../utils/usersUtils';
-import { useGetModulesDropDown } from './hooks/useGetModulesDropDown';
 import { useSaveAccount } from './hooks/useSaveAccount';
 import { MESSAGES } from './messages';
 import { SaveAccountQuery } from './types/account';
@@ -52,7 +51,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-export const SetupAccount: FunctionComponent = () => {
+export const SetupAccount = () => {
     const currentUser = useCurrentUser();
     const [isSaved, setIsSaved] = useState<boolean>(false);
     const { formatMessage } = useSafeIntl();
@@ -101,10 +100,13 @@ export const SetupAccount: FunctionComponent = () => {
         initialValues,
         handleSubmit,
     } = formik;
-    const onChange = (keyValue, value) => {
+    const onChange = (keyValue: string, value: any) => {
         setFieldTouched(keyValue, true);
         if (keyValue === 'modules' && value) {
-            setFieldValue(keyValue, commaSeparatedIdsToStringArray(value));
+            setFieldValue(
+                keyValue,
+                commaSeparatedIdsToStringArray(value as string),
+            );
         } else {
             // Set empty strings to undefined to avoid backend validation issues
             const processedValue = value === '' ? undefined : value;
@@ -118,16 +120,7 @@ export const SetupAccount: FunctionComponent = () => {
         touched,
         messages: MESSAGES,
     });
-    const { data: modules, isFetching: isFetchingModules } =
-        useGetModulesDropDown();
 
-    const filteredModules: DropdownOptions<string>[] = useMemo(
-        () =>
-            modules?.filter(
-                (module: DropdownOptions<string>) => module.value !== 'DEFAULT',
-            ) ?? [],
-        [modules],
-    );
     const allowConfirm = isValid && !isEqual(values, initialValues);
     const hasAccount = Boolean(currentUser.account);
     return (
@@ -277,19 +270,16 @@ export const SetupAccount: FunctionComponent = () => {
                                             errors={getErrors('password')}
                                             disabled={values.email_invitation}
                                         />
-                                        <InputComponent
-                                            type="select"
+                                        <ModulesDropdown
                                             multi
                                             required
                                             keyValue="modules"
-                                            labelString={formatMessage(
-                                                MESSAGES.modules,
-                                            )}
                                             value={values.modules}
                                             onChange={onChange}
                                             errors={getErrors('modules')}
-                                            loading={isFetchingModules}
-                                            options={filteredModules}
+                                            params={{
+                                                exclude: 'DEFAULT',
+                                            }}
                                         />
                                         <InputComponent
                                             type="checkbox"

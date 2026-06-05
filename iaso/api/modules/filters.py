@@ -3,12 +3,12 @@ import copy
 import django_filters
 
 from django.utils.datastructures import MultiValueDict
-from django_filters.rest_framework import FilterSet
 from rest_framework.filters import OrderingFilter
 
 
-class ModuleFilter(FilterSet):
+class ModuleFilter(django_filters.FilterSet):
     search = django_filters.CharFilter(field_name="name", method="filter_search")
+    exclude = django_filters.CharFilter(field_name="codename", method="filter_exclude")
 
     def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
         self.is_bound = data is not None
@@ -49,6 +49,11 @@ class ModuleFilter(FilterSet):
     def filter_search(self, queryset, name, value):
         if value:
             queryset = [module for module in queryset if value.lower() in module.name.lower()]
+        return queryset
+
+    def filter_exclude(self, queryset, name, value):
+        if value:
+            queryset = [module for module in queryset if value.lower() not in module.codename.lower()]
         return queryset
 
 

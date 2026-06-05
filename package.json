@@ -10,7 +10,7 @@
         "fix-lint-pre-commit": "eslint --cache --fix",
         "export-lint-problems": "eslint \"./hat/assets/js/**/*.{js,jsx,ts,tsx}\" -f html -o ./hat/assets/js/lintErrors.html",
         "orval": "orval",
-        "test": "vitest --config vitest.config.ts --project integration --project unit --run",
+        "test": "vitest --config vitest.config.ts --project integration --project unit --project a11y --run",
         "test:api-e2e": "vitest --config vitest.config.ts --project api-e2e --run",
         "test:watch": "vitest --config vitest.config.ts",
         "test:coverage": "vitest run --coverage --config vitest.config.ts",

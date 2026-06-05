@@ -67,6 +67,10 @@ class ModuleDropdownAPITestCase(SwaggerTestCaseMixin, APITestCase):
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data, 0)
 
+        res = self.client.get(reverse("modules-list"), data={"exclude": self.related_modules[0].codename})
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidData(res_data, len(self.related_modules) - 1)
+
     def test_order(self):
         self.client.force_authenticate(self.john_wick)
         res = self.client.get(reverse("modules-list"))

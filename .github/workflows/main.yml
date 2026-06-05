@@ -1,0 +1,44 @@
+name: Iaso main branch
+on:
+  push:
+    tags:
+      - v*
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  check_on_main:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - id: check
+        run: |
+#          git fetch origin main
+          git fetch origin main-test
+          if git merge-base --is-ancestor ${{ github.sha }} origin/main; then
+            echo "Tag in on main, proceeding..."
+           else
+            echo "Tag is not in main, stopping now"
+            exit 1
+          fi
+
+  tests:
+    needs: [ check_on_main ]
+    uses: ./.github/workflows/wc_tests.yml
+    with:
+#      branch: main
+      branch: main-test
+
+  build_and_push_image:
+    needs: [ check_on_main, tests ]
+    uses: ./.github/workflows/wc_docker_build.yml
+    with:
+#      branch: main
+      branch: main-test
+      image_tags: ${{ github.ref_name }},main
+    secrets: inherit

@@ -1,9 +1,9 @@
-import { UseMutationResult, useQueryClient } from 'react-query';
+import { UseMutationResult } from 'react-query';
+import { useDeleteTableRow } from 'Iaso/components/tables/TableWithDeepLink';
+import { baseUrls } from '../../../constants/urls';
 import { deleteRequest } from '../../../libs/Api';
 import { useSnackMutation } from '../../../libs/apiHooks';
 import MESSAGES from '../messages';
-import { useDeleteTableRow } from 'Iaso/components/tables/TableWithDeepLink';
-import { baseUrls } from '../../../constants/urls';
 
 const deleteForm = (id: number) => {
     return deleteRequest(`/api/forms/${id}/`);
@@ -12,11 +12,12 @@ const deleteForm = (id: number) => {
 type useDeleteArgs = {
     params: any;
     count: number;
-}
+};
 
-export const useDeleteForm = ({params, count}: useDeleteArgs): UseMutationResult => {
-    const queryClient = useQueryClient();
-
+export const useDeleteForm = ({
+    params,
+    count,
+}: useDeleteArgs): UseMutationResult => {
     const onSuccessNavigateOrInvalidate = useDeleteTableRow({
         count,
         params,
@@ -24,15 +25,15 @@ export const useDeleteForm = ({params, count}: useDeleteArgs): UseMutationResult
         pageSizeKey: 'pageSize',
         invalidateQueries: ['forms'],
         baseUrl: baseUrls.forms,
-    })
+    });
 
     return useSnackMutation({
         mutationFn: body => deleteForm(body.id),
         snackSuccessMessage: MESSAGES.formDeleted,
-        options:{
-            onSuccess:()=>{
-                onSuccessNavigateOrInvalidate(); 
-            }
-        }
+        options: {
+            onSuccess: () => {
+                onSuccessNavigateOrInvalidate();
+            },
+        },
     });
 };

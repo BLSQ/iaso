@@ -12,11 +12,12 @@ jobs:
   check_on_main:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - name: Check out repository code
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - id: check
+      - name: Check if tag is part of main
         run: |
 #          git fetch origin main
           git fetch origin main-test

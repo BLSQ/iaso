@@ -6,7 +6,7 @@ import sys
 
 
 # Fetch the data from iaso's /api/datastore/ endpoint and copy it to a local DB
-# By default it will fetch from staging.poliooutbreaks.com but you can change the source by passing the -s arg
+# Pass the source URL with the -s arg
 # It will write to localhost:8081 but you can change the destination by passing the -t arg
 # You can also save the json in a file by passing the -- f arg with the file name and the -d arg for the destination directpry. if no value is passed to -d, it will save in the current dir
 # If you don't want to save on a local Db but want to save the json file,  just don't pass the -lu and -lpwd args
@@ -20,14 +20,14 @@ parser.add_argument("-lu", "--localuser", help="Local User name")  # User name f
 parser.add_argument("-lp", "--localpwd", help="Local Password")
 parser.add_argument("-f", "--file", type=str, help="Output to file")
 parser.add_argument("-d", "--dir", type=str, help="Destination directory for file (with end backslash)")
-parser.add_argument("-s", "--source", help="Source URL (with end backslash)")
+parser.add_argument("-s", "--source", required=True, help="Source URL (with end backslash)")
 parser.add_argument("-t", "--to", help="Destination URL (with end backslash)")
 
 args = parser.parse_args()
 auth_data = {"username": args.user, "password": args.pwd}
 local_auth_data = {"username": args.localuser, "password": args.localpwd}
 
-source = args.source if args.source else "https://staging.poliooutbreaks.com/"
+source = args.source
 # Get access token
 auth_response = subprocess.check_output(
     [

@@ -26,7 +26,10 @@ class MobileFormsAPITestCase(APITestCase):
         sw_version = m.SourceVersion.objects.create(data_source=sw_source, number=1)
         star_wars.default_version = sw_version
         star_wars.save()
-        cls.jedi_group = m.Group.objects.create(name="Jedi group", source_version=sw_version)
+        cls.form_manager = cls.create_user_with_profile(
+            username="form_manager", account=star_wars, permissions=[CORE_FORMS_PERMISSION]
+        )
+        cls.health_facilities_group = m.Group.objects.create(name="Health facilities", source_version=sw_version)
         cls.empty_group = m.Group.objects.create(name="Empty group", source_version=sw_version)
 
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
@@ -55,7 +58,7 @@ class MobileFormsAPITestCase(APITestCase):
         cls.form_2.form_versions.create(file=cls.create_file_mock(name="testf1.xml"), version_id="2020022401")
         cls.form_2.org_unit_types.add(cls.jedi_council)
         cls.form_2.org_unit_types.add(cls.jedi_academy)
-        cls.form_2.org_unit_groups.add(cls.jedi_group)
+        cls.form_2.org_unit_groups.add(cls.health_facilities_group)
 
         cls.form_2.instances.create(file=cls.create_file_mock(name="testi1.xml"))
         cls.form_2.instances.create(
@@ -133,22 +136,22 @@ class MobileFormsAPITestCase(APITestCase):
     def test_forms_list_exposes_org_unit_groups(self):
         """GET /mobile/forms/ exposes the org unit groups of the forms"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.form_manager)
         response = self.client.get("/api/mobile/forms/", headers={"Content-Type": "application/json"})
         self.assertJSONResponse(response, 200)
 
         form_data = response.json()["forms"][0]
         self.assertHasField(form_data, "org_unit_groups", list)
         self.assertEqual(1, len(form_data["org_unit_groups"]))
-        self.assertEqual(self.jedi_group.id, form_data["org_unit_groups"][0]["id"])
-        self.assertEqual(self.jedi_group.name, form_data["org_unit_groups"][0]["name"])
+        self.assertEqual(self.health_facilities_group.id, form_data["org_unit_groups"][0]["id"])
+        self.assertEqual(self.health_facilities_group.name, form_data["org_unit_groups"][0]["name"])
 
     def test_forms_list_filtered_by_org_unit_group(self):
         """GET /mobile/forms/ filtered by orgUnitGroupIds"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.form_manager)
         response = self.client.get(
-            f"/api/mobile/forms/?orgUnitGroupIds={self.jedi_group.pk}",
+            f"/api/mobile/forms/?orgUnitGroupIds={self.health_facilities_group.pk}",
             headers={"Content-Type": "application/json"},
         )
         self.assertJSONResponse(response, 200)

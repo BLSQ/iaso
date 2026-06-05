@@ -112,8 +112,18 @@ class FormSerializer(DynamicFieldsModelSerializerBackwardCompatible):
     )
     org_unit_groups = serializers.SerializerMethodField()
     org_unit_group_ids = serializers.PrimaryKeyRelatedField(
-        source="org_unit_groups", many=True, allow_empty=True, required=False, queryset=Group.objects.all()
+        source="org_unit_groups", many=True, allow_empty=True, required=False, queryset=Group.objects.none()
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Restrict the writable org unit groups to the ones of the user's account.
+        request = self.context.get("request")
+        if request and "org_unit_group_ids" in self.fields:
+            user = request.user
+            if user and user.is_authenticated and hasattr(user, "iaso_profile"):
+                self.fields["org_unit_group_ids"].child_relation.queryset = Group.objects.filter_for_user(user)
+
     projects = ProjectSerializer(read_only=True, many=True)
     project_ids = serializers.PrimaryKeyRelatedField(
         source="projects", many=True, allow_empty=False, queryset=Project.objects.all()

@@ -49,7 +49,10 @@ class FormsAPITestCase(APITestCase):
         star_wars.save()
         cls.sw_version = sw_version
 
-        cls.jedi_group = m.Group.objects.create(name="Jedi group", source_version=sw_version)
+        cls.form_manager = cls.create_user_with_profile(
+            username="form_manager", account=star_wars, permissions=[CORE_FORMS_PERMISSION]
+        )
+        cls.health_facilities_group = m.Group.objects.create(name="Health facilities", source_version=sw_version)
         cls.empty_group = m.Group.objects.create(name="Empty group", source_version=sw_version)
         other_source = m.DataSource.objects.create(name="Other source")
         other_version = m.SourceVersion.objects.create(data_source=other_source, number=1)
@@ -100,7 +103,7 @@ class FormsAPITestCase(APITestCase):
         form_version.save()
         cls.form_2.org_unit_types.add(cls.jedi_council)
         cls.form_2.org_unit_types.add(cls.jedi_academy)
-        cls.form_2.org_unit_groups.add(cls.jedi_group)
+        cls.form_2.org_unit_groups.add(cls.health_facilities_group)
 
         cls.form_2.instances.create(file=cls.create_file_mock(name="testi1.xml"))
         cls.form_2.instances.create(
@@ -196,10 +199,10 @@ class FormsAPITestCase(APITestCase):
         self.assertValidFormListData(response.json(), 0)
 
     def test_forms_list_filtered_by_org_unit_group(self):
-        self.client.force_authenticate(self.yoda)
-        # Filter by org unit group `jedi_group`: only form_2 is linked to it.
+        self.client.force_authenticate(self.form_manager)
+        # Filter by org unit group `health_facilities_group`: only form_2 is linked to it.
         response = self.client.get(
-            f"/api/forms/?orgUnitGroupIds={self.jedi_group.pk}",
+            f"/api/forms/?orgUnitGroupIds={self.health_facilities_group.pk}",
             headers={"Content-Type": "application/json"},
         )
         self.assertJSONResponse(response, 200)
@@ -449,20 +452,20 @@ class FormsAPITestCase(APITestCase):
     def test_forms_retrieve_with_org_unit_groups(self):
         """GET /forms/<form_id> returns the org unit groups of the form"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.form_manager)
         response = self.client.get(f"/api/forms/{self.form_2.id}/")
         self.assertJSONResponse(response, 200)
 
         form_data = response.json()
         self.assertHasField(form_data, "org_unit_groups", list)
         self.assertEqual(1, len(form_data["org_unit_groups"]))
-        self.assertEqual(self.jedi_group.id, form_data["org_unit_groups"][0]["id"])
-        self.assertEqual(self.jedi_group.name, form_data["org_unit_groups"][0]["name"])
+        self.assertEqual(self.health_facilities_group.id, form_data["org_unit_groups"][0]["id"])
+        self.assertEqual(self.health_facilities_group.name, form_data["org_unit_groups"][0]["name"])
 
     def test_forms_retrieve_with_org_unit_groups_in_fields_param(self):
         """GET /forms/<form_id> with the fields param used by the web form detail page"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.form_manager)
         fields = (
             "id,name,org_unit_types,org_unit_groups,projects,period_type,derived,single_per_period,"
             "periods_before_allowed,periods_after_allowed,device_field,location_field,label_keys,"
@@ -474,12 +477,12 @@ class FormsAPITestCase(APITestCase):
         form_data = response.json()
         self.assertHasField(form_data, "org_unit_groups", list)
         self.assertEqual(1, len(form_data["org_unit_groups"]))
-        self.assertEqual(self.jedi_group.id, form_data["org_unit_groups"][0]["id"])
+        self.assertEqual(self.health_facilities_group.id, form_data["org_unit_groups"][0]["id"])
 
     def test_forms_create_with_org_unit_groups_ok(self):
         """POST /forms/ with org unit groups"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.form_manager)
         response = self.client.post(
             "/api/forms/",
             data={
@@ -489,7 +492,7 @@ class FormsAPITestCase(APITestCase):
                 "periods_after_allowed": 0,
                 "project_ids": [self.project_1.id],
                 "org_unit_type_ids": [self.jedi_council.id],
-                "org_unit_group_ids": [self.jedi_group.id],
+                "org_unit_group_ids": [self.health_facilities_group.id],
             },
             format="json",
         )
@@ -499,12 +502,12 @@ class FormsAPITestCase(APITestCase):
         self.assertValidFormData(response_data)
         form = m.Form.objects.get(pk=response_data["id"])
         self.assertEqual(1, form.org_unit_groups.count())
-        self.assertEqual(self.jedi_group, form.org_unit_groups.first())
+        self.assertEqual(self.health_facilities_group, form.org_unit_groups.first())
 
     def test_forms_create_without_org_unit_groups_ok(self):
         """POST /forms/ without org unit groups: the field is optional"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.form_manager)
         response = self.client.post(
             "/api/forms/",
             data={
@@ -524,9 +527,9 @@ class FormsAPITestCase(APITestCase):
         self.assertEqual(0, form.org_unit_groups.count())
 
     def test_forms_create_wrong_org_unit_groups(self):
-        """POST /forms/ - mismatch between project and org unit groups"""
+        """POST /forms/ - org unit group from outside the user's account is rejected at the field level"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.form_manager)
         response = self.client.post(
             "/api/forms/",
             data={
@@ -541,12 +544,46 @@ class FormsAPITestCase(APITestCase):
             format="json",
         )
         self.assertJSONResponse(response, 400)
+        self.assertHasError(response.json(), "org_unit_group_ids")
+
+    def test_forms_create_org_unit_groups_not_linked_to_project(self):
+        """POST /forms/ - group of the user's account but not linked to the form's projects"""
+
+        self.client.force_authenticate(self.form_manager)
+        # `health_facilities_group` belongs to the user's account, but its data source is not linked to `project_3`.
+        response = self.client.post(
+            "/api/forms/",
+            data={
+                "name": "test form with group from another project",
+                "period_type": "MONTH",
+                "periods_before_allowed": 1,
+                "periods_after_allowed": 0,
+                "project_ids": [self.project_3.id],
+                "org_unit_type_ids": [],
+                "org_unit_group_ids": [self.health_facilities_group.id],
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, 400)
         self.assertHasError(response.json(), "org_unit_group_ids", "Invalid org unit group ids")
+
+    def test_forms_patch_org_unit_groups_from_other_account(self):
+        """PATCH /forms/<form_id> with only org_unit_group_ids cannot attach a group from outside the account"""
+
+        self.client.force_authenticate(self.form_manager)
+        response = self.client.patch(
+            f"/api/forms/{self.form_1.id}/",
+            data={"org_unit_group_ids": [self.unrelated_group.id]},
+            format="json",
+        )
+        self.assertJSONResponse(response, 400)
+        self.assertHasError(response.json(), "org_unit_group_ids")
+        self.assertEqual(0, self.form_1.org_unit_groups.count())
 
     def test_forms_update_org_unit_groups_ok(self):
         """PUT /forms/<form_id>: add then remove org unit groups"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.form_manager)
         data = {
             "name": "test form 1 (updated)",
             "period_type": None,
@@ -554,7 +591,7 @@ class FormsAPITestCase(APITestCase):
             "periods_after_allowed": 0,
             "project_ids": [self.project_1.id],
             "org_unit_type_ids": [self.jedi_council.id],
-            "org_unit_group_ids": [self.jedi_group.id, self.empty_group.id],
+            "org_unit_group_ids": [self.health_facilities_group.id, self.empty_group.id],
         }
         response = self.client.put(f"/api/forms/{self.form_1.id}/", data=data, format="json")
         self.assertJSONResponse(response, 200)

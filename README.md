@@ -880,8 +880,8 @@ SECRET_KEY_FALLBACKS=
 # To interact with Enketo/ODK
 ENKETO_API_TOKEN=
 ENKETO_SIGNING_SECRET=
-# Docker image tag (defaults to "latest" if not set)
-PROD_DOCKER_IMAGE_TAG=
+# Docker image tag (defaults to "develop" if not set)
+PROD_IMAGE_TAG=
 ```
 
 Docker Compose automatically reads a `.env` file in the project root, so no `source` command is needed.

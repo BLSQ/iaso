@@ -22,6 +22,13 @@ class MobileFormsAPITestCase(APITestCase):
         )
         cls.iron_man = cls.create_user_with_profile(username="iron_man", account=marvel)
 
+        sw_source = m.DataSource.objects.create(name="Galactic Empire")
+        sw_version = m.SourceVersion.objects.create(data_source=sw_source, number=1)
+        star_wars.default_version = sw_version
+        star_wars.save()
+        cls.jedi_group = m.Group.objects.create(name="Jedi group", source_version=sw_version)
+        cls.empty_group = m.Group.objects.create(name="Empty group", source_version=sw_version)
+
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
         cls.jedi_academy = m.OrgUnitType.objects.create(name="Jedi Academy", short_name="Aca")
         cls.sith_guild = m.OrgUnitType.objects.create(name="Sith guild", short_name="Sith")
@@ -48,6 +55,7 @@ class MobileFormsAPITestCase(APITestCase):
         cls.form_2.form_versions.create(file=cls.create_file_mock(name="testf1.xml"), version_id="2020022401")
         cls.form_2.org_unit_types.add(cls.jedi_council)
         cls.form_2.org_unit_types.add(cls.jedi_academy)
+        cls.form_2.org_unit_groups.add(cls.jedi_group)
 
         cls.form_2.instances.create(file=cls.create_file_mock(name="testi1.xml"))
         cls.form_2.instances.create(
@@ -60,6 +68,8 @@ class MobileFormsAPITestCase(APITestCase):
         cls.project_1.forms.add(cls.form_1)
         cls.project_1.forms.add(cls.form_2)
         cls.project_1.save()
+
+        sw_source.projects.add(cls.project_1)
 
         # Set reference forms.
         cls.jedi_council.reference_forms.add(cls.form_2)
@@ -119,6 +129,37 @@ class MobileFormsAPITestCase(APITestCase):
             )
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 2)
+
+    def test_forms_list_exposes_org_unit_groups(self):
+        """GET /mobile/forms/ exposes the org unit groups of the forms"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/mobile/forms/", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+
+        form_data = response.json()["forms"][0]
+        self.assertHasField(form_data, "org_unit_groups", list)
+        self.assertEqual(1, len(form_data["org_unit_groups"]))
+        self.assertEqual(self.jedi_group.id, form_data["org_unit_groups"][0]["id"])
+        self.assertEqual(self.jedi_group.name, form_data["org_unit_groups"][0]["name"])
+
+    def test_forms_list_filtered_by_org_unit_group(self):
+        """GET /mobile/forms/ filtered by orgUnitGroupIds"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            f"/api/mobile/forms/?orgUnitGroupIds={self.jedi_group.pk}",
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 1)
+
+        response = self.client.get(
+            f"/api/mobile/forms/?orgUnitGroupIds={self.empty_group.pk}",
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 0)
 
     def test_forms_list_ok_hide_derived_forms(self):
         """GET /mobile/forms/ web app happy path: we expect 1 results if one of the form is marked as derived"""

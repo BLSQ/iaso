@@ -9,7 +9,7 @@ from hat.audit.models import FORM_API, log_modification
 from iaso.api.common import ModelSerializer, TimestampField
 from iaso.api.form_predefined_filters.serializers import FormPredefinedFilterSerializer
 from iaso.api.projects import ProjectSerializer
-from iaso.models import EntityDuplicateAnalyzis, Form, FormVersion, OrgUnitType, Project
+from iaso.models import EntityDuplicateAnalyzis, Form, FormVersion, Group, OrgUnitType, Project
 
 
 class FormVersionNestedSerializer(ModelSerializer):
@@ -32,6 +32,8 @@ class FormSerializer(DynamicFieldsModelSerializerBackwardCompatible):
             "location_field",
             "org_unit_types",
             "org_unit_type_ids",
+            "org_unit_groups",
+            "org_unit_group_ids",
             "projects",
             "project_ids",
             "period_type",
@@ -61,6 +63,8 @@ class FormSerializer(DynamicFieldsModelSerializerBackwardCompatible):
             "location_field",
             "org_unit_types",
             "org_unit_type_ids",
+            "org_unit_groups",
+            "org_unit_group_ids",
             "projects",
             "project_ids",
             "period_type",
@@ -89,6 +93,7 @@ class FormSerializer(DynamicFieldsModelSerializerBackwardCompatible):
             "id",
             "form_id",
             "org_unit_types",
+            "org_unit_groups",
             "projects",
             "instances_count",
             "instance_updated_at",
@@ -104,6 +109,10 @@ class FormSerializer(DynamicFieldsModelSerializerBackwardCompatible):
     org_unit_types = serializers.SerializerMethodField()
     org_unit_type_ids = serializers.PrimaryKeyRelatedField(
         source="org_unit_types", many=True, allow_empty=True, queryset=OrgUnitType.objects.all()
+    )
+    org_unit_groups = serializers.SerializerMethodField()
+    org_unit_group_ids = serializers.PrimaryKeyRelatedField(
+        source="org_unit_groups", many=True, allow_empty=True, required=False, queryset=Group.objects.all()
     )
     projects = ProjectSerializer(read_only=True, many=True)
     project_ids = serializers.PrimaryKeyRelatedField(
@@ -124,6 +133,10 @@ class FormSerializer(DynamicFieldsModelSerializerBackwardCompatible):
     @staticmethod
     def get_org_unit_types(obj: Form):
         return [t.as_dict() for t in obj.org_unit_types.all()]
+
+    @staticmethod
+    def get_org_unit_groups(obj: Form):
+        return [g.as_dict(with_counts=False) for g in obj.org_unit_groups.all()]
 
     @staticmethod
     def get_reference_form_of_org_unit_types(obj: Form):
@@ -162,6 +175,18 @@ class FormSerializer(DynamicFieldsModelSerializerBackwardCompatible):
             allowed_org_unit_types = [ut for p in data["projects"] for ut in p.unit_types.all()]
             if len(set(data["org_unit_types"]) - set(allowed_org_unit_types)) > 0:
                 raise serializers.ValidationError({"org_unit_type_ids": "Invalid org unit type ids"})
+
+            # validate org_unit_groups against projects (a group must belong to a source version
+            # of a data source linked to one of the form's projects)
+            org_unit_groups = data.get("org_unit_groups", [])
+            if org_unit_groups:
+                allowed_group_ids = set(
+                    Group.objects.filter(source_version__data_source__projects__in=data["projects"]).values_list(
+                        "id", flat=True
+                    )
+                )
+                if any(group.id not in allowed_group_ids for group in org_unit_groups):
+                    raise serializers.ValidationError({"org_unit_group_ids": "Invalid org unit group ids"})
 
         # If the period type is None, some period-specific fields must have specific values
         if "period_type" in data:

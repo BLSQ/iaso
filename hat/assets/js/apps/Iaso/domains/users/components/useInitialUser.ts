@@ -132,6 +132,10 @@ export const useInitialUser = (
                 value: get(initialData, 'institution', null),
                 errors: [],
             },
+            team: {
+                value: get(initialData, 'team', null),
+                errors: [],
+            },
         };
     }, [initialData]);
     const [user, setUser] = useState<UserDialogData>(initialUser);

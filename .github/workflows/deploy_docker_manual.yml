@@ -20,6 +20,10 @@ on:
         required: false
         default: cloud-alerts
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   deploy:
     uses: ./.github/workflows/wc_docker_deploy.yml

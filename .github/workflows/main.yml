@@ -19,7 +19,7 @@ jobs:
 
       - name: Check if tag is part of main
         run: |
-#          git fetch origin main
+          # git fetch origin main
           git fetch origin main-test
           if git merge-base --is-ancestor ${{ github.sha }} origin/main; then
             echo "Tag in on main, proceeding..."
@@ -32,14 +32,14 @@ jobs:
     needs: [ check_on_main ]
     uses: ./.github/workflows/wc_tests.yml
     with:
-#      branch: main
+      #      branch: main
       branch: main-test
 
   build_and_push_image:
     needs: [ check_on_main, tests ]
     uses: ./.github/workflows/wc_docker_build.yml
     with:
-#      branch: main
+      #      branch: main
       branch: main-test
       image_tags: ${{ github.ref_name }},main
     secrets: inherit

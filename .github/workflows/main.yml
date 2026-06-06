@@ -36,9 +36,6 @@ jobs:
               run: |
                   npm ci
                   npm test
-            - name: Check ESLint (non-blocking)
-              run: npm run show-lint-problems
-              continue-on-error: true
             - name: Check Frontend (JS/React) translations
               run: |
                   python scripts/update_trads.py

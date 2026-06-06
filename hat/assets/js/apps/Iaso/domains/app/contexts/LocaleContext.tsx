@@ -6,8 +6,8 @@ import React, {
     useState,
 } from 'react';
 import { LangOptions } from 'bluesquare-components';
-import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
 import moment from 'moment';
+import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
 
 const LocaleContext = createContext({
     locale: moment.locale(),

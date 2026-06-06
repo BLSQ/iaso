@@ -42,6 +42,7 @@
         "hat/assets/js/orval/*",
         "hat/assets/js/apps/Iaso/**/*",
         "hat/assets/js/apps/Iaso/*",
+        "hat/assets/js/*.tsx",
         "plugins/**/js/**/*",
         "hat/assets/js/__tests__/**/*",
         "hat/assets/js/tests/*",

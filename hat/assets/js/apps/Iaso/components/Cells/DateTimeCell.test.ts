@@ -1,5 +1,4 @@
 import { textPlaceholder } from 'bluesquare-components';
-import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
 import moment from 'moment';
 import {
     DateCell,
@@ -8,6 +7,7 @@ import {
     convertValueIfDate,
 } from 'Iaso/components/Cells/DateTimeCell';
 import { apiDateFormats, getLocaleDateFormat } from 'Iaso/utils/dates';
+import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
 
 const locales = Object.keys(LANGUAGE_CONFIGS);
 import { setLocale } from '../../../../tests/helpers';

@@ -5,7 +5,6 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { MutateFunction } from 'react-query';
 import { Alert, Box, Button, Typography } from '@mui/material';
 import LinearProgress, {
     LinearProgressProps,
@@ -17,14 +16,15 @@ import {
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
+import { MutateFunction } from 'react-query';
 
 import InputComponent from 'Iaso/components/forms/InputComponent.tsx';
+import { TaskApiResponse } from 'Iaso/domains/tasks/types';
 import { useTaskMonitor } from 'Iaso/hooks/taskMonitor';
 import { getRequest } from 'Iaso/libs/Api';
-import { TaskApiResponse } from 'Iaso/domains/tasks/types';
 import { Project, User } from 'Iaso/utils/usersUtils';
-import MESSAGES from '../messages';
 import { SxStyles } from '../../../types/general';
+import MESSAGES from '../messages';
 
 const styles: SxStyles = {
     progressWrapper: {

@@ -1,5 +1,5 @@
-import { TypographyVariant } from '@mui/material';
 import React, { FunctionComponent } from 'react';
+import { TypographyVariant } from '@mui/material';
 import { Instance } from '../../types/instance';
 import { useGetInstance } from '../hooks/useGetInstance';
 import { InstanceDetailRaw } from './InstanceDetailRaw';

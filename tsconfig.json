@@ -18,7 +18,19 @@
         "lib": ["ES2023", "DOM"], // prevent some linter errors
         "resolveJsonModule": true, // enable import from json
         "paths": {
-            "Iaso/*": ["hat/assets/js/apps/Iaso/*"]
+            "Iaso/*": ["hat/assets/js/apps/Iaso/*"],
+            "IasoModules/plugins/configs": [
+                "hat/assets/js/apps/Iaso/bundle/generated/combinedPluginConfigs.js"
+            ],
+            "IasoModules/plugins/keys": [
+                "hat/assets/js/apps/Iaso/bundle/generated/pluginKeys.js"
+            ],
+            "IasoModules/translations/configs": [
+                "hat/assets/js/apps/Iaso/bundle/generated/combinedTranslations.js"
+            ],
+            "IasoModules/language/configs": [
+                "hat/assets/js/apps/Iaso/bundle/generated/languageConfigs.js"
+            ]
         },
         "types": ["vitest/globals", "@testing-library/jest-dom", "playwright", "node"]
     },

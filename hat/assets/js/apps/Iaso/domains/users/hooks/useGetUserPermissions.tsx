@@ -1,5 +1,5 @@
-import { useSafeIntl } from 'bluesquare-components';
 import { useCallback, useMemo } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import PERMISSIONS_MESSAGES from '../permissionsMessages';
 
 type Row = {
@@ -8,7 +8,6 @@ type Row = {
 };
 
 export const useGetUserPermissions = (
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     allPermissions: any,
     userPermissions: string[],
 ): any => {

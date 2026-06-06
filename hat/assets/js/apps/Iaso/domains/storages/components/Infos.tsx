@@ -1,17 +1,15 @@
-/* eslint-disable react/require-default-props */
+import React, { FunctionComponent, useMemo, ReactElement } from 'react';
 import { Table, TableBody, TableRow, TableCell, Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { FunctionComponent, useMemo, ReactElement } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
+import { FieldType } from '../../forms/types/forms';
+import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
 import MESSAGES from '../messages';
 
-import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
-
 import { Storage } from '../types/storages';
-import { FieldType } from '../../forms/types/forms';
+import { LinkToEntity } from './LinkToEntity';
 import { StatusCell } from './StatusCell';
 import { StatusModal } from './StatusModal';
-import { LinkToEntity } from './LinkToEntity';
 
 const useStyles = makeStyles(theme => ({
     leftCell: {

@@ -1,12 +1,3 @@
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import Paper from '@mui/material/Paper';
-import Snackbar from '@mui/material/Snackbar';
-import * as Sentry from '@sentry/browser';
-import { browserTracingIntegration } from '@sentry/browser';
-import { useSafeIntl } from 'bluesquare-components';
 import React, {
     createContext,
     FunctionComponent,
@@ -16,6 +7,15 @@ import React, {
     useMemo,
     useState,
 } from 'react';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Paper from '@mui/material/Paper';
+import Snackbar from '@mui/material/Snackbar';
+import * as Sentry from '@sentry/browser';
+import { browserTracingIntegration } from '@sentry/browser';
+import { useSafeIntl } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
 import { SxStyles } from '../../../types/general';
 

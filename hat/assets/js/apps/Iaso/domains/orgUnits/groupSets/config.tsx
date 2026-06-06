@@ -1,14 +1,13 @@
+import React, { useMemo } from 'react';
 import { Chip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
-import React, { useMemo } from 'react';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import { baseUrls } from '../../../constants/urls';
-import MESSAGES from './messages';
-
-import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import * as Permission from '../../../utils/permissions';
+import MESSAGES from './messages';
 
 export const baseUrl = baseUrls.groupSets;
 

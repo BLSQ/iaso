@@ -1,10 +1,10 @@
 import React, { FunctionComponent } from 'react';
+import { Button } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { useSafeIntl } from 'bluesquare-components';
-import { Button } from '@mui/material';
-import Dhis2Search from './Dhis2SearchComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import MESSAGES from '../messages';
+import Dhis2Search from './Dhis2SearchComponent';
 import ObjectDumper from './ObjectDumper';
 
 type Props = {

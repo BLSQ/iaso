@@ -3,10 +3,10 @@ import { Box, Grid, Theme, GridSize } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl, commonStyles, useGoBack } from 'bluesquare-components';
 import TopBar from '../../../components/nav/TopBarComponent';
-import InstanceDetail from './components/InstanceDetail';
-import MESSAGES from './messages';
 import { baseUrls } from '../../../constants/urls';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
+import InstanceDetail from './components/InstanceDetail';
+import MESSAGES from './messages';
 
 type Params = {
     instanceIds: string;

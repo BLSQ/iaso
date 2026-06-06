@@ -1,14 +1,14 @@
 import React, { FunctionComponent } from 'react';
 import { Divider } from '@mui/material';
-import moment from 'moment';
 import {
     textPlaceholder,
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
-import MESSAGES from '../messages';
-import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
-import InstanceDetailsField from './InstanceDetailsField';
 import { useSafeIntl } from 'bluesquare-components';
+import moment from 'moment';
+import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
+import MESSAGES from '../messages';
+import InstanceDetailsField from './InstanceDetailsField';
 
 const formatUnixTimestamp = unix =>
     unix ? moment.unix(unix).format('LTS') : textPlaceholder;

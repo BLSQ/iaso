@@ -1,8 +1,8 @@
 import React, { FunctionComponent, useEffect } from 'react';
-import { useQuill } from 'react-quilljs';
-import { makeStyles } from '@mui/styles';
 import { FormControl, FormLabel } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import isEqual from 'lodash/isEqual';
+import { useQuill } from 'react-quilljs';
 import 'quill/dist/quill.snow.css';
 
 const useStyles = makeStyles(theme => ({

@@ -1,15 +1,15 @@
 import React, { FunctionComponent } from 'react';
 import Alert from '@mui/lab/Alert';
+import { Button } from '@mui/material';
 import { LoadingSpinner, Select, useSafeIntl } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
-import { Button } from '@mui/material';
+import Descriptor from '../descriptor';
+import MESSAGES from '../messages';
 import { isMapped, isNeverMapped } from '../question_mappings';
 import Dhis2SearchComponent from './Dhis2SearchComponent';
 import { DuplicateHint } from './DuplicateHint';
-import ObjectDumper from './ObjectDumper';
-import Descriptor from '../descriptor';
 import EventTrackerProgramForm from './EventTrackerProgramForm';
-import MESSAGES from '../messages';
+import ObjectDumper from './ObjectDumper';
 
 const Dhis2ProgramTrackedEntityAttributeSearch = ({
     questionMapping,

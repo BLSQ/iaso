@@ -1,3 +1,4 @@
+import React, { FunctionComponent } from 'react';
 import {
     Table,
     TableBody,
@@ -6,7 +7,6 @@ import {
     TableRow,
 } from '@mui/material';
 import { textPlaceholder } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import { SxStyles } from '../../types/general';
 
 type SubTableProps = TableProps & {

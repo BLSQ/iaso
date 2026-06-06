@@ -1,8 +1,8 @@
 import React from 'react';
 import Alert from '@mui/lab/Alert';
 import { useSafeIntl } from 'bluesquare-components';
-import { isNeverMapped } from '../question_mappings';
 import MESSAGES from '../messages';
+import { isNeverMapped } from '../question_mappings';
 
 type Props = {
     mapping?: Record<string, any>;

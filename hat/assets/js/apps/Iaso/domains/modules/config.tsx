@@ -1,9 +1,9 @@
 import React, { ReactElement, useMemo } from 'react';
-import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
 import {
     HighlightOffOutlined as NotCheckedIcon,
     CheckCircleOutlineOutlined as CheckedIcon,
 } from '@mui/icons-material';
+import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
 import MESSAGES from './messages';
 
 export const useModulesColumns = (): Column[] => {

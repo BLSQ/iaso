@@ -9,11 +9,10 @@ import {
 } from 'bluesquare-components';
 
 import { useSnackMutation } from '../../../../../libs/apiHooks';
-import { sendComment, useGetComments } from './requests';
-import { adaptComment, calculateOffset, adaptComments } from './utils';
-
 import MESSAGES from '../../../messages';
 import { OrgUnit } from '../../../types/orgUnit';
+import { sendComment, useGetComments } from './requests';
+import { adaptComment, calculateOffset, adaptComments } from './utils';
 
 const styles = {
     commentsBlock: { marginBottom: '7px' },

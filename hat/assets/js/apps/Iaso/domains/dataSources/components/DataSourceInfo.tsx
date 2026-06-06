@@ -1,9 +1,9 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { Table, TableBody } from '@mui/material';
-import { WidgetPaperRow as Row } from '../../../components/papers/WidgetPaperRow';
 import { useSafeIntl } from 'bluesquare-components';
-import { getLabelsAndValues } from '../utils';
+import { WidgetPaperRow as Row } from '../../../components/papers/WidgetPaperRow';
 import { DataSource } from '../types/dataSources';
+import { getLabelsAndValues } from '../utils';
 
 type Props = {
     dataSource?: DataSource;

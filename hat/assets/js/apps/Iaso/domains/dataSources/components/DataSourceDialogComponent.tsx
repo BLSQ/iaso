@@ -1,19 +1,19 @@
 import React, { useState, useCallback, FunctionComponent } from 'react';
 import { Box, Button, Grid, Typography } from '@mui/material';
-import * as Permission from '../../../utils/permissions';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import { merge } from 'lodash';
+import { FormattedMessage } from 'react-intl';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
-import MESSAGES from '../messages';
-import { FormattedMessage } from 'react-intl';
-import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import { commaSeparatedIdsToArray } from '../../../utils/forms';
-import { merge } from 'lodash';
-import { useCheckDhis2Mutation, useSaveDataSource } from '../requests';
-import { useCurrentUser } from '../../../utils/usersUtils';
 import { useFormState } from '../../../hooks/form';
+import { commaSeparatedIdsToArray } from '../../../utils/forms';
+import * as Permission from '../../../utils/permissions';
+import { useCurrentUser } from '../../../utils/usersUtils';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
-import { useTranslatedDhis2Errors } from '../hooks/useTranslatedDhis2Errors';
 import { userHasPermission, userHasAccessToModule } from '../../users/utils';
+import { useTranslatedDhis2Errors } from '../hooks/useTranslatedDhis2Errors';
+import MESSAGES from '../messages';
+import { useCheckDhis2Mutation, useSaveDataSource } from '../requests';
 
 type SelectorProps = {
     keyValue: string;

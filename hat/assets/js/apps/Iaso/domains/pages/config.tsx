@@ -1,18 +1,18 @@
+import React, { useCallback, useMemo } from 'react';
 import {
     Column,
     ExternalLinkIconButton,
     IconButton,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { useCallback, useMemo } from 'react';
-import { baseUrls } from '../../constants/urls';
-import { DateTimeCellRfc } from '../../components/Cells/DateTimeCell';
-import MESSAGES from './messages';
-import { PAGES_TYPES } from './constants';
-import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
-import * as Permission from '../../utils/permissions';
-import { EditIconButton } from '../../components/Buttons/EditIconButton';
 import { DeleteIconButton } from '../../components/Buttons/DeleteIconButton';
+import { EditIconButton } from '../../components/Buttons/EditIconButton';
+import { DateTimeCellRfc } from '../../components/Cells/DateTimeCell';
+import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
+import { baseUrls } from '../../constants/urls';
+import * as Permission from '../../utils/permissions';
+import { PAGES_TYPES } from './constants';
+import MESSAGES from './messages';
 
 export const baseUrl = baseUrls.pages;
 

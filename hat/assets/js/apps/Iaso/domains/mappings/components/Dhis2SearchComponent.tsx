@@ -45,7 +45,7 @@ const Dhis2Search = props => {
         mapOptions,
         fetchFromPromise,
         disabled,
-        placeholder
+        placeholder,
     } = props;
     const fetchData = fetchFromPromise || fetchFrom;
     const [inputValue, setInputValue] = React.useState(defaultValue || '');
@@ -115,7 +115,6 @@ const Dhis2Search = props => {
             }
             filterOptions={x => x}
             options={options}
-          
             disabled={disabled}
             onChange={onSearchChange}
             openOnFocus={options.length > 0}

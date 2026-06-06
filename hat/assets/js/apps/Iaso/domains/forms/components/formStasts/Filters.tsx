@@ -1,6 +1,6 @@
-import { Button, Grid } from '@mui/material';
 import React, { FunctionComponent, useCallback, useState } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
+import { Button, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     commonStyles,
@@ -8,8 +8,8 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import InputComponent from '../../../../components/forms/InputComponent';
-import MESSAGES from '../../messages';
 import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
+import MESSAGES from '../../messages';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

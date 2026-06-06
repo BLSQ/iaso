@@ -1,8 +1,7 @@
-/* eslint-disable no-unused-vars */
 import React from 'react';
 import InputComponent from '../../../components/forms/InputComponent';
-import PERMISSIONS_MESSAGES from '../permissionsMessages';
 import { Permission } from '../../userRoles/types/userRoles';
+import PERMISSIONS_MESSAGES from '../permissionsMessages';
 
 type PermissionCheckboxProps = {
     permissionCode: string;
@@ -57,7 +56,6 @@ const PermissionCheckbox: React.FunctionComponent<PermissionCheckboxProps> = ({
                     checkBoxs,
                 )
             }
-            // eslint-disable-next-line react/jsx-props-no-spreading
             {...checkBoxLabel}
             dataTestId="permission-checkbox"
             withMarginTop={false}

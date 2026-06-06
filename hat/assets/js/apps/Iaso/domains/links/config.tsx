@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
-import Checkbox from '@mui/material/Checkbox';
 import { Box } from '@mui/material';
+import Checkbox from '@mui/material/Checkbox';
 import { useSafeIntl, Expander } from 'bluesquare-components';
-import getDisplayName from '../../utils/usersUtils';
-import { StarsComponent } from '../../components/stars/StarsComponent';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
+import { StarsComponent } from '../../components/stars/StarsComponent';
+import getDisplayName from '../../utils/usersUtils';
 import MESSAGES from './messages';
 
 export const useLinksTableColumns = validateLink => {

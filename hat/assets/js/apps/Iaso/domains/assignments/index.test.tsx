@@ -70,9 +70,12 @@ vi.mock('Iaso/domains/assignments/hooks/requests/useSaveAssignment', () => ({
     useSaveAssignment: mockUseSaveAssignment,
 }));
 
-vi.mock('Iaso/domains/assignments/hooks/requests/useBulkDeleteAssignments', () => ({
-    useBulkDeleteAssignments: mockUseBulkDeleteAssignments,
-}));
+vi.mock(
+    'Iaso/domains/assignments/hooks/requests/useBulkDeleteAssignments',
+    () => ({
+        useBulkDeleteAssignments: mockUseBulkDeleteAssignments,
+    }),
+);
 
 vi.mock('bluesquare-components', async importOriginal => {
     const actual =

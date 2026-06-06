@@ -1,7 +1,7 @@
+import React, { Dispatch, FunctionComponent, SetStateAction } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { Table, useRedirectToReplace } from 'bluesquare-components';
-import React, { Dispatch, FunctionComponent, SetStateAction } from 'react';
 import { baseUrls } from '../../../constants/urls';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { HEIGHT, useGetOrgUnitsListColumns } from '../config';

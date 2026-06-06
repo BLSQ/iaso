@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useState } from 'react';
 import {
     AddButton,
     ConfirmCancelModal,
@@ -6,7 +7,6 @@ import {
 } from 'bluesquare-components';
 import { FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import React, { FunctionComponent, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
 import InputComponent from '../../../components/forms/InputComponent';

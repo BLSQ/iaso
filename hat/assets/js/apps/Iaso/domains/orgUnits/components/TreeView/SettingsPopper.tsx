@@ -1,3 +1,11 @@
+import React, {
+    Dispatch,
+    FunctionComponent,
+    MouseEvent,
+    SetStateAction,
+    useCallback,
+    useState,
+} from 'react';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import SettingsIcon from '@mui/icons-material/Settings';
 import {
@@ -11,14 +19,6 @@ import {
 } from '@mui/material';
 
 import { useSafeIntl } from 'bluesquare-components';
-import React, {
-    Dispatch,
-    FunctionComponent,
-    MouseEvent,
-    SetStateAction,
-    useCallback,
-    useState,
-} from 'react';
 import { SxStyles } from '../../../../types/general';
 import { OrgUnitStatus } from '../../types/orgUnit';
 import { MESSAGES } from './messages';

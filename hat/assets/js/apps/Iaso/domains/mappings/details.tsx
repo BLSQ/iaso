@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { makeStyles } from '@mui/styles';
 import { Grid, Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import {
     commonStyles,
@@ -10,21 +10,20 @@ import {
     useGoBack,
 } from 'bluesquare-components';
 import TopBar from '../../components/nav/TopBarComponent';
-import RecursiveTreeView from './components/RecursiveTreeView';
+import { baseUrls } from '../../constants/urls.ts';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import DerivedQuestionMappingForm from './components/DerivedQuestionMappingForm';
+import GeneraMappingInfo from './components/GeneraMappingInfo';
 import QuestionInfos from './components/QuestionInfos';
 import QuestionMappingForm from './components/QuestionMappingForm';
-import DerivedQuestionMappingForm from './components/DerivedQuestionMappingForm';
-import { baseUrls } from '../../constants/urls.ts';
-import GeneraMappingInfo from './components/GeneraMappingInfo';
+import RecursiveTreeView from './components/RecursiveTreeView';
 import Descriptor from './descriptor';
-import MESSAGES from './messages';
-
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import {
     useApplyPartialUpdate,
     useApplyUpdate,
     useGetMappingVersionDetail,
 } from './hooks';
+import MESSAGES from './messages';
 
 const baseUrl = baseUrls.mappingDetail;
 

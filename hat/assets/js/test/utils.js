@@ -47,7 +47,7 @@ export const fillFields = async (component, fieldKeys) => {
             .filter(`[keyValue="${keyValue}"]`);
         expect(element.exists()).to.equal(true);
         element.props().onChange(keyValue, 'LINK');
-        // eslint-disable-next-line no-await-in-loop
+
         await awaitUseEffect(component);
     }
 };

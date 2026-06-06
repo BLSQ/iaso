@@ -1,5 +1,5 @@
-import L from 'leaflet';
 import { RefObject, useEffect, useState } from 'react';
+import L from 'leaflet';
 import { useMap } from 'react-leaflet';
 
 export const usePopupState = (popupRef: RefObject<L.Popup>): boolean => {

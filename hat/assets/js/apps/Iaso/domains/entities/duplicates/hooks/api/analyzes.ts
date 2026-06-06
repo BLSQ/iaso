@@ -1,7 +1,7 @@
 import { UseQueryResult, UseMutationResult } from 'react-query';
+import { getRequest, postRequest } from '../../../../../libs/Api';
 import { useSnackQuery, useSnackMutation } from '../../../../../libs/apiHooks';
 import { Analysis, Parameters } from '../../types';
-import { getRequest, postRequest } from '../../../../../libs/Api';
 
 export const useGetLatestAnalysis = (): UseQueryResult<Analysis, any> => {
     return useSnackQuery({

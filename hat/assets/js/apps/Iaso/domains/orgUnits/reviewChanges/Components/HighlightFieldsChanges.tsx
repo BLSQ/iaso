@@ -16,7 +16,7 @@ type Props = {
     field: NewOrgUnitField;
     newFieldValues: NestedGroup[];
     oldFieldValues: NestedGroup[];
-    status: string;
+    // status: string;
     isNew: boolean;
     isNewOrgUnit: boolean;
     fieldType: string;

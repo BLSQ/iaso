@@ -74,6 +74,17 @@ const CreateEditDialog: FunctionComponent<Props> = ({
     const getSchema = () => {
         return yup.lazy(vals => {
             const type = get(vals, 'type');
+            let content;
+            if (type === IFRAME) {
+                content = yup
+                    .string()
+                    .trim()
+                    .url(formatMessage(MESSAGES.urlNotValid));
+            } else if (type === SUPERSET) {
+                content = yup.string().trim().nullable();
+            } else {
+                content = yup.string().trim();
+            }
             return yup.object().shape({
                 name: yup
                     .string()
@@ -83,15 +94,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                     .string()
                     .trim()
                     .required(formatMessage(MESSAGES.slugRequired)),
-                content:
-                    type === IFRAME
-                        ? yup
-                              .string()
-                              .trim()
-                              .url(formatMessage(MESSAGES.urlNotValid))
-                        : type === SUPERSET
-                          ? yup.string().trim().nullable()
-                          : yup.string().trim(),
+                content,
                 superset_dashboard_id:
                     type === SUPERSET
                         ? yup

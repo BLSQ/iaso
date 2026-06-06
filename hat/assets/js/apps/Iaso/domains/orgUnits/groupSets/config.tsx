@@ -7,17 +7,20 @@ import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import { baseUrls } from '../../../constants/urls';
 import * as Permission from '../../../utils/permissions';
+import { GroupSet } from '../configuration/types';
 import MESSAGES from './messages';
 
 export const baseUrl = baseUrls.groupSets;
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(() => ({
     groupChip: {
         margin: '2px',
     },
 }));
 
-export const useGroupSetsTableColumns = (deleteGroupSet): Column[] => {
+export const useGroupSetsTableColumns = (
+    deleteGroupSet: (groupSet: GroupSet) => void,
+): Column[] => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     return useMemo(
@@ -105,6 +108,7 @@ export const useGroupSetsTableColumns = (deleteGroupSet): Column[] => {
                 ),
             },
         ],
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [],
     );
 };

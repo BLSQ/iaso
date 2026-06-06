@@ -40,7 +40,7 @@ type Props = {
 const Rte: FunctionComponent<Props> = ({
     label,
     field = { name: '', value: undefined },
-    form = { setFieldValue: (value: string, innerHtml: string) => {} },
+    form = { setFieldValue: (_value: string, _innerHtml: string) => {} },
 } = {}) => {
     const value = field.value || '';
     const classes = useStyles();
@@ -79,6 +79,7 @@ const Rte: FunctionComponent<Props> = ({
                 form.setFieldValue(field.name, quill.root.innerHTML);
             });
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [quill]);
 
     return (

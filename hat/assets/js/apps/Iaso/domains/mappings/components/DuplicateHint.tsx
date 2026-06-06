@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import Alert from '@mui/lab/Alert';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
@@ -9,7 +9,7 @@ type Props = {
     mappingVersion: Record<string, any>;
 };
 
-export const DuplicateHint = ({
+export const DuplicateHint: FunctionComponent<Props> = ({
     mapping = {} as Record<string, any>,
     mappingVersion,
 }) => {

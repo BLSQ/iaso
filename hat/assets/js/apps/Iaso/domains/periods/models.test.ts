@@ -56,7 +56,7 @@ describe('Periods model', () => {
             `unsupported period format ${tempPeriod}`,
         );
     });
-    it('previous should raise an error if invalid period format', () => {
+    it('previous should raise an error if invalid period format (previous)', () => {
         const tempPeriod = 'ZELDA';
         expect(() => period.previous(tempPeriod)).to.throw(
             `unsupported period format ${tempPeriod}`,

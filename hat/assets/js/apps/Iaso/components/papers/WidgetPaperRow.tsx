@@ -16,7 +16,7 @@ type RowProps = {
     placeholder?: string;
 };
 
-export const WidgetPaperRow = ({
+export const WidgetPaperRow: FunctionComponent<RowProps> = ({
     field,
     placeholder = textPlaceholder,
 }: RowProps) => {

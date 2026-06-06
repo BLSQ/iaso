@@ -19,6 +19,7 @@ export const Legend: FunctionComponent<Props> = ({ threshold, unit }) => {
     const getLegend = useGetLegend(threshold);
     const legendLabels = useMemo(
         () => getThresHoldLabels(threshold, unit),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [threshold],
     );
     return (

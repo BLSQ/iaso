@@ -40,6 +40,7 @@ export const MultiDateTimeCellRfc = (cellInfo: {
     return (
         <>
             {valueAsList.map((lineData, index) => (
+                // eslint-disable-next-line react/no-array-index-key
                 <div key={`${lineData}${index}`}>
                     {convertToDateTimeRfc(lineData)}
                 </div>

@@ -266,10 +266,8 @@ export const getLabelsAndValues = (dataSource, formatMessage) => {
     };
 
     const fields = [];
-    const hasDhis2Module = userHasAccessToModule(
-        'DHIS2_MAPPING',
-        useCurrentUser(),
-    );
+    const user = useCurrentUser();
+    const hasDhis2Module = userHasAccessToModule('DHIS2_MAPPING', user);
     if (!hasDhis2Module) {
         delete dataSource?.url;
     }

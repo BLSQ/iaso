@@ -17,7 +17,7 @@ describe("useArrayState's arrayReducer", () => {
         const state = [1, 2, 3, 4];
         const newValue = [100, 200, 300, 400, 500];
         const result = arrayReducer(state, { index: 'all', value: newValue });
-        expect(result).to.deep.equal(newValue);
+        expect(result).toEqual(newValue);
     });
 
     // todo : see remark in arrayReducer def, with proper typescript checking, it wouldn't happen.
@@ -27,7 +27,10 @@ describe("useArrayState's arrayReducer", () => {
             .mockImplementation(() => {});
         const state = [1, 2, 3, 4];
         const newValue = 'BOOM!';
-        const result = arrayReducer(state, { index: 'all', value: newValue });
+        const result = arrayReducer(state, {
+            index: 'all',
+            value: newValue as unknown as number[],
+        });
         expect(result).to.equal(state);
         expect(consoleSpy).toHaveBeenCalled();
         expect(consoleSpy).toHaveBeenCalledWith(

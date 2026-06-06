@@ -10,7 +10,7 @@ import ObjectDumper from './ObjectDumper';
 type Props = {
     dataSourceId: number;
     repeatGroupMapping: any;
-    onConfirmedQuestionMapping: Function;
+    onConfirmedQuestionMapping: (questionMapping: Record<string, any>) => void;
 };
 
 const EventTrackerProgramForm: FunctionComponent<Props> = ({

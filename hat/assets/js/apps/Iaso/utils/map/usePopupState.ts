@@ -24,7 +24,7 @@ export const usePopupState = (popupRef: RefObject<L.Popup>): boolean => {
         map.on('popupopen', onPopupOpen);
         map.on('popupclose', onPopupClose);
 
-        () => {
+        return () => {
             map.off('popupopen', onPopupOpen);
             map.off('popupclose', onPopupClose);
         };

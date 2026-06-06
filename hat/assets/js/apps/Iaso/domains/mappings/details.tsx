@@ -10,7 +10,7 @@ import {
     useGoBack,
 } from 'bluesquare-components';
 import TopBar from '../../components/nav/TopBarComponent';
-import { baseUrls } from '../../constants/urls.ts';
+import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import DerivedQuestionMappingForm from './components/DerivedQuestionMappingForm';
 import GeneraMappingInfo from './components/GeneraMappingInfo';
@@ -53,7 +53,7 @@ const fieldTypeOptions = formatMessage => [
     },
 ];
 
-const MappingDetails = props => {
+const MappingDetails = () => {
     const redirectToReplace = useRedirectToReplace();
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();

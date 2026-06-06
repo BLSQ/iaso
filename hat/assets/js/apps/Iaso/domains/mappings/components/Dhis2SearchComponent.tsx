@@ -75,6 +75,7 @@ const Dhis2Search = props => {
                     setOptions(finalOptions);
                 });
             }, 200),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [],
     );
     React.useEffect(() => {

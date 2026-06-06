@@ -118,6 +118,7 @@ vi.mock('./components/AssignmentsTable', () => ({
 }));
 
 vi.mock('./components/teams/TeamTable', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const ReactImport = require('react') as typeof import('react');
     return {
         TeamTable: (props: {

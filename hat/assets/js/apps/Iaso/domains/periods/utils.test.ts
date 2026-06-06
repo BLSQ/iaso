@@ -35,7 +35,7 @@ describe('getPrettyPeriod', () => {
         ).to.eql('2020');
     });
 
-    it('for year should return a year', () => {
+    it('for year should return a week', () => {
         expect(getPrettyPeriod('2020W53', testFormatMessage)).to.eql(
             'Week N° 53 (28/12/2020 - 03/01/2021)',
         );

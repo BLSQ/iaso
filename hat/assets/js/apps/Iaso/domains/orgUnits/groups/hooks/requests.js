@@ -8,7 +8,6 @@ import {
 } from '../../../../libs/Api';
 import { useSnackQuery, useSnackMutation } from '../../../../libs/apiHooks';
 
-import { baseUrl } from '../config';
 import MESSAGES from '../messages';
 
 export const useGetGroups = params => {

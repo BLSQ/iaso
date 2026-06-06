@@ -16,7 +16,7 @@ import InstanceLogContentBodyTable from './InstanceLogContentBodyTable';
 
 type Props = {
     fileContent: FileContent;
-    fileDescriptor?: Record<string, any>;
+    // fileDescriptor?: Record<string, any>;
 };
 
 const useStyles = makeStyles(theme => ({

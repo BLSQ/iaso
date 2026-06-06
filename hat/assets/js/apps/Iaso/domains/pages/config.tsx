@@ -2,7 +2,6 @@ import React, { useCallback, useMemo } from 'react';
 import {
     Column,
     ExternalLinkIconButton,
-    IconButton,
     useSafeIntl,
 } from 'bluesquare-components';
 import { DeleteIconButton } from '../../components/Buttons/DeleteIconButton';

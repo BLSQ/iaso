@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, ReactElement } from 'react';
 import { TableBody, TableRow, TableCell } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { ErrorBoundary } from 'bluesquare-components';
@@ -8,7 +8,7 @@ import { formatLabel } from '../../utils';
 
 type TableBodyProps = {
     fileContent: FileContent;
-    fileDescriptor?: Record<string, any>;
+    // fileDescriptor?: Record<string, any>;
 };
 const useStyles = makeStyles(theme => ({
     tableCell: {
@@ -63,7 +63,7 @@ function renderRepeatGroup(
     const valueA = fileContent.logA.json[question.name];
     const valueB = fileContent.logB.json[question.name];
 
-    const records: JSX.Element[] = [];
+    const records: ReactElement[] = [];
     for (const [recordA, recordB] of safeZip(valueA, valueB)) {
         // TODO fetch the 2 formDescriptor for more accurate rendering/type
         const questionNames = Array.from(
@@ -147,6 +147,7 @@ function QuestionRow({
     );
 }
 
+// eslint-disable-next-line react/display-name
 const InstanceLogContentBodyTable = memo(({ fileContent }: TableBodyProps) => {
     const classes = useStyles();
     const getImageUrl = useCallback((value, logFiles) => {

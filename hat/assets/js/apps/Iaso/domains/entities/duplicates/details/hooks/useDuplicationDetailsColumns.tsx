@@ -132,6 +132,7 @@ export const useDuplicationDetailsColumns = ({
         }
 
         return columns;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         formatMessage,
         setQuery,

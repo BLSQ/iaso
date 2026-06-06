@@ -44,6 +44,7 @@ const InstanceDetailsExportRequests: FunctionComponent<Props> = ({
             {currentInstance.export_statuses &&
                 currentInstance.export_statuses.length > 0 && <Divider />}
             {currentInstance.export_statuses.map((exportStatus, index) => (
+                // eslint-disable-next-line react/no-array-index-key
                 <React.Fragment key={index}>
                     <InstanceDetailsField
                         label={formatMessage(MESSAGES.exportStatus)}

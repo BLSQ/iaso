@@ -27,7 +27,7 @@ export const useGetMappingVersions = params => {
     });
 };
 
-export const useCreateMappingMutation = params => {
+export const useCreateMappingMutation = () => {
     const redirectToReplace = useRedirectToReplace();
 
     return useSnackMutation({

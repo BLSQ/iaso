@@ -199,6 +199,7 @@ type LinkToActionParams = {
 
 const renderTrigger =
     (isAlreadyLinked: boolean) =>
+    // eslint-disable-next-line react/display-name
     ({ openDialog }) =>
         isAlreadyLinked ? (
             <LinkOffIcon onClick={openDialog} />

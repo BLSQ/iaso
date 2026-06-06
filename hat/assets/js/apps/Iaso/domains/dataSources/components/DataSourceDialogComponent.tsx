@@ -118,7 +118,7 @@ type Props = {
     initialData?: Record<string, any>;
 };
 
-export const DataSourceDialogComponent = ({
+export const DataSourceDialogComponent: FunctionComponent<Props> = ({
     defaultSourceVersion,
     initialData,
     renderTrigger,

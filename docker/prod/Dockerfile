@@ -44,7 +44,7 @@ RUN pip install uv
 # Use python from the system, not from uv
 # https://docs.astral.sh/uv/reference/environment/#uv_python_preference
 ENV UV_PYTHON_PREFERENCE=only-system
-RUN uv sync --python "$(which python3)"
+RUN uv sync --python "$(which python3)" --no-dev
 RUN uv add gunicorn==23.0.0
 
 # Strip the venv: remove caches and debug symbols

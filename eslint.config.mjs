@@ -59,7 +59,13 @@ const importOrderRule = [
 ];
 
 export default defineConfig([
-    globalIgnores(['**/node_modules/', '**/build/', '**/dist/', '**/*.min.js']),
+    globalIgnores([
+        '**/node_modules/',
+        '**/build/',
+        '**/dist/',
+        '**/*.min.js',
+        'hat/assets/js/apps/Iaso/bundle/**',
+    ]),
     {
         extends: fixupConfigRules(
             compat.extends(

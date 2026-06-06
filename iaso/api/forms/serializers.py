@@ -120,7 +120,7 @@ class FormSerializer(DynamicFieldsModelSerializerBackwardCompatible):
         # Restrict the writable org unit groups to the ones of the user's account.
         request = self.context.get("request")
         if request and "org_unit_group_ids" in self.fields:
-            user = request.user
+            user = getattr(request, "user", None)
             if user and user.is_authenticated and hasattr(user, "iaso_profile"):
                 self.fields["org_unit_group_ids"].child_relation.queryset = Group.objects.filter_for_user(user)
 

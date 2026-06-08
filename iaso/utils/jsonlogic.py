@@ -590,7 +590,9 @@ def entities_jsonlogic_to_q(
         form_id_filter = Q(entity_id=OuterRef("id")) & Q(form__form_id=form_id)
 
         if operator == "some":
-            queryset, _ = annotate_suffixed_json_fields(Instance.objects, conditions, "json", index)
+            queryset, _ = annotate_suffixed_json_fields(
+                Instance.objects.filter(deleted=False), conditions, "json", index
+            )
             q, index = entities_jsonlogic_to_q(conditions, field_prefix, index)
             return Exists(queryset.filter(form_id_filter & q)), index
         if operator == "all":
@@ -598,11 +600,13 @@ def entities_jsonlogic_to_q(
             # - EXIST on the form without conditions to exclude entities that don't have the form
             # - NOT EXIST on the form with inverted conditions, so only get forms that only have
             #   the desired conditions
-            queryset, _ = annotate_suffixed_json_fields(Instance.objects, conditions, "json", index)
+            queryset, _ = annotate_suffixed_json_fields(
+                Instance.objects.filter(deleted=False), conditions, "json", index
+            )
             q, index = entities_jsonlogic_to_q(conditions, field_prefix, index)
             return Exists(queryset.filter(form_id_filter)) & ~Exists(queryset.filter(form_id_filter & ~q)), index
         # if operator == "none":
-        queryset, _ = annotate_suffixed_json_fields(Instance.objects, conditions, "json", index)
+        queryset, _ = annotate_suffixed_json_fields(Instance.objects.filter(deleted=False), conditions, "json", index)
         q, index = entities_jsonlogic_to_q(conditions, field_prefix, index)
         return ~Exists(queryset.filter(form_id_filter & q)), index
 

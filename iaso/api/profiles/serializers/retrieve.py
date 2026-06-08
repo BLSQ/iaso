@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
 from phonenumbers.phonenumberutil import region_code_for_number
@@ -318,13 +319,17 @@ class ProfileRetrieveSerializer(ModelSerializer):
 
     @extend_schema_field(serializers.ListField(child=serializers.CharField()))
     def get_permissions(self, obj):
+        permissions_active_modules = [p.codename for p in obj.account.permissions_from_active_modules]
+
         user_group_permissions = [
             permission.split(".")[1]
             for permission in obj.user.get_group_permissions()
             if permission.split(".")[1].startswith("iaso_")
         ]
         user_permissions = list(
-            obj.user.user_permissions.filter(codename__startswith="iaso_").values_list("codename", flat=True)
+            obj.user.user_permissions.filter(
+                Q(codename__startswith="iaso_") & Q(codename__in=permissions_active_modules)
+            ).values_list("codename", flat=True)
         )
         all_permissions = user_group_permissions + user_permissions
         permissions = list(set(all_permissions))
@@ -332,7 +337,12 @@ class ProfileRetrieveSerializer(ModelSerializer):
 
     @extend_schema_field(serializers.ListField(child=serializers.CharField()))
     def get_user_permissions(self, obj):
-        return list(obj.user.user_permissions.filter(codename__startswith="iaso_").values_list("codename", flat=True))
+        permissions_active_modules = [p.codename for p in obj.account.permissions_from_active_modules]
+        return list(
+            obj.user.user_permissions.filter(
+                Q(codename__startswith="iaso_") & Q(codename__in=permissions_active_modules)
+            ).values_list("codename", flat=True)
+        )
 
     @extend_schema_field({"type": "string", "nullable": True})
     def get_country_code(self, obj):

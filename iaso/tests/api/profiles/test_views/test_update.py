@@ -942,10 +942,10 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
 
         self.client.force_authenticate(self.jim)
         self.account.modules = [MODULE_DEFAULT.codename, MODULE_VALIDATION_WORKFLOW.codename]
-        self.account.save()
+        self.account.save(update_fields=["modules"])
 
         response = self.client.patch(
-            reverse("profiles-detail", kwargs={"pk": self.john.pk}),
+            reverse("profiles-detail", kwargs={"pk": self.john.iaso_profile.id}),
             data={
                 "user_permissions": [
                     CORE_VALIDATION_WORKFLOW_PERMISSION.codename,
@@ -959,7 +959,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response = self.client.get(
-            reverse("profiles-detail", kwargs={"pk": self.john.pk}),
+            reverse("profiles-detail", kwargs={"pk": self.john.iaso_profile.id}),
         )
 
         res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
@@ -973,10 +973,10 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
         self.assertIn(CORE_USERS_ADMIN_PERMISSION.codename, res_data["user_permissions"])
 
         self.account.modules = [MODULE_DEFAULT.codename]
-        self.account.save()
+        self.account.save(update_fields=["modules"])
 
         response = self.client.get(
-            reverse("profiles-detail", kwargs={"pk": self.john.pk}),
+            reverse("profiles-detail", kwargs={"pk": self.john.iaso_profile.id}),
         )
 
         res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
@@ -990,7 +990,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
         self.assertIn(CORE_USERS_ADMIN_PERMISSION.codename, res_data["user_permissions"])
 
         response = self.client.patch(
-            reverse("profiles-detail", kwargs={"pk": self.john.pk}),
+            reverse("profiles-detail", kwargs={"pk": self.john.iaso_profile.id}),
             data={**res_data, "phone_number": ""},
             format="json",
         )

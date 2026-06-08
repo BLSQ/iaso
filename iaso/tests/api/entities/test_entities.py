@@ -14,6 +14,7 @@ from django.core.files import File
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
+from rest_framework import status
 
 from iaso import models as m
 from iaso.api.common import EXPORTS_DATETIME_FORMAT
@@ -851,6 +852,90 @@ class WebEntityAPITestCase(EntityAPITestCase):
                 ]
             }
         )
+
+    def test_list_entities_fields_search_soft_deleted_instances(self):
+        self.client.force_authenticate(self.yoda)
+        self.form_2 = m.Form.objects.create(name="Form 2", form_id="form_2")
+
+        ent1_instance1 = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"gender": "F"},
+        )
+        ent1 = Entity.objects.create(
+            name="Ent 1",
+            entity_type=self.entity_type,
+            attributes=ent1_instance1,
+            account=self.account,
+        )
+        ent1_instance1.entity = ent1
+        ent1_instance1.save()
+
+        inst2 = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_2,
+            json={"residence": "Bujumbura"},
+            entity=ent1,
+        )
+
+        response = self.client.get(
+            "/api/entities/",
+            {"fields_search": self._generate_json_filter("and", "some", "F", "Bujumbura")},
+        )
+        res = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(res["result"]), 1)
+
+        inst2.deleted = True
+        inst2.save()
+
+        response = self.client.get(
+            "/api/entities/",
+            {"fields_search": self._generate_json_filter("and", "some", "F", "Bujumbura")},
+        )
+        res = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(res["result"]), 0)
+
+    def test_list_entities_filter_by_date_soft_deleted_instances(self):
+        self.client.force_authenticate(self.yoda)
+
+        source_date = datetime.datetime(2024, 9, 12, 0, 0, 5, tzinfo=pytz.UTC)
+        source_date_str = source_date.strftime("%Y-%m-%d")
+
+        entity_type = EntityType.objects.create(name="ET", reference_form=self.form_1)
+
+        instance = Instance.objects.create(form=self.form_1, source_created_at=source_date)
+        instance.entity = Entity.objects.create(entity_type=entity_type, attributes=instance, account=self.account)
+        instance.save()
+
+        response = self.client.get(f"/api/entities/?dateFrom={source_date_str}&dateTo={source_date_str}")
+        resp = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(resp["result"]), 1)
+
+        instance.deleted = True
+        instance.save()
+
+        response = self.client.get(f"/api/entities/?dateFrom={source_date_str}&dateTo={source_date_str}")
+        res = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(res["result"]), 0)
+
+    def test_list_entities_prefetch_soft_deleted_instances(self):
+        self.client.force_authenticate(self.yoda)
+
+        entity_type = EntityType.objects.create(name="ET2", reference_form=self.form_1)
+
+        # Entity with 1 active instance and 1 soft-deleted instance
+        instance_active = Instance.objects.create(form=self.form_1)
+        entity = Entity.objects.create(entity_type=entity_type, attributes=instance_active, account=self.account)
+        instance_active.entity = entity
+        instance_active.save()
+
+        Instance.objects.create(form=self.form_1, entity=entity, deleted=True)
+
+        response = self.client.get(f"/api/entities/{entity.id}/", format="json")
+        resp = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        self.assertEqual(len(resp["instances"]), 1)
+        self.assertEqual(resp["instances"][0], instance_active.id)
 
     def test_get_entity_by_id(self):
         self.client.force_authenticate(self.yoda)

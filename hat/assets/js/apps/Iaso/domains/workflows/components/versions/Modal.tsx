@@ -6,9 +6,8 @@ import {
     makeFullModal,
     AddButton,
 } from 'bluesquare-components';
-import { useCreateWorkflowVersion } from '../../hooks/requests/useCreateWorkflowVersion';
-
 import InputComponent from '../../../../components/forms/InputComponent';
+import { useCreateWorkflowVersion } from '../../hooks/requests/useCreateWorkflowVersion';
 
 import MESSAGES from '../../messages';
 

@@ -224,7 +224,7 @@ export const getTablePages = (dataForTable, rowsPerPage) => {
         : 0;
 };
 
-export const getLabelsAndValues = (dataSource, formatMessage) => {
+export const getLabelsAndValues = (dataSource, formatMessage, user) => {
     const keys = [
         'name',
         'description',
@@ -266,10 +266,7 @@ export const getLabelsAndValues = (dataSource, formatMessage) => {
     };
 
     const fields = [];
-    const hasDhis2Module = userHasAccessToModule(
-        'DHIS2_MAPPING',
-        useCurrentUser(),
-    );
+    const hasDhis2Module = userHasAccessToModule('DHIS2_MAPPING', user);
     if (!hasDhis2Module) {
         delete dataSource?.url;
     }

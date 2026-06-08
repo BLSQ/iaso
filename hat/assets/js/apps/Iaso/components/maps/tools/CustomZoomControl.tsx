@@ -1,11 +1,10 @@
-import { useLeafletContext } from '@react-leaflet/core';
-import L from 'leaflet';
 import { FunctionComponent, useCallback, useEffect, useState } from 'react';
+import { useLeafletContext } from '@react-leaflet/core';
+import { useSafeIntl } from 'bluesquare-components';
+import L from 'leaflet';
 import { defineMessages } from 'react-intl';
 
 import { useMap } from 'react-leaflet';
-
-import { useSafeIntl } from 'bluesquare-components';
 
 import tiles from '../../../constants/mapTiles';
 

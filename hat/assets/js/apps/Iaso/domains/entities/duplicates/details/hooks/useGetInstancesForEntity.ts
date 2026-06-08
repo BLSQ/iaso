@@ -1,6 +1,6 @@
 import { UseQueryResult } from 'react-query';
-import { useSnackQuery } from '../../../../../libs/apiHooks';
 import { getRequest } from '../../../../../libs/Api';
+import { useSnackQuery } from '../../../../../libs/apiHooks';
 import { Instance } from '../../../../instances/types/instance';
 
 type QueryParams = {

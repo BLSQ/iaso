@@ -1,6 +1,6 @@
+import React, { useMemo } from 'react';
 import { Box } from '@mui/material';
 import { Column, useSafeIntl } from 'bluesquare-components';
-import React, { useMemo } from 'react';
 import { convertValueIfDate } from '../../../../../components/Cells/DateTimeCell';
 import { findDescriptorInChildren } from '../../../../../utils';
 import {
@@ -132,6 +132,7 @@ export const useDuplicationDetailsColumns = ({
         }
 
         return columns;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         formatMessage,
         setQuery,

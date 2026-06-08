@@ -284,7 +284,7 @@ const MESSAGES = defineMessages({
     results: {
         id: 'iaso.label.resultsLower',
         defaultMessage: 'result(s)',
-    }
+    },
 });
 
 export default MESSAGES;

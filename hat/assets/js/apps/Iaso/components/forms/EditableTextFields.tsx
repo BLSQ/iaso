@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import InputComponent from './InputComponent';
 import { IntlMessage } from 'bluesquare-components';
+import InputComponent from './InputComponent';
 
 type Props = {
     fields: {

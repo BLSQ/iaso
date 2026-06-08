@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import MESSAGES from '../../messages';
 import { DropdownOptions } from '../../../../types/utils';
+import MESSAGES from '../../messages';
 
 export const useInstancesOptions = (): DropdownOptions<
     'true' | 'false' | 'duplicates'

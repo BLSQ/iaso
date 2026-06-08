@@ -132,7 +132,9 @@ export const TeamTable: FunctionComponent<Props> = ({
                                         subTeam => (
                                             <AssigneeRow
                                                 key={subTeam.id}
-                                                radioGroupName={assigneeRadioGroupName}
+                                                radioGroupName={
+                                                    assigneeRadioGroupName
+                                                }
                                                 isActive={
                                                     selectedTeam?.id ===
                                                     subTeam.id
@@ -164,7 +166,9 @@ export const TeamTable: FunctionComponent<Props> = ({
                                         .map(user => (
                                             <AssigneeRow
                                                 key={user.id}
-                                                radioGroupName={assigneeRadioGroupName}
+                                                radioGroupName={
+                                                    assigneeRadioGroupName
+                                                }
                                                 isActive={
                                                     selectedUser?.id === user.id
                                                 }

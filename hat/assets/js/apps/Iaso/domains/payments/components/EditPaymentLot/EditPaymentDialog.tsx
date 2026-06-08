@@ -5,12 +5,12 @@ import {
     makeFullModal,
 } from 'bluesquare-components';
 import { UseMutateAsyncFunction } from 'react-query';
+import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
+import getDisplayName from '../../../../utils/usersUtils';
+import { UserDisplayData } from '../../../users/types';
+import { SavePaymentStatusArgs } from '../../hooks/requests/useSavePaymentStatus';
 import MESSAGES from '../../messages';
 import { PaymentStatus } from '../../types';
-import { SavePaymentStatusArgs } from '../../hooks/requests/useSavePaymentStatus';
-import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
-import { UserDisplayData } from '../../../users/types';
-import getDisplayName from '../../../../utils/usersUtils';
 import { StatusSelect } from '../StatusSelect';
 
 type Props = {

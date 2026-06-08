@@ -5,9 +5,8 @@ import { useSnackQuery } from '../../../../libs/apiHooks';
 
 import { DropdownOptionsWithOriginal } from '../../../../types/utils';
 
-import { DataSource, DataSourcesApi } from '../../types/dataSources';
-
 import { staleTime } from '../../config';
+import { DataSource, DataSourcesApi } from '../../types/dataSources';
 
 const getDataSources = (
     filterEmptyVersions = false,

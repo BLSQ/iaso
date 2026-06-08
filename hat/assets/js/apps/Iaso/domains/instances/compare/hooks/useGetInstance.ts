@@ -1,8 +1,8 @@
 import { UseQueryResult } from 'react-query';
-import { getRequest } from '../../../../libs/Api';
-import { Instance } from '../../types/instance';
-import { useSnackQuery } from '../../../../libs/apiHooks';
 import MESSAGES from '../../../../components/snackBars/messages';
+import { getRequest } from '../../../../libs/Api';
+import { useSnackQuery } from '../../../../libs/apiHooks';
+import { Instance } from '../../types/instance';
 
 export const useGetInstance = (
     instanceId: string | undefined,

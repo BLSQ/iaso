@@ -1,7 +1,7 @@
 import { UseMutationResult } from 'react-query';
+import { deleteRequest } from '../../../../../libs/Api';
 import { useSnackMutation } from '../../../../../libs/apiHooks';
 
-import { deleteRequest } from '../../../../../libs/Api';
 import { apiUrlOUCRC } from '../../constants';
 import { OrgUnitChangeRequestConfigurationFull } from '../../types';
 

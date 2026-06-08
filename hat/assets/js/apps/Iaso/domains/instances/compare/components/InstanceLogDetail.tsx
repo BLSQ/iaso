@@ -4,7 +4,6 @@ import {
     useSafeIntl,
     LoadingSpinner,
     IntlFormatMessage,
-    ErrorBoundary,
 } from 'bluesquare-components';
 
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';

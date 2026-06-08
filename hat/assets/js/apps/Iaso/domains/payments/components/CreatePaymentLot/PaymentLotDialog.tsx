@@ -1,3 +1,9 @@
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useState,
+} from 'react';
 import Add from '@mui/icons-material/Add';
 import { Box, Button, Divider, Grid } from '@mui/material';
 import {
@@ -8,16 +14,10 @@ import {
     selectionInitialState,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, {
-    FunctionComponent,
-    useCallback,
-    useEffect,
-    useState,
-} from 'react';
-import * as Yup from 'yup';
 
 import { useFormik } from 'formik';
 import moment from 'moment';
+import * as Yup from 'yup';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { useTranslatedErrors } from '../../../../libs/validation';
 import getDisplayName, { useCurrentUser } from '../../../../utils/usersUtils';

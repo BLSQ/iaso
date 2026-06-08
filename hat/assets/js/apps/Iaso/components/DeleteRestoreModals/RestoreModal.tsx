@@ -1,11 +1,11 @@
-import { makeFullModal } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
-import { RestoreButton } from './RestoreButton';
+import { makeFullModal } from 'bluesquare-components';
+import { RestoreIconButton } from '../Buttons/RestoreIconButton';
 import {
     DeleteRestoreModal,
     DeleteRestoreModalProps,
 } from './DeleteRestoreModal';
-import { RestoreIconButton } from '../Buttons/RestoreIconButton';
+import { RestoreButton } from './RestoreButton';
 
 const RestoreModalWithButton = makeFullModal(DeleteRestoreModal, RestoreButton);
 const RestoreModalWithIconButton = makeFullModal(

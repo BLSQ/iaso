@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
 
+import { Box } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 
-import { Box } from '@mui/material';
 import { OrgUnit } from '../types/orgUnit';
 import { orgUnitLabelString } from '../utils';
 

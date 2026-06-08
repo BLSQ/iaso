@@ -1,18 +1,17 @@
-import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
+import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
 
-import MESSAGES from '../messages';
-
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
+import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
+import * as Permissions from '../../../utils/permissions';
 import EnketoIcon from '../../instances/components/EnketoIcon';
 
 import { LinkToInstance } from '../../instances/components/LinkToInstance';
 
-import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
-import * as Permissions from '../../../utils/permissions';
 import { useDeleteInstance } from '../../instances/hooks/requests/useDeleteInstance';
 import { useGetEnketoUrl } from '../hooks/useGetEnketoUrl';
+import MESSAGES from '../messages';
 
 type Props = {
     settings: any;

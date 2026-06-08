@@ -12,8 +12,16 @@ type BulkGpsPushParams = {
 };
 export const useInstanceBulkgpspush = (): UseMutationResult => {
     return useSnackMutation(
-        ({ select_all, selected_ids, unselected_ids, filters }: BulkGpsPushParams) => {
-            const url = makeUrlWithParams('/api/tasks/create/instancebulkgpspush/', filters);
+        ({
+            select_all,
+            selected_ids,
+            unselected_ids,
+            filters,
+        }: BulkGpsPushParams) => {
+            const url = makeUrlWithParams(
+                '/api/tasks/create/instancebulkgpspush/',
+                filters,
+            );
             return postRequest(url, {
                 select_all,
                 selected_ids,

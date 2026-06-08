@@ -1,10 +1,10 @@
 import React, { FunctionComponent, useCallback } from 'react';
-import { FormattedMessage } from 'react-intl';
-import { Button, Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import AddLocation from '@mui/icons-material/AddLocation';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { Button, Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { commonStyles } from 'bluesquare-components';
+import { FormattedMessage } from 'react-intl';
 import InputComponent from '../../../../components/forms/InputComponent';
 import MESSAGES from '../../messages';
 import { OrgUnit } from '../../types/orgUnit';

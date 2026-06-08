@@ -91,6 +91,5 @@ Object.keys(rtlMatchers).forEach(matcherName => {
 
 // Don't load svg strings into tests
 require.extensions['.svg'] = obj => {
-    // eslint-disable-next-line no-param-reassign
     obj.exports = () => React.createElement('svg', null, 'SVG_TEST_STUB');
 };

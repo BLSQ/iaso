@@ -1,6 +1,6 @@
+import React, { FunctionComponent } from 'react';
 import { Table, TableContainer } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import { NewOrgUnitField } from '../../hooks/useNewFields';
 import { OrgUnitChangeRequestDetails } from '../../types';
 import { ReviewOrgUnitChangesDetailsTableBody } from './ReviewOrgUnitChangesDetailsTableBody';

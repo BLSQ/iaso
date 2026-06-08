@@ -1,9 +1,9 @@
-import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks.ts';
-import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
 import { useRedirectToReplace } from 'bluesquare-components';
-import MESSAGES from './messages';
+import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
+import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 import { baseUrls } from '../../constants/urls.ts';
 import { useApiParams } from '../../hooks/useApiParams';
+import MESSAGES from './messages';
 
 const defaultTimes = {
     staleTime: 1000 * 60 * 15, // in MS
@@ -27,7 +27,7 @@ export const useGetMappingVersions = params => {
     });
 };
 
-export const useCreateMappingMutation = params => {
+export const useCreateMappingMutation = () => {
     const redirectToReplace = useRedirectToReplace();
 
     return useSnackMutation({

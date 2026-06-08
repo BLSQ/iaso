@@ -28,8 +28,51 @@ const compat = new FlatCompat({
     allConfig: js.configs.all,
 });
 
+// Webpack Module Federation virtual modules (see hat/webpack.dev.js aliases)
+const IASO_MODULES_IMPORT_ORDER_PATH_GROUPS = [
+    {
+        pattern: 'react',
+        group: 'external',
+        position: 'before',
+    },
+    {
+        pattern: 'IasoModules/**',
+        group: 'internal',
+    },
+    {
+        pattern: 'Iaso/**',
+        group: 'internal',
+    },
+];
+
+const importOrderRule = [
+    'error',
+    {
+        groups: [
+            'builtin',
+            'external',
+            'internal',
+            'parent',
+            'sibling',
+            'index',
+        ],
+        pathGroups: IASO_MODULES_IMPORT_ORDER_PATH_GROUPS,
+        pathGroupsExcludedImportTypes: ['react'],
+        alphabetize: {
+            order: 'asc',
+            caseInsensitive: true,
+        },
+    },
+];
+
 export default defineConfig([
-    globalIgnores(['**/node_modules/', '**/build/', '**/dist/', '**/*.min.js']),
+    globalIgnores([
+        '**/node_modules/',
+        '**/build/',
+        '**/dist/',
+        '**/*.min.js',
+        'hat/assets/js/apps/Iaso/bundle/**',
+    ]),
     {
         files: lintedJsPaths,
         extends: fixupConfigRules(
@@ -97,36 +140,16 @@ export default defineConfig([
                 { js: 'off', jsx: 'off', ts: 'off', tsx: 'off', mjs: 'off' },
             ],
 
-            'import/order': [
-                'error',
-                {
-                    groups: [
-                        'builtin',
-                        'external',
-                        'internal',
-                        'parent',
-                        'sibling',
-                        'index',
-                    ],
-                    pathGroups: [
-                        {
-                            pattern: 'react',
-                            group: 'external',
-                            position: 'before',
-                        },
-                    ],
-                    pathGroupsExcludedImportTypes: ['react'],
-                    alphabetize: {
-                        order: 'asc',
-                        caseInsensitive: true,
-                    },
-                },
-            ],
+            'import/order': importOrderRule,
 
             camelcase: 'off',
             'class-methods-use-this': 'warn',
             'constructor-super': 'warn',
             'import/no-extraneous-dependencies': 'off',
+            'import/no-unresolved': [
+                'warn',
+                { ignore: ['^IasoModules/'] },
+            ],
             'import/prefer-default-export': 'off',
             'jsx-a11y/anchor-is-valid': 'off',
             'jsx-a11y/click-events-have-key-events': 'off',
@@ -262,31 +285,7 @@ export default defineConfig([
                 { js: 'off', jsx: 'off', ts: 'off', tsx: 'off' },
             ],
 
-            'import/order': [
-                'error',
-                {
-                    groups: [
-                        'builtin',
-                        'external',
-                        'internal',
-                        'parent',
-                        'sibling',
-                        'index',
-                    ],
-                    pathGroups: [
-                        {
-                            pattern: 'react',
-                            group: 'external',
-                            position: 'before',
-                        },
-                    ],
-                    pathGroupsExcludedImportTypes: ['react'],
-                    alphabetize: {
-                        order: 'asc',
-                        caseInsensitive: true,
-                    },
-                },
-            ],
+            'import/order': importOrderRule,
 
             '@typescript-eslint/ban-ts-comment': 'off',
             '@typescript-eslint/no-explicit-any': 0,
@@ -301,7 +300,10 @@ export default defineConfig([
             'constructor-super': 'warn',
             'import/no-extraneous-dependencies': 'off',
             'import/no-named-as-default': 'warn',
-            'import/no-unresolved': 'warn',
+            'import/no-unresolved': [
+                'warn',
+                { ignore: ['^IasoModules/'] },
+            ],
             'import/prefer-default-export': 'off',
             'jsx-a11y/anchor-is-valid': 'off',
             'jsx-a11y/click-events-have-key-events': 'off',

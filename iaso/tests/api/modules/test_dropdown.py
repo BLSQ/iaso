@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.models import Account
-from iaso.modules import MODULE_FORM_AI, MODULE_STOCK, MODULES
+from iaso.modules import MODULE_DEFAULT, MODULE_FORM_AI, MODULE_STOCK, MODULES
 from iaso.permissions.core_permissions import CORE_MODULES_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
@@ -48,26 +48,26 @@ class ModuleListAPITestCase(SwaggerTestCaseMixin, APITestCase):
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data, len(self.related_modules))
 
-        res = self.client.get(reverse("modules-dropdown"), data={"search": self.related_modules[0].name.upper()})
+        res = self.client.get(reverse("modules-dropdown"), data={"search": "DEFAULT"})
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data, 1)
-        self.assertEqual(res_data[0]["label"], self.related_modules[0].name)
+        self.assertEqual(res_data[0]["label"], MODULE_DEFAULT.name)
 
-        res = self.client.get(reverse("modules-dropdown"), data={"search": self.related_modules[0].name.lower()})
+        res = self.client.get(reverse("modules-dropdown"), data={"search": "default"})
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data, 1)
-        self.assertEqual(res_data[0]["label"], self.related_modules[0].name)
+        self.assertEqual(res_data[0]["label"], MODULE_DEFAULT.name)
 
-        res = self.client.get(reverse("modules-dropdown"), data={"search": self.related_modules[0].name[:2]})
+        res = self.client.get(reverse("modules-dropdown"), data={"search": "Def"})
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
-        self.assertValidData(res_data, 3)
-        self.assertEqual(res_data[0]["label"], self.related_modules[0].name)
+        self.assertValidData(res_data, 1)
+        self.assertEqual(res_data[0]["label"], MODULE_DEFAULT.name)
 
         res = self.client.get(reverse("modules-dropdown"), data={"search": "d" * 22})
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data, 0)
 
-        res = self.client.get(reverse("modules-dropdown"), data={"exclude": self.related_modules[0].codename})
+        res = self.client.get(reverse("modules-dropdown"), data={"exclude": MODULE_DEFAULT.codename})
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data, len(self.related_modules) - 1)
 

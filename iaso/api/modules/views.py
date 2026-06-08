@@ -7,8 +7,8 @@ from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
 
 from iaso.modules import MODULES
+from iaso.permissions.core_permissions import CORE_MODULES_PERMISSION
 
-from ...permissions.core_permissions import CORE_MODULES_PERMISSION
 from ..common import HasPermission
 from .filters import ModuleFilter, ModuleOrderingFilter
 from .serializers.dropdown import ModuleDropdownSerializer

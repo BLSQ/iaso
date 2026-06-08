@@ -146,8 +146,7 @@ function QuestionRow({
     );
 }
 
-// eslint-disable-next-line react/display-name
-const InstanceLogContentBodyTable = memo(({ fileContent }: TableBodyProps) => {
+const InstanceLogContentBodyTable = ({ fileContent }: TableBodyProps) => {
     const classes = useStyles();
     const getImageUrl = useCallback((value, logFiles) => {
         if (value && logFiles) {
@@ -208,6 +207,6 @@ const InstanceLogContentBodyTable = memo(({ fileContent }: TableBodyProps) => {
             </TableBody>
         </ErrorBoundary>
     );
-});
+};
 
-export default InstanceLogContentBodyTable;
+export default memo(InstanceLogContentBodyTable);

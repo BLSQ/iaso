@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useCallback, useMemo, useRef } from 'react';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
-import { Box, Grid, Paper, Typography } from '@mui/material';
+import { Box, Grid, Paper } from '@mui/material';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import classNames from 'classnames';
 import { Field, useFormikContext } from 'formik';
@@ -209,6 +209,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                 vials_received: vialsReceived,
             });
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [index, setFieldValue, arrival_reports],
     );
 

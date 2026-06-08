@@ -58,6 +58,7 @@ export const MultiRows: FunctionComponent<RowObjectProps> = ({
                             return (
                                 <Row
                                     cellWithMargin={false}
+                                    // eslint-disable-next-line react/no-array-index-key
                                     key={`${logKey}-${index}`}
                                     value={
                                         <ExpandableItem

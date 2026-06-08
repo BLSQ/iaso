@@ -107,6 +107,7 @@ export const CampaignAsyncSelect: FunctionComponent<Props> = ({
                 return [];
             }
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [
             campaignTypes,
             baseOptions,
@@ -140,6 +141,7 @@ export const CampaignAsyncSelect: FunctionComponent<Props> = ({
             setSearch(val?.label ? val.label : undefined);
             handleChange(keyValue, val ? val : undefined);
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [handleChange],
     );
 

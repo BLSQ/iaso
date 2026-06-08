@@ -29,6 +29,7 @@ export const PreAlerts: FunctionComponent<Props> = ({
     const emptyPreAlert = useEmptyPreAlert(dosesPerVaccineOptions);
     const onClick = useCallback(() => {
         setFieldValue(PREALERT, [...values[PREALERT], emptyPreAlert]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [setFieldValue, values, vaccine, emptyPreAlert]);
 
     const currentUser = useCurrentUser();
@@ -51,7 +52,7 @@ export const PreAlerts: FunctionComponent<Props> = ({
                 return (
                     <PreAlert
                         index={index}
-                        key={index}
+                        key={index} // eslint-disable-line react/no-array-index-key
                         dosesForVaccineOptions={dosesPerVaccineOptions}
                     />
                 );

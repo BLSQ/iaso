@@ -41,6 +41,7 @@ const useMonthYear = ({
 
         if (month) return `${month}-${year}`;
         return undefined;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [side, ...Object.values(params)]);
 };
 

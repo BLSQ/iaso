@@ -18,8 +18,7 @@ const getAfroMapData = ({
     selectedRound,
     isEmbedded,
 }: GetAfroMapDataArgs) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { accountId, ...apiParams } = params;
+    const { accountId: _accountId, ...apiParams } = params;
     (apiParams as Record<string, string | number>).category = category;
     (apiParams as Record<string, string | number>).round = selectedRound;
     if (isEmbedded) {
@@ -95,8 +94,7 @@ const getZoomedInShapes = ({
     selectedRound,
     isEmbedded,
 }: GetZoomedInShapesArgs) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { accountId, ...apiParams } = params;
+    const { accountId: _accountId, ...apiParams } = params;
     (apiParams as Record<string, string | number>).category = category;
     (apiParams as Record<string, string | number>).bounds = bounds;
     (apiParams as Record<string, string | number>).round = selectedRound;

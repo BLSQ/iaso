@@ -27,6 +27,7 @@ export const VaccineArrivalReports: FunctionComponent<Props> = ({
     const emptyArrivalReport = useEmptyArrivalReport(dosesPerVaccineOptions);
     const onClick = useCallback(() => {
         setFieldValue(VAR, [...values[VAR], emptyArrivalReport]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [setFieldValue, values, vaccine]);
 
     const currentUser = useCurrentUser();
@@ -48,7 +49,7 @@ export const VaccineArrivalReports: FunctionComponent<Props> = ({
                 return (
                     <VaccineArrivalReport
                         index={index}
-                        key={index}
+                        key={index} // eslint-disable-line react/no-array-index-key
                         dosesForVaccineOptions={dosesPerVaccineOptions}
                     />
                 );

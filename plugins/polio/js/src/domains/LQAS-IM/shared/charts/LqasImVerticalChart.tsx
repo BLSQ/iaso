@@ -73,6 +73,7 @@ export const LqasImVerticalChart: FunctionComponent<Props> = ({
                                     {data.map((_entry, index) => {
                                         return (
                                             <Cell
+                                                // eslint-disable-next-line react/no-array-index-key
                                                 key={`cell-${index}`}
                                                 fill={blue[500]}
                                             />

@@ -91,6 +91,7 @@ export const LqasFilterByDate: FunctionComponent<Props> = ({
             // setFilters(newFilters);
             redirectToReplace(currentUrl, newParams);
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [redirectToReplace, ...Object.values(params), side],
     );
 

@@ -18,7 +18,7 @@ export const TextInput: FunctionComponent<Props> = ({
     value,
     touchOnFocus = true,
     shrinkLabel = true,
-    required = false,
+    required: _required = false,
     ...props
 }) => {
     const hasError =

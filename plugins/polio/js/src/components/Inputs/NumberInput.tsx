@@ -66,6 +66,7 @@ export const NumberInput: FunctionComponent<Props> = ({
         if (field.value === undefined) {
             form.setFieldValue(field.name, null);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [form.setFieldValue, field.value]);
 
     return (

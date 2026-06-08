@@ -118,6 +118,7 @@ export const usePolioDialogTabs = (
             return [...defaultTabs, ...polioTabs];
         }
         return defaultTabs;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         formatMessage,
         formik.errors,

@@ -132,6 +132,7 @@ export const LqasAfroPopup: FunctionComponent<Props> = ({
                                 color="primary"
                                 size="small"
                                 target="_blank"
+                                // eslint-disable-next-line max-len
                                 to={`/${baseUrls.lqasCountry}/leftCampaign/${shape.data.campaign_id}/leftCountry/${countryId}/leftRound/${roundNumber}/leftTab/map/rightCampaign/${shape.data.campaign_id}/rightCountry/${countryId}/rightRound/${roundNumber}/rightTab/list/leftFilterType/country/rightFilterType/country/`}
                             >
                                 {formatMessage(MESSAGES.gotoLqasForCountry)}

@@ -32,7 +32,11 @@ export const BudgetDetailsCardsLayout: FunctionComponent<Props> = ({
         <Box width="100%">
             {budgetDetails?.results.map((budgetStep, i) => {
                 return (
-                    <Box mb={1} key={`event-${budgetStep.transition_key}-${i}`}>
+                    <Box
+                        mb={1}
+                        // eslint-disable-next-line react/no-array-index-key
+                        key={`event-${budgetStep.transition_key}-${i}`}
+                    >
                         <BudgetEventCard step={budgetStep} />
                     </Box>
                 );

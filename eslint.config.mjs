@@ -15,6 +15,13 @@ import globals from 'globals';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Frontend sources: main app + polio plugin JS bundle.
+const lintedJsPaths = [
+    'hat/assets/js/**/*.{js,jsx,ts,tsx}',
+    'plugins/polio/js/**/*.{js,jsx,ts,tsx}',
+];
+
 const compat = new FlatCompat({
     baseDirectory: __dirname,
     recommendedConfig: js.configs.recommended,
@@ -24,6 +31,7 @@ const compat = new FlatCompat({
 export default defineConfig([
     globalIgnores(['**/node_modules/', '**/build/', '**/dist/', '**/*.min.js']),
     {
+        files: lintedJsPaths,
         extends: fixupConfigRules(
             compat.extends(
                 'plugin:react-hooks/recommended',
@@ -190,7 +198,7 @@ export default defineConfig([
         },
     },
     {
-        files: ['**/*.ts', '**/*.tsx'],
+        files: lintedJsPaths,
 
         extends: fixupConfigRules(
             compat.extends(

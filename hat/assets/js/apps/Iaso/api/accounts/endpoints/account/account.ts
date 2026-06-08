@@ -390,7 +390,6 @@ export const useApiAccountsUpdateMutationOptions = <
         }
     > = props => {
         const { id, data, params } = props ?? {};
-        // added something to test
         return apiAccountsUpdate(id, data, params, requestOptions);
     };
 

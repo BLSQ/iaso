@@ -1,8 +1,8 @@
+import React, { FunctionComponent } from 'react';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import StarRateIcon from '@mui/icons-material/StarRate';
 import { IconButton, Tooltip } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import { defineMessages } from 'react-intl';
 import { ShortFile } from '../../domains/instances/types/instance';
 

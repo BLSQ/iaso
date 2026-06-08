@@ -1,13 +1,13 @@
-import { Box, Divider, Grid } from '@mui/material';
-import { Field, FormikProvider, useFormik } from 'formik';
 import React, { FunctionComponent, useCallback } from 'react';
-
+import { Box, Divider, Grid } from '@mui/material';
 import {
     ConfirmCancelModal,
     LoadingSpinner,
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
+import { Field, FormikProvider, useFormik } from 'formik';
+
 import { EditIconButton } from '../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 
 import { MultiSelect } from '../../../components/Inputs/MultiSelect';

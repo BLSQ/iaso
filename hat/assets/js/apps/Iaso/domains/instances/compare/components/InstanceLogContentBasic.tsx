@@ -16,7 +16,6 @@ import InstanceLogContentBodyTable from './InstanceLogContentBodyTable';
 
 type Props = {
     fileContent: FileContent;
-    fileDescriptor?: Record<string, any>;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -43,7 +42,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export const InstanceLogContentBasic: FunctionComponent<Props> = ({
-    fileContent,    
+    fileContent,
 }) => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
@@ -94,9 +93,7 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
                     </TableCell>
                 </TableRow>
             </TableHead>
-                <InstanceLogContentBodyTable
-                    fileContent={fileContent}
-                />
+            <InstanceLogContentBodyTable fileContent={fileContent} />
         </Table>
     );
 };

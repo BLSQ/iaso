@@ -1,24 +1,26 @@
+import React, { useMemo } from 'react';
 import { Chip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
-import React, { useMemo } from 'react';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import { baseUrls } from '../../../constants/urls';
-import MESSAGES from './messages';
-
-import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import * as Permission from '../../../utils/permissions';
+import { GroupSet } from '../configuration/types';
+import MESSAGES from './messages';
 
 export const baseUrl = baseUrls.groupSets;
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(() => ({
     groupChip: {
         margin: '2px',
     },
 }));
 
-export const useGroupSetsTableColumns = (deleteGroupSet): Column[] => {
+export const useGroupSetsTableColumns = (
+    deleteGroupSet: (groupSet: GroupSet) => void,
+): Column[] => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     return useMemo(
@@ -106,6 +108,7 @@ export const useGroupSetsTableColumns = (deleteGroupSet): Column[] => {
                 ),
             },
         ],
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [],
     );
 };

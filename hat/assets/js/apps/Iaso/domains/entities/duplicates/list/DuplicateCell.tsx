@@ -42,6 +42,7 @@ export const DuplicateCell: FunctionComponent<Props> = ({
                 return (
                     <p
                         className={className}
+                        // eslint-disable-next-line react/no-array-index-key
                         key={`${entity}-${field}-${index}`}
                     >
                         {convertValueIfDate(field)}

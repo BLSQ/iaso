@@ -42,6 +42,7 @@ export const useReasonsForDelayValidation = (
                     }),
                 ...translatedFields(apiValidator, appLocales),
             }),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [apiValidator, appLocales],
     );
     return schema;

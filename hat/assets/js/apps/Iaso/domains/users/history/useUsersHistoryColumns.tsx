@@ -1,9 +1,9 @@
-import { Expander, useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
-import MESSAGES from '../messages';
+import { Expander, useSafeIntl } from 'bluesquare-components';
+import { BreakWordCell } from '../../../components/Cells/BreakWordCell';
 import { DateCell } from '../../../components/Cells/DateTimeCell';
 import getDisplayName from '../../../utils/usersUtils';
-import { BreakWordCell } from '../../../components/Cells/BreakWordCell';
+import MESSAGES from '../messages';
 
 export const useUsersHistoryColumns = () => {
     const { formatMessage } = useSafeIntl();

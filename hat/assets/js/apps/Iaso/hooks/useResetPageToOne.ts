@@ -1,5 +1,5 @@
-import { useSkipEffectOnMount } from 'bluesquare-components';
 import { useState } from 'react';
+import { useSkipEffectOnMount } from 'bluesquare-components';
 import { convertObjectToString } from '../utils/dataManipulation';
 
 type Params = {

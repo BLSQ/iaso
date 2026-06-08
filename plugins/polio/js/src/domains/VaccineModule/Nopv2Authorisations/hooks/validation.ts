@@ -1,6 +1,6 @@
-import * as yup from 'yup';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
+import * as yup from 'yup';
 import MESSAGES from '../../../../constants/messages';
 
 yup.addMethod(

@@ -4,15 +4,15 @@ import { Box } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
-import { baseUrls } from '../../../constants/urls';
 import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
+import { baseUrls } from '../../../constants/urls';
 
-import MESSAGES from './messages';
-import { ChronogramFilters } from './Filters/ChronogramFilters';
-import { ChronogramParams } from './types';
-import { ChronogramTable } from './Table/ChronogramTable';
-import { defaultParams } from '../constants';
 import { useStyles } from '../../../styles/theme';
+import { defaultParams } from '../constants';
+import { ChronogramFilters } from './Filters/ChronogramFilters';
+import MESSAGES from './messages';
+import { ChronogramTable } from './Table/ChronogramTable';
+import { ChronogramParams } from './types';
 
 export const Chronogram: FunctionComponent = () => {
     const params = useParamsObject(baseUrls.chronogram) as ChronogramParams;

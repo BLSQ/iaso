@@ -1,7 +1,7 @@
-import { useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
-import MESSAGES from '../messages';
+import { useSafeIntl } from 'bluesquare-components';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import MESSAGES from '../messages';
 
 const options = ['m', 'y'];
 

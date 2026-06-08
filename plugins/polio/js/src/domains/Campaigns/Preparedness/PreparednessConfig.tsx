@@ -1,4 +1,5 @@
 import React, { useCallback, FunctionComponent } from 'react';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import {
     Button,
     CircularProgress,
@@ -8,24 +9,23 @@ import {
     Box,
     Typography,
 } from '@mui/material';
-import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
+import { Field, useFormikContext } from 'formik';
 import moment from 'moment';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
-import { TextInput } from '../../../components/Inputs';
-import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { TextInput } from '../../../components/Inputs';
+import MESSAGES from '../../../constants/messages';
+import { ObrName, PolioCampaignValues, Round } from '../../../constants/types';
 import { useStyles } from '../../../styles/theme';
 import {
     useGeneratePreparednessSheet,
     useGetPreparednessData,
     useFetchPreparedness,
 } from './hooks/useGetPreparednessData';
-import MESSAGES from '../../../constants/messages';
-import { PreparednessSummary } from './PreparednessSummary';
-import { ObrName, PolioCampaignValues, Round } from '../../../constants/types';
 import { useGetLatestSubActivityDate } from './hooks/useGetSubactivitiesDates';
+import { PreparednessSummary } from './PreparednessSummary';
 
 type Props = {
     round: Round;

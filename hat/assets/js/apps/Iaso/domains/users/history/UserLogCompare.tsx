@@ -1,4 +1,6 @@
 import React, { FunctionComponent } from 'react';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import {
     Table,
     TableBody,
@@ -11,8 +13,6 @@ import {
     Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import { MESSAGES as LOG_MESSAGES } from '../../orgUnits/history/messages';
@@ -188,7 +188,7 @@ export const UserLogCompare: FunctionComponent<Props> = ({
                                                 value={value ?? ''}
                                                 isDifferent={Boolean(
                                                     showAllFields &&
-                                                        diffFields[fieldKey],
+                                                    diffFields[fieldKey],
                                                 )}
                                             />
                                         </TableCell>

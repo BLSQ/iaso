@@ -1,13 +1,13 @@
 import React, { FunctionComponent } from 'react';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
+import { baseUrls } from '../../../constants/urls';
+import { useGetNotifications } from '../hooks/api';
 import {
     ApiNotificationsParams,
     NotificationsMetaData,
     NotificationsParams,
 } from '../types';
-import { useGetNotifications } from '../hooks/api';
 import { useNotificationsTableColumns } from './useNotificationsTableColumns';
-import { baseUrls } from '../../../constants/urls';
 
 type Props = {
     params: NotificationsParams;

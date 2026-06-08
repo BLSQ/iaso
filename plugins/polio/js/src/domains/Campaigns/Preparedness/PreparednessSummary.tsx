@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { Grid, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import moment from 'moment';
 import { isEmpty } from 'lodash';
+import moment from 'moment';
 import MESSAGES from '../../../constants/messages';
 import { RefreshPreparednessResponse } from '../../../constants/types';
 

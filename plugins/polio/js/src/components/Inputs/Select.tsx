@@ -1,5 +1,5 @@
-import { get } from 'lodash';
 import React, { FunctionComponent, useMemo } from 'react';
+import { get } from 'lodash';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { DropdownOptions } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 

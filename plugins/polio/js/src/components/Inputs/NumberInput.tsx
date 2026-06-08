@@ -1,10 +1,10 @@
-import { get } from 'lodash';
 import React, {
     FocusEventHandler,
     FunctionComponent,
     useCallback,
     useEffect,
 } from 'react';
+import { get } from 'lodash';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 
 type Props = {
@@ -66,6 +66,7 @@ export const NumberInput: FunctionComponent<Props> = ({
         if (field.value === undefined) {
             form.setFieldValue(field.name, null);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [form.setFieldValue, field.value]);
 
     return (

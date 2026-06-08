@@ -4,9 +4,9 @@ import {
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
-import MESSAGES from './MESSAGES';
-import { useDeleteNopv2Authorisation } from '../../../hooks/api';
 import { DeleteIconButton } from '../../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
+import { useDeleteNopv2Authorisation } from '../../../hooks/api';
+import MESSAGES from './MESSAGES';
 
 type Props = {
     isOpen: boolean;

@@ -25,8 +25,8 @@ import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useCurrentUser } from '../../../utils/usersUtils';
 
-import { useGetOrgUnitValidationStatus } from '../hooks/utils/useGetOrgUnitValidationStatus';
 import { useGetGroupDropdown } from '../hooks/requests/useGetGroups';
+import { useGetOrgUnitValidationStatus } from '../hooks/utils/useGetOrgUnitValidationStatus';
 import { useSourceVersionIds } from '../hooks/utils/useSourceVersionIds';
 import MESSAGES from '../messages';
 import { useGetOrgUnitTypesDropdownOptions } from '../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';

@@ -3,10 +3,10 @@ import { Box } from '@mui/material';
 
 import { Column, useSafeIntl } from 'bluesquare-components';
 
-import MESSAGES from '../messages';
-import { DeleteChronogramTemplateTask } from '../Modals/ChronogramTemplateTaskDeleteModal';
-import { EditChronogramTemplateTaskModal } from '../Modals/ChronogramTemplateTaskCreateEditModal';
 import { ChronogramTaskMetaData } from '../../types';
+import MESSAGES from '../messages';
+import { EditChronogramTemplateTaskModal } from '../Modals/ChronogramTemplateTaskCreateEditModal';
+import { DeleteChronogramTemplateTask } from '../Modals/ChronogramTemplateTaskDeleteModal';
 
 export const useChronogramTemplateTaskTableColumns = (
     chronogramTaskMetaData: ChronogramTaskMetaData,

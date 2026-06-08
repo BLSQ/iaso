@@ -1,15 +1,15 @@
 import React, { FunctionComponent } from 'react';
 import Alert from '@mui/lab/Alert';
+import { Button } from '@mui/material';
 import { LoadingSpinner, Select, useSafeIntl } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
-import { Button } from '@mui/material';
+import Descriptor from '../descriptor';
+import MESSAGES from '../messages';
 import { isMapped, isNeverMapped } from '../question_mappings';
 import Dhis2SearchComponent from './Dhis2SearchComponent';
 import { DuplicateHint } from './DuplicateHint';
-import ObjectDumper from './ObjectDumper';
-import Descriptor from '../descriptor';
 import EventTrackerProgramForm from './EventTrackerProgramForm';
-import MESSAGES from '../messages';
+import ObjectDumper from './ObjectDumper';
 
 const Dhis2ProgramTrackedEntityAttributeSearch = ({
     questionMapping,
@@ -168,10 +168,9 @@ type Props = {
     question: Record<string, any>;
     mappingVersion: Record<string, any>;
     indexedQuestions: Record<string, any>;
-    onConfirmedQuestionMapping: Function;
-    onUnmapQuestionMapping: Function;
-    onNeverMapQuestionMapping: Function;
-    hesabuDescriptor?: any[];
+    onConfirmedQuestionMapping: (questionMapping: Record<string, any>) => void;
+    onUnmapQuestionMapping: () => void;
+    onNeverMapQuestionMapping: () => void;
     fieldOptions?: any[];
     fieldTypeOptions?: any[];
 };
@@ -184,7 +183,6 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
     onConfirmedQuestionMapping,
     onUnmapQuestionMapping,
     onNeverMapQuestionMapping,
-    hesabuDescriptor = [],
     fieldOptions = [], // should be ordered so state is initalized with 1st element
     fieldTypeOptions = [], // should be ordered so state is initalized with 1st element
 }) => {
@@ -389,6 +387,7 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
 
                     {questionMapping.map &&
                         questionMapping.map((q, index) => (
+                            // eslint-disable-next-line react/no-array-index-key
                             <ObjectDumper key={index} object={q} />
                         ))}
                 </div>

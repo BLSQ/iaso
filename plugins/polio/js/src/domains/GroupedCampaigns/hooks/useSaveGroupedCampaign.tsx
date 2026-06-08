@@ -1,5 +1,5 @@
-import { UseMutationResult } from 'react-query';
 import { PartialBy } from 'bluesquare-components';
+import { UseMutationResult } from 'react-query';
 import {
     postRequest,
     patchRequest,
@@ -9,7 +9,7 @@ import { useSnackMutation } from '../../../../../../../hat/assets/js/apps/Iaso/l
 type QueryData = {
     id: string;
     name: string;
-    // eslint-disable-next-line camelcase
+
     campaigns_ids: string[];
 };
 

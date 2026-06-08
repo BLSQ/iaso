@@ -2,18 +2,18 @@ import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-import { StorageParams } from './types/storages';
-import { Filters } from './components/Filters';
-import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
-import { useGetStorages } from './hooks/requests/useGetStorages';
-import { useGetStorageApiParams } from './hooks/requests/requests';
-import MESSAGES from './messages';
-import { useGetColumns, defaultSorted, baseUrl } from './config';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { baseUrls } from '../../constants/urls';
 import { useActiveParams } from '../../routing/hooks/useActiveParams';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { Filters } from './components/Filters';
+import { useGetColumns, defaultSorted, baseUrl } from './config';
+import { useGetStorageApiParams } from './hooks/requests/requests';
+import { useGetStorages } from './hooks/requests/useGetStorages';
+import MESSAGES from './messages';
+import { StorageParams } from './types/storages';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

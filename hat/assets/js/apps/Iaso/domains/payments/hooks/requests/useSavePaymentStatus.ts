@@ -1,9 +1,9 @@
 import { UseMutationResult } from 'react-query';
 import { patchRequest, postRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
-import { Payment, PaymentStatus } from '../../types';
 import { Selection } from '../../../orgUnits/types/selection';
 import MESSAGES from '../../messages';
+import { Payment, PaymentStatus } from '../../types';
 
 const apiUrl = `/api/payments/`;
 const taskApi = `/api/tasks/create/paymentsbulkupdate/`;

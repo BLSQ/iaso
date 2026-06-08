@@ -1,14 +1,13 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ErrorsPopper } from './ErrorsPopper';
-import { act } from '@testing-library/react';
 
 // we mock Popper to avoid heavy computation and layout simulation
 vi.mock('@mui/material', async () => {
-    const actual = await vi.importActual<typeof import('@mui/material')>(
-        '@mui/material',
-    );
+    const actual =
+        await vi.importActual<typeof import('@mui/material')>('@mui/material');
 
     return {
         ...actual,
@@ -16,7 +15,6 @@ vi.mock('@mui/material', async () => {
             open ? <div data-testid="mock-popper">{children}</div> : null,
     };
 });
-
 
 describe('ErrorsPopper', () => {
     it('returns null when there are no errors', () => {
@@ -66,7 +64,6 @@ describe('ErrorsPopper', () => {
             await user.click(button);
         });
 
-
         expect(screen.getByText('First error')).toBeInTheDocument();
         expect(screen.getByText('Second error')).toBeInTheDocument();
     });
@@ -107,8 +104,7 @@ describe('ErrorsPopper', () => {
         );
         await act(async () => {
             await user.click(screen.getByRole('button'));
-        })
-
+        });
 
         expect(screen.getByText('Lowercase error')).toBeInTheDocument();
     });

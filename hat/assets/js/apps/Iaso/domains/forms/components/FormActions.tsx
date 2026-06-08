@@ -231,8 +231,8 @@ export const FormActions: FunctionComponent<Props> = ({
                                 download
                                 reloadDocument
                                 to={
-                                    settings.row.original
-                                        .latest_form_version?.file
+                                    settings.row.original.latest_form_version
+                                        ?.file
                                 }
                             >
                                 XML

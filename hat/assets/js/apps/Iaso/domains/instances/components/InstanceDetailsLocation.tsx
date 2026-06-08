@@ -3,16 +3,15 @@ import React from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { MarkerMap } from '../../../components/maps/MarkerMapComponent';
 import OrgUnitDisplay from '../../orgUnits/components/OrgUnitDisplay';
+import { OrgUnitLabel } from '../../orgUnits/components/OrgUnitLabel';
 import { OrgUnitSourceRefDisplay } from '../../orgUnits/components/OrgUnitSourceRefDisplay';
 
+import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { getOrgUnitsTree } from '../../orgUnits/utils';
 
+import MESSAGES from '../messages';
 import { Instance } from '../types/instance';
 import InstanceDetailsField from './InstanceDetailsField';
-
-import { OrgUnitLabel } from '../../orgUnits/components/OrgUnitLabel';
-import { OrgUnit } from '../../orgUnits/types/orgUnit';
-import MESSAGES from '../messages';
 
 type Props = {
     currentInstance: Instance;

@@ -1,7 +1,7 @@
 import { UseMutationResult } from 'react-query';
+import { useDeleteTableRow } from 'Iaso/components/tables/TableWithDeepLink';
 import { deleteRequest } from '../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackMutation } from '../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import { useDeleteTableRow } from 'Iaso/components/tables/TableWithDeepLink';
 import { baseUrls } from '../../../constants/urls';
 
 const deleteGroupedCampaign = async id =>
@@ -10,9 +10,12 @@ const deleteGroupedCampaign = async id =>
 type useDeleteArgs = {
     params: any;
     count: number;
-}
+};
 
-export const useDeleteGroupedCampaign = ({params, count}: useDeleteArgs): UseMutationResult => {
+export const useDeleteGroupedCampaign = ({
+    params,
+    count,
+}: useDeleteArgs): UseMutationResult => {
     const onSuccess = useDeleteTableRow({
         count,
         params,
@@ -26,6 +29,6 @@ export const useDeleteGroupedCampaign = ({params, count}: useDeleteArgs): UseMut
         mutationFn: id => deleteGroupedCampaign(id),
         options: {
             onSuccess,
-        }
+        },
     });
 };

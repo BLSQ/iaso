@@ -16,7 +16,7 @@ const getVaccineReporting = params => {
 };
 export const tableDefaults = {
     order: '-campaign_started_at',
-    limit: 50,
+    limit: 20,
     page: 1,
 };
 

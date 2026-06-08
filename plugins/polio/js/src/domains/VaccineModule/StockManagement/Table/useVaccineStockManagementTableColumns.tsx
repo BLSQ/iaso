@@ -5,9 +5,9 @@ import {
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
+import { NumberCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import { baseUrls } from '../../../../constants/urls';
 import MESSAGES from '../messages';
-import { NumberCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 
 export const useVaccineStockManagementTableColumns = (
     vaccineType?: string,

@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import { commonStyles } from 'bluesquare-components';
 
 import { TableRow, TableCell, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { commonStyles } from 'bluesquare-components';
 
 import classNames from 'classnames';
 import { useGetCampaignFieldLabel } from '../hooks/useGetCampaignFieldLabel';

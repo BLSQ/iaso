@@ -1,8 +1,8 @@
 import React, { FunctionComponent, useEffect } from 'react';
-import { useQuill } from 'react-quilljs';
-import { makeStyles } from '@mui/styles';
 import { FormControl, FormLabel } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import isEqual from 'lodash/isEqual';
+import { useQuill } from 'react-quilljs';
 import 'quill/dist/quill.snow.css';
 
 const useStyles = makeStyles(theme => ({
@@ -40,7 +40,7 @@ type Props = {
 const Rte: FunctionComponent<Props> = ({
     label,
     field = { name: '', value: undefined },
-    form = { setFieldValue: (value: string, innerHtml: string) => {} },
+    form = { setFieldValue: (_value: string, _innerHtml: string) => {} },
 } = {}) => {
     const value = field.value || '';
     const classes = useStyles();
@@ -79,6 +79,7 @@ const Rte: FunctionComponent<Props> = ({
                 form.setFieldValue(field.name, quill.root.innerHTML);
             });
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [quill]);
 
     return (

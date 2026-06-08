@@ -468,6 +468,7 @@ export class Period {
 
     // more period functions -----------------
 
+    /* eslint-disable class-methods-use-this -- period navigation helpers; kept as instance methods for API consistency */
     nextYearMonth(period: string): string {
         let year = parseInt(period.slice(0, 4), 0);
         let month = parseInt(period.slice(4, 6), 0);
@@ -619,6 +620,7 @@ export class Period {
         }
         return `${year}W${week}`;
     }
+    /* eslint-enable class-methods-use-this */
 
     next(period: string): string {
         if (period.includes('NovQ')) {

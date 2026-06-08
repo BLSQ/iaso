@@ -1,10 +1,10 @@
 import React, { FunctionComponent } from 'react';
-import { userHasOneOfPermissions } from '../../users/utils';
+import { LinkTo } from '../../../components/nav/LinkTo';
 import { baseUrls } from '../../../constants/urls';
+import { SUBMISSIONS, SUBMISSIONS_UPDATE } from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../../assignments/messages';
-import { SUBMISSIONS, SUBMISSIONS_UPDATE } from '../../../utils/permissions';
-import { LinkTo } from '../../../components/nav/LinkTo';
+import { userHasOneOfPermissions } from '../../users/utils';
 
 type Props = {
     instanceId: string;

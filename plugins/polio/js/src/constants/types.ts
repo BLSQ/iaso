@@ -180,25 +180,8 @@ export type Round = {
     campaign: Nullable<string>; // uuid
     cost: Nullable<string>;
     datelogs: RoundDateHistoryEntry[];
-    /** @deprecated Use vaccine supply chain (DestructionReport). */
-    date_destruction: Nullable<string>;
-    /** @deprecated Use vaccine supply chain (VaccineRequestForm). */
-    date_signed_vrf_received: Nullable<string>; // date
-    destructions: Destruction[];
     doses_requested: Nullable<number>;
     ended_at: string; // date
-    /** @deprecated Use vaccine supply chain (OutgoingStockMovement / Form A). */
-    forma_comment: Nullable<string>;
-    /** @deprecated Use vaccine supply chain (OutgoingStockMovement / Form A). */
-    forma_date: Nullable<string>; // date
-    /** @deprecated Use vaccine supply chain (OutgoingStockMovement / Form A). */
-    forma_missing_vials: Nullable<number>;
-    /** @deprecated Use vaccine supply chain (OutgoingStockMovement / Form A). */
-    forma_reception: Nullable<string>; // date
-    /** @deprecated Use vaccine supply chain (OutgoingStockMovement / Form A). */
-    forma_unusable_vials: Nullable<number>;
-    /** @deprecated Use vaccine supply chain (OutgoingStockMovement / Form A). */
-    forma_usable_vials: Nullable<number>;
     id: number;
     im_ended_at: Nullable<string>; // date
     im_percentage_children_missed_in_household: Nullable<string>;

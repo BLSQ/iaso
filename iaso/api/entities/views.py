@@ -197,7 +197,9 @@ class EntityViewSet(ModelViewSet):
             queryset = queryset.prefetch_related(
                 Prefetch(
                     "instances",
-                    queryset=Instance.objects.only("id", "entity_id", "source_created_at", "created_at"),
+                    queryset=Instance.objects.filter(deleted=False).only(
+                        "id", "entity_id", "source_created_at", "created_at"
+                    ),
                 ),
             )
 
@@ -272,7 +274,7 @@ class EntityViewSet(ModelViewSet):
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
-        queryset = Entity.objects.filter_for_user(self.request.user).distinct()
+        queryset = self.get_queryset().distinct()
         entity = get_object_or_404(queryset, pk=pk)
         serializer = self.get_serializer(entity, many=False)
         return Response(serializer.data)

@@ -1,6 +1,6 @@
+import React, { FunctionComponent, useCallback } from 'react';
 import { TextArea } from 'bluesquare-components';
 import { get } from 'lodash';
-import React, { FunctionComponent, useCallback } from 'react';
 
 type Props = {
     field: any;

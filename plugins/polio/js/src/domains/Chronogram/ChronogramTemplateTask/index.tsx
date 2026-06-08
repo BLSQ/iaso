@@ -1,13 +1,12 @@
-import { Box, Grid } from '@mui/material';
 import React, { FunctionComponent } from 'react';
+import { Box, Grid } from '@mui/material';
 
 import { LoadingSpinner, useGoBack, useSafeIntl } from 'bluesquare-components';
 
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
-import { useStyles } from '../../../styles/theme';
-
 import { baseUrls } from '../../../constants/urls';
+import { useStyles } from '../../../styles/theme';
 
 import { useOptionChronogramTask } from '../api/useOptionChronogram';
 import { ChronogramParams } from '../Chronogram/types';

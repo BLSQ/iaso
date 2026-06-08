@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 
-import { Nopv2AuthStatus } from '../types';
 import MESSAGES from '../../../../constants/messages';
+import { Nopv2AuthStatus } from '../types';
 
 type Props = {
     status: Nopv2AuthStatus;

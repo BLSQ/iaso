@@ -1,6 +1,5 @@
-import { ObjectSchema, array, number, object, string } from 'yup';
-
 import { useSafeIntl } from 'bluesquare-components';
+import { ObjectSchema, array, number, object, string } from 'yup';
 
 import { apiRegexDateFormat } from '../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
 import MESSAGES from '../messages';

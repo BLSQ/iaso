@@ -2,8 +2,8 @@ import React, { FunctionComponent } from 'react';
 import { TableRow, TableCell, Box } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 
-import { FilteredDistricts } from './types';
 import MESSAGES from '../../../../constants/messages';
+import { FilteredDistricts } from './types';
 
 type Props = {
     isFetching: boolean;

@@ -1,11 +1,11 @@
 import React, { FunctionComponent } from 'react';
-import { Tooltip } from 'react-leaflet';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import { useSafeIntl } from 'bluesquare-components';
-import { Shape } from '../../../../../constants/types';
+import { Tooltip } from 'react-leaflet';
 import MESSAGES from '../../../../../constants/messages';
+import { Shape } from '../../../../../constants/types';
 
 type Props = {
     name: string;

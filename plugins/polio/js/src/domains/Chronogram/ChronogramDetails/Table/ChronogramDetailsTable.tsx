@@ -5,9 +5,9 @@ import { TableWithDeepLink } from '../../../../../../../../hat/assets/js/apps/Ia
 import { baseUrls } from '../../../../constants/urls';
 
 import { ChronogramTaskMetaData } from '../../types';
+import { useGetChronogramTasks } from '../api/useGetChronogramTasks';
 import { ChronogramTasksParams } from '../types';
 import { useChronogramDetailsTableColumn } from './useChronogramDetailsTableColumn';
-import { useGetChronogramTasks } from '../api/useGetChronogramTasks';
 
 type Props = {
     params: ChronogramTasksParams;

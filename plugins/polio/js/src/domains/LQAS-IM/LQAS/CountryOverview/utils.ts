@@ -1,3 +1,14 @@
+import { useMemo } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
+import { isEqual } from 'lodash';
+import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
+import { Campaign } from '../../../..//constants/types';
+import { findDataForShape } from '../../../..//utils';
+import MESSAGES from '../../../../constants/messages';
+import { IN_SCOPE } from '../../shared/constants';
+import { calculateChildrenAbsent } from '../../shared/hooks/useRfaTitle';
+import { childrenNotMarked, convertStatToPercent } from '../../shared/LqasIm';
+import { computeScopeCounts, determineLqasImDates } from '../../shared/utils';
 import {
     BarChartData,
     ConvertedLqasImData,
@@ -5,17 +16,6 @@ import {
     LqasImCampaign,
 } from '../../types';
 import { determineStatusForDistrict, sumChildrenCheckedLqas } from '../utils';
-import { childrenNotMarked, convertStatToPercent } from '../../shared/LqasIm';
-import { useSafeIntl } from 'bluesquare-components';
-import MESSAGES from '../../../../constants/messages';
-import { useMemo } from 'react';
-import { calculateChildrenAbsent } from '../../shared/hooks/useRfaTitle';
-import { Campaign } from '../../../..//constants/types';
-import { isEqual } from 'lodash';
-import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
-import { findDataForShape } from '../../../..//utils';
-import { IN_SCOPE } from '../../shared/constants';
-import { computeScopeCounts, determineLqasImDates } from '../../shared/utils';
 
 export const makeLqasRatioUnmarked = ({
     data,

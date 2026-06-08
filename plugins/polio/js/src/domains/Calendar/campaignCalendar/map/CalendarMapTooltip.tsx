@@ -1,6 +1,5 @@
-/* eslint-disable react/require-default-props */
-import { useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import { Tooltip } from 'react-leaflet';
 import MESSAGES from '../../../../constants/messages';
 

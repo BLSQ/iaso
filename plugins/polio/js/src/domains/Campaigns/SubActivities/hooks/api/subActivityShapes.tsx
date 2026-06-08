@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { CampaignFormValues, Round } from '../../../../../constants/types';
-import { useGetParentOrgUnit } from '../../../Scope/hooks/useGetParentOrgUnit';
 import { useGetGeoJson } from '../../../Scope/hooks/useGetGeoJson';
+import { useGetParentOrgUnit } from '../../../Scope/hooks/useGetParentOrgUnit';
 
 export const useGetSubActivityShapes = (
     campaign: CampaignFormValues,

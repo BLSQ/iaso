@@ -1,4 +1,3 @@
-/* eslint-disable react/require-default-props */
 import React, { FunctionComponent, useMemo } from 'react';
 import { Box, Typography, Grid, Divider } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -68,7 +67,6 @@ export const LqasSummary: FunctionComponent<Props> = ({
     const ratePassedColor = getRatePassedColors(summary.ratePassed, classes);
 
     return (
-        // eslint-disable-next-line react/jsx-no-useless-fragment
         <>
             {data && campaign && data[campaign] && (
                 <Box pt={2} pb={2}>

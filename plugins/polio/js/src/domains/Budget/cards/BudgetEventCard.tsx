@@ -1,4 +1,6 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import React, { FunctionComponent, useCallback, useState } from 'react';
+import { PlaylistAdd } from '@mui/icons-material';
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import {
     Box,
     Card,
@@ -9,21 +11,18 @@ import {
     Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { FunctionComponent, useCallback, useState } from 'react';
 import { formatThousand, useSafeIntl } from 'bluesquare-components';
-import moment from 'moment';
 import classNames from 'classnames';
-import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
-import { PlaylistAdd } from '@mui/icons-material';
+import moment from 'moment';
+import getDisplayName from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../../constants/messages';
 
+import { useDeleteRestoreBudgetStep } from '../hooks/api/useGetBudgetDetails';
+import { styles as eventStyles } from '../hooks/config';
 import { BudgetFilesModalForCards } from '../pop-ups/BudgetFilesModalForCards';
 
-import { formatComment, shouldOpenModal, useActionMessage } from './utils';
-import { styles as eventStyles } from '../hooks/config';
 import { BudgetStep, LinkWithAlias } from '../types';
-import getDisplayName from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import { useDeleteRestoreBudgetStep } from '../hooks/api/useGetBudgetDetails';
+import { formatComment, shouldOpenModal, useActionMessage } from './utils';
 
 type Props = {
     step: BudgetStep;

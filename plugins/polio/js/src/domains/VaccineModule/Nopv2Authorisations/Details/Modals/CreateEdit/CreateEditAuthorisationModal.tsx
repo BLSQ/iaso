@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import { Box, Divider } from '@mui/material';
 import {
     AddButton,
     ConfirmCancelModal,
@@ -7,18 +8,17 @@ import {
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import { Box, Divider } from '@mui/material';
-import { DateInput } from '../../../../../../components/Inputs/DateInput';
-import { useCreateEditNopv2Authorisation } from '../../../hooks/api';
 import { EditIconButton } from '../../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
-import { useNopv2AuthorisationsSchema } from '../../../hooks/validation';
-import MESSAGES from './MESSAGES';
-import { NumberInput } from '../../../../../../components/Inputs/NumberInput';
+import { DateInput } from '../../../../../../components/Inputs/DateInput';
 import { MultilineText } from '../../../../../../components/Inputs/MultilineText';
+import { NumberInput } from '../../../../../../components/Inputs/NumberInput';
 import { SingleSelect } from '../../../../../../components/Inputs/SingleSelect';
-import { useStatusOptions } from '../../../hooks/statuses';
-import { AuthorisationAPIData } from '../../../types';
 import { useGetCountries } from '../../../../../../hooks/useGetCountries';
+import { useCreateEditNopv2Authorisation } from '../../../hooks/api';
+import { useStatusOptions } from '../../../hooks/statuses';
+import { useNopv2AuthorisationsSchema } from '../../../hooks/validation';
+import { AuthorisationAPIData } from '../../../types';
+import MESSAGES from './MESSAGES';
 
 type Props = {
     isOpen: boolean;

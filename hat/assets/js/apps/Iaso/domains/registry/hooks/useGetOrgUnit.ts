@@ -44,6 +44,7 @@ export const useFetchOrgUnits = (appId?: string): FetchOrgUnitsListResult => {
                 );
             }
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [queryClient],
     );
 
@@ -112,7 +113,8 @@ export const useGetOrgUnitListChildren = (
             select: data => {
                 if (!data) return undefined;
                 const orgunits: OrgUnit[] = data.orgunits.filter(
-                    orgUnit => `${orgUnitParentId}` !== `${orgUnit.id}`,
+                    (orgUnit: OrgUnit) =>
+                        `${orgUnitParentId}` !== `${orgUnit.id}`,
                 );
                 return {
                     ...data,

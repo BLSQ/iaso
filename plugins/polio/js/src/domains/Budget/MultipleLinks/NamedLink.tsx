@@ -1,20 +1,20 @@
 import React, { FunctionComponent, useCallback } from 'react';
+import ClearIcon from '@mui/icons-material/Clear';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Grid, IconButton } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { Field, useFormikContext } from 'formik';
 import {
     // @ts-ignore
     useSafeIntl,
     // @ts-ignore
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
-import ClearIcon from '@mui/icons-material/Clear';
 import classNames from 'classnames';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { Field, useFormikContext } from 'formik';
 
-import { useStyles } from '../../../styles/theme';
 import { TextInput } from '../../../components/Inputs/TextInput';
 import MESSAGES from '../../../constants/messages';
+import { useStyles } from '../../../styles/theme';
 
 const useCustomStyles = makeStyles(theme => {
     return {

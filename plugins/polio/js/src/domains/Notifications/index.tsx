@@ -4,15 +4,15 @@ import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 
-import { useStyles } from '../../styles/theme';
-
-import MESSAGES from './messages';
-import { NotificationsFilters } from './Filters/NotificationsFilters';
-import { NotificationsMetaData, NotificationsParams } from './types';
-import { NotificationsTable } from './Table/NotificationsTable';
-import { useOptionNotifications } from './hooks/api';
 import { useParamsObject } from '../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { baseUrls } from '../../constants/urls';
+import { useStyles } from '../../styles/theme';
+
+import { NotificationsFilters } from './Filters/NotificationsFilters';
+import { useOptionNotifications } from './hooks/api';
+import MESSAGES from './messages';
+import { NotificationsTable } from './Table/NotificationsTable';
+import { NotificationsMetaData, NotificationsParams } from './types';
 
 export const Notifications: FunctionComponent = () => {
     const params = useParamsObject(

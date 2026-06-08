@@ -4,16 +4,16 @@ import { Box, Grid, Paper } from '@mui/material';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import classNames from 'classnames';
 import { Field, useFormikContext } from 'formik';
+import { DropdownOptions } from 'Iaso/types/utils';
 import { DeleteIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
 import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
 import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
 import { NumberInput, TextInput } from '../../../../../components/Inputs';
 import { DateInput } from '../../../../../components/Inputs/DateInput';
+import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import MESSAGES from '../../messages';
 import { SupplyChainFormData } from '../../types';
 import { usePaperStyles } from '../shared';
-import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
-import { DropdownOptions } from 'Iaso/types/utils';
 
 type Props = {
     index: number;

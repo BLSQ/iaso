@@ -121,20 +121,22 @@ export const AccountSwitch: FunctionComponent<Props> = ({
                                     aria-labelledby="account-button"
                                     onKeyDown={menuListKeyDownHandler}
                                 >
-                                    {currentUser?.other_accounts?.map(account => (
-                                        <MenuItem
-                                            key={account.id}
-                                            selected={
-                                                account.id ===
-                                                currentUser.account.id
-                                            }
-                                            onClick={() =>
-                                                switchAccount(account.id)
-                                            }
-                                        >
-                                            {account.name}
-                                        </MenuItem>
-                                    ))}
+                                    {currentUser?.other_accounts?.map(
+                                        account => (
+                                            <MenuItem
+                                                key={account.id}
+                                                selected={
+                                                    account.id ===
+                                                    currentUser.account.id
+                                                }
+                                                onClick={() =>
+                                                    switchAccount(account.id)
+                                                }
+                                            >
+                                                {account.name}
+                                            </MenuItem>
+                                        ),
+                                    )}
                                 </MenuList>
                             </ClickAwayListener>
                         </Paper>

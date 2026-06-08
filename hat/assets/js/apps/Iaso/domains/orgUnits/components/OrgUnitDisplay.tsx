@@ -1,6 +1,6 @@
+import React, { ReactElement } from 'react';
 import { makeStyles } from '@mui/styles';
 import { LinkWithLocation, textPlaceholder } from 'bluesquare-components';
-import React, { ReactElement } from 'react';
 import { baseUrls } from '../../../constants/urls';
 import { OrgUnit } from '../types/orgUnit';
 import { OrgUnitLabel } from './OrgUnitLabel';

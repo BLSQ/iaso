@@ -1,4 +1,3 @@
-/* eslint-disable react/require-default-props */
 import React, { FunctionComponent, ReactElement } from 'react';
 import { Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';

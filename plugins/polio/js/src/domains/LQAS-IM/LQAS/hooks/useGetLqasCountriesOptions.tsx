@@ -1,17 +1,17 @@
+import { useMemo } from 'react';
+import moment from 'moment';
 import { UseQueryResult } from 'react-query';
+import { getRequest } from 'Iaso/libs/Api';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { DropdownOptions } from 'Iaso/types/utils';
 import { LqasUrlParams } from '..';
+import { appId } from '../../../../constants/app';
 import {
     MonthYear,
     NumberAsString,
     Side,
     UuidAsString,
 } from '../../../../constants/types';
-import { useMemo } from 'react';
-import moment from 'moment';
-import { useSnackQuery } from 'Iaso/libs/apiHooks';
-import { getRequest } from 'Iaso/libs/Api';
-import { DropdownOptions } from 'Iaso/types/utils';
-import { appId } from '../../../../constants/app';
 
 const getLqasCountriesOptions = (monthYear?: MonthYear, isEmbedded = false) => {
     const endpoint = '/api/polio/lqasim/countriesoptions';
@@ -41,6 +41,7 @@ const useMonthYear = ({
 
         if (month) return `${month}-${year}`;
         return undefined;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [side, ...Object.values(params)]);
 };
 

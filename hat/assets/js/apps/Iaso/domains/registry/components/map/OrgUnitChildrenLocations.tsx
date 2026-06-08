@@ -1,7 +1,8 @@
-import L from 'leaflet';
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import L from 'leaflet';
 import { Pane } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
+import MarkersListComponent from '../../../../components/maps/markers/MarkersListComponent';
 import {
     circleColorMarkerOptions,
     colorClusterCustomMarker,
@@ -10,7 +11,6 @@ import {
 import { OrgUnit } from '../../../orgUnits/types/orgUnit';
 import { OrgunitType } from '../../../orgUnits/types/orgunitTypes';
 
-import MarkersListComponent from '../../../../components/maps/markers/MarkersListComponent';
 import { MapToolTip } from './MapTooltip';
 import { selectedOrgUnitColor } from './OrgUnitChildrenMap';
 

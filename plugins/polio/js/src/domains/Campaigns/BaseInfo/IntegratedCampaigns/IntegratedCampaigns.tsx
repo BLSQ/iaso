@@ -2,12 +2,10 @@ import React, { FunctionComponent } from 'react';
 import { useFormikContext } from 'formik';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { PolioCampaignValues } from '../../../../constants/types';
-import { IntegratedCampaignsInfo } from './IntegratedCampaignsInfo';
 import { AddIntegratedCampaignsModal } from './AddIntegratedCampaignsModal';
+import { IntegratedCampaignsInfo } from './IntegratedCampaignsInfo';
 
-type Props = {};
-
-export const IntegratedCampaigns: FunctionComponent<Props> = () => {
+export const IntegratedCampaigns: FunctionComponent = () => {
     const { values } = useFormikContext<PolioCampaignValues>();
 
     return (

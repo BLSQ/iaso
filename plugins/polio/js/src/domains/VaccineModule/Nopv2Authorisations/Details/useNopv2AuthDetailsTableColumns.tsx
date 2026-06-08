@@ -1,13 +1,13 @@
 import React, { useMemo } from 'react';
 import { Column, useSafeIntl } from 'bluesquare-components';
-import { VACCINE_AUTH_ADMIN } from '../../../../constants/permissions';
-import MESSAGES from '../../../../constants/messages';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
-import { DeleteAuthorisationModal } from './Modals/Delete/DeleteAuthorisationModal';
-import { EditAuthorisationModal } from './Modals/CreateEdit/CreateEditAuthorisationModal';
-import { Nopv2AuthorisationsStatusCell } from '../Table/Nopv2AuthorisationsStatusCell';
-import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import MESSAGES from '../../../../constants/messages';
+import { VACCINE_AUTH_ADMIN } from '../../../../constants/permissions';
+import { Nopv2AuthorisationsStatusCell } from '../Table/Nopv2AuthorisationsStatusCell';
+import { EditAuthorisationModal } from './Modals/CreateEdit/CreateEditAuthorisationModal';
+import { DeleteAuthorisationModal } from './Modals/Delete/DeleteAuthorisationModal';
 
 export const useNopv2AuthDetailsTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();

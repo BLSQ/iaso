@@ -1,8 +1,8 @@
+import React, { useCallback, useMemo, useState } from 'react';
 import {
     selectionInitialState,
     setTableSelection,
 } from 'bluesquare-components';
-import React, { useCallback, useMemo, useState } from 'react';
 import { Selection } from '../domains/orgUnits/types/selection';
 import { useObjectState } from '../hooks/useObjectState';
 import { PaginationParams } from '../types/general';

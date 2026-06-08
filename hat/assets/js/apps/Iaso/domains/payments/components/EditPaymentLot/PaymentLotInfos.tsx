@@ -1,7 +1,7 @@
+import React, { FunctionComponent } from 'react';
 import { Box, Button, Grid, Paper, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
-import React, { FunctionComponent } from 'react';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { SxStyles } from '../../../../types/general';
 import getDisplayName from '../../../../utils/usersUtils';

@@ -2,11 +2,11 @@ import React, { useState, useMemo, FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles } from 'bluesquare-components';
+import { INSTANCE_STATUSES } from '../../instances/constants';
+import { PERIOD_TYPE_QUARTER } from '../../periods/constants';
+import { groupCompletenessData } from '../utils';
 import CompletenessFiltersComponent from './CompletenessFiltersComponent';
 import CompletenessPeriodComponent from './CompletenessPeriodComponent';
-import { PERIOD_TYPE_QUARTER } from '../../periods/constants';
-import { INSTANCE_STATUSES } from '../../instances/constants';
-import { groupCompletenessData } from '../utils';
 
 const useStyles = makeStyles(theme => commonStyles(theme));
 

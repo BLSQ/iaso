@@ -1,7 +1,7 @@
+import React, { FunctionComponent } from 'react';
 import { Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { Field, useFormikContext } from 'formik';
-import React, { FunctionComponent } from 'react';
 import { DateInput, NumberInput, TextInput } from '../../../components/Inputs';
 import MESSAGES from '../../../constants/messages';
 import { CampaignFormValues } from '../../../constants/types';

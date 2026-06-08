@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unstable-nested-components */
 import React, {
     FunctionComponent,
     useEffect,
@@ -7,6 +6,8 @@ import React, {
 } from 'react';
 import { LoadingSpinner, useRedirectToReplace } from 'bluesquare-components';
 import { useMapEvents } from 'react-leaflet';
+import { Side } from '../../../../../constants/types';
+import { baseUrls } from '../../../../../constants/urls';
 import { defaultShapeStyle } from '../../../../../utils';
 import { MapPanes } from '../../../../Campaigns/MapComponent/MapPanes';
 import { COUNTRY, DISTRICT } from '../../../shared/constants';
@@ -21,8 +22,6 @@ import { AfroMapParams } from '../types';
 import { getRound } from '../utils';
 import { LqasAfroPopup } from './LqasAfroPopUp';
 import { LqasAfroTooltip } from './LqasAfroTooltip';
-import { Side } from '../../../../../constants/types';
-import { baseUrls } from '../../../../../constants/urls';
 
 const getMainLayerStyle = shape => {
     return lqasDistrictColors[shape.status] ?? defaultShapeStyle;

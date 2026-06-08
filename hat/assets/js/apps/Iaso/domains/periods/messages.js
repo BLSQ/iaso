@@ -12,7 +12,7 @@ const MESSAGES = defineMessages({
     quarter_nov: {
         id: 'iaso.label.quarter_nov',
         defaultMessage: 'Quarter November',
-    },    
+    },
     financial_nov: {
         id: 'iaso.label.financial_nov',
         defaultMessage: 'Financial Yearly Nov',
@@ -20,11 +20,11 @@ const MESSAGES = defineMessages({
     week: {
         id: 'iaso.label.week',
         defaultMessage: 'Week',
-    },    
+    },
     weekDisplay: {
         id: 'iaso.label.weekDisplay',
         defaultMessage: 'Week N° {weekNumber} ({start} - {end})',
-    },        
+    },
     month: {
         id: 'iaso.label.month',
         defaultMessage: 'Month',

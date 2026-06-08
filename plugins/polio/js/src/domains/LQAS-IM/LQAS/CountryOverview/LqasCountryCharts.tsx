@@ -1,19 +1,19 @@
-import { Box, Paper } from '@mui/material';
-import { HorizontalDivider } from '../../../../components/HorizontalDivider';
 import React, { FunctionComponent } from 'react';
-import { GraphTitle } from '../../shared/charts/GraphTitle';
+import { Box, Paper } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import MESSAGES from '../../../../constants/messages';
-import { LqasImHorizontalChart } from '../../shared/charts/LqasImHorizontalChart';
-import { paperElevation } from '../../shared/constants';
-import { LqasImVerticalChart } from '../../shared/charts/LqasImVerticalChart';
-import { CaregiversTable } from '../Graphs/CaregiversTable';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
-import { DistrictsNotFound } from '../../shared/DebugInfo/DistrictsNotFound';
-import { DatesIgnored } from '../../shared/DebugInfo/DatesIgnored';
-import { BadRoundNumbers } from '../../shared/DebugInfo/BadRoundNumber';
+import { HorizontalDivider } from '../../../../components/HorizontalDivider';
+import MESSAGES from '../../../../constants/messages';
 import { NumberAsString } from '../../../../constants/types';
+import { GraphTitle } from '../../shared/charts/GraphTitle';
+import { LqasImHorizontalChart } from '../../shared/charts/LqasImHorizontalChart';
+import { LqasImVerticalChart } from '../../shared/charts/LqasImVerticalChart';
+import { paperElevation } from '../../shared/constants';
+import { BadRoundNumbers } from '../../shared/DebugInfo/BadRoundNumber';
+import { DatesIgnored } from '../../shared/DebugInfo/DatesIgnored';
+import { DistrictsNotFound } from '../../shared/DebugInfo/DistrictsNotFound';
 import { ConvertedLqasImData, LqasChartData, LqasImData } from '../../types';
+import { CaregiversTable } from '../Graphs/CaregiversTable';
 
 type Props = {
     lqasData?: LqasImData;

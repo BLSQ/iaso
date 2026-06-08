@@ -1,4 +1,6 @@
 import React, { FunctionComponent } from 'react';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import {
     Table,
     TableBody,
@@ -11,14 +13,12 @@ import {
     Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
-import ValueWithErrorBoundary from './ValueWithErrorBoundary';
 import MESSAGES from '../../forms/messages';
 import { MESSAGES as LOG_MESSAGES } from './messages';
+import ValueWithErrorBoundary from './ValueWithErrorBoundary';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

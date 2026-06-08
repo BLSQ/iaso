@@ -1,17 +1,17 @@
 import React, { FunctionComponent } from 'react';
-import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { Box, useTheme } from '@mui/material';
+import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import Color from 'color';
-import TopBar from '../../components/nav/TopBarComponent';
-import MESSAGES from './messages';
-import { baseUrls } from '../../constants/urls';
-import { PotentialPaymentParams } from './types';
-import { useGetPaymentLots } from './hooks/requests/useGetPaymentLots';
-import { usePaymentLotsColumns } from './hooks/config/usePaymentLotsColumns';
-import { PaymentLotsFilters } from './components/CreatePaymentLot/PaymentLotsFilters';
-import { SimpleTableWithDeepLink } from '../../components/tables/SimpleTableWithDeepLink';
 import { RefreshButton } from '../../components/Buttons/RefreshButton';
+import TopBar from '../../components/nav/TopBarComponent';
+import { SimpleTableWithDeepLink } from '../../components/tables/SimpleTableWithDeepLink';
+import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { PaymentLotsFilters } from './components/CreatePaymentLot/PaymentLotsFilters';
+import { usePaymentLotsColumns } from './hooks/config/usePaymentLotsColumns';
+import { useGetPaymentLots } from './hooks/requests/useGetPaymentLots';
+import MESSAGES from './messages';
+import { PotentialPaymentParams } from './types';
 
 const getRowProps = row => {
     if (row.original.task) {

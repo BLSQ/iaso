@@ -2,6 +2,7 @@ import { UseQueryResult } from 'react-query';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 
+import { appId } from '../../../../../constants/app';
 import {
     IM_COUNTRY_URL,
     IM_GLOBAL_SLUG,
@@ -10,7 +11,6 @@ import {
 } from '../../../IM/constants';
 import { LQAS_COUNTRY_URL } from '../../../LQAS/constants';
 import { LqasImData, LqasIMType } from '../../../types';
-import { appId } from '../../../../../constants/app';
 
 export const getLqasIm = (
     type: LqasIMType,

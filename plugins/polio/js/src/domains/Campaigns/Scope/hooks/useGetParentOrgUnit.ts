@@ -1,8 +1,8 @@
 import { UseQueryResult } from 'react-query';
 // @ts-ignore
+import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 // @ts-ignore
-import { getRequest } from 'Iaso/libs/Api';
 
 type Parent = {
     name: string;

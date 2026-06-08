@@ -1,11 +1,11 @@
 import { UseQueryResult } from 'react-query';
 // @ts-ignore
+import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 // @ts-ignore
-import { getRequest } from 'Iaso/libs/Api';
+import { makeUrlWithParams } from '../../../../libs/utils';
 import { DropdownOptions } from '../../../../types/utils';
 
-import { makeUrlWithParams } from '../../../../libs/utils';
 import { staleTime } from '../../config';
 import MESSAGES from '../../messages';
 

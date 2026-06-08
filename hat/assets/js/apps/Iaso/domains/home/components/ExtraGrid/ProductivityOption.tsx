@@ -1,7 +1,7 @@
+import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { ExternalLink } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 
 type Props = {
     destinationName: string;

@@ -1,13 +1,13 @@
 import React, { FunctionComponent } from 'react';
-import isEqual from 'lodash/isEqual';
 
 import { Table, TableBody, Paper, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
+import isEqual from 'lodash/isEqual';
 import { baseUrls } from '../../../constants/urls';
-import { LinksValue } from './LinksValueComponent';
 import MESSAGES from '../messages';
 import { Link } from '../types';
+import { LinksValue } from './LinksValueComponent';
 
 const useStyles = makeStyles(theme => ({
     paper: {

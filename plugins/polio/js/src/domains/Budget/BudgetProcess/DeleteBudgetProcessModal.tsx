@@ -3,10 +3,10 @@ import { ConfirmCancelModal, makeFullModal } from 'bluesquare-components';
 
 import { DeleteIconButton } from '../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
 
+import { useDeleteBudgetProcess } from '../hooks/api/useDeleteBudgetProcess';
 import MESSAGES from '../messages';
 import { Budget } from '../types';
 import { formatRoundNumbers } from '../utils';
-import { useDeleteBudgetProcess } from '../hooks/api/useDeleteBudgetProcess';
 
 type Props = {
     isOpen: boolean;
@@ -23,7 +23,10 @@ const DeleteBudgetProcessModal: FunctionComponent<Props> = ({
     params,
     count,
 }) => {
-    const { mutate: deleteBudgetProcess } = useDeleteBudgetProcess({params, count});
+    const { mutate: deleteBudgetProcess } = useDeleteBudgetProcess({
+        params,
+        count,
+    });
     const onDelete = useCallback(
         () => deleteBudgetProcess(budgetProcess.id),
         [budgetProcess.id, deleteBudgetProcess],

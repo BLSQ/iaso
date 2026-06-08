@@ -139,7 +139,7 @@ export type BudgetStep = {
     amount?: number;
     transition_key: string; // (step name)
     transition_label: string; // (step name)
-    // eslint-disable-next-line no-undef
+
     deleted_at: Nullable<string>;
 };
 

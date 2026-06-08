@@ -1,27 +1,26 @@
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { Box } from '@mui/material';
 import { FieldInputProps } from 'formik';
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { ColorsHashedPattern } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/HashedPatterns/ColorsHashedPattern';
-import {
-    HASHED_MAP_PATTERN_N_OPV2_B_OPV,
-    OTHER_VACCINE_COLOR,
-    PolioVaccine,
-    polioVaccines,
-} from '../../../../constants/virus';
-import { MapComponent } from '../../MapComponent/MapComponent';
-
-import {
-    initialDistrict,
-    selectedPathOptions,
-    unselectedPathOptions,
-} from '../../../../styles/constants';
-
 import { OrgUnit } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 import {
     CampaignFormValues,
     Scope,
     Vaccine,
 } from '../../../../constants/types';
+import {
+    HASHED_MAP_PATTERN_N_OPV2_B_OPV,
+    OTHER_VACCINE_COLOR,
+    PolioVaccine,
+    polioVaccines,
+} from '../../../../constants/virus';
+import {
+    initialDistrict,
+    selectedPathOptions,
+    unselectedPathOptions,
+} from '../../../../styles/constants';
+import { MapComponent } from '../../MapComponent/MapComponent';
+
 import { ScopeMapLegend } from './ScopeMapLegend';
 import { Shape } from './types';
 import { findScopeWithOrgUnit } from './utils';

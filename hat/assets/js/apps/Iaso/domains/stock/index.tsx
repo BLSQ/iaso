@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import InfoIcon from '@mui/icons-material/Info';
 import { Box, Button, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 

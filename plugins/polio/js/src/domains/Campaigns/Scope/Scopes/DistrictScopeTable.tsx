@@ -1,4 +1,12 @@
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
+import CheckIcon from '@mui/icons-material/Check';
 import MapIcon from '@mui/icons-material/Map';
+import SelectAllIcon from '@mui/icons-material/SelectAll';
 import {
     Box,
     Table as MuiTable,
@@ -17,27 +25,17 @@ import {
 import { FieldInputProps } from 'formik';
 import { cloneDeep } from 'lodash';
 import sortBy from 'lodash/sortBy';
-import React, {
-    FunctionComponent,
-    useCallback,
-    useMemo,
-    useState,
-} from 'react';
-
-import CheckIcon from '@mui/icons-material/Check';
-import SelectAllIcon from '@mui/icons-material/SelectAll';
-import MESSAGES from '../../../../constants/messages';
-import { useStyles } from '../../../../styles/theme';
-
-import { FilteredDistricts, Shape, ShapeRow } from './types';
-import { checkFullRegionIsPartOfScope } from './utils';
-
-import { OrgUnit } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
-import { TablePlaceHolder } from './TablePlaceHolder';
-import { TableText } from './TableText';
 
 import { OrgUnitLocationIcon } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/components/OrgUnitLocationIcon';
+import { OrgUnit } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
+import MESSAGES from '../../../../constants/messages';
 import { Scope } from '../../../../constants/types';
+import { useStyles } from '../../../../styles/theme';
+
+import { TablePlaceHolder } from './TablePlaceHolder';
+import { TableText } from './TableText';
+import { FilteredDistricts, Shape, ShapeRow } from './types';
+import { checkFullRegionIsPartOfScope } from './utils';
 
 type Props = {
     field: FieldInputProps<Scope[]>;

@@ -1,3 +1,4 @@
+import React, { FunctionComponent } from 'react';
 import InfoIcon from '@mui/icons-material/Info';
 import {
     Table,
@@ -10,7 +11,6 @@ import {
     useTheme,
 } from '@mui/material';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import { baseUrls } from '../../../constants/urls';
 import { colorCodes } from '../../orgUnits/reviewChanges/Components/ReviewOrgUnitChangesInfos';
 import MESSAGES from '../messages';

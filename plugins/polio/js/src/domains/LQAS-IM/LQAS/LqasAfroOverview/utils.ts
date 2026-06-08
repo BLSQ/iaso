@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { RoundSelection, SelectPeriod } from './types';
-import { FAIL_COLOR, OK_COLOR } from '../../../../styles/constants';
-import { Side } from '../../../../constants/types';
 import MESSAGES from '../../../../constants/messages';
+import { Side } from '../../../../constants/types';
+import { FAIL_COLOR, OK_COLOR } from '../../../../styles/constants';
+import { RoundSelection, SelectPeriod } from './types';
 
 export const useOptions = (): DropdownOptions<string>[] => {
     const { formatMessage } = useSafeIntl();

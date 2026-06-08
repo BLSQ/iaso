@@ -1,5 +1,5 @@
-import { Box, Grid, Typography } from '@mui/material';
 import React, { FunctionComponent } from 'react';
+import { Box, Grid, Typography } from '@mui/material';
 
 type Props = {
     legendItems: {

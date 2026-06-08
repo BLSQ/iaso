@@ -1,18 +1,18 @@
 import React, { FunctionComponent } from 'react';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import TopBar from '../../components/nav/TopBarComponent';
-import MESSAGES from './messages';
-import { UserRolesFilters } from './components/UserRolesFilters';
-import { baseUrls } from '../../constants/urls';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-import { UserRoleParams } from './types/userRoles';
-import { useGetUserRolesColumns } from './config';
-import { useGetUserRoles } from './hooks/requests/useGetUserRoles';
-import { useDeleteUserRole } from './hooks/requests/useDeleteUserRole';
-import { CreateUserRoleDialog } from './components/CreateEditUserRole';
+import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { CreateUserRoleDialog } from './components/CreateEditUserRole';
+import { UserRolesFilters } from './components/UserRolesFilters';
+import { useGetUserRolesColumns } from './config';
+import { useDeleteUserRole } from './hooks/requests/useDeleteUserRole';
+import { useGetUserRoles } from './hooks/requests/useGetUserRoles';
+import MESSAGES from './messages';
+import { UserRoleParams } from './types/userRoles';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

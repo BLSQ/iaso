@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, Dispatch, SetStateAction } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../../constants/messages';
 
@@ -8,7 +8,7 @@ type WarningModalProps = {
     dataTestId: string;
     closeWarning: () => void;
     isWarningOpen: boolean;
-    setIsWarningOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    setIsWarningOpen: Dispatch<SetStateAction<boolean>>;
 };
 
 export const useWarningModal = (

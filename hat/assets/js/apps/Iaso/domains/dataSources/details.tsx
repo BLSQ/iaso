@@ -4,6 +4,8 @@ import React, {
     useMemo,
     useState,
 } from 'react';
+import { Box, Grid, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     useSafeIntl,
     commonStyles,
@@ -11,15 +13,15 @@ import {
     Table,
     useGoBack,
 } from 'bluesquare-components';
-import { Box, Grid, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import TopBar from '../../components/nav/TopBarComponent';
-import MESSAGES from './messages';
-import { useGetDataSource } from './hooks/useGetDataSource';
-import { DataSource } from './types/dataSources';
-import { DataSourceInfo } from './components/DataSourceInfo';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
+import { baseUrls } from '../../constants/urls';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { DataSourceInfo } from './components/DataSourceInfo';
 import { useSourceVersionsTableColumns } from './config';
+import { useGetDataSource } from './hooks/useGetDataSource';
+import MESSAGES from './messages';
+import { DataSource } from './types/dataSources';
 import {
     getSortedSourceVersions,
     handleSort,
@@ -27,8 +29,6 @@ import {
     getTableParams,
     getTablePages,
 } from './utils';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { baseUrls } from '../../constants/urls';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

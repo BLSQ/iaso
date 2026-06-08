@@ -1,14 +1,14 @@
+import React, { ReactElement, useCallback } from 'react';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import SendIcon from '@mui/icons-material/Send';
 import { ExternalLinkIconButton, IconButton } from 'bluesquare-components';
-import React, { ReactElement, useCallback } from 'react';
-import { PaymentLot } from '../types';
+import { baseUrls } from 'Iaso/constants/urls';
 import { useLocale } from '../../app/contexts/LocaleContext';
 
 import { useMarkPaymentsAsSent } from '../hooks/requests/useSavePaymentLot';
 import MESSAGES from '../messages';
+import { PaymentLot } from '../types';
 import { EditPaymentLotDialog } from './EditPaymentLot/EditPaymentLotDialog';
-import { baseUrls } from 'Iaso/constants/urls';
 
 interface ActionCellProps<T> {
     row: {

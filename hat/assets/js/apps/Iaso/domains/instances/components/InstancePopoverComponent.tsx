@@ -1,16 +1,16 @@
 import React from 'react';
-import moment from 'moment';
 
-import { makeStyles } from '@mui/styles';
-import Popover from '@mui/material/Popover';
-import Box from '@mui/material/Box';
-import { Button } from '@mui/material';
 import Info from '@mui/icons-material/InfoOutlined';
+import { Button } from '@mui/material';
+import Box from '@mui/material/Box';
+import Popover from '@mui/material/Popover';
+import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
-import MESSAGES from '../messages';
+import moment from 'moment';
 import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
 
 import { getOrgUnitsTree } from '../../orgUnits/utils';
+import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({
     popoverPaper: {

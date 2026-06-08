@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import MESSAGES from '../messages';
 import { defaultVaccineOptions } from '../../SupplyChain/constants';
+import MESSAGES from '../messages';
 
 const statuses: string[] = ['draft', 'commented', 'final'];
 

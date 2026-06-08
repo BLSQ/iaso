@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useCallback, useState } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
 import { Pagination } from '@mui/lab';
 import { Box, Collapse, useMediaQuery, useTheme } from '@mui/material';
@@ -8,7 +9,6 @@ import {
     useSafeIntl,
     useSkipEffectOnMount,
 } from 'bluesquare-components';
-import React, { FunctionComponent, useCallback, useState } from 'react';
 
 // @ts-ignore
 import TopBar from 'Iaso/components/nav/TopBarComponent';
@@ -85,7 +85,11 @@ export const BudgetProcessList: FunctionComponent = () => {
     );
 
     const { data: budgets, isFetching } = useGetBudgets(apiParams);
-    const columns = useBudgetColumns(isUserPolioBudgetAdmin, apiParams, budgets?.count ?? 0);
+    const columns = useBudgetColumns(
+        isUserPolioBudgetAdmin,
+        apiParams,
+        budgets?.count ?? 0,
+    );
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
 

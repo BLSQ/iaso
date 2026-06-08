@@ -39,8 +39,8 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
     const [isRejected, setIsRejected] = useState<boolean>(false);
     const isPartiallyApproved = Boolean(
         changeRequest?.requested_fields &&
-            changeRequest?.requested_fields.length > approvedFields.length &&
-            approvedFields.length > 0,
+        changeRequest?.requested_fields.length > approvedFields.length &&
+        approvedFields.length > 0,
     );
 
     const allowConfirm = isNewOrgUnit || selectedFields.length > 0;

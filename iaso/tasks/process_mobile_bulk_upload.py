@@ -206,10 +206,12 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                     continue
 
                 # Check if this entity has any prior positive confirmation
+                # Keep in mind that the older submissions from patient history are often
+                # re-uploaded by the mobile app along with the new submissions
                 has_prior_conf = (
                     positive_instance_qs(Instance.objects)
                     .filter(entity_id=conf.entity_id)
-                    .exclude(id__in=instance_ids)
+                    .filter(created_at__lt=api_import.created_at)
                     .exists()
                 )
 

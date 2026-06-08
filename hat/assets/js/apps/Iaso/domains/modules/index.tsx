@@ -21,7 +21,10 @@ const baseUrl = baseUrls.modules;
 export const Modules = () => {
     const params = useParamsObject(baseUrl);
     const { search, ..._params } = params;
-    const searchParams = search ? { search: search } : undefined;
+    const searchParams = React.useMemo(
+        () => (search ? { search } : undefined),
+        [search],
+    );
     const classes: Record<string, string> = useStyles();
 
     const { data, isFetching } = useApiModulesList(searchParams, {
@@ -32,8 +35,10 @@ export const Modules = () => {
             ],
         },
     });
+
     const { formatMessage } = useSafeIntl();
     const columns = useModulesColumns();
+
     return (
         <>
             <TopBar

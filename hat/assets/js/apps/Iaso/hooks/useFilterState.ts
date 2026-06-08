@@ -1,10 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRedirectTo, useRedirectToReplace } from 'bluesquare-components';
 import { isEqual } from 'lodash';
-import {
-    useGetMultipleOrgUnits,
-    useGetOrgUnit,
-} from '../domains/orgUnits/components/TreeView/requests';
+import { useGetMultipleOrgUnits } from '../domains/orgUnits/components/TreeView/requests';
 import { OrgUnit } from '../domains/orgUnits/types/orgUnit';
 
 export type FilterState = {
@@ -19,7 +16,7 @@ export type FilterState = {
 
 type FilterStateParams = {
     baseUrl: string;
-    params: Record<string, unknown>;
+    params?: Record<string, unknown>;
     withPagination?: boolean;
     saveSearchInHistory?: boolean;
     searchActive?: string; // the key of the params used to activate search. If no such param exists, and the hook is used with a table, the table will load data onMount
@@ -63,7 +60,10 @@ export const useFilterState = ({
             if (withPagination) {
                 tempParams.page = '1';
             }
-            if (searchActive && Object.keys(params).includes(searchActive)) {
+            if (
+                searchActive &&
+                Object.keys(params ?? {}).includes(searchActive)
+            ) {
                 tempParams[searchActive] = 'true';
             }
             if (saveSearchInHistory) {
@@ -120,7 +120,10 @@ export const useFilterState = ({
             if (withPagination) {
                 tempParams.page = '1';
             }
-            if (searchActive && Object.keys(params).includes(searchActive)) {
+            if (
+                searchActive &&
+                Object.keys(params ?? {}).includes(searchActive)
+            ) {
                 tempParams[searchActive] = 'true';
             }
             if (saveSearchInHistory) {

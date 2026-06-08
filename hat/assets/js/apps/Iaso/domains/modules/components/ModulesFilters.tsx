@@ -16,7 +16,7 @@ export const ModulesFilters = ({ params }: Props) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({
             baseUrl,
-            params: params ?? {},
+            params: params,
             withPagination: false,
         });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);

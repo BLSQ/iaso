@@ -1,14 +1,13 @@
+import React, { FunctionComponent, useMemo } from 'react';
 import { Box, FormControl, List, ListItem } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { FieldInputProps } from 'formik';
-import React, { FunctionComponent, useMemo } from 'react';
 import { MapLegend } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/MapLegend';
 import MESSAGES from '../../../../constants/messages';
+import { Scope, Vaccine } from '../../../../constants/types';
 import { PolioVaccine, polioVaccines } from '../../../../constants/virus';
 
 import { useStyles } from '../../../../styles/theme';
-
-import { Scope, Vaccine } from '../../../../constants/types';
 
 type Props = {
     field: FieldInputProps<Scope[]>;

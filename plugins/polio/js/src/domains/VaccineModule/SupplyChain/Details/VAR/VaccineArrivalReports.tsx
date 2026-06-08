@@ -1,19 +1,19 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import { useFormikContext } from 'formik';
-import { VaccineArrivalReport } from './VaccineArrivalReport';
+import { userHasOneOfPermissions } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import {
+    POLIO_SUPPLY_CHAIN_READ,
+    POLIO_SUPPLY_CHAIN_WRITE,
+} from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
+import { useCurrentUser } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { VAR } from '../../constants';
 import MESSAGES from '../../messages';
 import {
     MultiFormTab,
     useDosesPerVialDropDownForVaccine,
     useEmptyArrivalReport,
 } from '../shared';
-import { VAR } from '../../constants';
-import { useCurrentUser } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import {
-    POLIO_SUPPLY_CHAIN_READ,
-    POLIO_SUPPLY_CHAIN_WRITE,
-} from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
-import { userHasOneOfPermissions } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { VaccineArrivalReport } from './VaccineArrivalReport';
 
 type Props = { className?: string; items?: any[] };
 

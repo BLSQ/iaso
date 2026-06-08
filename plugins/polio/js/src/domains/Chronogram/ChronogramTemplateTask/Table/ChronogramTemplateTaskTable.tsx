@@ -4,10 +4,10 @@ import { TableWithDeepLink } from '../../../../../../../../hat/assets/js/apps/Ia
 
 import { baseUrls } from '../../../../constants/urls';
 
+import { ChronogramTaskMetaData } from '../../types';
+import { useGetChronogramTemplateTask } from '../api/useGetChronogramTemplateTask';
 import { ChronogramTemplateTaskParams } from '../types';
 import { useChronogramTemplateTaskTableColumns } from './useChronogramTemplateTaskTableColumns';
-import { useGetChronogramTemplateTask } from '../api/useGetChronogramTemplateTask';
-import { ChronogramTaskMetaData } from '../../types';
 
 type Props = {
     params: ChronogramTemplateTaskParams;

@@ -1,11 +1,11 @@
+import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Divider, Grid, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { Field, useFormikContext } from 'formik';
-import React, { FunctionComponent, useCallback } from 'react';
 import { DateInput, NumberInput } from '../../../components/Inputs';
 import MESSAGES from '../../../constants/messages';
-import { useStyles } from '../../../styles/theme';
 import { Campaign } from '../../../constants/types';
+import { useStyles } from '../../../styles/theme';
 
 export const riskAssessmentFormFields = [
     'risk_assessment_status',

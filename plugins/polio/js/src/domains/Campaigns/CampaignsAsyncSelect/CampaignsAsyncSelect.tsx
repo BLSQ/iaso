@@ -1,6 +1,11 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { getRequest, IntlMessage, AsyncSelect } from 'bluesquare-components';
+import { useQueryClient } from 'react-query';
+import { openSnackBar } from 'Iaso/components/snackBars/EventDispatcher';
+import { errorSnackBar } from 'Iaso/constants/snackBars';
+import { useAsyncInitialState } from 'Iaso/hooks/useAsyncInitialState';
 import MESSAGES from '../../../constants/messages';
+import { Campaign } from '../../../constants/types';
 import {
     CampaignCategory,
     CAMPAIGNS_ENDPOINT,
@@ -9,12 +14,7 @@ import {
     Options,
     useGetCampaigns,
 } from '../hooks/api/useGetCampaigns';
-import { openSnackBar } from 'Iaso/components/snackBars/EventDispatcher';
-import { errorSnackBar } from 'Iaso/constants/snackBars';
-import { Campaign } from '../../../constants/types';
-import { useAsyncInitialState } from 'Iaso/hooks/useAsyncInitialState';
 import { useCampaignTypeNames } from './useCampaignTypeNames';
-import { useQueryClient } from 'react-query';
 
 type Props = {
     handleChange: (keyValue: string, value: unknown) => void;

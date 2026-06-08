@@ -1,5 +1,5 @@
-import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import React, { useMemo } from 'react';
+import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import MESSAGES from '../../messages';

@@ -1,12 +1,5 @@
 import React, { FunctionComponent, useRef } from 'react';
 import {
-    commonStyles,
-    mapPopupStyles,
-    useSafeIntl,
-    LinkButton,
-} from 'bluesquare-components';
-import { Popup } from 'react-leaflet';
-import {
     Card,
     CardContent,
     Box,
@@ -15,10 +8,17 @@ import {
     Divider,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import {
+    commonStyles,
+    mapPopupStyles,
+    useSafeIntl,
+    LinkButton,
+} from 'bluesquare-components';
+import { Popup } from 'react-leaflet';
 import PopupItemComponent from '../../../../../../../../../hat/assets/js/apps/Iaso/components/maps/popups/PopupItemComponent';
 import MESSAGES from '../../../../../constants/messages';
-import { COUNTRY, DISTRICT } from '../../../shared/constants';
 import { baseUrls } from '../../../../../constants/urls';
+import { COUNTRY, DISTRICT } from '../../../shared/constants';
 
 // @ts-ignore
 const useStyle = makeStyles(theme => {

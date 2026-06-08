@@ -1,21 +1,20 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import { useFormikContext } from 'formik';
-import { PreAlert } from './PreAlert';
+import { userHasOneOfPermissions } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import {
+    POLIO_SUPPLY_CHAIN_READ,
+    POLIO_SUPPLY_CHAIN_WRITE,
+} from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
+import { useCurrentUser } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { PREALERT } from '../../constants';
 import MESSAGES from '../../messages';
 import {
     MultiFormTab,
     useDosesPerVialDropDownForVaccine,
     useEmptyPreAlert,
 } from '../shared';
-import { PREALERT } from '../../constants';
-import { useCurrentUser } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
-import { userHasOneOfPermissions } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
-
-import {
-    POLIO_SUPPLY_CHAIN_READ,
-    POLIO_SUPPLY_CHAIN_WRITE,
-} from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
+import { PreAlert } from './PreAlert';
 
 type Props = { className?: string; items?: any[] };
 

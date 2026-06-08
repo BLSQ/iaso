@@ -4,8 +4,8 @@ import React, {
     useEffect,
     useMemo,
 } from 'react';
-import { useFormik, FormikProvider } from 'formik';
-import { isEqual } from 'lodash';
+import { Box, Chip, Divider, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     useSafeIntl,
     ConfirmCancelModal,
@@ -13,24 +13,24 @@ import {
     makeFullModal,
     useRedirectToReplace,
 } from 'bluesquare-components';
-import { Box, Chip, Divider, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import MESSAGES from '../../../constants/messages';
+import { useFormik, FormikProvider } from 'formik';
+import { isEqual } from 'lodash';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import { useUserHasTeam } from '../../../hooks/useGetTeams';
 import {
     useApiErrorValidation,
     useTranslatedErrors,
 } from '../../../../../../../hat/assets/js/apps/Iaso/libs/validation';
-import { useSaveBudgetStep } from '../hooks/api/useSaveBudgetStep';
-import { AddStepButton, RepeatStepIcon } from './AddStepButton';
-import { BudgetStep, StepForm } from '../types';
-import { UserHasTeamWarning } from './UserHasTeamWarning';
-import { AddMultipleLinks } from '../MultipleLinks/AddMultipleLinks';
-import { useBudgetStepValidation } from '../hooks/validation';
-import { useGetRecipientTeams } from '../hooks/api/useGetEmailRecipients';
+import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import MESSAGES from '../../../constants/messages';
 import { baseUrls } from '../../../constants/urls';
+import { useUserHasTeam } from '../../../hooks/useGetTeams';
+import { useGetRecipientTeams } from '../hooks/api/useGetEmailRecipients';
+import { useSaveBudgetStep } from '../hooks/api/useSaveBudgetStep';
+import { useBudgetStepValidation } from '../hooks/validation';
+import { AddMultipleLinks } from '../MultipleLinks/AddMultipleLinks';
+import { BudgetStep, StepForm } from '../types';
+import { AddStepButton, RepeatStepIcon } from './AddStepButton';
+import { UserHasTeamWarning } from './UserHasTeamWarning';
 
 type Props = {
     budgetProcessId?: string;

@@ -1,10 +1,10 @@
-import { get } from 'lodash';
 import React, {
     FocusEventHandler,
     FunctionComponent,
     useCallback,
     useEffect,
 } from 'react';
+import { get } from 'lodash';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 
 type Props = {

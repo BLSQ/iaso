@@ -36,4 +36,4 @@ export const singleVaccinesList = [
         label: 'bOPV',
         value: 'bOPV',
     },
-]
+];

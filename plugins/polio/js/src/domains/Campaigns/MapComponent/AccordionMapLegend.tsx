@@ -1,4 +1,4 @@
-/* eslint-disable react/require-default-props */
+import React, { FunctionComponent } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
     Accordion,
@@ -9,12 +9,10 @@ import {
     Typography,
 } from '@mui/material';
 import { IntlMessage } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { useStyles } from '../../Calendar/campaignCalendar/Styles';
-
 import MESSAGES from '../../../constants/messages';
 import { convertWidth } from '../../../utils';
+import { useStyles } from '../../Calendar/campaignCalendar/Styles';
 
 type Props = {
     data: { id: string; value: string; color: string }[];

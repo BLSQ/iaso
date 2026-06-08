@@ -1,15 +1,15 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
 import { Box, Grid } from '@mui/material';
 import { useSafeIntl, useRedirectToReplace } from 'bluesquare-components';
-import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
-import { LqasAfroMapFilters } from './Filters/LqasAfroMapFilters';
-import { useStyles } from '../../../../styles/theme';
-import { AfroMapParams } from './types';
-import MESSAGES from '../../../../constants/messages';
-import { LqasAfroMapWithSelector } from './Map/LqasAfroMapWithSelector';
-import { baseUrls } from '../../../../constants/urls';
-import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { useLocation } from 'react-router-dom';
+import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
+import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
+import MESSAGES from '../../../../constants/messages';
+import { baseUrls } from '../../../../constants/urls';
+import { useStyles } from '../../../../styles/theme';
+import { LqasAfroMapFilters } from './Filters/LqasAfroMapFilters';
+import { LqasAfroMapWithSelector } from './Map/LqasAfroMapWithSelector';
+import { AfroMapParams } from './types';
 
 const baseUrl = baseUrls.lqasAfro;
 const embeddedUrl = baseUrls.embeddedLqasAfroPath;

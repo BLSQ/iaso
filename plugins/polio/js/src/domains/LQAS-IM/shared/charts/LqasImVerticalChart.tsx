@@ -19,7 +19,6 @@ import { BAR_HEIGHT } from './PercentageBarChart/constants';
 import { customLabelHorizontal } from './PercentageBarChart/utils';
 
 type Props = {
-    // eslint-disable-next-line react/require-default-props
     data?: BarChartData[];
     chartKey: string;
     isLoading: boolean;

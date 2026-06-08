@@ -1,9 +1,9 @@
 import React, { FocusEventHandler, FunctionComponent, ReactNode } from 'react';
 import { CircularProgress } from '@mui/material';
 import TextField from '@mui/material/TextField';
+import { textPlaceholder } from 'bluesquare-components';
 import { FormControl } from './FormControl';
 import { useStyles } from './SingleSelect';
-import { textPlaceholder } from 'bluesquare-components';
 
 type Props = {
     params: Record<string, any>;

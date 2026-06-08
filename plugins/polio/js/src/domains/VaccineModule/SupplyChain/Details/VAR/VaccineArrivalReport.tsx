@@ -1,9 +1,9 @@
+import React, { FunctionComponent, useCallback, useMemo, useRef } from 'react';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { Box, Grid, Paper, Typography } from '@mui/material';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import classNames from 'classnames';
 import { Field, useFormikContext } from 'formik';
-import React, { FunctionComponent, useCallback, useMemo, useRef } from 'react';
 import { DeleteIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
 import {
     DropdownOptions,
@@ -11,11 +11,11 @@ import {
 } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { NumberInput, Select } from '../../../../../components/Inputs';
 import { DateInput } from '../../../../../components/Inputs/DateInput';
+import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import { VAR } from '../../constants';
 import MESSAGES from '../../messages';
 import { SupplyChainFormData } from '../../types';
 import { usePaperStyles } from '../shared';
-import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 
 type Props = {
     index: number;

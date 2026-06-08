@@ -1,3 +1,4 @@
+import React, { FunctionComponent } from 'react';
 import { Box, Divider } from '@mui/material';
 import {
     ConfirmCancelModal,
@@ -5,13 +6,12 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { Field, useFormikContext } from 'formik';
-import React, { FunctionComponent } from 'react';
 import { useLocale } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/contexts/LocaleContext';
 import { DateInput } from '../../../../components/Inputs/DateInput';
 import { SingleSelect } from '../../../../components/Inputs/SingleSelect';
 import MESSAGES from '../../../../constants/messages';
-import { ReasonsForDelayButton } from './ReasonsForDelayButton';
 import { useReasonsDelayOptions } from './hooks/reasons';
+import { ReasonsForDelayButton } from './ReasonsForDelayButton';
 
 type Props = {
     isOpen: boolean;

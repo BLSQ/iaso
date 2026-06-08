@@ -1,7 +1,5 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Accept } from 'react-dropzone';
 import { Box } from '@mui/material';
-import { useFormik } from 'formik';
 import {
     FilesUpload,
     LoadingSpinner,
@@ -9,15 +7,17 @@ import {
     SimpleModal,
     useSafeIntl,
 } from 'bluesquare-components';
+import { useFormik } from 'formik';
+import { Accept } from 'react-dropzone';
 
+import { FileUploadButtons } from 'Iaso/components/Buttons/FileUploadButtons';
 import { BulkImportButton } from 'Iaso/domains/users/components/BulkImport/BulkImportButton';
 import { useApiErrorValidation } from 'Iaso/libs/validation';
-import { FileUploadButtons } from 'Iaso/components/Buttons/FileUploadButtons';
 
+import { useUploadXlsx } from '../hooks/api';
+import { useBulkImportNotificationSchema } from '../hooks/validation';
 import MESSAGES from '../messages';
 import { XlsxFile } from '../types';
-import { useBulkImportNotificationSchema } from '../hooks/validation';
-import { useUploadXlsx } from '../hooks/api';
 
 type Props = {
     isOpen: boolean;

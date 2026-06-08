@@ -3,13 +3,13 @@ import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { Profile } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import {
     CampaignLogDetail,
     CampaignLogData,
     CampaignLogsDetail,
     Campaign,
 } from '../../../../constants/types';
-import { Profile } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
 export const getCampaignLog = (
     campaignId?: string,

@@ -1,11 +1,11 @@
+import React, { FunctionComponent } from 'react';
+import { TableCell } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
-import React, { FunctionComponent } from 'react';
-
-import { TableCell } from '@mui/material';
-import { useStyles } from '../Styles';
 
 import MESSAGES from '../../../../constants/messages';
+import { useStyles } from '../Styles';
+
 import { CalendarRound, PeriodType } from '../types';
 
 interface Props {

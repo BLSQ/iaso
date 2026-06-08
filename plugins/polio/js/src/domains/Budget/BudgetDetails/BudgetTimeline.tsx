@@ -1,13 +1,13 @@
-import { Box, Divider } from '@mui/material';
 import React, { FunctionComponent, useMemo } from 'react';
-import classnames from 'classnames';
-import Stepper from '@mui/material/Stepper';
+import { Box, Divider } from '@mui/material';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
+import Stepper from '@mui/material/Stepper';
+import classnames from 'classnames';
 import moment from 'moment';
 import { Categories, Item } from '../types';
-import { TimelineStepIcon } from './TimelineStepIcon';
 import { useStyles } from './styles';
+import { TimelineStepIcon } from './TimelineStepIcon';
 
 type Props = {
     categories?: Categories;

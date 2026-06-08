@@ -337,6 +337,5 @@ export const verticalChartTooltipFormatter = (
     _name: string,
     props: { payload: { originalKey: string } },
 ): [string, string] => {
-    // eslint-disable-next-line react/prop-types
     return [`${Math.round(value)}%`, props.payload.originalKey];
 };

@@ -1,7 +1,6 @@
+import React, { useEffect, useMemo, useState } from 'react';
 import { FormikProps } from 'formik';
 import { isEqual } from 'lodash';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Optional } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { PREALERT, VAR, VRF } from '../constants';
 import { makeHandleSubmit } from '../Details/utils';
 import {

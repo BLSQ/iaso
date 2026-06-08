@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import React, { useCallback } from 'react';
 import { Permission } from '../../userRoles/types/userRoles';
 import PermissionCheckbox from './PermissionCheckbox';

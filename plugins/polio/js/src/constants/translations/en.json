@@ -842,6 +842,7 @@
     "iaso.polio.PREPARING": "Preparing",
     "iaso.polio.raStatus": "RA Status",
     "iaso.polio.reports": "Reports",
+    "iaso.polio.repository.dateNotFound": "Date not found",
     "iaso.polio.repository.formAisLate": "Form A is late",
     "iaso.polio.repository.noPdf": "No pdf",
     "iaso.polio.repository.title": "Vaccine Management Repository",

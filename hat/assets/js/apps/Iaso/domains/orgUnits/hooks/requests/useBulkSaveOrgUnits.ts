@@ -2,9 +2,8 @@ import { UseMutationResult } from 'react-query';
 import { postRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
 
-import { SaveData } from '../../types/saveMulti';
-
 import MESSAGES from '../../messages';
+import { SaveData } from '../../types/saveMulti';
 
 const saveBulkOrgUnits = (data: SaveData) => {
     const url = '/api/tasks/create/orgunitsbulkupdate/';

@@ -1,5 +1,5 @@
-import moment from 'moment';
 import { useMemo } from 'react';
+import moment from 'moment';
 
 type Props = {
     // age '0' is when the user input a birth date, age '1' when they gave an age (in months)

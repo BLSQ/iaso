@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
+import LoopIcon from '@mui/icons-material/Loop';
 import { Button, useMediaQuery, useTheme, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import LoopIcon from '@mui/icons-material/Loop';
+import { useSafeIntl } from 'bluesquare-components';
 
 import MESSAGES from '../../../constants/messages';
 

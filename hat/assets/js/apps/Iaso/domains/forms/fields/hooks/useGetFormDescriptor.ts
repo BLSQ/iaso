@@ -9,7 +9,6 @@ type FormVersions = {
     descriptor: FormDescriptor;
 };
 type FormVersionsList = {
-    // eslint-disable-next-line camelcase
     form_versions: FormVersions[];
 };
 

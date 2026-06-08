@@ -177,7 +177,9 @@ export const findCampaignRound = (
     return campaign.rounds.find(rnd => rnd.number === round);
 };
 
-export const createSearchParamsWithArray = (params: Record<string, string | Array<any>>) => {
+export const createSearchParamsWithArray = (
+    params: Record<string, string | Array<any>>,
+) => {
     return new URLSearchParams(
         Object.entries(params).flatMap(([key, values]) =>
             Array.isArray(values)

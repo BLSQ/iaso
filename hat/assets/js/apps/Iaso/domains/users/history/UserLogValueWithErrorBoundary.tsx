@@ -1,7 +1,7 @@
 import React from 'react';
-import { injectIntl, IntlFormatMessage } from 'bluesquare-components';
 import { Typography, Box } from '@mui/material';
 import { withStyles } from '@mui/styles';
+import { injectIntl, IntlFormatMessage } from 'bluesquare-components';
 
 import MESSAGES from '../messages';
 import { UserLogValue } from './UserLogValue';

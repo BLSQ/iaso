@@ -25,7 +25,7 @@ type CreateReAssignDialogProps = {
     currentInstance?: {
         id: number;
         period?: string;
-        // eslint-disable-next-line camelcase
+
         org_unit?: any;
     };
     onCreateOrReAssign: UseMutateAsyncFunction<

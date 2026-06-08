@@ -58,10 +58,9 @@ describe('AssignmentsTable', () => {
             />,
         );
 
-        expect(mockUseGetPlanningOrgUnitsChildrenPaginated).toHaveBeenCalledWith(
-            '7',
-            defaultParams,
-        );
+        expect(
+            mockUseGetPlanningOrgUnitsChildrenPaginated,
+        ).toHaveBeenCalledWith('7', defaultParams);
 
         expect(captureTableProps).toHaveBeenCalled();
         const tableProps = captureTableProps.mock.calls[0][0] as {
@@ -98,8 +97,11 @@ describe('AssignmentsTable', () => {
         );
 
         expect(
-            (captureTableProps.mock.calls.at(-1)?.[0] as { extraProps: { loading: boolean } })
-                .extraProps.loading,
+            (
+                captureTableProps.mock.calls.at(-1)?.[0] as {
+                    extraProps: { loading: boolean };
+                }
+            ).extraProps.loading,
         ).toBe(true);
 
         mockUseGetPlanningOrgUnitsChildrenPaginated.mockReturnValue({
@@ -122,8 +124,11 @@ describe('AssignmentsTable', () => {
         );
 
         expect(
-            (captureTableProps.mock.calls.at(-1)?.[0] as { extraProps: { loading: boolean } })
-                .extraProps.loading,
+            (
+                captureTableProps.mock.calls.at(-1)?.[0] as {
+                    extraProps: { loading: boolean };
+                }
+            ).extraProps.loading,
         ).toBe(true);
     });
 

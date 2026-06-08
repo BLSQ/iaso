@@ -18,11 +18,11 @@ import isEqual from 'lodash/isEqual';
 import * as yup from 'yup';
 
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useTranslatedErrors } from 'Iaso/libs/validation';
 import { SxStyles } from 'Iaso/types/general';
 import InputComponent from '../../../../components/forms/InputComponent';
 
-import { baseUrls } from 'Iaso/constants/urls';
-import { useTranslatedErrors } from 'Iaso/libs/validation';
 import { formatLabel } from '../../../instances/utils';
 import { useGetFormForEntityType, useGetForms } from '../hooks/requests/forms';
 import MESSAGES from '../messages';

@@ -1,19 +1,19 @@
+import React, { FunctionComponent } from 'react';
 import CheckBox from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlank from '@mui/icons-material/CheckBoxOutlineBlank';
-import { grey } from '@mui/material/colors';
-import React, { FunctionComponent } from 'react';
 import { Button, Container, Divider, Grid } from '@mui/material';
+import { grey } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
 import {
     commonStyles,
     useSafeIntl,
     LoadingSpinner,
 } from 'bluesquare-components';
-import { LinksCompare } from './LinksCompareComponent';
-import MESSAGES from '../messages';
-import { useValidateLink } from '../hooks/useValidateLink';
-import { Link } from '../types';
 import { useGetLinkDetails } from '../hooks/useGetLinkDetails';
+import { useValidateLink } from '../hooks/useValidateLink';
+import MESSAGES from '../messages';
+import { Link } from '../types';
+import { LinksCompare } from './LinksCompareComponent';
 
 const useStyles = makeStyles((theme: any) => ({
     ...commonStyles(theme),

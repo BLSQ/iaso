@@ -1,10 +1,9 @@
 import React, { FunctionComponent } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
 import { Typography } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../../constants/messages';
 
 type Props = {
-    // eslint-disable-next-line react/require-default-props
     formsWithBadRoundNumber: number;
 };
 

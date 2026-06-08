@@ -1,10 +1,10 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import { Select, renderTags, useSafeIntl } from 'bluesquare-components';
-import { ExtendedDataSource, fetchAssociatedOrgUnits } from '../requests';
-import { getSourcesWithoutCurrentSource } from '../utils';
 import MESSAGES from '../../forms/messages';
+import { ExtendedDataSource, fetchAssociatedOrgUnits } from '../requests';
 import { OrgUnit } from '../types/orgUnit';
+import { getSourcesWithoutCurrentSource } from '../utils';
 
 type Props = {
     sourcesSelected: ExtendedDataSource[];
@@ -42,7 +42,6 @@ const SourcesFilterComponent: FunctionComponent<Props> = ({
             for (let i = 0; i < newSources.length; i += 1) {
                 const ss = newSources[i];
                 if (!ss.orgUnits) {
-                    // eslint-disable-next-line no-await-in-loop
                     const detail = await fetchAssociatedOrgUnits(
                         ss,
                         currentOrgUnit,

@@ -1,4 +1,3 @@
-import classNames from 'classnames';
 import React, {
     FunctionComponent,
     useContext,
@@ -6,9 +5,10 @@ import React, {
     useState,
 } from 'react';
 import { makeStyles } from '@mui/styles';
-import { Home } from './Home';
-import { InputContext } from '../../../app/contexts/InputContext';
+import classNames from 'classnames';
 import PageError from '../../../../components/errors/PageError';
+import { InputContext } from '../../../app/contexts/InputContext';
+import { Home } from './Home';
 import { Productivity } from './Productivity';
 
 export const useStyles = makeStyles({

@@ -103,6 +103,7 @@ export const useGetCampaignsOptions = (
 ): GetCampaignsParams => {
     return useMemo(
         () => makeCampaignOptions(options, asCsv),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [
             asCsv,
             options.pageSize,
@@ -155,6 +156,7 @@ export const useCampaignsQueryKey = ({
 }): { queryKey: QueryKey; params: GetCampaignsParams } => {
     return useMemo(() => {
         return makeCampaignQueryKey({ queryKey, options, asCsv });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         queryKey,
         asCsv,

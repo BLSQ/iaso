@@ -21,8 +21,14 @@ export const usePrepareGroupExportUrls = (params: Params) => {
         };
 
         return {
-            csvUrl: getTableUrl(EXPORT_GROUPS_BASE_URL, { ...baseParams, file_format: 'csv' }),
-            xlsxUrl: getTableUrl(EXPORT_GROUPS_BASE_URL, { ...baseParams, file_format: 'xlsx' }),
+            csvUrl: getTableUrl(EXPORT_GROUPS_BASE_URL, {
+                ...baseParams,
+                file_format: 'csv',
+            }),
+            xlsxUrl: getTableUrl(EXPORT_GROUPS_BASE_URL, {
+                ...baseParams,
+                file_format: 'xlsx',
+            }),
         };
     }, [params.dataSource, params.project_ids, params.search, params.version]);
 };

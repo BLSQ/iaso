@@ -1,6 +1,6 @@
 import { UseMutationResult } from 'react-query';
-import { useSnackMutation } from '../../../../libs/apiHooks';
 import { deleteRequest } from '../../../../libs/Api';
+import { useSnackMutation } from '../../../../libs/apiHooks';
 
 import MESSAGES from '../../messages';
 

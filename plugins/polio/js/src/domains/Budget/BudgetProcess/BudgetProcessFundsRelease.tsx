@@ -1,8 +1,8 @@
-import { Box, Grid } from '@mui/material';
-import { Field, useFormikContext } from 'formik';
 import React, { FunctionComponent } from 'react';
-
+import { Box, Grid } from '@mui/material';
 import { NumberInput, useSafeIntl } from 'bluesquare-components';
+import { Field, useFormikContext } from 'formik';
+
 import { DateInput, PaymentField } from '../../../components/Inputs';
 import MESSAGES from '../messages';
 import { BudgetDetail } from '../types';

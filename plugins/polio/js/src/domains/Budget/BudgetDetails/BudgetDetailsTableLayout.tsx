@@ -1,6 +1,6 @@
+import React, { FunctionComponent } from 'react';
 import { Box, Divider, Paper } from '@mui/material';
 import { Column, Paginated, useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import MESSAGES from '../../../constants/messages';

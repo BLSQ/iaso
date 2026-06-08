@@ -1,5 +1,5 @@
-import { TableCell, TableRow } from '@mui/material';
 import React, { FunctionComponent } from 'react';
+import { TableCell, TableRow } from '@mui/material';
 
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';

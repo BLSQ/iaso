@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -18,7 +18,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const baseUrl = baseUrls.modules;
-export const Modules = () => {
+export const Modules: FunctionComponent = () => {
     const params = useParamsObject(baseUrl);
     const { search, ..._params } = params;
     const searchParams = React.useMemo(

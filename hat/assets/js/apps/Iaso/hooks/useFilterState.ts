@@ -25,7 +25,7 @@ type FilterStateParams = {
 
 const paginationParams = ['pageSize', 'page', 'order'];
 
-const removePaginationParams = params => {
+const removePaginationParams = (params: Record<string, unknown>) => {
     const newParams = {
         ...params,
     };
@@ -56,7 +56,7 @@ export const useFilterState = ({
             const tempParams = {
                 ...params,
                 ...filters,
-            };
+            } as Record<string, string | undefined>;
             if (withPagination) {
                 tempParams.page = '1';
             }
@@ -86,7 +86,7 @@ export const useFilterState = ({
     ]);
 
     const updateFilters = useCallback(
-        newFilters => {
+        (newFilters: Record<string, unknown>) => {
             const initialFilterValue = removePaginationParams(params);
             if (!isEqual(newFilters, initialFilterValue)) {
                 setFiltersUpdated(true);
@@ -100,7 +100,7 @@ export const useFilterState = ({
     );
 
     const handleChange = useCallback(
-        (key, value) => {
+        (key: string, value: unknown) => {
             const newFilters = {
                 ...filters,
                 [key]: value !== null ? value : undefined,
@@ -111,12 +111,15 @@ export const useFilterState = ({
     );
 
     const changeAndSearch = useCallback(
-        (key, value) => {
+        (key: string, value: unknown) => {
             const newFilters = {
                 ...filters,
                 [key]: value !== null ? value : undefined,
             };
-            const tempParams = { ...params, ...newFilters };
+            const tempParams = {
+                ...params,
+                ...newFilters,
+            } as Record<string, string | undefined>;
             if (withPagination) {
                 tempParams.page = '1';
             }
@@ -223,7 +226,7 @@ export const useCheckBoxFilter = ({
     const [checkBoxValue, setCheckBoxValue] = useState<boolean>(initialValue);
 
     const handleCheckboxChange = useCallback(
-        (_key, value) => {
+        (_key: string, value: boolean) => {
             handleChange(keyValue, !checkBoxValue);
             setCheckBoxValue(value);
         },

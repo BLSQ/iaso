@@ -1,6 +1,6 @@
+import React, { useMemo } from 'react';
 import { Box, Chip } from '@mui/material';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
-import React, { useMemo } from 'react';
 import { computeEditableFields } from '../hooks/api/useRetrieveOrgUnitChangeRequestConfig';
 import MESSAGES from '../messages';
 import { OrgUnitChangeRequestConfigurationFull } from '../types';

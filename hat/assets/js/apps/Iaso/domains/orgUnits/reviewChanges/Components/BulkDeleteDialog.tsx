@@ -2,10 +2,10 @@ import React, { FunctionComponent, useCallback } from 'react';
 
 import { ConfirmCancelModal, useSafeIntl } from 'bluesquare-components';
 
-import MESSAGES from '../messages';
-import { OrgUnitChangeRequest, ApproveOrgUnitParams } from '../types';
 import { Selection } from '../../types/selection';
 import { useBulkDeleteChangeRequests } from '../hooks/api/useBulkDeleteChangeRequest';
+import MESSAGES from '../messages';
+import { OrgUnitChangeRequest, ApproveOrgUnitParams } from '../types';
 
 type Props = {
     isOpen: boolean;

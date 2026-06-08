@@ -1,3 +1,6 @@
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
+
+import Add from '@mui/icons-material/Add';
 import { Box, Button } from '@mui/material';
 import {
     ConfirmCancelModal,
@@ -5,16 +8,13 @@ import {
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
-import * as Yup from 'yup';
-
-import Add from '@mui/icons-material/Add';
 import { useFormik } from 'formik';
+import * as Yup from 'yup';
 import { EditIconButton } from '../Buttons/EditIconButton';
-import { LegendBuilder } from './index';
 import { MESSAGES } from './messages';
 import { ScaleThreshold } from './types';
 import { getRangeValues, getScaleThreshold } from './utils';
+import { LegendBuilder } from './index';
 
 type Props = {
     titleMessage: IntlMessage;

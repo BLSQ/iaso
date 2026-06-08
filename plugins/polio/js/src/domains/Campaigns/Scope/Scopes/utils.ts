@@ -1,5 +1,5 @@
-import { cloneDeep } from 'lodash';
 import { useMemo } from 'react';
+import { cloneDeep } from 'lodash';
 import { OrgUnit } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 import { Optional } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { Scope, Vaccine } from '../../../../constants/types';

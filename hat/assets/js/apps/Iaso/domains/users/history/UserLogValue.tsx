@@ -1,6 +1,6 @@
+import React, { FunctionComponent } from 'react';
 import { makeStyles } from '@mui/styles';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import { LinkTo } from '../../../components/nav/LinkTo';
 import { baseUrls } from '../../../constants/urls';
 import { NameAndId } from '../../../types/utils';
@@ -128,7 +128,6 @@ export const UserLogValue: FunctionComponent<Props> = ({
                 return value.toString();
         }
     } catch (e) {
-        // eslint-disable-next-line no-console
         console.error('Could not parse', e);
         throw new Error(value.toString());
     }

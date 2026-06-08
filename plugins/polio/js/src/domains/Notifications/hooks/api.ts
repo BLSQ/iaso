@@ -6,16 +6,16 @@ import {
 } from 'react-query';
 
 import {
-    useSnackMutation,
-    useSnackQuery,
-} from '../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import {
     deleteRequest,
     getRequest,
     optionsRequest,
     patchRequest,
     postRequest,
 } from '../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import {
+    useSnackMutation,
+    useSnackQuery,
+} from '../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 
 import MESSAGES from '../messages';
 import {

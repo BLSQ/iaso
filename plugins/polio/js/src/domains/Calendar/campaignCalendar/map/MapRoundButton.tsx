@@ -1,10 +1,10 @@
 import React, { FunctionComponent } from 'react';
+import EditIcon from '@mui/icons-material/Settings';
 import { Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import EditIcon from '@mui/icons-material/Settings';
 import classnames from 'classnames';
-import { useIconLabel } from './hooks';
 import { useStyles } from '../Styles';
+import { useIconLabel } from './hooks';
 
 const style = theme => {
     return {

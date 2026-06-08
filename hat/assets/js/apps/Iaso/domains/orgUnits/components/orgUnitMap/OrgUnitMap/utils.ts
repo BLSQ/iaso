@@ -1,14 +1,13 @@
-import EditableGroup from '../EditableGroup';
-
 import {
     hasFeatureFlag,
     EDIT_GEO_JSON_RIGHT,
     EDIT_CATCHMENT_RIGHT,
 } from '../../../../../utils/featureFlags';
 import { User } from '../../../../../utils/usersUtils';
-import { OrgUnitMapState } from './types';
 import { OrgUnit } from '../../../types/orgUnit';
+import EditableGroup from '../EditableGroup';
 import { buttonsInitialState } from './constants';
+import { OrgUnitMapState } from './types';
 
 export const getAncestorWithGeojson = (orgUnit: OrgUnit): OrgUnit => {
     let ancestorWithGeoJson;

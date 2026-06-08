@@ -1,6 +1,6 @@
+import { useMemo } from 'react';
 import { Column } from 'bluesquare-components';
 import { get, orderBy } from 'lodash';
-import { useMemo } from 'react';
 
 type SortOrder = 'asc' | 'desc';
 

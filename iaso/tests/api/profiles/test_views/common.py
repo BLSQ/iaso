@@ -16,7 +16,7 @@ from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 class BaseProfileAPITestCase(SwaggerTestCaseMixin, APITestCase):
     def setUp(self):
-        super().setUpTestData()
+        super().setUp()
         self.MODULES = [module.codename for module in MODULES]
         self.account = m.Account.objects.create(
             name="Global Health Initiative", modules=self.MODULES, enforce_password_validation=False

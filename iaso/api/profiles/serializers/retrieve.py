@@ -324,7 +324,7 @@ class ProfileRetrieveSerializer(ModelSerializer):
         user_group_permissions = [
             permission.split(".")[1]
             for permission in obj.user.get_group_permissions()
-            if permission.split(".")[1].startswith("iaso_")
+            if permission.split(".")[1].startswith("iaso_") and permission in permissions_active_modules
         ]
         user_permissions = list(
             obj.user.user_permissions.filter(

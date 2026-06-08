@@ -940,17 +940,14 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
         - Edit from the UI : aka retrieve + just submits with initial data => should not crash
         """
 
-        self.client.force_authenticate(self.jom)
+        self.client.force_authenticate(self.jim)
+        self.account.modules = [MODULE_DEFAULT.codename, MODULE_VALIDATION_WORKFLOW.codename]
+        self.account.save()
+
         response = self.client.patch(
-            reverse("profiles-detail", kwargs={"pk": PK_ME}),
-            data={"modules": [MODULE_DEFAULT.codename, MODULE_VALIDATION_WORKFLOW.codename]},
-            format="json",
-        )
-        self.assertJSONResponse(response, status.HTTP_200_OK)
-        response = self.client.patch(
-            reverse("profiles-detail", kwargs={"pk": PK_ME}),
+            reverse("profiles-detail", kwargs={"pk": self.john.pk}),
             data={
-                "permissions": [
+                "user_permissions": [
                     CORE_VALIDATION_WORKFLOW_PERMISSION.codename,
                     CORE_USERS_MANAGED_PERMISSION.codename,
                     CORE_USERS_ADMIN_PERMISSION.codename,
@@ -961,23 +958,40 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
 
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
-        response = self.client.patch(
-            reverse("profiles-detail", kwargs={"pk": PK_ME}),
-            data={"modules": [MODULE_DEFAULT.codename]},
-            format="json",
+        response = self.client.get(
+            reverse("profiles-detail", kwargs={"pk": self.john.pk}),
         )
-        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertIn(CORE_VALIDATION_WORKFLOW_PERMISSION.codename, res_data["permissions"])
+        self.assertIn(CORE_VALIDATION_WORKFLOW_PERMISSION.codename, res_data["user_permissions"])
+
+        self.assertIn(CORE_USERS_MANAGED_PERMISSION.codename, res_data["permissions"])
+        self.assertIn(CORE_USERS_MANAGED_PERMISSION.codename, res_data["user_permissions"])
+
+        self.assertIn(CORE_USERS_ADMIN_PERMISSION.codename, res_data["permissions"])
+        self.assertIn(CORE_USERS_ADMIN_PERMISSION.codename, res_data["user_permissions"])
+
+        self.account.modules = [MODULE_DEFAULT.codename]
+        self.account.save()
 
         response = self.client.get(
-            reverse("profiles-detail", kwargs={"pk": PK_ME}),
+            reverse("profiles-detail", kwargs={"pk": self.john.pk}),
         )
 
         res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertNotIn(CORE_VALIDATION_WORKFLOW_PERMISSION.codename, res_data["permissions"])
+        self.assertNotIn(CORE_VALIDATION_WORKFLOW_PERMISSION.codename, res_data["user_permissions"])
+
+        self.assertIn(CORE_USERS_MANAGED_PERMISSION.codename, res_data["permissions"])
+        self.assertIn(CORE_USERS_MANAGED_PERMISSION.codename, res_data["user_permissions"])
+
+        self.assertIn(CORE_USERS_ADMIN_PERMISSION.codename, res_data["permissions"])
+        self.assertIn(CORE_USERS_ADMIN_PERMISSION.codename, res_data["user_permissions"])
 
         response = self.client.patch(
-            reverse("profiles-detail", kwargs={"pk": PK_ME}),
-            data=res_data,
+            reverse("profiles-detail", kwargs={"pk": self.john.pk}),
+            data={**res_data, "phone_number": ""},
             format="json",
         )
         self.assertJSONResponse(response, status.HTTP_200_OK)

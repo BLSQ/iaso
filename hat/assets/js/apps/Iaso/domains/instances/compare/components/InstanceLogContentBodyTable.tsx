@@ -8,7 +8,6 @@ import { formatLabel } from '../../utils';
 
 type TableBodyProps = {
     fileContent: FileContent;
-    // fileDescriptor?: Record<string, any>;
 };
 const useStyles = makeStyles(theme => ({
     tableCell: {

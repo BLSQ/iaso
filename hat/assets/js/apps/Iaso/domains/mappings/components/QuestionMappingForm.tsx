@@ -171,7 +171,6 @@ type Props = {
     onConfirmedQuestionMapping: (questionMapping: Record<string, any>) => void;
     onUnmapQuestionMapping: () => void;
     onNeverMapQuestionMapping: () => void;
-    // hesabuDescriptor?: any[];
     fieldOptions?: any[];
     fieldTypeOptions?: any[];
 };
@@ -184,7 +183,6 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
     onConfirmedQuestionMapping,
     onUnmapQuestionMapping,
     onNeverMapQuestionMapping,
-    // hesabuDescriptor = [],
     fieldOptions = [], // should be ordered so state is initalized with 1st element
     fieldTypeOptions = [], // should be ordered so state is initalized with 1st element
 }) => {

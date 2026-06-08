@@ -35,7 +35,6 @@ export const ReviewOrgUnitChangesDetailsTableBody: FunctionComponent<Props> = ({
                         field={field}
                         newFieldValues={changedFieldWithNewValues}
                         oldFieldValues={changedFieldWithOldValues}
-                        // status={changeRequest?.status || ''}
                         isNew={isNew}
                         isNewOrgUnit={isNewOrgUnit}
                         setSelected={setSelected}

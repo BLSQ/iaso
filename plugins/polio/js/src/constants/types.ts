@@ -180,16 +180,24 @@ export type Round = {
     campaign: Nullable<string>; // uuid
     cost: Nullable<string>;
     datelogs: RoundDateHistoryEntry[];
+    /** @deprecated Use vaccine supply chain (DestructionReport). */
     date_destruction: Nullable<string>;
+    /** @deprecated Use vaccine supply chain (VaccineRequestForm). */
     date_signed_vrf_received: Nullable<string>; // date
     destructions: Destruction[];
     doses_requested: Nullable<number>;
     ended_at: string; // date
+    /** @deprecated Use vaccine supply chain (OutgoingStockMovement / Form A). */
     forma_comment: Nullable<string>;
+    /** @deprecated Use vaccine supply chain (OutgoingStockMovement / Form A). */
     forma_date: Nullable<string>; // date
+    /** @deprecated Use vaccine supply chain (OutgoingStockMovement / Form A). */
     forma_missing_vials: Nullable<number>;
+    /** @deprecated Use vaccine supply chain (OutgoingStockMovement / Form A). */
     forma_reception: Nullable<string>; // date
+    /** @deprecated Use vaccine supply chain (OutgoingStockMovement / Form A). */
     forma_unusable_vials: Nullable<number>;
+    /** @deprecated Use vaccine supply chain (OutgoingStockMovement / Form A). */
     forma_usable_vials: Nullable<number>;
     id: number;
     im_ended_at: Nullable<string>; // date
@@ -210,8 +218,11 @@ export type Round = {
     percentage_covered_target_population: Nullable<number>;
     preparedness_spreadsheet_url: Nullable<string>;
     preparedness_sync_status: Nullable<PreparednessSyncStatus>;
+    /** @deprecated Round-level reporting delay summary; use vaccine supply chain module. */
     reporting_delays_district_to_region: Nullable<number>;
+    /** @deprecated Round-level reporting delay summary; use vaccine supply chain module. */
     reporting_delays_hc_to_district: Nullable<number>;
+    /** @deprecated Round-level reporting delay summary; use vaccine supply chain module. */
     reporting_delays_region_to_national: Nullable<number>;
     scopes: Scope[];
     started_at: string; // date
@@ -220,6 +231,7 @@ export type Round = {
     vaccine_names: string;
     vaccine_names_extended: string;
     vaccines: RoundVaccine[];
+    /** @deprecated Use vaccine supply chain (DestructionReport). */
     vials_destroyed: Nullable<number>;
 };
 

@@ -67,8 +67,6 @@ export const Teams: FunctionComponent = () => {
                     count={data?.count ?? 0}
                     params={apiParams}
                     extraProps={{ loading: isFetching }}
-                    expanded={{}}
-                    getObjectId={() => ''}
                 />
             </Box>
         </>

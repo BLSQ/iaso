@@ -78,7 +78,9 @@ class Chronogram(SoftDeletableModel):
         verbose_name = _("Chronogram")
 
     def __str__(self) -> str:
-        return f"{self.id} - {self.round.campaign.obr_name} - Round {self.round.number}"
+        if self.round_id and self.round.campaign_id and self.round.number is not None:
+            return f"{self.id} - {self.round.campaign.obr_name} - Round {self.round.number}"
+        return f"Chronogram {self.id}"
 
     @property
     def percentage_of_completion(self) -> dict:

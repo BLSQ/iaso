@@ -3,15 +3,15 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import moment from 'moment/moment';
+import { getApiModulesListQueryKey, useApiModulesList } from 'Iaso/api/modules';
+import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import TopBar from '../../components/nav/TopBarComponent';
-import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-import { baseUrls } from '../../constants/urls';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { ModulesFilters } from './components/ModulesFilters';
 import { useModulesColumns } from './config';
-import { useGetModules } from './hooks/requests/useGetModules';
 import MESSAGES from './messages';
-import { ModuleParams } from './types/modules';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -19,12 +19,26 @@ const useStyles = makeStyles(theme => ({
 
 const baseUrl = baseUrls.modules;
 export const Modules: FunctionComponent = () => {
-    const params = useParamsObject(baseUrl) as unknown as ModuleParams;
+    const params = useParamsObject(baseUrl);
+    const { search, ..._params } = params;
+    const searchParams = React.useMemo(
+        () => (search ? { search } : undefined),
+        [search],
+    );
     const classes: Record<string, string> = useStyles();
 
-    const { data, isFetching } = useGetModules(params);
+    const { data, isFetching } = useApiModulesList(searchParams, {
+        query: {
+            queryKey: [
+                ...getApiModulesListQueryKey(searchParams),
+                moment().locale(),
+            ],
+        },
+    });
+
     const { formatMessage } = useSafeIntl();
     const columns = useModulesColumns();
+
     return (
         <>
             <TopBar
@@ -40,18 +54,17 @@ export const Modules: FunctionComponent = () => {
                         {formatMessage(MESSAGES.modulesInformation)}
                     </Grid>
                 </Grid>
-                <ModulesFilters params={params} />
+                <ModulesFilters params={searchParams} />
                 <TableWithDeepLink
                     marginTop={false}
-                    data={data?.results ?? []}
-                    pages={data?.pages ?? 1}
+                    showPagination={false}
+                    data={data ?? []}
                     defaultSorted={[{ id: 'name', desc: false }]}
                     columns={columns}
-                    count={data?.count ?? 0}
+                    count={data?.length ?? 0}
                     baseUrl={baseUrl}
                     params={params}
-                    extraProps={{ loading: isFetching, defaultPageSize: 100 }}
-                    showPagination={false}
+                    extraProps={{ loading: isFetching }}
                     columnSelectorEnabled={false}
                 />
             </Box>

@@ -310,7 +310,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     modules: {
         url: 'settings/modules',
-        params: ['accountId', 'search', ...paginationPathParams],
+        params: ['accountId', 'search'],
     },
     users: {
         url: 'settings/users/management',

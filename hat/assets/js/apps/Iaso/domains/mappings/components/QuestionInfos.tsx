@@ -1,10 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import Typography from '@mui/material/Typography';
-import _ from 'lodash';
 import { useSafeIntl } from 'bluesquare-components';
+import _ from 'lodash';
 import Descriptor from '../descriptor';
-import ObjectDumper from './ObjectDumper';
 import MESSAGES from '../messages';
+import ObjectDumper from './ObjectDumper';
 
 type Props = {
     question?: Record<string, any> | null;

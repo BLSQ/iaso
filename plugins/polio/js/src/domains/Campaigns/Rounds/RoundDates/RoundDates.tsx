@@ -1,9 +1,9 @@
+import React, { FunctionComponent } from 'react';
 import { Box, Divider, Grid, Typography } from '@mui/material';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import { isEqual } from 'lodash';
 import moment from 'moment';
-import React, { FunctionComponent } from 'react';
 import { dateFormat } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
 import { DateInput } from '../../../../components/Inputs';
 import MESSAGES from '../../../../constants/messages';
@@ -43,8 +43,8 @@ export const RoundDates: FunctionComponent<Props> = ({
     const hasInitialData = Boolean(
         initialValues?.rounds?.find(round => round.number === roundNumber)
             ?.started_at &&
-            initialValues?.rounds?.find(round => round.number === roundNumber)
-                ?.ended_at,
+        initialValues?.rounds?.find(round => round.number === roundNumber)
+            ?.ended_at,
     );
     const isPlanned =
         values?.is_planned ||

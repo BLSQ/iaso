@@ -11,13 +11,13 @@ import {
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
-import MESSAGES from '../../../constants/messages';
-import { makeFileLinks, makeLinks } from '../utils';
 import {
     Nullable,
     Optional,
 } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import MESSAGES from '../../../constants/messages';
 import { LinkWithAlias, FileWithName } from '../types';
+import { makeFileLinks, makeLinks } from '../utils';
 
 type Props = {
     open: boolean;

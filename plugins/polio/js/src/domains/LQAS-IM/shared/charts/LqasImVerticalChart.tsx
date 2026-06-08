@@ -19,7 +19,6 @@ import { BAR_HEIGHT } from './PercentageBarChart/constants';
 import { customLabelHorizontal } from './PercentageBarChart/utils';
 
 type Props = {
-    // eslint-disable-next-line react/require-default-props
     data?: BarChartData[];
     chartKey: string;
     isLoading: boolean;
@@ -74,6 +73,7 @@ export const LqasImVerticalChart: FunctionComponent<Props> = ({
                                     {data.map((_entry, index) => {
                                         return (
                                             <Cell
+                                                // eslint-disable-next-line react/no-array-index-key
                                                 key={`cell-${index}`}
                                                 fill={blue[500]}
                                             />

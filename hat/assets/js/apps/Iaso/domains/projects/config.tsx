@@ -1,6 +1,11 @@
 import React, { ReactElement, useMemo } from 'react';
 import { Box, Switch } from '@mui/material';
-import { Column, Setting, textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import {
+    Column,
+    Setting,
+    textPlaceholder,
+    useSafeIntl,
+} from 'bluesquare-components';
 import { baseUrls } from '../../constants/urls';
 import { EditProjectDialog } from './components/CreateEditProjectDialog';
 

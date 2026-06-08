@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import { makeStyles } from '@mui/styles';
+import EditIcon from '@mui/icons-material/Settings';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
-import EditIcon from '@mui/icons-material/Settings';
+import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
 import MESSAGES from '../messages';

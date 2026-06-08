@@ -5,12 +5,11 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
-import MESSAGES from '../messages';
-
+import { DeleteIconButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
 import { Chronogram } from '../../Chronogram/types';
 
-import { DeleteIconButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
 import { useDeleteChronogram } from '../api/useDeleteChronogram';
+import MESSAGES from '../messages';
 
 type Props = {
     isOpen: boolean;

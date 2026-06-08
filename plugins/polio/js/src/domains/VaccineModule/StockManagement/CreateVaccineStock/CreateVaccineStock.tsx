@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import { Box } from '@mui/material';
 import {
     AddButton,
     ConfirmCancelModal,
@@ -7,12 +8,11 @@ import {
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import { Box } from '@mui/material';
 import { SingleSelect } from '../../../../components/Inputs/SingleSelect';
-import MESSAGES from '../messages';
-import { useSaveVaccineStock } from '../hooks/api';
-import { useGetCountriesOptions } from '../../SupplyChain/hooks/api/vrf';
 import { singleVaccinesList } from '../../SupplyChain/constants';
+import { useGetCountriesOptions } from '../../SupplyChain/hooks/api/vrf';
+import { useSaveVaccineStock } from '../hooks/api';
+import MESSAGES from '../messages';
 
 type Props = {
     isOpen: boolean;

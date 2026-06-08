@@ -240,7 +240,15 @@ export const useFormsTableColumns = ({
             });
         }
         return cols;
-    }, [formatMessage, user, onlyDeleted, showDeleted, orgUnitId, hasDhis2Module, deleteForm]);
+    }, [
+        formatMessage,
+        user,
+        onlyDeleted,
+        showDeleted,
+        orgUnitId,
+        hasDhis2Module,
+        deleteForm,
+    ]);
 };
 
 export const requiredFields = [

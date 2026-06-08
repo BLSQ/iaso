@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useCallback, useState } from 'react';
 import { Box, Button, Divider, Grid, Paper } from '@mui/material';
 import {
     SimpleModal,
@@ -6,7 +7,6 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import Color from 'color';
-import React, { FunctionComponent, useCallback, useState } from 'react';
 import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
 import { useSortedItems } from '../../../../hooks/useSortedItems';
 import { SxStyles } from '../../../../types/general';

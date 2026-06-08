@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
-import MESSAGES from './messages';
 import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
 import { YesNoCell } from 'Iaso/components/Cells/YesNoCell';
+import MESSAGES from './messages';
 
 export const useDevicesTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();

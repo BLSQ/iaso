@@ -140,3 +140,10 @@ class RoundModelTestCase(APITestCase, PolioTestCaseMixin):
         self.assertEqual(
             round_6.chronograms.valid().count(), 1, "A new chronogram should be created for a campaign on hold."
         )
+
+    def test_str_with_campaign_and_number(self):
+        self.assertEqual(str(self.rnd1), f"{self.obr_name} – Round {self.rnd1.number}")
+
+    def test_str_without_campaign(self):
+        round_without_campaign = pm.Round.objects.create(number=99)
+        self.assertEqual(str(round_without_campaign), f"Round {round_without_campaign.pk}")

@@ -1,18 +1,18 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Campaign, MapShapes, Side } from '../../../../constants/types';
-import { ConvertedLqasImData, LqasImMapLayer } from '../../types';
-import { useLqasImTabState } from '../../shared/Tabs/useLqasImTabState';
-import { useMapShapes } from '../../shared/hooks/api/useMapShapes';
-import { getLqasMapLayer, useLqasMapHeaderData } from './utils';
 
 import { Divider, Paper } from '@mui/material';
-import { LIST, MAP, paperElevation } from '../../shared/constants';
-import { LqasImMapHeader } from '../../shared/Map/LqasImMapHeader';
-import { LqasSummary } from './LqasSummary';
-import { LqasImTabs } from '../../shared/Tabs/LqasImTabs';
 import { DropdownOptions } from 'Iaso/types/utils';
+import { Campaign, MapShapes, Side } from '../../../../constants/types';
+import { LIST, MAP, paperElevation } from '../../shared/constants';
+import { useMapShapes } from '../../shared/hooks/api/useMapShapes';
+import { LqasImMapHeader } from '../../shared/Map/LqasImMapHeader';
+import { LqasImTabs } from '../../shared/Tabs/LqasImTabs';
+import { useLqasImTabState } from '../../shared/Tabs/useLqasImTabState';
+import { ConvertedLqasImData, LqasImMapLayer } from '../../types';
 import { LqasCountryListView } from './LqasCountryListView';
 import { LqasCountryMapView } from './LqasCountryMapView';
+import { LqasSummary } from './LqasSummary';
+import { getLqasMapLayer, useLqasMapHeaderData } from './utils';
 
 type Props = {
     roundNumber?: number;

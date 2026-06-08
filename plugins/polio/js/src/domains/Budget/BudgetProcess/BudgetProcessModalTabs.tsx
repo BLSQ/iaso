@@ -1,5 +1,5 @@
-import { Grid, Tab, Tabs } from '@mui/material';
 import React, { FunctionComponent, useState } from 'react';
+import { Grid, Tab, Tabs } from '@mui/material';
 
 import { useSafeIntl } from 'bluesquare-components';
 

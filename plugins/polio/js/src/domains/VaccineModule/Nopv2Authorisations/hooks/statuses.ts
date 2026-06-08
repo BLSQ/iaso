@@ -1,5 +1,5 @@
-import { useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import MESSAGES from '../../../../constants/messages';
 import { Nopv2AuthStatus } from '../types';

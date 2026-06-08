@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react';
-import { userHasPermission } from '../../users/utils';
-import { baseUrls } from '../../../constants/urls';
-import { useCurrentUser } from '../../../utils/usersUtils';
-import * as Permission from '../../../utils/permissions';
 import { LinkTo } from '../../../components/nav/LinkTo';
+import { baseUrls } from '../../../constants/urls';
+import * as Permission from '../../../utils/permissions';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import { userHasPermission } from '../../users/utils';
 
 type Props = {
     formId: string | number;

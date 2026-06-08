@@ -1,14 +1,13 @@
 import React, { FunctionComponent } from 'react';
 
+import DeleteDialog from '../../../../components/dialogs/DeleteDialogComponent';
+import { FormVersion } from '../../../forms/hooks/useGetPossibleFields';
+import { PossibleField } from '../../../forms/types/forms';
+import { useDeleteWorkflowChange } from '../../hooks/requests/useDeleteWorkflowChange';
+import MESSAGES from '../../messages';
 import { Change, ReferenceForm } from '../../types';
 
-import MESSAGES from '../../messages';
-import DeleteDialog from '../../../../components/dialogs/DeleteDialogComponent';
 import { ChangesModal } from './Modal';
-
-import { useDeleteWorkflowChange } from '../../hooks/requests/useDeleteWorkflowChange';
-import { PossibleField } from '../../../forms/types/forms';
-import { FormVersion } from '../../../forms/hooks/useGetPossibleFields';
 
 type Props = {
     change: Change;

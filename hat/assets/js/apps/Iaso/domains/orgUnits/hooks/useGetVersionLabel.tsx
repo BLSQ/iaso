@@ -1,5 +1,5 @@
-import { useSafeIntl } from 'bluesquare-components';
 import { useCallback } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import { DropdownOptionsWithOriginal } from '../../../types/utils';
 import { Version } from '../../dataSources/types/dataSources';
 import MESSAGES from '../messages';

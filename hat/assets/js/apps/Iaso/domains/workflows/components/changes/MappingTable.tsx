@@ -1,3 +1,10 @@
+import React, {
+    Dispatch,
+    FunctionComponent,
+    SetStateAction,
+    useCallback,
+    useMemo,
+} from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -7,23 +14,13 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { cloneDeep } from 'lodash';
-import React, {
-    Dispatch,
-    FunctionComponent,
-    SetStateAction,
-    useCallback,
-    useMemo,
-} from 'react';
 
 import { DropdownOptions } from '../../../../types/utils';
-import { Change, ChangesOption, Mapping, ReferenceForm } from '../../types';
-
 import { PossibleField } from '../../../forms/types/forms';
-import MESSAGES from '../../messages';
-
-import { useGetChangesModalColumns } from '../../config/changes';
-
 import { formatLabel } from '../../../instances/utils';
+import { useGetChangesModalColumns } from '../../config/changes';
+import MESSAGES from '../../messages';
+import { Change, ChangesOption, Mapping, ReferenceForm } from '../../types';
 
 type Props = {
     mappingArray: Mapping[];

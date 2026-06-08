@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
 
+import { Box, Typography } from '@mui/material';
 import {
     ConfirmCancelModal,
     FilesUpload,
@@ -7,10 +8,8 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
-import { Box, Typography } from '@mui/material';
-import { AttachmentModalButton } from './AttachmentModalButton';
-
 import MESSAGES from '../messages';
+import { AttachmentModalButton } from './AttachmentModalButton';
 
 type Props = {
     isOpen: boolean;

@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
+import { appId } from '../../../../../constants/app';
 import { MapShapes } from '../../../../../constants/types';
 import { useGetGeoJson } from '../../../../Campaigns/Scope/hooks/useGetGeoJson';
-import { appId } from '../../../../../constants/app';
 
 const defaultShapes: OrgUnit[] = [];
 export const useMapShapes = (

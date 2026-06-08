@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import { Box, Divider } from '@mui/material';
 import {
     AddButton,
     ConfirmCancelModal,
@@ -6,21 +7,19 @@ import {
     useSafeIntl,
     InputWithInfos,
 } from 'bluesquare-components';
-import { Box, Divider } from '@mui/material';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
 
-import TextInput from '../../../../../../../../hat/assets/js/apps/Iaso/domains/pages/components/TextInput';
 import { EditIconButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
+import TextInput from '../../../../../../../../hat/assets/js/apps/Iaso/domains/pages/components/TextInput';
 import { NumberInput } from '../../../../components/Inputs/NumberInput';
 import { SingleSelect } from '../../../../components/Inputs/SingleSelect';
 
+import { ChronogramTaskMetaData } from '../../types';
+import { useCreateEditChronogramTemplateTask } from '../api/useCreateEditChronogramTemplateTask';
+import { useChronogramTemplateTaskSchema } from '../hooks/validation';
 import MESSAGES from '../messages';
 import { ChronogramTemplateTask } from '../types';
-
-import { ChronogramTaskMetaData } from '../../types';
-import { useChronogramTemplateTaskSchema } from '../hooks/validation';
-import { useCreateEditChronogramTemplateTask } from '../api/useCreateEditChronogramTemplateTask';
 
 type Props = {
     isOpen: boolean;

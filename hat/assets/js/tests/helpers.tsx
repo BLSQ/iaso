@@ -7,11 +7,11 @@ import { render, RenderOptions } from '@testing-library/react';
 import { screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { theme } from 'bluesquare-components';
-import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
 import moment from 'moment/moment';
 import { IntlProvider } from 'react-intl';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { getGlobalOverrides } from 'Iaso/styles';
+import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
 
 export const setLocale = (code: string): void => {
     moment.locale(code);

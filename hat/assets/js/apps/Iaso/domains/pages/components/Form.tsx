@@ -1,7 +1,7 @@
 import React, { FunctionComponent, ReactNode } from 'react';
-import { commonStyles } from 'bluesquare-components';
-import { makeStyles } from '@mui/styles';
 import { Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import { commonStyles } from 'bluesquare-components';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

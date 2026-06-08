@@ -63,6 +63,7 @@ export const getEmptyCellBetweenTwoDates = (
                 spans += 1;
                 result.push(
                     <EmptyCell
+                        // eslint-disable-next-line react/no-array-index-key
                         key={`empty-cell-week-${weeksCount}-end-${i}`}
                         colSpan={7}
                         isCurrentWeek={spans === currentWeekIndex}
@@ -106,6 +107,7 @@ export const drawEmptyFirstCells = ({
                 .forEach((_, i) => {
                     result.push(
                         <EmptyCell
+                            // eslint-disable-next-line react/no-array-index-key
                             key={`empty-cell-${id}-start-${i}`}
                             colSpan={7}
                             isCurrentWeek={
@@ -192,6 +194,7 @@ const getEmptyCells = ({
             spans += 1;
             cells.push(
                 <EmptyCell
+                    // eslint-disable-next-line react/no-array-index-key
                     key={`empty-cell-week-${id}-end-${i}-${spans}`}
                     colSpan={7}
                     isCurrentWeek={spans === currentWeekIndex}

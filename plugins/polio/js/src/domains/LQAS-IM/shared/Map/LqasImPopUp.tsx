@@ -72,19 +72,18 @@ export const LqasImPopup: FunctionComponent<Props> = ({
     ) : null;
 };
 
-export const makePopup =
-    (
-        LQASData: Record<string, ConvertedLqasImData>,
-        round: number | undefined,
-        campaign = '',
-    ) =>
-    shape => {
-        return (
-            <LqasImPopup
-                shape={shape}
-                data={LQASData}
-                round={round}
-                campaign={campaign}
-            />
-        );
-    };
+export const makePopup = (
+    LQASData: Record<string, ConvertedLqasImData>,
+    round: number | undefined,
+    campaign = '',
+) => {
+    const LqasImMapPopup = (shape: Props['shape']) => (
+        <LqasImPopup
+            shape={shape}
+            data={LQASData}
+            round={round}
+            campaign={campaign}
+        />
+    );
+    return LqasImMapPopup;
+};

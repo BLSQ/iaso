@@ -1,7 +1,7 @@
+import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { LinkWithLocation, useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 
 const useStyles = makeStyles(theme => ({
     link: {

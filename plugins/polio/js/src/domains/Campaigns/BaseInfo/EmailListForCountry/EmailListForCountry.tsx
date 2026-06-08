@@ -1,8 +1,8 @@
-import { CircularProgress, Tooltip, Typography } from '@mui/material';
 import React, { FunctionComponent } from 'react';
+import { CircularProgress, Tooltip, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { useCountryUsersGroup } from '../../../Config/CountryNotification/requests';
 import MESSAGES from '../../../../constants/messages';
+import { useCountryUsersGroup } from '../../../Config/CountryNotification/requests';
 
 type Props = {
     countryId?: number;

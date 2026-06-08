@@ -9,9 +9,9 @@ import {
     ObjectSchema,
     addMethod,
 } from 'yup';
-import MESSAGES from '../../../constants/messages';
-import { ValidationError } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { useAPIErrorValidator } from '../../../../../../../hat/assets/js/apps/Iaso/libs/validation';
+import { ValidationError } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import MESSAGES from '../../../constants/messages';
 
 const makeRequired = (validator, required: boolean, errorMsg: string) => {
     if (required) {

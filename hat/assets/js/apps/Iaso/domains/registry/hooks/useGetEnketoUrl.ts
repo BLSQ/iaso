@@ -1,11 +1,9 @@
-import { getRequest } from '../../../libs/Api';
-
 import { openSnackBar } from '../../../components/snackBars/EventDispatcher';
 import { errorSnackBar } from '../../../constants/snackBars';
+import { getRequest } from '../../../libs/Api';
 import { Instance } from '../../instances/types/instance';
 
 type Result = {
-    // eslint-disable-next-line camelcase
     edit_url: string;
 };
 

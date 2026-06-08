@@ -13,6 +13,7 @@ export const baseRenderTags = getLabel => (tagValue, getTagProps) =>
         )
         .map((option, index) => (
             <Chip
+                key={option.value}
                 color="secondary"
                 style={{
                     backgroundColor: option.color,

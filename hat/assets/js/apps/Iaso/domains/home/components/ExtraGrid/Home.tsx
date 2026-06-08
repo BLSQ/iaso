@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import classNames from 'classnames';
 import { Box } from '@mui/material';
+import classNames from 'classnames';
 import { useStyles } from './Welcome';
 
 export const Home: FunctionComponent = () => {

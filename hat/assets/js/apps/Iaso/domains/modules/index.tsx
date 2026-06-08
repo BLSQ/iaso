@@ -1,8 +1,8 @@
+import React, { FunctionComponent } from 'react';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';

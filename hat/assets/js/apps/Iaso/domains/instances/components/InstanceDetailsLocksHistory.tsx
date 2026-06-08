@@ -1,4 +1,6 @@
 import React, { FunctionComponent } from 'react';
+import LockIcon from '@mui/icons-material/Lock';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
 import {
     Grid,
     Table,
@@ -13,14 +15,12 @@ import {
     LoadingSpinner,
     useSafeIntl,
 } from 'bluesquare-components';
-import LockIcon from '@mui/icons-material/Lock';
-import LockOpenIcon from '@mui/icons-material/LockOpen';
-import MESSAGES from '../messages';
-import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
-import getDisplayName from '../../../utils/usersUtils';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
+import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import { postRequest } from '../../../libs/Api';
 import { useSnackMutation } from '../../../libs/apiHooks';
+import getDisplayName from '../../../utils/usersUtils';
+import MESSAGES from '../messages';
 import { Instance } from '../types/instance';
 
 const InstanceDetailsLocksHistory: FunctionComponent<{

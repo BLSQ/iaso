@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
-import InputComponent from './InputComponent';
 import { IntlMessage } from 'bluesquare-components';
+import InputComponent from './InputComponent';
 
 type Checkbox = {
     keyValue: string;

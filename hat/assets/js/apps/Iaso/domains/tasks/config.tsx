@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import {
     displayDateFromTimestamp,
-    Expander,
     Column,
     useSafeIntl,
 } from 'bluesquare-components';

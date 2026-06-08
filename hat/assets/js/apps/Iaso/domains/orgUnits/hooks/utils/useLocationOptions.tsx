@@ -1,7 +1,7 @@
-import { useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
-import MESSAGES from '../../messages';
+import { useSafeIntl } from 'bluesquare-components';
 import { DropdownOptions } from '../../../../types/utils';
+import MESSAGES from '../../messages';
 
 export const useLocationOptions = (): DropdownOptions<'true' | 'false'>[] => {
     const { formatMessage } = useSafeIntl();

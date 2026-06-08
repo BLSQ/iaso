@@ -1,8 +1,8 @@
-import { ConfirmCancelModal } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 import { Box, Divider, Typography } from '@mui/material';
-import { MESSAGES } from './messages';
+import { ConfirmCancelModal } from 'bluesquare-components';
 import { noOp } from '../../../../utils';
+import { MESSAGES } from './messages';
 
 type Props = {
     open: boolean;

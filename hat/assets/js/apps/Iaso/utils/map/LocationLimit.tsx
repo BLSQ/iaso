@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
-import { defineMessages } from 'react-intl';
 import { useSafeIntl, NumberInput, IntlMessage } from 'bluesquare-components';
+import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
     locationLimit: {

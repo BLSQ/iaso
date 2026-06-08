@@ -1,8 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { useSafeIntl, IconButton } from 'bluesquare-components';
-
-import { Button } from '@mui/material';
 import PublishIcon from '@mui/icons-material/Publish';
+import { Button } from '@mui/material';
+import { useSafeIntl, IconButton } from 'bluesquare-components';
 
 import MESSAGES from '../messages';
 

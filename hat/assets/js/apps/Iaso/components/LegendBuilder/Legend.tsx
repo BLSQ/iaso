@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { useTheme } from '@mui/material';
-import { scaleThreshold } from '@visx/scale';
 import { LegendThreshold, LegendItem, LegendLabel } from '@visx/legend';
+import { scaleThreshold } from '@visx/scale';
 import { ScaleThreshold } from './types';
 import { getThresHoldLabels } from './utils';
 
@@ -19,6 +19,7 @@ export const Legend: FunctionComponent<Props> = ({ threshold, unit }) => {
     const getLegend = useGetLegend(threshold);
     const legendLabels = useMemo(
         () => getThresHoldLabels(threshold, unit),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [threshold],
     );
     return (

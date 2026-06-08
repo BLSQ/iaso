@@ -1,13 +1,13 @@
-import InfoIcon from '@mui/icons-material/Info';
-import { Tab, Tooltip } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import classnames from 'classnames';
 import React, {
     FunctionComponent,
     ReactNode,
     useCallback,
     useMemo,
 } from 'react';
+import InfoIcon from '@mui/icons-material/Info';
+import { Tab, Tooltip } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import classnames from 'classnames';
 
 export const useStyles = makeStyles(theme => ({
     tabError: {

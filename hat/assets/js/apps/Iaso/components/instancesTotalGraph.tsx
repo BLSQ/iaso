@@ -1,4 +1,7 @@
 import React, { FunctionComponent } from 'react';
+import { Typography } from '@mui/material';
+import { LoadingSpinner } from 'bluesquare-components';
+import { FormattedMessage } from 'react-intl';
 import {
     CartesianGrid,
     Line,
@@ -8,9 +11,6 @@ import {
     XAxis,
     YAxis,
 } from 'recharts';
-import { Typography } from '@mui/material';
-import { LoadingSpinner } from 'bluesquare-components';
-import { FormattedMessage } from 'react-intl';
 
 type Data = {
     index: number;

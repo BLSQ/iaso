@@ -1,5 +1,5 @@
-import { LoadingSpinner } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
+import { LoadingSpinner } from 'bluesquare-components';
 import { FavButton } from '../../../components/files/FavButton';
 import { ShortFile } from '../../instances/types/instance';
 

@@ -1,7 +1,3 @@
-import { Box, Divider, Grid, Paper } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import { commonStyles, useSafeIntl, useGoBack } from 'bluesquare-components';
-import classnames from 'classnames';
 import React, {
     FunctionComponent,
     useCallback,
@@ -9,24 +5,28 @@ import React, {
     useMemo,
     useState,
 } from 'react';
+import { Box, Divider, Grid, Paper } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import { commonStyles, useSafeIntl, useGoBack } from 'bluesquare-components';
+import classnames from 'classnames';
 import { isEqual } from 'lodash';
 import TopBar from '../../../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../../../constants/urls';
 import { useArrayState } from '../../../../hooks/useArrayState';
 import { useObjectState } from '../../../../hooks/useObjectState';
-import { useDuplicationDetailsColumns } from './hooks/useDuplicationDetailsColumns';
+import { useParamsObject } from '../../../../routing/hooks/useParamsObject';
 import {
     useGetDuplicateDetails,
     useGetDuplicates,
 } from '../hooks/api/useGetDuplicates';
 import MESSAGES from '../messages';
-import { DuplicateInfos } from './DuplicateInfos';
-import { useDuplicateInfos } from './hooks/useDuplicateInfos';
 import { DuplicateData, DuplicateEntityForTable } from '../types';
 import { DuplicateDetailsTableButtons } from './DuplicateDetailsTableButtons';
+import { DuplicateInfos } from './DuplicateInfos';
+import { useDuplicateInfos } from './hooks/useDuplicateInfos';
+import { useDuplicationDetailsColumns } from './hooks/useDuplicationDetailsColumns';
 import { SubmissionsForEntity } from './submissions/SubmissionsForEntity';
-import { useParamsObject } from '../../../../routing/hooks/useParamsObject';
 
 const updateCellColors =
     (selected: 'entity1' | 'entity2') =>

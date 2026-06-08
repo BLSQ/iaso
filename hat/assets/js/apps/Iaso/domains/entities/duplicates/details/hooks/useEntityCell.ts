@@ -1,5 +1,5 @@
-import { isEqual } from 'lodash';
 import { Dispatch, useCallback } from 'react';
+import { isEqual } from 'lodash';
 import { DuplicateEntityForTable, EntityForTableData } from '../../types';
 
 const getEntityStatus = (

@@ -1,7 +1,7 @@
-import { Box, Grid } from '@mui/material';
 import React, { FunctionComponent } from 'react';
-import { ProductivityOption } from './ProductivityOption';
+import { Box, Grid } from '@mui/material';
 import { baseUrls } from '../../../../constants/urls';
+import { ProductivityOption } from './ProductivityOption';
 
 const options = [
     { name: 'SUTOM', url: 'https://sutom.nocle.fr' },

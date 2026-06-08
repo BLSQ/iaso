@@ -1,5 +1,5 @@
-import { FormattedNumber } from 'bluesquare-components';
 import React, { FunctionComponent, ReactElement, useMemo } from 'react';
+import { FormattedNumber } from 'bluesquare-components';
 import {
     useNumberSeparatorsFromLocale,
     useThousandGroupStyle,

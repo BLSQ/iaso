@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-no-useless-fragment */
 import React, { FunctionComponent, ReactElement } from 'react';
 import {
     userHasAllPermissions,

@@ -1,12 +1,12 @@
-import { Box, Divider, Grid } from '@mui/material';
 import React, { FunctionComponent, useCallback, useState } from 'react';
+import { Box, Divider, Grid } from '@mui/material';
 import {
     IconButton as IconButtonComponent,
     useSafeIntl,
 } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import MESSAGES from '../messages';
 import InputComponent from '../../../components/forms/InputComponent';
+import MESSAGES from '../messages';
 import { usePutSourceVersion } from '../requests';
 
 type Props = {

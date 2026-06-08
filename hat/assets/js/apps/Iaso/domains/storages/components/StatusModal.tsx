@@ -4,19 +4,19 @@ import React, {
     useMemo,
     useCallback,
 } from 'react';
-import isEqual from 'lodash/isEqual';
 import {
     useSafeIntl,
     ConfirmCancelModal,
     makeFullModal,
 } from 'bluesquare-components';
-import { Storage, StorageStatus } from '../types/storages';
-import { useSaveStatus } from '../hooks/requests/useSaveStatus';
-import { ModalButton } from './ModalButton';
+import isEqual from 'lodash/isEqual';
 import InputComponent from '../../../components/forms/InputComponent';
+import { useSaveStatus } from '../hooks/requests/useSaveStatus';
 import { useGetReasons } from '../hooks/useGetReasons';
 import { useGetStatus } from '../hooks/useGetStatus';
 import MESSAGES from '../messages';
+import { Storage, StorageStatus } from '../types/storages';
+import { ModalButton } from './ModalButton';
 
 type Props = {
     isOpen: boolean;

@@ -50,9 +50,6 @@ jobs:
       - name: npm test
         run: npm test
 
-      - name: Check ESLint
-        run: npm run show-lint-problems
-
       - name: Check Frontend (JS/React) translations
         run: |
             python scripts/update_trads.py
@@ -169,3 +166,40 @@ jobs:
 
       - name: Formatting with ruff
         run: ruff format --check .
+
+  frontend_lint_and_format:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Use node.js 22.18.0
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.18.0'
+          cache: npm
+
+      - name: upgrade npm
+        run: |
+          npm install --global npm@11.13.0
+
+      - name: Environment info
+        run: |
+          node --version
+          npm --version
+
+      - name: Cache node_modules
+        id: cache-node-modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: npm ci
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Check ESLint
+        run: npm run show-lint-problems

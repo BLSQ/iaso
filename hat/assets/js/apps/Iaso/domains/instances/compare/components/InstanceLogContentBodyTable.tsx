@@ -1,14 +1,13 @@
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, ReactElement } from 'react';
 import { TableBody, TableRow, TableCell } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { ErrorBoundary } from 'bluesquare-components';
 import { InstanceImagePreview } from '../../components/InstanceImagePreview';
 import { FileContent } from '../../types/instance';
 import { formatLabel } from '../../utils';
-import { ErrorBoundary } from 'bluesquare-components';
 
 type TableBodyProps = {
     fileContent: FileContent;
-    fileDescriptor?: Record<string, any>;
 };
 const useStyles = makeStyles(theme => ({
     tableCell: {
@@ -39,7 +38,7 @@ function safeZip(a, b) {
     return Array.from({ length: len }, (_, i) => [arrA[i], arrB[i]]);
 }
 
-function findNode(node:any, target_name: string) {
+function findNode(node: any, target_name: string) {
     if (node.name === target_name) return node;
     if (!node.children) return null;
     for (const child of node.children) {
@@ -63,10 +62,10 @@ function renderRepeatGroup(
     const valueA = fileContent.logA.json[question.name];
     const valueB = fileContent.logB.json[question.name];
 
-    const records: JSX.Element[] = [];
-    for (let [recordA, recordB] of safeZip(valueA, valueB)) {
+    const records: ReactElement[] = [];
+    for (const [recordA, recordB] of safeZip(valueA, valueB)) {
         // TODO fetch the 2 formDescriptor for more accurate rendering/type
-        let questionNames = Array.from(
+        const questionNames = Array.from(
             new Set(
                 (recordA ? Object.keys(recordA) : []).concat(
                     recordB ? Object.keys(recordB) : [],
@@ -74,7 +73,7 @@ function renderRepeatGroup(
             ),
         );
 
-        for (let questionName of questionNames) {
+        for (const questionName of questionNames) {
             let question = fileContent.fields.find(f => f.name == questionName);
             if (question == undefined) {
                 const qA = findNode(fileContent?.formDescriptorA, questionName);
@@ -147,11 +146,11 @@ function QuestionRow({
     );
 }
 
-const InstanceLogContentBodyTable = memo(({ fileContent }: TableBodyProps) => {
+const InstanceLogContentBodyTable = ({ fileContent }: TableBodyProps) => {
     const classes = useStyles();
     const getImageUrl = useCallback((value, logFiles) => {
         if (value && logFiles) {
-            return logFiles[value]
+            return logFiles[value];
         }
         return null;
     }, []);
@@ -208,6 +207,6 @@ const InstanceLogContentBodyTable = memo(({ fileContent }: TableBodyProps) => {
             </TableBody>
         </ErrorBoundary>
     );
-});
+};
 
-export default InstanceLogContentBodyTable;
+export default memo(InstanceLogContentBodyTable);

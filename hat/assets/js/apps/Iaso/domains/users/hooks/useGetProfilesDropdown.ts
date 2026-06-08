@@ -54,13 +54,12 @@ export const useGetProfilesDropdown = ({
         typeof triggerWithEmptyQuery === 'function'
             ? triggerWithEmptyQuery()
             : triggerWithEmptyQuery;
-
     return useSnackQuery({
         queryKey: [
             'profiles',
             params,
             shouldTriggerWithEmptyQuery ? 'triggerWithEmptyQuery' : undefined,
-        ].filter(Boolean),
+        ],
         queryFn: () => {
             if (isEmpty(baseParams) && !shouldTriggerWithEmptyQuery) {
                 return Promise.resolve([]);

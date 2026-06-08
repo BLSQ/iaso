@@ -1,4 +1,3 @@
-import { Bounds } from 'hat/assets/js/apps/Iaso/utils/map/mapUtils';
 import React, {
     FunctionComponent,
     createContext,
@@ -6,6 +5,7 @@ import React, {
     useMemo,
     ReactNode,
 } from 'react';
+import { Bounds } from 'hat/assets/js/apps/Iaso/utils/map/mapUtils';
 
 type LqasAfroOverviewContextObject = {
     bounds: Bounds | undefined;

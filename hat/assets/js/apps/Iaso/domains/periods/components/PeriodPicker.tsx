@@ -8,6 +8,7 @@ import { Box, FormHelperText, FormLabel, Grid } from '@mui/material';
 
 import Typography from '@mui/material/Typography';
 import { DatePicker } from 'bluesquare-components';
+import { Moment } from 'moment';
 import { SxStyles } from 'Iaso/types/general';
 import InputComponent from '../../../components/forms/InputComponent';
 
@@ -93,6 +94,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
         } else {
             setCurrentPeriod(null);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activePeriodString]);
 
     const handleChange = (
@@ -112,7 +114,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
     };
 
     const handleChangeDay = useCallback(
-        date => {
+        (date: Moment) => {
             const newValue = date?.format('YYYYMMDD') ?? null;
             try {
                 const parsedValue = Period.parse(newValue)?.[1];

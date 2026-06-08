@@ -8,14 +8,12 @@ import { AvatarTimeline } from './AvatarTimeline';
 type SubmissionListProps = {
     totalSteps: number;
     instanceId: number;
-    isMostRecent: boolean;
     timeline: Timeline[];
 };
 
 export const SubmissionList = ({
     timeline,
     totalSteps,
-    isMostRecent,
     instanceId,
 }: SubmissionListProps) => {
     return (
@@ -36,6 +34,9 @@ export const SubmissionList = ({
                             <AvatarTimeline
                                 status={timelineItem.status}
                                 type={timelineItem.type}
+                                userCanDoActions={
+                                    timelineItem.user_can_do_actions
+                                }
                             />
                         </ListItemAvatar>
                         <ListItemText
@@ -43,7 +44,6 @@ export const SubmissionList = ({
                             secondary={
                                 <ListItemSecondaryText
                                     timelineItem={timelineItem}
-                                    isMostRecent={isMostRecent}
                                     instanceId={instanceId}
                                 />
                             }

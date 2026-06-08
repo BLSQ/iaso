@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Tooltip as LeafletTooltip } from 'react-leaflet';
 import { get } from 'lodash';
+import { Tooltip as LeafletTooltip } from 'react-leaflet';
 
 import { Shape } from '../../../constants/types';
 import { findBackgroundShape } from './utils';

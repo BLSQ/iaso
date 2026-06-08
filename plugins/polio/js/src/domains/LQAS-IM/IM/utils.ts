@@ -159,7 +159,6 @@ export const imTooltipFormatter =
         _name: any,
         props: { payload: { marked: number; checked: number } },
     ): [string, string] => {
-        // eslint-disable-next-line react/prop-types
         const ratio = `${props.payload.marked}/${props.payload.checked}`;
         return [ratio, formatMessage(MESSAGES.vaccinated)];
     };

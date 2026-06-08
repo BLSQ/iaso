@@ -1,3 +1,4 @@
+import React, { FunctionComponent } from 'react';
 import { Container, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -5,7 +6,6 @@ import {
     commonStyles,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import { useGetLogDetails } from '../../../hooks/useGetLogDetails';
 import MESSAGES from '../messages';
 import { UserLogCompare } from './UserLogCompare';

@@ -1,5 +1,5 @@
-import L from 'leaflet';
 import React, { FunctionComponent, useMemo } from 'react';
+import L from 'leaflet';
 import { GeoJSON, Pane } from 'react-leaflet';
 
 import { OrgUnit } from '../../../orgUnits/types/orgUnit';

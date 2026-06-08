@@ -6,7 +6,10 @@ import React, {
     useMemo,
 } from 'react';
 import ClearIcon from '@mui/icons-material/Clear';
-import Autocomplete from '@mui/material/Autocomplete';
+import { SxProps } from '@mui/material';
+import Autocomplete, {
+    AutocompleteRenderGetTagProps,
+} from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import { makeStyles } from '@mui/styles';
 import {
@@ -17,7 +20,6 @@ import {
 import { defineMessages } from 'react-intl';
 import { TextInput } from './TextInput';
 import { defaultRenderTags, getExtraProps, getOption } from './utils';
-import { SxProps } from '@mui/material';
 
 const styles = theme => ({
     inputLabel: {
@@ -95,10 +97,14 @@ type Props = {
     helperText?: ReactNode;
     options?: DropdownOptions<any>[];
     loading?: boolean;
-    getOptionLabel?: Record<string, any> | Function;
-    getOptionSelected?: Record<string, any> | Function;
+    getOptionLabel?: Record<string, any> | (() => string);
+    getOptionSelected?: Record<string, any> | (() => string);
     renderOption?: (arg: { label: string }) => ReactNode;
-    renderTags?: Function;
+    renderTags?: (
+        value: any[],
+        getTagProps: AutocompleteRenderGetTagProps,
+        ownerState?: unknown,
+    ) => ReactNode;
     returnFullObject?: boolean;
     placeholder?: string;
     dataTestId?: string;
@@ -147,6 +153,7 @@ export const SingleSelect: FunctionComponent<Props> = ({
             }
         }
         return tempErrors;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value, options, errors, loading, hasValue]);
 
     const fixedValue = useMemo(
@@ -156,6 +163,7 @@ export const SingleSelect: FunctionComponent<Props> = ({
 
     const handleChange = useCallback(
         (e, newValue) => onChange(newValue?.value ?? null),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [onChange, returnFullObject],
     );
 
@@ -166,6 +174,7 @@ export const SingleSelect: FunctionComponent<Props> = ({
     );
     const handleInputChange = useCallback(
         (_, newInputValue) => freeSolo && onChange(newInputValue),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [onChange, returnFullObject],
     );
 

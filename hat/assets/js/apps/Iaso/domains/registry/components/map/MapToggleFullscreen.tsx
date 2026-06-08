@@ -1,12 +1,12 @@
-import FullscreenIcon from '@mui/icons-material/Fullscreen';
-import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
-import { Box, Paper } from '@mui/material';
 import React, {
     Dispatch,
     FunctionComponent,
     SetStateAction,
     useEffect,
 } from 'react';
+import FullscreenIcon from '@mui/icons-material/Fullscreen';
+import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
+import { Box, Paper } from '@mui/material';
 import { useMap } from 'react-leaflet';
 import { SxStyles } from '../../../../types/general';
 

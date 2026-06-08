@@ -1,17 +1,17 @@
-import { ConfirmCancelModal, makeFullModal } from 'bluesquare-components';
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import { ConfirmCancelModal, makeFullModal } from 'bluesquare-components';
 import { useFormik } from 'formik';
 import { isEqual } from 'lodash';
+import InputComponent from '../../../components/forms/InputComponent';
 import {
     useGetAlgorithmsOptions,
     useGetDataSources,
     useSourceOptions,
     useSourceVersionOptions,
 } from '../../links/hooks/filters';
-import InputComponent from '../../../components/forms/InputComponent';
+import { useRunValidation } from '../hooks/useRunValidation';
 import { MESSAGES } from '../messages';
 import { AddRunButton } from './AddRunButton';
-import { useRunValidation } from '../hooks/useRunValidation';
 
 type Props = {
     isOpen: boolean;

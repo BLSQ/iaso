@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { IconButton } from 'bluesquare-components';
-
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import { IconButton } from 'bluesquare-components';
 
 import MESSAGES from '../messages';
 

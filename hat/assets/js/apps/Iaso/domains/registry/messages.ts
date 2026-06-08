@@ -160,7 +160,7 @@ const MESSAGES = defineMessages({
     markerClustering: {
         id: 'iaso.map.title.markerClustering',
         defaultMessage: 'Clustering',
-    }
+    },
 });
 
 export default MESSAGES;

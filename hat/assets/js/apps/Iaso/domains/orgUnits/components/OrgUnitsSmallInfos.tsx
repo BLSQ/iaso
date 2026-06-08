@@ -1,10 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
+import { OrgUnit } from '../types/orgUnit';
 import { getOrgUnitGroups, useGetStatusMessage } from '../utils';
 import OrgUnitsSmallInfosRow from './OrgUnitsSmallInfosRow';
 import { getOrgUnitParentsString } from './TreeView/utils';
-import { OrgUnit } from '../types/orgUnit';
 
 type Props = {
     orgUnit: OrgUnit;

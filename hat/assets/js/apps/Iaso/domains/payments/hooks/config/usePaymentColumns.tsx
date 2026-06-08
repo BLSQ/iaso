@@ -1,17 +1,17 @@
+import React, { useMemo } from 'react';
 import {
     Column,
     IconButton,
     IntlFormatMessage,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { useMemo } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
 import { textPlaceholder } from '../../../../constants/uiConstants';
+import { baseUrls } from '../../../../constants/urls';
 import { EditPaymentDialog } from '../../components/EditPaymentLot/EditPaymentDialog';
 import MESSAGES from '../../messages';
 import { PaymentLot, PotentialPayment } from '../../types';
 import { SavePaymentStatusArgs } from '../requests/useSavePaymentStatus';
-import { baseUrls } from '../../../../constants/urls';
 
 export const usePaymentColumns = ({
     potential = true,

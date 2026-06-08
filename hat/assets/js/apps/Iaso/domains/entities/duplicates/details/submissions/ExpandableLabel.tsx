@@ -1,12 +1,12 @@
 import React from 'react';
+import { Stack, Typography } from '@mui/material';
 import {
     IconButton as IconButtonComponent,
     displayDateFromTimestamp,
 } from 'bluesquare-components';
-import { Stack, Typography } from '@mui/material';
-import MESSAGES from '../../messages';
 import { baseUrls } from '../../../../../constants/urls';
 import { Instance } from '../../../../instances/types/instance';
+import MESSAGES from '../../messages';
 
 interface Props {
     instance: Instance;

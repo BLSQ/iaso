@@ -1,13 +1,13 @@
 import React, { useMemo } from 'react';
-import { Column, useSafeIntl } from 'bluesquare-components';
 import { Box } from '@mui/material';
+import { Column, useSafeIntl } from 'bluesquare-components';
 
 import { DateCell } from '../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 
 import MESSAGES from '../messages';
+import { EditNotificationModal } from '../Modals/NotificationsCreateEditModal';
 import { DeleteNotificationModal } from '../Modals/NotificationsDeleteModal';
 import { NotificationsMetaData } from '../types';
-import { EditNotificationModal } from '../Modals/NotificationsCreateEditModal';
 
 export const useNotificationsTableColumns = (
     notificationsMetaData: NotificationsMetaData,

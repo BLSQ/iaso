@@ -1,6 +1,13 @@
 import { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 
+import {
+    userHasAccessToModule,
+    userHasPermission,
+} from 'Iaso/domains/users/utils';
+import { MODULE_EXTERNAL_STORAGE } from 'Iaso/utils/modules';
+import { STORAGES } from 'Iaso/utils/permissions';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { useGetFormDescriptor } from '../../forms/fields/hooks/useGetFormDescriptor';
 import { useGetPossibleFields } from '../../forms/hooks/useGetPossibleFields';
 import MESSAGES from '../messages';
@@ -11,6 +18,7 @@ import { useGetFields } from './useGetFields';
 
 export const useGetEntityFields = (entity: Entity | undefined) => {
     const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
 
     const { data: entityTypes } = useGetEntityTypesDropdown();
     const { possibleFields } = useGetPossibleFields(
@@ -39,21 +47,36 @@ export const useGetEntityFields = (entity: Entity | undefined) => {
         formDescriptors,
     );
 
-    const staticFields: Field[] = useMemo(
-        () => [
-            {
+    const hasExternalStorageAccess = userHasAccessToModule(
+        MODULE_EXTERNAL_STORAGE,
+        currentUser,
+    );
+    const hasPermission = userHasPermission(STORAGES, currentUser);
+
+    const staticFields: Field[] = useMemo(() => {
+        const fields: Field[] = [];
+
+        if (hasExternalStorageAccess && hasPermission) {
+            fields.push({
                 label: formatMessage(MESSAGES.nfcCards),
                 value: `${entity?.nfc_cards ?? 0}`,
                 key: 'nfcCards',
-            },
-            {
-                label: formatMessage(MESSAGES.uuid),
-                value: entity?.uuid ? `${entity.uuid}` : '--',
-                key: 'uuid',
-            },
-        ],
-        [entity?.nfc_cards, entity?.uuid, formatMessage],
-    );
+            });
+        }
+        fields.push({
+            label: formatMessage(MESSAGES.uuid),
+            value: entity?.uuid ? `${entity.uuid}` : '--',
+            key: 'uuid',
+        });
+
+        return fields;
+    }, [
+        entity?.nfc_cards,
+        entity?.uuid,
+        formatMessage,
+        hasExternalStorageAccess,
+        hasPermission,
+    ]);
 
     return {
         isLoading: !entity || detailFields.length !== dynamicFields.length,

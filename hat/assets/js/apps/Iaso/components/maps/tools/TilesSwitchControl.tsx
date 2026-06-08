@@ -1,14 +1,13 @@
+import React, { FunctionComponent, useState } from 'react';
 import Layers from '@mui/icons-material/Layers';
 import { Box, SxProps, Typography } from '@mui/material';
 import { Theme } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import classNames from 'classnames';
-import React, { FunctionComponent, useState } from 'react';
-
-import TileSwitch from './TileSwitchComponent';
 
 import MESSAGES from '../messages';
+import TileSwitch from './TileSwitchComponent';
 
 const useStyles = makeStyles(theme => ({
     legendLayers: {

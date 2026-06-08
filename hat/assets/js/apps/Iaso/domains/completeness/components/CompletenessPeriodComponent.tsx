@@ -10,10 +10,10 @@ import {
 } from 'bluesquare-components';
 import { postRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
-import { getColumns } from '../config';
-import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../../../components/snackBars/messages';
+import { baseUrls } from '../../../constants/urls';
 import { usePrettyPeriod } from '../../periods/utils';
+import { getColumns } from '../config';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

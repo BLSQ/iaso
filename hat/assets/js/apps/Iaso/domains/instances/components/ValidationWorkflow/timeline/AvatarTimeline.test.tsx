@@ -4,10 +4,43 @@ import { describe, expect, it } from 'vitest';
 import { AvatarTimeline } from './AvatarTimeline';
 
 describe('AvatarTimeline', () => {
-    it('renders MoreHoriz icon when type is NEXT_BYPASS', () => {
-        render(<AvatarTimeline type="NEXT_BYPASS" status="ACCEPTED" />);
+    it('renders MoreHoriz icon without background color when type is NEXT_BYPASS and user cannot do action', () => {
+        render(
+            <AvatarTimeline
+                type="NEXT_BYPASS"
+                status="ACCEPTED"
+                userCanDoActions={false}
+            />,
+        );
 
         expect(screen.getByTestId('MoreHorizIcon')).toBeInTheDocument();
+        expect(screen.getByTestId('next-step')).toBeInTheDocument();
+    });
+
+    it('renders MoreHoriz icon without background color when type is NEXT_STEP', () => {
+        render(
+            <AvatarTimeline
+                type="NEXT_STEP"
+                status="ACCEPTED"
+                userCanDoActions={false}
+            />,
+        );
+
+        expect(screen.getByTestId('MoreHorizIcon')).toBeInTheDocument();
+        expect(screen.getByTestId('next-step')).toBeInTheDocument();
+    });
+
+    it('renders MoreHoriz icon withbackground color when type is NEXT_BYPASS and user can do action', () => {
+        render(
+            <AvatarTimeline
+                type="NEXT_BYPASS"
+                status="ACCEPTED"
+                userCanDoActions={true}
+            />,
+        );
+
+        expect(screen.getByTestId('MoreHorizIcon')).toBeInTheDocument();
+        expect(screen.queryByTestId('next-step')).toBeNull();
     });
 
     it('renders Clear icon when status is REJECTED', () => {

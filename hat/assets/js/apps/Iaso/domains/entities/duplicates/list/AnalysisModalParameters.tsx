@@ -1,5 +1,3 @@
-import { Grid, Typography } from '@mui/material';
-import { IconButton, useSafeIntl } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
@@ -8,11 +6,13 @@ import React, {
 } from 'react';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
+import { Grid, Typography } from '@mui/material';
+import { IconButton, useSafeIntl } from 'bluesquare-components';
 import InputComponent, {
     InputComponentType,
 } from '../../../../components/forms/InputComponent';
-import MESSAGES from '../messages';
 import { LEVENSHTEIN_PARAMETERS_DROPDOWN } from '../../constants';
+import MESSAGES from '../messages';
 import { Parameters } from '../types';
 
 type Props = {

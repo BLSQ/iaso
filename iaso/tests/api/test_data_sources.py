@@ -60,6 +60,34 @@ class DataSourcesAPITestCase(APITestCase):
             response = self.client.get("/api/datasources/")
         self.assertJSONResponse(response, 200)
 
+    def test_datasource_list_no_duplicates_when_multiple_projects(self):
+        """A DataSource linked to multiple projects in the same account must not produce inflated org unit counts."""
+        self.data_source.default_version = self.source_version
+        self.data_source.save()
+
+        m.OrgUnit.objects.create(name="OU1", version=self.source_version)
+        m.OrgUnit.objects.create(name="OU2", version=self.source_version)
+        m.OrgUnit.objects.create(name="OU3", version=self.source_version)
+
+        extra_project = m.Project.objects.create(name="Extra project", app_id="extra.app", account=self.account)
+        self.data_source.projects.add(extra_project)
+
+        self.client.force_authenticate(self.jane)
+
+        with self.assertNumQueries(6):
+            response = self.client.get("/api/datasources/")
+
+        data = self.assertJSONResponse(response, 200)
+        source_ids = [s["id"] for s in data["sources"]]
+        self.assertEqual(len(source_ids), len(set(source_ids)), "Duplicate DataSource entries found in response")
+
+        ds_entry = next(s for s in data["sources"] if s["id"] == self.data_source.pk)
+        self.assertEqual(
+            ds_entry["default_version"]["org_units_count"],
+            3,
+            "Org unit count is inflated by multi-project JOIN",
+        )
+
     def test_datasource_post_with_all_params(self):
         """POST /datasource/ with all params should work OK"""
         self.client.force_authenticate(self.joe)

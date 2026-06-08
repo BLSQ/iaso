@@ -1,9 +1,12 @@
-import { Column, useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent, useMemo } from 'react';
+import { Column, useSafeIntl } from 'bluesquare-components';
 import { useLocation } from 'react-router-dom';
 import { TableWithDeepLink } from '../../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import { getPrefixedParams } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/common';
 import { baseUrls } from '../../../../constants/urls';
+import ColorLegend from '../components/ColorLegend';
+import { NO_PDF_COLOR, WITH_PDF_COLOR } from '../constants';
+import { MESSAGES as REPOSITORY_MESSAGES } from '../messages';
 import { VaccineRepositoryParams } from '../types';
 import { Filters } from './Filters';
 import {
@@ -11,9 +14,6 @@ import {
     useGetVaccineRepositoryReports,
 } from './hooks/useGetVaccineRepositoryReports';
 import { useVaccineRepositoryReportsColumns } from './hooks/useVaccineRepositoryReportsColumns';
-import ColorLegend from '../components/ColorLegend';
-import { MESSAGES as REPOSITORY_MESSAGES } from '../messages';
-import { NO_PDF_COLOR, WITH_PDF_COLOR } from '../constants';
 
 type Props = {
     params: VaccineRepositoryParams;

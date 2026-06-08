@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import * as yup from 'yup';
 import {
     EDIT_ACCESS_COMPLETION_ONLY,
     EDIT_ACCESS_FULL,
@@ -71,10 +72,7 @@ vi.mock('./dropdownOptions', () => ({
 }));
 
 vi.mock('./validation', () => ({
-    useFormAValidation: () => {
-        const yup = require('yup');
-        return yup.object().shape({});
-    },
+    useFormAValidation: () => yup.object().shape({}),
 }));
 
 vi.mock('Iaso/hooks/useSkipEffectUntilValue', () => ({
@@ -114,9 +112,11 @@ vi.mock('Iaso/components/forms/InputComponent', () => ({
         keyValue,
     }: any) => {
         if (type === 'checkbox') {
+            const inputId = `input-${keyValue}`;
             return (
-                <label>
+                <label htmlFor={inputId}>
                     <input
+                        id={inputId}
                         type="checkbox"
                         checked={!!value}
                         disabled={disabled}

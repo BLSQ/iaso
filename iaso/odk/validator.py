@@ -34,6 +34,7 @@ def parse_sheet(excel_file, sheet_name):
     excel_data = excel_file.parse(sheet_name=sheet_name, keep_default_na=False)
     excel_data = excel_data.reset_index()
     excel_data.rename(columns={"index": "line_number"}, inplace=True)
+    excel_data.columns = excel_data.columns.str.strip()
 
     cleanable_columns = ["name", "list_name", "list name"]
     for column_name in cleanable_columns:
@@ -183,6 +184,21 @@ def validate_xls_form(xls_file):
                                 "severity": "error",
                             }
                         )
+
+    for q in question_rows:
+        raw_params = q.get("parameters", "")
+        if raw_params:
+            for token in str(raw_params).split():
+                if len(token.split("=")) != 2:
+                    validation_errors.append(
+                        {
+                            "message": f"invalid 'parameters' column value '{raw_params}' for '{q.get('name')}': expecting 'parameter=value' pairs",
+                            "question": q,
+                            "sheet": "survey",
+                            "severity": "error",
+                        }
+                    )
+                    break
 
     # TODO more advanced validations
     #    - choices

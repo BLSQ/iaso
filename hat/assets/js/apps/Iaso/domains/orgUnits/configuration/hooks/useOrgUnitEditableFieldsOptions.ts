@@ -1,7 +1,7 @@
 import { useSafeIntl } from 'bluesquare-components';
+import { DropdownOptions } from '../../../../types/utils';
 import { editableFields } from '../constants';
 import MESSAGES from '../messages';
-import { DropdownOptions } from '../../../../types/utils';
 
 export const useOrgUnitsEditableFieldsOptions =
     (): DropdownOptions<string>[] => {

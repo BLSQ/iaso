@@ -14,12 +14,12 @@ import {
     IntlFormatMessage,
 } from 'bluesquare-components';
 import classnames from 'classnames';
-import { baseUrls } from '../../../constants/urls';
 import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import MESSAGES from '../../../constants/messages';
+import { baseUrls } from '../../../constants/urls';
 import { WARNING_COLOR } from '../../../styles/constants';
-import { Budget } from '../types';
 import { EditBudgetProcessModal } from '../BudgetProcess/EditBudgetProcessModal';
+import { Budget } from '../types';
 
 type Props = {
     budget: Budget;

@@ -20,7 +20,10 @@ export const useReferenceInstanceBulkLink = (): UseMutationResult => {
             unselected_ids,
             filters,
         }: BulkInstanceReferenceLinkParams) => {
-            const url = makeUrlWithParams('/api/tasks/create/instancereferencebulklink/', filters);
+            const url = makeUrlWithParams(
+                '/api/tasks/create/instancereferencebulklink/',
+                filters,
+            );
             return postRequest(url, {
                 actions,
                 select_all,

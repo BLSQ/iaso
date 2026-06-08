@@ -73,7 +73,7 @@ class NestedTimelineSerializer(BaseNestedTimelineSerializer):
             "order",
         ]
 
-    @extend_schema_field(serializers.ChoiceField(choices=["TIMELINE", "NEXT_BYPASS"]))
+    @extend_schema_field(serializers.ChoiceField(choices=["TIMELINE", "NEXT_BYPASS", "NEXT_STEP"]))
     def get_type(self, obj):
         return "TIMELINE"
 
@@ -84,7 +84,7 @@ class NestedTimelineSerializer(BaseNestedTimelineSerializer):
         return [x.pk for x in obj.node.roles_required.all()]
 
 
-class NestedTimelineNextBypassSerializer(BaseNestedTimelineSerializer):
+class NestedTimelineNextTemplatesSerializer(BaseNestedTimelineSerializer):
     """
     Must be similar to NestedTimelineSerializer for swagger compliance (see get_timeline method) hence the get_methods that return None
     """
@@ -121,7 +121,7 @@ class NestedTimelineNextBypassSerializer(BaseNestedTimelineSerializer):
         return None
 
     def get_type(self, obj):
-        return "NEXT_BYPASS"
+        return "NEXT_BYPASS" if obj.can_skip_previous_nodes else "NEXT_STEP"
 
     def get_node_slug(self, obj):
         return obj.slug
@@ -193,7 +193,8 @@ class NestedSubmissionSerializer(ModelSerializer):
     def get_timeline(self, obj):
         instance = self._get_instance(obj)
 
-        # get history
+        status = self.get_general_validation_status(obj)
+
         nodes = instance.prefetched_validation_nodes
         nodes_timeline = [
             n
@@ -202,45 +203,46 @@ class NestedSubmissionSerializer(ModelSerializer):
         ]
         nodes_timeline = sorted(nodes_timeline, key=lambda n: n.updated_at, reverse=True)
 
-        next_bypass = None
-        if not obj.next_created_at and instance.general_validation_status == ValidationWorkflowArtefactStatus.PENDING:
-            node_order = list(reversed(self.context["node_dumps"]))
+        if status in [ValidationWorkflowArtefactStatus.REJECTED, ValidationWorkflowArtefactStatus.APPROVED]:
+            return NestedTimelineSerializer(nodes_timeline, context=self.context, many=True).data
 
-            ordering = Case(
-                *[When(slug=slug, then=pos) for pos, slug in enumerate(node_order)],
-                output_field=IntegerField(),
+        # means there we're in PENDING, so we need to display whole graph
+        node_order = list(reversed(self.context["node_dumps"]))
+
+        ordering = Case(
+            *[When(slug=slug, then=pos) for pos, slug in enumerate(node_order)],
+            output_field=IntegerField(),
+        )
+
+        next_templates = (
+            ValidationNodeTemplate.objects.prefetch_related("roles_required")
+            .filter(
+                workflow=instance.form.validation_workflow,
             )
-
-            next_bypass = (
-                ValidationNodeTemplate.objects.prefetch_related("roles_required")
-                .filter(
-                    can_skip_previous_nodes=True,
-                    workflow=instance.form.validation_workflow,
-                )
-                .filter(
-                    Q(
-                        ~Exists(
-                            ValidationNode.objects.exclude(created_at__lt=obj.created_at).filter(
-                                instance=instance,
-                                node=OuterRef("pk"),
-                            )
-                        )
-                    )
-                    & Q(
-                        ~Exists(
-                            ValidationNode.objects.exclude(created_at__lt=obj.created_at).filter(
-                                instance=instance,
-                                node=OuterRef("pk"),
-                                status=ValidationNodeStatus.UNKNOWN,
-                            )
+            .filter(
+                Q(
+                    ~Exists(
+                        ValidationNode.objects.exclude(created_at__lt=obj.created_at).filter(
+                            instance=instance,
+                            node=OuterRef("pk"),
                         )
                     )
                 )
-                .order_by(ordering)
+                & Q(
+                    ~Exists(
+                        ValidationNode.objects.exclude(created_at__lt=obj.created_at).filter(
+                            instance=instance,
+                            node=OuterRef("pk"),
+                            status=ValidationNodeStatus.UNKNOWN,
+                        )
+                    )
+                )
             )
+            .order_by(ordering)
+        )
 
         return (
-            NestedTimelineNextBypassSerializer(next_bypass, many=True, context=self.context).data
+            NestedTimelineNextTemplatesSerializer(next_templates, many=True, context=self.context).data
             + NestedTimelineSerializer(nodes_timeline, context=self.context, many=True).data
         )
 

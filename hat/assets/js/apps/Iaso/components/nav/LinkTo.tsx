@@ -1,3 +1,5 @@
+import React, { FunctionComponent } from 'react';
+import { SvgIconComponent } from '@mui/icons-material';
 import { makeStyles } from '@mui/styles';
 import {
     IconButtonBuiltInIcon,
@@ -8,10 +10,8 @@ import {
     useKeyPressListener,
 } from 'bluesquare-components';
 import classNames from 'classnames';
-import React, { FunctionComponent } from 'react';
 
 import MESSAGES from './messages';
-import { SvgIconComponent } from '@mui/icons-material';
 
 export type IconVariant = IconButtonBuiltInIcon;
 

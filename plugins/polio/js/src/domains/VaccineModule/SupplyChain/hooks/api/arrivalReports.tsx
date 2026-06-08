@@ -1,5 +1,5 @@
-import { useSnackQuery } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { getRequest } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import { useSnackQuery } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { apiUrl } from '../../constants';
 
 export const useGetArrivalReportsDetails = (vrfId?: string) => {

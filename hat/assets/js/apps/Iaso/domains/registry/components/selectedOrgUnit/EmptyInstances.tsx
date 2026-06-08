@@ -1,8 +1,8 @@
+import React, { FunctionComponent } from 'react';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { Box, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 
 import { HEIGHT } from '../../config';
 import MESSAGES from '../../messages';

@@ -70,7 +70,7 @@ export const listMenuPermission = (menuItem, permissions = []) => {
         ) {
             permissionsTemp = [...permissionsTemp, ...menuItem.permissions];
         }
-        menuItem.subMenu &&
+        if (menuItem.subMenu) {
             menuItem.subMenu.forEach(subMenuItem => {
                 const subPerms = listMenuPermission(
                     subMenuItem,
@@ -78,6 +78,7 @@ export const listMenuPermission = (menuItem, permissions = []) => {
                 ).filter(sp => !permissionsTemp.includes(sp)); // Avoid duplicate permission
                 permissionsTemp = [...permissionsTemp, ...subPerms];
             });
+        }
     }
     return permissionsTemp;
 };

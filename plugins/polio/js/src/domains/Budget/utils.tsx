@@ -1,19 +1,19 @@
-import { Typography } from '@mui/material';
 import React from 'react';
+import { Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { Profile } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import { fileExtensions } from '../../constants/fileExtensions';
+import { Team } from '../../../../../../hat/assets/js/apps/Iaso/domains/teams/types/team';
 import {
     Nullable,
     Optional,
 } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { Team } from '../../../../../../hat/assets/js/apps/Iaso/domains/teams/types/team';
+import { Profile } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { fileExtensions } from '../../constants/fileExtensions';
 import { FileWithName, LinkWithAlias, Round } from './types';
 
 export const formatUserName = (profile: Profile): string => {
     return profile?.first_name && profile?.last_name
         ? `${profile.first_name} ${profile.last_name}`
-        : profile?.user_name ?? `${profile?.user_id}`;
+        : (profile?.user_name ?? `${profile?.user_id}`);
 };
 
 export const formatRoundNumber = (roundNumber: number | string): string => {

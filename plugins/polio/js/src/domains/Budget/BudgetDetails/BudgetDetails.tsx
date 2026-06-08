@@ -5,26 +5,26 @@ import React, {
     useState,
 } from 'react';
 import { Box, Grid, useMediaQuery, useTheme } from '@mui/material';
-import { groupBy } from 'lodash';
 import {
     Paginated,
     useGoBack,
     useRedirectToReplace,
 } from 'bluesquare-components';
-import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
+import { groupBy } from 'lodash';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
-import { useStyles } from '../../../styles/theme';
-import { useTableState } from '../hooks/config';
 import { useBoundState } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/useBoundState';
+import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { baseUrls } from '../../../constants/urls';
+import { useStyles } from '../../../styles/theme';
 import { useGetBudgetForCampaign } from '../hooks/api/useGetBudget';
 import { useGetBudgetDetails } from '../hooks/api/useGetBudgetDetails';
+import { useTableState } from '../hooks/config';
 import { BudgetStep } from '../types';
-import { BudgetDetailsCardsLayout } from './mobile/BudgetDetailsCardsLayout';
-import { BudgetDetailsTableLayout } from './BudgetDetailsTableLayout';
-import { BudgetDetailsFiltersMobile } from './mobile/BudgetDetailsFiltersMobile';
 import { BudgetDetailsInfos } from './BudgetDetailsInfos';
-import { baseUrls } from '../../../constants/urls';
+import { BudgetDetailsTableLayout } from './BudgetDetailsTableLayout';
+import { BudgetDetailsCardsLayout } from './mobile/BudgetDetailsCardsLayout';
+import { BudgetDetailsFiltersMobile } from './mobile/BudgetDetailsFiltersMobile';
 
 type BudgetProcessDetailsParams = {
     campaignName?: string;

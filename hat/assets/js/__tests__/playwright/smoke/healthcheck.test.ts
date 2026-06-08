@@ -5,7 +5,7 @@ const ENV = {
     pathways: 'https://collect.projectpathways.org/',
     playground: 'https://iaso-playground.bluesquare.org',
     campaigns: 'https://www.poliooutbreaks.com/',
-    'iaso-demo': 'https://demo.openiaso.com',
+    demo: 'https://demo.openiaso.com',
 };
 
 let envToCheck = process.env?.HEALTH_ENV

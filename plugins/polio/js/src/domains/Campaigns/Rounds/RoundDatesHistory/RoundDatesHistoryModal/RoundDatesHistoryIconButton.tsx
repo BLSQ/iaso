@@ -8,14 +8,15 @@ type IconButtonProps = {
     dataTestId?: string;
 };
 
-export const RoundDatesHistoryIconButton: FunctionComponent<IconButtonProps> =
-    ({ onClick, dataTestId = 'roundHistoryButton' }) => {
-        return (
-            <IconButton
-                dataTestId={dataTestId}
-                onClick={onClick}
-                overrideIcon={InfoOutlinedIcon}
-                tooltipMessage={MESSAGES.seeHistory}
-            />
-        );
-    };
+export const RoundDatesHistoryIconButton: FunctionComponent<
+    IconButtonProps
+> = ({ onClick, dataTestId = 'roundHistoryButton' }) => {
+    return (
+        <IconButton
+            dataTestId={dataTestId}
+            onClick={onClick}
+            overrideIcon={InfoOutlinedIcon}
+            tooltipMessage={MESSAGES.seeHistory}
+        />
+    );
+};

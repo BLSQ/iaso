@@ -6,12 +6,24 @@ import SkipNextIcon from '@mui/icons-material/SkipNext';
 import { Avatar } from '@mui/material';
 import { Timeline } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodes';
 
-type AvatarTimelineProps = Pick<Timeline, 'status' | 'type'>;
+type AvatarTimelineProps = {
+    userCanDoActions: Timeline['user_can_do_actions'];
+} & Pick<Timeline, 'status' | 'type'>;
 
-export const AvatarTimeline = ({ status, type }: AvatarTimelineProps) => {
-    if (type === 'NEXT_BYPASS') {
+export const AvatarTimeline = ({
+    status,
+    type,
+    userCanDoActions,
+}: AvatarTimelineProps) => {
+    if (type === 'NEXT_BYPASS' && userCanDoActions) {
         return (
             <Avatar sx={{ bgcolor: 'background.warning' }}>
+                <MoreHorizIcon />
+            </Avatar>
+        );
+    } else if (type === 'NEXT_BYPASS' || type === 'NEXT_STEP') {
+        return (
+            <Avatar data-testid={'next-step'}>
                 <MoreHorizIcon />
             </Avatar>
         );

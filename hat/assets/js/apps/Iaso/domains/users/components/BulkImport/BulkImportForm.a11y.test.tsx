@@ -7,6 +7,7 @@ import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers'
 
 describe('BulkImportDialog accessibility', () => {
     // multiple issues in blsq-components :/
+    // eslint-disable-next-line vitest/no-disabled-tests
     it.skip('has no accessibility violations', async () => {
         const { container } = renderWithThemeAndIntlProvider(
             <MemoryRouter>

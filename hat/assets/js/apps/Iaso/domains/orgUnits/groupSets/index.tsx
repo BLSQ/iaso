@@ -1,11 +1,11 @@
+import React from 'react';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     AddButton as AddButtonComponent,
     commonStyles,
-    useSafeIntl
+    useSafeIntl,
 } from 'bluesquare-components';
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import TopBar from '../../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';

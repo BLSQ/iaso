@@ -1,6 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { makeStyles } from '@mui/styles';
 import {
     Button,
     Box,
@@ -10,21 +8,23 @@ import {
     DialogActions,
     Grid,
 } from '@mui/material';
-import isEqual from 'lodash/isEqual';
-import { get, merge } from 'lodash';
-import { Field, FormikProvider, useFormik } from 'formik';
-import * as yup from 'yup';
 import Typography from '@mui/material/Typography';
-import Form from './Form';
-import TextInput from './TextInput';
-import Rte from './Rte';
-import RadioInput from './RadioInput';
-import { UsersSelect } from './UsersSelect';
-import { UserRolesSelect } from './UserRolesSelect';
+import { makeStyles } from '@mui/styles';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import { Field, FormikProvider, useFormik } from 'formik';
+import { get, merge } from 'lodash';
+import isEqual from 'lodash/isEqual';
+import * as yup from 'yup';
 import { useCurrentUser } from '../../../utils/usersUtils';
-import { useSavePage } from '../hooks/useSavePage';
 import { PAGES_TYPES, IFRAME, TEXT, RAW, SUPERSET } from '../constants';
+import { useSavePage } from '../hooks/useSavePage';
 import MESSAGES from '../messages';
+import Form from './Form';
+import RadioInput from './RadioInput';
+import Rte from './Rte';
+import TextInput from './TextInput';
+import { UserRolesSelect } from './UserRolesSelect';
+import { UsersSelect } from './UsersSelect';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -74,6 +74,17 @@ const CreateEditDialog: FunctionComponent<Props> = ({
     const getSchema = () => {
         return yup.lazy(vals => {
             const type = get(vals, 'type');
+            let content;
+            if (type === IFRAME) {
+                content = yup
+                    .string()
+                    .trim()
+                    .url(formatMessage(MESSAGES.urlNotValid));
+            } else if (type === SUPERSET) {
+                content = yup.string().trim().nullable();
+            } else {
+                content = yup.string().trim();
+            }
             return yup.object().shape({
                 name: yup
                     .string()
@@ -83,15 +94,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                     .string()
                     .trim()
                     .required(formatMessage(MESSAGES.slugRequired)),
-                content:
-                    type === IFRAME
-                        ? yup
-                              .string()
-                              .trim()
-                              .url(formatMessage(MESSAGES.urlNotValid))
-                        : type === SUPERSET
-                          ? yup.string().trim().nullable()
-                          : yup.string().trim(),
+                content,
                 superset_dashboard_id:
                     type === SUPERSET
                         ? yup

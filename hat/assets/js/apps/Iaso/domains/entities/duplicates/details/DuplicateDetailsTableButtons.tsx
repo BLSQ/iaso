@@ -1,6 +1,6 @@
+import React, { FunctionComponent, SetStateAction } from 'react';
 import { Box, Button, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent, SetStateAction } from 'react';
 import InputComponent from '../../../../components/forms/InputComponent';
 import {
     ENTITY_DUPLICATES_SOFT_DELETE,

@@ -18,7 +18,8 @@ from iaso import models as m
 from iaso.api.common import EXPORTS_DATETIME_FORMAT
 from iaso.models import Entity, EntityType, FormVersion, Instance, Project
 from iaso.models.deduplication import ValidationStatus
-from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION
+from iaso.modules import MODULE_EXTERNAL_STORAGE
+from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION, CORE_STORAGE_PERMISSION
 from iaso.tests.api.entities.common_base_with_setup import EntityAPITestCase
 
 
@@ -164,6 +165,89 @@ class WebEntityAPITestCase(EntityAPITestCase):
         response = self.client.get(f"/api/entities/{entity.pk}/")
 
         self.assertEqual(response.status_code, 200)
+
+    def test_retrieve_entity_without_permission_hides_nfc_cards(self):
+        restricted_user = self.create_user_with_profile(
+            username="restricted",
+            account=self.account,
+            # This user doesn't have the CORE_STORAGE_PERMISSION which is required to see nfc_cards
+            permissions=[CORE_ENTITIES_PERMISSION],
+        )
+        self.client.force_authenticate(restricted_user)
+
+        entity = Entity.objects.create(
+            name="Top Secret Client",
+            entity_type=self.entity_type,
+            account=self.account,
+        )
+
+        response = self.client.get(f"/api/entities/{entity.pk}/")
+        self.assertEqual(response.status_code, 200)
+
+        response_data = response.json()
+        self.assertNotIn("nfc_cards", response_data)
+
+    def test_retrieve_entity_without_module_hides_nfc_cards(self):
+        f"""nfc_cards should be hidden when the account lacks the {MODULE_EXTERNAL_STORAGE},
+        even if the user has the storage permission."""
+
+        account_without_module = m.Account.objects.create(name="Account no module", modules=[])
+        sw_version = m.SourceVersion.objects.create(data_source=self.sw_source, number=99)
+        account_without_module.default_version = sw_version
+        account_without_module.save()
+
+        user_with_perm_no_module = self.create_user_with_profile(
+            username="has_perm_no_module",
+            account=account_without_module,
+            permissions=[CORE_ENTITIES_PERMISSION, CORE_STORAGE_PERMISSION],
+        )
+        self.client.force_authenticate(user_with_perm_no_module)
+
+        entity_type = m.EntityType.objects.create(
+            name="Type no module", reference_form=self.form_1, account=account_without_module
+        )
+        entity = Entity.objects.create(
+            name="No Module Entity",
+            entity_type=entity_type,
+            account=account_without_module,
+        )
+
+        response = self.client.get(f"/api/entities/{entity.pk}/")
+        self.assertEqual(response.status_code, 200)
+
+        response_data = response.json()
+        self.assertNotIn("nfc_cards", response_data)
+
+    def test_retrieve_entity_with_permission_and_module_shows_nfc_cards(self):
+        f"""nfc_cards should be present when the user has the storage permission
+        and the account has the {MODULE_EXTERNAL_STORAGE}."""
+
+        account_with_module = m.Account.objects.create(name="Account with module", modules=["EXTERNAL_STORAGE"])
+        sw_version = m.SourceVersion.objects.create(data_source=self.sw_source, number=100)
+        account_with_module.default_version = sw_version
+        account_with_module.save()
+
+        user_with_both = self.create_user_with_profile(
+            username="has_perm_and_module",
+            account=account_with_module,
+            permissions=[CORE_ENTITIES_PERMISSION, CORE_STORAGE_PERMISSION],
+        )
+        self.client.force_authenticate(user_with_both)
+
+        entity_type = m.EntityType.objects.create(
+            name="Type with module", reference_form=self.form_1, account=account_with_module
+        )
+        entity = Entity.objects.create(
+            name="Full Access Entity",
+            entity_type=entity_type,
+            account=account_with_module,
+        )
+
+        response = self.client.get(f"/api/entities/{entity.pk}/")
+        self.assertEqual(response.status_code, 200)
+
+        response_data = response.json()
+        self.assertIn("nfc_cards", response_data)
 
     def test_list_entities_search_filter(self):
         """

@@ -1,10 +1,10 @@
+import React, { FunctionComponent } from 'react';
 import { Box, Typography, TypographyVariant } from '@mui/material';
 import {
     IconButton as IconButtonComponent,
     LoadingSpinner,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 
 import { Accordion } from '../../../../components/Accordion/Accordion';
 import { AccordionDetails } from '../../../../components/Accordion/AccordionDetails';
@@ -15,10 +15,10 @@ import InstanceDetailsInfos from '../../components/InstanceDetailsInfos';
 import InstanceDetailsLocation from '../../components/InstanceDetailsLocation';
 import InstanceFileContent from '../../components/InstanceFileContent';
 import InstancesFilesList from '../../components/InstancesFilesListComponent';
+import { INSTANCE_METAS_FIELDS } from '../../constants';
 import { Instance } from '../../types/instance';
 import { getInstancesFilesList } from '../../utils';
 import MESSAGES from '../messages';
-import { INSTANCE_METAS_FIELDS } from '../../constants';
 
 type Props = {
     data?: Instance;

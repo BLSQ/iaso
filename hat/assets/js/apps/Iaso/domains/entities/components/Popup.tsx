@@ -1,8 +1,5 @@
 import React, { createRef, FunctionComponent } from 'react';
 
-import { Popup } from 'react-leaflet';
-import classNames from 'classnames';
-
 import {
     Card,
     CardContent,
@@ -19,16 +16,18 @@ import {
     mapPopupStyles,
     LinkWithLocation,
 } from 'bluesquare-components';
+import classNames from 'classnames';
+import { Popup } from 'react-leaflet';
 import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
-import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
 
-import { Location } from './ListMap';
 import { baseUrls } from '../../../constants/urls';
-import { ExtraColumn } from '../types/fields';
-import { useGetFieldValue } from '../hooks/useGetFieldValue';
 import { formatLabel } from '../../instances/utils';
+import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
+import { useGetFieldValue } from '../hooks/useGetFieldValue';
 
 import MESSAGES from '../messages';
+import { ExtraColumn } from '../types/fields';
+import { Location } from './ListMap';
 
 const useStyles = makeStyles(theme => ({
     ...mapPopupStyles(theme),

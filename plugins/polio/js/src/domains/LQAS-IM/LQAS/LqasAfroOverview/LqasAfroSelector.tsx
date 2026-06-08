@@ -1,6 +1,6 @@
+import React, { FunctionComponent } from 'react';
 import { Box, FormControlLabel, Grid, Radio, RadioGroup } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import MESSAGES from '../../../../constants/messages';
 import { Side } from '../../../../constants/types';

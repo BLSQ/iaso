@@ -59,8 +59,8 @@ RUN uv sync --python "$(which python3)"
 
 COPY --from=npmbuilder /opt/app/hat/assets /opt/app/hat/assets
 COPY . /opt/app
-RUN SECRET_KEY=NOT_SO_SECRET python manage.py collectstatic
-RUN SECRET_KEY=NOT_SO_SECRET python manage.py compilemessages
+RUN SECRET_KEY=NOT_SO_SECRET uv run python manage.py collectstatic
+RUN SECRET_KEY=NOT_SO_SECRET uv run python manage.py compilemessages
 
 FROM base AS dev
 # Tell iaso backend to Use the assets build by webpack
@@ -76,9 +76,16 @@ CMD ["manage", "testserver", "--no-input", "iaso/fixtures/user.yaml", "--addrpor
 
 FROM base AS prod
 USER root
+
+# Copy the virtualenv from builder
+COPY --from=base /opt/app/.venv .venv
+ENV VIRTUAL_ENV=/opt/app/.venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
 # Only install gunicorn for production
-RUN pip install gunicorn
+RUN uv add install gunicorn
 COPY --from=npmbuilder /opt/app/hat/assets /opt/app/hat/assets
+
 # Migrations are run by the start_gunicorn
 RUN SECRET_KEY=NOT_SO_SECRET python manage.py collectstatic --noinput
 EXPOSE 8081

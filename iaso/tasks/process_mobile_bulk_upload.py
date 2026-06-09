@@ -22,6 +22,7 @@ from traceback import format_exc
 from django.core.files import File
 from django.core.files.base import ContentFile
 from django.db import transaction
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from beanstalk_worker import task_decorator
@@ -34,7 +35,7 @@ from iaso.api.org_unit_change_requests.serializers import OrgUnitChangeRequestWr
 from iaso.api.org_units import import_org_units
 from iaso.api.stocks.utils import import_stock_ledger_items
 from iaso.api.storage import import_storage_logs
-from iaso.models import Instance, Project, StockLedgerItem, Task
+from iaso.models import Entity, Instance, Project, StockLedgerItem, Task
 
 
 INSTANCES_JSON = "instances.json"
@@ -108,8 +109,11 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                         instance = instances_by_uuid.get(uuid) or Instance.objects.get(uuid=uuid)
                         original = copy(instance)
                         instance = process_instance_xml(instance, instance_data, zip_ref, user, form_versions_cache)
+                        if instance is None:
+                            continue
                         stats["new_instances"] += 1
-                        new_instance_files += process_instance_attachments(zip_ref, dirs[uuid], instance)
+                        if uuid in dirs:
+                            new_instance_files += process_instance_attachments(zip_ref, dirs[uuid], instance)
                         log_modification(v1=original, v2=instance, source=BULK_UPLOAD, user=user)
 
                     duplicated_count = duplicate_instance_files(new_instance_files)
@@ -200,7 +204,25 @@ def process_instance_xml(instance: Instance, instance_data, zip_ref, user, form_
     # the file's size is also known upfront: `SizedFileField` doesn't have to decompress the whole
     # entry a first time just to measure it. Same name as the zip entry, as `File(zip_ext_file)`
     # had, so the stored path doesn't change.
-    xml_content = zip_ref.read(entry_name)
+    try:
+        xml_content = zip_ref.read(entry_name)
+    except KeyError:
+        # Handle files referenced in the manifest but missing from the zip file.
+        # refs: SLEEP-1634
+        logger.error("File %s for instance %s missing from the zip archive", filename, uuid)
+        if not instance.file or not instance.json:
+            # Clean up the Instance and soft-delete the Entity referencing it as its attributes.
+            try:
+                entity = instance.attributes
+                entity.attributes = None
+                entity.deleted_at = timezone.now()
+                entity.save()
+            except Entity.DoesNotExist:
+                pass
+
+            instance.delete()
+        return None
+
     file = ContentFile(xml_content, name=entry_name)
     if not instance.file or not instance.json:  # new instance
         instance = process_instance_file(

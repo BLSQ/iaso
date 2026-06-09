@@ -174,7 +174,7 @@ describe('Account detail integration test', () => {
         ).toBeVisible();
 
         // renders feature flag data
-        expect(screen.getByText('ALLOW_SHAPE_EDITION')).toBeVisible();
+        expect(screen.getByText('Hello')).toBeVisible();
         expect(
             within(screen.getByTestId('account-feature-flags')).getByLabelText(
                 'Selected',

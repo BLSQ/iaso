@@ -999,7 +999,8 @@ submission</p>
 
         <details class="quote">
           <summary>Source code in <code>iaso/models/entity.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">215</span>
+          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">214</span>
+<span class="normal">215</span>
 <span class="normal">216</span>
 <span class="normal">217</span>
 <span class="normal">218</span>
@@ -1116,7 +1117,11 @@ submission</p>
 <span class="normal">329</span>
 <span class="normal">330</span>
 <span class="normal">331</span>
-<span class="normal">332</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Entity</span><span class="p">(</span><span class="n">SoftDeletableModel</span><span class="p">):</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Entity</span><span class="p">(</span><span class="n">SoftDeletableModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;An entity represents a physical object or person with a known Entity Type</span>
 
 <span class="sd">    Contrary to forms, they are not linked to a specific OrgUnit.</span>
@@ -1215,15 +1220,20 @@ submission</p>
 
     <span class="k">def</span> <span class="nf">get_pending_duplicate_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve the id list of related pending duplicate entities.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;pending_duplicates1&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;pending_duplicates2&quot;</span><span class="p">):</span>
-            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">duplicate</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">duplicate</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pending_duplicates1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pending_duplicates2</span><span class="p">)))</span>
-
         <span class="n">results</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-        <span class="n">e1qs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">duplicates1</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
-        <span class="n">e2qs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">duplicates2</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">duplicate</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">(</span><span class="n">e1qs</span><span class="p">,</span> <span class="n">e2qs</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">duplicate</span><span class="o">.</span><span class="n">validation_status</span> <span class="o">==</span> <span class="n">ValidationStatus</span><span class="o">.</span><span class="n">PENDING</span><span class="p">:</span>
-                <span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">duplicate</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;pending_duplicates1&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;pending_duplicates2&quot;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">duplicate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pending_duplicates1</span><span class="p">:</span>
+                <span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">duplicate</span><span class="o">.</span><span class="n">entity2_id</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">duplicate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pending_duplicates2</span><span class="p">:</span>
+                <span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">duplicate</span><span class="o">.</span><span class="n">entity1_id</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+
+        <span class="n">e1qs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">duplicates1</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">validation_status</span><span class="o">=</span><span class="n">ValidationStatus</span><span class="o">.</span><span class="n">PENDING</span><span class="p">,</span> <span class="n">entity2__deleted_at__isnull</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">e2qs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">duplicates2</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">validation_status</span><span class="o">=</span><span class="n">ValidationStatus</span><span class="o">.</span><span class="n">PENDING</span><span class="p">,</span> <span class="n">entity1__deleted_at__isnull</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">duplicate</span> <span class="ow">in</span> <span class="n">e1qs</span><span class="p">:</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">duplicate</span><span class="o">.</span><span class="n">entity2_id</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">duplicate</span> <span class="ow">in</span> <span class="n">e2qs</span><span class="p">:</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">duplicate</span><span class="o">.</span><span class="n">entity1_id</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">get_latest_instance_created_at</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1265,14 +1275,14 @@ submission</p>
 
       <details class="quote">
         <summary>Source code in <code>iaso/models/entity.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">325</span>
-<span class="normal">326</span>
-<span class="normal">327</span>
-<span class="normal">328</span>
-<span class="normal">329</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">329</span>
 <span class="normal">330</span>
 <span class="normal">331</span>
-<span class="normal">332</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_latest_instance_created_at</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_latest_instance_created_at</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve the datetime of the last created instance for this entity.&quot;&quot;&quot;</span>
     <span class="n">instance_dates</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">saved_at</span>
@@ -1302,7 +1312,8 @@ submission</p>
 
       <details class="quote">
         <summary>Source code in <code>iaso/models/entity.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">312</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">311</span>
+<span class="normal">312</span>
 <span class="normal">313</span>
 <span class="normal">314</span>
 <span class="normal">315</span>
@@ -1313,17 +1324,26 @@ submission</p>
 <span class="normal">320</span>
 <span class="normal">321</span>
 <span class="normal">322</span>
-<span class="normal">323</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_pending_duplicate_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_pending_duplicate_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve the id list of related pending duplicate entities.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;pending_duplicates1&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;pending_duplicates2&quot;</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">duplicate</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">duplicate</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pending_duplicates1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pending_duplicates2</span><span class="p">)))</span>
-
     <span class="n">results</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-    <span class="n">e1qs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">duplicates1</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
-    <span class="n">e2qs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">duplicates2</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">duplicate</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">(</span><span class="n">e1qs</span><span class="p">,</span> <span class="n">e2qs</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">duplicate</span><span class="o">.</span><span class="n">validation_status</span> <span class="o">==</span> <span class="n">ValidationStatus</span><span class="o">.</span><span class="n">PENDING</span><span class="p">:</span>
-            <span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">duplicate</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;pending_duplicates1&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;pending_duplicates2&quot;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">duplicate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pending_duplicates1</span><span class="p">:</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">duplicate</span><span class="o">.</span><span class="n">entity2_id</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">duplicate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pending_duplicates2</span><span class="p">:</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">duplicate</span><span class="o">.</span><span class="n">entity1_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+
+    <span class="n">e1qs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">duplicates1</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">validation_status</span><span class="o">=</span><span class="n">ValidationStatus</span><span class="o">.</span><span class="n">PENDING</span><span class="p">,</span> <span class="n">entity2__deleted_at__isnull</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">e2qs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">duplicates2</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">validation_status</span><span class="o">=</span><span class="n">ValidationStatus</span><span class="o">.</span><span class="n">PENDING</span><span class="p">,</span> <span class="n">entity1__deleted_at__isnull</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">duplicate</span> <span class="ow">in</span> <span class="n">e1qs</span><span class="p">:</span>
+        <span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">duplicate</span><span class="o">.</span><span class="n">entity2_id</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">duplicate</span> <span class="ow">in</span> <span class="n">e2qs</span><span class="p">:</span>
+        <span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">duplicate</span><span class="o">.</span><span class="n">entity1_id</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
       </details>
@@ -1350,7 +1370,8 @@ submission</p>
 
       <details class="quote">
         <summary>Source code in <code>iaso/models/entity.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">288</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">287</span>
+<span class="normal">288</span>
 <span class="normal">289</span>
 <span class="normal">290</span>
 <span class="normal">291</span>
@@ -1371,8 +1392,7 @@ submission</p>
 <span class="normal">306</span>
 <span class="normal">307</span>
 <span class="normal">308</span>
-<span class="normal">309</span>
-<span class="normal">310</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">soft_delete_with_instances_and_pending_duplicates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">audit_source</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+<span class="normal">309</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">soft_delete_with_instances_and_pending_duplicates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">audit_source</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This method does a proper soft-deletion of the entity:</span>
 <span class="sd">    - soft delete the entity</span>
@@ -1430,7 +1450,8 @@ submission</p>
 
         <details class="quote">
           <summary>Source code in <code>iaso/models/entity.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 45</span>
+          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 44</span>
+<span class="normal"> 45</span>
 <span class="normal"> 46</span>
 <span class="normal"> 47</span>
 <span class="normal"> 48</span>
@@ -1504,8 +1525,7 @@ submission</p>
 <span class="normal">116</span>
 <span class="normal">117</span>
 <span class="normal">118</span>
-<span class="normal">119</span>
-<span class="normal">120</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">EntityType</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="normal">119</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">EntityType</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Its `reference_form` describes the core attributes/metadata about the entity type (in case it refers to a person: name, age, ...)&quot;&quot;&quot;</span>
 
     <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>  <span class="c1"># Example: &quot;Child under 5&quot;</span>
@@ -1622,7 +1642,8 @@ submission</p>
 
       <details class="quote">
         <summary>Source code in <code>iaso/models/entity.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 89</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 88</span>
+<span class="normal"> 89</span>
 <span class="normal"> 90</span>
 <span class="normal"> 91</span>
 <span class="normal"> 92</span>
@@ -1652,8 +1673,7 @@ submission</p>
 <span class="normal">116</span>
 <span class="normal">117</span>
 <span class="normal">118</span>
-<span class="normal">119</span>
-<span class="normal">120</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_list_view_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="normal">119</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_list_view_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fetch the fields listed in `fields_list_view` from the reference form.</span>
 

@@ -37,9 +37,10 @@ class TestAccountFeatureFlagDropdown(SwaggerTestCaseMixin, APITestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(4):
             # 1-2 PERMISSION CHECK
-            # 3 SELECT
+            # 3 Serializer populate
+            # 4 SELECT
             res = self.client.get(reverse("account_feature_flags-dropdown"))
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data, self.ff_length)

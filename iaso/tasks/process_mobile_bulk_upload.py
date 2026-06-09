@@ -21,6 +21,7 @@ from traceback import format_exc
 
 from django.core.files import File
 from django.db import transaction
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from beanstalk_worker import task_decorator
@@ -33,7 +34,7 @@ from iaso.api.org_unit_change_requests.serializers import OrgUnitChangeRequestWr
 from iaso.api.org_units import import_org_units
 from iaso.api.stocks.utils import import_stock_ledger_items
 from iaso.api.storage import import_storage_logs
-from iaso.models import Instance, Project, StockLedgerItem, Task
+from iaso.models import Entity, Instance, Project, StockLedgerItem, Task
 
 
 INSTANCES_JSON = "instances.json"
@@ -90,8 +91,11 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                         instance = Instance.objects.get(uuid=uuid)
                         original = copy(instance)
                         instance = process_instance_xml(instance, instance_data, zip_ref, user)
+                        if instance is None:
+                            continue
                         stats["new_instances"] += 1
-                        new_instance_files += process_instance_attachments(dirs[uuid], instance)
+                        if uuid in dirs:
+                            new_instance_files += process_instance_attachments(dirs[uuid], instance)
                         log_modification(v1=original, v2=instance, source=BULK_UPLOAD, user=user)
 
                     duplicated_count = duplicate_instance_files(new_instance_files)
@@ -167,7 +171,27 @@ def process_instance_xml(instance: Instance, instance_data, zip_ref, user):
     uuid = instance.uuid
     filename = ntpath.basename(instance_data.get("file", None))
     logger.info(f"Processing instance {instance.uuid}")
-    with zip_ref.open(os.path.join(uuid, filename), "r") as f:
+
+    zip_path = os.path.join(uuid, filename)
+
+    # Handle files referenced in the manifest but missing from the zip file.
+    # refs: SLEEP-1634
+    if zip_path not in zip_ref.namelist():
+        logger.error("File %s for instance %s missing from the zip archive", filename, uuid)
+        if not instance.file or not instance.json:
+            # Clean up the Instance and soft-delete the Entity referencing it as its attributes.
+            try:
+                entity = instance.attributes
+                entity.attributes = None
+                entity.deleted_at = timezone.now()
+                entity.save()
+            except Entity.DoesNotExist:
+                pass
+
+            instance.delete()
+        return None
+
+    with zip_ref.open(zip_path, "r") as f:
         if not instance.file or not instance.json:  # new instance
             instance = process_instance_file(instance, File(f), user)
         else:

@@ -1,6 +1,7 @@
 import json
 import logging
 import ntpath
+import os
 import tempfile
 
 from copy import copy
@@ -1083,6 +1084,18 @@ def import_data(instances, user, app_id, api_import):
         # it is possible (although it won't happen often) that the instance has already been created by the
         # POST /sync/form_upload/ endpoint.
         file_name = ntpath.basename(instance_data.get("file", None))
+
+        # Workaround for mobile uploads containing multiple instances that reference the same file.
+        # The overlapping names caused a single reference Instance to be created that two entities tried to
+        # reference simultaneoulsy as their attributes, causing an IntegrityError.
+        # refs: SLEEP-1634
+        existing_instances = Instance.objects.filter(file_name=file_name)
+        for existing_instance in existing_instances:
+            if existing_instance.uuid and existing_instance.uuid != uuid:
+                base, ext = os.path.splitext(file_name)
+                file_name = f"{base}_dup_{uuid}{ext}"
+                break
+
         instance, _ = Instance.objects.get_or_create(file_name=file_name)
 
         instance.uuid = uuid

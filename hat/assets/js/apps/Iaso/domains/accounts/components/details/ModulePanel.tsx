@@ -11,6 +11,7 @@ import {
     TableRow,
     Tooltip,
     Typography,
+    TableContainer,
 } from '@mui/material';
 import { visuallyHidden } from '@mui/utils';
 import { useSafeIntl } from 'bluesquare-components';
@@ -28,6 +29,10 @@ type Props = {
 };
 
 const styles: SxStyles = {
+    tableContainer: {
+        maxHeight: '60vh',
+        overscrollBehavior: 'none',
+    },
     row: {
         '&:nth-of-type(odd)': (
             theme: ReturnType<typeof getOverriddenTheme>,
@@ -49,68 +54,71 @@ export const ModulePanel: FunctionComponent<Props> = ({
     return (
         <WidgetPaper
             title={formatMessage(MESSAGES.modulesTitle)}
-            expandable={true}
             id={`account-${accountId}-modules`}
             data-testid={'account-module-panel'}
         >
             {modules?.length ? (
-                <Table size={'small'}>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell sx={{ width: 75 }}>
-                                <Typography
-                                    sx={visuallyHidden}
-                                    component={'span'}
-                                >
-                                    {formatMessage(MESSAGES.additionalInfo)}
-                                </Typography>
-                            </TableCell>
-                            <TableCell>
-                                {formatMessage(MESSAGES.name)}
-                            </TableCell>
-                            <TableCell>
-                                {formatMessage(MESSAGES.status)}
-                            </TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {modules?.map(({ value, label }) => {
-                            return (
-                                <TableRow key={value} sx={styles.row}>
-                                    <TableCell align={'center'}>
-                                        {value === 'FORM_AI' && (
-                                            <Tooltip
-                                                title={formatMessage(
-                                                    MESSAGES.formAIModuleTooltipTitle,
-                                                )}
-                                            >
-                                                <InfoIcon color="action" />
-                                            </Tooltip>
-                                        )}
-                                    </TableCell>
-                                    <TableCell>{label}</TableCell>
-                                    <TableCell>
-                                        {account?.modules?.includes(value) ? (
-                                            <CheckIcon
-                                                color={'success'}
-                                                aria-label={formatMessage(
-                                                    MESSAGES.selected,
-                                                )}
-                                            />
-                                        ) : (
-                                            <ClearIcon
-                                                color={'error'}
-                                                aria-label={formatMessage(
-                                                    MESSAGES.notSelected,
-                                                )}
-                                            />
-                                        )}
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })}
-                    </TableBody>
-                </Table>
+                <TableContainer sx={styles.tableContainer}>
+                    <Table size={'small'} stickyHeader>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell sx={{ width: 75 }}>
+                                    <Typography
+                                        sx={visuallyHidden}
+                                        component={'span'}
+                                    >
+                                        {formatMessage(MESSAGES.additionalInfo)}
+                                    </Typography>
+                                </TableCell>
+                                <TableCell>
+                                    {formatMessage(MESSAGES.name)}
+                                </TableCell>
+                                <TableCell>
+                                    {formatMessage(MESSAGES.status)}
+                                </TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {modules?.map(({ value, label }) => {
+                                return (
+                                    <TableRow key={value} sx={styles.row}>
+                                        <TableCell align={'center'}>
+                                            {value === 'FORM_AI' && (
+                                                <Tooltip
+                                                    title={formatMessage(
+                                                        MESSAGES.formAIModuleTooltipTitle,
+                                                    )}
+                                                >
+                                                    <InfoIcon color="action" />
+                                                </Tooltip>
+                                            )}
+                                        </TableCell>
+                                        <TableCell>{label}</TableCell>
+                                        <TableCell>
+                                            {account?.modules?.includes(
+                                                value,
+                                            ) ? (
+                                                <CheckIcon
+                                                    color={'success'}
+                                                    aria-label={formatMessage(
+                                                        MESSAGES.selected,
+                                                    )}
+                                                />
+                                            ) : (
+                                                <ClearIcon
+                                                    color={'error'}
+                                                    aria-label={formatMessage(
+                                                        MESSAGES.notSelected,
+                                                    )}
+                                                />
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
             ) : (
                 <Alert severity={'info'} sx={{ mb: 2 }}>
                     {formatMessage(MESSAGES.noResultsFound)}

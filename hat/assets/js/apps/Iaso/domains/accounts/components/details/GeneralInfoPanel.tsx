@@ -34,8 +34,9 @@ export const GeneralInfoPanel: FunctionComponent<Props> = ({
         <WidgetPaper
             title={formatMessage(MESSAGES.generalInfoTitle)}
             data-testid={'accounts-general'}
+            sx={{ mb: 2 }}
         >
-            <Table>
+            <Table size={'small'}>
                 <TableBody>
                     <Row
                         field={{
@@ -62,6 +63,7 @@ export const GeneralInfoPanel: FunctionComponent<Props> = ({
                             value: account?.forum_path,
                         }}
                     />
+                    {/* TODO: Fix this is not correct, we need to diplay key only if the module is active */}
                     {userHasAccessToModule('FORM_AI', user) && (
                         <Row
                             field={{

@@ -117,18 +117,6 @@ const AccountsDetails: FunctionComponent = () => {
 
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 <Grid container spacing={2} direction={'column'}>
-                    <Grid
-                        item
-                        xs={12}
-                        sx={{ justifyContent: 'flex-end', display: 'flex' }}
-                    >
-                        <LinkButton
-                            to={`/${baseUrls.accountsEdit}/id/${params.id}/`}
-                        >
-                            <Edit className={classes.buttonIcon} />
-                            {formatMessage(MESSAGES.edit)}
-                        </LinkButton>
-                    </Grid>
                     <Grid item xs={12}>
                         <Tabs
                             value={tab}
@@ -170,6 +158,19 @@ const AccountsDetails: FunctionComponent = () => {
                                     account={account}
                                     modules={modules}
                                 />
+                                <Box
+                                    sx={{
+                                        justifyContent: 'flex-end',
+                                        display: 'flex',
+                                    }}
+                                >
+                                    <LinkButton
+                                        to={`/${baseUrls.accountsEdit}/id/${params.id}/`}
+                                    >
+                                        <Edit className={classes.buttonIcon} />
+                                        {formatMessage(MESSAGES.edit)}
+                                    </LinkButton>
+                                </Box>
                             </Grid>
                         </CustomTabPanel>
                     </Grid>

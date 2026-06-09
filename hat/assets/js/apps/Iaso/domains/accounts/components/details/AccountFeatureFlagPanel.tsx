@@ -6,6 +6,7 @@ import {
     Table,
     TableBody,
     TableCell,
+    TableContainer,
     TableHead,
     TableRow,
 } from '@mui/material';
@@ -24,6 +25,10 @@ type Props = {
 };
 
 const styles: SxStyles = {
+    tableContainer: {
+        maxHeight: '31.7vh',
+        overscrollBehavior: 'none',
+    },
     row: {
         '&:nth-of-type(odd)': (
             theme: ReturnType<typeof getOverriddenTheme>,
@@ -46,51 +51,52 @@ export const AccountFeatureFlagPanel: FunctionComponent<Props> = ({
     return (
         <WidgetPaper
             title={formatMessage(MESSAGES.featureFlagsTitle)}
-            expandable={true}
             id={`account-${accountId}-feature-flags`}
             data-testid={`account-feature-flags`}
         >
             {accountFeatureFlags?.length ? (
-                <Table size={'small'}>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>
-                                {formatMessage(MESSAGES.name)}
-                            </TableCell>
-                            <TableCell>
-                                {formatMessage(MESSAGES.status)}
-                            </TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {accountFeatureFlags?.map(({ value, label }) => {
-                            return (
-                                <TableRow key={value} sx={styles.row}>
-                                    <TableCell>{label}</TableCell>
-                                    <TableCell>
-                                        {account?.feature_flags
-                                            ?.map(({ code }) => code)
-                                            ?.includes(value) ? (
-                                            <CheckIcon
-                                                color={'success'}
-                                                aria-label={formatMessage(
-                                                    MESSAGES.selected,
-                                                )}
-                                            />
-                                        ) : (
-                                            <ClearIcon
-                                                color={'error'}
-                                                aria-label={formatMessage(
-                                                    MESSAGES.notSelected,
-                                                )}
-                                            />
-                                        )}
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })}
-                    </TableBody>
-                </Table>
+                <TableContainer sx={styles.tableContainer}>
+                    <Table size={'small'} stickyHeader>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>
+                                    {formatMessage(MESSAGES.name)}
+                                </TableCell>
+                                <TableCell>
+                                    {formatMessage(MESSAGES.status)}
+                                </TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {accountFeatureFlags?.map(({ value, label }) => {
+                                return (
+                                    <TableRow key={value} sx={styles.row}>
+                                        <TableCell>{label}</TableCell>
+                                        <TableCell>
+                                            {account?.feature_flags
+                                                ?.map(({ code }) => code)
+                                                ?.includes(value) ? (
+                                                <CheckIcon
+                                                    color={'success'}
+                                                    aria-label={formatMessage(
+                                                        MESSAGES.selected,
+                                                    )}
+                                                />
+                                            ) : (
+                                                <ClearIcon
+                                                    color={'error'}
+                                                    aria-label={formatMessage(
+                                                        MESSAGES.notSelected,
+                                                    )}
+                                                />
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
             ) : (
                 <Alert severity={'info'} sx={{ mb: 2 }}>
                     {formatMessage(MESSAGES.noResultsFound)}

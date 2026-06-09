@@ -7,6 +7,7 @@ import {
     useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
+import { LinkButton } from 'bluesquare-components';
 import { FormikProvider, useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import { useApiAccountFeatureFlagsDropdownList } from 'Iaso/api/accountFeatureFlags';
@@ -130,34 +131,31 @@ export const AccountsEdit: FunctionComponent = () => {
                         </Grid>
                         <Grid item xs={12} md={6}>
                             <ModulesEditPanel modules={modulesData} />
-                        </Grid>
-                        <Grid
-                            item
-                            xs={12}
-                            sx={{
-                                justifyContent: 'space-between',
-                                display: 'flex',
-                            }}
-                        >
-                            <Button
-                                variant="contained"
-                                type={'button'}
-                                color={'error'}
-                                href={`/dashboard/${baseUrls.accountsDetail}/id/${params.id}/`}
+                            <Box
+                                sx={{
+                                    justifyContent: 'flex-end',
+                                    display: 'flex',
+                                }}
                             >
-                                {formatMessage(MESSAGES.cancel)}
-                            </Button>
-                            <Button
-                                variant="contained"
-                                type={'submit'}
-                                color={'success'}
-                                disabled={!allowConfirm}
-                                onClick={() =>
-                                    allowConfirm && formik.handleSubmit()
-                                }
-                            >
-                                {formatMessage(MESSAGES.save)}
-                            </Button>
+                                <LinkButton
+                                    to={`/${baseUrls.accountsDetail}/id/${params.id}/`}
+                                    color={'error'}
+                                >
+                                    {formatMessage(MESSAGES.cancel)}
+                                </LinkButton>
+                                <Button
+                                    variant="contained"
+                                    type={'submit'}
+                                    color={'success'}
+                                    disabled={!allowConfirm}
+                                    sx={{ ml: 2 }}
+                                    onClick={() =>
+                                        allowConfirm && formik.handleSubmit()
+                                    }
+                                >
+                                    {formatMessage(MESSAGES.save)}
+                                </Button>
+                            </Box>
                         </Grid>
                     </Grid>
                 </FormikProvider>

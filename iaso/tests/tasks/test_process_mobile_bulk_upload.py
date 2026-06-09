@@ -1032,3 +1032,73 @@ class ProcessMobileBulkUploadTest(ProcessMobileBulkUploadTestCase):
         # Verify the instance was actually updated with the newer timestamp
         self.assertEqual(instance.source_updated_at, updated_timestamp)
         self.assertEqual(instance.last_modified_by, self.user)
+
+    def test_bulk_upload_duplicate_file_name_collision(self):
+        """
+        Test edge case where 2 instances reference the same file name in the zip upload.
+        refs: SLEEP-1634
+        """
+
+        zip_path = "/tmp/bulk_upload_duplicate_file_name_collision.zip"
+
+        instances_data = [
+            {
+                "id": "11111111-2222-3333-4444-555555555555",
+                "created_at": int(DEFAULT_CREATED_AT.timestamp()),
+                "updated_at": int(DEFAULT_CREATED_AT.timestamp()),
+                "file": "/storage/test/same_name.xml",
+                "name": "Enregistrement",
+                "formId": str(self.form_registration.id),
+                "orgUnitId": "1",
+                "entityUuid": "11111111-2222-3333-4444-555555555555",
+                "entityTypeId": str(self.default_entity_type.id),
+            },
+            {
+                "id": "77777777-8888-9999-aaaa-bbbbbbbbbbbb",
+                "created_at": int(DEFAULT_CREATED_AT.timestamp()),
+                "updated_at": int(DEFAULT_CREATED_AT.timestamp()),
+                "file": "/storage/test/same_name.xml",  # Same file name!
+                "name": "Enregistrement",
+                "formId": str(self.form_registration.id),
+                "orgUnitId": "1",
+                "entityUuid": "77777777-8888-9999-aaaa-bbbbbbbbbbbb",
+                "entityTypeId": str(self.default_entity_type.id),
+            },
+        ]
+
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            zipf.writestr("instances.json", json.dumps(instances_data))
+            with open("iaso/fixtures/instance_form_1_1.xml", "rb") as xml_file:
+                xml_content = xml_file.read()
+                zipf.writestr("11111111-2222-3333-4444-555555555555/same_name.xml", xml_content)
+                zipf.writestr("77777777-8888-9999-aaaa-bbbbbbbbbbbb/same_name.xml", xml_content)
+
+        self.save_file_to_api_import(self.api_import, zip_path)
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+
+        self.assertEqual(m.Instance.objects.count(), 2)
+        instance1 = m.Instance.objects.get(uuid="11111111-2222-3333-4444-555555555555")
+        instance2 = m.Instance.objects.get(uuid="77777777-8888-9999-aaaa-bbbbbbbbbbbb")
+
+        self.assertEqual(m.Entity.objects.count(), 2)
+        entity1 = m.Entity.objects.get(uuid="11111111-2222-3333-4444-555555555555")
+        entity2 = m.Entity.objects.get(uuid="77777777-8888-9999-aaaa-bbbbbbbbbbbb")
+
+        self.assertEqual(instance1.file_name, "same_name.xml")
+        self.assertEqual(instance2.file_name, "same_name_dup_77777777-8888-9999-aaaa-bbbbbbbbbbbb.xml")
+
+        self.assertEqual(entity1.attributes, instance1)
+        self.assertEqual(entity2.attributes, instance2)
+
+        # Verify physical files are attached to both
+        self.assertTrue(instance1.file)
+        self.assertTrue(instance2.file)

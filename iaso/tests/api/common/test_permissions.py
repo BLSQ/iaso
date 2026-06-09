@@ -12,8 +12,8 @@ class TestHasModulePermission(TestCase):
     def setUp(self):
         super().setUp()
         self.account = Account.objects.create(name="account")
-        self.module_1 = IasoModule(name="Module 1", codename="MODULE_1", fr_name="Modules")
-        self.module_2 = IasoModule(name="Module 2", codename="MODULE_2", fr_name="Modules")
+        self.module_1 = IasoModule(name="Module 1", codename="MODULE_1")
+        self.module_2 = IasoModule(name="Module 2", codename="MODULE_2")
 
     def test_unauthenticated_user_is_rejected(self):
         request = RequestFactory()

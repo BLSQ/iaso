@@ -106,7 +106,8 @@ const createConfig = (project: string, tags: string[] | RegExp[], mutationInvali
 
 module.exports = {
     accounts: createConfig('accounts', ['Account'], accountsMutationInvalidates),
-    accountFeatureFlags: createConfig('accountFeatureFlags', ['Account feature flags'])
+    accountFeatureFlags: createConfig('accountFeatureFlags', ['Account feature flags']),
+    modules: createConfig('modules', ["Modules"]),
     // validationWorkflows: createConfig('validationWorkflows', ['Validation workflows'], validationWorkflowsMutationInvalidates),
     // profiles: createConfig('profiles', ['Profiles'])
 };

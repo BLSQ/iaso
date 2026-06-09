@@ -318,6 +318,7 @@ TEMPLATES = [
                 "hat.common.context_processors.product_fruits_config",
                 "hat.common.context_processors.learn_more_url",
                 "hat.common.context_processors.available_languages",
+                "hat.common.context_processors.sso_providers_for_login",
             ]
         },
     }
@@ -875,12 +876,12 @@ if SSO_WHO_CLIENT_ID:
         "SCOPE": ["openid", "profile", "email"],
     }
 
-if SSO_PROVIDERS:
+ACTIVATE_SOCIAL_ACCOUNT = bool(WFP_AUTH_CLIENT_ID) or bool(SSO_PROVIDERS)
+
+if ACTIVATE_SOCIAL_ACCOUNT:
     if "plugins.sso" not in INSTALLED_APPS:
         index = INSTALLED_APPS.index("allauth.socialaccount")
         INSTALLED_APPS.insert(index + 1, "plugins.sso")
-
-ACTIVATE_SOCIAL_ACCOUNT = WFP_AUTH_CLIENT_ID is not False or bool(SSO_PROVIDERS)
 
 CACHES = {
     "default": {

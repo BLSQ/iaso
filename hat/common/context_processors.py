@@ -53,6 +53,19 @@ def learn_more_url(request: HttpRequest) -> Dict[str, Any]:
     return {"LEARN_MORE_URL": settings.LEARN_MORE_URL}
 
 
+def sso_providers_for_login(request: HttpRequest) -> Dict[str, Any]:
+    from allauth.socialaccount import providers as allauth_providers
+    from django.urls import NoReverseMatch, reverse
+
+    result = []
+    for provider in allauth_providers.registry.get_list():
+        try:
+            result.append({"name": provider.name, "login_url": reverse(f"{provider.id}_login")})
+        except NoReverseMatch:
+            pass
+    return {"sso_providers_for_login": result}
+
+
 def theme(request: HttpRequest) -> Dict[str, Any]:
     return {
         # TODO: Duplicated data: refactor?

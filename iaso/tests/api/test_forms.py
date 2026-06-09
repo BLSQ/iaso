@@ -546,21 +546,23 @@ class FormsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 400)
         self.assertHasError(response.json(), "org_unit_group_ids")
 
-    def test_forms_create_org_unit_groups_not_linked_to_project(self):
-        """POST /forms/ - group of the user's account but not linked to the form's projects"""
+    def test_forms_create_org_unit_groups_not_in_default_version(self):
+        """POST /forms/ - a group of the account but not in the default source version is rejected"""
 
         self.client.force_authenticate(self.form_manager)
-        # `health_facilities_group` belongs to the user's account, but its data source is not linked to `project_3`.
+        # A group on another version of the account's data source (not the account default version).
+        other_version = m.SourceVersion.objects.create(data_source=self.sw_source, number=2)
+        group_on_other_version = m.Group.objects.create(name="Old group", source_version=other_version)
         response = self.client.post(
             "/api/forms/",
             data={
-                "name": "test form with group from another project",
+                "name": "test form with group from a non-default version",
                 "period_type": "MONTH",
                 "periods_before_allowed": 1,
                 "periods_after_allowed": 0,
-                "project_ids": [self.project_3.id],
-                "org_unit_type_ids": [],
-                "org_unit_group_ids": [self.health_facilities_group.id],
+                "project_ids": [self.project_1.id],
+                "org_unit_type_ids": [self.jedi_council.id],
+                "org_unit_group_ids": [group_on_other_version.id],
             },
             format="json",
         )

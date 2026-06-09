@@ -1,5 +1,12 @@
 import React, { useState, useCallback, FunctionComponent } from 'react';
-import { Box, Button, Grid, Typography } from '@mui/material';
+import {
+    Alert,
+    AlertTitle,
+    Box,
+    Button,
+    Grid,
+    Typography,
+} from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { merge } from 'lodash';
 import { FormattedMessage } from 'react-intl';
@@ -70,6 +77,7 @@ const initialForm = (
         project_ids: [],
         default_version_id: null,
         is_default_source: false,
+        confirm_default_version_change: false,
         credentials: {
             dhis_name: '',
             dhis_url: '',
@@ -100,10 +108,15 @@ const initialForm = (
     return values;
 };
 
-const formIsValid = form => {
+const formIsValid = (form, willChangeDefaultVersion = false) => {
     return (
         form.project_ids?.value.length > 0 &&
-        !(form.is_default_source.value && !form.default_version_id.value)
+        !(form.is_default_source.value && !form.default_version_id.value) &&
+        // changing the account default version must be explicitly confirmed
+        !(
+            willChangeDefaultVersion &&
+            !form.confirm_default_version_change.value
+        )
     );
 };
 
@@ -142,7 +155,15 @@ export const DataSourceDialogComponent: FunctionComponent<Props> = ({
         closeDialog();
     };
 
-    const allowConfirm = formIsValid(form);
+    // The account default version changes when this source is (or becomes) the default source
+    // and the selected version differs from the account's current default version.
+    const willChangeDefaultVersion = Boolean(
+        form.is_default_source.value &&
+        form.default_version_id.value &&
+        form.default_version_id.value !== defaultSourceVersion?.version?.id,
+    );
+
+    const allowConfirm = formIsValid(form, willChangeDefaultVersion);
 
     const setCredentials = (credentialsField, credentialsFieldValue) => {
         const newCredentials = {
@@ -267,6 +288,69 @@ export const DataSourceDialogComponent: FunctionComponent<Props> = ({
                                 type="checkbox"
                                 label={MESSAGES.defaultSource}
                             />
+                        </Box>
+                    )}
+                    {willChangeDefaultVersion && (
+                        <Box mt={1}>
+                            <Alert severity="warning">
+                                <AlertTitle>
+                                    {formatMessage(
+                                        MESSAGES.changeDefaultVersionWarningTitle,
+                                    )}
+                                </AlertTitle>
+                                <ul style={{ margin: 0, paddingLeft: '1.2em' }}>
+                                    <li>
+                                        {formatMessage(
+                                            MESSAGES.changeDefaultVersionWarningPastData,
+                                        )}
+                                    </li>
+                                    <li>
+                                        {formatMessage(
+                                            MESSAGES.changeDefaultVersionWarningGroups,
+                                        )}
+                                    </li>
+                                    <li>
+                                        {formatMessage(
+                                            MESSAGES.changeDefaultVersionWarningUsers,
+                                        )}
+                                    </li>
+                                    <li>
+                                        {formatMessage(
+                                            MESSAGES.changeDefaultVersionWarningPlanning,
+                                        )}
+                                    </li>
+                                    <li>
+                                        {formatMessage(
+                                            MESSAGES.changeDefaultVersionWarningReferences,
+                                        )}
+                                    </li>
+                                    <li>
+                                        {formatMessage(
+                                            MESSAGES.changeDefaultVersionWarningSavedViews,
+                                        )}
+                                    </li>
+                                    <li>
+                                        {formatMessage(
+                                            MESSAGES.changeDefaultVersionWarningOther,
+                                        )}
+                                    </li>
+                                </ul>
+                                <InputComponent
+                                    keyValue="confirm_default_version_change"
+                                    onChange={setFieldValue}
+                                    value={
+                                        form.confirm_default_version_change
+                                            .value
+                                    }
+                                    errors={
+                                        form.confirm_default_version_change
+                                            .errors
+                                    }
+                                    type="checkbox"
+                                    label={MESSAGES.changeDefaultVersionConfirm}
+                                    withMarginTop={false}
+                                />
+                            </Alert>
                         </Box>
                     )}
                 </Grid>

@@ -186,14 +186,13 @@ class FormSerializer(DynamicFieldsModelSerializerBackwardCompatible):
             if len(set(data["org_unit_types"]) - set(allowed_org_unit_types)) > 0:
                 raise serializers.ValidationError({"org_unit_type_ids": "Invalid org unit type ids"})
 
-            # validate org_unit_groups against projects (a group must belong to a source version
-            # of a data source linked to one of the form's projects)
+            # validate org_unit_groups: a group must belong to the account's default source version
+            # (the data source version currently in use)
             org_unit_groups = data.get("org_unit_groups", [])
             if org_unit_groups:
+                default_version = self.context["request"].user.iaso_profile.account.default_version
                 allowed_group_ids = set(
-                    Group.objects.filter(source_version__data_source__projects__in=data["projects"]).values_list(
-                        "id", flat=True
-                    )
+                    Group.objects.filter(source_version=default_version).values_list("id", flat=True)
                 )
                 if any(group.id not in allowed_group_ids for group in org_unit_groups):
                     raise serializers.ValidationError({"org_unit_group_ids": "Invalid org unit group ids"})

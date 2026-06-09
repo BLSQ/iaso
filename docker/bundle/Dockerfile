@@ -54,6 +54,8 @@ RUN apt-get update && apt-get --yes  --no-install-recommends install \
 WORKDIR /opt/app
 COPY pyproject.toml /opt/app/pyproject.toml
 RUN pip install uv
+# make uv use the system python and install everything in the system, not in a .venv
+ENV UV_PROJECT_ENVIRONMENT=/usr/local
 ENV UV_PYTHON_PREFERENCE=only-system
 RUN uv sync --python "$(which python3)"
 
@@ -76,11 +78,6 @@ CMD ["manage", "testserver", "--no-input", "iaso/fixtures/user.yaml", "--addrpor
 
 FROM base AS prod
 USER root
-
-# Copy the virtualenv from builder
-COPY --from=base /opt/app/.venv .venv
-ENV VIRTUAL_ENV=/opt/app/.venv
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Only install gunicorn for production
 RUN uv add install gunicorn

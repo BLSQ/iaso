@@ -1,5 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema
 from rest_framework.exceptions import NotFound
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
@@ -15,6 +16,7 @@ from iaso.models import Instance
 from iaso.permissions.core_permissions import CORE_SUBMISSIONS_PERMISSION
 
 
+@extend_schema(tags=["Submission diff"])
 class InstanceDiffViewSet(CustomPaginationListModelMixin, GenericViewSet):
     permission_classes = [IsAuthenticated, HasPermission(CORE_SUBMISSIONS_PERMISSION)]
     filter_backends = [DjangoFilterBackend, OrderingFilter]
@@ -27,8 +29,9 @@ class InstanceDiffViewSet(CustomPaginationListModelMixin, GenericViewSet):
     def get_queryset(self):
         if not Instance.objects.filter_for_user(self.request.user).filter(id=self.kwargs["instance_id"]).exists():
             raise NotFound
-        return Modification.objects.filter(
-            content_type=ContentType.objects.get_for_model(Instance), object_id=self.kwargs.get("instance_id")
+        instance_content_type = ContentType.objects.get_for_model(Instance)
+        return Modification.objects.select_related("content_type").filter(
+            content_type=instance_content_type, object_id=self.kwargs.get("instance_id")
         )
 
     def get_serializer_class(self):

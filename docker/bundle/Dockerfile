@@ -52,9 +52,10 @@ RUN apt-get update && apt-get --yes  --no-install-recommends install \
     &&  apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 WORKDIR /opt/app
-COPY requirements.txt /opt/app/requirements.txt
-COPY requirements-dev.txt /opt/app/requirements-dev.txt
-RUN pip install -r requirements-dev.txt
+COPY pyproject.toml /opt/app/pyproject.toml
+RUN pip install uv
+ENV UV_PYTHON_PREFERENCE=only-system
+RUN uv sync --python "$(which python3)"
 
 COPY --from=npmbuilder /opt/app/hat/assets /opt/app/hat/assets
 COPY . /opt/app

@@ -104,38 +104,30 @@ jobs:
         # needed because the postgres container does not provide a health check
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install Python 3.9
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
-          python-version: 3.9
+          python-version-file: "pyproject.toml"
       - name: Install GDAL and gettext
         run: sudo apt-get update && sudo apt install gdal-bin gettext
-      - uses: actions/cache@v4
-        id: cache-venv
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
         with:
-          path: ./venv/
-          # The cache key depends on requirements.txt
-          key: ${{ runner.os }}-venv-${{ hashFiles('**/requirements*.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-venv-
-          # Build a virtualenv, but only if it doesn't already exist
-      - run:
-          python -v && python -m venv ./venv && . ./venv/bin/activate && pip install -U pip &&
-          pip install -r requirements-dev.txt
-        if: steps.cache-venv.outputs.cache-hit != 'true'
+          enable-cache: true
+          cache-dependency-glob: 'uv.lock'
+      - name: Install backend dependencies
+        run: uv sync --locked
       - name: Environment info
-        run: |
-          pip list
+        run: uv tree --all-groups
       - name: Check formatting with ruff
         # https://docs.astral.sh/ruff/integrations/#github-actions
         run: |
-          . ./venv/bin/activate && ruff check --output-format=github . && ruff format --check
+          . uv run ruff check --output-format=github . && uv run ruff format --check
       - name: Check Backend (Django) translations
         run: |
-          . ./venv/bin/activate
-          python manage.py make_translations
-          python manage.py compile_translations
+          uv run python manage.py make_translations
+          uv run python manage.py compile_translations
         env:
           RDS_DB_NAME: github_actions
           SECRET_KEY: secret
@@ -150,11 +142,11 @@ jobs:
           PLUGINS: polio,wfp,wfp_auth
       - name: Django tests
         run: |
-          . ./venv/bin/activate &&  python manage.py migrate
-          . ./venv/bin/activate &&  python manage.py createcachetable
+          uv run python manage.py migrate
+          uv run python manage.py createcachetable
           # check we don't have missing migration
-          . ./venv/bin/activate &&  python manage.py makemigrations --check
-          . ./venv/bin/activate &&  python -W "ignore" manage.py test
+          uv run python manage.py makemigrations --check
+          uv run python -W "ignore" manage.py test
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -172,6 +164,8 @@ jobs:
           RDS_PORT: 5432
           RDS_USERNAME: postgres
           SECRET_KEY: secret
+      - name: Minimize uv cache
+        run: uv cache prune --ci
       - name: Slack notification
         uses: rtCamp/action-slack-notify@v2
         env:

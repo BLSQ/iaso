@@ -1102,3 +1102,72 @@ class ProcessMobileBulkUploadTest(ProcessMobileBulkUploadTestCase):
         # Verify physical files are attached to both
         self.assertTrue(instance1.file)
         self.assertTrue(instance2.file)
+
+    def test_bulk_upload_missing_file_key_error(self):
+        """
+        Test when an instance's XML file is missing from the zip archive
+        refs: SLEEP-1634
+        """
+        zip_path = "/tmp/bulk_upload_missing_file_key_error.zip"
+
+        instances_data = [
+            {
+                "id": "11111111-2222-3333-4444-555555555555",
+                "created_at": int(DEFAULT_CREATED_AT.timestamp()),
+                "updated_at": int(DEFAULT_CREATED_AT.timestamp()),
+                "file": "/storage/test/valid_instance.xml",
+                "name": "Enregistrement",
+                "formId": str(self.form_registration.id),
+                "orgUnitId": "1",
+                "entityUuid": "11111111-2222-3333-4444-555555555555",
+                "entityTypeId": str(self.default_entity_type.id),
+            },
+            {
+                "id": "88888888-9999-aaaa-bbbb-cccccccccccc",
+                "created_at": int(DEFAULT_CREATED_AT.timestamp()),
+                "updated_at": int(DEFAULT_CREATED_AT.timestamp()),
+                "file": "/storage/test/missing_instance.xml",
+                "name": "Enregistrement",
+                "formId": str(self.form_registration.id),
+                "orgUnitId": "1",
+                "entityUuid": "88888888-9999-aaaa-bbbb-cccccccccccc",
+                "entityTypeId": str(self.default_entity_type.id),
+            },
+        ]
+
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            zipf.writestr("instances.json", json.dumps(instances_data))
+            with open("iaso/fixtures/instance_form_1_1.xml", "rb") as xml_file:
+                xml_content = xml_file.read()
+                # Only write the first (valid) file, do not write the missing_instance.xml file
+                zipf.writestr("11111111-2222-3333-4444-555555555555/valid_instance.xml", xml_content)
+
+        self.save_file_to_api_import(self.api_import, zip_path)
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+
+        self.assertTrue(m.Instance.objects.filter(uuid="11111111-2222-3333-4444-555555555555").exists())
+        instance1 = m.Instance.objects.get(uuid="11111111-2222-3333-4444-555555555555")
+        self.assertTrue(instance1.file)
+
+        self.assertTrue(m.Entity.objects.filter(uuid="11111111-2222-3333-4444-555555555555").exists())
+        entity1 = m.Entity.objects.get(uuid="11111111-2222-3333-4444-555555555555")
+        self.assertEqual(entity1.attributes, instance1)
+        self.assertIsNone(entity1.deleted_at)
+
+        # The faulty instance should have been deleted
+        self.assertFalse(m.Instance.objects.filter(uuid="88888888-9999-aaaa-bbbb-cccccccccccc").exists())
+
+        # The faulty entity should have been soft-deleted
+        self.assertTrue(m.Entity.objects_include_deleted.filter(uuid="88888888-9999-aaaa-bbbb-cccccccccccc").exists())
+        entity2 = m.Entity.objects_include_deleted.get(uuid="88888888-9999-aaaa-bbbb-cccccccccccc")
+        self.assertIsNotNone(entity2.deleted_at)
+        self.assertIsNone(entity2.attributes)

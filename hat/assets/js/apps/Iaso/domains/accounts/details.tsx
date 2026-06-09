@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import Edit from '@mui/icons-material/Edit';
 import { Box, Grid, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -8,12 +8,14 @@ import {
     LoadingSpinner,
     useRedirectTo,
     useSafeIntl,
+    useTabs,
 } from 'bluesquare-components';
 import { useApiAccountFeatureFlagsDropdownList } from 'Iaso/api/accountFeatureFlags';
 import {
     useApiAccountsAiApiKeyRetrieve,
     useApiAccountsRetrieve,
 } from 'Iaso/api/accounts';
+import { useApiModulesDropdownList } from 'Iaso/api/modules';
 import Page404 from 'Iaso/components/errors/Page404';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
@@ -21,23 +23,34 @@ import { AccountFeatureFlagPanel } from 'Iaso/domains/accounts/components/detail
 import { CustomTabPanel } from 'Iaso/domains/accounts/components/details/CustomTabPanel';
 import { GeneralInfoPanel } from 'Iaso/domains/accounts/components/details/GeneralInfoPanel';
 import { ModulePanel } from 'Iaso/domains/accounts/components/details/ModulePanel';
-import { useGetModulesDropDown } from 'Iaso/domains/setup/hooks/useGetModulesDropDown';
 import { userHasAccessToModule } from 'Iaso/domains/users/utils';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import MESSAGES from './messages';
 
-function a11yProps(value: string) {
+const a11yProps = (value: string) => {
     return {
         id: `account-tab-${value}`,
         'aria-controls': `account-tabpanel-${value}`,
     };
-}
+};
 
 const useStyles = makeStyles((theme: any) => {
-    return { ...commonStyles(theme) };
+    return {
+        ...commonStyles(theme),
+        // todo : remove this once IA-4806 has been done
+        '@global': {
+            body: {
+                overflowX: 'hidden !important',
+                overflowY: 'auto !important',
+            },
+        },
+    };
 });
-const AccountsDetails = () => {
+
+const baseRedirectUrl = `${baseUrls.accounts}`;
+
+const AccountsDetails: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const params = useParamsObject(baseUrls.accountsDetail);
 
@@ -59,14 +72,14 @@ const AccountsDetails = () => {
         });
 
     const { data: modules, isLoading: isLoadingModules } =
-        useGetModulesDropDown();
+        useApiModulesDropdownList();
 
     const {
         data: accountFeatureFlags,
         isLoading: isLoadingAccountFeatureFlags,
     } = useApiAccountFeatureFlagsDropdownList();
 
-    const [tab, setTab] = useState('general');
+    const { tab, handleChangeTab } = useTabs({ defaultTab: 'general' });
     const classes: Record<string, string> = useStyles();
 
     const generalLoading =
@@ -75,11 +88,6 @@ const AccountsDetails = () => {
         isLoadingAIApiKey ||
         isLoadingAccountFeatureFlags;
 
-    const handleChange = (_: React.SyntheticEvent, newValue: string) => {
-        setTab(newValue);
-    };
-
-    const baseRedirectUrl = `${baseUrls.accounts}`;
     const redirectTo = useRedirectTo();
 
     if (generalLoading) {
@@ -124,7 +132,7 @@ const AccountsDetails = () => {
                     <Grid item xs={12}>
                         <Tabs
                             value={tab}
-                            onChange={handleChange}
+                            onChange={handleChangeTab}
                             aria-label={formatMessage(MESSAGES.accountTabs)}
                             sx={{ mb: 3 }}
                         >

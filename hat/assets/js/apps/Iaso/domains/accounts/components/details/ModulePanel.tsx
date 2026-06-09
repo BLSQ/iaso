@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
 import InfoIcon from '@mui/icons-material/Info';
@@ -15,18 +15,35 @@ import {
 import { visuallyHidden } from '@mui/utils';
 import { useSafeIntl } from 'bluesquare-components';
 import { ApiAccountsRetrieveQueryResult } from 'Iaso/api/accounts';
+import { ApiModulesDropdownListQueryResult } from 'Iaso/api/modules';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
+import { getOverriddenTheme } from 'Iaso/styles';
+import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';
-
-// todo : modules type inference once generated through orval
 
 type Props = {
     accountId: number;
     account?: ApiAccountsRetrieveQueryResult;
-    // modules: string[]
+    modules?: ApiModulesDropdownListQueryResult;
 };
 
-export const ModulePanel = ({ accountId, modules, account }: Props) => {
+const styles: SxStyles = {
+    row: {
+        '&:nth-of-type(odd)': (
+            theme: ReturnType<typeof getOverriddenTheme>,
+        ) => ({
+            backgroundColor: theme.palette.gray.background,
+        }),
+        '&:nth-of-type(even)': {
+            backgroundColor: 'transparent',
+        },
+    },
+};
+export const ModulePanel: FunctionComponent<Props> = ({
+    accountId,
+    modules,
+    account,
+}) => {
     const { formatMessage } = useSafeIntl();
 
     return (
@@ -37,7 +54,7 @@ export const ModulePanel = ({ accountId, modules, account }: Props) => {
             data-testid={'account-module-panel'}
         >
             {modules?.length ? (
-                <Table>
+                <Table size={'small'}>
                     <TableHead>
                         <TableRow>
                             <TableCell sx={{ width: 75 }}>
@@ -59,7 +76,7 @@ export const ModulePanel = ({ accountId, modules, account }: Props) => {
                     <TableBody>
                         {modules?.map(({ value, label }) => {
                             return (
-                                <TableRow key={value}>
+                                <TableRow key={value} sx={styles.row}>
                                     <TableCell align={'center'}>
                                         {value === 'FORM_AI' && (
                                             <Tooltip

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { Alert, Box, Button, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -15,21 +15,30 @@ import {
     useApiAccountsRetrieve,
     useApiAccountsUpdate,
 } from 'Iaso/api/accounts';
+import { useApiModulesDropdownList } from 'Iaso/api/modules';
 import Page404 from 'Iaso/components/errors/Page404';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import { FeatureFlagsEditPanel } from 'Iaso/domains/accounts/components/edit/FeatureFlagsEditPanel';
 import { GeneralInfoEditPanel } from 'Iaso/domains/accounts/components/edit/GeneralInfoEditPanel';
 import { ModulesEditPanel } from 'Iaso/domains/accounts/components/edit/ModulesEditPanel';
-import { useGetModulesDropDown } from 'Iaso/domains/setup/hooks/useGetModulesDropDown';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { withFormikSubmitAsync } from 'Iaso/utils/forms';
 import MESSAGES from './messages';
 
 const useStyles = makeStyles((theme: any) => {
-    return { ...commonStyles(theme) };
+    return {
+        ...commonStyles(theme),
+        // todo : remove this once IA-4806 has been done
+        '@global': {
+            body: {
+                overflowX: 'hidden !important',
+                overflowY: 'auto !important',
+            },
+        },
+    };
 });
-export const AccountsEdit = () => {
+export const AccountsEdit: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const params = useParamsObject(baseUrls.accountsEdit);
@@ -38,7 +47,7 @@ export const AccountsEdit = () => {
 
     const { data: data, isLoading } = useApiAccountsRetrieve(accountId);
     const { data: modulesData, isLoading: isLoadingModules } =
-        useGetModulesDropDown();
+        useApiModulesDropdownList();
     const {
         data: accountFeatureFlags,
         isLoading: isLoadingAccountFeatureFlags,

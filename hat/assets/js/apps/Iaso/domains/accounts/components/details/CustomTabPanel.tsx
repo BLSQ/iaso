@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { Grid, GridProps } from '@mui/material';
 
 type TabPanelProps = {
@@ -7,7 +7,7 @@ type TabPanelProps = {
     value: string;
 } & Omit<GridProps, 'role' | 'hidden' | 'id' | 'aria-labelledby'>;
 
-export const CustomTabPanel = (props: TabPanelProps) => {
+export const CustomTabPanel: FunctionComponent<TabPanelProps> = props => {
     const { children, value, index, ...other } = props;
 
     return (

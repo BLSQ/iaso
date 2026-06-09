@@ -10,6 +10,7 @@ import { faker } from '@faker-js/faker';
 import { HttpResponse, delay, http } from 'msw';
 import type { RequestHandlerOptions } from 'msw';
 
+import { AccountFeatureFlagDropdownValueEnum } from '../../models';
 import type {
     AccountFeatureFlagDropdown,
     PaginatedAccountFeatureFlagListList,
@@ -89,14 +90,18 @@ export const getApiAccountFeatureFlagsDropdownListResponseMock =
                 (_, i) => i + 1,
             ).map(() => ({
                 label: faker.string.alpha({ length: { min: 10, max: 20 } }),
-                value: faker.string.alpha({ length: { min: 10, max: 20 } }),
+                value: faker.helpers.arrayElement(
+                    Object.values(AccountFeatureFlagDropdownValueEnum),
+                ),
             })),
             Array.from(
                 { length: faker.number.int({ min: 1, max: 10 }) },
                 (_, i) => i + 1,
             ).map(() => ({
                 label: faker.string.alpha({ length: { min: 10, max: 20 } }),
-                value: faker.string.alpha({ length: { min: 10, max: 20 } }),
+                value: faker.helpers.arrayElement(
+                    Object.values(AccountFeatureFlagDropdownValueEnum),
+                ),
             })),
         ]);
 

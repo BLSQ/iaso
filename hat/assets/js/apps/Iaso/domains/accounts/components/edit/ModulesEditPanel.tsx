@@ -1,13 +1,32 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { Alert, Table, TableBody, TableCell, TableRow } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { ErrorMessage, Field } from 'formik';
+import { ApiModulesDropdownListQueryResult } from 'Iaso/api/modules';
 import { ArrayCheckboxInput } from 'Iaso/components/forms/ArrayCheckboxInput';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
+import { getOverriddenTheme } from 'Iaso/styles';
+import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';
 
-//todo: modules props
-export const ModulesEditPanel = ({ modules }) => {
+type Props = {
+    modules?: ApiModulesDropdownListQueryResult;
+};
+
+const styles: SxStyles = {
+    row: {
+        '&:nth-of-type(odd)': (
+            theme: ReturnType<typeof getOverriddenTheme>,
+        ) => ({
+            backgroundColor: theme.palette.gray.background,
+        }),
+        '&:nth-of-type(even)': {
+            backgroundColor: 'transparent',
+        },
+    },
+};
+
+export const ModulesEditPanel: FunctionComponent<Props> = ({ modules }) => {
     const { formatMessage } = useSafeIntl();
 
     return (
@@ -25,11 +44,11 @@ export const ModulesEditPanel = ({ modules }) => {
                             </Alert>
                         )}
                     </ErrorMessage>
-                    <Table>
+                    <Table size={'small'}>
                         <TableBody>
                             {modules?.map(({ value, label }) => {
                                 return (
-                                    <TableRow key={value}>
+                                    <TableRow key={value} sx={styles.row}>
                                         <TableCell>{label}</TableCell>
                                         <TableCell>
                                             <Field

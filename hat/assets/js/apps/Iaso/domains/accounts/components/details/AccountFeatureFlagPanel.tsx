@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
 import {
@@ -13,6 +13,8 @@ import { useSafeIntl } from 'bluesquare-components';
 import { ApiAccountFeatureFlagsDropdownListQueryResult } from 'Iaso/api/accountFeatureFlags';
 import { ApiAccountsRetrieveQueryResult } from 'Iaso/api/accounts';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
+import { getOverriddenTheme } from 'Iaso/styles';
+import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';
 
 type Props = {
@@ -20,11 +22,25 @@ type Props = {
     accountFeatureFlags?: ApiAccountFeatureFlagsDropdownListQueryResult;
     account: ApiAccountsRetrieveQueryResult;
 };
-export const AccountFeatureFlagPanel = ({
+
+const styles: SxStyles = {
+    row: {
+        '&:nth-of-type(odd)': (
+            theme: ReturnType<typeof getOverriddenTheme>,
+        ) => ({
+            backgroundColor: theme.palette.gray.background,
+        }),
+        '&:nth-of-type(even)': {
+            backgroundColor: 'transparent',
+        },
+    },
+};
+
+export const AccountFeatureFlagPanel: FunctionComponent<Props> = ({
     accountId,
     accountFeatureFlags,
     account,
-}: Props) => {
+}) => {
     const { formatMessage } = useSafeIntl();
 
     return (
@@ -35,7 +51,7 @@ export const AccountFeatureFlagPanel = ({
             data-testid={`account-feature-flags`}
         >
             {accountFeatureFlags?.length ? (
-                <Table>
+                <Table size={'small'}>
                     <TableHead>
                         <TableRow>
                             <TableCell>
@@ -49,7 +65,7 @@ export const AccountFeatureFlagPanel = ({
                     <TableBody>
                         {accountFeatureFlags?.map(({ value, label }) => {
                             return (
-                                <TableRow key={value}>
+                                <TableRow key={value} sx={styles.row}>
                                     <TableCell>{label}</TableCell>
                                     <TableCell>
                                         {account?.feature_flags

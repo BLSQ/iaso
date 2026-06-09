@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
 import { Box, Table, TableBody } from '@mui/material';
@@ -22,7 +22,11 @@ type Props = {
     account: ApiAccountsRetrieveQueryResult;
     AIApiKey?: ApiAccountsAiApiKeyRetrieveQueryResult;
 };
-export const GeneralInfoPanel = ({ accountId, account, AIApiKey }: Props) => {
+export const GeneralInfoPanel: FunctionComponent<Props> = ({
+    accountId,
+    account,
+    AIApiKey,
+}) => {
     const { formatMessage } = useSafeIntl();
     const user = useCurrentUser();
     const { mutateAsync: deleteAIApiKey } = useApiAccountsAiApiKeyDestroy();

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { Field } from 'formik';
@@ -6,7 +6,8 @@ import { BooleanInput } from 'Iaso/components/forms/BooleanInput';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import MESSAGES from 'Iaso/domains/accounts/messages';
 import TextInput from 'Iaso/domains/pages/components/TextInput';
-export const GeneralInfoEditPanel = () => {
+
+export const GeneralInfoEditPanel: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
 
     return (

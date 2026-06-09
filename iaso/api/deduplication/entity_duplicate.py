@@ -8,6 +8,7 @@ from uuid import UUID, uuid4
 
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
+from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse
 from django.utils.text import slugify
@@ -180,7 +181,7 @@ def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: D
             try:
                 the_field = root.find(".//" + field_name)
                 if the_field is not None:
-                    the_field.text = the_val
+                    the_field.text = str(the_val)
             except Exception as e:
                 logger.exception("Error updating xml field %s: %s", field_name, e)
 
@@ -301,20 +302,30 @@ class EntityDuplicatePostSerializer(serializers.Serializer):
     reason = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
     def validate(self, data):
+        request = self.context.get("request")
+        user = request.user
+        account = user.iaso_profile.account
+
         if data["entity1_id"] == data["entity2_id"]:
             raise serializers.ValidationError("Entities 1 and 2 must be different")
 
         try:
-            entity1 = Entity.objects.get(pk=data["entity1_id"])
+            entity1 = Entity.objects_include_deleted.get(pk=data["entity1_id"], account=account)
         except Entity.DoesNotExist:
             logger.exception(f"Entity merge failed: entity 1 does not exist: {data}")
             raise serializers.ValidationError("Entity 1 does not exist")
 
+        if entity1.deleted_at is not None:
+            raise serializers.ValidationError("Entity 1 is already deleted or merged")
+
         try:
-            entity2 = Entity.objects.get(pk=data["entity2_id"])
+            entity2 = Entity.objects_include_deleted.get(pk=data["entity2_id"], account=account)
         except Entity.DoesNotExist:
             logger.exception(f"Entity merge failed: entity 2 does not exist: {data}")
             raise serializers.ValidationError("Entity 2 does not exist")
+
+        if entity2.deleted_at is not None:
+            raise serializers.ValidationError("Entity 2 is already deleted or merged")
 
         if entity1.entity_type != entity2.entity_type:
             logger.exception(f"Entity merge failed: Entities must be of the same type: {data}")
@@ -343,7 +354,27 @@ class EntityDuplicatePostSerializer(serializers.Serializer):
         }
 
     def create(self, validated_data):
-        ed = EntityDuplicate.objects.get(entity1=validated_data["entity1"], entity2=validated_data["entity2"])
+        e1 = validated_data["entity1"]
+        e2 = validated_data["entity2"]
+        user = self.context.get("request").user
+        account = user.iaso_profile.account
+
+        # acquire row-level lock on the EntityDuplicate and both Entities during merging.
+        entity_ids = sorted([e1.pk, e2.pk])
+        entities = list(
+            Entity.objects_include_deleted.filter(account=account).select_for_update().filter(pk__in=entity_ids)
+        )
+        for entity in entities:
+            if entity.deleted_at is not None:
+                raise serializers.ValidationError(f"Entity {entity.pk} was already merged or deleted")
+
+        try:
+            ed = EntityDuplicate.objects.filter_for_account(account).select_for_update().get(entity1=e1, entity2=e2)
+        except EntityDuplicate.DoesNotExist:
+            try:
+                ed = EntityDuplicate.objects.filter_for_account(account).select_for_update().get(entity2=e1, entity1=e2)
+            except EntityDuplicate.DoesNotExist:
+                raise serializers.ValidationError("This duplicate does not exist for your account")
 
         if ed.validation_status != ValidationStatus.PENDING:
             raise serializers.ValidationError("This duplicate has already been validated or ignored")
@@ -383,6 +414,35 @@ class EntityDuplicatePostSerializer(serializers.Serializer):
         ed.metadata["new_entity_id"] = new_entity.pk
         ed.validation_status = ValidationStatus.VALIDATED
         ed.save()
+
+        # Update existing EntityDuplicate records that reference e1 or e2
+        # while avoiding the uniqueness constraint
+        duplicates_to_update = (
+            EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING)
+            .exclude(pk=ed.pk)
+            .filter(Q(entity1=e1) | Q(entity2=e1) | Q(entity1=e2) | Q(entity2=e2))
+        )
+        for duplicate in duplicates_to_update:
+            if duplicate.entity1_id in (e1.pk, e2.pk):
+                duplicate.entity1 = new_entity
+            if duplicate.entity2_id in (e1.pk, e2.pk):
+                duplicate.entity2 = new_entity
+
+            if duplicate.entity1_id == duplicate.entity2_id:
+                duplicate.delete()
+                continue
+
+            if (
+                EntityDuplicate.objects.exclude(pk=duplicate.pk)
+                .filter(
+                    Q(entity1=duplicate.entity1, entity2=duplicate.entity2)
+                    | Q(entity1=duplicate.entity2, entity2=duplicate.entity1)
+                )
+                .exists()
+            ):
+                duplicate.delete()
+            else:
+                duplicate.save()
 
         return {
             "new_entity_id": new_entity.pk,
@@ -435,7 +495,12 @@ class EntityDuplicateViewSet(ModelViewSet):
 
     def get_queryset(self):
         user_account = self.request.user.iaso_profile.account
-        return EntityDuplicate.objects.filter_for_account(user_account)
+        qs = EntityDuplicate.objects.filter_for_account(user_account)
+
+        qs = qs.exclude(validation_status=ValidationStatus.PENDING, entity1__deleted_at__isnull=False).exclude(
+            validation_status=ValidationStatus.PENDING, entity2__deleted_at__isnull=False
+        )
+        return qs
 
     @extend_schema(parameters=[duplicate_detail_entities_param])
     @action(detail=False, methods=["get"], url_path="detail", pagination_class=None, filter_backends=[])
@@ -470,7 +535,7 @@ class EntityDuplicateViewSet(ModelViewSet):
             entities = request.GET.get("entities", "").split(",")
             entity1_id = int(entities[0])
             entity2_id = int(entities[1])
-        except ValueError:
+        except (ValueError, IndexError):
             raise ValidationError(
                 "Entities parameter is required and must be a comma separated list of 2 entities IDs."
             )
@@ -564,6 +629,7 @@ class EntityDuplicateViewSet(ModelViewSet):
         return JsonResponse(return_data, safe=False)
 
     @extend_schema(request=EntityDuplicatePostSerializer)
+    @transaction.atomic
     def create(self, request, pk=None, *args, **kwargs):
         """
         POST /api/entityduplicates/
@@ -582,6 +648,10 @@ class EntityDuplicateViewSet(ModelViewSet):
         }
         in the body
         Provides an API to merge duplicate entities or to ignore the match
+
+        When merging, a new entity is created with merged attributes and a full set of copied Instances.
+
+        This is used when the ENTITY_DUPLICATES_SOFT_DELETE feature flag is disabled.
         """
 
         serializer = EntityDuplicatePostSerializer(data=request.data, context={"request": request})

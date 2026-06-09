@@ -80,10 +80,10 @@ class EntityDuplicateAnalyzisDetailSerializer(serializers.ModelSerializer):
         return obj.metadata["entity_type_id"]
 
     def get_parameters(self, obj):
-        return obj.metadata["parameters"]
+        return obj.metadata.get("parameters", {})
 
     def get_the_fields(self, obj):
-        return obj.metadata["fields"]
+        return obj.metadata.get("fields", [])
 
     class Meta:
         model = EntityDuplicateAnalyzis

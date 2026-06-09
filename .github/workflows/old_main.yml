@@ -122,8 +122,7 @@ jobs:
         run: uv tree --all-groups
       - name: Check formatting with ruff
         # https://docs.astral.sh/ruff/integrations/#github-actions
-        run: |
-          . uv run ruff check --output-format=github . && uv run ruff format --check
+        run: uv run ruff check --output-format=github . && uv run ruff format --check .
       - name: Check Backend (Django) translations
         run: |
           uv run python manage.py make_translations

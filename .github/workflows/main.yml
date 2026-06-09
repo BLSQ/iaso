@@ -130,6 +130,12 @@ jobs:
               # https://docs.astral.sh/ruff/integrations/#github-actions
               run: |
                   . ./venv/bin/activate && ruff check --output-format=github . && ruff format --check
+            - name: Migrations
+              run: |
+                . ./venv/bin/activate &&  python manage.py migrate
+                . ./venv/bin/activate &&  python manage.py createcachetable
+                # check we don't have missing migration
+                . ./venv/bin/activate &&  python manage.py makemigrations --check
             - name: Check Backend (Django) translations
               run: |
                   . ./venv/bin/activate
@@ -149,10 +155,6 @@ jobs:
                   PLUGINS: polio,wfp,wfp_auth
             - name: Django tests
               run: |
-                  . ./venv/bin/activate &&  python manage.py migrate
-                  . ./venv/bin/activate &&  python manage.py createcachetable
-                  # check we don't have missing migration
-                  . ./venv/bin/activate &&  python manage.py makemigrations --check
                   . ./venv/bin/activate &&  python -W "ignore" manage.py test
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

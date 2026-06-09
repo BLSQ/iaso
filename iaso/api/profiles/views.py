@@ -55,6 +55,7 @@ from iaso.api.profiles.serializers.update import BaseProfileUpdateSerializer, Pr
 from iaso.mail.branding import core_email_branding_context
 from iaso.models import OrgUnit, Profile, TenantUser, UserRole
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
+from iaso.plugins import is_trypelim_plugin_active
 from iaso.utils import is_mobile_request
 
 
@@ -125,6 +126,9 @@ class ProfilesViewSet(ModelViewSet):
     def get_queryset(self):
         account = self.request.user.iaso_profile.account
         qs = Profile.objects.filter(account=account).with_editable_org_unit_types()
+
+        if is_trypelim_plugin_active():
+            qs = qs.filter(user__is_active=True)
 
         if self.action == "list":
             if self.request.query_params.get("managedUsersOnly", "").lower() in ["true", "1"]:

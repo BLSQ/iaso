@@ -241,7 +241,9 @@ def make_token_view(provider_id):
             return JsonResponse({"result": "error", "message": e.message, "details": e.message}, status=409)
         except Exception as e:
             logger.exception(str(e))
-            return JsonResponse({"result": "error", "message": "Error login account", "details": str(e)}, status=500)
+            return JsonResponse(
+                {"result": "error", "message": "Error login account", "details": "Internal server error"}, status=500
+            )
 
         user = social_account.user
         refresh = RefreshToken.for_user(user)

@@ -38,7 +38,10 @@ import SupervisorAccount from '@mui/icons-material/SupervisorAccount';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import { ThemeConfigContext } from 'Iaso/domains/app/contexts/ThemeConfigContext';
-import { VALIDATION_WORKFLOW_MODULE } from 'Iaso/utils/modules';
+import {
+    MODULE_EMBEDDED_LINKS,
+    VALIDATION_WORKFLOW_MODULE,
+} from 'Iaso/utils/modules';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
 import EntitySvg from '../components/svg/Entity';
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
@@ -60,7 +63,6 @@ import {
     SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
     SHOW_DEV_FEATURES,
     SHOW_DHIS2_LINK,
-    SHOW_PAGES,
 } from '../utils/featureFlags';
 import { useCurrentUser, User } from '../utils/usersUtils';
 import MESSAGES from './messages';
@@ -508,7 +510,7 @@ export const useMenuItems = (): MenuItems => {
     }
 
     if (
-        hasFeatureFlag(currentUser, SHOW_PAGES) &&
+        userHasAccessToModule(MODULE_EMBEDDED_LINKS, currentUser) &&
         !basicItems.find(item => item.key === 'pages')
     ) {
         basicItems.push({

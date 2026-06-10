@@ -1,5 +1,6 @@
 from django.conf import settings
-from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
+from rest_framework import serializers
 from rest_framework.filters import BaseFilterBackend
 
 from dynamic_fields.serializer import DynamicFieldsModelSerializerMixin
@@ -28,8 +29,14 @@ class DynamicFieldsFilterBackend(BaseFilterBackend):
             settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE in values
             and settings.DYNAMIC_FIELDS_DEFAULT_FIELDS_PARAM_VALUE in values
         ):
-            raise ValidationError(
-                f"Dynamic fields cannot contain both {settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE} and {settings.DYNAMIC_FIELDS_DEFAULT_FIELDS_PARAM_VALUE}"
+            message = _("Dynamic fields cannot contain both {all_fields} and {default_fields}").format(
+                all_fields=settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
+                default_fields=settings.DYNAMIC_FIELDS_DEFAULT_FIELDS_PARAM_VALUE,
+            )
+            raise serializers.ValidationError(
+                {
+                    settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: [message]
+                }
             )
 
         serializer_class = getattr(view, "dynamic_fields_serializer_class", None) or getattr(
@@ -40,7 +47,12 @@ class DynamicFieldsFilterBackend(BaseFilterBackend):
             valid = serializer_class.get_valid_options()
             invalid = set(values) - set(valid)
             if invalid:
-                raise ValidationError(f"Invalid dynamic fields: {invalid}")
+                message = _("Invalid dynamic fields: {fields}").format(fields=", ".join(invalid))
+                raise serializers.ValidationError(
+                    {
+                        settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: [message]
+                    }
+                )
 
         return queryset
 

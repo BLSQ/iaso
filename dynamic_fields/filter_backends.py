@@ -33,11 +33,7 @@ class DynamicFieldsFilterBackend(BaseFilterBackend):
                 all_fields=settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
                 default_fields=settings.DYNAMIC_FIELDS_DEFAULT_FIELDS_PARAM_VALUE,
             )
-            raise serializers.ValidationError(
-                {
-                    settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: [message]
-                }
-            )
+            raise serializers.ValidationError({settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: [message]})
 
         serializer_class = getattr(view, "dynamic_fields_serializer_class", None) or getattr(
             view, "serializer_class", None
@@ -48,11 +44,7 @@ class DynamicFieldsFilterBackend(BaseFilterBackend):
             invalid = set(values) - set(valid)
             if invalid:
                 message = _("Invalid dynamic fields: {fields}").format(fields=", ".join(invalid))
-                raise serializers.ValidationError(
-                    {
-                        settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: [message]
-                    }
-                )
+                raise serializers.ValidationError({settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: [message]})
 
         return queryset
 

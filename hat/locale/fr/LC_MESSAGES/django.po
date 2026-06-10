@@ -232,6 +232,16 @@ msgstr "L'équipe %(site_name)s."
 msgid "Password reset on %(site_name)s"
 msgstr "Réinitialisation du mot de passe sur %(site_name)s"
 
+#: dynamic_fields/filter_backends.py
+msgid "Dynamic fields cannot contain both {all_fields} and {default_fields}"
+msgstr ""
+"Les champs dynamiques ne peuvent pas contenir à la fois {all_fields} et "
+"{default_fields}"
+
+#: dynamic_fields/filter_backends.py
+msgid "Invalid dynamic fields: {fields}"
+msgstr "Champs dynamiques invalides : {fields}"
+
 #~ msgid "User ID"
 #~ msgstr "ID utilisateur"
 

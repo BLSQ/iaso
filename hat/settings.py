@@ -860,6 +860,9 @@ if SSO_WHO_CLIENT_ID:
         "authorize_url": f"https://login.microsoftonline.com/{SSO_WHO_TENANT_ID}/oauth2/v2.0/authorize",
         "token_url": f"https://login.microsoftonline.com/{SSO_WHO_TENANT_ID}/oauth2/v2.0/token",
         "userinfo_url": "https://graph.microsoft.com/oidc/userinfo",
+        "login_path": "polio/login/",
+        "callback_path": "polio/login/callback",
+        "token_path": "polio/token/",
         "account_id": sso_who_account,
         "email_recipients_new_account": os.environ.get("SSO_WHO_EMAIL_RECIPIENTS_NEW_ACCOUNT", "").split(","),
     }

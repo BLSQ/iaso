@@ -6,7 +6,11 @@ from django.contrib.auth.models import Permission
 
 from hat.menupermissions.constants import FEATUREFLAGES_TO_EXCLUDE
 from iaso import models as m
-from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_USERS_ADMIN_PERMISSION
+from iaso.permissions.core_permissions import (
+    CORE_FORMS_PERMISSION,
+    CORE_PROJECTS_PERMISSION,
+    CORE_USERS_ADMIN_PERMISSION,
+)
 from iaso.test import APITestCase
 
 
@@ -19,6 +23,10 @@ class ProjectsAPITestCase(APITestCase):
         cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi, permissions=[CORE_FORMS_PERMISSION])
         cls.john = cls.create_user_with_profile(username="johndoe", account=wha, permissions=[CORE_FORMS_PERMISSION])
         cls.jim = cls.create_user_with_profile(username="jimdoe", account=ghi)
+        # Only this user has the project-specific permission required to write projects.
+        cls.project_admin = cls.create_user_with_profile(
+            username="projectadmin", account=ghi, permissions=[CORE_PROJECTS_PERMISSION]
+        )
 
         cls.project_1 = m.Project.objects.create(
             name="Project 1",
@@ -27,9 +35,44 @@ class ProjectsAPITestCase(APITestCase):
             color="#FF5733",
             description="Project 1 description",
         )
-        flag = m.FeatureFlag.objects.create(name="A feature", code="a_feature")
-        cls.project_1.feature_flags.set([flag])
-        m.Project.objects.create(name="Project 2", app_id="org.ghi.p2", account=ghi)
+        cls.flag_a = m.FeatureFlag.objects.create(name="A feature", code="a_feature")
+        cls.project_1.feature_flags.set([cls.flag_a])
+        cls.project_2 = m.Project.objects.create(name="Project 2", app_id="org.ghi.p2", account=ghi)
+
+        # Feature flags used by the project write tests.
+        cls.flag_require_auth = m.FeatureFlag.objects.get(code=m.FeatureFlag.REQUIRE_AUTHENTICATION)
+        cls.flag_requires_auth = m.FeatureFlag.objects.create(
+            code="FEATURE_FLAG_THAT_REQUIRES_AUTHENTICATION",
+            name="Has a dependency on 'REQUIRE_AUTHENTICATION'",
+            requires_authentication=True,
+        )
+        cls.flag_config = m.FeatureFlag.objects.create(
+            code="with_configuration",
+            name="With configuration",
+            configuration_schema={"distance": {"type": "int", "description": "Something", "default": 1}},
+        )
+        cls.flag_all_types = m.FeatureFlag.objects.create(
+            code="with_all_configuration_types",
+            name="With all configuration types",
+            configuration_schema={
+                "int": {"type": "int", "description": "An int", "default": 1},
+                "long": {"type": "long", "description": "A long", "default": 1},
+                "number": {"type": "number", "description": "A number", "default": 1},
+                "float": {"type": "float", "description": "A float", "default": 1},
+                "double": {"type": "double", "description": "A double", "default": 1},
+                "decimal": {"type": "decimal", "description": "A decimal", "default": 1},
+                "url": {"type": "url", "description": "A url", "default": 1},
+                "text": {"type": "text", "description": "A text", "default": 1},
+                "str": {"type": "str", "description": "A str", "default": 1},
+                "string": {"type": "string", "description": "A string", "default": 1},
+            },
+        )
+
+        # Forms used by the project write tests. `form_in_account` is reachable from the user's
+        # account (linked to project_1), `form_other` is linked to no project of the account.
+        cls.form_in_account = m.Form.objects.create(name="Form in account")
+        cls.project_1.forms.add(cls.form_in_account)
+        cls.form_other = m.Form.objects.create(name="Orphan form")
 
     def setUp(self):
         """Clean up any feature flags created by previous tests to ensure isolation"""
@@ -326,21 +369,293 @@ class ProjectsAPITestCase(APITestCase):
         self.assertIn("description", response_data)
         self.assertEqual(response_data["description"], "Project 1 description")
 
-    def test_projects_create(self):
-        """POST /projects/: not authorized for now"""
+    def test_projects_create_without_permission(self):
+        """POST /projects/ requires the project-specific permission CORE_PROJECTS_PERMISSION."""
         self.client.force_authenticate(self.jane)
-        response = self.client.post("/api/projects/", data={}, format="json")
-        self.assertJSONResponse(response, 405)
+        response = self.client.post(
+            "/api/projects/",
+            data={"name": "Nope", "app_id": "org.ghi.nope", "feature_flags": []},
+            format="json",
+        )
+        self.assertJSONResponse(response, 403)
 
-    def test_projects_update(self):
-        """PUT /projects/<project_id>: not authorized for now"""
-        self.client.force_authenticate(self.jane)
-        response = self.client.put(f"/api/projects/{self.project_1.id}/", data={}, format="json")
-        self.assertJSONResponse(response, 405)
+    def test_projects_create_ok(self):
+        """POST /projects/ happy path"""
+        self.client.force_authenticate(self.project_admin)
+        payload = {
+            "name": "New Project",
+            "app_id": "org.ghi.new",
+            "description": "A new project",
+            "feature_flags": [{"id": self.flag_a.id, "name": self.flag_a.name, "code": self.flag_a.code}],
+            "needs_authentication": False,
+            "color": "#123456",
+        }
+        response = self.client.post("/api/projects/", data=payload, format="json")
+        self.assertJSONResponse(response, 201)
+        response_data = response.json()
+        self.assertValidProjectData(response_data)
+        self.assertEqual("org.ghi.new", response_data["app_id"])
+        self.assertEqual("A new project", response_data["description"])
+        self.assertEqual(1, len(response_data["feature_flags"]))
 
-    def test_projects_delete(self):
-        """DELETE /projects/<project_id>: not authorized for now"""
+        project = m.Project.objects.get(app_id="org.ghi.new")
+        self.assertEqual(self.project_admin.iaso_profile.account, project.account)
+
+    def test_projects_create_duplicate_app_id(self):
+        """POST /projects/ with an app_id already in use is rejected"""
+        self.client.force_authenticate(self.project_admin)
+        payload = {"name": "Dup", "app_id": self.project_1.app_id, "feature_flags": []}
+        response = self.client.post("/api/projects/", data=payload, format="json")
+        self.assertJSONResponse(response, 400)
+        self.assertIn("app_id", response.json())
+
+    def test_projects_update_without_permission(self):
+        """PUT /projects/<id> requires the project-specific permission CORE_PROJECTS_PERMISSION."""
         self.client.force_authenticate(self.jane)
+        payload = {"name": "x", "app_id": self.project_1.app_id, "feature_flags": []}
+        response = self.client.put(f"/api/projects/{self.project_1.id}/", data=payload, format="json")
+        self.assertJSONResponse(response, 403)
+
+    def test_projects_update_keeps_same_app_id(self):
+        """PUT /projects/<id> resending the project's own app_id must not raise 'App id already used'."""
+        self.client.force_authenticate(self.project_admin)
+        payload = {
+            "id": self.project_1.id,
+            "name": "Project 1 renamed",
+            "app_id": self.project_1.app_id,  # unchanged
+            "description": "updated description",
+            "feature_flags": [],
+        }
+        response = self.client.put(f"/api/projects/{self.project_1.id}/", data=payload, format="json")
+        self.assertJSONResponse(response, 200)
+        self.project_1.refresh_from_db()
+        self.assertEqual("Project 1 renamed", self.project_1.name)
+        self.assertEqual("org.ghi.p1", self.project_1.app_id)
+
+    def test_projects_update_fails_if_duplicate_app_id(self):
+        """PUT /projects/<id> changing app_id to one used by another project is rejected"""
+        self.client.force_authenticate(self.project_admin)
+        payload = {
+            "id": self.project_1.id,
+            "name": "Project 1",
+            "app_id": self.project_2.app_id,
+            "feature_flags": [],
+        }
+        response = self.client.put(f"/api/projects/{self.project_1.id}/", data=payload, format="json")
+        self.assertJSONResponse(response, 400)
+        self.assertIn("app_id", response.json())
+
+    def test_projects_update_flag_requires_authentication(self):
+        """A flag with requires_authentication needs REQUIRE_AUTHENTICATION alongside it."""
+        self.client.force_authenticate(self.project_admin)
+        payload = {
+            "id": self.project_1.id,
+            "name": "Project 1",
+            "app_id": self.project_1.app_id,
+            "feature_flags": [
+                {
+                    "id": self.flag_requires_auth.id,
+                    "name": self.flag_requires_auth.name,
+                    "code": self.flag_requires_auth.code,
+                }
+            ],
+        }
+        response = self.client.put(f"/api/projects/{self.project_1.id}/", data=payload, format="json")
+        self.assertJSONResponse(response, 400)
+
+        payload["feature_flags"].append(
+            {
+                "id": self.flag_require_auth.id,
+                "name": self.flag_require_auth.name,
+                "code": self.flag_require_auth.code,
+            }
+        )
+        response = self.client.put(f"/api/projects/{self.project_1.id}/", data=payload, format="json")
+        self.assertJSONResponse(response, 200)
+        codes = [ff["code"] for ff in response.json()["feature_flags"]]
+        self.assertIn(m.FeatureFlag.REQUIRE_AUTHENTICATION, codes)
+        self.assertIn(self.flag_requires_auth.code, codes)
+
+    def test_projects_update_auto_commit_require_auth(self):
+        """needs_authentication=True auto-adds the REQUIRE_AUTHENTICATION flag."""
+        self.client.force_authenticate(self.project_admin)
+        payload = {
+            "id": self.project_1.id,
+            "name": "Project 1",
+            "app_id": self.project_1.app_id,
+            "feature_flags": [{"id": self.flag_a.id, "name": self.flag_a.name, "code": self.flag_a.code}],
+            "needs_authentication": True,
+        }
+        response = self.client.put(f"/api/projects/{self.project_1.id}/", data=payload, format="json")
+        self.assertJSONResponse(response, 200)
+        response_data = response.json()
+        self.assertTrue(response_data["needs_authentication"])
+        self.assertIn(m.FeatureFlag.REQUIRE_AUTHENTICATION, [ff["code"] for ff in response_data["feature_flags"]])
+
+    def test_projects_update_configuration_missing(self):
+        """A feature flag with a configuration schema requires a configuration."""
+        self.client.force_authenticate(self.project_admin)
+        payload = {
+            "id": self.project_1.id,
+            "name": "Project 1",
+            "app_id": self.project_1.app_id,
+            "feature_flags": [
+                {"id": self.flag_config.id, "name": self.flag_config.name, "code": self.flag_config.code}
+            ],
+        }
+        response = self.client.put(f"/api/projects/{self.project_1.id}/", data=payload, format="json")
+        self.assertJSONResponse(response, 400)
+
+    def test_projects_update_configuration_ok(self):
+        """A valid configuration is accepted and persisted."""
+        self.client.force_authenticate(self.project_admin)
+        payload = {
+            "id": self.project_1.id,
+            "name": "Project 1",
+            "app_id": self.project_1.app_id,
+            "feature_flags": [
+                {
+                    "id": self.flag_config.id,
+                    "name": self.flag_config.name,
+                    "code": self.flag_config.code,
+                    "configuration": {"distance": 100},
+                }
+            ],
+        }
+        response = self.client.put(f"/api/projects/{self.project_1.id}/", data=payload, format="json")
+        self.assertJSONResponse(response, 200)
+        with_configuration = next(ff for ff in response.json()["feature_flags"] if ff["code"] == self.flag_config.code)
+        self.assertEqual(100, with_configuration["configuration"]["distance"])
+
+    def test_projects_update_configuration_wrong_key(self):
+        """A configuration missing a required key is rejected."""
+        self.client.force_authenticate(self.project_admin)
+        payload = {
+            "id": self.project_1.id,
+            "name": "Project 1",
+            "app_id": self.project_1.app_id,
+            "feature_flags": [
+                {
+                    "id": self.flag_config.id,
+                    "name": self.flag_config.name,
+                    "code": self.flag_config.code,
+                    "configuration": {"dist": 100},
+                }
+            ],
+        }
+        response = self.client.put(f"/api/projects/{self.project_1.id}/", data=payload, format="json")
+        self.assertJSONResponse(response, 400)
+
+    def test_projects_update_configuration_wrong_type(self):
+        """A configuration value of the wrong type is rejected."""
+        self.client.force_authenticate(self.project_admin)
+        payload = {
+            "id": self.project_1.id,
+            "name": "Project 1",
+            "app_id": self.project_1.app_id,
+            "feature_flags": [
+                {
+                    "id": self.flag_config.id,
+                    "name": self.flag_config.name,
+                    "code": self.flag_config.code,
+                    "configuration": {"distance": "not-an-int"},
+                }
+            ],
+        }
+        response = self.client.put(f"/api/projects/{self.project_1.id}/", data=payload, format="json")
+        self.assertJSONResponse(response, 400)
+
+    def test_projects_update_all_configuration_types(self):
+        """All supported configuration types are accepted."""
+        self.client.force_authenticate(self.project_admin)
+        payload = {
+            "id": self.project_1.id,
+            "name": "Project 1",
+            "app_id": self.project_1.app_id,
+            "feature_flags": [
+                {
+                    "id": self.flag_all_types.id,
+                    "name": self.flag_all_types.name,
+                    "code": self.flag_all_types.code,
+                    "configuration": {
+                        "int": 123,
+                        "long": 123,
+                        "number": 123,
+                        "float": 123.0,
+                        "double": 123.0,
+                        "decimal": 123.0,
+                        "url": "http://www.perdu.com",
+                        "text": "some text",
+                        "str": "some text",
+                        "string": "some text",
+                    },
+                }
+            ],
+        }
+        response = self.client.put(f"/api/projects/{self.project_1.id}/", data=payload, format="json")
+        self.assertJSONResponse(response, 200)
+
+    def test_projects_update_configuration_bad_url(self):
+        """A configuration url with a non-http(s) scheme is rejected."""
+        self.client.force_authenticate(self.project_admin)
+        payload = {
+            "id": self.project_1.id,
+            "name": "Project 1",
+            "app_id": self.project_1.app_id,
+            "feature_flags": [
+                {
+                    "id": self.flag_all_types.id,
+                    "name": self.flag_all_types.name,
+                    "code": self.flag_all_types.code,
+                    "configuration": {
+                        "int": 123,
+                        "long": 123,
+                        "number": 123,
+                        "float": 123.0,
+                        "double": 123.0,
+                        "decimal": 123.0,
+                        "url": "htp://wrong.scheme.com",
+                        "text": "some text",
+                        "str": "some text",
+                        "string": "some text",
+                    },
+                }
+            ],
+        }
+        response = self.client.put(f"/api/projects/{self.project_1.id}/", data=payload, format="json")
+        self.assertJSONResponse(response, 400)
+
+    def test_projects_update_forms_ok(self):
+        """PUT /projects/<id> can assign forms reachable from the user's account."""
+        self.client.force_authenticate(self.project_admin)
+        payload = {
+            "id": self.project_2.id,
+            "name": "Project 2",
+            "app_id": self.project_2.app_id,
+            "feature_flags": [],
+            "forms": [self.form_in_account.id],
+        }
+        response = self.client.put(f"/api/projects/{self.project_2.id}/", data=payload, format="json")
+        self.assertJSONResponse(response, 200)
+        self.assertIn(self.form_in_account, list(self.project_2.forms.all()))
+
+    def test_projects_update_forms_not_in_account(self):
+        """PUT /projects/<id> rejects forms not associated to the user's account."""
+        self.client.force_authenticate(self.project_admin)
+        payload = {
+            "id": self.project_2.id,
+            "name": "Project 2",
+            "app_id": self.project_2.app_id,
+            "feature_flags": [],
+            "forms": [self.form_other.id],
+        }
+        response = self.client.put(f"/api/projects/{self.project_2.id}/", data=payload, format="json")
+        self.assertJSONResponse(response, 400)
+        self.assertIn("forms", response.json())
+
+    def test_projects_delete_not_allowed(self):
+        """DELETE /projects/<project_id>: not exposed on the projects endpoint"""
+        self.client.force_authenticate(self.project_admin)
         response = self.client.delete(f"/api/projects/{self.project_1.id}/", format="json")
         self.assertJSONResponse(response, 405)
 

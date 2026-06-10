@@ -6,11 +6,15 @@ from qr_code.qrcode.utils import QRCodeOptions
 from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.permissions import SAFE_METHODS
 
+from iaso.api.common import (
+    ModelViewSet,
+)
 from iaso.models import Project, ProjectFeatureFlags
 
-from ...permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION
-from ..common import ModelViewSet
+from ...permissions.core_permissions import CORE_PROJECTS_PERMISSION, CORE_USERS_ADMIN_PERMISSION
+from ..common import HasPermission, ModelViewSet
 from .serializers import ProjectSerializer
 
 
@@ -28,13 +32,19 @@ class ProjectsViewSet(ModelViewSet):
     GET /api/projects/<id>
     """
 
-    permission_classes = [permissions.IsAuthenticated]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["app_id", "name"]
     ordering = ["id"]
     serializer_class = ProjectSerializer
     results_key = "projects"
-    http_method_names = ["get", "head", "options", "trace"]
+    http_method_names = ["get", "head", "options", "trace", "put", "post", "patch"]
+
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            self.permission_classes = [permissions.IsAuthenticated]
+        else:
+            self.permission_classes = [HasPermission(CORE_PROJECTS_PERMISSION)]
+        return super().get_permissions()
 
     def get_queryset(self) -> QuerySet[Project]:
         querystring = self.request.query_params

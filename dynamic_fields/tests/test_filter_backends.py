@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
 from django.test import TestCase, override_settings
 from rest_framework import serializers
 from rest_framework.request import Request
@@ -50,14 +49,24 @@ class DynamicFieldsFilterBackendTest(TestCase):
     def test_invalid_fields_raises(self):
         request = Request(self.factory.get("/?fields=invalid"))
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(serializers.ValidationError) as error:
             self.backend.filter_queryset(request, self.queryset, DummyView())
+
+        self.assertEqual(
+            str(error.exception.detail["fields"][0]),
+            "Invalid dynamic fields: invalid",
+        )
 
     def test_conflicting_params_raises(self):
         request = Request(self.factory.get("/?fields=:all&fields=:default"))
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(serializers.ValidationError) as error:
             self.backend.filter_queryset(request, self.queryset, DummyView())
+
+        self.assertEqual(
+            str(error.exception.detail["fields"][0]),
+            "Dynamic fields cannot contain both :all and :default",
+        )
 
     def test_get_schema_operation_parameters(self):
         class TestSerializer(DynamicFieldsModelSerializerMixin, serializers.Serializer):
@@ -125,14 +134,24 @@ class DynamicFieldsFilterBackendBackwardCompatibleTest(TestCase):
     def test_invalid_fields_raises(self):
         request = Request(self.factory.get("/?fields=invalid"))
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(serializers.ValidationError) as error:
             self.backend.filter_queryset(request, self.queryset, DummyView())
+
+        self.assertEqual(
+            str(error.exception.detail["fields"][0]),
+            "Invalid dynamic fields: invalid",
+        )
 
     def test_conflicting_params_raises(self):
         request = Request(self.factory.get("/?fields=:all,:default"))
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(serializers.ValidationError) as error:
             self.backend.filter_queryset(request, self.queryset, DummyView())
+
+        self.assertEqual(
+            str(error.exception.detail["fields"][0]),
+            "Dynamic fields cannot contain both :all and :default",
+        )
 
     def test_get_schema_operation_parameters(self):
         class TestSerializer(DynamicFieldsModelSerializerMixin, serializers.Serializer):

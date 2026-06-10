@@ -34,7 +34,7 @@ class Command(BaseCommand):
         self.stdout.write(f" - {name}: {queryset.count()}")
         clean, infected, errors = 0, 0, 0
         for model_with_file in queryset:
-            result, timestamp = scan_stored_file_for_virus(model_with_file.file)
+            result, timestamp = scan_stored_file_for_virus(stored_file=model_with_file.file, raise_on_error=False)
             model_with_file.file_last_scan = timestamp
             model_with_file.file_scan_status = result
             model_with_file.save()

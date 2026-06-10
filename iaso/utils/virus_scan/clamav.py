@@ -86,7 +86,7 @@ def scan_disk_file_for_virus(file_path: str):
     return _scan_with_clamav(file_path)
 
 
-def scan_stored_file_for_virus(stored_file: Union[FieldFile, File]):
+def scan_stored_file_for_virus(stored_file: Union[FieldFile, File], raise_on_error=True):
     """
     Scan a file from Django storage (local disk, S3, Azure, etc.) using ClamAV.
 
@@ -108,7 +108,11 @@ def scan_stored_file_for_virus(stored_file: Union[FieldFile, File]):
             temp_file.flush()
             return _scan_with_clamav(temp_file.name)
     except Exception as e:
-        logger.error(f"Could not read stored file {stored_file.name} for scanning - {e}")
+        error_msg = f"Could not read stored file {stored_file.name} for scanning - {e}"
+        if raise_on_error:
+            logger.error(error_msg)
+        else:
+            logger.warning(error_msg)
         return VirusScanStatus.ERROR, None
 
 

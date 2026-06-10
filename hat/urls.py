@@ -35,7 +35,7 @@ class SSOLoginView(auth.views.LoginView):
         return {**super().get_context_data(**kwargs), "sso_providers_for_login": _sso_providers()}
 
 
-class SSODisabledPasswordLoginView(TemplateView):
+class SSOTemplateLoginView(TemplateView):
     def get_context_data(self, **kwargs):
         return {**super().get_context_data(**kwargs), "sso_providers_for_login": _sso_providers()}
 
@@ -61,10 +61,8 @@ else:
     if settings.DISABLE_PASSWORD_LOGINS:
         login_template = "iaso/disabled_password_login.html"
         urlpatterns = [
-            path(
-                "admin/login/", SSODisabledPasswordLoginView.as_view(template_name=login_template), name="admin-login"
-            ),
-            path("login/", SSODisabledPasswordLoginView.as_view(template_name=login_template), name="login"),
+            path("admin/login/", SSOTemplateLoginView.as_view(template_name=login_template), name="admin-login"),
+            path("login/", SSOTemplateLoginView.as_view(template_name=login_template), name="login"),
         ]
     else:
         from iaso.auth.forms import AxesAuthenticationForm

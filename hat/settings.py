@@ -318,7 +318,6 @@ TEMPLATES = [
                 "hat.common.context_processors.product_fruits_config",
                 "hat.common.context_processors.learn_more_url",
                 "hat.common.context_processors.available_languages",
-                "hat.common.context_processors.sso_providers_for_login",
             ]
         },
     }

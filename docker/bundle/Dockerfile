@@ -57,6 +57,7 @@ RUN pip install uv
 # make uv use the system python and install everything in the system, not in a .venv
 ENV UV_PROJECT_ENVIRONMENT=/usr/local
 ENV UV_PYTHON_PREFERENCE=only-system
+ENV UV_NO_DEV=1
 RUN uv sync --python "$(which python3)"
 
 COPY --from=npmbuilder /opt/app/hat/assets /opt/app/hat/assets
@@ -80,6 +81,7 @@ FROM base AS prod
 USER root
 
 # Only install gunicorn for production
+ENV UV_NO_DEV=1
 RUN uv add install gunicorn
 COPY --from=npmbuilder /opt/app/hat/assets /opt/app/hat/assets
 

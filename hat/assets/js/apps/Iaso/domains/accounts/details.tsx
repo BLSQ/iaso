@@ -57,9 +57,9 @@ const AccountsDetails: FunctionComponent = () => {
     const accountId = parseInt(params.id);
 
     const { data: account, isLoading } = useApiAccountsRetrieve(
-        parseInt(params.id),
+        accountId,
         undefined,
-        { query: { enabled: !!accountId } },
+        { query: { enabled: Boolean(accountId) } },
     );
 
     const user = useCurrentUser();
@@ -67,7 +67,9 @@ const AccountsDetails: FunctionComponent = () => {
     const { data: AIApiKey, isLoading: isLoadingAIApiKey } =
         useApiAccountsAiApiKeyRetrieve(accountId, undefined, {
             query: {
-                enabled: !!accountId && userHasAccessToModule('FORM_AI', user),
+                enabled:
+                    Boolean(accountId) &&
+                    userHasAccessToModule('FORM_AI', user),
             },
         });
 
@@ -113,28 +115,29 @@ const AccountsDetails: FunctionComponent = () => {
                 title={formatMessage(MESSAGES.accounts)}
                 displayBackButton
                 goBack={() => redirectTo(baseRedirectUrl)}
-            />
+            >
+                <Tabs
+                    textColor="inherit"
+                    indicatorColor="secondary"
+                    value={tab}
+                    onChange={handleChangeTab}
+                    aria-label={formatMessage(MESSAGES.accountTabs)}
+                    classes={{
+                        root: classes.tabs,
+                        indicator: classes.indicator,
+                    }}
+                >
+                    <Tab
+                        label={formatMessage(MESSAGES.accountTabGeneralTitle)}
+                        {...a11yProps('general')}
+                        value={'general'}
+                    />
+                </Tabs>
+            </TopBar>
 
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 <Grid container spacing={2} direction={'column'}>
                     <Grid item xs={12}>
-                        <Tabs
-                            value={tab}
-                            onChange={handleChangeTab}
-                            aria-label={formatMessage(MESSAGES.accountTabs)}
-                            sx={{ mb: 3 }}
-                        >
-                            <Tab
-                                label={formatMessage(
-                                    MESSAGES.accountTabGeneralTitle,
-                                )}
-                                {...a11yProps('general')}
-                                value={'general'}
-                                sx={{
-                                    typography: 'h5',
-                                }}
-                            />
-                        </Tabs>
                         <CustomTabPanel
                             index={'general'}
                             value={tab}

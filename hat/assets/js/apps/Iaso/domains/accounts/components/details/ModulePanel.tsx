@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import CheckIcon from '@mui/icons-material/Check';
-import ClearIcon from '@mui/icons-material/Clear';
+import CheckedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
+import NotCheckedIcon from '@mui/icons-material/HighlightOffOutlined';
 import InfoIcon from '@mui/icons-material/Info';
 import {
     Alert,
@@ -98,15 +98,15 @@ export const ModulePanel: FunctionComponent<Props> = ({
                                             {account?.modules?.includes(
                                                 value,
                                             ) ? (
-                                                <CheckIcon
+                                                <CheckedIcon
                                                     color={'success'}
                                                     aria-label={formatMessage(
                                                         MESSAGES.selected,
                                                     )}
                                                 />
                                             ) : (
-                                                <ClearIcon
-                                                    color={'error'}
+                                                <NotCheckedIcon
+                                                    color={'disabled'}
                                                     aria-label={formatMessage(
                                                         MESSAGES.notSelected,
                                                     )}

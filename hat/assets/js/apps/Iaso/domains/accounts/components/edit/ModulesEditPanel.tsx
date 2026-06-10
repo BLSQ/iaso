@@ -8,7 +8,8 @@ import {
     TableContainer,
 } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { ErrorMessage, Field } from 'formik';
+import { ErrorMessage, Field, useFormikContext } from 'formik';
+import { ApiAccountsUpdateBody } from 'Iaso/api/accounts';
 import { ApiModulesDropdownListQueryResult } from 'Iaso/api/modules';
 import { ArrayCheckboxInput } from 'Iaso/components/forms/ArrayCheckboxInput';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
@@ -39,6 +40,7 @@ const styles: SxStyles = {
 
 export const ModulesEditPanel: FunctionComponent<Props> = ({ modules }) => {
     const { formatMessage } = useSafeIntl();
+    const form = useFormikContext<ApiAccountsUpdateBody>();
 
     return (
         <WidgetPaper
@@ -79,9 +81,29 @@ export const ModulesEditPanel: FunctionComponent<Props> = ({ modules }) => {
                     </TableContainer>
                 </>
             ) : (
-                <Alert severity={'info'} sx={{ mb: 2 }}>
-                    {formatMessage(MESSAGES.noResultsFound)}
-                </Alert>
+                <TableContainer sx={styles.tableContainer}>
+                    <Table size={'small'} stickyHeader>
+                        <TableBody>
+                            {form?.values?.modules?.map(value => {
+                                return (
+                                    <TableRow key={value} sx={styles.row}>
+                                        <TableCell>{value}</TableCell>
+                                        <TableCell>
+                                            <Field
+                                                component={ArrayCheckboxInput}
+                                                checked
+                                                disabled
+                                                name={'modules'}
+                                                value={value}
+                                                aria-label={value}
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
             )}
         </WidgetPaper>
     );

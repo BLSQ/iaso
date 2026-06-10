@@ -361,7 +361,7 @@ describe('Accounts edit tests', () => {
         const link = screen.getByRole('link', { name: /cancel/i });
         expect(link).toHaveAttribute(
             'href',
-            `/dashboard/${baseUrls.accountsDetail}/id/${accountId}/`,
+            `/${baseUrls.accountsDetail}/id/${accountId}/`,
         );
         await act(async () => {
             await userEvent.click(

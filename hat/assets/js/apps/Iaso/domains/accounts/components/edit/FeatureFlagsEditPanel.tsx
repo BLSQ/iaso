@@ -8,8 +8,9 @@ import {
     TableContainer,
 } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { ErrorMessage, Field } from 'formik';
+import { ErrorMessage, Field, useFormikContext } from 'formik';
 import { ApiAccountFeatureFlagsDropdownListQueryResult } from 'Iaso/api/accountFeatureFlags';
+import { ApiAccountsUpdateBody } from 'Iaso/api/accounts';
 import { ArrayCheckboxInput } from 'Iaso/components/forms/ArrayCheckboxInput';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { getOverriddenTheme } from 'Iaso/styles';
@@ -41,6 +42,7 @@ export const FeatureFlagsEditPanel: FunctionComponent<Props> = ({
     accountFeatureFlags,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const form = useFormikContext<ApiAccountsUpdateBody>();
 
     return (
         <WidgetPaper
@@ -87,9 +89,29 @@ export const FeatureFlagsEditPanel: FunctionComponent<Props> = ({
                     </TableContainer>
                 </>
             ) : (
-                <Alert severity={'info'} sx={{ mb: 2 }}>
-                    {formatMessage(MESSAGES.noResultsFound)}
-                </Alert>
+                <TableContainer sx={styles.tableContainer}>
+                    <Table size={'small'} stickyHeader>
+                        <TableBody>
+                            {form.values.feature_flags?.map(value => {
+                                return (
+                                    <TableRow key={value} sx={styles.row}>
+                                        <TableCell>{value}</TableCell>
+                                        <TableCell>
+                                            <Field
+                                                component={ArrayCheckboxInput}
+                                                name={'feature_flags'}
+                                                value={value}
+                                                checked
+                                                disabled
+                                                aria-label={value}
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
             )}
         </WidgetPaper>
     );

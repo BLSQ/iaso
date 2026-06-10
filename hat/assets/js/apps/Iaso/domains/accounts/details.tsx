@@ -39,13 +39,6 @@ const a11yProps = (value: string) => {
 const useStyles = makeStyles((theme: any) => {
     return {
         ...commonStyles(theme),
-        // todo : remove this once IA-4806 has been done
-        '@global': {
-            body: {
-                overflowX: 'hidden !important',
-                overflowY: 'auto !important',
-            },
-        },
     };
 });
 

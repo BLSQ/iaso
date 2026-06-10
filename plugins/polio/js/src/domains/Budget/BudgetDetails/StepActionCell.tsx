@@ -1,11 +1,11 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { useMediaQuery, useTheme, Box } from '@mui/material';
-import moment from 'moment';
 import { Paginated } from 'bluesquare-components';
-import { Transition, BudgetStep, Params } from '../types';
-import { DeleteRestoreButton } from './DeleteRestoreButton';
+import moment from 'moment';
 import { CreateBudgetStepIcon } from '../CreateBudgetStep/CreateBudgetStep';
 import { getStyle, useStyles } from '../hooks/config';
+import { Transition, BudgetStep, Params } from '../types';
+import { DeleteRestoreButton } from './DeleteRestoreButton';
 
 type Props = {
     budgetStep: BudgetStep;

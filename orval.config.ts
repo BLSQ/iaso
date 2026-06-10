@@ -62,6 +62,9 @@ const createConfig = (project: string, tags: string[] | RegExp[], mutationInvali
                         optionalQueryClient: true,
                     },
                 },
+                fetch: {
+                    includeHttpResponseReturnType: false,
+                },
                 mutator: {
                     path: '../../../../orval/client/custom-fetch.ts',
                     name: 'customFetchInstance',
@@ -101,6 +104,7 @@ const createConfig = (project: string, tags: string[] | RegExp[], mutationInvali
 };
 
 module.exports = {
+    modules: createConfig('modules', ["Modules"])
     // validationWorkflows: createConfig('validationWorkflows', ['Validation workflows'], validationWorkflowsMutationInvalidates),
     // profiles: createConfig('profiles', ['Profiles'])
 };

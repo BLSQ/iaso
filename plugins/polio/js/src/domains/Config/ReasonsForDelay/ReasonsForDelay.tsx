@@ -1,16 +1,16 @@
 import React, { FunctionComponent } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
 import { Grid, Box } from '@mui/material';
-import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
-import { useUrlParams } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
-import { useStyles } from '../../../styles/theme';
+import { useSafeIntl } from 'bluesquare-components';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
-import MESSAGES from './messages';
-import { useReasonsForDelay } from './hooks/requests';
+import { useUrlParams } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
+import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
+import { baseUrls } from '../../../constants/urls';
+import { useStyles } from '../../../styles/theme';
 import { CreateReasonForDelay } from './CreateEdit/CreateEditReasonForDelay';
 import { useReasonsForDelayColumns } from './hooks/columns';
-import { baseUrls } from '../../../constants/urls';
+import { useReasonsForDelay } from './hooks/requests';
+import MESSAGES from './messages';
 
 const baseUrl = baseUrls.reasonsForDelayConfig;
 export const ReasonsForDelay: FunctionComponent = () => {

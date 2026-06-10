@@ -1,7 +1,7 @@
 import _ from 'lodash';
 
-import { Period } from '../periods/models';
 import { PERIOD_TYPE_QUARTER } from '../periods/constants';
+import { Period } from '../periods/models';
 
 /**
  * This function takes a flat list of completeness data, as returned by the API, and transforms it into

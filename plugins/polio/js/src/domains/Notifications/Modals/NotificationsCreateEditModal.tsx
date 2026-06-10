@@ -1,24 +1,24 @@
 import React, { FunctionComponent } from 'react';
+import { Box, Divider } from '@mui/material';
 import {
     AddButton,
     ConfirmCancelModal,
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
-import { Box, Divider } from '@mui/material';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
 
+import { EditIconButton } from '../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import TextInput from '../../../../../../../hat/assets/js/apps/Iaso/domains/pages/components/TextInput';
 import { DateInput } from '../../../components/Inputs/DateInput';
-import { EditIconButton } from '../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import { OrgUnitsLevels as OrgUnitSelect } from '../../../components/Inputs/OrgUnitsSelect';
 import { SingleSelect } from '../../../components/Inputs/SingleSelect';
 
-import MESSAGES from '../messages';
-import { NotificationsApiData, NotificationsMetaData } from '../types';
 import { useCreateEditNotification } from '../hooks/api';
 import { useNotificationSchema } from '../hooks/validation';
+import MESSAGES from '../messages';
+import { NotificationsApiData, NotificationsMetaData } from '../types';
 
 type Props = {
     isOpen: boolean;

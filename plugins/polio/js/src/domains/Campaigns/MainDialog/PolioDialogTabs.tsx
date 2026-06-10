@@ -1,5 +1,5 @@
-import { Tabs } from '@mui/material';
 import React, { FunctionComponent } from 'react';
+import { Tabs } from '@mui/material';
 import { useStyles } from '../../../styles/theme';
 import { PolioDialogTab } from './PolioDialogTab';
 

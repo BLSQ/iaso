@@ -2,7 +2,6 @@ import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MODULE_EXTERNAL_STORAGE } from 'Iaso/utils/modules';
 import { STORAGES } from 'Iaso/utils/permissions';
-import MESSAGES from '../messages';
 import { useGetEntityFields } from './useGetEntityFields';
 
 const {

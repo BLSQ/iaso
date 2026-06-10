@@ -60,6 +60,7 @@ const MESSAGES = defineMessages({
     labelStartOffsetInDaysTooltip: {
         id: 'iaso.polio.chronogram.label.start_offset_in_days_tooltip',
         defaultMessage:
+            // eslint-disable-next-line max-len
             'Enter as an integer the number of days the task is expected to be completed in regards to Round start date. For tasks to be handled before the round starts, add a minus sign before the integer. E.g. "-7"',
     },
     labelStatus: {

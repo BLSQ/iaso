@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-05 07:16+0000\n"
+"POT-Creation-Date: 2026-06-05 08:57+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -736,15 +736,17 @@ msgstr "Options géographiques"
 msgid "Data Validation"
 msgstr "Validation de données"
 
-#: iaso/models/feature_flags.py iaso/permissions/core_permissions.py
+#: iaso/models/feature_flags.py iaso/modules.py
+#: iaso/permissions/core_permissions.py
 msgid "Entities"
 msgstr "Entités"
 
-#: iaso/models/feature_flags.py
+#: iaso/models/feature_flags.py iaso/modules.py
 msgid "Planning"
 msgstr "Planification"
 
-#: iaso/models/feature_flags.py iaso/permissions/core_permissions.py
+#: iaso/models/feature_flags.py iaso/modules.py
+#: iaso/permissions/core_permissions.py
 msgid "Stock management"
 msgstr "Management de stock"
 
@@ -973,6 +975,66 @@ msgstr "Soumission"
 #: iaso/models/validation_workflow/validation_node.py
 msgid "New version"
 msgstr "Nouvelle version"
+
+#: iaso/modules.py
+msgid "Data collection - Forms"
+msgstr "Collecte de données - Formulaires"
+
+#: iaso/modules.py
+msgid "Default"
+msgstr "Par défaut"
+
+#: iaso/modules.py
+msgid "DHIS2 mapping"
+msgstr "Mappage DHIS2"
+
+#: iaso/modules.py
+msgid "Embedded links"
+msgstr "Liens intégrés"
+
+#: iaso/modules.py
+msgid "External storage"
+msgstr "Stockage externe"
+
+#: iaso/modules.py
+msgid "Polio project"
+msgstr "Projet Polio"
+
+#: iaso/modules.py
+msgid "Registry"
+msgstr "Registre"
+
+#: iaso/modules.py
+msgid "Payments"
+msgstr "Paiements"
+
+#: iaso/modules.py
+msgid "Completeness per Period"
+msgstr "Complétude par période"
+
+#: iaso/modules.py
+msgid "Trypelim project"
+msgstr "Projet Trypelim"
+
+#: iaso/modules.py
+msgid "Data validation"
+msgstr "Validation des données"
+
+#: iaso/modules.py
+msgid "SaaS"
+msgstr "SaaS"
+
+#: iaso/modules.py
+msgid "SNT Malaria"
+msgstr "SNT Malaria"
+
+#: iaso/modules.py
+msgid "Form AI"
+msgstr "IA pour formulaires"
+
+#: iaso/modules.py
+msgid "Validation workflow"
+msgstr "Workflow de validation"
 
 #: iaso/permissions/core_permissions.py
 msgid "Attributions"

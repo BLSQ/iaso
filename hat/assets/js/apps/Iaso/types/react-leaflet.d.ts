@@ -1,4 +1,4 @@
-import { CSSProperties } from React;
+import { CSSProperties } from 'react';
 import 'react-leaflet';
 import 'leaflet';
 import { GeoJSON as LeafletGeoJSON } from 'leaflet';

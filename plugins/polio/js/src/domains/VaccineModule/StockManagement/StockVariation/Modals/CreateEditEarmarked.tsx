@@ -89,6 +89,7 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
             setFieldValue('vials_earmarked', value);
             setFieldTouched('vials_earmarked', true);
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [setFieldTouched, setFieldValue, vaccine],
     );
 

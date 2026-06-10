@@ -1,12 +1,12 @@
-import { useSnackbar } from 'notistack';
 import React, { useEffect } from 'react';
 
 import { useSafeIntl } from 'bluesquare-components';
-import SnackBarButton from './SnackBarButton';
-import SnackBarErrorMessage from './SnackBarErrorMessage';
+import { useSnackbar } from 'notistack';
 
 import { dispatcher } from './EventDispatcher';
 import MESSAGES from './messages';
+import SnackBarButton from './SnackBarButton';
+import SnackBarErrorMessage from './SnackBarErrorMessage';
 
 type Notification = {
     key: string;

@@ -1,24 +1,24 @@
 import React, { FunctionComponent } from 'react';
+import { Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     AddButton,
     commonStyles,
     useSafeIntl,
     ErrorBoundary,
 } from 'bluesquare-components';
-import { Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import TopBar from '../../components/nav/TopBarComponent';
-import { useDefaultSourceVersion } from './utils';
-import { DataSourceDialogComponent } from './components/DataSourceDialogComponent';
-import { baseUrls } from '../../constants/urls';
-import { useDataSourcesTableColumns } from './config';
-import { SOURCE_WRITE } from '../../utils/permissions';
-import MESSAGES from './messages';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
+import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
+import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { useGetDataSources } from './useGetDataSources';
+import { SOURCE_WRITE } from '../../utils/permissions';
+import { DataSourceDialogComponent } from './components/DataSourceDialogComponent';
 import { Filters } from './components/Filters';
+import { useDataSourcesTableColumns } from './config';
+import MESSAGES from './messages';
+import { useGetDataSources } from './useGetDataSources';
+import { useDefaultSourceVersion } from './utils';
 
 const baseUrl = baseUrls.sources;
 const defaultOrder = 'name';

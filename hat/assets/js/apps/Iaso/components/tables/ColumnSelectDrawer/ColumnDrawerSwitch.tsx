@@ -1,6 +1,6 @@
+import React, { ChangeEvent, FunctionComponent, ReactElement } from 'react';
 import { ListItemText, Switch, Tooltip } from '@mui/material';
 import { truncateText } from 'bluesquare-components';
-import React, { ChangeEvent, FunctionComponent, ReactElement } from 'react';
 
 type Props = {
     disabled: boolean;

@@ -1,8 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Divider } from '@mui/material';
-import { Field, FormikProvider, useFormik } from 'formik';
-import { isEqual } from 'lodash';
-
 import {
     AddButton,
     ConfirmCancelModal,
@@ -10,20 +7,21 @@ import {
     useSafeIntl,
     InputWithInfos,
 } from 'bluesquare-components';
+import { Field, FormikProvider, useFormik } from 'formik';
+import { isEqual } from 'lodash';
 
-import * as Permission from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
-import TextInput from '../../../../../../../../hat/assets/js/apps/Iaso/domains/pages/components/TextInput';
 import { EditIconButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
-import MESSAGES from '../messages';
-import { ChronogramTask, Chronogram } from '../../Chronogram/types';
+import TextInput from '../../../../../../../../hat/assets/js/apps/Iaso/domains/pages/components/TextInput';
+import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import * as Permission from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
+import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { NumberInput } from '../../../../components/Inputs/NumberInput';
 import { SingleSelect } from '../../../../components/Inputs/SingleSelect';
-
+import { ChronogramTask, Chronogram } from '../../Chronogram/types';
 import { ChronogramTaskMetaData } from '../../types';
-import { useChronogramTaskSchema } from '../hooks/validation';
 import { useCreateEditChronogramTask } from '../api/useCreateEditChronogramTask';
-import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { useChronogramTaskSchema } from '../hooks/validation';
+import MESSAGES from '../messages';
 
 type Props = {
     isOpen: boolean;

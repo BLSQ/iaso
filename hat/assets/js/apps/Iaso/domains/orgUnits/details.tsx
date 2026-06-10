@@ -321,7 +321,6 @@ const OrgUnitDetail: FunctionComponent = () => {
             redirectToReplace,
             refreshOrgUnitQueryCache,
             saveOu,
-            queryClient,
         ],
     );
 

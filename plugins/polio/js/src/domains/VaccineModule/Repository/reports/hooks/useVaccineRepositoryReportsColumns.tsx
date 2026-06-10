@@ -1,5 +1,5 @@
-import { Column, useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
+import { Column, useSafeIntl } from 'bluesquare-components';
 import { DocumentsCells } from '../../components/DocumentsCell';
 import MESSAGES from '../../messages';
 

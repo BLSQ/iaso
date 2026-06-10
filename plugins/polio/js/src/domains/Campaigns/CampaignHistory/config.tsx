@@ -480,6 +480,7 @@ export const useGetConfig = (): Record<string, any> => {
                                                 ];
                                             return (
                                                 <Link
+                                                    key={ouId}
                                                     target="_blank"
                                                     href={`/dashboard/orgunits/detail/orgUnitId/${ouId}`}
                                                 >

@@ -1,13 +1,13 @@
 import React, { FunctionComponent } from 'react';
-import { FormattedMessage } from 'react-intl';
+import DeleteIcon from '@mui/icons-material/Delete';
+import Edit from '@mui/icons-material/Settings';
 import { Button, Box, ButtonPropsColorOverrides } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import Edit from '@mui/icons-material/Settings';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { OverridableStringUnion } from '@mui/types';
 import { commonStyles } from 'bluesquare-components';
+import { FormattedMessage } from 'react-intl';
 import ShapeSvg from '../../../../components/svg/ShapeSvgComponent';
 import MESSAGES from '../../messages';
-import { OverridableStringUnion } from '@mui/types';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

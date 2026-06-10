@@ -1,4 +1,4 @@
-import { ProjectFeatureFlag } from './featureFlag';
+import { FeatureFlag } from '../types/featureFlag';
 
 export type Project = {
     app_id?: string;

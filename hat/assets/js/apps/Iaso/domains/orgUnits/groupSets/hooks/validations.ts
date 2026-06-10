@@ -1,8 +1,7 @@
+import { useMemo } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import * as yup from 'yup';
 
-import { useSafeIntl } from 'bluesquare-components';
-
-import { useMemo } from 'react';
 import { useAPIErrorValidator } from '../../../../libs/validation';
 import MESSAGES from '../messages';
 

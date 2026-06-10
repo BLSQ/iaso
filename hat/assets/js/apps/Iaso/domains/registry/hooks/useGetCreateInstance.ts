@@ -3,7 +3,6 @@ import { errorSnackBar } from '../../../constants/snackBars';
 import { postRequest } from '../../../libs/Api';
 
 type Result = {
-    // eslint-disable-next-line camelcase
     edit_url: string;
 };
 

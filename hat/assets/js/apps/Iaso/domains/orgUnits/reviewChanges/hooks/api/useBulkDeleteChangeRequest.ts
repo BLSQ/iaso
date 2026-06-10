@@ -1,12 +1,12 @@
 import { UseMutationResult } from 'react-query';
 
-import { makeUrlWithParams } from 'Iaso/libs/utils';
 import { postRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
+import { makeUrlWithParams } from 'Iaso/libs/utils';
 
+import { Selection } from '../../../types/selection';
 import MESSAGES from '../../messages';
 import { OrgUnitChangeRequest, ApproveOrgUnitParams } from '../../types';
-import { Selection } from '../../../types/selection';
 import { useGetApprovalProposalsParams } from './useGetApprovalProposals';
 
 export type BulkDeleteBody = Selection<OrgUnitChangeRequest> & {

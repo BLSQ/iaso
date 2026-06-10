@@ -253,7 +253,6 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
                         placeholder={titleMessage}
                         required={required}
                         disabled={disabled || isFetchingSource}
-                        // eslint-disable-next-line react/no-unstable-nested-components
                         label={(orgUnit: OrgUnit) => (
                             <TreeViewLabel
                                 orgUnit={orgUnit}
@@ -290,7 +289,6 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
                     <TreeViewWithSearch
                         getChildrenData={getChildrenWithSource}
                         getRootData={getRootDataWithSource}
-                        // eslint-disable-next-line react/no-unstable-nested-components
                         label={(orgUnit: OrgUnit) => (
                             <TreeViewLabel
                                 orgUnit={orgUnit}

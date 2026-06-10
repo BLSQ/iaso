@@ -1,15 +1,15 @@
 import React, { FunctionComponent } from 'react';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { Box, useTheme } from '@mui/material';
-import { useParamsObject } from '../../../routing/hooks/useParamsObject';
-import { baseUrls } from '../../../constants/urls';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import TopBar from '../../../components/nav/TopBarComponent';
-import MESSAGES from '../messages';
-import { UsersHistoryFilters } from './UsersHistoryFilters';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
+import { baseUrls } from '../../../constants/urls';
+import { useParamsObject } from '../../../routing/hooks/useParamsObject';
 import { useGetUsersHistory } from '../hooks/useGetUsersHistory';
-import { useUsersHistoryColumns } from './useUsersHistoryColumns';
+import MESSAGES from '../messages';
 import { UserHistoryLogDetails } from './UserHistoryLogDetails';
+import { UsersHistoryFilters } from './UsersHistoryFilters';
+import { useUsersHistoryColumns } from './useUsersHistoryColumns';
 
 const tableDefaults = {
     page: 1,
@@ -42,7 +42,7 @@ export const UsersHistory: FunctionComponent = () => {
                     extraProps={{
                         loading: isFetching,
                         defaultPageSize: data?.limit ?? tableDefaults.limit,
-                        // eslint-disable-next-line react/no-unstable-nested-components
+
                         SubComponent: log => {
                             return log ? (
                                 <UserHistoryLogDetails logId={log.id} />

@@ -1,10 +1,10 @@
+import React, { FunctionComponent } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Box, Grid, IconButton } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { isEmpty } from 'lodash';
-import React, { FunctionComponent } from 'react';
-
 import { useSafeIntl } from 'bluesquare-components';
+import { isEmpty } from 'lodash';
+
 import { Legend } from '../../../components/LegendBuilder/Legend';
 import {
     AddLegendDialog,

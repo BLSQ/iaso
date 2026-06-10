@@ -1,20 +1,39 @@
+import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
-import React from 'react';
-import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+import { useSafeIntl } from 'bluesquare-components';
+import { DateCell } from 'Iaso/components/Cells/DateTimeCell';
 import PdfSvgComponent from 'Iaso/components/svg/PdfSvgComponent';
+import { DateAsString } from 'plugins/polio/js/src/constants/types';
+import MESSAGES from '../messages';
 
-export const OpenButtonComponent = ({ onClick, date }) => (
-    <Box
-        role="button"
-        onClick={onClick}
-        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-    >
-        {DateCell({ value: date })}
+type Props = {
+    onClick: () => void;
+    date?: DateAsString;
+};
+
+export const OpenButtonComponent: FunctionComponent<Props> = ({
+    onClick,
+    date,
+}) => {
+    const { formatMessage } = useSafeIntl();
+    const dateNotFound = formatMessage(MESSAGES.dateNotFound);
+    return (
         <Box
-            component="span"
-            sx={{ marginLeft: 1, position: 'relative', top: 3 }}
+            role="button"
+            onClick={onClick}
+            sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}
         >
-            <PdfSvgComponent sx={{ fontSize: '1.2rem' }} />
+            {date ? DateCell({ value: date }) : dateNotFound}
+            <Box
+                component="span"
+                sx={{ marginLeft: 1, position: 'relative', top: 3 }}
+            >
+                <PdfSvgComponent sx={{ fontSize: '1.2rem' }} />
+            </Box>
         </Box>
-    </Box>
-);
+    );
+};

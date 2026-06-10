@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useCallback, useState } from 'react';
 import { Box, Paper, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -5,7 +6,6 @@ import {
     useRedirectToReplace,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { FunctionComponent, useCallback, useState } from 'react';
 import MESSAGES from '../../../../../constants/messages';
 import { Side, Sides } from '../../../../../constants/types';
 import { LIST, MAP, paperElevation } from '../../../shared/constants';

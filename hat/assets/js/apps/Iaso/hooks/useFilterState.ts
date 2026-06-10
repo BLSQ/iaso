@@ -1,10 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRedirectTo, useRedirectToReplace } from 'bluesquare-components';
 import { isEqual } from 'lodash';
-import {
-    useGetMultipleOrgUnits,
-    useGetOrgUnit,
-} from '../domains/orgUnits/components/TreeView/requests';
+import { useGetMultipleOrgUnits } from '../domains/orgUnits/components/TreeView/requests';
 import { OrgUnit } from '../domains/orgUnits/types/orgUnit';
 
 export type FilterState = {
@@ -19,7 +16,7 @@ export type FilterState = {
 
 type FilterStateParams = {
     baseUrl: string;
-    params: Record<string, unknown>;
+    params?: Record<string, unknown>;
     withPagination?: boolean;
     saveSearchInHistory?: boolean;
     searchActive?: string; // the key of the params used to activate search. If no such param exists, and the hook is used with a table, the table will load data onMount
@@ -28,7 +25,7 @@ type FilterStateParams = {
 
 const paginationParams = ['pageSize', 'page', 'order'];
 
-const removePaginationParams = params => {
+const removePaginationParams = (params: Record<string, unknown>) => {
     const newParams = {
         ...params,
     };
@@ -59,11 +56,14 @@ export const useFilterState = ({
             const tempParams = {
                 ...params,
                 ...filters,
-            };
+            } as Record<string, string | undefined>;
             if (withPagination) {
                 tempParams.page = '1';
             }
-            if (searchActive && Object.keys(params).includes(searchActive)) {
+            if (
+                searchActive &&
+                Object.keys(params ?? {}).includes(searchActive)
+            ) {
                 tempParams[searchActive] = 'true';
             }
             if (saveSearchInHistory) {
@@ -86,7 +86,7 @@ export const useFilterState = ({
     ]);
 
     const updateFilters = useCallback(
-        newFilters => {
+        (newFilters: Record<string, unknown>) => {
             const initialFilterValue = removePaginationParams(params);
             if (!isEqual(newFilters, initialFilterValue)) {
                 setFiltersUpdated(true);
@@ -100,7 +100,7 @@ export const useFilterState = ({
     );
 
     const handleChange = useCallback(
-        (key, value) => {
+        (key: string, value: unknown) => {
             const newFilters = {
                 ...filters,
                 [key]: value !== null ? value : undefined,
@@ -111,16 +111,22 @@ export const useFilterState = ({
     );
 
     const changeAndSearch = useCallback(
-        (key, value) => {
+        (key: string, value: unknown) => {
             const newFilters = {
                 ...filters,
                 [key]: value !== null ? value : undefined,
             };
-            const tempParams = { ...params, ...newFilters };
+            const tempParams = {
+                ...params,
+                ...newFilters,
+            } as Record<string, string | undefined>;
             if (withPagination) {
                 tempParams.page = '1';
             }
-            if (searchActive && Object.keys(params).includes(searchActive)) {
+            if (
+                searchActive &&
+                Object.keys(params ?? {}).includes(searchActive)
+            ) {
                 tempParams[searchActive] = 'true';
             }
             if (saveSearchInHistory) {
@@ -220,7 +226,7 @@ export const useCheckBoxFilter = ({
     const [checkBoxValue, setCheckBoxValue] = useState<boolean>(initialValue);
 
     const handleCheckboxChange = useCallback(
-        (_key, value) => {
+        (_key: string, value: boolean) => {
             handleChange(keyValue, !checkBoxValue);
             setCheckBoxValue(value);
         },

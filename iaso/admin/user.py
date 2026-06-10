@@ -8,7 +8,7 @@ from django.db.models.lookups import Exact
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import path
 
-from iaso.admin.base import admin_attr_decorator
+from iaso.admin.utils import admin_attr_decorator
 from iaso.models import Account, Profile, TenantUser
 
 
@@ -176,3 +176,13 @@ class UserAdmin(AuthUserAdmin):
             is_superuser=user.is_superuser,
             is_staff=user.is_staff,
         )
+
+
+# unregister old user admin
+try:
+    admin.site.unregister(User)
+except admin.sites.NotRegistered:
+    pass
+
+# register new user admin
+admin.site.register(User, UserAdmin)

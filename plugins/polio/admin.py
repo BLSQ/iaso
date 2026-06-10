@@ -11,7 +11,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from translated_fields import TranslatedFieldAdmin
 
-from iaso.admin import IasoJSONEditorWidget
+from iaso.admin.utils import IasoJSONEditorWidget
 from plugins.polio.api.vaccines.supply_chain import validate_rounds_and_campaign
 from plugins.polio.models.base import VaccineStockHistory
 from plugins.polio.preparedness.display_utils import (

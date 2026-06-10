@@ -1,8 +1,9 @@
 from django.conf import settings
 from django.core.validators import MinLengthValidator
 from django.db import models
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 from django.utils.text import slugify
+from django.utils.timezone import now
 
 from iaso.models.common import CreatedAndUpdatedModel
 from iaso.modules import MODULES, IasoModule
@@ -39,6 +40,12 @@ class AccountQuerySet(QuerySet):
 
         return self.filter(profile=user.iaso_profile)
 
+    def exclude_disabled_accounts(self):
+        return self.exclude(Q(disabled_at__isnull=False) & Q(disabled_at__lte=now()))
+
+    def only_disabled_accounts(self):
+        return self.filter(Q(disabled_at__isnull=False) & Q(disabled_at__lte=now()))
+
 
 class Account(CreatedAndUpdatedModel):
     """Account represent a tenant (=roughly a client organization or a country)"""
@@ -57,6 +64,7 @@ class Account(CreatedAndUpdatedModel):
     custom_translations = models.JSONField(null=True, blank=True)
     enforce_password_validation = models.BooleanField(default=True)
     anthropic_api_key = EncryptedTextField(null=True, blank=True, help_text="Anthropic API key used by the Form AI")
+    disabled_at = models.DateTimeField(null=True)
 
     objects = models.Manager.from_queryset(AccountQuerySet)()
 
@@ -115,3 +123,7 @@ class Account(CreatedAndUpdatedModel):
         for module in self.iaso_modules:
             permissions.extend(module.permissions)
         return permissions
+
+    @property
+    def is_active(self):
+        return not self.disabled_at or self.disabled_at <= now()

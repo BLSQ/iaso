@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib import admin
 
-from iaso.admin import IasoJSONEditorWidget
+from iaso.admin.utils import IasoJSONEditorWidget
 from iaso.models import OpenHEXAInstance, OpenHEXAWorkspace
 
 

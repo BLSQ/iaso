@@ -14,6 +14,7 @@ django-qr-code==4.0.1 # https://django-qr-code.readthedocs.io/en/latest/
 django-stubs-ext==4.2.7  # https://github.com/typeddjango/django-stubs/tags
 django-axes==8.0.0 # https://github.com/jazzband/django-axes/tags
 django-appconf==1.2.0 # https://github.com/django-compressor/django-appconf
+django-admin-action-forms==2.2.1 # https://github.com/michalpokusa/django-admin-action-forms
 
 # Django REST Framework.
 # ------------------------------------------------------------------------------

@@ -29,8 +29,11 @@ type Props = {
 };
 
 const styles: SxStyles = {
+    root: {
+        mb: 2,
+    },
     tableContainer: {
-        maxHeight: '60vh',
+        maxHeight: 'calc(95vh - 260px)',
         overscrollBehavior: 'none',
     },
     row: {
@@ -56,6 +59,7 @@ export const ModulePanel: FunctionComponent<Props> = ({
             title={formatMessage(MESSAGES.modulesTitle)}
             id={`account-${accountId}-modules`}
             data-testid={'account-module-panel'}
+            sx={styles.root}
         >
             {modules?.length ? (
                 <TableContainer sx={styles.tableContainer}>

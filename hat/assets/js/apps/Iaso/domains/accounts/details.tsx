@@ -17,6 +17,7 @@ import {
 } from 'Iaso/api/accounts';
 import { useApiModulesDropdownList } from 'Iaso/api/modules';
 import Page404 from 'Iaso/components/errors/Page404';
+import { MainWrapper } from 'Iaso/components/MainWrapper';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import { AccountFeatureFlagPanel } from 'Iaso/domains/accounts/components/details/AccountFeatureFlagPanel';
@@ -135,50 +136,42 @@ const AccountsDetails: FunctionComponent = () => {
                 </Tabs>
             </TopBar>
 
-            <Box className={`${classes.containerFullHeightNoTabPadded}`}>
-                <Grid container spacing={2} direction={'column'}>
-                    <Grid item xs={12}>
-                        <CustomTabPanel
-                            index={'general'}
-                            value={tab}
-                            spacing={2}
-                        >
-                            <Grid xs={12} md={6} item>
-                                <GeneralInfoPanel
-                                    accountId={accountId}
-                                    account={account}
-                                    AIApiKey={AIApiKey}
-                                />
-                                <AccountFeatureFlagPanel
-                                    accountId={accountId}
-                                    accountFeatureFlags={accountFeatureFlags}
-                                    account={account}
-                                />
-                            </Grid>
-                            <Grid xs={12} md={6} item>
-                                <ModulePanel
-                                    accountId={accountId}
-                                    account={account}
-                                    modules={modules}
-                                />
-                                <Box
-                                    sx={{
-                                        justifyContent: 'flex-end',
-                                        display: 'flex',
-                                    }}
-                                >
-                                    <LinkButton
-                                        to={`/${baseUrls.accountsEdit}/id/${params.id}/`}
-                                    >
-                                        <Edit className={classes.buttonIcon} />
-                                        {formatMessage(MESSAGES.edit)}
-                                    </LinkButton>
-                                </Box>
-                            </Grid>
-                        </CustomTabPanel>
+            <MainWrapper sx={{ p: 4 }} navHasTabs>
+                <CustomTabPanel index={'general'} value={tab} spacing={2}>
+                    <Grid xs={12} md={6} item>
+                        <GeneralInfoPanel
+                            accountId={accountId}
+                            account={account}
+                            AIApiKey={AIApiKey}
+                        />
+                        <AccountFeatureFlagPanel
+                            accountId={accountId}
+                            accountFeatureFlags={accountFeatureFlags}
+                            account={account}
+                        />
                     </Grid>
-                </Grid>
-            </Box>
+                    <Grid xs={12} md={6} item>
+                        <ModulePanel
+                            accountId={accountId}
+                            account={account}
+                            modules={modules}
+                        />
+                        <Box
+                            sx={{
+                                justifyContent: 'flex-end',
+                                display: 'flex',
+                            }}
+                        >
+                            <LinkButton
+                                to={`/${baseUrls.accountsEdit}/id/${params.id}/`}
+                            >
+                                <Edit className={classes.buttonIcon} />
+                                {formatMessage(MESSAGES.edit)}
+                            </LinkButton>
+                        </Box>
+                    </Grid>
+                </CustomTabPanel>
+            </MainWrapper>
         </>
     );
 };

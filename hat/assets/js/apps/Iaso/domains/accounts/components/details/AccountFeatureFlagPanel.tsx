@@ -26,7 +26,7 @@ type Props = {
 
 const styles: SxStyles = {
     tableContainer: {
-        maxHeight: '31.7vh',
+        maxHeight: 'calc(91.5vh - 500px)',
         overscrollBehavior: 'none',
     },
     row: {

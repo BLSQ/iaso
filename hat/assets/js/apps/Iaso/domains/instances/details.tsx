@@ -105,10 +105,10 @@ const InstanceDetails: FunctionComponent = () => {
         isLoadingInstance ||
         (currentInstance?.entity && isLoadingEntityFields);
 
-    // not showing history link in submission detail if there is only one version/log
+    // not showing history link in submission detail if there is no modification log
     // in the future. add this info directly in the instance api to not make another call;
     const { data: instanceLogsDetails } = useGetInstanceLogs(instanceId);
-    const showHistoryLink = (instanceLogsDetails?.list?.length || 0) > 1;
+    const showHistoryLink = (instanceLogsDetails?.list?.length || 0) > 0;
 
     return (
         <section className={classes.relativeContainer}>

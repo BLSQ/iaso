@@ -50,7 +50,7 @@ const getInstanceLogDetail = (
 };
 export const useGetInstanceLogDetail = (
     instanceId: number | string,
-    logIds: string[],
+    logIds: (string | undefined)[],
 ): Array<UseQueryResult<InstanceLogData, unknown>> => {
     // @ts-ignore => ignoring this, useQueies is working with unknown type as you can have multiple calls with multiple types
     return useSnackQueries<InstanceLogData>(
@@ -69,7 +69,9 @@ export const useGetInstanceLogDetail = (
 const getVersion = (
     formVersionId: string | undefined,
 ): Promise<Record<string, any>> => {
-    return getRequest(`/api/formversions/${formVersionId}/?fields=id,name,descriptor`);
+    return getRequest(
+        `/api/formversions/${formVersionId}/?fields=id,name,descriptor`,
+    );
 };
 export const useGetFormDescriptor = (
     formVersionId?: string,

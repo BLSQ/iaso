@@ -92,7 +92,7 @@ export const InstanceLogInfos: FunctionComponent<Props> = ({
             // Form version
             {
                 label: formatMessage(MESSAGES.form_version),
-                value: infos?.json._version,
+                value: infos?.json?._version,
                 index: 5,
             },
             // Period
@@ -115,7 +115,7 @@ export const InstanceLogInfos: FunctionComponent<Props> = ({
             formatMessage,
             formatPeriod,
             infos?.deleted,
-            infos?.json._version,
+            infos?.json?._version,
             infos?.period,
         ],
     );

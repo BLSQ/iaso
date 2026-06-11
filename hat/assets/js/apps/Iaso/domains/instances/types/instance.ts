@@ -84,7 +84,7 @@ export type InstanceLogsDetail = Pagination & {
     list: Array<InstanceLogDetail>;
 };
 
-type NewValue = {
+type InstanceLogValue = {
     fields: Record<string, any>;
 };
 
@@ -92,7 +92,8 @@ export type InstanceLogData = {
     id: number;
     content_type: string;
     object_id: string;
-    new_value: NewValue[];
+    new_value: InstanceLogValue[];
+    past_value: InstanceLogValue[];
     source: string;
     user: User;
     possible_fields: Record<string, any>[];

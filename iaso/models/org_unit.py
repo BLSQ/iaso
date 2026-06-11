@@ -78,20 +78,33 @@ class OrgUnitTypeQuerySet(models.QuerySet):
     def countries(self):
         return self.filter(category="COUNTRY")
 
+    def filter_for_user(self, user):
+        if user and user.is_anonymous:
+            return self.none()
+
+        account = getattr(getattr(user, "iaso_profile", None), "account", None)
+
+        if not account:
+            return self.none()
+
+        queryset = self
+
+        if user and user.is_authenticated:
+            queryset = queryset.filter(projects__account=user.iaso_profile.account)
+        return queryset
+
     def filter_for_user_and_app_id(
         self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str] = None
     ):
         if user and user.is_anonymous and app_id is None:
             return self.none()
 
-        queryset = self.prefetch_related(
-            "projects",
-            "projects__account",
-            "projects__projectfeatureflags_set",
-            "allow_creating_sub_unit_types",
-            "reference_forms",
-            "sub_unit_types",
-        )
+        account = getattr(getattr(user, "iaso_profile", None), "account", None)
+
+        if not account:
+            return self.none()
+
+        queryset = self
 
         if user and user.is_authenticated:
             queryset = queryset.filter(projects__account=user.iaso_profile.account)

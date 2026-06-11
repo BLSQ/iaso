@@ -101,8 +101,7 @@ from .api.org_unit_change_request_configurations.views_mobile import MobileOrgUn
 from .api.org_unit_change_requests.views import OrgUnitChangeRequestViewSet
 from .api.org_unit_change_requests.views_mobile import MobileOrgUnitChangeRequestViewSet
 from .api.org_unit_tree.views import OrgUnitTreeViewSet
-from .api.org_unit_types import OrgUnitTypeViewSet
-from .api.org_unit_types.viewsets import OrgUnitTypeViewSetV2
+from .api.org_unit_types.views import OrgUnitTypeViewSet, OrgUnitTypeViewSetV2
 from .api.org_unit_validation_status import ValidationStatusViewSet
 from .api.org_units import OrgUnitViewSet
 from .api.pages import PagesViewSet
@@ -164,7 +163,7 @@ router.register(r"mobile/orgunits/changes", MobileOrgUnitChangeRequestViewSet, b
 router.register(r"orgunits/tree", OrgUnitTreeViewSet, basename="orgunitstree")
 router.register(r"orgunits", OrgUnitViewSet, basename="orgunits")
 router.register(r"orgunittypes", OrgUnitTypeViewSet, basename="orgunittypes")
-router.register(r"v2/orgunittypes", OrgUnitTypeViewSetV2, basename="orgunittypes")
+router.register(r"v2/orgunittypes", OrgUnitTypeViewSetV2, basename="orgunittypes_v2")
 router.register(r"apps", AppsViewSet, basename="apps")
 router.register(r"projects", ProjectsViewSet, basename="projects")
 router.register(r"potential_payments", PotentialPaymentsViewSet, basename="potential_payments")

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-11 00:00+0000\n"
+"POT-Creation-Date: 2026-06-11 07:53+0000\n"
 "PO-Revision-Date: 2026-06-11 00:00+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -15,11 +15,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-
-#: plugins/sso/templates/sso/login_subtemplate.html
-#, python-format
-msgid "Login via %(name)s"
-msgstr "Se connecter via %(name)s"
 
 #: plugins/sso/templates/sso/new_account_email.html
 #, python-format
@@ -71,8 +66,8 @@ msgstr ""
 "permissions appropriées à ce compte utilisateur.\n"
 "\n"
 "Si vous avez besoin d'informations supplémentaires ou rencontrez des "
-"problèmes, veuillez ne pas répondre à cet e-mail automatique, mais "
-"contacter directement le personnel.\n"
+"problèmes, veuillez ne pas répondre à cet e-mail automatique, mais contacter "
+"directement le personnel.\n"
 "\n"
 "Merci de votre attention rapide à cette question. Vos efforts contribuent "
 "grandement au bon fonctionnement et à la convivialité de notre plateforme.\n"
@@ -84,3 +79,7 @@ msgstr ""
 #, python-format
 msgid "New User Account %(username)s Awaiting Access Permissions"
 msgstr "Nouveau compte utilisateur %(username)s en attente de permissions"
+
+#, python-format
+#~ msgid "Login via %(name)s"
+#~ msgstr "Se connecter via %(name)s"

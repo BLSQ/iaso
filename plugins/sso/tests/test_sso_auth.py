@@ -1,27 +1,34 @@
 from unittest.mock import patch
 
 from allauth.socialaccount.models import SocialAccount
+from django.test import override_settings
 
 from iaso import models as m
 from iaso.test import APITestCase
 from plugins.sso.views import ExtraData
 
 
+# Self-contained SSO config for the tests. It is injected via ``override_settings``
+# together with a dedicated ``ROOT_URLCONF`` (see ``plugins/sso/tests/urls.py``) so the
+# provider URLs are registered even when SSO is not configured in the environment (e.g. CI).
 SSO_TEST_CONFIG = {
     "who": {
         "name": "WHO",
+        "client_id": "test-client-id",
+        "client_secret": "test-secret",
         "authorize_url": "https://login.microsoftonline.com/test-tenant/oauth2/v2.0/authorize",
         "token_url": "https://login.microsoftonline.com/test-tenant/oauth2/v2.0/token",
         "userinfo_url": "https://graph.microsoft.com/oidc/userinfo",
         "login_path": "polio/login/",
-        "callback_path": "polio/login/callback",
+        "callback_path": "polio/login/callback/",
         "token_path": "polio/token/",
-        "account_name": "test_account",
+        "account_id": "test_account",
         "email_recipients_new_account": [],
     },
 }
 
 
+@override_settings(SSO_PROVIDERS=SSO_TEST_CONFIG, ROOT_URLCONF="plugins.sso.tests.urls")
 class SSOAuthTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
@@ -44,21 +51,11 @@ class SSOAuthTestCase(APITestCase):
         mock_response = mock_get.return_value
         mock_response.json.return_value = extra_data
 
-        with patch(
-            "plugins.sso.views.SSOBaseAdapter.sso_config",
-            new_callable=lambda: property(
-                lambda self: {
-                    "account_name": "foo",
-                    "email_recipients_new_account": [],
-                    **SSO_TEST_CONFIG["who"],
-                }
-            ),
-        ):
-            response = self.client.post(
-                f"/polio/token/?app_id={self.project.app_id}&app_version=2501",
-                format="json",
-                data={"token": "f4k3-t0k3n"},
-            )
+        response = self.client.post(
+            f"/polio/token/?app_id={self.project.app_id}&app_version=2501",
+            format="json",
+            data={"token": "f4k3-t0k3n"},
+        )
         self.assertEqual(response.status_code, 200)
 
         self.assertEqual(m.User.objects.count(), 1)
@@ -91,21 +88,11 @@ class SSOAuthTestCase(APITestCase):
         mock_response = mock_get.return_value
         mock_response.json.return_value = extra_data
 
-        with patch(
-            "plugins.sso.views.SSOBaseAdapter.sso_config",
-            new_callable=lambda: property(
-                lambda self: {
-                    "account_name": "foo",
-                    "email_recipients_new_account": [],
-                    **SSO_TEST_CONFIG["who"],
-                }
-            ),
-        ):
-            response = self.client.post(
-                f"/polio/token/?app_id={self.project.app_id}&app_version=2501",
-                format="json",
-                data={"token": "f4k3-t0k3n"},
-            )
+        response = self.client.post(
+            f"/polio/token/?app_id={self.project.app_id}&app_version=2501",
+            format="json",
+            data={"token": "f4k3-t0k3n"},
+        )
         self.assertEqual(response.status_code, 200)
 
         # Should not create a new user, but link the social account to the existing one

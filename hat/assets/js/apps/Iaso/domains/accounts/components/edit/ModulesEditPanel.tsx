@@ -22,8 +22,11 @@ type Props = {
 };
 
 const styles: SxStyles = {
+    root: {
+        mb: 2,
+    },
     tableContainer: {
-        maxHeight: '70vh',
+        maxHeight: 'calc(97vh - 240px)',
         overscrollBehavior: 'none',
     },
     row: {
@@ -46,6 +49,7 @@ export const ModulesEditPanel: FunctionComponent<Props> = ({ modules }) => {
         <WidgetPaper
             title={formatMessage(MESSAGES.modulesTitle)}
             id={'edit-modules'}
+            sx={styles.root}
         >
             {modules?.length ? (
                 <>

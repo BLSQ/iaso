@@ -1,8 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Alert, Box, Button, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import {
-    commonStyles,
     LoadingSpinner,
     useRedirectTo,
     useSafeIntl,
@@ -18,6 +16,7 @@ import {
 } from 'Iaso/api/accounts';
 import { useApiModulesDropdownList } from 'Iaso/api/modules';
 import Page404 from 'Iaso/components/errors/Page404';
+import { MainWrapper } from 'Iaso/components/MainWrapper';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import { FeatureFlagsEditPanel } from 'Iaso/domains/accounts/components/edit/FeatureFlagsEditPanel';
@@ -27,21 +26,8 @@ import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { withFormikSubmitAsync } from 'Iaso/utils/forms';
 import MESSAGES from './messages';
 
-const useStyles = makeStyles((theme: any) => {
-    return {
-        ...commonStyles(theme),
-        // todo : remove this once IA-4806 has been done
-        '@global': {
-            body: {
-                overflowX: 'hidden !important',
-                overflowY: 'auto !important',
-            },
-        },
-    };
-});
 export const AccountsEdit: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
-    const classes: Record<string, string> = useStyles();
     const params = useParamsObject(baseUrls.accountsEdit);
 
     const accountId = parseInt(params.id);
@@ -115,7 +101,7 @@ export const AccountsEdit: FunctionComponent = () => {
                 goBack={() => redirectTo(redirectBackUrl)}
                 displayBackButton
             />
-            <Box className={`${classes.containerFullHeightNoTabPadded}`}>
+            <MainWrapper sx={{ p: 4 }}>
                 <FormikProvider value={formik}>
                     {formik.status && (
                         <Alert severity={'error'} sx={{ mb: 2 }}>
@@ -159,7 +145,7 @@ export const AccountsEdit: FunctionComponent = () => {
                         </Grid>
                     </Grid>
                 </FormikProvider>
-            </Box>
+            </MainWrapper>
         </>
     );
 };

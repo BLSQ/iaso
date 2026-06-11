@@ -19,7 +19,7 @@ type RowProps = {
 export const WidgetPaperRow: FunctionComponent<RowProps> = ({
     field,
     placeholder = textPlaceholder,
-}: RowProps) => {
+}) => {
     const { label, value } = field;
     const classes = useStyles();
     return (

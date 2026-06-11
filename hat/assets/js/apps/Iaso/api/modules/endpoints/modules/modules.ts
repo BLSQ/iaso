@@ -17,10 +17,10 @@ import type {
 
 import { customFetchInstance } from '../../../../../../orval/client/custom-fetch';
 import { getCustomQueryOptions } from '../../../../../../orval/mutator/custom-query-options';
-import { ModuleDropdown } from '../../models';
 import type {
     ApiModulesDropdownListParams,
     ApiModulesListParams,
+    ModuleDropdown,
     ModuleList,
 } from '../../models';
 
@@ -165,8 +165,8 @@ export const getApiModulesDropdownListUrl = (
 export const apiModulesDropdownList = async (
     params?: ApiModulesDropdownListParams,
     options?: RequestInit,
-): Promise<ModuleDropdown> => {
-    return customFetchInstance<ModuleDropdown>(
+): Promise<ModuleDropdown[]> => {
+    return customFetchInstance<ModuleDropdown[]>(
         getApiModulesDropdownListUrl(params),
         {
             credentials: 'same-origin',

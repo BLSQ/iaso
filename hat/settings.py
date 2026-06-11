@@ -819,9 +819,9 @@ CODE_CHALLENGE = generate_pkce()
 
 SOCIALACCOUNT_PROVIDERS = {}
 
+
 WFP_AUTH_CLIENT_ID = env.str("WFP_AUTH_CLIENT_ID", default=None)
-# for now, only WFP uses social_accounts
-ACTIVATE_SOCIAL_ACCOUNT = WFP_AUTH_CLIENT_ID is not None
+
 if WFP_AUTH_CLIENT_ID:
     # Activate WFP login
     # activate the wfp_auth plugin only if needed
@@ -841,6 +841,49 @@ if WFP_AUTH_CLIENT_ID:
         "IASO_ACCOUNT_NAME": iaso_account,
         "EMAIL_RECIPIENTS_NEW_ACCOUNT": env.list("WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT", default=[], delimiter=","),
     }
+
+# Generic SSO providers (e.g. WHO via Microsoft Entra ID)
+SSO_PROVIDERS = {}
+
+SSO_WHO_CLIENT_ID = os.environ.get("SSO_WHO_CLIENT_ID", "")
+if SSO_WHO_CLIENT_ID:
+    SSO_WHO_TENANT_ID = os.environ.get("SSO_WHO_TENANT_ID", "")
+    if not SSO_WHO_TENANT_ID:
+        raise ImproperlyConfigured("need SSO_WHO_TENANT_ID when SSO_WHO_CLIENT_ID is set")
+    sso_who_account = os.environ.get("SSO_WHO_ACCOUNT", "")
+    if not sso_who_account:
+        raise ImproperlyConfigured("need SSO_WHO_ACCOUNT to associate a tenant to the WHO auth server")
+
+    SSO_PROVIDERS["who"] = {
+        "name": "WHO",
+        "client_id": SSO_WHO_CLIENT_ID,
+        "client_secret": os.environ.get("SSO_WHO_CLIENT_SECRET", ""),
+        "pkce_enabled": True,
+        "scope": ["openid", "profile", "email"],
+        "authorize_url": f"https://login.microsoftonline.com/{SSO_WHO_TENANT_ID}/oauth2/v2.0/authorize",
+        "token_url": f"https://login.microsoftonline.com/{SSO_WHO_TENANT_ID}/oauth2/v2.0/token",
+        "userinfo_url": "https://graph.microsoft.com/oidc/userinfo",
+        "login_path": "polio/login/",
+        "callback_path": "polio/login/callback",
+        "token_path": "polio/token/",
+        "account_id": sso_who_account,
+        "email_recipients_new_account": os.environ.get("SSO_WHO_EMAIL_RECIPIENTS_NEW_ACCOUNT", "").split(","),
+    }
+
+# Derive allauth SOCIALACCOUNT_PROVIDERS from SSO_PROVIDERS so there is a single config dict per provider.
+for _provider_id, _config in SSO_PROVIDERS.items():
+    SOCIALACCOUNT_PROVIDERS[_provider_id] = {
+        "APP": {"client_id": _config["client_id"], "secret": _config.get("client_secret", "")},
+        "OAUTH_PKCE_ENABLED": _config.get("pkce_enabled", True),
+        "SCOPE": _config.get("scope", ["openid", "profile", "email"]),
+    }
+
+ACTIVATE_SOCIAL_ACCOUNT = bool(WFP_AUTH_CLIENT_ID) or bool(SSO_PROVIDERS)
+
+if ACTIVATE_SOCIAL_ACCOUNT:
+    if "plugins.sso" not in INSTALLED_APPS:
+        index = INSTALLED_APPS.index("allauth.socialaccount")
+        INSTALLED_APPS.insert(index + 1, "plugins.sso")
 
 CACHES = {
     "default": {

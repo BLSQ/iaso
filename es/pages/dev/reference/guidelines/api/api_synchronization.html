@@ -904,6 +904,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#integrating-with-formik" class="md-nav__link">
+    Integrating with formik
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#testing" class="md-nav__link">
     Testing
   </a>
@@ -1032,6 +1039,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#when-running-tests-with-msw-i-want-to-hide-all-the-logs-from-network-interceptor" class="md-nav__link">
+    When running tests with msw, I want to hide all the logs from network interceptor
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1089,6 +1103,7 @@
 <li><a href="#generating-new-files">Generating new files</a></li>
 <li><a href="#integrating-react-query-hooks">Integrating React Query hooks</a></li>
 <li><a href="#using-zod-schemas">Using zod schemas</a></li>
+<li><a href="#integrating-with-formik">Integrating with formik</a></li>
 <li><a href="#testing">Testing</a><ul>
 <li><a href="#integration-testing-without-a-backend">Integration testing (without a backend)</a></li>
 <li><a href="#e2e-tests">E2E Tests</a></li>
@@ -1307,6 +1322,58 @@ useApiValidationWorkflowsRetrieve(slug, {...otherQueryOptions})
 </code></pre>
 <h3 id="using-zod-schemas">Using zod schemas<a class="headerlink" href="#using-zod-schemas" title="Permanent link">#</a></h3>
 <p>WIP</p>
+<h3 id="integrating-with-formik">Integrating with formik<a class="headerlink" href="#integrating-with-formik" title="Permanent link">#</a></h3>
+<p>Each generated endpoints comed with zod schemas that we can reuse into formik. 
+In order to achieve this, we'll use <a href="#https://github.com/robertLichtnow/zod-formik-adapter">zod-formik-adapter</a> that allows us to convert zod schemas to formik compatible validation schemas.</p>
+<p>There is also a wrapper utility function <code>withFormikSubmitAsync</code> that you can use in the formik <code>save</code> method to automatically display errors from the backend.</p>
+<p>Here under an example:</p>
+<pre><code class="language-typescript">
+import React from 'react';
+import { Alert, Box } from '@mui/material';
+import {
+    ConfirmCancelModal,
+    makeFullModal,
+    useSafeIntl,
+} from 'bluesquare-components';
+import { Field, FormikProvider, useFormik } from 'formik';
+import { toFormikValidationSchema } from 'zod-formik-adapter';
+import {
+    AccountUpdateAIApiKeyRequest,
+    useApiAccountsAiApiKeyUpdate,
+} from 'Iaso/api/accounts';
+import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
+import PasswordInput from 'Iaso/components/forms/PasswordInput';
+import MESSAGES from 'Iaso/domains/accounts/messages';
+import { withFormikSubmitAsync } from 'Iaso/utils/forms';
+
+type Props = {
+    accountId: number;
+    isOpen: boolean;
+    closeDialog: () =&gt; void;
+};
+
+const EditAIApiKeyModal = ({ accountId, isOpen, closeDialog }: Props) =&gt; {
+    const { formatMessage } = useSafeIntl();
+    const { mutateAsync: saveAIApiKey } = useApiAccountsAiApiKeyUpdate({
+        mutation: {
+            ignoreErrorCodes: [400],
+        },
+    });
+    const formik = useFormik({
+        initialValues: {},
+        validationSchema: toFormikValidationSchema(
+            AccountUpdateAIApiKeyRequest,
+        ),
+        onSubmit: withFormikSubmitAsync(values =&gt;
+            saveAIApiKey({
+                id: accountId,
+                data: values as AccountUpdateAIApiKeyRequest,
+            }),
+        ),
+    });
+    ...
+
+</code></pre>
 <h3 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">#</a></h3>
 <p>The generated code includes a set of testing utilities that make it easier to write efficient and reliable tests:</p>
 <ul>
@@ -1329,6 +1396,7 @@ const server = setupServer(...getValidationWorkflowsMock());
     server.listen({
       onUnhandledRequest: 'error',
     });
+    faker.seed(1); // if you want &quot;fixed&quot; generated mock data 
   });
 
   afterEach(() =&gt; {
@@ -1337,11 +1405,11 @@ const server = setupServer(...getValidationWorkflowsMock());
   });
 
   afterAll(() =&gt; {
+    faker.seed(Date.now()); // reset
     server.close();
   });
   beforeEach(() =&gt; {
     vi.clearAllMocks();
-    faker.seed(Date.now());
     vi.unstubAllEnvs();
   });
 });
@@ -1588,6 +1656,10 @@ const NewSchema = BaseSchema.extend({
 });
 </code></pre>
 <p>This allows you to reuse the generated schema while customizing it for your specific needs.</p>
+<h3 id="when-running-tests-with-msw-i-want-to-hide-all-the-logs-from-network-interceptor">When running tests with msw, I want to hide all the logs from network interceptor<a class="headerlink" href="#when-running-tests-with-msw-i-want-to-hide-all-the-logs-from-network-interceptor" title="Permanent link">#</a></h3>
+<p>In your .env :</p>
+<pre><code class="language-dotenv">VITEST_DEBUG=&quot;!msw:*&quot;
+</code></pre>
 <hr />
 <h2 id="known-issues-and-caveats">Known Issues and Caveats<a class="headerlink" href="#known-issues-and-caveats" title="Permanent link">#</a></h2>
 <ol>

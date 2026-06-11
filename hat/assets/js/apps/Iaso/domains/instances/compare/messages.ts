@@ -101,6 +101,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.selectVersionToCompare',
         defaultMessage: 'Please select the version to compare',
     },
+    initialVersion: {
+        id: 'iaso.instance.initialVersion',
+        defaultMessage: 'Initial version',
+    },
 });
 
 export default MESSAGES;

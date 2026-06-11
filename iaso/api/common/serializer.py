@@ -53,3 +53,23 @@ class DropdownOptionsSerializer(serializers.Serializer):
 class DropdownOptionsWithRepresentationSerializer(DropdownOptionsSerializer):
     def to_representation(self, instance):
         return {"value": instance[0], "label": str(instance[1])}
+
+
+class JsonPatchOperationSerializer(serializers.Serializer):
+    """
+    Serializer just there for swagger compliance: see https://jsonpatch.com/
+    """
+
+    op = serializers.ChoiceField(
+        choices=[
+            "add",
+            "remove",
+            "replace",
+            "move",
+            "copy",
+            "test",
+        ]
+    )
+    path = serializers.CharField()
+    value = serializers.JSONField(required=False)
+    vars()["from"] = serializers.CharField(required=False)

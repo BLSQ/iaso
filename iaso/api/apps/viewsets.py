@@ -3,7 +3,11 @@ from django.http import Http404
 from drf_spectacular.utils import extend_schema
 from rest_framework import permissions
 from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import SAFE_METHODS
 from rest_framework.request import Request
+
+from iaso.api.common.permissions import HasPermission
+from iaso.permissions.core_permissions import CORE_PROJECTS_PERMISSION
 
 from ...models import Project, ProjectFeatureFlags
 from ..common import ModelViewSet
@@ -33,6 +37,13 @@ class AppsViewSet(ModelViewSet):
     lookup_value_regex = r"[\w.]+"  # allow dots in the pk url param
     http_method_names = ["get"]
     results_key = "apps"
+
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            self.permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+        else:
+            self.permission_classes = [HasPermission(CORE_PROJECTS_PERMISSION)]
+        return super().get_permissions()
 
     def get_queryset(self):
         """Prefetch feature flags to avoid N+1 when serializing projectfeatureflags_set."""

@@ -2,12 +2,13 @@ import typing
 
 from iaso import models as m
 from iaso.models import FeatureFlag
-from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_PROJECTS_PERMISSION
 from iaso.test import APITestCase
 
 
 class AppsAPITestCase(APITestCase):
-    yoda: m.User
+    user_with_projects_permission: m.User
+    user_without_projects_permission: m.User
     project_1: m.Project
     project_2: m.Project
     flag_1: m.FeatureFlag
@@ -18,7 +19,14 @@ class AppsAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         account = m.Account.objects.create(name="Global Health Initiative")
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=account, permissions=[CORE_FORMS_PERMISSION])
+        # Can perform write operations on apps.
+        cls.user_with_projects_permission = cls.create_user_with_profile(
+            username="user_with_projects_permission", account=account, permissions=[CORE_PROJECTS_PERMISSION]
+        )
+        # Authenticated but lacks `CORE_PROJECTS_PERMISSION`, so cannot write.
+        cls.user_without_projects_permission = cls.create_user_with_profile(
+            username="user_without_projects_permission", account=account, permissions=[CORE_FORMS_PERMISSION]
+        )
         cls.project_1 = m.Project.objects.create(
             name="Project 1",
             account=account,
@@ -199,7 +207,7 @@ class AppsAPITestCase(APITestCase):
             "feature_flags": [],
             "needs_authentication": False,
         }
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.post("/api/apps/", candidate_app, format="json")
         self.assertJSONResponse(response, 405)
 

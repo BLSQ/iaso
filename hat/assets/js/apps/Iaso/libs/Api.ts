@@ -3,7 +3,7 @@ import moment from 'moment';
 
 import { PostArg } from '../types/general';
 import { Nullable, Optional } from '../types/utils';
-import { FETCHING_ABORTED } from './constants';
+import { DRF_NON_FIELD_ERRORS, FETCHING_ABORTED } from './constants';
 
 export class ApiError extends Error {
     public status: any;
@@ -33,6 +33,25 @@ export class ApiError extends Error {
         this.details = json;
     }
 }
+
+export type DrfValidationErrors<TData> = Partial<
+    Record<keyof TData | typeof DRF_NON_FIELD_ERRORS, string[]>
+>;
+
+export type ApiError400<TData> = ApiError & {
+    status: 400;
+    details: DrfValidationErrors<TData>;
+};
+
+export const isApiError400 = <TData>(
+    error: unknown,
+): error is ApiError400<TData> => {
+    return (
+        error instanceof ApiError &&
+        error.status === 400 &&
+        typeof error.details === 'object'
+    );
+};
 
 const tryJson = async response => {
     try {

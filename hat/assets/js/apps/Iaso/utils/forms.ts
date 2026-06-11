@@ -1,4 +1,6 @@
+import { FormikErrors, FormikHelpers } from 'formik';
 import { get } from 'lodash';
+import { DrfValidationErrors, isApiError400 } from 'Iaso/libs/Api';
 
 /**
  * Convert a comma-separated list of ids to an array of ids
@@ -78,3 +80,39 @@ export const hasFormikFieldError = (key, errors, touched) => {
     if (!errors) return false;
     return Boolean(get(errors, key) && get(touched, key));
 };
+
+export const convertDrfErrorsToFormik = <T>(
+    errors: DrfValidationErrors<T>,
+    helpers: FormikHelpers<T>,
+) => {
+    const fieldErrors: FormikErrors<T> = {};
+
+    Object.entries(errors).forEach(([key, value]) => {
+        if (!value?.length) return;
+
+        if (key === 'non_field_errors') {
+            helpers.setStatus(value.join(' '));
+            return;
+        }
+
+        fieldErrors[key as keyof T] = value.join(' ');
+    });
+
+    helpers.setErrors(fieldErrors);
+};
+
+export const withFormikSubmitAsync =
+    <TValues>(submit: (values: TValues) => Promise<unknown>) =>
+    async (values: TValues, helpers: FormikHelpers<TValues>) => {
+        try {
+            await submit(values);
+        } catch (error) {
+            if (isApiError400<TValues>(error)) {
+                convertDrfErrorsToFormik(error.details, helpers);
+
+                return;
+            }
+
+            throw error;
+        }
+    };

@@ -49,7 +49,7 @@ const getInstanceLogDetail = (
 };
 export const useGetInstanceLogDetail = (
     instanceId: number | string,
-    logIds: string[],
+    logIds: (string | undefined)[],
 ): Array<UseQueryResult<InstanceLogData, unknown>> => {
     // @ts-ignore => ignoring this, useQueies is working with unknown type as you can have multiple calls with multiple types
     return useSnackQueries<InstanceLogData>(

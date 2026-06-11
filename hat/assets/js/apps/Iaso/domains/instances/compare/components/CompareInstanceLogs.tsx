@@ -38,12 +38,39 @@ export const CompareInstanceLogs: FunctionComponent = () => {
     const goBack = useGoBack(baseUrls.instances);
     const redirectToReplace = useRedirectToReplace();
     const { instanceIds: instanceId } = params;
+    const { formatMessage }: { formatMessage: IntlFormatMessage } =
+        useSafeIntl();
 
     const {
-        data: instanceLogsDropdown,
+        data: rawInstanceLogsDropdown,
         isFetching: isFetchingInstanceLogs,
         isError,
     } = useGetInstanceLogs(instanceId);
+
+    const instanceLogsDropdown = useMemo(() => {
+        if (!rawInstanceLogsDropdown) return undefined;
+        if (rawInstanceLogsDropdown.length === 0) return [];
+
+        return [
+            ...rawInstanceLogsDropdown,
+            {
+                value: 'initial',
+                label: formatMessage(MESSAGES.initialVersion),
+            },
+        ];
+    }, [rawInstanceLogsDropdown, formatMessage]);
+
+    const oldestLogId = useMemo(() => {
+        if (!rawInstanceLogsDropdown || rawInstanceLogsDropdown.length === 0)
+            return undefined;
+        return rawInstanceLogsDropdown[rawInstanceLogsDropdown.length - 1]
+            ?.value;
+    }, [rawInstanceLogsDropdown]);
+
+    const logIdA =
+        params.logA === 'initial' ? oldestLogId?.toString() : params.logA;
+    const logIdB =
+        params.logB === 'initial' ? oldestLogId?.toString() : params.logB;
 
     const [
         {
@@ -56,32 +83,37 @@ export const CompareInstanceLogs: FunctionComponent = () => {
             isFetching: isInstanceLogBFetching,
             isError: isInstanceLogBError,
         },
-    ] = useGetInstanceLogDetail(instanceId, [params.logA, params.logB]);
+    ] = useGetInstanceLogDetail(instanceId, [logIdA, logIdB]);
 
-    const instanceLogContent = useMemo(
-        () => ({
-            logA: instanceLogA?.new_value[0]?.fields,
-            logB: instanceLogB?.new_value[0]?.fields,
+    const instanceLogContent = useMemo(() => {
+        const logAValue =
+            params.logA === 'initial'
+                ? instanceLogA?.past_value[0]?.fields
+                : instanceLogA?.new_value[0]?.fields;
+        const logBValue =
+            params.logB === 'initial'
+                ? instanceLogB?.past_value[0]?.fields
+                : instanceLogB?.new_value[0]?.fields;
+        return {
+            logA: logAValue,
+            logB: logBValue,
             logAFiles: instanceLogA?.files,
             logBFiles: instanceLogB?.files,
             formDescriptorA: instanceLogA?.form_descriptor,
             formDescriptorB: instanceLogB?.form_descriptor,
             fields: instanceLogA?.possible_fields,
-        }),
-        [instanceLogA, instanceLogB],
-    );
+        };
+    }, [instanceLogA, instanceLogB, params.logA, params.logB]);
+
     const isLogDetailLoading = isInstanceLogAFetching || isInstanceLogBFetching;
     const isLogDetailError = isInstanceLogAError || isInstanceLogBError;
     const classes: Record<string, string> = useStyles();
 
-    const { formatMessage }: { formatMessage: IntlFormatMessage } =
-        useSafeIntl();
-
     const [logAInitialValue, setLogAInitialValue] = useState<
-        number | undefined
+        string | number | undefined
     >(undefined);
     const [logBInitialValue, setLogBInitialValue] = useState<
-        number | undefined
+        string | number | undefined
     >(undefined);
 
     const handleChange = (key, value) => {
@@ -150,14 +182,17 @@ export const CompareInstanceLogs: FunctionComponent = () => {
                             dropDownHandleChange={handleChange}
                             value={params.logA || logAInitialValue}
                             label={MESSAGES.instanceLogsVersionA}
-                            user={instanceLogA?.user}
+                            user={
+                                params.logA === 'initial'
+                                    ? undefined
+                                    : instanceLogA?.user
+                            }
                             infos={instanceLogContent.logA}
                             loading={isInstanceLogAFetching}
                             options={instanceLogsDropdown?.filter(
                                 instance =>
-                                    instance.value !==
-                                    (parseInt(params.logB, 10) ||
-                                        logBInitialValue),
+                                    String(instance.value) !==
+                                    String(params.logB || logBInitialValue),
                             )}
                             dropDownLoading={isFetchingInstanceLogs}
                         />
@@ -171,14 +206,17 @@ export const CompareInstanceLogs: FunctionComponent = () => {
                             label={MESSAGES.instanceLogsVersionB}
                             options={instanceLogsDropdown?.filter(
                                 instance =>
-                                    instance.value !==
-                                    (parseInt(params.logA, 10) ||
-                                        logAInitialValue),
+                                    String(instance.value) !==
+                                    String(params.logA || logAInitialValue),
                             )}
-                            loading={isFetchingInstanceLogs}
-                            user={instanceLogB?.user}
+                            loading={isInstanceLogBFetching}
+                            user={
+                                params.logB === 'initial'
+                                    ? undefined
+                                    : instanceLogB?.user
+                            }
                             infos={instanceLogContent.logB}
-                            dropDownLoading={isInstanceLogBFetching}
+                            dropDownLoading={isFetchingInstanceLogs}
                         />
                     </Grid>
 

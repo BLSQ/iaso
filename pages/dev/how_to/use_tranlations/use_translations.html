@@ -1009,6 +1009,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#zod-custom-errors-and-translations" class="md-nav__link">
+    Zod custom errors and translations
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1454,6 +1461,35 @@ export default MyPluginComponent;
 <li>Warnings will be displayed in the console during build when fallbacks are used</li>
 </ol>
 <p>For more information on creating plugins with translations, see <a href="../use_plugins/use_plugins.html">Using Plugins in Iaso Frontend</a>.</p>
+<h3 id="zod-custom-errors-and-translations">Zod custom errors and translations<a class="headerlink" href="#zod-custom-errors-and-translations" title="Permanent link">#</a></h3>
+<p>See the code in <code>hat/assets/js/apps/Iaso/libs/zodUtils.ts</code></p>
+<pre><code class="language-typescript">
+const zodMessages = {
+    required: {
+        en: 'This field is required.',
+        fr: 'Ce champ est obligatoire.',
+        es: 'Este campo es obligatorio.',
+        pt: 'Este campo é obrigatório.',
+    },
+};
+
+export async function loadZodLocale(locale: keyof typeof zodLocales) {
+    const loader = zodLocales[locale] ?? zodLocales.en;
+
+    const { default: importLocale } = await loader();
+
+    z.config({
+        ...importLocale(),
+        customError: ({ code, expected, input }) =&gt; {
+            if (code === 'invalid_type' &amp;&amp; expected === 'string' &amp;&amp; !input) {
+                return zodMessages.required?.[locale];
+            }
+            return undefined;
+        },
+    });
+}
+</code></pre>
+<p>You can there extend zodMessages to add custom messages and translations</p>
 
 
 

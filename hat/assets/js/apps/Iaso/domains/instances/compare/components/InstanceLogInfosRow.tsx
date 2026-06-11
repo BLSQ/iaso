@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { Stack, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 
 interface Props {
     label: string;
@@ -12,15 +12,14 @@ const InstanceLogInfosRow: React.FunctionComponent<Props> = ({
     value,
     valueColor = 'inherit',
 }) => (
-    <Stack direction="row" spacing={1} alignItems="center">
-        <Typography variant="body2" color={valueColor}>
-            <b>{label} :</b>
-        </Typography>
-
-        <Typography variant="body2" color={valueColor}>
-            {value}
-        </Typography>
-    </Stack>
+    <Typography
+        variant="body2"
+        color={valueColor}
+        component="div"
+        sx={{ mb: 0.5 }}
+    >
+        <b>{label} :</b> {value}
+    </Typography>
 );
 
 export default InstanceLogInfosRow;

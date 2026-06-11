@@ -101,6 +101,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.selectVersionToCompare',
         defaultMessage: 'Please select the version to compare',
     },
+    source_created_at: {
+        id: 'iaso.instance.source_created_at',
+        defaultMessage: 'Created on device',
+    },
+    created_by: {
+        id: 'iaso.label.created_by',
+        defaultMessage: 'Created by',
+    },
     initialVersion: {
         id: 'iaso.instance.initialVersion',
         defaultMessage: 'Initial version',

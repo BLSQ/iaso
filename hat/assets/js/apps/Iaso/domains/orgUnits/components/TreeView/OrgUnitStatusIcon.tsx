@@ -1,10 +1,10 @@
+import React, { FunctionComponent } from 'react';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import FlareIcon from '@mui/icons-material/Flare';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import { Box, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import MESSAGES from '../../messages';
 import { OrgUnit } from '../../types/orgUnit';
 

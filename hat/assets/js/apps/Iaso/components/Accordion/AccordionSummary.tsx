@@ -1,10 +1,10 @@
 import React from 'react';
+import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import {
     AccordionSummary as MuiAccordionSummary,
     AccordionSummaryProps,
     styled,
 } from '@mui/material';
-import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 
 export const AccordionSummary = styled((props: AccordionSummaryProps) => (
     <MuiAccordionSummary

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, UrlParams, useSafeIntl } from 'bluesquare-components';
@@ -18,7 +18,8 @@ import MESSAGES from './messages';
 const useStyles = makeStyles((theme: any) => {
     return { ...commonStyles(theme) };
 });
-export const Accounts = () => {
+
+export const Accounts: FunctionComponent = () => {
     const params: ParamsWithAccountId & Partial<UrlParams> = useParamsObject(
         baseUrls.accounts,
     );

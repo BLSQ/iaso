@@ -1,5 +1,5 @@
-import { SxProps, Theme } from '@mui/material';
 import React, { FunctionComponent, RefObject, useEffect, useRef } from 'react';
+import { SxProps, Theme } from '@mui/material';
 import { TileLayer, useMap } from 'react-leaflet';
 import { Tile, TilesSwitchControl } from './TilesSwitchControl';
 

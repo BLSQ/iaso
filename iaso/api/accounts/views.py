@@ -150,7 +150,10 @@ class AccountViewSet(CustomPaginationListModelMixin, RetrieveModelMixin, UpdateM
     @extend_schema(responses={200: AccountRetrieveCurrentSerializer})
     @action(detail=False, methods=["GET"], url_path="me")
     def me(self, request):
-        if not request.user and not request.user.iaso_profile and not request.user.iaso_profile.account:
+        iaso_profile = getattr(request.user, "iaso_profile", None)
+        account = getattr(iaso_profile, "account", None)
+
+        if not account:
             raise NotFound
 
         qs = list(self.get_queryset())

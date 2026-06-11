@@ -20,6 +20,7 @@ import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
 import { cloneDeep, sortBy } from 'lodash';
 import MESSAGES from '../../../../constants/messages';
+import { Side } from '../../../../constants/types';
 import {
     OK_COLOR,
     FAIL_COLOR,
@@ -39,7 +40,6 @@ import {
     LQAS_POOR,
     LQAS_VERY_POOR,
 } from '../constants';
-import { Side } from '../../../../constants/types';
 
 type SortFocus =
     | 'DISTRICT'

@@ -1,6 +1,3 @@
-import FileCopyIcon from '@mui/icons-material/FileCopy';
-import { Box, Divider, Grid } from '@mui/material';
-import { IconButton, useRedirectTo, useSafeIntl } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
@@ -8,9 +5,15 @@ import React, {
     useMemo,
     useState,
 } from 'react';
+import FileCopyIcon from '@mui/icons-material/FileCopy';
+import { Box, Divider, Grid } from '@mui/material';
+import { IconButton, useRedirectTo, useSafeIntl } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { baseUrls } from '../../../../constants/urls';
+import * as Permission from '../../../../utils/permissions';
+import { useCurrentUser } from '../../../../utils/usersUtils';
+import { userHasPermission } from '../../../users/utils';
 import MESSAGES from '../../messages';
 import {
     useCopyDataSourceVersion,
@@ -18,9 +21,6 @@ import {
     useDataSourceVersions,
 } from '../../requests';
 import { WarningMessage } from './CopyVersionWarnings';
-import { userHasPermission } from '../../../users/utils';
-import * as Permission from '../../../../utils/permissions';
-import { useCurrentUser } from '../../../../utils/usersUtils';
 
 type Props = {
     dataSourceId: number;
@@ -96,7 +96,6 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
         [allSourceVersions, destinationSourceId, formatMessage],
     );
     const nextVersionNumber =
-        // eslint-disable-next-line no-unsafe-optional-chaining
         sourceVersionsDropDown[sourceVersionsDropDown?.length - 1]?.value ?? 1;
     const [destinationVersionNumber, setDestinationVersionNumber] =
         useState(nextVersionNumber);

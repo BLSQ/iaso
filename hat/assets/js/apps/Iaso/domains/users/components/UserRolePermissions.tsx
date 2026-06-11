@@ -1,12 +1,12 @@
-import { Stack, Typography } from '@mui/material';
 import React, { FunctionComponent } from 'react';
 import {
     CheckCircleOutlineOutlined as CheckedIcon,
     HighlightOffOutlined as NotCheckedIcon,
 } from '@mui/icons-material';
+import { Stack, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import PERMISSIONS_MESSAGES from '../permissionsMessages';
 import { Permission } from '../../userRoles/types/userRoles';
+import PERMISSIONS_MESSAGES from '../permissionsMessages';
 
 type Props = {
     original: any;

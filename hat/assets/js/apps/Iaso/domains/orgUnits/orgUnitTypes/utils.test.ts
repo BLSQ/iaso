@@ -59,7 +59,11 @@ describe('flattenOrgUnitTypeHierarchy', () => {
     });
 
     it('does not filter when orgUnitTypeId is not provided', () => {
-        const result = flattenOrgUnitTypeHierarchy(hierarchy, undefined, [2, 4]);
+        const result = flattenOrgUnitTypeHierarchy(
+            hierarchy,
+            undefined,
+            [2, 4],
+        );
 
         expect(result.map(item => item.value)).toEqual([1, 2, 3, 4]);
     });

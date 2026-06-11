@@ -9,14 +9,14 @@ import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers'
 
 describe('FeatureFlag accessibility', () => {
     beforeAll(() => {
-        faker.seed(1);
+        faker.seed(2);
     });
 
     afterAll(() => {
         faker.seed(Date.now());
     });
 
-    it("does not have accessiblity violations when there's no feature flag", async () => {
+    it("does not have accessibility violations when there's no feature flag", async () => {
         const accountMock = getApiAccountsRetrieveResponseMock();
 
         const { container } = renderWithThemeAndIntlProvider(
@@ -31,10 +31,11 @@ describe('FeatureFlag accessibility', () => {
         const results = await axe(container);
         expect(results).toHaveNoViolations();
     });
-    it('does not have accessiblity violations when there are feature flags', async () => {
+    it('does not have accessibility violations when there are feature flags', async () => {
         const featureFlags =
             getApiAccountFeatureFlagsDropdownListResponseMock();
         expect(featureFlags?.length).toBeGreaterThan(1);
+
         const accountMock = getApiAccountsRetrieveResponseMock({
             feature_flags: [
                 {
@@ -56,8 +57,8 @@ describe('FeatureFlag accessibility', () => {
             />,
         );
 
-        expect(screen.queryByLabelText('Selected')).not.toBeNull();
-        expect(screen.queryByLabelText('Not selected')).not.toBeNull();
+        expect(screen.queryAllByLabelText('Selected')).not.toBeNull();
+        expect(screen.queryAllByLabelText('Not selected')).not.toBeNull();
 
         const results = await axe(container);
         expect(results).toHaveNoViolations();

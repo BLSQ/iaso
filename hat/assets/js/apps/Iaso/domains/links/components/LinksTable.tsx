@@ -1,5 +1,5 @@
-import { Column } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
+import { Column } from 'bluesquare-components';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import { useLinksTableColumns } from '../config';
 import { useValidateLink } from '../hooks/useValidateLink';

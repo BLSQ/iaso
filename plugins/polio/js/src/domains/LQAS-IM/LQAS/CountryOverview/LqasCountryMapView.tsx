@@ -1,7 +1,16 @@
 import React, { FunctionComponent, useMemo } from 'react';
+import { Box } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import { GreyHashedPattern } from 'Iaso/components/maps/HashedPatterns/GreyHashedPattern';
 import MESSAGES from '../../../../constants/messages';
 import { Campaign, Side } from '../../../../constants/types';
+import { defaultShapeStyle } from '../../../../utils';
+import { MapComponent } from '../../../Campaigns/MapComponent/MapComponent';
+import { MapLegend } from '../../../Campaigns/MapComponent/MapLegend';
+import { MapLegendContainer } from '../../../Campaigns/MapComponent/MapLegendContainer';
+import { HASHED_MAP_PATTERN } from '../../shared/constants';
+import { makePopup } from '../../shared/Map/LqasImPopUp';
+import { ScopeAndDNFDisclaimer } from '../../shared/Map/ScopeAndDNFDisclaimer';
 import {
     ConvertedLqasImData,
     LqasImMapLayer,
@@ -9,15 +18,6 @@ import {
 } from '../../types';
 import { lqasDistrictColors } from '../constants';
 import { makeLqasMapLegendItems } from '../utils';
-import { Box } from '@mui/material';
-import { MapLegendContainer } from '../../../Campaigns/MapComponent/MapLegendContainer';
-import { MapLegend } from '../../../Campaigns/MapComponent/MapLegend';
-import { MapComponent } from '../../../Campaigns/MapComponent/MapComponent';
-import { ScopeAndDNFDisclaimer } from '../../shared/Map/ScopeAndDNFDisclaimer';
-import { defaultShapeStyle } from '../../../../utils';
-import { HASHED_MAP_PATTERN } from '../../shared/constants';
-import { GreyHashedPattern } from 'Iaso/components/maps/HashedPatterns/GreyHashedPattern';
-import { makePopup } from '../../shared/Map/LqasImPopUp';
 import { findScopeIdsForRound } from './utils';
 
 const getMainLayerStyles = (shape: LqasImMapLayer): MapColorConfig => {

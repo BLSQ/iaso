@@ -1,6 +1,6 @@
+import React, { FunctionComponent } from 'react';
 import { Typography } from '@mui/material';
 import { SimpleModal, useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import MESSAGES from '../messages';
 import DialogInfoButton from './DialogInfoButton';
 
@@ -29,7 +29,6 @@ const UserRoleDialogInfoComponent: FunctionComponent<Props> = ({
             dataTestId="userRoleDialogInfo"
             titleMessage={formatMessage(MESSAGES.userRoleDialogInfoTitle)}
             closeDialog={handleClose}
-            // eslint-disable-next-line react/no-unstable-nested-components
             buttons={() => <DialogInfoButton handleClose={handleClose} />}
             maxWidth="sm"
             backdropClick

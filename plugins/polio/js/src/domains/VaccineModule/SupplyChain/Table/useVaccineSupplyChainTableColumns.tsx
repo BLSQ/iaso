@@ -18,10 +18,10 @@ import {
 } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { baseUrls } from '../../../../constants/urls';
+import { CampaignNameWithWarning } from '../../StockManagement/StockVariation/Table/CampaignNameWithWarning';
 import { useDeleteVrf } from '../hooks/api/vrf';
 import MESSAGES from '../messages';
 import { SupplyChainList } from '../types';
-import { CampaignNameWithWarning } from '../../StockManagement/StockVariation/Table/CampaignNameWithWarning';
 
 export const useVaccineSupplyChainTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();

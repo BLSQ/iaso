@@ -11,11 +11,8 @@ class TestAccountFeatureFlagDropdown(SwaggerTestCaseMixin, APITestCase):
         super().setUp()
         account = Account.objects.create(name="account")
 
-        # delete the ones created by migration
-        AccountFeatureFlag.objects.all().delete()
-
-        for i in range(20):
-            AccountFeatureFlag.objects.create(name=f"test-name-{i}", code=f"test-code-{i}")
+        self.ff_length = AccountFeatureFlag.objects.count()
+        self.assertGreater(self.ff_length, 0)
 
         self.john_doe = self.create_user_with_profile(username="john.doe", account=account)
         self.john_wick = self.create_user_with_profile(
@@ -40,20 +37,21 @@ class TestAccountFeatureFlagDropdown(SwaggerTestCaseMixin, APITestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(4):
             # 1-2 PERMISSION CHECK
-            # 3 SELECT
+            # 3 Serializer populate
+            # 4 SELECT
             res = self.client.get(reverse("account_feature_flags-dropdown"))
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
-        self.assertValidData(res_data, 20)
+        self.assertValidData(res_data, self.ff_length)
 
     def test_list(self):
         self.client.force_authenticate(self.john_wick)
         res = self.client.get(reverse("account_feature_flags-dropdown"))
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
-        self.assertValidData(res_data, 20)
+        self.assertValidData(res_data, self.ff_length)
 
-        self.assertCountEqual(res_data, [{"value": f"test-code-{i}", "label": f"test-name-{i}"} for i in range(20)])
+        self.assertCountEqual(res_data, [{"value": x.code, "label": x.name} for x in AccountFeatureFlag.objects.all()])
 
     def test_list_empty(self):
         """

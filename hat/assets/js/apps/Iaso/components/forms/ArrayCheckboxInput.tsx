@@ -42,6 +42,7 @@ export const ArrayCheckboxInput = <T,>({
                 <Checkbox
                     checked={checked}
                     onChange={onChange ?? handleChange}
+                    size="small"
                 />
             }
             label={label}

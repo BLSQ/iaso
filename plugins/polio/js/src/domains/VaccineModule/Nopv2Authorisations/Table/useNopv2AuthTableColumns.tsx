@@ -2,8 +2,8 @@ import React, { useMemo } from 'react';
 import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import MESSAGES from '../../../../constants/messages';
-import { Nopv2AuthorisationsStatusCell } from './Nopv2AuthorisationsStatusCell';
 import { baseUrls } from '../../../../constants/urls';
+import { Nopv2AuthorisationsStatusCell } from './Nopv2AuthorisationsStatusCell';
 
 const baseUrl = baseUrls.nopv2AuthDetails;
 

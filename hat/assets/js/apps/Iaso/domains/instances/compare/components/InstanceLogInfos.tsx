@@ -1,4 +1,5 @@
 import React, { FunctionComponent, useMemo } from 'react';
+import { Grid, Box, Card, Typography } from '@mui/material';
 import {
     useSafeIntl,
     LoadingSpinner,
@@ -6,18 +7,16 @@ import {
     textPlaceholder,
 } from 'bluesquare-components';
 
-import { Grid, Box, Card, Typography } from '@mui/material';
 import moment from 'moment';
-import { usePrettyPeriod } from '../../../periods/utils';
-
+import InputComponent from '../../../../components/forms/InputComponent';
 import { getDisplayName, User } from '../../../../utils/usersUtils';
+import { LinkToForm } from '../../../forms/components/LinkToForm';
 import { LinkToOrgUnit } from '../../../orgUnits/components/LinkToOrgUnit';
 import { useGetOrgUnitDetail } from '../../../orgUnits/hooks/requests/useGetOrgUnitDetail';
+import { usePrettyPeriod } from '../../../periods/utils';
 
 import MESSAGES from '../messages';
-import { LinkToForm } from '../../../forms/components/LinkToForm';
 import InstanceLogInfosRow from './InstanceLogInfosRow';
-import InputComponent from '../../../../components/forms/InputComponent';
 
 type Props = {
     log: string;

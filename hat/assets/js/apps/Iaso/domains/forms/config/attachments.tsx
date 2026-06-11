@@ -1,11 +1,11 @@
 import React, { ReactElement, useMemo } from 'react';
-import { useSafeIntl, IconButton, Column } from 'bluesquare-components';
 import GetAppIcon from '@mui/icons-material/GetApp';
+import { useSafeIntl, IconButton, Column } from 'bluesquare-components';
 
-import MESSAGES from '../messages';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { useDeleteAttachment } from '../hooks/useDeleteAttachment';
+import MESSAGES from '../messages';
 
 export const useGetColumns = (params, count): Column[] => {
     const { formatMessage } = useSafeIntl();

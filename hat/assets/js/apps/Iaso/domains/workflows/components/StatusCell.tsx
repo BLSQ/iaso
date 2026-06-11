@@ -1,9 +1,8 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { useTheme } from '@mui/material';
 
-import { Status } from '../types';
-
 import { useGetStatus } from '../hooks/useGetStatus';
+import { Status } from '../types';
 
 type Props = {
     status: Status;

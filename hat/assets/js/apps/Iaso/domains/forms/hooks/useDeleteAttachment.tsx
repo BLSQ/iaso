@@ -1,8 +1,8 @@
 import { UseMutationResult } from 'react-query';
+import { useDeleteTableRow } from '../../../components/tables/TableWithDeepLink';
+import { baseUrls } from '../../../constants/urls';
 import { deleteRequest } from '../../../libs/Api';
 import { useSnackMutation } from '../../../libs/apiHooks';
-import { baseUrls } from '../../../constants/urls';
-import { useDeleteTableRow } from '../../../components/tables/TableWithDeepLink';
 
 const deleteAttachment = (id: number) =>
     deleteRequest(`/api/formattachments/${id}`);

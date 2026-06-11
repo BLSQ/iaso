@@ -1,7 +1,7 @@
 import React, { useState, FunctionComponent, useCallback } from 'react';
+import SearchIcon from '@mui/icons-material/Search';
 import { Grid, Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import SearchIcon from '@mui/icons-material/Search';
 import {
     commonStyles,
     useSafeIntl,

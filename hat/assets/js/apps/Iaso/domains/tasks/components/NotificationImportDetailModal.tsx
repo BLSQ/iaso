@@ -7,10 +7,10 @@ import {
     AlertModal,
 } from 'bluesquare-components';
 
-import MESSAGES from '../messages';
-import { NotificationImportDetailButton } from './NotificationImportDetailButton';
-import { Task } from '../types';
 import { useGetPolioNotificationImport } from '../hooks/api';
+import MESSAGES from '../messages';
+import { Task } from '../types';
+import { NotificationImportDetailButton } from './NotificationImportDetailButton';
 
 type Props = {
     task: Task<any>;

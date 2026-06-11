@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { TableRow, TableCell } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { textPlaceholder } from 'Iaso/constants/uiConstants';
@@ -16,10 +16,10 @@ type RowProps = {
     placeholder?: string;
 };
 
-export const WidgetPaperRow = ({
+export const WidgetPaperRow: FunctionComponent<RowProps> = ({
     field,
     placeholder = textPlaceholder,
-}: RowProps) => {
+}) => {
     const { label, value } = field;
     const classes = useStyles();
     return (

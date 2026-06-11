@@ -74,8 +74,8 @@ export const usePolioDialogTabs = (
                     formik.values.rounds.length === 0 ||
                     Boolean(
                         formik.values.id &&
-                            formik.values.separate_scopes_per_round !==
-                                formik.initialValues.separate_scopes_per_round,
+                        formik.values.separate_scopes_per_round !==
+                            formik.initialValues.separate_scopes_per_round,
                     ) ||
                     formik.values.rounds.filter(r => !r.on_hold).length === 0,
                 disabledMessage: subActivityTooltipMsg,
@@ -118,6 +118,7 @@ export const usePolioDialogTabs = (
             return [...defaultTabs, ...polioTabs];
         }
         return defaultTabs;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         formatMessage,
         formik.errors,

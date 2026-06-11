@@ -1,13 +1,11 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
+import { Box, FormControlLabel, FormGroup, Switch } from '@mui/material';
+import { useRedirectToReplace, useSafeIntl } from 'bluesquare-components';
 import { LqasUrlParams } from '../..';
+import MESSAGES from '../../../../../constants/messages';
 import { Side } from '../../../../../constants/types';
 import { LqasFilterByCountry } from './LqasFilterByCountry';
 import { LqasFilterByDate } from './LqasFilterByDate';
-import { useRedirectToReplace, useSafeIntl } from 'bluesquare-components';
-import { Box, FormControlLabel, FormGroup, Grid, Switch } from '@mui/material';
-import MESSAGES from '../../../../../constants/messages';
-
-type FilterType = 'country' | 'date';
 
 type Props = {
     isFetching: boolean;
@@ -57,6 +55,7 @@ export const LqasCountryViewFilters: FunctionComponent<Props> = ({
             [`${side}FilterType`]: !classicModeOn ? 'country' : 'date',
         };
         redirectToReplace(currentUrl, newParams);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [redirectToReplace, currentUrl, classicModeOn]);
 
     return (

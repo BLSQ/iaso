@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import { useSafeIntl } from 'bluesquare-components';
 import { makeStyles } from '@mui/styles';
+import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../messages';
 
 const useStyles = makeStyles(theme => ({

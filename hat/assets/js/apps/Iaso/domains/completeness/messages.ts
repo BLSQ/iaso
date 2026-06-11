@@ -132,7 +132,7 @@ const MESSAGES = defineMessages({
     week: {
         id: 'iaso.label.periodType.week',
         defaultMessage: 'Week',
-    }
+    },
 });
 
 export default MESSAGES;

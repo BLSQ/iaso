@@ -2,11 +2,11 @@ import React from 'react';
 import { faker } from '@faker-js/faker';
 import { screen, waitFor } from '@testing-library/react';
 import { axe } from 'jest-axe';
-import { delay, http, HttpResponse, RequestHandlerOptions } from 'msw';
 import { setupServer } from 'msw/node';
 import { Route, Routes } from 'react-router';
 import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
+import type { AccountFeatureFlagDropdown } from 'Iaso/api/accountFeatureFlags';
 import {
     getAccountFeatureFlagsMock,
     getApiAccountFeatureFlagsDropdownListMockHandler,
@@ -16,6 +16,8 @@ import {
     getApiAccountsRetrieveResponseMock,
     getApiAccountsUpdateMockHandler,
 } from 'Iaso/api/accounts/endpoints/account/account.msw';
+import { ModuleDropdown } from 'Iaso/api/modules';
+import { getApiModulesDropdownListMockHandler } from 'Iaso/api/modules/endpoints/modules/modules.msw';
 import { baseUrls } from 'Iaso/constants/urls';
 import { AccountsEdit } from 'Iaso/domains/accounts/edit';
 import {
@@ -38,35 +40,12 @@ const renderAccountEdit = (id: number = 1234) => {
     );
 };
 
-export const getApiModuleListMockHandler = (
-    overrideResponse?: { results: Array<{ codename: string }> },
-    options?: RequestHandlerOptions,
-) => {
-    return http.get(
-        '*/api/modules/',
-        async (_info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
-            await delay(
-                (() =>
-                    process.env?.MSW_DELAY
-                        ? parseInt(process.env.MSW_DELAY)
-                        : 0)(),
-            );
-
-            return HttpResponse.json(
-                overrideResponse !== undefined ? overrideResponse : [],
-                { status: 200 },
-            );
-        },
-        options,
-    );
-};
-
 const mockUpdate = vi.fn();
 
 const server = setupServer(
     ...[getApiAccountsRetrieveMockHandler()],
     ...getAccountFeatureFlagsMock(),
-    ...[getApiModuleListMockHandler()],
+    ...[getApiModulesDropdownListMockHandler()],
     ...[
         getApiAccountsUpdateMockHandler(async info => {
             const body = await info.request.json();
@@ -77,7 +56,7 @@ const server = setupServer(
 );
 const previousDefaults = TestingQueryClient.getDefaultOptions();
 
-describe('AccountsEdit accessiblity', () => {
+describe('AccountsEdit accessibility', () => {
     beforeAll(() => {
         TestingQueryClient.setDefaultOptions({
             queries: {
@@ -121,18 +100,21 @@ describe('AccountsEdit accessiblity', () => {
             user_manual_path: 'USER MANUAL PATH',
             forum_path: 'FORUM PATH',
         });
-        const mockModules = [
-            { codename: 'DEFAULT' },
-            { codename: 'COMPLETENESS_PER_PERIOD' },
-            { codename: 'DATA_COLLECTION_FORMS' },
+        const mockModules: ModuleDropdown[] = [
+            { label: 'Default', value: 'DEFAULT' },
+            {
+                label: 'Completeness per period',
+                value: 'COMPLETENESS_PER_PERIOD',
+            },
+            { label: 'Data collection forms', value: 'DATA_COLLECTION_FORMS' },
         ];
-        const feature_flags = [
-            { label: 'FF1', value: 'FF1' },
-            { label: 'FF2', value: 'FF2' },
+        const feature_flags: AccountFeatureFlagDropdown[] = [
+            { label: 'FF1', value: 'ALLOW_SHAPE_EDITION' },
+            { label: 'FF2', value: 'ALLOW_CATCHMENT_EDITION' },
         ];
         server.use(
             getApiAccountsRetrieveMockHandler(mockAccount),
-            getApiModuleListMockHandler({ results: mockModules }),
+            getApiModulesDropdownListMockHandler(mockModules),
             getApiAccountFeatureFlagsDropdownListMockHandler(feature_flags),
         );
 

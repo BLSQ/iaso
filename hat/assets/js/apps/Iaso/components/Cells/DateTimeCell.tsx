@@ -1,7 +1,7 @@
 import React, { ReactElement } from 'react';
 import { textPlaceholder } from 'bluesquare-components';
-import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
 import moment from 'moment';
+import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
 import { apiDateFormats } from '../../utils/dates';
 import { SubTable } from './SubTable';
 
@@ -40,6 +40,7 @@ export const MultiDateTimeCellRfc = (cellInfo: {
     return (
         <>
             {valueAsList.map((lineData, index) => (
+                // eslint-disable-next-line react/no-array-index-key
                 <div key={`${lineData}${index}`}>
                     {convertToDateTimeRfc(lineData)}
                 </div>

@@ -1,7 +1,6 @@
+import { useSafeIntl } from 'bluesquare-components';
 import * as yup from 'yup';
 import { number, string } from 'yup';
-
-import { useSafeIntl } from 'bluesquare-components';
 
 import MESSAGES from '../messages';
 

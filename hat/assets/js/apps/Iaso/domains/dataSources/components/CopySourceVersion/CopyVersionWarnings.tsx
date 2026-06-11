@@ -1,6 +1,6 @@
+import React, { FunctionComponent } from 'react';
 import { Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { FunctionComponent } from 'react';
 import { FormattedMessage } from 'react-intl';
 import MESSAGES from '../../messages';
 import { useDataSourceAsDropDown } from '../../requests';

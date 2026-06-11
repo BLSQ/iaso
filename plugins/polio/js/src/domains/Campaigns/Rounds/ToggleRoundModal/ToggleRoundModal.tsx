@@ -35,7 +35,8 @@ export const ToggleRoundModal: FunctionComponent<Props> = ({
             onCancel={onChangeCurrentRoundOnly}
             confirmMessage={MESSAGES.yes}
             cancelMessage={MESSAGES.no}
-            children={null}
-        />
+        >
+            <></>
+        </ConfirmCancelModal>
     );
 };

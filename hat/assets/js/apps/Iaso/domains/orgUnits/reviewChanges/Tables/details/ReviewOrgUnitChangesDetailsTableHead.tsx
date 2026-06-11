@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
 import { Box, TableCell, TableHead, TableRow } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../messages';
 
 type Props = {

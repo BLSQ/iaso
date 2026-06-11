@@ -7,6 +7,7 @@
  */
 
 export * from './accountFeatureFlagDropdown.zod';
+export * from './accountFeatureFlagDropdownValueEnum.zod';
 export * from './accountFeatureFlagList.zod';
 export * from './apiAccountFeatureFlagsDropdownListParams.zod';
 export * from './apiAccountFeatureFlagsListParams.zod';

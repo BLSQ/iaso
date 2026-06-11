@@ -254,7 +254,7 @@ export const Table: FunctionComponent<Props> = ({
                             {data?.results &&
                                 data.results.movements.map(entry => {
                                     return (
-                                        <TableRow>
+                                        <TableRow key={entry.id}>
                                             <TableCell sx={{ height: '60px' }}>
                                                 {entry.country_name}
                                             </TableCell>

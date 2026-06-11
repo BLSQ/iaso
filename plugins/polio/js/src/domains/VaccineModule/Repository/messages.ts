@@ -93,6 +93,10 @@ export const MESSAGES = defineMessages({
         id: 'iaso.polio.repository.formAisLate',
         defaultMessage: 'Form A is late',
     },
+    dateNotFound: {
+        id: 'iaso.polio.repository.dateNotFound',
+        defaultMessage: 'Date not found',
+    },
 });
 
 export default MESSAGES;

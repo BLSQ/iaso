@@ -93,7 +93,7 @@ from .api.mobile.groups import MobileGroupsViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.mobile.storage import MobileStoragePasswordViewSet
-from .api.modules import ModulesViewSet
+from .api.modules.views import ModulesViewSet
 from .api.notifications.views import NotificationViewSet
 from .api.openhexa.views import OpenHexaPipelinesViewSet
 from .api.org_unit_change_request_configurations.views import OrgUnitChangeRequestConfigurationViewSet

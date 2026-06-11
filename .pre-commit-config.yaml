@@ -14,6 +14,6 @@ repos:
     - id: eslint
       name: eslint
       language: node
-      files: ^hat/assets/js
+      files: ^(hat/assets/js|plugins/polio/js)/
       types_or: [ javascript, jsx, ts, tsx ]
       entry: npm run fix-lint-pre-commit

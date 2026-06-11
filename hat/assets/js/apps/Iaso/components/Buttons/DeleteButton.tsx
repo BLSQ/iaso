@@ -16,7 +16,7 @@ type Props = {
     id?: string;
 } & Omit<ButtonProps, 'children'>;
 
-export const DeleteButton = ({
+export const DeleteButton: FunctionComponent<Props> = ({
     message = MESSAGES.delete,
     id = '',
     size = 'medium',

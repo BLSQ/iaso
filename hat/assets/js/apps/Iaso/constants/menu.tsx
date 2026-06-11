@@ -316,9 +316,9 @@ const menuItems = (
             icon: props => <MenuBookIcon {...props} />,
         },
         {
-            label: formatMessage(MESSAGES.validation),
+            label: formatMessage(MESSAGES.changeRequests),
             icon: props => <RuleIcon {...props} />,
-            key: 'validation',
+            key: 'changeRequests',
             subMenu: [
                 {
                     label: formatMessage(MESSAGES.reviewChangeProposals),

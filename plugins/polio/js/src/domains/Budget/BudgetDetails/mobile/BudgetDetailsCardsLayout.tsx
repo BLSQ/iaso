@@ -1,7 +1,7 @@
+import React, { FunctionComponent } from 'react';
 import { Box, Pagination } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { Paginated } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import { BudgetEventCard } from '../../cards/BudgetEventCard';
 import { BudgetStep } from '../../types';
 
@@ -32,7 +32,11 @@ export const BudgetDetailsCardsLayout: FunctionComponent<Props> = ({
         <Box width="100%">
             {budgetDetails?.results.map((budgetStep, i) => {
                 return (
-                    <Box mb={1} key={`event-${budgetStep.transition_key}-${i}`}>
+                    <Box
+                        mb={1}
+                        // eslint-disable-next-line react/no-array-index-key
+                        key={`event-${budgetStep.transition_key}-${i}`}
+                    >
                         <BudgetEventCard step={budgetStep} />
                     </Box>
                 );

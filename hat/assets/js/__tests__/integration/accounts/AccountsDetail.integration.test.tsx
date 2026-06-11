@@ -2,7 +2,7 @@ import React, { act } from 'react';
 import { faker } from '@faker-js/faker';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { delay, http, HttpResponse, type RequestHandlerOptions } from 'msw';
+import { HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { Route, Routes } from 'react-router';
 import { MemoryRouter } from 'react-router-dom';
@@ -20,6 +20,7 @@ import {
     getApiAccountsRetrieveMockHandler,
     getApiAccountsRetrieveResponseMock,
 } from 'Iaso/api/accounts/endpoints/account/account.msw';
+import { getApiModulesDropdownListMockHandler } from 'Iaso/api/modules/endpoints/modules/modules.msw';
 import { baseUrls } from 'Iaso/constants/urls';
 import AccountsDetails from 'Iaso/domains/accounts/details';
 import {
@@ -41,33 +42,10 @@ vi.mock('Iaso/domains/users/utils', async () => {
     };
 });
 
-export const getApiModuleListMockHandler = (
-    overrideResponse?: { results: Array<{ codename: string }> },
-    options?: RequestHandlerOptions,
-) => {
-    return http.get(
-        '*/api/modules/',
-        async (_info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
-            await delay(
-                (() =>
-                    process.env?.MSW_DELAY
-                        ? parseInt(process.env.MSW_DELAY)
-                        : 0)(),
-            );
-
-            return HttpResponse.json(
-                overrideResponse !== undefined ? overrideResponse : [],
-                { status: 200 },
-            );
-        },
-        options,
-    );
-};
-
 const server = setupServer(
     ...getAccountMock(),
     ...getAccountFeatureFlagsMock(),
-    ...[getApiModuleListMockHandler()],
+    ...[getApiModulesDropdownListMockHandler()],
 );
 
 const renderAccountDetail = (id: number = 1234) => {
@@ -149,16 +127,18 @@ describe('Account detail integration test', () => {
             forum_path: 'Forum path user',
             user_manual_path: 'User account manual path',
             modules: ['DEFAULT', 'COMPLETENESS_PER_PERIOD'],
-            feature_flags: [{ name: 'Hello', code: 'Hello' }],
+            feature_flags: [{ name: 'Hello', code: 'ALLOW_SHAPE_EDITION' }],
             enforce_password_validation: true,
         });
         server.use(
             getApiAccountsRetrieveMockHandler(dataAccount),
             getApiAccountsAiApiKeyRetrieveMockHandler(data),
             getApiAccountFeatureFlagsDropdownListMockHandler([
-                { label: 'Hello', value: 'Hello' },
+                { label: 'Hello', value: 'ALLOW_SHAPE_EDITION' },
             ]),
-            getApiModuleListMockHandler({ results: [{ codename: 'DEFAULT' }] }),
+            getApiModulesDropdownListMockHandler([
+                { label: 'Default', value: 'DEFAULT' },
+            ]),
         );
         renderAccountDetail();
 

@@ -1,10 +1,10 @@
 import { openSnackBar } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/snackBars/EventDispatcher';
-import { deleteRequest } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
-
 import {
     errorSnackBar,
     succesfullSnackBar,
 } from '../../../../../../../../../hat/assets/js/apps/Iaso/constants/snackBars';
+import { deleteRequest } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
+
 import { Optional } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { PREALERT, VAR, VRF, apiUrl } from '../../constants';
 import MESSAGES from '../../messages';
@@ -14,24 +14,24 @@ import {
     TabValue,
 } from '../../types';
 
-var GetFileBlobUsingURL = function (url, convertBlob) {
-    var xhr = new XMLHttpRequest();
+const GetFileBlobUsingURL = function (url, convertBlob) {
+    const xhr = new XMLHttpRequest();
     xhr.open('GET', url);
     xhr.responseType = 'blob';
-    xhr.addEventListener('load', function () {
+    xhr.addEventListener('load', () => {
         convertBlob(xhr.response);
     });
     xhr.send();
 };
 
-var blobToFile = function (blob, name) {
+const blobToFile = function (blob, name) {
     blob.lastModifiedDate = new Date();
     blob.name = name;
     return blob;
 };
 
-var GetFileObjectFromURL = function (filePathOrUrl, fileName, convertBlob) {
-    GetFileBlobUsingURL(filePathOrUrl, function (blob) {
+const GetFileObjectFromURL = function (filePathOrUrl, fileName, convertBlob) {
+    GetFileBlobUsingURL(filePathOrUrl, blob => {
         convertBlob(blobToFile(blob, fileName));
     });
 };
@@ -45,7 +45,6 @@ export const saveTab = (
     const toDelete: any = [];
     const promises: Promise<any>[] = [];
     supplyChainData?.[key]?.forEach(tabData => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { to_delete, ...dataToPass } = tabData;
         const { lot_numbers } = dataToPass;
         if (!Array.isArray(lot_numbers)) {

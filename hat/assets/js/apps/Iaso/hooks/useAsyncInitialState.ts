@@ -31,6 +31,7 @@ export const useAsyncInitialState = <T>(
     }, [initialState, keepSynced]);
     return useMemo(
         () => [state, setState, isSet.current],
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [state, setState, isSet.current],
     );
 };

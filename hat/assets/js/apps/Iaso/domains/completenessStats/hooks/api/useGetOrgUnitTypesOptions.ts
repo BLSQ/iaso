@@ -1,5 +1,5 @@
-import { UseQueryResult } from 'react-query';
 import { memoize } from 'lodash';
+import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../../libs/utils';

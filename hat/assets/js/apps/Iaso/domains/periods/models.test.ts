@@ -56,7 +56,7 @@ describe('Periods model', () => {
             `unsupported period format ${tempPeriod}`,
         );
     });
-    it('previous should raise an error if invalid period format', () => {
+    it('previous should raise an error if invalid period format (previous)', () => {
         const tempPeriod = 'ZELDA';
         expect(() => period.previous(tempPeriod)).to.throw(
             `unsupported period format ${tempPeriod}`,
@@ -86,7 +86,7 @@ describe('Periods model', () => {
                 semester: 1,
                 year: 2020,
                 periodString,
-                week: undefined
+                week: undefined,
             };
         });
         it('should create a daily period object', () => {
@@ -184,7 +184,7 @@ describe('Periods model', () => {
                 semester: 1,
                 year: 2020,
                 periodString,
-                week: undefined
+                week: undefined,
             };
         });
         it('should create a monthly period object', () => {
@@ -347,7 +347,6 @@ describe('Periods model', () => {
         });
     });
 
-
     describe('quarterly nov string', () => {
         beforeAll(() => {
             periodString = '2018NovQ1';
@@ -372,7 +371,7 @@ describe('Periods model', () => {
             );
         });
         it('monthRange should return correct month range', () => {
-            expect(period.monthRange).to.eql([11,12,1]);
+            expect(period.monthRange).to.eql([11, 12, 1]);
         });
         it('toCode should return correct code', () => {
             expect(period.toCode()).to.eql('NovQ1/2018');
@@ -381,22 +380,27 @@ describe('Periods model', () => {
             expect(period.next(periodString)).to.eql(`2018NovQ2`);
         });
         it('previousQuarter should return previous year last quarter string', () => {
-            expect(period.previous(periodString)).to.eql("2017NovQ4");
+            expect(period.previous(periodString)).to.eql('2017NovQ4');
         });
         it('nextQuarter should return next year quarter string', () => {
-            expect(period.next("2020NovQ4")).to.eql(`2021NovQ1`);
+            expect(period.next('2020NovQ4')).to.eql(`2021NovQ1`);
         });
-        it('previousQuarter should return previous quarter string', () => {     
-            expect(period.previous("2024NovQ4")).to.eql(`2024NovQ3`);
+        it('previousQuarter should return previous quarter string', () => {
+            expect(period.previous('2024NovQ4')).to.eql(`2024NovQ3`);
         });
         it('nextPeriods should return next 2 quarters', () => {
             expect(period.nextPeriods(2)).to.eql(['2018NovQ2', '2018NovQ3']);
         });
         it('previousPeriods should return previous 2 quarters', () => {
-            expect(period.previousPeriods(2)).to.eql(['2017NovQ3', '2017NovQ4']);
+            expect(period.previousPeriods(2)).to.eql([
+                '2017NovQ3',
+                '2017NovQ4',
+            ]);
         });
         it('getPeriodType should correct period type', () => {
-            expect(Period.getPeriodType('2017NovQ3')).to.eql(PERIOD_TYPE_QUARTER_NOV);
+            expect(Period.getPeriodType('2017NovQ3')).to.eql(
+                PERIOD_TYPE_QUARTER_NOV,
+            );
         });
         describe('isBefore', () => {
             it('should return true', () => {
@@ -415,7 +419,6 @@ describe('Periods model', () => {
             });
         });
     });
-
 
     describe('financial nov string', () => {
         beforeAll(() => {
@@ -441,7 +444,9 @@ describe('Periods model', () => {
             );
         });
         it('monthRange should return correct month range', () => {
-            expect(period.monthRange).to.eql([11,12,1,2,3,4,5,6,7,8,9,10]);
+            expect(period.monthRange).to.eql([
+                11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+            ]);
         });
         it('toCode should return correct code', () => {
             expect(period.toCode()).to.eql('2018Nov');
@@ -450,10 +455,10 @@ describe('Periods model', () => {
             expect(period.next(periodString)).to.eql(`2019Nov`);
         });
         it('pervious should return previous year string', () => {
-            expect(period.previous(periodString)).to.eql("2017Nov");
+            expect(period.previous(periodString)).to.eql('2017Nov');
         });
         it('next should return next year quarter string', () => {
-            expect(period.next("2020NovQ4")).to.eql(`2021NovQ1`);
+            expect(period.next('2020NovQ4')).to.eql(`2021NovQ1`);
         });
         it('nextPeriods should return next 2 years', () => {
             expect(period.nextPeriods(2)).to.eql(['2019Nov', '2020Nov']);
@@ -462,7 +467,9 @@ describe('Periods model', () => {
             expect(period.previousPeriods(2)).to.eql(['2016Nov', '2017Nov']);
         });
         it('getPeriodType should correct period type', () => {
-            expect(Period.getPeriodType('2017Nov')).to.eql(PERIOD_TYPE_FINANCIAL_NOV);
+            expect(Period.getPeriodType('2017Nov')).to.eql(
+                PERIOD_TYPE_FINANCIAL_NOV,
+            );
         });
         describe('isBefore', () => {
             it('should return true', () => {
@@ -481,7 +488,6 @@ describe('Periods model', () => {
             });
         });
     });
-
 
     describe('sixmonthly string', () => {
         beforeAll(() => {
@@ -650,7 +656,6 @@ describe('Periods model', () => {
         });
     });
 
-
     describe('weekly string', () => {
         beforeAll(() => {
             periodString = '2026W52';
@@ -720,6 +725,5 @@ describe('Periods model', () => {
                 expect(Period.isAfter('2021W1', '2021W1')).to.eql(false);
             });
         });
-    })
-
+    });
 });

@@ -1,8 +1,8 @@
 import React, { createElement, FunctionComponent, ReactNode } from 'react';
 import { Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import OrgUnitsSmallInfos from './OrgUnitsSmallInfos';
 import { OrgUnit } from '../types/orgUnit';
+import OrgUnitsSmallInfos from './OrgUnitsSmallInfos';
 
 const useStyles = makeStyles(() => ({
     root: {

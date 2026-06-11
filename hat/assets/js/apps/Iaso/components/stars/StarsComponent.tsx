@@ -1,5 +1,5 @@
-import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent, ReactElement } from 'react';
+import { makeStyles } from '@mui/styles';
 import Star from './StarSvgComponent';
 
 const useStyles = makeStyles(theme => ({

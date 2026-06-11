@@ -22,12 +22,12 @@ import moment from 'moment';
 import { Popup } from 'react-leaflet';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
+import { baseUrls } from '../../../constants/urls';
 import { usePopupState } from '../../../utils/map/usePopupState';
 import { useGetOrgUnitDetail } from '../hooks/requests/useGetOrgUnitDetail';
 import MESSAGES from '../messages';
-import { LinkToOrgUnit } from './LinkToOrgUnit';
-import { baseUrls } from '../../../constants/urls';
 import { OrgUnit } from '../types/orgUnit';
+import { LinkToOrgUnit } from './LinkToOrgUnit';
 
 //@ts-ignore
 const useStyles = makeStyles(theme => ({

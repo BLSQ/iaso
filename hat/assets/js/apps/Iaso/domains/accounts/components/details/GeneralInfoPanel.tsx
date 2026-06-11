@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
 import { Box, Table, TableBody } from '@mui/material';
@@ -22,7 +22,11 @@ type Props = {
     account: ApiAccountsRetrieveQueryResult;
     AIApiKey?: ApiAccountsAiApiKeyRetrieveQueryResult;
 };
-export const GeneralInfoPanel = ({ accountId, account, AIApiKey }: Props) => {
+export const GeneralInfoPanel: FunctionComponent<Props> = ({
+    accountId,
+    account,
+    AIApiKey,
+}) => {
     const { formatMessage } = useSafeIntl();
     const user = useCurrentUser();
     const { mutateAsync: deleteAIApiKey } = useApiAccountsAiApiKeyDestroy();
@@ -30,8 +34,9 @@ export const GeneralInfoPanel = ({ accountId, account, AIApiKey }: Props) => {
         <WidgetPaper
             title={formatMessage(MESSAGES.generalInfoTitle)}
             data-testid={'accounts-general'}
+            sx={{ mb: 2 }}
         >
-            <Table>
+            <Table size={'small'}>
                 <TableBody>
                     <Row
                         field={{
@@ -58,6 +63,7 @@ export const GeneralInfoPanel = ({ accountId, account, AIApiKey }: Props) => {
                             value: account?.forum_path,
                         }}
                     />
+                    {/* TODO: Fix this is not correct, we need to diplay key only if the module is active */}
                     {userHasAccessToModule('FORM_AI', user) && (
                         <Row
                             field={{

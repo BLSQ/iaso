@@ -36,6 +36,8 @@ jobs:
               run: |
                   npm ci
                   npm test
+            - name: Check ESLint
+              run: npm run show-lint-problems
             - name: Check Frontend (JS/React) translations
               run: |
                   python scripts/update_trads.py

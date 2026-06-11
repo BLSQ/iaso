@@ -1,14 +1,13 @@
-import { makeRedirectionUrl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
+import { makeRedirectionUrl } from 'bluesquare-components';
 import { LinkTo } from '../../../components/nav/LinkTo';
 import { baseUrls } from '../../../constants/urls';
+import { REGISTRY_READ, REGISTRY_WRITE } from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { OrgUnit, ShortOrgUnit } from '../../orgUnits/types/orgUnit';
 import { userHasOneOfPermissions } from '../../users/utils';
 
 import MESSAGES from '../messages';
-
-import { REGISTRY_READ, REGISTRY_WRITE } from '../../../utils/permissions';
 
 type Props = {
     orgUnit?: OrgUnit | ShortOrgUnit;

@@ -1,8 +1,8 @@
 import React, { FunctionComponent, useCallback } from 'react';
-import { TableRow, TableCell, Box } from '@mui/material';
-import { LinkTo } from 'Iaso/components/nav/LinkTo';
-import { DeleteIconButton } from 'Iaso/components/Buttons/DeleteIconButton';
+import { TableRow, TableCell } from '@mui/material';
 import { useFormikContext } from 'formik';
+import { DeleteIconButton } from 'Iaso/components/Buttons/DeleteIconButton';
+import { LinkTo } from 'Iaso/components/nav/LinkTo';
 import { PolioCampaignValues } from 'plugins/polio/js/src/constants/types';
 
 type Props = {

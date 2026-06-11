@@ -1,22 +1,22 @@
 import React, { FunctionComponent, useMemo } from 'react';
+import { Box, Grid } from '@mui/material';
 import {
     useSafeIntl,
     // Table,
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';
-import { Box, Grid } from '@mui/material';
-import { PaginationParams } from '../../../../../../hat/assets/js/apps/Iaso/types/general';
-import { useParamsObject } from '../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
-import { GroupedCampaignsFilter } from './GroupedCampaignsFilter';
-import { useStyles } from '../../styles/theme';
-import { GroupedCampaignDialog } from './GroupedCampaignDialog';
 import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
+import { useParamsObject } from '../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
+import { PaginationParams } from '../../../../../../hat/assets/js/apps/Iaso/types/general';
+import MESSAGES from '../../constants/messages';
+import { baseUrls } from '../../constants/urls';
+import { useStyles } from '../../styles/theme';
 import { useGroupedCampaignsColumns } from './config';
+import { GroupedCampaignDialog } from './GroupedCampaignDialog';
+import { GroupedCampaignsFilter } from './GroupedCampaignsFilter';
 import { useDeleteGroupedCampaign } from './hooks/useDeleteGroupedCampaign';
 import { useGetGroupedCampaigns } from './hooks/useGetGroupedCampaigns';
-import { baseUrls } from '../../constants/urls';
-import MESSAGES from '../../constants/messages';
 
 type Params = PaginationParams & {
     search?: string;
@@ -41,7 +41,10 @@ export const GroupedCampaigns: FunctionComponent = () => {
     }, [params]);
     const { data: groupedCampaigns, isFetching } =
         useGetGroupedCampaigns(tableParams);
-    const { mutateAsync: deleteGroupedCampaign } = useDeleteGroupedCampaign({params: tableParams, count: groupedCampaigns?.count ?? 0});
+    const { mutateAsync: deleteGroupedCampaign } = useDeleteGroupedCampaign({
+        params: tableParams,
+        count: groupedCampaigns?.count ?? 0,
+    });
     const columns = useGroupedCampaignsColumns(deleteGroupedCampaign);
 
     return (

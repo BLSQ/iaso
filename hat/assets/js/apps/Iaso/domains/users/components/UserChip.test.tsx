@@ -17,9 +17,7 @@ describe('UserChip', () => {
             />,
         );
 
-        expect(
-            screen.getByText(/ada \(Ada Lovelace\)/i),
-        ).toBeVisible();
+        expect(screen.getByText(/ada \(Ada Lovelace\)/i)).toBeVisible();
     });
 
     it('uses white label text on a dark background color', () => {

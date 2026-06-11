@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-09 21:04+0000\n"
+"POT-Creation-Date: 2026-06-11 07:53+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -231,6 +231,11 @@ msgstr "L'équipe %(site_name)s."
 #, python-format
 msgid "Password reset on %(site_name)s"
 msgstr "Réinitialisation du mot de passe sur %(site_name)s"
+
+#: hat/templates/sso/login_subtemplate.html
+#, python-format
+msgid "Login via %(name)s"
+msgstr "Se connecter via %(name)s"
 
 #~ msgid "User ID"
 #~ msgstr "ID utilisateur"

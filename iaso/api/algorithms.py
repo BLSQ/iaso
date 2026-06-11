@@ -2,6 +2,7 @@ from django.db.models import Q
 from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers, viewsets
 
+from iaso.api.common import HasPermission
 from iaso.models import MatchingAlgorithm, Project
 from iaso.permissions.core_permissions import CORE_LINKS_PERMISSION
 
@@ -22,7 +23,7 @@ class AlgorithmsViewSet(viewsets.ModelViewSet):
     GET /api/algorithms/
     """
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_LINKS_PERMISSION)]
 
     serializer_class = AlgorithmsSerializer
     http_method_names = ["get", "post", "put", "head", "options", "trace", "delete"]

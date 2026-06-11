@@ -44,7 +44,7 @@ export const InstanceLogInfos: FunctionComponent<Props> = ({
     infos,
     loading,
 }) => {
-    const formatPeriod = usePrettyPeriod();
+    // const formatPeriod = usePrettyPeriod();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
 
@@ -96,11 +96,11 @@ export const InstanceLogInfos: FunctionComponent<Props> = ({
                 index: 5,
             },
             // Period
-            {
-                label: formatMessage(MESSAGES.period),
-                value: formatPeriod(infos?.period),
-                index: 6,
-            },
+            // {
+            //     label: formatMessage(MESSAGES.period),
+            //     value: formatPeriod(infos?.period),
+            //     index: 6,
+            // },
             // Deleted
             {
                 label: formatMessage(MESSAGES.deleted),
@@ -110,13 +110,35 @@ export const InstanceLogInfos: FunctionComponent<Props> = ({
                 valueColor: infos?.deleted ? 'error' : 'inherit',
                 index: 7,
             },
+            // Created on device
+            {
+                label: formatMessage(MESSAGES.source_created_at),
+                value: infos?.source_created_at
+                    ? moment(
+                          typeof infos.source_created_at === 'number'
+                              ? infos.source_created_at * 1000
+                              : infos.source_created_at,
+                      ).format('LTS')
+                    : textPlaceholder,
+                index: 8,
+            },
+            // Created by
+            {
+                label: formatMessage(MESSAGES.created_by),
+                value: infos?.created_by
+                    ? `user_id ${infos.created_by}`
+                    : textPlaceholder,
+                index: 9,
+            },
         ],
         [
             formatMessage,
-            formatPeriod,
+            // formatPeriod,
             infos?.deleted,
             infos?.json?._version,
-            infos?.period,
+            // infos?.period,
+            infos?.source_created_at,
+            infos?.created_by,
         ],
     );
     return (

@@ -84,9 +84,7 @@ class ProjectSerializer(ModelSerializer):
     )
     # `forms` is write-only here so the projects read contract (and its query count) is unchanged.
     # `AppSerializer` re-declares it as readable for the mobile API.
-    forms = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Form.objects.all(), required=False, write_only=True
-    )
+    forms = serializers.PrimaryKeyRelatedField(many=True, queryset=Form.objects.all(), required=False, write_only=True)
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
     qr_code = serializers.SerializerMethodField()

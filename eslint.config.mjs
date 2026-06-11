@@ -377,19 +377,29 @@ export default defineConfig([
             '**/*.test.tsx',
             '**/*.test.ts',
             '**/*.integration.test.tsx',
-            '**/*.integration.test.ts'
+            '**/*.integration.test.ts',
         ],
         plugins: {
             vitest,
         },
         rules: {
             ...vitest.configs.recommended.rules,
+            'vitest/no-disabled-tests': 'off',
         },
         languageOptions: {
             globals: {
                 ...vitest.environments.env.globals,
                 ...globals.jest,
             },
+        },
+    },
+    {
+        files: ['hat/assets/js/apps/Iaso/api/**/*.{ts,tsx}'],
+        rules: {
+            // Orval-generated files: disable rules that fire on generated code.
+            // eslint-disable in orval headers breaks models/index.ts merge (orval #346).
+            'max-len': 'off',
+            'no-nested-ternary': 'off',
         },
     },
     {

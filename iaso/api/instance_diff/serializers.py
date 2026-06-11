@@ -5,26 +5,7 @@ from rest_framework import serializers
 
 from hat.audit.models import Modification
 from iaso.api.common import ModelSerializer
-
-
-class JsonPatchOperationSerializer(serializers.Serializer):
-    """
-    Serializer just there for swagger compliance: see https://jsonpatch.com/
-    """
-
-    op = serializers.ChoiceField(
-        choices=[
-            "add",
-            "remove",
-            "replace",
-            "move",
-            "copy",
-            "test",
-        ]
-    )
-    path = serializers.CharField()
-    value = serializers.JSONField(required=False)
-    vars()["from"] = serializers.CharField(required=False)
+from iaso.api.common.serializer import JsonPatchOperationSerializer
 
 
 class ModificationSerializer(ModelSerializer):

@@ -174,16 +174,22 @@ class InstanceDiffAPITestCase(SwaggerTestCaseMixin, APITestCase):
         del updated[0]["fields"]["general_validation_status"]
         updated[0]["fields"]["new_field"] = "VALID"
 
+        value = updated[0]["fields"]["created_by"]
+        del updated[0]["fields"]["created_by"]
+        updated[0]["fields"]["new_field_created_by"] = value
+
         log_modification(updated, self.instance, source=self.sw_source.name, user=self.john_wick)
 
         res = self.client.get(reverse("instances_diff-list", kwargs={"instance_id": self.instance.id}))
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data, 2)
+
         self.assertCountEqual(
             res_data["results"][0]["diff"],
             [
                 {"op": "remove", "path": "/new_field"},
                 {"op": "add", "path": "/general_validation_status", "value": ""},
                 {"op": "replace", "path": "/file", "value": self.instance.file.name},
+                {"op": "move", "from": "/new_field_created_by", "path": "/created_by"},
             ],
         )

@@ -101,7 +101,7 @@ export const useGetTeamsDropdown = (
     // This should be removed after planning page is refactored
     fullTeams = false,
 ): UseQueryResult<DropdownTeamsOptions[], Error> => {
-    const queryKey: any[] = ['teamsList', options, currentTeamId];
+    const queryKey: any[] = ['teamsDropdown', options];
     return useSnackQuery({
         queryKey,
         queryFn: () => getTeamsDropdown(options, fullTeams),
@@ -123,6 +123,8 @@ export const useGetTeamsDropdown = (
                     };
                 });
             },
+
+            keepPreviousData: true,
             staleTime: Infinity,
         },
     });

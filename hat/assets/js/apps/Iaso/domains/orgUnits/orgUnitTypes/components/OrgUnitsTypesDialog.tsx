@@ -352,7 +352,15 @@ export const OrgUnitsTypesModal: FunctionComponent<Props> = ({
                 });
             }
         }
-    }, [formState, formatMessage, resetForm, saveType, setFieldErrors]);
+    }, [
+        formState,
+        formatMessage,
+        resetForm,
+        saveType,
+        setFieldErrors,
+        createType,
+        id,
+    ]);
     const hasPermission =
         userHasOneOfPermissions(
             [Permission.ORG_UNITS, Permission.ORG_UNITS_READ],

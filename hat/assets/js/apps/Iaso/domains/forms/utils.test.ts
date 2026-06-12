@@ -1,12 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { OrgUnitTypeHierarchyDropdownValues } from '../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { FormsDropdownOptions } from './hooks/useGetFormsDropdownOptions';
 import { filterOrgUnitTypesByForms } from './utils';
 
-const createOrgUnitType = (
-    id: number,
-    name: string,
-): OrgUnitTypeHierarchyDropdownValues[number] => ({
+const createOrgUnitType = (id: number, name: string) => ({
     value: id,
     label: name,
     original: {
@@ -20,7 +16,7 @@ const createOrgUnitType = (
 });
 
 describe('filterOrgUnitTypesByForms', () => {
-    const orgUnitTypes: OrgUnitTypeHierarchyDropdownValues = [
+    const orgUnitTypes = [
         createOrgUnitType(1, 'Region'),
         createOrgUnitType(2, 'District'),
         createOrgUnitType(3, 'Facility'),

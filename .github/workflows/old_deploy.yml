@@ -15,7 +15,6 @@ on:
     # On push to develop deploy to staging
     branches:
       - develop
-      - IA-4812-clean-and-optimize-c-is-to-build-images-for-deployment-rebase
 
 
 

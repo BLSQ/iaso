@@ -105,8 +105,8 @@ jobs:
       - name: Gather required files for deployment
         run: |
           docker compose -f docker/prod/docker-compose.prod.yml -f docker/prod/docker-compose.test.yml config --no-interpolate --no-path-resolution --no-normalize > deployment/docker-compose.yml
-#          mv docker/prod/docker-compose.prod.yml deployment/docker-compose.yml
           mv cron.yaml deployment/cron.yaml
+#          mv docker/prod/docker-compose.prod.yml deployment/docker-compose.yml
 
       - name: Set env vars in beanstalk config
         run: |

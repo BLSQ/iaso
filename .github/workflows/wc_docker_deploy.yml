@@ -104,7 +104,8 @@ jobs:
 
       - name: Gather required files for deployment
         run: |
-          mv docker/prod/docker-compose.prod.yml deployment/docker-compose.yml
+          docker compose -f docker/prod/docker-compose.prod.yml -f docker/prod/docker-compose.test.yml config --no-interpolate --no-path-resolution --no-normalize > deployment/docker-compose.yml
+#          mv docker/prod/docker-compose.prod.yml deployment/docker-compose.yml
           mv cron.yaml deployment/cron.yaml
 
       - name: Set env vars in beanstalk config
@@ -114,6 +115,9 @@ jobs:
           sed -i s/prod_image_digest_value/${{ needs.check_image.outputs.image_digest }}/g ./deployment/.ebextensions/environment.config
           sed -i s/prod_image_creation_value/${{ needs.check_image.outputs.image_timestamp }}/g ./deployment/.ebextensions/environment.config
           sed -i s/prod_image_tag_value/${{ inputs.image_tag }}/g ./deployment/.ebextensions/environment.config
+          sed -i s/plugin_env_1_value/plugin_1/g ./deployment/.ebextensions/environment.config
+          sed -i s/plugin_env_2_value/plugin_2/g ./deployment/.ebextensions/environment.config
+          sed -i s/plugin_env_3_value/plugin_3/g ./deployment/.ebextensions/environment.config
           cat ./deployment/.ebextensions/environment.config
 
       - name: Set up Python 3.14

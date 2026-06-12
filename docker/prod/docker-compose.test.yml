@@ -1,0 +1,6 @@
+services:
+    iaso:
+      environment:
+        - PLUGIN_ENV_1
+        - PLUGIN_ENV_2
+        - PLUGIN_ENV_3

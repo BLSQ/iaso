@@ -8,7 +8,7 @@ from submissions import submission2xml
 def setup_registry(account_name, iaso_client):
     print("-- Setting up a form")
     project_id = iaso_client.get("/api/projects/")["projects"][0]["id"]
-    org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
+    org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["results"]
 
     health_area_type = [out for out in org_unit_types if out["name"] == "Health area/Aire de santé - AREA"][0]
     health_area_type_id = health_area_type["id"]

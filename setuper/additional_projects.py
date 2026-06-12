@@ -73,7 +73,7 @@ def get_project_ids(created_or_updated_projects, iaso_client):
 
 
 def update_org_unit_types_with_new_projects(iaso_client, project_ids):
-    org_unit_types = iaso_client.get("/api/v2/orgunittypes/?fields=id,projects")["orgUnitTypes"]
+    org_unit_types = iaso_client.get("/api/v2/orgunittypes/?fields=id,projects")["results"]
     updated_types = []
     for org_unit_type in org_unit_types:
         linked_project_ids = [project["id"] for project in org_unit_type["projects"]]

@@ -28,7 +28,7 @@ def setup_orgunits(iaso_client):
         "searches": [{"validation_status": "all", "color": "f4511e", "source": data_source_id}],
     }
     task = iaso_client.post("/api/tasks/create/orgunitsbulkupdate/", json=data)
-    org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
+    org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["results"]
     update_org_unit_sub_type(iaso_client, project_id, org_unit_types)
     iaso_client.wait_task_completion(task)
 

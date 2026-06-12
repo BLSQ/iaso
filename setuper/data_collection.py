@@ -15,9 +15,7 @@ from submissions import (
 def setup_instances(account_name, iaso_client):
     print("-- Setting up a form")
     project_id = iaso_client.get("/api/projects/")["projects"][0]["id"]
-    org_unit_types = iaso_client.get("/api/v2/orgunittypes/?with_units_count=true&fields=id,name,units_count")[
-        "orgUnitTypes"
-    ]
+    org_unit_types = iaso_client.get("/api/v2/orgunittypes/?fields=id,name,units_count")["results"]
     org_unit_type_ids = [out["id"] for out in org_unit_types]
 
     # create a form

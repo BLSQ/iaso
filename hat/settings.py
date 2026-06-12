@@ -393,7 +393,7 @@ DATABASE_ROUTERS = [
 # This database settings which duplicate the main db settings, will be used by the background task worker so that they
 # can have a connexion outside of the transaction to report the progress on a Task. see Comments in services.py
 
-if "test" in sys.argv:
+if IN_TESTS:
     # `task_logs`, `worker` and `dashboard` are separate connection aliases that all use the same
     # physical database as `default`. By default the test runner builds (and, with `--parallel`,
     # clones per worker) one test database per alias, so it would create several test databases for

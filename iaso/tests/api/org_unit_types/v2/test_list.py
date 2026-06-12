@@ -139,7 +139,7 @@ class OrgUnitTypesV2ListTestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_filter_project(self):
         self.client.force_authenticate(self.jane)
-        response = self.client.get(reverse("orgunittypes_v2-list"), data={"project": self.ead.id})
+        response = self.client.get(reverse("orgunittypes_v2-list"), data={"project": self.ead.id, "fields": ":all"})
         res_data = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeListData(res_data, 2)
 

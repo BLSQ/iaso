@@ -225,7 +225,7 @@ class AppsAPITestCase(APITestCase):
     def test_apps_update_not_allowed(self):
         """PUT /apps/<app_id>/ is no longer supported. Project updates now go through /api/projects/."""
         candidate_app = {"name": "This is an existing app", "feature_flags": []}
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
         self.assertJSONResponse(response, 405)
 

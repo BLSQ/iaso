@@ -1,7 +1,6 @@
 import logging
 
 import django.core.exceptions as django_exceptions
-import transaction
 
 from django.conf import settings
 from django.contrib.auth import get_user_model

@@ -190,3 +190,4 @@ pydantic==2.11.3  # https://github.com/pydantic/pydantic/tags
 # Testing.
 # ------------------------------------------------------------------------------
 django-test-migrations==1.4.0 # https://github.com/wemake-services/django-test-migrations
+tblib==3.0.0  # https://github.com/ionelmc/python-tblib/tags - required by `manage.py test --parallel`

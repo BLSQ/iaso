@@ -10,6 +10,7 @@ import { faker } from '@faker-js/faker';
 import { HttpResponse, delay, http } from 'msw';
 import type { RequestHandlerOptions } from 'msw';
 
+import { ModuleDropdownValueEnum } from '../../models';
 import type { ModuleDropdown, ModuleList } from '../../models';
 
 export const getApiModulesListResponseMock = (): ModuleList[] =>
@@ -32,20 +33,26 @@ export const getApiModulesListResponseMock = (): ModuleList[] =>
         })),
     ]);
 
-export const getApiModulesDropdownListResponseMock = (
-    overrideResponse: Partial<Extract<ModuleDropdown, object>> = {},
-): ModuleDropdown =>
+export const getApiModulesDropdownListResponseMock = (): ModuleDropdown[] =>
     faker.helpers.arrayElement([
-        {
+        Array.from(
+            { length: faker.number.int({ min: 1, max: 10 }) },
+            (_, i) => i + 1,
+        ).map(() => ({
             label: faker.string.alpha({ length: { min: 10, max: 20 } }),
-            value: faker.string.alpha({ length: { min: 10, max: 20 } }),
-            ...overrideResponse,
-        },
-        {
+            value: faker.helpers.arrayElement(
+                Object.values(ModuleDropdownValueEnum),
+            ),
+        })),
+        Array.from(
+            { length: faker.number.int({ min: 1, max: 10 }) },
+            (_, i) => i + 1,
+        ).map(() => ({
             label: faker.string.alpha({ length: { min: 10, max: 20 } }),
-            value: faker.string.alpha({ length: { min: 10, max: 20 } }),
-            ...overrideResponse,
-        },
+            value: faker.helpers.arrayElement(
+                Object.values(ModuleDropdownValueEnum),
+            ),
+        })),
     ]);
 
 export const getApiModulesListMockHandler = (
@@ -81,10 +88,10 @@ export const getApiModulesListMockHandler = (
 
 export const getApiModulesDropdownListMockHandler = (
     overrideResponse?:
-        | ModuleDropdown
+        | ModuleDropdown[]
         | ((
               info: Parameters<Parameters<typeof http.get>[1]>[0],
-          ) => Promise<ModuleDropdown> | ModuleDropdown),
+          ) => Promise<ModuleDropdown[]> | ModuleDropdown[]),
     options?: RequestHandlerOptions,
 ) => {
     return http.get(

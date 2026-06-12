@@ -5,7 +5,17 @@ import { BooleanInput } from 'Iaso/components/forms/BooleanInput';
 
 describe('BooleanInput accessibility', () => {
     it('has no accessibility violations', async () => {
-        const { container } = render(<BooleanInput label={'some label'} />);
+        const { container } = render(
+            <BooleanInput
+                label={'some label'}
+                field={{
+                    name: 'test',
+                    value: false,
+                    onChange: () => {},
+                    onBlur: () => {},
+                }}
+            />,
+        );
 
         const results = await axe(container);
 

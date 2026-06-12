@@ -162,7 +162,7 @@ export const csvPreview = async data => {
 };
 
 export const updateDefaultDataSource = ([accountId, defaultVersionId]) =>
-    putRequest(`/api/accounts/${accountId}/`, {
+    putRequest(`/api/accounts/${accountId}/set-default-version/`, {
         default_version: defaultVersionId,
     });
 

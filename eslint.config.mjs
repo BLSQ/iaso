@@ -199,8 +199,8 @@ export default defineConfig([
                 { extensions: ['.js', '.jsx'] },
             ],
 
-            'react/jsx-indent': ['error', 4],
-            'react/jsx-indent-props': ['error', 4],
+            'react/jsx-indent': 'off',
+            'react/jsx-indent-props': 'off',
             'import/no-named-as-default': 'off',
             'react/jsx-one-expression-per-line': 'off',
             'react/jsx-props-no-spreading': 'off',
@@ -353,8 +353,8 @@ export default defineConfig([
                 { extensions: ['.js', '.jsx', '.tsx', '.ts'] },
             ],
 
-            'react/jsx-indent': ['error', 4],
-            'react/jsx-indent-props': ['error', 4],
+            'react/jsx-indent': 'off',
+            'react/jsx-indent-props': 'off',
             'react/jsx-one-expression-per-line': 'off',
             'react/jsx-props-no-spreading': 'off',
             'react/jsx-wrap-multilines': 'off',
@@ -377,19 +377,29 @@ export default defineConfig([
             '**/*.test.tsx',
             '**/*.test.ts',
             '**/*.integration.test.tsx',
-            '**/*.integration.test.ts'
+            '**/*.integration.test.ts',
         ],
         plugins: {
             vitest,
         },
         rules: {
             ...vitest.configs.recommended.rules,
+            'vitest/no-disabled-tests': 'off',
         },
         languageOptions: {
             globals: {
                 ...vitest.environments.env.globals,
                 ...globals.jest,
             },
+        },
+    },
+    {
+        files: ['hat/assets/js/apps/Iaso/api/**/*.{ts,tsx}'],
+        rules: {
+            // Orval-generated files: disable rules that fire on generated code.
+            // eslint-disable in orval headers breaks models/index.ts merge (orval #346).
+            'max-len': 'off',
+            'no-nested-ternary': 'off',
         },
     },
     {

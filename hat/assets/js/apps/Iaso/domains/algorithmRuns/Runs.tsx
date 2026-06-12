@@ -40,7 +40,7 @@ export const Runs: FunctionComponent = () => {
         params,
         enabled: Boolean(params.searchActive),
     });
-    // declaring this here to ahev an easy access to isSaving
+    // declaring this here to have an easy access to isSaving
     const { mutateAsync: launchRun, isLoading: isSaving } =
         useLaunchAlgorithmRun();
 

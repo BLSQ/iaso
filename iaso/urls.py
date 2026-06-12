@@ -21,7 +21,8 @@ from iaso.api.tasks.create.profiles_bulk_update import ProfilesBulkUpdate
 from iaso.api.validation_workflows.views_mobile import ValidationWorkflowMobileViewSet
 from plugins.router import router as plugins_router
 
-from .api.accounts import AccountViewSet
+from .api.account_feature_flags.views import AccountFeatureFlagViewSet
+from .api.accounts.views import AccountViewSet
 from .api.algorithms import AlgorithmsViewSet
 from .api.algorithms_runs import AlgorithmsRunsViewSet
 from .api.api_import.views import APIImportViewSet
@@ -33,7 +34,6 @@ from .api.colors import colors_list
 from .api.comment import CommentViewSet
 from .api.completeness import CompletenessViewSet
 from .api.completeness_stats import CompletenessStatsV2ViewSet
-from .api.custom_translations import CustomTranslationsViewSet
 from .api.data_source_versions_synchronization.views import DataSourceVersionsSynchronizationViewSet
 from .api.data_sources import DataSourceViewSet
 from .api.deduplication.entity_duplicate import EntityDuplicateViewSet  # type: ignore
@@ -72,6 +72,7 @@ from .api.forms.views_mobile import MobileFormViewSet
 from .api.group_sets.views import GroupSetsViewSet
 from .api.groups.views import GroupsViewSet
 from .api.hesabu_descriptors import HesabuDescriptorsViewSet
+from .api.instance_diff.views import InstanceDiffViewSet
 from .api.instances.views import InstancesViewSet
 from .api.instances.views_mobile import InstancesMobileViewSet
 from .api.links import LinkViewSet
@@ -172,6 +173,7 @@ router.register(r"payments/options", PaymentOptionsViewSet, basename="paymentsop
 router.register(r"payments", PaymentsViewSet, basename="payments")
 router.register(r"instances", InstancesViewSet, basename="instances")
 router.register(r"mobile/instances", InstancesMobileViewSet, basename="mobile_instances")
+router.register(r"diff/instances/(?P<instance_id>\d+)", InstanceDiffViewSet, basename="instances_diff")
 router.register(r"forms", FormsViewSet, basename="forms")
 router.register(r"mobile/forms", MobileFormViewSet, basename="formsmobile")
 router.register(r"pages", PagesViewSet, basename="pages")
@@ -185,7 +187,7 @@ router.register(r"devicespositions?", DevicesPositionViewSet, basename="devicesp
 router.register(r"datasources/sync", DataSourceVersionsSynchronizationViewSet, basename="datasources_synchronization")
 router.register(r"datasources", DataSourceViewSet, basename="datasources")
 router.register(r"accounts", AccountViewSet, basename="accounts")
-router.register(r"custom_translations", CustomTranslationsViewSet, basename="custom_translations")
+router.register(r"account-feature-flags", AccountFeatureFlagViewSet, basename="account_feature_flags")
 router.register(r"apitoken", APITokenViewSet, basename="apitoken")
 router.register(r"sourceversions", SourceVersionViewSet, basename="sourceversion")
 router.register(r"links", LinkViewSet, basename="links")

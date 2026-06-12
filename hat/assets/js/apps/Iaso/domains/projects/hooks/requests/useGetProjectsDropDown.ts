@@ -26,6 +26,7 @@ export const useGetProjectsDropDown = (): UseQueryResult<
                     }) ?? []
                 );
             },
+            staleTime: Infinity,
         },
     });
 };

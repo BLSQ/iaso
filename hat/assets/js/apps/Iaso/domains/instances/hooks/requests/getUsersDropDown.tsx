@@ -1,4 +1,8 @@
 import { QueryClient } from 'react-query';
+import {
+    getProfilesDropdownQueryKey,
+    ProfilesDropdownParams,
+} from 'Iaso/domains/users/utils';
 import { getRequest } from 'Iaso/libs/Api';
 import { makeUrlWithParams } from 'Iaso/libs/utils';
 import { DropdownOptions } from 'Iaso/types/utils';
@@ -15,14 +19,16 @@ export const getUsersDropDown = async ({
     limit,
     queryClient,
 }: Props): Promise<DropdownOptions<number>[]> => {
-    const params = {
-        ...(limit && { limit }),
+    const params: ProfilesDropdownParams = {
+        ...(limit && { limit: `${limit}` }),
         ...(query && { search: query }),
-        ...additionalFilters,
+        ...(additionalFilters ?? {}),
     };
 
-    const data = await queryClient.fetchQuery(['profiles', params ?? {}], () =>
-        getRequest(makeUrlWithParams('/api/profiles/dropdown/', params)),
+    const data = await queryClient.fetchQuery(
+        getProfilesDropdownQueryKey(params),
+        () => getRequest(makeUrlWithParams('/api/profiles/dropdown/', params)),
+        { staleTime: 1000 * 60 * 5 },
     );
 
     return limit ? (data?.results ?? []) : data;

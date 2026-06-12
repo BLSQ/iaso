@@ -31,7 +31,6 @@ const LocalizedAppComponent: FunctionComponent<Props> = ({
 }) => {
     const { locale } = useLocale();
     const onError = (err: any): void => console.warn(err);
-
     const { pluginRoutes } = usePluginsRouteConfigs();
     const routesConfigs = useGetRoutesConfigs({ userHomePage, pluginRoutes });
     const currentRoute = useCurrentRoute(routesConfigs);

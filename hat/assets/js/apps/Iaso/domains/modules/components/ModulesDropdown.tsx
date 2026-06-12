@@ -7,7 +7,7 @@ import {
 } from 'Iaso/api/modules';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
-import { MODULES } from 'Iaso/utils/permissions';
+import { ACCOUNT_MANAGEMENT, MODULES } from 'Iaso/utils/permissions';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import MESSAGES from '../messages';
 export type ModulesDropdownProps = {
@@ -25,7 +25,10 @@ export const ModulesDropdown = ({
     ...props
 }: ModulesDropdownProps) => {
     const currentUser = useCurrentUser();
-    const hasPermissions = userHasOneOfPermissions([MODULES], currentUser);
+    const hasPermissions = userHasOneOfPermissions(
+        [MODULES, ACCOUNT_MANAGEMENT],
+        currentUser,
+    );
 
     // todo: queryKey def could maybe be more generic at orval config level?
     const { data, isLoading } = useApiModulesDropdownList(params, {

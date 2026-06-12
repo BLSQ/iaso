@@ -112,7 +112,8 @@
         "url-search-params-polyfill": "^8.2.5",
         "video.js": "^7.20.3",
         "yup": "^0.32.9",
-        "zod": "^4.3.6"
+        "zod": "^4.3.6",
+        "zod-formik-adapter": "^2.0.0"
     },
     "devDependencies": {
         "@babel/core": "^7.0.1",

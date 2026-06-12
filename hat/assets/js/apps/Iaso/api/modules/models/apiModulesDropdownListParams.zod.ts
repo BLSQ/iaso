@@ -10,6 +10,7 @@ import { z as zod } from 'zod';
 export const ApiModulesDropdownListParams = zod.strictObject({
     exclude: zod.string().optional(),
     format: zod.enum(['csv', 'json']).optional(),
+    order: zod.string().optional(),
     search: zod.string().optional(),
 });
 

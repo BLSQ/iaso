@@ -20,14 +20,16 @@ jobs:
       pull-requests: write
       contents: read
     with:
-      branch: develop
+#      branch: develop
+      branch: develop-test
       pr_title: ${{ github.event.pull_request.title }}
 
   build_and_push_image:
     needs: config
     uses: ./.github/workflows/wc_docker_build.yml
     with:
-      branch: develop
+#      branch: develop
+      branch: develop-test
       image_tags: ${{ needs.config.outputs.image_tags }}
     secrets: inherit
 
@@ -41,7 +43,8 @@ jobs:
     needs: [ build_and_push_image ]
     uses: ./.github/workflows/wc_docker_deploy.yml
     with:
-      branch: develop
+#      branch: develop
+      branch: develop-test
 #      environment: staging
       environment: upgrade
       image_tag: develop

@@ -182,7 +182,11 @@ class ProjectSerializer(ModelSerializer):
         if color is not None:
             instance.color = color
 
-        instance.needs_authentication = self.needs_authentication_based_on_feature_flags(feature_flags)
+        # Only recompute `needs_authentication` when feature flags are part of the payload.
+        # On a partial update (PATCH) that omits `feature_flags`, the existing flags are kept
+        # (see `set_forms_and_feature_flags`), so resetting this flag would desync the two.
+        if feature_flags is not None:
+            instance.needs_authentication = self.needs_authentication_based_on_feature_flags(feature_flags)
         instance.save()
         self.set_forms_and_feature_flags(instance, forms, feature_flags)
 

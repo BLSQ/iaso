@@ -121,15 +121,54 @@ class ProjectsAPITestCase(APITestCase):
         self.assertEqual(response.json()["projects"][0]["description"], "Project 1 description")
 
     def test_projects_list_query_count(self):
-        """
-        Ensure projects list query count is controlled (prefetch feature flags, etc.).
-        Note: Count set deliberately to refine during debugging.
+        """Ensure the projects list query count stays constant regardless of the number of projects.
+
+        Expected 3 queries:
+          1. resolve request.user's profile/account (filter on account),
+          2. fetch the projects page,
+          3. prefetch projectfeatureflags_set (+ featureflag) in a single query.
+        A regression introducing an N+1 on feature flags would bump this count.
         """
         self.client.force_authenticate(self.jane)
         with self.assertNumQueries(3):
             response = self.client.get("/api/projects/", headers={"Content-Type": "application/json"})
         self.assertJSONResponse(response, 200)
         self.assertValidProjectListData(response.json(), 2)
+
+    def test_projects_list_filter_by_app_id(self):
+        """GET /projects/?app_id= should return only the matching project."""
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(f"/api/projects/?app_id={self.project_1.app_id}")
+        self.assertJSONResponse(response, 200)
+        self.assertValidProjectListData(response.json(), 1)
+        self.assertEqual(response.json()["projects"][0]["app_id"], self.project_1.app_id)
+
+    def test_projects_list_filter_by_nonexistent_app_id(self):
+        """GET /projects/?app_id= with unknown value should return empty list."""
+        self.client.force_authenticate(self.jane)
+        response = self.client.get("/api/projects/?app_id=org.ghi.nope")
+        self.assertJSONResponse(response, 200)
+        self.assertValidProjectListData(response.json(), 0)
+
+    def test_projects_list_filter_by_app_id_with_restricted_user(self):
+        """GET /projects/?app_id= respects project restrictions."""
+        user = self.jane
+        project = m.Project.objects.create(
+            name="Restricted", app_id="restricted.app", account=user.iaso_profile.account
+        )
+        user.iaso_profile.projects.set([project])
+        self.client.force_authenticate(user)
+
+        # Can access the restricted project
+        response = self.client.get(f"/api/projects/?app_id={project.app_id}")
+        self.assertJSONResponse(response, 200)
+        self.assertValidProjectListData(response.json(), 1)
+        self.assertEqual(response.json()["projects"][0]["app_id"], project.app_id)
+
+        # Cannot access project_1 because it's not in user's projects
+        response = self.client.get(f"/api/projects/?app_id={self.project_1.app_id}")
+        self.assertJSONResponse(response, 200)
+        self.assertValidProjectListData(response.json(), 0)
 
     def test_projects_list_paginated(self):
         """GET /projects/ paginated happy path"""
@@ -149,6 +188,59 @@ class ProjectsAPITestCase(APITestCase):
         self.assertEqual(response_data["projects"][0]["color"], "#FF5733")
         self.assertIn("description", response_data["projects"][0])
         self.assertEqual(response_data["projects"][0]["description"], "Project 1 description")
+
+    def test_projects_list_ordering(self):
+        """GET /projects/?order=<field> orders by the requested field, both ascending and descending."""
+        account = self.jane.iaso_profile.account
+        # The shared fixture has id order == name order == app_id order, so an ascending
+        # order assertion would pass even if the `order` param were ignored (the default
+        # is `order = ["id"]`). Add a third project that breaks this coincidence so that
+        # id order, name order and app_id order are all mutually distinct.
+        m.Project.objects.create(name="Middle project", app_id="org.ghi.p15", account=account)
+        self.client.force_authenticate(self.jane)
+
+        for field in ("name", "-name", "app_id", "-app_id"):
+            key = field.lstrip("-")
+            # Compute the expected order independently from the DB instead of re-sorting the response.
+            expected = list(
+                m.Project.objects.filter(account=account)
+                .filter_on_user_projects(self.jane)
+                .order_by(field)
+                .values_list(key, flat=True)
+            )
+            response = self.client.get(f"/api/projects/?order={field}")
+            self.assertJSONResponse(response, 200)
+            actual = [project[key] for project in response.json()["projects"]]
+            self.assertEqual(actual, expected, f"order={field}")
+
+    def test_projects_list_bypass_restrictions_disabled(self):
+        """GET /projects/?bypass_restrictions=0 behaves like the default (no bypass)."""
+        self.client.force_authenticate(self.jane)
+        response = self.client.get("/api/projects/?bypass_restrictions=0")
+        self.assertJSONResponse(response, 200)
+        self.assertValidProjectListData(response.json(), 2)
+
+    def test_projects_list_pagination_returns_distinct_pages(self):
+        """GET /projects/ pagination returns the expected, distinct project on each page."""
+        self.client.force_authenticate(self.jane)
+        expected_ids = list(
+            m.Project.objects.filter(account=self.jane.iaso_profile.account).order_by("id").values_list("id", flat=True)
+        )
+
+        response = self.client.get("/api/projects/?limit=1&page=1")
+        self.assertJSONResponse(response, 200)
+        page_1 = response.json()
+        self.assertValidProjectListData(page_1, 1, paginated=True)
+        self.assertEqual(page_1["page"], 1)
+        self.assertEqual(page_1["projects"][0]["id"], expected_ids[0])
+
+        response = self.client.get("/api/projects/?limit=1&page=2")
+        self.assertJSONResponse(response, 200)
+        page_2 = response.json()
+        self.assertValidProjectListData(page_2, 1, paginated=True)
+        self.assertEqual(page_2["page"], 2)
+        self.assertEqual(page_2["projects"][0]["id"], expected_ids[1])
+        self.assertNotEqual(page_1["projects"][0]["id"], page_2["projects"][0]["id"])
 
     def test_feature_flags_list_paginated(self):
         """GET /featureflags/ paginated happy path"""
@@ -194,12 +286,26 @@ class ProjectsAPITestCase(APITestCase):
         self.assertValidProjectListData(response.json(), total_projects_for_account)
 
     def test_feature_flags_list_ok(self):
-        """GET /featureflags/ happy path: we expect one result"""
+        """GET /featureflags/ returns the feature flags, including the ones created in the fixture."""
 
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/featureflags/", headers={"Content-Type": "application/json"})
         self.assertJSONResponse(response, 200)
         self.assertValidFeatureFlagListData(response.json(), m.FeatureFlag.objects.count())
+        # Assert on actual content, not only a DB-derived count: the flags created in the
+        # fixture must be present in the payload.
+        returned_codes = {flag["code"] for flag in response.json()["featureflags"]}
+        expected_codes = {
+            self.flag_a.code,
+            self.flag_requires_auth.code,
+            self.flag_config.code,
+            self.flag_all_types.code,
+            m.FeatureFlag.REQUIRE_AUTHENTICATION,
+        }
+        self.assertTrue(
+            expected_codes.issubset(returned_codes),
+            f"missing feature flags in response: {expected_codes - returned_codes}",
+        )
 
     def test_feature_flags_list_except_no_activated_modules(self):
         """GET /featureflags/except_no_activated_modules happy path: we expect one result"""
@@ -397,9 +503,13 @@ class ProjectsAPITestCase(APITestCase):
         self.assertEqual("org.ghi.new", response_data["app_id"])
         self.assertEqual("A new project", response_data["description"])
         self.assertEqual(1, len(response_data["feature_flags"]))
+        self.assertEqual("#123456", response_data["color"])
+        self.assertFalse(response_data["needs_authentication"])
 
         project = m.Project.objects.get(app_id="org.ghi.new")
         self.assertEqual(self.project_admin.iaso_profile.account, project.account)
+        self.assertEqual("#123456", project.color)
+        self.assertFalse(project.needs_authentication)
 
     def test_projects_create_duplicate_app_id(self):
         """POST /projects/ with an app_id already in use is rejected"""
@@ -652,6 +762,35 @@ class ProjectsAPITestCase(APITestCase):
         response = self.client.put(f"/api/projects/{self.project_2.id}/", data=payload, format="json")
         self.assertJSONResponse(response, 400)
         self.assertIn("forms", response.json())
+
+    def test_projects_partial_update_color_only(self):
+        """PATCH /projects/<id> updates a single field without resending feature_flags."""
+        self.client.force_authenticate(self.project_admin)
+        self.assertEqual(1, self.project_1.feature_flags.count())
+
+        response = self.client.patch(f"/api/projects/{self.project_1.id}/", data={"color": "#000000"}, format="json")
+        self.assertJSONResponse(response, 200)
+
+        self.project_1.refresh_from_db()
+        self.assertEqual("#000000", self.project_1.color)
+        # Omitting `feature_flags` from a PATCH must not wipe the existing ones.
+        self.assertEqual(1, self.project_1.feature_flags.count())
+
+    def test_projects_partial_update_preserves_needs_authentication(self):
+        """PATCH of an unrelated field must not reset needs_authentication when feature_flags is omitted."""
+        self.client.force_authenticate(self.project_admin)
+        self.project_1.feature_flags.set([self.flag_a, self.flag_require_auth])
+        self.project_1.needs_authentication = True
+        self.project_1.save()
+
+        response = self.client.patch(f"/api/projects/{self.project_1.id}/", data={"color": "#000000"}, format="json")
+        self.assertJSONResponse(response, 200)
+
+        self.project_1.refresh_from_db()
+        self.assertEqual("#000000", self.project_1.color)
+        self.assertTrue(self.project_1.needs_authentication)
+        codes = set(self.project_1.feature_flags.values_list("code", flat=True))
+        self.assertIn(m.FeatureFlag.REQUIRE_AUTHENTICATION, codes)
 
     def test_projects_delete_not_allowed(self):
         """DELETE /projects/<project_id>: not exposed on the projects endpoint"""

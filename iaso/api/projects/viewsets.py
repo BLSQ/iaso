@@ -1,9 +1,10 @@
 from django.db.models import Prefetch, QuerySet
 from django.http import HttpResponse
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from qr_code.qrcode.maker import make_qr_code_image
 from qr_code.qrcode.utils import QRCodeOptions
-from rest_framework import filters, permissions, serializers, status
+from rest_framework import filters, permissions, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import SAFE_METHODS
@@ -11,15 +12,13 @@ from rest_framework.permissions import SAFE_METHODS
 from iaso.api.common import (
     ModelViewSet,
 )
+from iaso.api.query_params import parse_strict_boolean_param
 from iaso.models import Project, ProjectFeatureFlags
 
 from ...permissions.core_permissions import CORE_PROJECTS_PERMISSION, CORE_USERS_ADMIN_PERMISSION
 from ..common import HasPermission, ModelViewSet
+from .filters import ProjectsFilter
 from .serializers import ProjectSerializer
-
-
-class ProjectsQuerystringSerializer(serializers.Serializer):
-    bypass_restrictions = serializers.BooleanField(default=False)
 
 
 @extend_schema(tags=["Projects"])
@@ -32,7 +31,8 @@ class ProjectsViewSet(ModelViewSet):
     GET /api/projects/<id>
     """
 
-    filter_backends = [filters.OrderingFilter]
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
+    filterset_class = ProjectsFilter
     ordering_fields = ["app_id", "name"]
     ordering = ["id"]
     serializer_class = ProjectSerializer
@@ -47,11 +47,7 @@ class ProjectsViewSet(ModelViewSet):
         return super().get_permissions()
 
     def get_queryset(self) -> QuerySet[Project]:
-        querystring = self.request.query_params
-        querystring_serializer = ProjectsQuerystringSerializer(data=querystring)
-        querystring_serializer.is_valid(raise_exception=True)
-        bypass_restrictions = querystring_serializer.validated_data.get("bypass_restrictions")
-
+        bypass_restrictions = parse_strict_boolean_param(self.request.query_params.get("bypass_restrictions", None))
         projects = Project.objects.filter(account=self.request.user.iaso_profile.account).prefetch_related(
             Prefetch(
                 "projectfeatureflags_set",

@@ -593,6 +593,11 @@ export const useApiV2OrgunittypesUpdateMutationOptions = <
             queryClient.invalidateQueries({
                 queryKey: getApiV2OrgunittypesRetrieveQueryKey(variables.id),
             });
+            queryClient.invalidateQueries({
+                queryKey: getApiV2OrgunittypesHierarchyRetrieveQueryKey(
+                    variables.id,
+                ),
+            });
         }
         mutationOptions?.onSuccess?.(data, variables, context);
     };
@@ -763,6 +768,11 @@ export const useApiV2OrgunittypesPartialUpdateMutationOptions = <
             queryClient.invalidateQueries({
                 queryKey: getApiV2OrgunittypesRetrieveQueryKey(variables.id),
             });
+            queryClient.invalidateQueries({
+                queryKey: getApiV2OrgunittypesHierarchyRetrieveQueryKey(
+                    variables.id,
+                ),
+            });
         }
         mutationOptions?.onSuccess?.(data, variables, context);
     };
@@ -915,6 +925,11 @@ export const useApiV2OrgunittypesDestroyMutationOptions = <
             });
             queryClient.invalidateQueries({
                 queryKey: getApiV2OrgunittypesRetrieveQueryKey(variables.id),
+            });
+            queryClient.invalidateQueries({
+                queryKey: getApiV2OrgunittypesHierarchyRetrieveQueryKey(
+                    variables.id,
+                ),
             });
         }
         mutationOptions?.onSuccess?.(data, variables, context);

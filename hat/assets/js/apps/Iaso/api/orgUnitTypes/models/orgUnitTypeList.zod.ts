@@ -26,6 +26,13 @@ export const orgUnitTypeListSubUnitTypesItemShortNameMax = 255;
 export const orgUnitTypeListSubUnitTypesItemDepthMin = 0;
 export const orgUnitTypeListSubUnitTypesItemDepthMax = 32767;
 
+export const orgUnitTypeListAllowCreatingSubUnitTypesItemNameMax = 255;
+
+export const orgUnitTypeListAllowCreatingSubUnitTypesItemShortNameMax = 255;
+
+export const orgUnitTypeListAllowCreatingSubUnitTypesItemDepthMin = 0;
+export const orgUnitTypeListAllowCreatingSubUnitTypesItemDepthMax = 32767;
+
 export const OrgUnitTypeList = zod.strictObject({
     id: zod.number(),
     name: zod.string().max(orgUnitTypeListNameMax),
@@ -60,6 +67,24 @@ export const OrgUnitTypeList = zod.strictObject({
                 .number()
                 .min(orgUnitTypeListSubUnitTypesItemDepthMin)
                 .max(orgUnitTypeListSubUnitTypesItemDepthMax)
+                .nullish(),
+            created_at: zod.iso.datetime({ offset: true }),
+            updated_at: zod.iso.datetime({ offset: true }),
+        }),
+    ),
+    allow_creating_sub_unit_types: zod.array(
+        zod.strictObject({
+            id: zod.number(),
+            name: zod
+                .string()
+                .max(orgUnitTypeListAllowCreatingSubUnitTypesItemNameMax),
+            short_name: zod
+                .string()
+                .max(orgUnitTypeListAllowCreatingSubUnitTypesItemShortNameMax),
+            depth: zod
+                .number()
+                .min(orgUnitTypeListAllowCreatingSubUnitTypesItemDepthMin)
+                .max(orgUnitTypeListAllowCreatingSubUnitTypesItemDepthMax)
                 .nullish(),
             created_at: zod.iso.datetime({ offset: true }),
             updated_at: zod.iso.datetime({ offset: true }),

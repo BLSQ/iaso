@@ -33,6 +33,7 @@ class NestedSubUnitTypeSerializer(ModelSerializer):
 class OrgUnitTypeListSerializer(DynamicFieldsModelSerializerBackwardCompatible):
     projects = NestedProjectSerializer(many=True, read_only=True)
     sub_unit_types = NestedSubUnitTypeSerializer(many=True, read_only=True, allow_empty=True)
+    allow_creating_sub_unit_types = NestedSubUnitTypeSerializer(many=True, read_only=True, allow_empty=True)
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
     units_count = serializers.SerializerMethodField(read_only=True)
@@ -40,6 +41,18 @@ class OrgUnitTypeListSerializer(DynamicFieldsModelSerializerBackwardCompatible):
     class Meta:
         model = OrgUnitType
         fields = [
+            "id",
+            "name",
+            "short_name",
+            "depth",
+            "projects",
+            "sub_unit_types",
+            "allow_creating_sub_unit_types",
+            "created_at",
+            "updated_at",
+            "units_count",
+        ]
+        default_fields = [
             "id",
             "name",
             "short_name",

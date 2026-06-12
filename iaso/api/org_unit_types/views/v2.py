@@ -96,6 +96,12 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
                     else OrgUnitType.objects.all().order_by("id"),
                 ),
                 Prefetch(
+                    "allow_creating_sub_unit_types",
+                    queryset=OrgUnitType.objects.filter(projects__app_id=app_id).all().order_by("id")
+                    if app_id
+                    else OrgUnitType.objects.all().order_by("id"),
+                ),
+                Prefetch(
                     "org_units",
                     queryset=OrgUnit.objects.filter_for_user_and_app_id(self.request.user, app_id),
                     to_attr="prefetched_org_units",

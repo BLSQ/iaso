@@ -117,7 +117,7 @@ class OrgUnitTypesV2ListTestCase(SwaggerTestCaseMixin, APITestCase):
         self.data_source_1.projects.set([self.ead, self.esd])
 
         self.client.force_authenticate(self.jane)
-        response = self.client.get(reverse("orgunittypes_v2-list"), data={"order": "id"})
+        response = self.client.get(reverse("orgunittypes_v2-list"), data={"order": "id", "fields": ":all"})
         res_data = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeListData(res_data, 5)
         response_data = response.json()["results"]
@@ -145,39 +145,45 @@ class OrgUnitTypesV2ListTestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_filter_by_wrong_data_source_retrieve_ok(self):
         self.client.force_authenticate(self.jane)
-        response = self.client.get(reverse("orgunittypes_v2-list"), {"project": -1})
+        response = self.client.get(reverse("orgunittypes_v2-list"), {"project": -1, "fields": ":all"})
         res_data = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeListData(res_data, 0)
 
     def test_filter_project_ids(self):
         self.client.force_authenticate(self.jane)
         response = self.client.get(
-            reverse("orgunittypes_v2-list"), data={"project_ids": ",".join([str(self.ead.id), str(self.esd.id)])}
+            reverse("orgunittypes_v2-list"),
+            data={"project_ids": ",".join([str(self.ead.id), str(self.esd.id)]), "fields": ":all"},
         )
         res_data = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeListData(res_data, 5)
 
         self.client.force_authenticate(self.jane)
         response = self.client.get(
-            reverse("orgunittypes_v2-list"), data={"project_ids": ",".join([str(self.wrong_project.id)])}
+            reverse("orgunittypes_v2-list"),
+            data={"project_ids": ",".join([str(self.wrong_project.id)]), "fields": ":all"},
         )
         res_data = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeListData(res_data, 0)
 
     def test_filter_project_id(self):
         self.client.force_authenticate(self.jane)
-        response = self.client.get(reverse("orgunittypes_v2-list"), data={"project": self.ead.id})
+        response = self.client.get(reverse("orgunittypes_v2-list"), data={"project": self.ead.id, "fields": ":all"})
         res_data = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeListData(res_data, 2)
 
         self.client.force_authenticate(self.jane)
-        response = self.client.get(reverse("orgunittypes_v2-list"), data={"project": self.wrong_project.id})
+        response = self.client.get(
+            reverse("orgunittypes_v2-list"), data={"project": self.wrong_project.id, "fields": ":all"}
+        )
         res_data = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeListData(res_data, 0)
 
     def test_filter_app_id(self):
         self.client.force_authenticate(self.jane)
-        response = self.client.get(reverse("orgunittypes_v2-list"), data={"app_id": "ead.app_id", "order": "id"})
+        response = self.client.get(
+            reverse("orgunittypes_v2-list"), data={"app_id": "ead.app_id", "order": "id", "fields": ":all"}
+        )
         res_data = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeListData(res_data, 2)
 
@@ -198,23 +204,29 @@ class OrgUnitTypesV2ListTestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_filter_search(self):
         self.client.force_authenticate(self.jane)
-        response = self.client.get(reverse("orgunittypes_v2-list"), data={"search": "test", "order": "id"})
+        response = self.client.get(
+            reverse("orgunittypes_v2-list"), data={"search": "test", "order": "id", "fields": ":all"}
+        )
         res_data = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeListData(res_data, 0)
 
         self.client.force_authenticate(self.jane)
-        response = self.client.get(reverse("orgunittypes_v2-list"), data={"search": "boom", "order": "id"})
+        response = self.client.get(
+            reverse("orgunittypes_v2-list"), data={"search": "boom", "order": "id", "fields": ":all"}
+        )
         res_data = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeListData(res_data, 1)
 
         self.client.force_authenticate(self.jane)
-        response = self.client.get(reverse("orgunittypes_v2-list"), data={"search": "bo", "order": "id"})
+        response = self.client.get(
+            reverse("orgunittypes_v2-list"), data={"search": "bo", "order": "id", "fields": ":all"}
+        )
         res_data = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeListData(res_data, 1)
 
     def test_num_queries(self):
         self.client.force_authenticate(self.jane)
-        with self.assertNumQueries(8):
-            response = self.client.get(reverse("orgunittypes_v2-list"), data={"app_id": "ead.app_id"})
+        with self.assertNumQueries(9):
+            response = self.client.get(reverse("orgunittypes_v2-list"), data={"app_id": "ead.app_id", "fields": ":all"})
         res_data = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeListData(res_data, 2)

@@ -104,6 +104,29 @@ export const getApiV2OrgunittypesListResponseMock = (
                         updated_at:
                             faker.date.past().toISOString().slice(0, 19) + 'Z',
                     })),
+                    allow_creating_sub_unit_types: Array.from(
+                        { length: faker.number.int({ min: 1, max: 10 }) },
+                        (_, i) => i + 1,
+                    ).map(() => ({
+                        id: faker.number.int(),
+                        name: faker.string.alpha({
+                            length: { min: 10, max: 255 },
+                        }),
+                        short_name: faker.string.alpha({
+                            length: { min: 10, max: 255 },
+                        }),
+                        depth: faker.helpers.arrayElement([
+                            faker.helpers.arrayElement([
+                                faker.number.int({ min: 0, max: 32767 }),
+                                null,
+                            ]),
+                            undefined,
+                        ]),
+                        created_at:
+                            faker.date.past().toISOString().slice(0, 19) + 'Z',
+                        updated_at:
+                            faker.date.past().toISOString().slice(0, 19) + 'Z',
+                    })),
                     created_at: faker.number.float({ fractionDigits: 2 }),
                     updated_at: faker.number.float({ fractionDigits: 2 }),
                     units_count: faker.helpers.arrayElement([
@@ -171,6 +194,29 @@ export const getApiV2OrgunittypesListResponseMock = (
                         ]),
                     })),
                     sub_unit_types: Array.from(
+                        { length: faker.number.int({ min: 1, max: 10 }) },
+                        (_, i) => i + 1,
+                    ).map(() => ({
+                        id: faker.number.int(),
+                        name: faker.string.alpha({
+                            length: { min: 10, max: 255 },
+                        }),
+                        short_name: faker.string.alpha({
+                            length: { min: 10, max: 255 },
+                        }),
+                        depth: faker.helpers.arrayElement([
+                            faker.helpers.arrayElement([
+                                faker.number.int({ min: 0, max: 32767 }),
+                                null,
+                            ]),
+                            undefined,
+                        ]),
+                        created_at:
+                            faker.date.past().toISOString().slice(0, 19) + 'Z',
+                        updated_at:
+                            faker.date.past().toISOString().slice(0, 19) + 'Z',
+                    })),
+                    allow_creating_sub_unit_types: Array.from(
                         { length: faker.number.int({ min: 1, max: 10 }) },
                         (_, i) => i + 1,
                     ).map(() => ({

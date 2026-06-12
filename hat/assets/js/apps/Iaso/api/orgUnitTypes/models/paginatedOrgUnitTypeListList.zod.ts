@@ -25,6 +25,13 @@ export const paginatedOrgUnitTypeListListResultsItemSubUnitTypesItemShortNameMax
 export const paginatedOrgUnitTypeListListResultsItemSubUnitTypesItemDepthMin = 0;
 export const paginatedOrgUnitTypeListListResultsItemSubUnitTypesItemDepthMax = 32767;
 
+export const paginatedOrgUnitTypeListListResultsItemAllowCreatingSubUnitTypesItemNameMax = 255;
+
+export const paginatedOrgUnitTypeListListResultsItemAllowCreatingSubUnitTypesItemShortNameMax = 255;
+
+export const paginatedOrgUnitTypeListListResultsItemAllowCreatingSubUnitTypesItemDepthMin = 0;
+export const paginatedOrgUnitTypeListListResultsItemAllowCreatingSubUnitTypesItemDepthMax = 32767;
+
 export const PaginatedOrgUnitTypeListList = zod.strictObject({
     count: zod.number().optional(),
     has_next: zod.boolean().optional(),
@@ -85,6 +92,32 @@ export const PaginatedOrgUnitTypeListList = zod.strictObject({
                             )
                             .max(
                                 paginatedOrgUnitTypeListListResultsItemSubUnitTypesItemDepthMax,
+                            )
+                            .nullish(),
+                        created_at: zod.iso.datetime({ offset: true }),
+                        updated_at: zod.iso.datetime({ offset: true }),
+                    }),
+                ),
+                allow_creating_sub_unit_types: zod.array(
+                    zod.strictObject({
+                        id: zod.number(),
+                        name: zod
+                            .string()
+                            .max(
+                                paginatedOrgUnitTypeListListResultsItemAllowCreatingSubUnitTypesItemNameMax,
+                            ),
+                        short_name: zod
+                            .string()
+                            .max(
+                                paginatedOrgUnitTypeListListResultsItemAllowCreatingSubUnitTypesItemShortNameMax,
+                            ),
+                        depth: zod
+                            .number()
+                            .min(
+                                paginatedOrgUnitTypeListListResultsItemAllowCreatingSubUnitTypesItemDepthMin,
+                            )
+                            .max(
+                                paginatedOrgUnitTypeListListResultsItemAllowCreatingSubUnitTypesItemDepthMax,
                             )
                             .nullish(),
                         created_at: zod.iso.datetime({ offset: true }),

@@ -20,6 +20,7 @@ export const ApiV2OrgunittypesListParams = zod.strictObject({
                 'depth',
                 'projects',
                 'sub_unit_types',
+                'allow_creating_sub_unit_types',
                 'created_at',
                 'updated_at',
                 'units_count',

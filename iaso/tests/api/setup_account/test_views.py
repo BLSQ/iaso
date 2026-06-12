@@ -399,7 +399,6 @@ class SetupAccountApiTestCase(APITestCase):
             "modules": self.MODULES,
             "feature_flags": [
                 "ALLOW_CATCHMENT_EDITION",
-                "SHOW_PAGES",
                 "SHOW_LINK_INSTANCE_REFERENCE",
                 "SHOW_BENEFICIARY_TYPES_IN_LIST_MENU",
                 "SHOW_HOME_ONLINE",

@@ -318,7 +318,7 @@ const menuItems = (
         {
             label: formatMessage(MESSAGES.changeRequests),
             icon: props => <RuleIcon {...props} />,
-            key: 'changeRequests',
+            key: 'validation',
             subMenu: [
                 {
                     label: formatMessage(MESSAGES.reviewChangeProposals),

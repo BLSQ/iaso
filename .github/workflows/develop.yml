@@ -47,6 +47,7 @@ jobs:
       branch: develop-test
 #      environment: staging
       environment: upgrade
-      image_tag: develop
+      image_tag: develop-test
+#      image_tag: develop
 #      slack_channel: iasops
     secrets: inherit

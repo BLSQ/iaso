@@ -14,6 +14,7 @@ import {
     IconButton,
 } from 'bluesquare-components';
 
+import { OrgUnitTypeDropdownOption } from 'Iaso/domains/orgUnits/configuration/types';
 import { openSnackBar } from '../../../../components/snackBars/EventDispatcher';
 import { errorSnackBar } from '../../../../constants/snackBars';
 import { getRequest } from '../../../../libs/Api';
@@ -35,12 +36,12 @@ const fetchSubOrgUnitsByType = (params, orgUnitType) => {
 
 const getSubOrgunits = (
     orgUnit,
-    orgUnitTypes = [] as any[],
+    orgUnitTypes: OrgUnitTypeDropdownOption[] = [],
     orgUnitTypesList = [] as any[],
 ) => {
     if (orgUnit?.sub_unit_types.length > 0) {
         let newOrgUnitTypesList = [...orgUnitTypesList];
-        orgUnit.sub_unit_types.forEach(subOrgUnit => {
+        orgUnit.sub_unit_types?.forEach(subOrgUnit => {
             const fullSubOrgUnit = orgUnitTypes.find(
                 o => o.id === subOrgUnit.id,
             );
@@ -68,7 +69,7 @@ const getSubOrgunits = (
 type Props = {
     orgUnitTypesSelected: any;
     setOrgUnitTypesSelected: any;
-    orgUnitTypes: any;
+    orgUnitTypes?: OrgUnitTypeDropdownOption[];
     currentOrgUnit: any;
     map: any;
 };
@@ -102,7 +103,7 @@ const OrgUnitTypeFilterComponent: FunctionComponent<Props> = ({
     const updateOrgUnitTypesSelected = newOrgUnitTypesSelected => {
         const promisesArray: Promise<any>[] = [];
         const oldOrgUnitsTypes: any[] = [];
-        newOrgUnitTypesSelected.forEach(ot => {
+        newOrgUnitTypesSelected?.forEach(ot => {
             if (!ot.orgUnits) {
                 promisesArray.push(
                     fetchSubOrgUnitsByType(
@@ -133,7 +134,7 @@ const OrgUnitTypeFilterComponent: FunctionComponent<Props> = ({
     useEffect(() => {
         const newOrgUnitTypesSelected: any[] = [];
         let newOrgUnitTypesList: any[] = [];
-        orgUnitTypes.forEach(ot => {
+        orgUnitTypes?.forEach(ot => {
             if (
                 currentOrgUnit?.org_unit_type?.sub_unit_types.find(
                     o => o.id === ot.id,

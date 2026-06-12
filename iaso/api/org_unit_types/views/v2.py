@@ -13,7 +13,7 @@ from iaso.api.common import ModelViewSet, ReadOnlyOrHasPermission
 from iaso.api.permission_checks import (
     AuthenticationEnforcedPermission,
 )
-from iaso.models import Form, OrgUnitType, Project
+from iaso.models import OrgUnit, OrgUnitType
 from iaso.permissions.core_permissions import CORE_ORG_UNITS_TYPES_PERMISSION
 
 from ..filters import OrgUnitTypeDropdownFilter, OrgUnitTypeFilter
@@ -78,26 +78,49 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
 
     def get_queryset(self):
         queryset = OrgUnitType.objects.filter_for_user(self.request.user)
+        app_id = self.request.query_params.get("app_id")
 
         if self.action == "destroy":
             queryset = queryset.prefetch_related("org_units")
 
         if self.action == "dropdown":
-            queryset = queryset.only("id", "name", "depth", "sub_unit_types").prefetch_related("sub_unit_types")
+            queryset = queryset.only("id", "name", "depth", "short_name").prefetch_related("sub_unit_types")
 
-        if self.action in ["list", "retrieve"]:
-            prefetch_projects = Prefetch(
-                "projects",
-                queryset=Project.objects.select_related("account")
-                .prefetch_related("projectfeatureflags_set", "projectfeatureflags_set__featureflag")
-                .all(),
-            )
+        if self.action == "list":
             queryset = queryset.prefetch_related(
-                Prefetch("reference_forms", queryset=Form.objects.prefetch_related(prefetch_projects)),
-                prefetch_projects,
-                "sub_unit_types",
-                "allow_creating_sub_unit_types",
+                "projects",
+                Prefetch(
+                    "sub_unit_types",
+                    queryset=OrgUnitType.objects.filter(projects__app_id=app_id).all().order_by("id")
+                    if app_id
+                    else OrgUnitType.objects.all().order_by("id"),
+                ),
+                Prefetch(
+                    "org_units",
+                    queryset=OrgUnit.objects.filter_for_user_and_app_id(self.request.user, app_id),
+                    to_attr="prefetched_org_units",
+                ),
             )
+        if self.action == "retrieve":
+            queryset = queryset.prefetch_related(
+                Prefetch(
+                    "sub_unit_types",
+                    queryset=OrgUnitType.objects.filter(projects__app_id=app_id).all().order_by("id")
+                    if app_id
+                    else OrgUnitType.objects.all().order_by("id"),
+                ),
+                Prefetch(
+                    "allow_creating_sub_unit_types",
+                    queryset=OrgUnitType.objects.filter(projects__app_id=app_id).all().order_by("id")
+                    if app_id
+                    else OrgUnitType.objects.all().order_by("id"),
+                ),
+                "projects",
+                "reference_forms",
+                "reference_forms__projects",
+            )
+        if self.action == "hierarchy":
+            queryset = queryset.prefetch_related("sub_unit_types")
 
         return queryset.distinct()
 

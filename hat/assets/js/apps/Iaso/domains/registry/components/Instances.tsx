@@ -11,12 +11,13 @@ import {
     useRedirectToReplace,
     useSafeIntl,
 } from 'bluesquare-components';
+import { useApiV2OrgunittypesRetrieve } from 'Iaso/api/orgUnitTypes';
+import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
+import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
+import { baseUrls } from 'Iaso/constants/urls';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
-import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import InputComponent from '../../../components/forms/InputComponent';
-import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
-import { baseUrls } from '../../../constants/urls';
 import * as Permissions from '../../../utils/permissions';
 import { Form } from '../../forms/types/forms';
 import { ColumnSelect } from '../../instances/components/ColumnSelect';
@@ -27,7 +28,6 @@ import { Period } from '../../periods/models';
 import { INSTANCE_METAS_FIELDS, defaultSorted } from '../config';
 import { useGetEmptyInstanceOrgUnits } from '../hooks/useGetEmptyInstanceOrgUnits';
 import { useGetInstanceApi, useGetInstances } from '../hooks/useGetInstances';
-import { useGetOrgUnitType } from '../hooks/useGetOrgUnitType';
 import MESSAGES from '../messages';
 import { RegistryParams } from '../types';
 import { OrgunitTypeRegistry } from '../types/orgunitTypes';
@@ -109,7 +109,11 @@ export const Instances: FunctionComponent<Props> = ({
         [params, redirectToReplace],
     );
 
-    const { data: orgunitTypeDetail } = useGetOrgUnitType(currentType?.id);
+    const { data: orgunitTypeDetail } = useApiV2OrgunittypesRetrieve(
+        currentType?.id as number,
+        undefined,
+        { query: { enabled: Boolean(currentType?.id) } },
+    );
 
     const { data: formsList, isFetching: isFetchingForms } =
         useGetFormsDropdownOptions({

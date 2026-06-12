@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { OrgUnitTypeHierarchy } from './hooks/useGetOrgUnitTypesHierarchy';
+import { OrgUnitTypeHierarchy } from 'Iaso/api/orgUnitTypes';
 import { flattenOrgUnitTypeHierarchy } from './utils';
 
-const hierarchy: OrgUnitTypeHierarchy[] = [
+const hierarchy: OrgUnitTypeHierarchy['sub_unit_types'] = [
     {
         id: 1,
         name: 'Country',

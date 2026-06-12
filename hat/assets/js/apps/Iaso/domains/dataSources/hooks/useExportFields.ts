@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
+import { useApiV2OrgunittypesDropdownList } from 'Iaso/api/orgUnitTypes';
 import { useGetGroupDropdown } from 'Iaso/domains/orgUnits/hooks/requests/useGetGroups';
 import { useGetOrgUnitValidationStatus } from 'Iaso/domains/orgUnits/hooks/utils/useGetOrgUnitValidationStatus';
 import { VersionFields } from '../components/VersionPicker';
-import { useOrgUnitTypes } from '../requests';
 import {
     dataSourceVersionsAsOptions,
     versionsAsOptionsWithSourceName,
@@ -23,7 +23,7 @@ export const useExportFields = ({
         isLoading: isLoadingOrgUnitStatusAsOptions,
     } = useGetOrgUnitValidationStatus(true);
     const { data: orgUnitTypes, isLoading: areOrgUnitTypesLoading } =
-        useOrgUnitTypes();
+        useApiV2OrgunittypesDropdownList();
 
     const { data: groupsRef, isLoading: isLoadingGroupRef } =
         useGetGroupDropdown(

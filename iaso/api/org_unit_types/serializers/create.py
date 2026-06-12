@@ -1,4 +1,3 @@
-from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer
@@ -10,14 +9,14 @@ class OrgUnitTypeCreateSerializer(ModelSerializer):
         source="projects", write_only=True, many=True, queryset=Project.objects.none(), allow_empty=False
     )
     sub_unit_type_ids = serializers.PrimaryKeyRelatedField(
-        source="sub_unit_types", write_only=True, many=True, allow_empty=True, queryset=OrgUnitType.objects.none()
+        source="sub_unit_types", write_only=True, many=True, allow_empty=True, queryset=OrgUnitType.objects.all()
     )
     allow_creating_sub_unit_type_ids = serializers.PrimaryKeyRelatedField(
         source="allow_creating_sub_unit_types",
         write_only=True,
         many=True,
         allow_empty=True,
-        queryset=OrgUnitType.objects.none(),
+        queryset=OrgUnitType.objects.all(),
     )
     reference_forms_ids = serializers.PrimaryKeyRelatedField(
         source="reference_forms",
@@ -25,7 +24,7 @@ class OrgUnitTypeCreateSerializer(ModelSerializer):
         required=False,
         many=True,
         allow_empty=True,
-        queryset=Form.objects.none(),
+        queryset=Form.objects.all(),
     )
 
     class Meta:
@@ -53,22 +52,13 @@ class OrgUnitTypeCreateSerializer(ModelSerializer):
         super().__init__(*args, **kwargs)
 
         account = self._get_account()
+        user = self.context["request"].user
 
         if account:
             self.fields["project_ids"].child_relation.queryset = Project.objects.filter(account=account)
 
-        self.fields["sub_unit_type_ids"].child_relation.queryset = OrgUnitType.objects.all()
-        self.fields["allow_creating_sub_unit_type_ids"].child_relation.queryset = OrgUnitType.objects.all()
-        self.fields["reference_forms_ids"].child_relation.queryset = Form.objects.all()
-
-    def _validate_reference_forms(self, data):
-        reference_forms_ids = [form.pk for form in data.get("reference_forms", [])]
-        projects_forms_ids = Form.objects.filter(projects__in=data.get("projects", [])).values_list("id", flat=True)
-        forms_not_in_projects_forms = set(reference_forms_ids) - set(projects_forms_ids)
-        if forms_not_in_projects_forms:
-            raise serializers.ValidationError({"reference_forms_ids": _("Invalid reference forms ids")})
-        return data
-
-    def validate(self, data):
-        self._validate_reference_forms(data)
-        return data
+            self.fields["sub_unit_type_ids"].child_relation.queryset = OrgUnitType.objects.filter_for_user(user)
+            self.fields[
+                "allow_creating_sub_unit_type_ids"
+            ].child_relation.queryset = OrgUnitType.objects.filter_for_user(user)
+            self.fields["reference_forms_ids"].child_relation.queryset = Form.objects.filter_for_user_and_app_id(user)

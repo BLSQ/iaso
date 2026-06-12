@@ -1,4 +1,4 @@
-import { mutationInvalidates as validationWorkflowsMutationInvalidates} from './hat/assets/js/orval/apiConfiguration/validationWorkflows/configuration';
+import { mutationInvalidates as orgUnitTypesMutationInvalidates} from './hat/assets/js/orval/apiConfiguration/orgUnitTypes/configuration';
 import { createSchemaTransformer, normalizeSchema } from './hat/assets/js/orval/transformer/fakerTransformer';
 
 require('dotenv').config();
@@ -104,7 +104,8 @@ const createConfig = (project: string, tags: string[] | RegExp[], mutationInvali
 };
 
 module.exports = {
-    modules: createConfig('modules', ["Modules"])
+    modules: createConfig('modules', ["Modules"]),
+    orgUnitTypes: createConfig('orgUnitTypes', ["Org unit types v2"], orgUnitTypesMutationInvalidates)
     // validationWorkflows: createConfig('validationWorkflows', ['Validation workflows'], validationWorkflowsMutationInvalidates),
     // profiles: createConfig('profiles', ['Profiles'])
 };

@@ -3,7 +3,7 @@ import { Box, Paper, Typography } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 
-import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { OrgUnitTypeHierarchy } from 'Iaso/api/orgUnitTypes';
 import { SxStyles } from 'Iaso/types/general';
 
 import MESSAGES from '../../messages';
@@ -57,7 +57,7 @@ const styles: SxStyles = {
 
 type Props = {
     parameterValues: ParameterValues;
-    orgunitTypes: OrgUnitTypeHierarchyDropdownValues;
+    orgunitTypes: OrgUnitTypeHierarchy[];
 };
 
 export const LQASRead: FunctionComponent<Props> = ({

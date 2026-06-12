@@ -2,6 +2,7 @@ import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
+import { OrgUnitTypeHierarchy } from 'Iaso/api/orgUnitTypes';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { Parameters } from 'Iaso/domains/openHexa/components/Parameters';
 import { useGetPipelineConfig } from 'Iaso/domains/openHexa/hooks/useGetPipelineConfig';
@@ -11,7 +12,6 @@ import {
     Pipeline,
 } from 'Iaso/domains/openHexa/types/pipeline';
 
-import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { LQASForm } from 'Iaso/domains/plannings/sampling/customForms/LQASForm';
 
 import { Planning } from 'Iaso/domains/plannings/types';
@@ -26,7 +26,7 @@ type Props = {
     pipeline?: Pipeline;
     parameterValues?: ParameterValues;
     setParameterValues: (values: ParameterValues) => void;
-    orgunitTypes: OrgUnitTypeHierarchyDropdownValues;
+    orgunitTypes: OrgUnitTypeHierarchy[];
     isFetchingOrgunitTypes: boolean;
     setAllowConfirm: React.Dispatch<React.SetStateAction<boolean>>;
     taskStatus?: TaskStatus;

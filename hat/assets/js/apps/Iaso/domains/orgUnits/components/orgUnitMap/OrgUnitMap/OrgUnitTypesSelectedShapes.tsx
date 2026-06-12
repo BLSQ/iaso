@@ -1,16 +1,16 @@
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { GeoJSON, Pane } from 'react-leaflet';
+import { OrgUnitTypeDropdownOption } from 'Iaso/domains/orgUnits/configuration/types';
 import MESSAGES from '../../../messages';
 import { OrgUnit } from '../../../types/orgUnit';
-import { OrgunitType } from '../../../types/orgunitTypes';
 import OrgUnitPopupComponent from '../../OrgUnitPopupComponent';
 import { orgunitsPane } from './OrgUnitMap';
 import { SourceShape } from './SourceShape';
 import { MappedOrgUnit } from './types';
 
 type Props = {
-    orgUnitTypes: (OrgunitType & { color: string })[];
+    orgUnitTypes?: OrgUnitTypeDropdownOption[];
     mappedOrgUnitTypesSelected: MappedOrgUnit[];
     mappedSourcesSelected: MappedOrgUnit[];
     updateOrgUnitLocation: (orgUnit: OrgUnit) => void;
@@ -25,7 +25,7 @@ export const OrgUnitTypesSelectedShapes: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     return (
         <>
-            {orgUnitTypes.map(ot => {
+            {orgUnitTypes?.map(ot => {
                 const selectedOut = mappedOrgUnitTypesSelected.find(
                     mot => mot.id === ot.id,
                 );

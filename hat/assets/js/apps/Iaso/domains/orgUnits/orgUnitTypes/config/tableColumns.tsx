@@ -1,23 +1,29 @@
 import React from 'react';
+import { formatThousand, useSafeIntl, Column } from 'bluesquare-components';
 import {
-    IconButton,
-    formatThousand,
-    useSafeIntl,
-    Column,
-} from 'bluesquare-components';
+    PaginatedOrgUnitTypeListList,
+    useApiV2OrgunittypesDestroy,
+} from 'Iaso/api/orgUnitTypes';
+import { textPlaceholder } from 'Iaso/constants/uiConstants';
 import { ProjectChips } from 'Iaso/domains/projects/components/ProjectChips';
 import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
 import DeleteDialog from '../../../../components/dialogs/DeleteDialogComponent';
 import { baseUrls } from '../../../../constants/urls';
 import { OrgUnitsTypesDialog } from '../components/OrgUnitsTypesDialog';
-import { useDeleteOrgUnitType } from '../hooks/useDeleteOrgUnitType';
 import MESSAGES from '../messages';
 
 export const baseUrl = baseUrls.orgUnitTypes;
 
-export const useGetColumns = (params: any, count: number): Column[] => {
+type SubUnitType = NonNullable<
+    PaginatedOrgUnitTypeListList['results']
+>[number]['sub_unit_types'][number];
+type ProjectType = NonNullable<
+    PaginatedOrgUnitTypeListList['results']
+>[number]['projects'];
+
+export const useGetColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
-    const { mutateAsync: deleteType } = useDeleteOrgUnitType({ params, count });
+    const { mutateAsync: deleteType } = useApiV2OrgunittypesDestroy();
     return [
         {
             Header: formatMessage(MESSAGES.name),
@@ -28,13 +34,19 @@ export const useGetColumns = (params: any, count: number): Column[] => {
             Header: formatMessage(MESSAGES.projects),
             accessor: 'projects',
             width: 300,
-            Cell: settings => <ProjectChips projects={settings.value} />,
+            Cell: (settings: { value: ProjectType }) => (
+                <ProjectChips projects={settings.value} />
+            ),
         },
         {
             Header: formatMessage(MESSAGES.subUnitTypes),
             accessor: 'sub_unit_types',
             Cell: settings =>
-                settings.value?.map(subType => subType.name).join(','),
+                settings.value?.length
+                    ? settings.value
+                          ?.map((subType: SubUnitType) => subType.name)
+                          .join(',')
+                    : textPlaceholder,
         },
         {
             Header: formatMessage(MESSAGES.shortName),
@@ -70,15 +82,7 @@ export const useGetColumns = (params: any, count: number): Column[] => {
             Cell: settings => (
                 <section>
                     <OrgUnitsTypesDialog
-                        renderTrigger={({ openDialog }) => (
-                            <IconButton
-                                onClick={openDialog}
-                                icon="edit"
-                                tooltipMessage={MESSAGES.edit}
-                                id={`edit-button-${settings.row.original.id}`}
-                            />
-                        )}
-                        orgUnitType={settings.row.original}
+                        id={parseInt(settings.row.original.id)}
                         titleMessage={MESSAGES.update}
                         key={settings.row.original.updated_at}
                     />
@@ -90,7 +94,7 @@ export const useGetColumns = (params: any, count: number): Column[] => {
                         titleMessage={MESSAGES.delete}
                         message={MESSAGES.deleteWarning}
                         onConfirm={() => {
-                            deleteType(settings.row.original.id);
+                            deleteType({ id: settings.row.original.id });
                         }}
                     />
                 </section>

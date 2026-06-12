@@ -3,10 +3,10 @@ import React, { FunctionComponent, useMemo } from 'react';
 import { Paper, Box, Divider } from '@mui/material';
 import { Grid, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import { useApiV2OrgunittypesHierarchyRetrieve } from 'Iaso/api/orgUnitTypes';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';
 
-import { useGetOrgUnitTypesHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { flattenOrgUnitTypeHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/utils';
 import { OpenhexaIntegrationDrawer } from 'Iaso/domains/plannings/sampling/OpenhexaIntegrationDrawer';
 import { Planning } from 'Iaso/domains/plannings/types';
@@ -45,9 +45,16 @@ export const SamplingResults: FunctionComponent<Props> = ({ planning }) => {
         useGetPlanningSamplingResults(`${planning.id}`, params);
 
     const { data: orgUnitTypeHierarchy, isFetching: isFetchingOrgunitTypes } =
-        useGetOrgUnitTypesHierarchy(
-            planning?.org_unit_details?.org_unit_type || 0,
+        useApiV2OrgunittypesHierarchyRetrieve(
+            planning?.org_unit_details?.org_unit_type as number,
+            undefined,
+            {
+                query: {
+                    enabled: Boolean(planning?.org_unit_details?.org_unit_type),
+                },
+            },
         );
+
     const orgunitTypes = useMemo(
         () =>
             flattenOrgUnitTypeHierarchy(

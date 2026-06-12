@@ -1,4 +1,4 @@
-import { OrgUnitTypeHierarchyDropdownValues } from '../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { OrgUnitTypeHierarchy } from 'Iaso/api/orgUnitTypes';
 import { FormsDropdownOptions } from './hooks/useGetFormsDropdownOptions';
 
 /**
@@ -12,7 +12,7 @@ import { FormsDropdownOptions } from './hooks/useGetFormsDropdownOptions';
  * otherwise the subset compatible with selected forms.
  */
 export const filterOrgUnitTypesByForms = (
-    orgunitTypes: OrgUnitTypeHierarchyDropdownValues,
+    orgunitTypes: OrgUnitTypeHierarchy['sub_unit_types'],
     forms?: FormsDropdownOptions,
     selectedFormsIds?: number[],
 ) => {

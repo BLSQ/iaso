@@ -5,7 +5,7 @@ import { Project } from 'Iaso/domains/projects/types/project';
 import { ProjectChip } from './ProjectChip';
 
 type Props = {
-    projects?: Project[];
+    projects?: Array<Pick<Project, 'id' | 'name' | 'color'>>;
 };
 
 export const ProjectChips: FunctionComponent<Props> = ({ projects }) => {

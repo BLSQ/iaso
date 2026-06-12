@@ -1,6 +1,5 @@
 import React, {
     FunctionComponent,
-    ReactNode,
     useCallback,
     useEffect,
     useMemo,
@@ -15,23 +14,31 @@ import {
     useSafeIntl,
     useSkipEffectOnMount,
     InputWithInfos,
+    makeFullModal,
+    AddButton,
 } from 'bluesquare-components';
 import { isUndefined, mapValues } from 'lodash';
 import intersection from 'lodash/intersection';
 import isEmpty from 'lodash/isEmpty';
 
+import {
+    OrgUnitTypeRetrieve,
+    useApiV2OrgunittypesCreate,
+    useApiV2OrgunittypesPartialUpdate,
+    useApiV2OrgunittypesRetrieve,
+} from 'Iaso/api/orgUnitTypes';
+import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
-import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
-import InputComponent from '../../../../components/forms/InputComponent';
-import { useFormState } from '../../../../hooks/form';
-import { DropdownOptions } from '../../../../types/utils';
+import { useFormState } from 'Iaso/hooks/form';
+import { DropdownOptions } from 'Iaso/types/utils';
 import {
     commaSeparatedIdsToArray,
     isFieldValid,
     isFormValid,
-} from '../../../../utils/forms';
+} from 'Iaso/utils/forms';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
+import InputComponent from '../../../../components/forms/InputComponent';
 import * as Permission from '../../../../utils/permissions';
-import { useCurrentUser } from '../../../../utils/usersUtils';
 import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
 import {
     userHasOneOfPermissions,
@@ -40,7 +47,6 @@ import {
 import { OrgunitType } from '../../types/orgunitTypes';
 import { requiredFields } from '../config/requiredFields';
 import { useGetOrgUnitTypesDropdownOptions } from '../hooks/useGetOrgUnitTypesDropdownOptions';
-import { useSaveOrgUnitType } from '../hooks/useSaveOrgUnitType';
 import MESSAGES from '../messages';
 
 type FormDropdownOption = {
@@ -62,7 +68,9 @@ const styles = {
         color: theme.palette.warning.main,
     }),
 };
-const mapOrgUnitType = orgUnitType => {
+const mapOrgUnitType = (
+    orgUnitType: OrgUnitTypeRetrieve | typeof defaultOrgUnitType,
+) => {
     return {
         id: orgUnitType.id,
         name: orgUnitType.name,
@@ -77,9 +85,10 @@ const mapOrgUnitType = orgUnitType => {
 };
 
 type Props = {
-    orgUnitType?: OrgunitType;
+    id?: number;
+    isOpen: boolean;
+    closeDialog: () => void;
     titleMessage: IntlMessage;
-    renderTrigger: ({ openDialog }: { openDialog: () => void }) => ReactNode;
 };
 
 const defaultOrgUnitType: Omit<
@@ -97,13 +106,33 @@ const defaultOrgUnitType: Omit<
     reference_forms: [],
     allow_creating_sub_unit_types: [],
 };
-export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
-    orgUnitType = defaultOrgUnitType,
+export const OrgUnitsTypesModal: FunctionComponent<Props> = ({
+    id,
     titleMessage,
-    renderTrigger,
+    closeDialog,
+    isOpen,
 }) => {
+    const { data: initialData } = useApiV2OrgunittypesRetrieve(
+        id as number,
+        undefined,
+        {
+            query: { enabled: Boolean(id) },
+        },
+    );
+    const orgUnitType = React.useMemo(
+        () => initialData ?? defaultOrgUnitType,
+        [initialData, defaultOrgUnitType],
+    );
+
     const [formState, setFieldValue, setFieldErrors, setFormState] =
         useFormState(mapOrgUnitType(orgUnitType));
+
+    // dirty fix to reupdate formState, would be worth redoing this code tbh
+    React.useEffect(() => {
+        if (initialData) {
+            setFormState(mapOrgUnitType(initialData));
+        }
+    }, [initialData, setFormState]);
 
     const [allForms, setAllForms] = useState<FormDropdownOption[]>();
     const { data: dataForms } = useGetFormsDropdownOptions({
@@ -132,7 +161,26 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
         useGetOrgUnitTypesDropdownOptions({
             onlyWriteAccess: true,
         });
-    const { mutateAsync: saveType } = useSaveOrgUnitType();
+
+    const { mutateAsync: saveType } = useApiV2OrgunittypesPartialUpdate({
+        mutation: {
+            ignoreErrorCodes: [400],
+            onSuccess: () => {
+                closeDialog();
+                resetForm();
+            },
+        },
+    });
+
+    const { mutateAsync: createType } = useApiV2OrgunittypesCreate({
+        mutation: {
+            ignoreErrorCodes: [400],
+            onSuccess: () => {
+                closeDialog();
+                resetForm();
+            },
+        },
+    });
 
     const getFilteredForms = (
         projects,
@@ -276,42 +324,35 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
         setFormState(mapOrgUnitType(orgUnitType));
     }, [orgUnitType, setFormState]);
 
-    const onConfirm = useCallback(
-        (closeDialog: () => void) => {
-            try {
-                saveType(
-                    mapValues(formState, v => v.value),
-                    {
-                        onSuccess: () => {
-                            closeDialog();
-                            resetForm();
-                        },
-                    },
-                );
-            } catch (error) {
-                if (error.status === 400) {
-                    Object.entries(error.details).forEach(entry => {
-                        if (
-                            entry[0] === 'sub_unit_type_ids' ||
-                            entry[0] === 'allow_creating_sub_unit_type_ids'
-                        ) {
-                            const typeName = (entry[1] as number[]).join(', ');
-                            const errorText: string = formatMessage(
-                                MESSAGES.subTypesErrors,
-                                {
-                                    typeName,
-                                },
-                            );
-                            setFieldErrors(entry[0], [errorText]);
-                        } else {
-                            setFieldErrors(entry[0], entry[1]);
-                        }
-                    });
-                }
+    const onConfirm = useCallback(() => {
+        try {
+            if (id) {
+                saveType({ id, data: mapValues(formState, v => v.value) });
+            } else {
+                createType({ data: mapValues(formState, v => v.value) });
             }
-        },
-        [formState, formatMessage, resetForm, saveType, setFieldErrors],
-    );
+        } catch (error) {
+            if (error.status === 400) {
+                Object.entries(error.details).forEach(entry => {
+                    if (
+                        entry[0] === 'sub_unit_type_ids' ||
+                        entry[0] === 'allow_creating_sub_unit_type_ids'
+                    ) {
+                        const typeName = (entry[1] as number[]).join(', ');
+                        const errorText: string = formatMessage(
+                            MESSAGES.subTypesErrors,
+                            {
+                                typeName,
+                            },
+                        );
+                        setFieldErrors(entry[0], [errorText]);
+                    } else {
+                        setFieldErrors(entry[0], entry[1]);
+                    }
+                });
+            }
+        }
+    }, [formState, formatMessage, resetForm, saveType, setFieldErrors]);
     const hasPermission =
         userHasOneOfPermissions(
             [Permission.ORG_UNITS, Permission.ORG_UNITS_READ],
@@ -348,114 +389,120 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
     return (
         //  @ts-ignore
         <>
-            <ConfirmCancelDialogComponent
+            <ConfirmCancelModal
                 id="OuTypes-modal"
+                open={isOpen}
+                closeDialog={closeDialog}
                 titleMessage={titleMessage}
-                onConfirm={closeDialog => onConfirm(closeDialog)}
-                onCancel={closeDialog => {
+                onConfirm={onConfirm}
+                onCancel={() => {
                     closeDialog();
                     resetForm();
                 }}
+                onClose={resetForm}
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}
                 allowConfirm={isFormValid(requiredFields, formState)}
                 maxWidth="sm"
-                renderTrigger={renderTrigger}
                 dataTestId="OuTypes-modal"
                 additionalButton={undefined}
                 additionalMessage={undefined}
                 onAdditionalButtonClick={undefined}
-                allowConfimAdditionalButton={undefined}
             >
-                <InputComponent
-                    keyValue="name"
-                    onChange={onChange}
-                    value={formState.name.value}
-                    errors={formState.name.errors}
-                    type="text"
-                    label={MESSAGES.name}
-                    required
-                />
+                <>
+                    <InputComponent
+                        keyValue="name"
+                        onChange={onChange}
+                        value={formState.name.value}
+                        errors={formState.name.errors}
+                        type="text"
+                        label={MESSAGES.name}
+                        required
+                    />
 
-                <InputComponent
-                    keyValue="short_name"
-                    onChange={onChange}
-                    value={formState.short_name.value}
-                    errors={formState.short_name.errors}
-                    type="text"
-                    label={MESSAGES.shortName}
-                    required
-                />
+                    <InputComponent
+                        keyValue="short_name"
+                        onChange={onChange}
+                        value={formState.short_name.value}
+                        errors={formState.short_name.errors}
+                        type="text"
+                        label={MESSAGES.shortName}
+                        required
+                    />
 
-                <InputComponent
-                    multi
-                    clearable
-                    keyValue="project_ids"
-                    onChange={onChange}
-                    value={formState.project_ids.value}
-                    errors={formState.project_ids.errors}
-                    type="select"
-                    options={allProjectWithInvalids}
-                    label={MESSAGES.projects}
-                    required
-                />
-
-                <InputComponent
-                    keyValue="depth"
-                    onChange={onChange}
-                    value={formState.depth.value}
-                    errors={formState.depth.errors}
-                    type="number"
-                    label={MESSAGES.depth}
-                />
-                <InputComponent
-                    multi
-                    clearable
-                    keyValue="sub_unit_type_ids"
-                    onChange={onChange}
-                    loading={isLoadingOrgUitTypes}
-                    value={allOrgUnitTypes && formState.sub_unit_type_ids.value}
-                    errors={formState.sub_unit_type_ids.errors}
-                    type="select"
-                    options={subUnitTypes}
-                    label={MESSAGES.subUnitTypes}
-                />
-                <InputWithInfos
-                    infos={formatMessage(MESSAGES.createSubUnitTypesInfos)}
-                >
                     <InputComponent
                         multi
                         clearable
-                        keyValue="allow_creating_sub_unit_type_ids"
+                        keyValue="project_ids"
+                        onChange={onChange}
+                        value={formState.project_ids.value}
+                        errors={formState.project_ids.errors}
+                        type="select"
+                        options={allProjectWithInvalids}
+                        label={MESSAGES.projects}
+                        required
+                    />
+
+                    <InputComponent
+                        keyValue="depth"
+                        onChange={onChange}
+                        value={formState.depth.value}
+                        errors={formState.depth.errors}
+                        type="number"
+                        label={MESSAGES.depth}
+                    />
+                    <InputComponent
+                        multi
+                        clearable
+                        keyValue="sub_unit_type_ids"
                         onChange={onChange}
                         loading={isLoadingOrgUitTypes}
                         value={
-                            allOrgUnitTypes &&
-                            formState.allow_creating_sub_unit_type_ids.value
+                            allOrgUnitTypes && formState.sub_unit_type_ids.value
                         }
-                        errors={
-                            formState.allow_creating_sub_unit_type_ids.errors
-                        }
+                        errors={formState.sub_unit_type_ids.errors}
                         type="select"
                         options={subUnitTypes}
-                        label={MESSAGES.createSubUnitTypes}
+                        label={MESSAGES.subUnitTypes}
                     />
-                </InputWithInfos>
-                {hasPermission && (
-                    <InputComponent
-                        multi
-                        clearable
-                        keyValue="reference_forms_ids"
-                        onChange={onChange}
-                        value={formState.reference_forms_ids.value}
-                        errors={formState.reference_forms_ids.errors}
-                        type="select"
-                        disabled={projectsEmpty}
-                        options={allForms || []}
-                        label={referenceFormsMessage}
-                    />
-                )}
-            </ConfirmCancelDialogComponent>
+                    <InputWithInfos
+                        infos={formatMessage(MESSAGES.createSubUnitTypesInfos)}
+                    >
+                        <InputComponent
+                            multi
+                            clearable
+                            keyValue="allow_creating_sub_unit_type_ids"
+                            onChange={onChange}
+                            loading={isLoadingOrgUitTypes}
+                            value={
+                                allOrgUnitTypes &&
+                                formState.allow_creating_sub_unit_type_ids.value
+                            }
+                            errors={
+                                formState.allow_creating_sub_unit_type_ids
+                                    .errors
+                            }
+                            type="select"
+                            options={subUnitTypes}
+                            label={MESSAGES.createSubUnitTypes}
+                        />
+                    </InputWithInfos>
+                    {hasPermission && (
+                        <InputComponent
+                            multi
+                            clearable
+                            keyValue="reference_forms_ids"
+                            onChange={onChange}
+                            value={formState.reference_forms_ids.value}
+                            errors={formState.reference_forms_ids.errors}
+                            type="select"
+                            disabled={projectsEmpty}
+                            options={allForms || []}
+                            label={referenceFormsMessage}
+                        />
+                    )}
+                </>
+            </ConfirmCancelModal>
 
             {/* @ts-ignore */}
             <ConfirmCancelModal
@@ -486,4 +533,11 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
             </ConfirmCancelModal>
         </>
     );
+};
+
+const modalWithButton = makeFullModal(OrgUnitsTypesModal, EditIconButton);
+const modalWithCreateButton = makeFullModal(OrgUnitsTypesModal, AddButton);
+export {
+    modalWithButton as OrgUnitsTypesDialog,
+    modalWithCreateButton as OrgUnitsTypesDialogAddButton,
 };

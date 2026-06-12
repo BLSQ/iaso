@@ -9,7 +9,7 @@ import PlusIcon from '@mui/icons-material/Add';
 import { Box, Button, Paper } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { useSafeIntl } from 'bluesquare-components';
-import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { OrgUnitTypeHierarchy } from 'Iaso/api/orgUnitTypes';
 import { Planning } from 'Iaso/domains/plannings/types';
 import { SxStyles } from 'Iaso/types/general';
 import {
@@ -64,7 +64,7 @@ type Props = {
     setAllowConfirm: React.Dispatch<React.SetStateAction<boolean>>;
     parameterValues: ParameterValues;
     handleParameterChange: (parameterName: string, value: any) => void;
-    orgunitTypes: OrgUnitTypeHierarchyDropdownValues;
+    orgunitTypes: OrgUnitTypeHierarchy[];
     isFetchingOrgunitTypes: boolean;
 };
 

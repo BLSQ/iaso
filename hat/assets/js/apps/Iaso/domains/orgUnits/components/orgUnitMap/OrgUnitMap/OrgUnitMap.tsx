@@ -17,6 +17,7 @@ import { Map as LeafletMap } from 'leaflet';
 
 import L from 'leaflet';
 import { GeoJSON, MapContainer, Pane, ScaleControl } from 'react-leaflet';
+import { OrgUnitTypeDropdownOption } from 'Iaso/domains/orgUnits/configuration/types';
 import { ExtendedDataSource } from 'Iaso/domains/orgUnits/requests';
 import { CloseTooltipOnMoveStart } from 'Iaso/utils/map/mapUtils';
 import { DisplayIfUserHasPerm } from '../../../../../components/DisplayIfUserHasPerm';
@@ -80,7 +81,7 @@ type Props = {
     onChangeShape: (key, geoJson) => void;
     onChangeLocation: (location) => void;
     sources: any[];
-    orgUnitTypes: any[];
+    orgUnitTypes?: OrgUnitTypeDropdownOption[];
     orgUnitLocationModified: boolean;
 };
 

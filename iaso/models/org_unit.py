@@ -250,7 +250,12 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
         queryset: OrgUnitQuerySet = self.defer("geom")
 
         if user and user.is_authenticated:
-            account = user.iaso_profile.account
+            iaso_profile = getattr(user, "iaso_profile", None)
+
+            if not iaso_profile:
+                return self.none()
+
+            account = getattr(iaso_profile, "account", None)
             queryset = self.filter_for_account(account)
 
             # Filter on version ids (linked to the account)

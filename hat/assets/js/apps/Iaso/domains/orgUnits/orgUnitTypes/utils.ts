@@ -1,7 +1,4 @@
-import {
-    OrgUnitTypeHierarchy,
-    OrgUnitTypeHierarchyDropdownValues,
-} from './hooks/useGetOrgUnitTypesHierarchy';
+import { OrgUnitTypeHierarchy } from 'Iaso/api/orgUnitTypes';
 
 /**
  * Convert hierarchical org unit types into flat dropdown options.
@@ -10,10 +7,10 @@ import {
  * flat list of `{ value, label, original }` options.
  */
 export const flattenOrgUnitTypeHierarchy = (
-    items: OrgUnitTypeHierarchy[],
+    items: OrgUnitTypeHierarchy['sub_unit_types'],
     orgUnitTypeId?: number,
     selectedOrgUnitTypeIds?: number[],
-): OrgUnitTypeHierarchyDropdownValues => {
+): OrgUnitTypeHierarchy[] => {
     return items.flatMap(item => {
         if (
             selectedOrgUnitTypeIds?.includes(item.id) &&
@@ -22,7 +19,7 @@ export const flattenOrgUnitTypeHierarchy = (
         ) {
             return [];
         }
-        const currentItem: OrgUnitTypeHierarchyDropdownValues[number] = {
+        const currentItem: OrgUnitTypeHierarchy['sub_unit_types'][number] = {
             value: item.id,
             label: item.name,
             original: item,

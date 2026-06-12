@@ -107,7 +107,9 @@ const FormForm: FunctionComponent<FormFormProps> = ({
     const { validation_workflow } = currentForm;
     const { data: allOrgUnitTypes, isFetching: isOuTypeLoading } =
         useGetOrgUnitTypesDropdownOptions({
-            projectIds: currentForm.project_ids.value,
+            params: {
+                project_ids: currentForm.project_ids.value,
+            },
             // we only want to fetch the org unit types if the project ids are set, project ids is a required field
             enabled:
                 currentForm.project_ids.value &&

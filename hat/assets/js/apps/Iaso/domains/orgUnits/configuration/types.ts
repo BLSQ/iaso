@@ -1,4 +1,5 @@
 import { Pagination, UrlParams } from 'bluesquare-components';
+import type { OrgUnitTypesDropdown } from 'Iaso/api/orgUnitTypes';
 import { User } from '../../../utils/usersUtils';
 
 export type OrgUnitChangeRequestConfigsParams = UrlParams & {
@@ -12,9 +13,8 @@ export type Project = {
     name: string;
 };
 
-export type OrgUnitTypeDropdownOption = {
-    id: number;
-    name: string;
+export type OrgUnitTypeDropdownOption = OrgUnitTypesDropdown & {
+    color: string;
 };
 
 export type GroupSet = {

@@ -88,7 +88,10 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
         data: orgUnitTypeOptions,
         isFetching: isFetchingOrgUnitTypeOptions,
     } = useGetOrgUnitTypesDropdownOptions({
-        projectId: config.project.id,
+        params: {
+            project: config.project.id,
+            fields: [':all'],
+        },
     });
     const { data: groupOptions, isFetching: isFetchingGroupOptions } =
         useGetGroupDropdown({

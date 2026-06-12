@@ -1,6 +1,10 @@
 import { useCallback, useMemo } from 'react';
 import { IntlMessage } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
+import {
+    apiV2OrgunittypesDropdownList,
+    useApiV2OrgunittypesDropdownList,
+} from 'Iaso/api/orgUnitTypes';
 import { getColor, useGetColors } from 'Iaso/hooks/useGetColors';
 import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
 import {
@@ -18,7 +22,6 @@ import {
 import MESSAGES from './messages';
 import { PaginatedDataSources } from './types/dataSources';
 import { OrgUnit } from './types/orgUnit';
-import { PaginatedOrgUnitTypes } from './types/orgunitTypes';
 
 type UseOrgUnitDetailDataReturn = {
     groups: GroupDropdownOption[];
@@ -74,16 +77,18 @@ export const useOrgUnitDetailData = (
     // Filter org unit types based on user permissions and editable types
     // Include types the user can edit, plus the current org unit's type
     const onSelectOrgUnitTypes = useCallback(
-        (data: PaginatedOrgUnitTypes): OrgUnitTypeDropdownOption[] => {
+        (
+            data: Awaited<ReturnType<typeof apiV2OrgunittypesDropdownList>>,
+        ): OrgUnitTypeDropdownOption[] => {
             const orgUnitTypes =
-                data?.orgUnitTypes.map((ot, i) => ({
+                data?.map((ot, i) => ({
                     ...ot,
                     color: getColor(i, colors),
                 })) || [];
             return orgUnitTypes.filter(
                 ot =>
-                    checkUserHasWriteTypePermission(ot.id) ||
-                    originalOrgUnit?.org_unit_type?.id === ot.id,
+                    checkUserHasWriteTypePermission(ot.value) ||
+                    originalOrgUnit?.org_unit_type?.id === ot.value,
             );
         },
         [
@@ -92,9 +97,22 @@ export const useOrgUnitDetailData = (
             colors,
         ],
     );
+
+    const { data: orgUnitTypes, isFetching: isFetchingOrgUnitTypes } =
+        useApiV2OrgunittypesDropdownList(
+            { fields: [':all'] },
+            {
+                query: {
+                    snackErrorMsg: MESSAGES.fetchOrgUnitTypesError,
+                    select: onSelectOrgUnitTypes,
+                    enabled:
+                        tab === 'map' || tab === 'children' || tab === 'infos',
+                    ...cacheOptions,
+                },
+            },
+        );
     const [
         { data: groups = [], isFetching: isFetchingGroups },
-        { data: orgUnitTypes = [], isFetching: isFetchingOrgUnitTypes },
         { data: links = [], isFetching: isFetchingLinks },
         {
             data: associatedDataSources = [],
@@ -105,7 +123,6 @@ export const useOrgUnitDetailData = (
     ] = useSnackQueries<
         [
             GroupDropdownOption[],
-            OrgUnitTypeDropdownOption[],
             Link[],
             DataSource[],
             DataSource[],
@@ -125,16 +142,6 @@ export const useOrgUnitDetailData = (
                 enabled:
                     (tab === 'children' || tab === 'infos') &&
                     (Boolean(originalOrgUnit) || isNewOrgunit),
-                ...cacheOptions,
-            },
-        },
-        {
-            queryKey: ['orgUnitTypes'],
-            queryFn: () => getRequest('/api/v2/orgunittypes/'),
-            snackErrorMsg: MESSAGES.fetchOrgUnitTypesError,
-            options: {
-                select: onSelectOrgUnitTypes,
-                enabled: tab === 'map' || tab === 'children' || tab === 'infos',
                 ...cacheOptions,
             },
         },

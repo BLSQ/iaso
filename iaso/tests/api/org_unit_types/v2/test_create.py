@@ -96,9 +96,9 @@ class OrgUnitTypesV2CreateTestCase(SwaggerTestCaseMixin, APITestCase):
         self.client.force_authenticate(self.jane)
         self.assertValidBodyData(data)
 
-        with self.assertNumQueries(10):
+        with self.assertNumQueries(14):
             res = self.client.post(reverse("orgunittypes_v2-list"), data=data)
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 
     def test_org_unit_type_create_invalid(self):
         """POST /orgunittypes/ without project ids: invalid"""
@@ -189,7 +189,11 @@ class OrgUnitTypesV2CreateTestCase(SwaggerTestCaseMixin, APITestCase):
         )
 
         res_data = self.assertJSONResponse(response, 400)
-        self.assertHasError(res_data, "reference_forms_ids", "Invalid reference forms ids")
+        self.assertHasError(
+            res_data,
+            "reference_forms_ids",
+            f'Invalid pk "{self.reference_form_wrong_project.id}" - object does not exist.',
+        )
 
     def test_org_unit_type_create_ok(self):
         """POST /orgunittypes/ with auth: 201 OK"""

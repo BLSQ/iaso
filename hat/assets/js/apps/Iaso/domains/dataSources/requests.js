@@ -39,20 +39,6 @@ export const postGeoPkg = async request => {
     return postRequest('/api/tasks/create/importgpkg/', body, file);
 };
 
-const getOrgUnitTypes = async () => {
-    return getRequest('/api/v2/orgunittypes/');
-};
-
-export const useOrgUnitTypes = () => {
-    return useSnackQuery(['orgUnitTypes'], getOrgUnitTypes, undefined, {
-        select: data =>
-            data.orgUnitTypes.map(orgUnitType => ({
-                value: orgUnitType.id,
-                label: orgUnitType.name,
-            })),
-    });
-};
-
 const getDataSourceVersions = async () => {
     return getRequest('/api/sourceversions/');
 };

@@ -20,11 +20,11 @@ import {
 } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
+import { OrgUnitTypeHierarchy } from 'Iaso/api/orgUnitTypes';
 import { useGetPipelineDetails } from 'Iaso/domains/openHexa/hooks/useGetPipelineDetails';
 import { useLaunchTask } from 'Iaso/domains/openHexa/hooks/useLaunchTask';
 import { ParameterValues } from 'Iaso/domains/openHexa/types/pipeline';
 
-import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { useGetLogs } from 'Iaso/domains/tasks/hooks/api';
 
 import { TaskStatus } from 'Iaso/domains/tasks/types';
@@ -39,7 +39,7 @@ type Props = {
     planning: Planning;
     disabled?: boolean;
     disabledMessage?: string;
-    orgunitTypes: OrgUnitTypeHierarchyDropdownValues;
+    orgunitTypes: OrgUnitTypeHierarchy[];
     isFetchingOrgunitTypes: boolean;
 };
 

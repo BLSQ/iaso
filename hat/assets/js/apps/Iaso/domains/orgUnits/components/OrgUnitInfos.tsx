@@ -159,9 +159,9 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     errors={orgUnitState.org_unit_type_id.errors}
                     type="select"
                     loading={isFetchingOrgUnitTypes}
-                    options={orgUnitTypes.map(t => ({
-                        label: t.name,
-                        value: t.id,
+                    options={orgUnitTypes?.map(t => ({
+                        label: t.label,
+                        value: t.value,
                     }))}
                     label={MESSAGES.org_unit_type_id}
                     disabled={disabled}

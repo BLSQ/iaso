@@ -111,7 +111,9 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
 }) => {
     const classes = useStyles();
     const redirectToReplace = useRedirectToReplace();
-    const { data: orgUnitTypes } = useGetOrgUnitTypesDropdownOptions();
+    const { data: orgUnitTypes } = useGetOrgUnitTypesDropdownOptions({
+        fields: [':all'],
+    });
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
     const isClusterActive =
         !params.isClusterActive || params.isClusterActive === 'true';
@@ -303,16 +305,14 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                         ).map(ot => (
                             <Pane
                                 style={{
-                                    zIndex: 400 + (ot.original?.depth || 1),
+                                    zIndex: 400 + (ot.depth || 1),
                                 }}
-                                name={`org-type-${ot.original?.id}`}
-                                key={ot.original?.id}
+                                name={`org-type-${ot.value}`}
+                                key={ot?.value}
                             >
                                 {orgUnits.shapes
                                     .filter(
-                                        o =>
-                                            o.org_unit_type_id ===
-                                            ot.original?.id,
+                                        o => o.org_unit_type_id === ot.value,
                                     )
                                     .map(
                                         o =>

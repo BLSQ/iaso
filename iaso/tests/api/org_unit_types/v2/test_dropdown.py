@@ -61,6 +61,8 @@ class OrgUnitTypesV2DropdownTestCase(SwaggerTestCaseMixin, APITestCase):
         cls.org_unit_type_2.sub_unit_types.add(cls.org_unit_type_3)
 
         wrong_project.forms.add(reference_form_wrong_project)
+        cls.org_unit_type_6 = org_unit_type_6 = OrgUnitType.objects.create(name="6", short_name="6")
+        wrong_project.unit_types.add(org_unit_type_6)
         wrong_project.save()
 
     def assertValidOrgUnitTypeDropdownData(self, data, expected_length):
@@ -70,7 +72,7 @@ class OrgUnitTypesV2DropdownTestCase(SwaggerTestCaseMixin, APITestCase):
     def test_org_unit_type_dropdown(self):
         # Default path that returns all OUTs to which the user has access
         self.client.force_authenticate(self.jane)
-        response = self.client.get(reverse("orgunittypes_v2-dropdown"))
+        response = self.client.get(reverse("orgunittypes_v2-dropdown"), data={"fields": ":all"})
         res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidOrgUnitTypeDropdownData(res_data, 5)  # The 5 types created in setUpTestData
 
@@ -93,25 +95,30 @@ class OrgUnitTypesV2DropdownTestCase(SwaggerTestCaseMixin, APITestCase):
         )
 
         self.client.force_authenticate(self.jane)
-        response = self.client.get(reverse("orgunittypes_v2-dropdown"), data={"source_version_id": self.version_1.id})
+        response = self.client.get(
+            reverse("orgunittypes_v2-dropdown"), data={"source_version_id": self.version_1.id, "fields": ":all"}
+        )
         res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertValidOrgUnitTypeDropdownData(res_data, 2)
         for out in res_data:
-            self.assertIn(out["id"], [self.org_unit_type_1.id, self.org_unit_type_2.id])
+            self.assertIn(out["value"], [self.org_unit_type_1.id, self.org_unit_type_2.id])
 
         # Now let's try with the other version
-        response = self.client.get(reverse("orgunittypes_v2-dropdown"), data={"source_version_id": self.version_2.id})
+        response = self.client.get(
+            reverse("orgunittypes_v2-dropdown"), data={"source_version_id": self.version_2.id, "fields": ":all"}
+        )
         res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertValidOrgUnitTypeDropdownData(res_data, 1)  # Because only 1 OU was created above with that version
-        self.assertEqual(res_data[0]["id"], self.org_unit_type_3.id)
+        self.assertEqual(res_data[0]["value"], self.org_unit_type_3.id)
 
     def test_filter_source_version_unknown_version(self):
         probably_not_a_valid_source_version_id = 1234567890
         self.client.force_authenticate(self.jane)
         response = self.client.get(
-            reverse("orgunittypes_v2-dropdown"), data={"source_version_id": probably_not_a_valid_source_version_id}
+            reverse("orgunittypes_v2-dropdown"),
+            data={"source_version_id": probably_not_a_valid_source_version_id, "fields": ":all"},
         )
         res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidOrgUnitTypeDropdownData(res_data, 0)  # Because no OU was created with that version
@@ -157,30 +164,36 @@ class OrgUnitTypesV2DropdownTestCase(SwaggerTestCaseMixin, APITestCase):
 
         # Let's make sure that the dropdown properly returns values for the setup account
         self.client.force_authenticate(self.jane)
-        response = self.client.get(reverse("orgunittypes_v2-dropdown"), data={"source_version_id": self.version_1.id})
+        response = self.client.get(
+            reverse("orgunittypes_v2-dropdown"), data={"source_version_id": self.version_1.id, "fields": ":all"}
+        )
 
         res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidOrgUnitTypeDropdownData(res_data, 3)  # Because 3 OU were created above
 
         # Now let's make sure that nothing is returned for the setup source version and the new user because it's the wrong account
         self.client.force_authenticate(new_user)
-        response = self.client.get(reverse("orgunittypes_v2-dropdown"), data={"source_version_id": self.version_1.id})
+        response = self.client.get(
+            reverse("orgunittypes_v2-dropdown"), data={"source_version_id": self.version_1.id, "fields": ":all"}
+        )
         res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidOrgUnitTypeDropdownData(res_data, 0)
 
     def test_filter_by_app_id(self):
         self.client.force_authenticate(self.jane)
-        response = self.client.get(reverse("orgunittypes_v2-dropdown"), data={"app_id": "somethingwrong"})
+        response = self.client.get(
+            reverse("orgunittypes_v2-dropdown"), data={"app_id": "somethingwrong", "fields": ":all"}
+        )
 
         res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidOrgUnitTypeDropdownData(res_data, 0)
 
-        response = self.client.get(reverse("orgunittypes_v2-dropdown"), data={"app_id": "ead.app_id"})
+        response = self.client.get(reverse("orgunittypes_v2-dropdown"), data={"app_id": "ead.app_id", "fields": ":all"})
 
         res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidOrgUnitTypeDropdownData(res_data, 2)
 
-        response = self.client.get(reverse("orgunittypes_v2-dropdown"), data={"app_id": "esd.app_id"})
+        response = self.client.get(reverse("orgunittypes_v2-dropdown"), data={"app_id": "esd.app_id", "fields": ":all"})
 
         res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidOrgUnitTypeDropdownData(res_data, 3)
@@ -189,8 +202,8 @@ class OrgUnitTypesV2DropdownTestCase(SwaggerTestCaseMixin, APITestCase):
         self.client.force_authenticate(self.jane)
         with self.assertNumQueries(2):
             # SELECT QUERYSET
-            # PREFETCH sub_types
-            response = self.client.get(reverse("orgunittypes_v2-dropdown"))
+            # PREFETCH SUB_UNIT_TYPES
+            response = self.client.get(reverse("orgunittypes_v2-dropdown"), data={"fields": ":all"})
         res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidOrgUnitTypeDropdownData(res_data, 5)
 

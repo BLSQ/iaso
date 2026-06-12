@@ -1,13 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import {
-    AddButton,
-    Column,
-    commonStyles,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { Column, commonStyles, useSafeIntl } from 'bluesquare-components';
 
+import { useApiV2OrgunittypesList } from 'Iaso/api/orgUnitTypes';
+import { useApiParams } from 'Iaso/hooks/useApiParams';
+import { useUrlParams } from 'Iaso/hooks/useUrlParams';
 import TopBar from '../../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 
@@ -16,9 +14,8 @@ import { baseUrls } from '../../../constants/urls';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
 import { OrgUnitTypesParams } from '../types/orgunitTypes';
 import { Filters } from './components/Filters';
-import { OrgUnitsTypesDialog } from './components/OrgUnitsTypesDialog';
+import { OrgUnitsTypesDialogAddButton } from './components/OrgUnitsTypesDialog';
 import { useGetColumns } from './config/tableColumns';
-import { useGetOrgUnitTypes } from './hooks/useGetOrgUnitTypes';
 import MESSAGES from './messages';
 
 const baseUrl = baseUrls.orgUnitTypes;
@@ -31,11 +28,18 @@ const OrgUnitTypes: FunctionComponent = () => {
     const params = useParamsObject(baseUrl) as unknown as OrgUnitTypesParams;
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const { data, isFetching } = useGetOrgUnitTypes({
-        ...params,
-        with_units_count: true,
-    });
-    const columns: Column[] = useGetColumns(params, data?.count ?? 0);
+
+    const defaults = {
+        order: 'name',
+        pageSize: 20,
+        page: 1,
+    };
+    const safeParams = useUrlParams(params, defaults);
+    const apiParams = useApiParams(safeParams);
+
+    const { data, isFetching } = useApiV2OrgunittypesList(apiParams);
+
+    const columns: Column[] = useGetColumns();
     return (
         <>
             <TopBar
@@ -52,19 +56,13 @@ const OrgUnitTypes: FunctionComponent = () => {
                     alignItems="center"
                     className={classes.marginTop}
                 >
-                    <OrgUnitsTypesDialog
+                    <OrgUnitsTypesDialogAddButton
                         titleMessage={MESSAGES.create}
-                        renderTrigger={({ openDialog }) => (
-                            <AddButton
-                                onClick={openDialog}
-                                id="create-ou-type"
-                            />
-                        )}
                     />
                 </Grid>
                 <TableWithDeepLink
                     marginTop={false}
-                    data={data?.orgUnitTypes ?? []}
+                    data={data?.results ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={[{ id: 'name', desc: false }]}
                     columns={columns}

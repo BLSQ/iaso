@@ -4,12 +4,11 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Grid, Collapse, Box } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
-import InputComponent from 'Iaso/components/forms/InputComponent';
 import {
     OrgUnitTypeHierarchy,
-    OrgUnitTypeHierarchyDropdownValues,
-    useGetOrgUnitTypesHierarchy,
-} from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+    useApiV2OrgunittypesHierarchyRetrieve,
+} from 'Iaso/api/orgUnitTypes';
+import InputComponent from 'Iaso/components/forms/InputComponent';
 import { flattenOrgUnitTypeHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/utils';
 import { Planning } from 'Iaso/domains/plannings/types';
 import { SxStyles } from 'Iaso/types/general';
@@ -35,7 +34,7 @@ const styles: SxStyles = {
 
 type Props = {
     parameterValues?: ParameterValues;
-    orgunitTypes: OrgUnitTypeHierarchyDropdownValues;
+    orgunitTypes: OrgUnitTypeHierarchy[];
     isFetchingOrgunitTypes: boolean;
     index: number;
     levels: number[] | undefined[];
@@ -78,9 +77,16 @@ export const Level: FunctionComponent<Props> = ({
             ),
         [orgunitTypes, levels, index],
     );
-    const { data: orgUnitTypeHierarchy } = useGetOrgUnitTypesHierarchy(
-        previousLevel?.value ? previousLevel.value : 0,
-    );
+    const { data: orgUnitTypeHierarchy } =
+        useApiV2OrgunittypesHierarchyRetrieve(
+            previousLevel?.value as number,
+            undefined,
+            {
+                query: {
+                    enabled: Boolean(planning?.org_unit_details?.org_unit_type),
+                },
+            },
+        );
     const isExpanded = expandedLevels[index];
     const handleSetIsExpanded = useCallback(
         (value: boolean) => {

@@ -18,10 +18,10 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
+import { useApiV2OrgunittypesHierarchyRetrieve } from 'Iaso/api/orgUnitTypes';
 import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
 import { useGetPipelineConfig } from 'Iaso/domains/openHexa/hooks/useGetPipelineConfig';
 import { useGetPipelineDetails } from 'Iaso/domains/openHexa/hooks/useGetPipelineDetails';
-import { useGetOrgUnitTypesHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { flattenOrgUnitTypeHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/utils';
 import { ParameterValues } from 'Iaso/domains/plannings/sampling/customForms/LQASForm';
 import { LQASRead } from 'Iaso/domains/plannings/sampling/customForms/LQASRead';
@@ -78,9 +78,16 @@ const SamplingResultDialog: FunctionComponent<Props> = ({
     const hasParameters = Object.keys(rawParameters).length > 0;
 
     const { data: orgUnitTypeHierarchy, isFetching: isFetchingOrgunitTypes } =
-        useGetOrgUnitTypesHierarchy(
-            planning.org_unit_details?.org_unit_type ?? undefined,
+        useApiV2OrgunittypesHierarchyRetrieve(
+            planning?.org_unit_details?.org_unit_type as number,
+            undefined,
+            {
+                query: {
+                    enabled: Boolean(planning?.org_unit_details?.org_unit_type),
+                },
+            },
         );
+
     const orgunitTypes = useMemo(
         () =>
             flattenOrgUnitTypeHierarchy(

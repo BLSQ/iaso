@@ -20,6 +20,10 @@ import {
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual, pick } from 'lodash';
 import moment from 'moment';
+import {
+    OrgUnitTypeHierarchy,
+    useApiV2OrgunittypesHierarchyRetrieve,
+} from 'Iaso/api/orgUnitTypes';
 import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { baseUrls } from 'Iaso/constants/urls';
@@ -28,14 +32,10 @@ import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetForms
 import { filterOrgUnitTypesByForms } from 'Iaso/domains/forms/utils';
 import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
 import { useGetOrgUnit } from 'Iaso/domains/orgUnits/components/TreeView/requests';
-import {
-    OrgUnitTypeHierarchy,
-    useGetOrgUnitTypesHierarchy,
-} from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+
 import { flattenOrgUnitTypeHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/utils';
 import { useSkipEffectUntilValue } from 'Iaso/hooks/useSkipEffectUntilValue';
 import { SxStyles } from 'Iaso/types/general';
-import { DropdownOptions } from 'Iaso/types/utils';
 import { PLANNING_WRITE } from 'Iaso/utils/permissions';
 import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
 
@@ -256,9 +256,15 @@ export const PlanningForm: FunctionComponent<Props> = ({
     const { data: rootorgunit, isFetching: isFetchingRootOrgUnit } =
         useGetOrgUnit(values.selectedOrgUnit?.toString());
     const { data: orgunitTypes, isFetching: isFetchingOrgunitTypes } =
-        useGetOrgUnitTypesHierarchy<DropdownOptions<number>[]>(
-            rootorgunit?.org_unit_type_id,
-            selectOrgUnitTypeByForm,
+        useApiV2OrgunittypesHierarchyRetrieve(
+            rootorgunit?.org_unit_type_id as number,
+            undefined,
+            {
+                query: {
+                    enabled: Boolean(rootorgunit?.org_unit_type_id),
+                    select: selectOrgUnitTypeByForm,
+                },
+            },
         );
 
     const { data: teamsDropdown, isFetching: isFetchingTeams } =

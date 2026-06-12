@@ -20,7 +20,7 @@ class PreparednessScoreFilterAPITestCase(PreparednessDashboardAPIBase):
         self.client.force_authenticate(self.user_polio)
 
     def test_filter_url_returns_empty_for_nonexistent(self):
-        response = self.client.get(self.SCORE_URL, {"url": 999999, "date": "2030-01-01"})
+        response = self.client.get(self.SCORE_URL, {"spread_id": 999999, "date": "2030-01-01"})
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(data, {})
 
@@ -48,12 +48,12 @@ class PreparednessScoreFilterAPITestCase(PreparednessDashboardAPIBase):
         SpreadSheetImport.objects.filter(pk=newer_ssi.pk).update(created_at=now - timedelta(days=1))
 
         date_str = (now - timedelta(days=1)).strftime("%Y-%m-%d")
-        response = self.client.get(self.SCORE_URL, {"url": older_ssi.url, "date": date_str})
+        response = self.client.get(self.SCORE_URL, {"spread_id": older_ssi.spread_id, "date": date_str})
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_filter_date_returns_empty_when_no_entries_before_date(self):
         """When all SpreadSheetImport entries are after the given date, the filter returns empty."""
-        response = self.client.get(self.SCORE_URL, {"url": 1, "date": "2000-01-01"})
+        response = self.client.get(self.SCORE_URL, {"spread_id": self.ssi.spread_id, "date": "2000-01-01"})
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(data, {})
 
@@ -82,6 +82,6 @@ class PreparednessScoreFilterAPITestCase(PreparednessDashboardAPIBase):
         SpreadSheetImport.objects.filter(pk=ssi_recent.pk).update(created_at=base_date - timedelta(days=1))
 
         date_str = base_date.strftime("%Y-%m-%d")
-        response = self.client.get(self.SCORE_URL, {"url": ssi_old.url, "date": date_str})
+        response = self.client.get(self.SCORE_URL, {"spread_id": ssi_old.spread_id, "date": date_str})
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertIn("scores", data)

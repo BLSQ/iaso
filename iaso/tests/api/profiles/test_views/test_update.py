@@ -995,3 +995,38 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             format="json",
         )
         self.assertJSONResponse(response, status.HTTP_200_OK)
+
+    def test_retrieve_returns_permissions_granted_through_a_role(self):
+        """
+        Regression test for IA-5223: permissions granted through a role (i.e. a Django group)
+        must be returned in `permissions`. They are delivered via `get_group_permissions()`
+        (fully-qualified `app_label.codename`) and were being wrongly filtered out against the
+        active-module codenames.
+        """
+        self.client.force_authenticate(self.jim)
+        self.account.modules = [MODULE_DEFAULT.codename, MODULE_VALIDATION_WORKFLOW.codename]
+        self.account.save(update_fields=["modules"])
+
+        role_group = Group.objects.create(name="role with validation workflow")
+        role_group.permissions.add(Permission.objects.get(codename=CORE_VALIDATION_WORKFLOW_PERMISSION.codename))
+        role = UserRole.objects.create(group=role_group, account=self.account)
+        self.jom.iaso_profile.user_roles.set([role])
+        # Assigning a role also adds the user to the underlying Django group (see ProfileViewSet),
+        # which is how role permissions are delivered through `get_group_permissions()`.
+        self.jom.groups.set([role_group])
+
+        response = self.client.get(reverse("profiles-detail", kwargs={"pk": self.jom.iaso_profile.id}))
+        res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        # The role permission is granted through the group, so it appears in `permissions`
+        # but not in `user_permissions` (which only holds directly-assigned permissions).
+        self.assertIn(CORE_VALIDATION_WORKFLOW_PERMISSION.codename, res_data["permissions"])
+        self.assertNotIn(CORE_VALIDATION_WORKFLOW_PERMISSION.codename, res_data["user_permissions"])
+
+        # Role permissions are still gated by active modules: deactivating the module removes them.
+        self.account.modules = [MODULE_DEFAULT.codename]
+        self.account.save(update_fields=["modules"])
+
+        response = self.client.get(reverse("profiles-detail", kwargs={"pk": self.jom.iaso_profile.id}))
+        res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertNotIn(CORE_VALIDATION_WORKFLOW_PERMISSION.codename, res_data["permissions"])

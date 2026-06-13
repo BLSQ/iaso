@@ -60,20 +60,19 @@ steps:
 
 - script: |
     python --version
-    python -m venv ./venv
-    . ./venv/bin/activate && pip install -U pip
-  displayName: 'install pip'
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+  displayName: 'install uv'
 
 - script: |
-    . ./venv/bin/activate && pip install -r requirements.txt  && pip install -r requirements-dev.txt
-    pip install unittest-xml-reporting
+    uv sync
+    uv add unittest-xml-reporting
   displayName: 'install requirements'
 
-- script: pip list
+- script: uv tree --depth 1
   displayName: 'Environment info'
 
 - script: |
-    . ./venv/bin/activate && ruff check .
+    uv run ruff check .
   displayName: 'Check formatting with ruff'
 
 # Setting the details for the health page
@@ -91,11 +90,11 @@ steps:
     export DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
     export DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USERNAME}
     export DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL}
-    . ./venv/bin/activate &&  python manage.py migrate
-    . ./venv/bin/activate &&  python manage.py createcachetable
-    . ./venv/bin/activate &&  python manage.py test --testrunner xmlrunner.extra.djangotestrunner.XMLTestRunner --no-input
-    . ./venv/bin/activate &&  python manage.py makemigrations --check
-    . ./venv/bin/activate &&  python manage.py createsuperuser --noinput
+    uv run python manage.py migrate
+    uv run python manage.py createcachetable
+    uv run python manage.py test --testrunner xmlrunner.extra.djangotestrunner.XMLTestRunner --no-input
+    uv run python manage.py makemigrations --check
+    uv run python manage.py createsuperuser --noinput
   displayName: 'Django tests'
   condition: succeededOrFailed()
   env:
@@ -142,7 +141,7 @@ steps:
     echo "Disk space after Docker cleanup:" && df -h
   displayName: 'Clean up Docker system'
 
-- script: docker build -t prod-coda2 --target prod -f $(Build.SourcesDirectory)/docker/bundle/Dockerfile .
+- script: docker build -t prod-coda2 --target prod -f $(Build.SourcesDirectory)/docker/prod/Dockerfile .
   displayName: 'Build docker image'
 
 # Save the Docker image compressed, in a dedicated folder for the artifact

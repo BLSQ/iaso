@@ -208,8 +208,7 @@ class FormsAPITestCase(APITestCase):
         self.assertValidFormListData(res_data, 1)
         # Filter by org unit group `empty_group`: no form is linked to it.
         response = self.client.get(
-            f"/api/forms/?orgUnitGroupIds={self.empty_group.pk}",
-            headers={"Content-Type": "application/json"},
+            f"/api/forms/?orgUnitGroupIds={self.empty_group.pk}"
         )
         res_data = self.assertJSONResponse(response, 200)
         self.assertValidFormListData(res_data, 0)

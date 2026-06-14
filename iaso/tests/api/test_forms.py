@@ -570,6 +570,7 @@ class FormsAPITestCase(APITestCase):
         )
         res_data = self.assertJSONResponse(response, 400)
         self.assertHasError(res_data, "org_unit_group_ids")
+        self.form_1.refresh_from_db()
         self.assertEqual(0, self.form_1.org_unit_groups.count())
 
     def test_forms_update_org_unit_groups_ok(self):

@@ -122,8 +122,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
         useGetGroupDropdown(
             { projectIds: currentForm.project_ids.value.join(',') },
             // we only want to fetch the groups if the project ids are set, project ids is a required field
-            currentForm.project_ids.value &&
-                currentForm.project_ids.value.length > 0,
+            Boolean(currentForm.project_ids?.value?.length)
         );
     useEffect(() => {
         if (

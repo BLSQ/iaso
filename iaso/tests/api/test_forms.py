@@ -568,8 +568,8 @@ class FormsAPITestCase(APITestCase):
             data={"org_unit_group_ids": [self.unrelated_group.id]},
             format="json",
         )
-        self.assertJSONResponse(response, 400)
-        self.assertHasError(response.json(), "org_unit_group_ids")
+        res_data = self.assertJSONResponse(response, 400)
+        self.assertHasError(res_data, "org_unit_group_ids")
         self.assertEqual(0, self.form_1.org_unit_groups.count())
 
     def test_forms_update_org_unit_groups_ok(self):

@@ -331,8 +331,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                             label={MESSAGES.orgUnitsGroups}
                             loading={isOuGroupLoading}
                             disabled={
-                                !currentForm.project_ids.value ||
-                                currentForm.project_ids.value.length === 0
+                                !currentForm.project_ids?.value?.length
                             }
                         />
                     </InputWithInfos>

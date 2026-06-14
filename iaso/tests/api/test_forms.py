@@ -201,15 +201,11 @@ class FormsAPITestCase(APITestCase):
     def test_forms_list_filtered_by_org_unit_group(self):
         self.client.force_authenticate(self.form_manager)
         # Filter by org unit group `health_facilities_group`: only form_2 is linked to it.
-        response = self.client.get(
-            f"/api/forms/?orgUnitGroupIds={self.health_facilities_group.pk}"
-        )
+        response = self.client.get(f"/api/forms/?orgUnitGroupIds={self.health_facilities_group.pk}")
         res_data = self.assertJSONResponse(response, 200)
         self.assertValidFormListData(res_data, 1)
         # Filter by org unit group `empty_group`: no form is linked to it.
-        response = self.client.get(
-            f"/api/forms/?orgUnitGroupIds={self.empty_group.pk}"
-        )
+        response = self.client.get(f"/api/forms/?orgUnitGroupIds={self.empty_group.pk}")
         res_data = self.assertJSONResponse(response, 200)
         self.assertValidFormListData(res_data, 0)
 
@@ -534,7 +530,9 @@ class FormsAPITestCase(APITestCase):
             format="json",
         )
         res_data = self.assertJSONResponse(response, 400)
-        self.assertHasError(res_data, "org_unit_group_ids", f'Invalid pk "{self.unrelated_group.id}" - object does not exist.')
+        self.assertHasError(
+            res_data, "org_unit_group_ids", f'Invalid pk "{self.unrelated_group.id}" - object does not exist.'
+        )
 
     def test_forms_create_org_unit_groups_not_in_default_version(self):
         """POST /forms/ - a group of the account but not in the default source version is rejected"""
@@ -557,7 +555,9 @@ class FormsAPITestCase(APITestCase):
             format="json",
         )
         res_data = self.assertJSONResponse(response, 400)
-        self.assertHasError(res_data, "org_unit_group_ids", "Invalid org unit group ids")
+        self.assertHasError(
+            res_data, "org_unit_group_ids", f'Invalid pk "{group_on_other_version.id}" - object does not exist.'
+        )
 
     def test_forms_patch_org_unit_groups_from_other_account(self):
         """PATCH /forms/<form_id> with only org_unit_group_ids cannot attach a group from outside the account"""

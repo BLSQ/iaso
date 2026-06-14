@@ -117,12 +117,16 @@ class FormSerializer(DynamicFieldsModelSerializerBackwardCompatible):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Restrict the writable org unit groups to the ones of the user's account.
+        # Restrict the writable org unit groups to the ones of the user's account that belong to the
+        # account's default source version (the data source version currently in use).
         request = self.context.get("request")
         if request and "org_unit_group_ids" in self.fields:
             user = getattr(request, "user", None)
             if user and user.is_authenticated and hasattr(user, "iaso_profile"):
-                self.fields["org_unit_group_ids"].child_relation.queryset = Group.objects.filter_for_user(user)
+                default_version = user.iaso_profile.account.default_version
+                self.fields["org_unit_group_ids"].child_relation.queryset = Group.objects.filter_for_user(user).filter(
+                    source_version=default_version
+                )
 
     projects = ProjectSerializer(read_only=True, many=True)
     project_ids = serializers.PrimaryKeyRelatedField(
@@ -185,17 +189,6 @@ class FormSerializer(DynamicFieldsModelSerializerBackwardCompatible):
             allowed_org_unit_types = [ut for p in data["projects"] for ut in p.unit_types.all()]
             if len(set(data["org_unit_types"]) - set(allowed_org_unit_types)) > 0:
                 raise serializers.ValidationError({"org_unit_type_ids": "Invalid org unit type ids"})
-
-            # validate org_unit_groups: a group must belong to the account's default source version
-            # (the data source version currently in use)
-            org_unit_groups = data.get("org_unit_groups", [])
-            if org_unit_groups:
-                default_version = self.context["request"].user.iaso_profile.account.default_version
-                allowed_group_ids = set(
-                    Group.objects.filter(source_version=default_version).values_list("id", flat=True)
-                )
-                if any(group.id not in allowed_group_ids for group in org_unit_groups):
-                    raise serializers.ValidationError({"org_unit_group_ids": "Invalid org unit group ids"})
 
         # If the period type is None, some period-specific fields must have specific values
         if "period_type" in data:

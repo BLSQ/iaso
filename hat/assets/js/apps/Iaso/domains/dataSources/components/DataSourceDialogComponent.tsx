@@ -5,6 +5,8 @@ import {
     Box,
     Button,
     Grid,
+    List,
+    ListItem,
     Typography,
 } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
@@ -290,69 +292,6 @@ export const DataSourceDialogComponent: FunctionComponent<Props> = ({
                             />
                         </Box>
                     )}
-                    {willChangeDefaultVersion && (
-                        <Box mt={1}>
-                            <Alert severity="warning">
-                                <AlertTitle>
-                                    {formatMessage(
-                                        MESSAGES.changeDefaultVersionWarningTitle,
-                                    )}
-                                </AlertTitle>
-                                <ul style={{ margin: 0, paddingLeft: '1.2em' }}>
-                                    <li>
-                                        {formatMessage(
-                                            MESSAGES.changeDefaultVersionWarningPastData,
-                                        )}
-                                    </li>
-                                    <li>
-                                        {formatMessage(
-                                            MESSAGES.changeDefaultVersionWarningGroups,
-                                        )}
-                                    </li>
-                                    <li>
-                                        {formatMessage(
-                                            MESSAGES.changeDefaultVersionWarningUsers,
-                                        )}
-                                    </li>
-                                    <li>
-                                        {formatMessage(
-                                            MESSAGES.changeDefaultVersionWarningPlanning,
-                                        )}
-                                    </li>
-                                    <li>
-                                        {formatMessage(
-                                            MESSAGES.changeDefaultVersionWarningReferences,
-                                        )}
-                                    </li>
-                                    <li>
-                                        {formatMessage(
-                                            MESSAGES.changeDefaultVersionWarningSavedViews,
-                                        )}
-                                    </li>
-                                    <li>
-                                        {formatMessage(
-                                            MESSAGES.changeDefaultVersionWarningOther,
-                                        )}
-                                    </li>
-                                </ul>
-                                <InputComponent
-                                    keyValue="confirm_default_version_change"
-                                    onChange={setFieldValue}
-                                    value={
-                                        form.confirm_default_version_change
-                                            .value
-                                    }
-                                    errors={
-                                        form.confirm_default_version_change
-                                            .errors
-                                    }
-                                    type="checkbox"
-                                    label={MESSAGES.changeDefaultVersionConfirm}
-                                    withMarginTop={false}
-                                />
-                            </Alert>
-                        </Box>
-                    )}
                 </Grid>
 
                 {hasDhis2Module && (
@@ -406,6 +345,58 @@ export const DataSourceDialogComponent: FunctionComponent<Props> = ({
                             {checkDhis2.isError &&
                                 `❌ ${formatMessage(MESSAGES.checkDhis2Error)}`}
                         </Typography>
+                    </Grid>
+                )}
+
+                {willChangeDefaultVersion && (
+                    <Grid xs={12} item>
+                        <Alert severity="warning">
+                            <AlertTitle>
+                                {formatMessage(
+                                    MESSAGES.changeDefaultVersionWarningTitle,
+                                )}
+                            </AlertTitle>
+                            <List
+                                sx={{
+                                    m: 0,
+                                    pl: '1.2em',
+                                    listStyleType: 'disc',
+                                }}
+                            >
+                                {[
+                                    MESSAGES.changeDefaultVersionWarningPastData,
+                                    MESSAGES.changeDefaultVersionWarningGroups,
+                                    MESSAGES.changeDefaultVersionWarningUsers,
+                                    MESSAGES.changeDefaultVersionWarningPlanning,
+                                    MESSAGES.changeDefaultVersionWarningReferences,
+                                    MESSAGES.changeDefaultVersionWarningSavedViews,
+                                    MESSAGES.changeDefaultVersionWarningOther,
+                                ].map(message => (
+                                    <ListItem
+                                        key={message.id}
+                                        sx={{
+                                            display: 'list-item',
+                                            p: 0,
+                                        }}
+                                    >
+                                        {formatMessage(message)}
+                                    </ListItem>
+                                ))}
+                            </List>
+                            <InputComponent
+                                keyValue="confirm_default_version_change"
+                                onChange={setFieldValue}
+                                value={
+                                    form.confirm_default_version_change.value
+                                }
+                                errors={
+                                    form.confirm_default_version_change.errors
+                                }
+                                type="checkbox"
+                                label={MESSAGES.changeDefaultVersionConfirm}
+                                withMarginTop={false}
+                            />
+                        </Alert>
                     </Grid>
                 )}
             </Grid>

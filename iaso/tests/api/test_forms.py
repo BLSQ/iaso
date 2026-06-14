@@ -468,9 +468,7 @@ class FormsAPITestCase(APITestCase):
             "possible_fields,legend_threshold,change_request_mode,validation_workflow"
         )
         response = self.client.get(f"/api/forms/{self.form_2.id}/?fields={fields}")
-        self.assertJSONResponse(response, 200)
-
-        form_data = response.json()
+        form_data = self.assertJSONResponse(response, 200)
         self.assertHasField(form_data, "org_unit_groups", list)
         self.assertEqual(1, len(form_data["org_unit_groups"]))
         self.assertEqual(self.health_facilities_group.id, form_data["org_unit_groups"][0]["id"])

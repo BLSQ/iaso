@@ -452,9 +452,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.form_manager)
         response = self.client.get(f"/api/forms/{self.form_2.id}/")
-        self.assertJSONResponse(response, 200)
-
-        form_data = response.json()
+        form_data = self.assertJSONResponse(response, 200)
         self.assertHasField(form_data, "org_unit_groups", list)
         self.assertEqual(1, len(form_data["org_unit_groups"]))
         self.assertEqual(self.health_facilities_group.id, form_data["org_unit_groups"][0]["id"])

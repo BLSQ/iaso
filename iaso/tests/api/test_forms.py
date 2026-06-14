@@ -212,8 +212,8 @@ class FormsAPITestCase(APITestCase):
             f"/api/forms/?orgUnitGroupIds={self.empty_group.pk}",
             headers={"Content-Type": "application/json"},
         )
-        self.assertJSONResponse(response, 200)
-        self.assertValidFormListData(response.json(), 0)
+        res_data = self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(res_data, 0)
 
     def test_forms_list_filtered_by_project(self):
         """GET /forms/ filtered by project"""

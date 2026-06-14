@@ -556,8 +556,8 @@ class FormsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 400)
-        self.assertHasError(response.json(), "org_unit_group_ids", "Invalid org unit group ids")
+        res_data = self.assertJSONResponse(response, 400)
+        self.assertHasError(res_data, "org_unit_group_ids", "Invalid org unit group ids")
 
     def test_forms_patch_org_unit_groups_from_other_account(self):
         """PATCH /forms/<form_id> with only org_unit_group_ids cannot attach a group from outside the account"""

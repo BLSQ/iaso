@@ -533,8 +533,8 @@ class FormsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 400)
-        self.assertHasError(response.json(), "org_unit_group_ids")
+        res_data = self.assertJSONResponse(response, 400)
+        self.assertHasError(res_data, "org_unit_group_ids", f'Invalid pk "{self.unrelated_group.id}" - object does not exist.')
 
     def test_forms_create_org_unit_groups_not_in_default_version(self):
         """POST /forms/ - a group of the account but not in the default source version is rejected"""

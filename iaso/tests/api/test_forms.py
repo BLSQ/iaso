@@ -514,9 +514,7 @@ class FormsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 201)
-
-        response_data = response.json()
+        response_data = self.assertJSONResponse(response, 201)
         form = m.Form.objects.get(pk=response_data["id"])
         self.assertEqual(0, form.org_unit_groups.count())
 

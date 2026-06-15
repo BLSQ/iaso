@@ -148,6 +148,7 @@ class Form(SoftDeletableModel):
     )
 
     org_unit_types = models.ManyToManyField("OrgUnitType", blank=True)
+    org_unit_groups = models.ManyToManyField("Group", blank=True, related_name="forms")
     form_id = models.TextField(null=True, blank=True)  # extracted from version xls file
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

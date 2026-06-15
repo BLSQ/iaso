@@ -153,7 +153,8 @@ jobs:
                   . ./venv/bin/activate &&  python manage.py createcachetable
                   # check we don't have missing migration
                   . ./venv/bin/activate &&  python manage.py makemigrations --check
-                  . ./venv/bin/activate &&  python -W "ignore" manage.py test
+                  # --parallel: run the suite across one process per CPU core (see IA-5186)
+                  . ./venv/bin/activate &&  python -W "ignore" manage.py test --parallel auto
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

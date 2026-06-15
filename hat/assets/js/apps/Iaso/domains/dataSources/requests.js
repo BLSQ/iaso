@@ -176,7 +176,7 @@ export const csvPreview = async data => {
 };
 
 export const updateDefaultDataSource = ([accountId, defaultVersionId]) =>
-    putRequest(`/api/accounts/${accountId}/`, {
+    putRequest(`/api/accounts/${accountId}/set-default-version/`, {
         default_version: defaultVersionId,
     });
 
@@ -213,6 +213,8 @@ export const useSaveDataSource = setFieldErrors => {
         setIsSaving(true);
 
         const { is_default_source, ...campaignData } = getValues(form);
+        // UI-only confirmation field, not part of the data source payload
+        delete campaignData.confirm_default_version_change;
 
         try {
             if (campaignData.id) {

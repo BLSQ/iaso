@@ -393,6 +393,19 @@ DATABASE_ROUTERS = [
 # This database settings which duplicate the main db settings, will be used by the background task worker so that they
 # can have a connexion outside of the transaction to report the progress on a Task. see Comments in services.py
 
+if IN_TESTS:
+    # `task_logs`, `worker` and `dashboard` are separate connection aliases that all use the same
+    # physical database as `default`. By default the test runner builds (and, with `--parallel`,
+    # clones per worker) one test database per alias, so it would create several test databases for
+    # what is really a single one. Declaring these aliases as TEST mirrors of `default` tells Django
+    # they share `default`'s (cloned) test database instead of getting their own. This is required
+    # for `manage.py test --parallel` to work here. See IA-5186.
+    for _mirror_alias in ("task_logs", "worker", "dashboard"):
+        if _mirror_alias in DATABASES:
+            # Rebuild each as its own dict so setting TEST does not mutate `default` (in test mode
+            # `dashboard` is the very same dict object as `default`).
+            DATABASES[_mirror_alias] = {**DATABASES["default"], "TEST": {"MIRROR": "default"}}
+
 # New django 3.2 settings to control which type of field is used by default for primary key
 # Added to remove unecessary warning
 # https://docs.djangoproject.com/en/4.0/releases/3.2/#customizing-type-of-auto-created-primary-keys

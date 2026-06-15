@@ -8,11 +8,15 @@ import { vi } from 'vitest';
 global.DOMMatrix = DOMMatrix as unknown as typeof DOMMatrix;
 
 // Mock the ResizeObserver
-const ResizeObserverMock = vi.fn(() => ({
-    observe: vi.fn(),
-    unobserve: vi.fn(),
-    disconnect: vi.fn(),
-}));
+const observe = vi.fn();
+const unobserve = vi.fn();
+const disconnect = vi.fn();
+
+class ResizeObserverMock {
+    observe = observe;
+    unobserve = unobserve;
+    disconnect = disconnect;
+}
 
 // Stub the global ResizeObserver
 vi.stubGlobal('ResizeObserver', ResizeObserverMock);

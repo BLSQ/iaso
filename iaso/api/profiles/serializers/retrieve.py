@@ -25,7 +25,7 @@ class NestedDataSourceSerializer(ModelSerializer):
 
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
-    url = serializers.CharField(source="credentials__url", read_only=True, allow_null=True)
+    url = serializers.CharField(source="credentials.url", read_only=True, allow_null=True)
 
     class Meta:
         model = DataSource
@@ -324,7 +324,7 @@ class ProfileRetrieveSerializer(ModelSerializer):
         user_group_permissions = [
             permission.split(".")[1]
             for permission in obj.user.get_group_permissions()
-            if permission.split(".")[1].startswith("iaso_") and permission in permissions_active_modules
+            if permission.split(".")[1].startswith("iaso_") and permission.split(".")[1] in permissions_active_modules
         ]
         user_permissions = list(
             obj.user.user_permissions.filter(

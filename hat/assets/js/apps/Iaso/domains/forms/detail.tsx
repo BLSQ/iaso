@@ -51,6 +51,7 @@ const defaultForm = {
     short_name: '',
     depth: null,
     org_unit_type_ids: [],
+    org_unit_group_ids: [],
     project_ids: [],
     period_type: null,
     derived: false,
@@ -76,6 +77,9 @@ const formatFormData = value => {
         depth: form.depth,
         org_unit_type_ids: form.org_unit_types
             ? form.org_unit_types.map((ot: any) => ot.id)
+            : [],
+        org_unit_group_ids: form.org_unit_groups
+            ? form.org_unit_groups.map((g: any) => g.id)
             : [],
         project_ids: form.projects ? form.projects.map((p: any) => p.id) : [],
         period_type:
@@ -109,6 +113,7 @@ const FormDetail: FunctionComponent = () => {
             'id',
             'name',
             'org_unit_types',
+            'org_unit_groups',
             'projects',
             'period_type',
             'derived',

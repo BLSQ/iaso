@@ -357,7 +357,7 @@ class BasicAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(json_response["orgUnitTypes"]), 0)
 
-        with self.assertNumQueries(10):
+        with self.assertNumQueries(9):
             # filter_for_user_and_app_id
             #   1. SELECT Projects
             #   2. SELECT Projects

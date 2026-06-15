@@ -4,7 +4,7 @@ from rest_framework import status
 
 from iaso.models import Account
 from iaso.modules import MODULE_DEFAULT, MODULE_FORM_AI, MODULE_STOCK, MODULES
-from iaso.permissions.core_permissions import CORE_MODULES_PERMISSION
+from iaso.permissions.core_permissions import CORE_ACCOUNT_MANAGEMENT_PERMISSION, CORE_MODULES_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
@@ -16,6 +16,9 @@ class ModuleListAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.john_doe = self.create_user_with_profile(username="john.doe", account=self.account)
         self.john_wick = self.create_user_with_profile(
             username="john.wick", account=self.account, permissions=[CORE_MODULES_PERMISSION]
+        )
+        self.jane_doe = self.create_user_with_profile(
+            username="jane.doe", account=self.account, permissions=[CORE_ACCOUNT_MANAGEMENT_PERMISSION]
         )
         self.related_modules = [m for m in MODULES if m.related_plugin is None]
 
@@ -32,6 +35,10 @@ class ModuleListAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.john_wick)
+        res = self.client.get(reverse("modules-list"))
+        self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.client.force_authenticate(self.jane_doe)
         res = self.client.get(reverse("modules-list"))
         self.assertJSONResponse(res, status.HTTP_200_OK)
 

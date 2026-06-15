@@ -1,8 +1,10 @@
 from django.conf import settings
 from django.core.validators import MinLengthValidator
 from django.db import models
+from django.db.models import QuerySet
 from django.utils.text import slugify
 
+from iaso.models.common import CreatedAndUpdatedModel
 from iaso.modules import MODULES, IasoModule
 from iaso.permissions.base import IasoPermission
 from iaso.utils.models.choice_array_field import ChoiceArrayField
@@ -12,22 +14,36 @@ from iaso.utils.models.encrypted_text_field import EncryptedTextField
 MODULE_CHOICES = ((module.codename, module.name) for module in MODULES)
 
 
-class AccountFeatureFlag(models.Model):
+class AccountFeatureFlag(CreatedAndUpdatedModel):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=255, primary_key=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.name} ({self.code})"
 
 
-class Account(models.Model):
+class AccountQuerySet(QuerySet):
+    def filter_for_user(self, user):
+        if not user or not user.is_authenticated:
+            return self.none()
+
+        tenant_user = getattr(user, "tenant_user", None)
+
+        if tenant_user:
+            return self.filter(
+                profile__in=tenant_user.main_user.tenant_users.values_list(
+                    "account_user__iaso_profile__id",
+                    flat=True,
+                )
+            )
+
+        return self.filter(profile=user.iaso_profile)
+
+
+class Account(CreatedAndUpdatedModel):
     """Account represent a tenant (=roughly a client organization or a country)"""
 
     name = models.TextField(unique=True, validators=[MinLengthValidator(1)])
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
     default_version = models.ForeignKey("SourceVersion", null=True, blank=True, on_delete=models.SET_NULL)
     feature_flags = models.ManyToManyField(AccountFeatureFlag)
     user_manual_path = models.TextField(null=True, blank=True)
@@ -41,6 +57,8 @@ class Account(models.Model):
     custom_translations = models.JSONField(null=True, blank=True)
     enforce_password_validation = models.BooleanField(default=True)
     anthropic_api_key = EncryptedTextField(null=True, blank=True, help_text="Anthropic API key used by the Form AI")
+
+    objects = models.Manager.from_queryset(AccountQuerySet)()
 
     @property
     def short_sanitized_name(self):

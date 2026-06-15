@@ -41,7 +41,6 @@ describe('InstanceValidationWidgetPaper a11y', () => {
     });
 
     // todo : LoadingSpinner is not accessible and not possible to add an aria-label ....
-    // eslint-disable-next-line vitest/no-disabled-tests
     it.skip('loading state is accessible', async () => {
         (useGetSubmissionValidationStatus as any).mockReturnValue({
             data: null,

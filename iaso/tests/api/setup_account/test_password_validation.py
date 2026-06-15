@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import status
 
+from iaso.models import Account
 from iaso.modules import MODULES
 from iaso.test import APITestCase, PasswordValidationTestMixin
 
@@ -25,6 +26,7 @@ class SetupAccountPasswordValidationAPITestCase(APITestCase, PasswordValidationT
         result = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(result, "password", self.ERROR_PASSWORD_TOO_SHORT)
         self.assertHasError(result, "password", self.ERROR_PASSWORD_TOO_COMMON)
+        self.assertFalse(Account.objects.exists())
 
     def test_setup_account_password_validation_error_too_similar_username(self):
         data = {
@@ -38,6 +40,7 @@ class SetupAccountPasswordValidationAPITestCase(APITestCase, PasswordValidationT
         response = self.client.post(self.BASE_URL, data=data, format="json")
         result = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(result, "password", self.ERROR_PASSWORD_TOO_SIMILAR_USERNAME)
+        self.assertFalse(Account.objects.exists())
 
     def test_setup_account_password_validation_error_too_similar_email(self):
         data = {
@@ -52,6 +55,7 @@ class SetupAccountPasswordValidationAPITestCase(APITestCase, PasswordValidationT
         response = self.client.post(self.BASE_URL, data=data, format="json")
         result = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(result, "password", self.ERROR_PASSWORD_TOO_SIMILAR_EMAIL)
+        self.assertFalse(Account.objects.exists())
 
     def test_setup_account_password_validation_error_too_similar_first_name(self):
         data = {
@@ -66,6 +70,7 @@ class SetupAccountPasswordValidationAPITestCase(APITestCase, PasswordValidationT
         response = self.client.post(self.BASE_URL, data=data, format="json")
         result = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(result, "password", self.ERROR_PASSWORD_TOO_SIMILAR_FIRST_NAME)
+        self.assertFalse(Account.objects.exists())
 
     def test_setup_account_password_validation_error_too_similar_last_name(self):
         data = {
@@ -81,6 +86,7 @@ class SetupAccountPasswordValidationAPITestCase(APITestCase, PasswordValidationT
         response = self.client.post(self.BASE_URL, data=data, format="json")
         result = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(result, "password", self.ERROR_PASSWORD_TOO_SIMILAR_LAST_NAME)
+        self.assertFalse(Account.objects.exists())
 
     def test_setup_account_password_validation_error_not_only_numeric(self):
         data = {
@@ -94,3 +100,4 @@ class SetupAccountPasswordValidationAPITestCase(APITestCase, PasswordValidationT
         response = self.client.post(self.BASE_URL, data=data, format="json")
         result = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(result, "password", self.ERROR_PASSWORD_NUMERIC)
+        self.assertFalse(Account.objects.exists())

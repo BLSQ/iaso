@@ -2,12 +2,13 @@ import typing
 
 from iaso import models as m
 from iaso.models import FeatureFlag
-from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_PROJECTS_PERMISSION
 from iaso.test import APITestCase
 
 
 class AppsAPITestCase(APITestCase):
-    yoda: m.User
+    user_with_projects_permission: m.User
+    user_without_projects_permission: m.User
     project_1: m.Project
     project_2: m.Project
     flag_1: m.FeatureFlag
@@ -18,7 +19,14 @@ class AppsAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         account = m.Account.objects.create(name="Global Health Initiative")
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=account, permissions=[CORE_FORMS_PERMISSION])
+        # Can perform write operations on apps.
+        cls.user_with_projects_permission = cls.create_user_with_profile(
+            username="user_with_projects_permission", account=account, permissions=[CORE_PROJECTS_PERMISSION]
+        )
+        # Authenticated but lacks `CORE_PROJECTS_PERMISSION`, so cannot write.
+        cls.user_without_projects_permission = cls.create_user_with_profile(
+            username="user_without_projects_permission", account=account, permissions=[CORE_FORMS_PERMISSION]
+        )
         cls.project_1 = m.Project.objects.create(
             name="Project 1",
             account=account,
@@ -199,7 +207,7 @@ class AppsAPITestCase(APITestCase):
             "feature_flags": [{"id": self.flag_1.id, "name": self.flag_1.name, "code": self.flag_1.code}],
             "needs_authentication": False,
         }
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.post("/api/apps/", candidate_app, format="json")
         self.assertJSONResponse(response, 201)
         response_data = response.json()
@@ -214,7 +222,7 @@ class AppsAPITestCase(APITestCase):
             "feature_flags": [{"id": self.flag_1.id, "name": self.flag_1.name, "code": self.flag_1.code}],
             "needs_authentication": False,
         }
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.post("/api/apps/", candidate_app, format="json")
         self.assertJSONResponse(response, 201)
         response_data = response.json()
@@ -234,7 +242,7 @@ class AppsAPITestCase(APITestCase):
             "feature_flags": [],
             "needs_authentication": False,
         }
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.post("/api/apps/", candidate_app, format="json")
         self.assertJSONResponse(response, 201)
 
@@ -245,7 +253,7 @@ class AppsAPITestCase(APITestCase):
             "feature_flags": [],
             "needs_authentication": False,
         }
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.post("/api/apps/", candidate_app, format="json")
         response_data = response.json()
         self.assertValidAppData(response_data)
@@ -261,7 +269,7 @@ class AppsAPITestCase(APITestCase):
             "feature_flags": [{"id": self.flag_1.id, "name": self.flag_1.name, "code": self.flag_1.code}],
             "needs_authentication": True,
         }
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.post("/api/apps/", candidate_app, format="json")
         self.assertJSONResponse(response, 201)
         response_data = response.json()
@@ -273,7 +281,7 @@ class AppsAPITestCase(APITestCase):
             "app_id": "com.this.is.new.app",
             "feature_flags": [{"id": self.flag_3.id, "name": self.flag_3.name, "code": self.flag_3.code}],
         }
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.post("/api/apps/", candidate_app, format="json")
         self.assertJSONResponse(response, 201)
         response_data = response.json()
@@ -292,6 +300,41 @@ class AppsAPITestCase(APITestCase):
         response = self.client.post("/api/apps/", candidate_app, format="json")
         self.assertJSONResponse(response, 401)
 
+    def test_read_is_public(self):
+        """Read operations are available to anonymous users (no authentication)."""
+
+        response = self.client.get(f"/api/apps/{self.project_1.app_id}/")
+        self.assertJSONResponse(response, 200)
+        self.assertValidAppData(response.json())
+
+        response = self.client.get(f"/api/apps/current/?app_id={self.project_1.app_id}")
+        self.assertJSONResponse(response, 200)
+        self.assertValidAppData(response.json())
+
+    def test_app_create_requires_projects_permission(self):
+        """An authenticated user without `CORE_PROJECTS_PERMISSION` cannot create an app."""
+
+        candidate_app = {
+            "name": "This is a new app",
+            "app_id": "com.this.is.new.app",
+            "feature_flags": [{"id": self.flag_1.id, "name": self.flag_1.name, "code": self.flag_1.code}],
+            "needs_authentication": False,
+        }
+        self.client.force_authenticate(self.user_without_projects_permission)
+        response = self.client.post("/api/apps/", candidate_app, format="json")
+        self.assertJSONResponse(response, 403)
+
+    def test_app_update_requires_projects_permission(self):
+        """An authenticated user without `CORE_PROJECTS_PERMISSION` cannot update an app."""
+
+        candidate_app = {
+            "name": "This is a newly updated app",
+            "feature_flags": [],
+        }
+        self.client.force_authenticate(self.user_without_projects_permission)
+        response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
+        self.assertJSONResponse(response, 403)
+
     def test_app_update_and_commit_require_auth_ok_with_auth(self):
         candidate_app = {
             "name": "This is a newly updated app",
@@ -299,7 +342,7 @@ class AppsAPITestCase(APITestCase):
             "feature_flags": [{"id": self.flag_1.id, "name": self.flag_1.name, "code": self.flag_1.code}],
             "needs_authentication": True,
         }
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
         self.assertJSONResponse(response, 200)
         response_data = response.json()
@@ -310,7 +353,7 @@ class AppsAPITestCase(APITestCase):
 
     def test_app_update_OK_without_feature_flags_with_auth(self):
         candidate_app = {"app_id": "self.project_1ddes.app_id", "name": "This is an existing app", "feature_flags": []}
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
         self.assertJSONResponse(response, 200)
 
@@ -320,7 +363,7 @@ class AppsAPITestCase(APITestCase):
             "app_id": "com.this.is.new.app",
             "feature_flags": [{"id": self.flag_3.id, "name": self.flag_3.name, "code": self.flag_3.code}],
         }
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
         self.assertJSONResponse(response, 200)
         response_data = response.json()
@@ -336,7 +379,7 @@ class AppsAPITestCase(APITestCase):
                 {"id": self.flag_4.id, "name": self.flag_4.name, "code": self.flag_4.code},
             ],
         }
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
         self.assertJSONResponse(response, 400)
 
@@ -368,7 +411,7 @@ class AppsAPITestCase(APITestCase):
                 }
             ],
         }
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
         self.assertJSONResponse(response, 400)
 
@@ -385,7 +428,7 @@ class AppsAPITestCase(APITestCase):
             ],
             "needs_authentication": True,
         }
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
         self.assertJSONResponse(response, 200)
         response_data = response.json()
@@ -406,7 +449,7 @@ class AppsAPITestCase(APITestCase):
                 }
             ],
         }
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
         self.assertJSONResponse(response, 400)
 
@@ -433,7 +476,7 @@ class AppsAPITestCase(APITestCase):
                 }
             ],
         }
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
         self.assertJSONResponse(response, 200)
 
@@ -460,7 +503,7 @@ class AppsAPITestCase(APITestCase):
                 }
             ],
         }
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
         self.assertJSONResponse(response, 400)
 
@@ -487,7 +530,7 @@ class AppsAPITestCase(APITestCase):
                 }
             ],
         }
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
         self.assertJSONResponse(response, 400)
 
@@ -514,7 +557,7 @@ class AppsAPITestCase(APITestCase):
                 }
             ],
         }
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
         self.assertJSONResponse(response, 200)
 
@@ -541,7 +584,7 @@ class AppsAPITestCase(APITestCase):
                 }
             ],
         }
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
         self.assertJSONResponse(response, 400)
 

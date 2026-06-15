@@ -9,4 +9,5 @@
 export * from './apiModulesDropdownListParams.zod';
 export * from './apiModulesListParams.zod';
 export * from './moduleDropdown.zod';
+export * from './moduleDropdownValueEnum.zod';
 export * from './moduleList.zod';

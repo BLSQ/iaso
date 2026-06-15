@@ -238,9 +238,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Stats',
         id: 'iaso.label.stats',
     },
-    validation: {
-        defaultMessage: 'Validation',
-        id: 'iaso.label.validation',
+    changeRequests: {
+        defaultMessage: 'Change Requests',
+        id: 'iaso.label.changeRequests',
     },
     accountSetup: {
         defaultMessage: 'Setup a new account',
@@ -265,6 +265,10 @@ const MESSAGES = defineMessages({
     pipelines: {
         defaultMessage: 'Pipelines',
         id: 'iaso.label.pipelines',
+    },
+    accounts: {
+        defaultMessage: 'Accounts',
+        id: 'iaso.label.accounts',
     },
 });
 

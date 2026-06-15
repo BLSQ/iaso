@@ -8,7 +8,7 @@ from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models, transaction
-from django.db.models import OuterRef, Prefetch, Subquery
+from django.db.models import Exists, OuterRef, Prefetch, Subquery
 from django.utils.html import strip_tags
 from django.utils.translation import gettext_lazy as _
 
@@ -82,7 +82,9 @@ class FormQuerySet(models.QuerySet):
         queryset = self.all()
 
         if user.is_authenticated:
-            queryset = queryset.filter(projects__account=user.iaso_profile.account)
+            queryset = queryset.filter(
+                Exists(Project.objects.filter(account=user.iaso_profile.account, forms=OuterRef("pk")))
+            )
 
         if app_id is not None:  # mobile app
             try:

@@ -14,6 +14,7 @@ from rest_framework.exceptions import ValidationError
 
 from iaso.api.common import CharInFilter
 from iaso.models import Entity, Instance, OrgUnit
+from iaso.plugins import is_trypelim_plugin_active
 from iaso.utils.date_and_time import date_string_to_end_of_day, date_string_to_start_of_day
 from iaso.utils.jsonlogic import entities_jsonlogic_to_q
 
@@ -22,7 +23,13 @@ class EntityFilterSet(FilterSet):
     form_name = CharFilter(field_name="attributes__form__name", lookup_expr="icontains")
     by_uuid = UUIDFilter(field_name="uuid")
     created_by_id = CharFilter(field_name="attributes__created_by_id")
-    created_by_team_id = CharFilter(field_name="attributes__created_by__teams__id")
+    created_by_team_id = CharFilter(
+        field_name=(
+            "attributes__created_by__trypelim_profile__team_id"
+            if is_trypelim_plugin_active()
+            else "attributes__created_by__teams__id"
+        )
+    )
 
     entity_type_ids = CharInFilter(field_name="entity_type_id", lookup_expr="in")
     groups = CharInFilter(field_name="attributes__org_unit__groups", lookup_expr="in")

@@ -56,7 +56,6 @@ dependencies = [
     "gql[requests]==3.4.1", # https://github.com/graphql-python/gql/tags
     "gspread==5.12.3", # https://github.com/burnash/gspread/tags
     "gspread-formatting==1.1.2", # https://github.com/robin900/gspread-formatting/tags
-    "gunicorn==23.0.0",
     "ipython==8.18.1", # https://github.com/ipython/ipython/tags
     "jsonpatch==1.33", # https://github.com/stefankoegl/python-json-patch
     "jsonref==1.1.0", # https://github.com/gazpachoking/jsonref

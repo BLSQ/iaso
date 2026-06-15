@@ -1,5 +1,11 @@
 import React, { ChangeEvent, FunctionComponent, ReactElement } from 'react';
-import { ListItemText, Switch, Tooltip } from '@mui/material';
+import {
+    ListItemText,
+    Switch,
+    Tooltip,
+    useMediaQuery,
+    useTheme,
+} from '@mui/material';
 import { truncateText } from 'bluesquare-components';
 
 type Props = {
@@ -23,6 +29,9 @@ export const ColumnDrawerSwitch: FunctionComponent<Props> = ({
     secondaryText,
     size = 'small',
 }) => {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
     return (
         <>
             <Switch
@@ -38,7 +47,26 @@ export const ColumnDrawerSwitch: FunctionComponent<Props> = ({
                 }}
                 className={className}
             />
-            <Tooltip title={toolTipTitle} placement="left-start">
+            <Tooltip
+                title={toolTipTitle}
+                placement={isMobile ? 'bottom' : 'left-start'}
+                slotProps={
+                    isMobile
+                        ? {}
+                        : {
+                              popper: {
+                                  modifiers: [
+                                      {
+                                          name: 'offset',
+                                          options: {
+                                              offset: [0, 40],
+                                          },
+                                      },
+                                  ],
+                              },
+                          }
+                }
+            >
                 <ListItemText
                     style={{
                         cursor: 'default',

@@ -73,7 +73,7 @@ jobs:
           cache-dependency-glob: 'uv.lock'
       - name: Translate pyproject.toml into requirements.txt for EBS
         run: |
-          uv export --no-dev --no-hashes --format requirements.txt -o requirements.txt
+          uv export --no-dev --no-hashes --group prod --format requirements.txt -o requirements.txt
           git add requirements.txt
 
       - name: Setup beanstalk

@@ -1801,6 +1801,9 @@ dev = [
     { name = "types-requests" },
     { name = "vcrpy" },
 ]
+prod = [
+    { name = "gunicorn" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -1923,6 +1926,7 @@ dev = [
     { name = "types-requests", specifier = "==2.31.0.6" },
     { name = "vcrpy", specifier = "==4.1.1" },
 ]
+prod = [{ name = "gunicorn", specifier = "==23.0.0" }]
 
 [[package]]
 name = "identify"

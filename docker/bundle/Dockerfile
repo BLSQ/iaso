@@ -58,7 +58,7 @@ RUN pip install uv
 ENV UV_PROJECT_ENVIRONMENT=/usr/local
 ENV UV_PYTHON_PREFERENCE=only-system
 ENV UV_NO_DEV=1
-RUN uv sync --python "$(which python3)"
+RUN uv sync --python "$(which python3)" --group prod
 
 COPY --from=npmbuilder /opt/app/hat/assets /opt/app/hat/assets
 COPY . /opt/app
@@ -80,9 +80,6 @@ CMD ["manage", "testserver", "--no-input", "iaso/fixtures/user.yaml", "--addrpor
 FROM base AS prod
 USER root
 
-# Only install gunicorn for production
-ENV UV_NO_DEV=1
-RUN uv add install gunicorn
 COPY --from=npmbuilder /opt/app/hat/assets /opt/app/hat/assets
 
 # Migrations are run by the start_gunicorn

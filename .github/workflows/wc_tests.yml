@@ -128,7 +128,8 @@ jobs:
         run: |
           uv run python manage.py migrate
           uv run python manage.py createcachetable
-          uv run python -W "ignore" manage.py test
+          uv run python -W "ignore" manage.py test --parallel auto
+          # --parallel: run the suite across one process per CPU core (see IA-5186)
 
       - name: Minimize uv cache
         run: uv cache prune --ci

@@ -26,6 +26,7 @@ from iaso.models import (
     Account,
     DataSource,
     ExternalCredentials,
+    FeatureFlag,
     Form,
     FormVersion,
     Instance,
@@ -118,7 +119,29 @@ class Command(BaseCommand):
         project, p_created = Project.objects.get_or_create(name="Test" + dhis2_version, account=account)
 
         project.app_id = f"org.bluesquare.play{dhis2_version}".replace("-", "").replace("_", "")
+        project.color = "#1976D2"
         project.save()
+
+        project2, _p2_created = Project.objects.get_or_create(
+            name="Test2" + dhis2_version,
+            account=account,
+            defaults={"app_id": f"org.bluesquare.play2{dhis2_version}".replace("-", "").replace("_", "")},
+        )
+        project2.app_id = f"org.bluesquare.play2{dhis2_version}".replace("-", "").replace("_", "")
+        project2.color = "#E53935"
+        project2.save()
+
+        # Feature flags exercising IA-5214: both projects share a form and carry real flags.
+        flag_auth, _ = FeatureFlag.objects.get_or_create(
+            code=FeatureFlag.REQUIRE_AUTHENTICATION,
+            defaults={"name": "Mobile: authentication required"},
+        )
+        flag_auto_upload, _ = FeatureFlag.objects.get_or_create(
+            code=FeatureFlag.FORMS_AUTO_UPLOAD,
+            defaults={"name": "Mobile: auto-upload forms"},
+        )
+        for proj in (project, project2):
+            proj.feature_flags.add(flag_auth, flag_auto_upload)
 
         datasource, _ds_created = DataSource.objects.get_or_create(
             name="reference_play_test" + dhis2_version, credentials=credentials
@@ -173,6 +196,7 @@ class Command(BaseCommand):
         quantity_form.save()
 
         project.forms.add(quantity_form)
+        project2.forms.add(quantity_form)  # shared form — exercises IA-5214 multi-project path
         quantity_form.org_unit_types.add(orgunit_type)
         quantity_mapping_version = self.seed_form(
             quantity_form,

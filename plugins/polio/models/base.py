@@ -382,28 +382,6 @@ class SubActivity(models.Model):
         return ", ".join(self.single_vaccine_list)
 
 
-ROUND_DEPRECATED_VACCINE_MANAGEMENT_HELP = _(
-    "Deprecated. Use VaccineRequestForm, OutgoingStockMovement, or DestructionReport "
-    "in the vaccine supply chain module instead."
-)
-
-# Round-level summary fields kept for backwards compatibility (campaign history, legacy API).
-ROUND_DEPRECATED_VACCINE_MANAGEMENT_FIELD_NAMES = (
-    "date_signed_vrf_received",
-    "date_destruction",
-    "vials_destroyed",
-    "reporting_delays_hc_to_district",
-    "reporting_delays_district_to_region",
-    "reporting_delays_region_to_national",
-    "forma_reception",
-    "forma_missing_vials",
-    "forma_usable_vials",
-    "forma_unusable_vials",
-    "forma_date",
-    "forma_comment",
-)
-
-
 class Round(models.Model):
     class Meta:
         ordering = ["number", "started_at"]
@@ -468,19 +446,6 @@ class Round(models.Model):
     # Preparedness
     preparedness_spreadsheet_url = models.URLField(null=True, blank=True)
     preparedness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)
-    # Deprecated: round-level vaccine management summary (see ROUND_DEPRECATED_VACCINE_MANAGEMENT_FIELD_NAMES).
-    date_signed_vrf_received = models.DateField(null=True, blank=True)
-    date_destruction = models.DateField(null=True, blank=True)
-    vials_destroyed = models.IntegerField(null=True, blank=True)
-    reporting_delays_hc_to_district = models.IntegerField(null=True, blank=True)
-    reporting_delays_district_to_region = models.IntegerField(null=True, blank=True)
-    reporting_delays_region_to_national = models.IntegerField(null=True, blank=True)
-    forma_reception = models.DateField(null=True, blank=True)
-    forma_missing_vials = models.IntegerField(null=True, blank=True)
-    forma_usable_vials = models.IntegerField(null=True, blank=True)
-    forma_unusable_vials = models.IntegerField(null=True, blank=True)
-    forma_date = models.DateField(null=True, blank=True)
-    forma_comment = models.TextField(blank=True, null=True)
 
     objects = models.Manager.from_queryset(RoundQuerySet)()
 

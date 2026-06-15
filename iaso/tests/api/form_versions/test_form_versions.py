@@ -605,10 +605,10 @@ class FormVersionsMultiProjectTest(APITestCase):
         count must stay flat regardless of how many projects or flags exist.
         """
         self.client.force_authenticate(self.user)
-        # 9 queries regardless of the number of projects or feature flags per project:
+        # 10 queries regardless of the number of projects or feature flags per project:
         #   2 auth, 1 forms (Exists filter), 1 prefetch projects, 1 prefetch projects__feature_flags,
-        #   1 prefetch projectfeatureflags_set, 1 with_latest_version subquery, 1 prefetch form_versions,
+        #   1 prefetch projectfeatureflags_set, 1 with_latest_version subquery, 1 prefetch form_versions, 1 prefetch orgunit_groups
         #   1 prefetch org_unit_types (+ related)
-        with self.assertNumQueries(9):
+        with self.assertNumQueries(10):
             response = self.client.get("/api/forms/")
         self.assertJSONResponse(response, 200)

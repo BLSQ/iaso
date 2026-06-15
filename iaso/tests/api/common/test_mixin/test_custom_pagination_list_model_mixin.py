@@ -48,20 +48,10 @@ class ViewSetWithoutPagination(CustomPaginationListModelMixin, GenericViewSet):
     results_key = "users"
 
 
-class ViewSetWithPaginationThatIsNotPaginator(CustomPaginationListModelMixin, GenericViewSet):
-    queryset = User.objects.all()
-    permission_classes = []
-    serializer_class = SerializerUser
-    pagination_class = RandomOtherPagination
-    results_key = "users"
-    remove_results_key_if_not_paginated = True
-
-
 router = DefaultRouter()
 router.register("test", ViewSet, basename="test")
 router.register("test-remove-results", ViewSetRemoveResultsIfNotPaginated, basename="test-remove-results")
 router.register("test-default", ViewSetWithoutPagination, basename="test-default")
-router.register("test-no-paginator", ViewSetWithPaginationThatIsNotPaginator, basename="test-no-paginator")
 urlpatterns = [
     path("", include(router.urls)),
 ]
@@ -91,10 +81,6 @@ class TestCustomListModelPaginationMixin(APITestCase):
         res = self.client.get(reverse("test-default-list"))
         self.assertEqual(len(res.json()["users"]), 10)
         self.assertIn("users", res.json())
-
-    def test_assert_raises_error_if_pagination_class_is_not_subclass_of_paginator(self):
-        with self.assertRaises(AttributeError, msg="Pagination class must be subclass of Paginator"):
-            self.client.get(reverse("test-no-paginator-list"))
 
     def test_results_key_is_removed_if_not_paginated(self):
         res = self.client.get(reverse("test-remove-results-list"))

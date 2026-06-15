@@ -30,6 +30,7 @@ import { LocationLimit } from 'Iaso/utils/map/LocationLimit';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import InputComponent from '../../../components/forms/InputComponent';
+import { useFindCustomComponent } from '../../../plugins/hooks/customComponents';
 
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
@@ -106,8 +107,11 @@ const Filters: FunctionComponent<Props> = ({
     const { data: types, isFetching: isFetchingTypes } =
         useGetEntityTypesDropdown();
     const { data: teamOptions } = useGetTeamsDropdown({});
+    const TeamsFilterOverride = useFindCustomComponent('entity.teams_filter');
     const { data: selectedTeam } = useGetTeam(
-        filters?.submitterTeamId ? parseInt(filters.submitterTeamId, 10) : 0,
+        !TeamsFilterOverride && filters?.submitterTeamId
+            ? parseInt(filters.submitterTeamId, 10)
+            : 0,
     );
     const { data: usersOptions } = useGetProfilesDropdown({
         team: selectedTeam,
@@ -148,30 +152,24 @@ const Filters: FunctionComponent<Props> = ({
         }
     }, [searchEnabled, getParams, params, filters, redirectTo]);
 
-    const handleChange = useCallback(
-        (key, value) => {
-            setFiltersUpdated(true);
-            if (key === 'location') {
-                setInitialOrgUnitId(value);
-            }
-            setFilters(prevFilters => ({
-                ...prevFilters,
-                [key]: value,
-            }));
-        },
-        [],
-    );
-    const handleTeamChange = useCallback(
-        (key, value) => {
-            setFiltersUpdated(true);
-            setFilters(prevFilters => ({
-                ...prevFilters,
-                [key]: value,
-                submitterId: undefined,
-            }));
-        },
-        [],
-    );
+    const handleChange = useCallback((key, value) => {
+        setFiltersUpdated(true);
+        if (key === 'location') {
+            setInitialOrgUnitId(value);
+        }
+        setFilters(prevFilters => ({
+            ...prevFilters,
+            [key]: value,
+        }));
+    }, []);
+    const handleTeamChange = useCallback((key, value) => {
+        setFiltersUpdated(true);
+        setFilters(prevFilters => ({
+            ...prevFilters,
+            [key]: value,
+            submitterId: undefined,
+        }));
+    }, []);
 
     const { url: apiUrl } = useGetEntitiesApiParams(params);
     return (
@@ -286,14 +284,21 @@ const Filters: FunctionComponent<Props> = ({
                     )}
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                    <InputComponent
-                        keyValue="submitterTeamId"
-                        onChange={handleTeamChange}
-                        value={filters.submitterTeamId}
-                        type="select"
-                        label={MESSAGES.submitterTeam}
-                        options={teamOptions}
-                    />
+                    {TeamsFilterOverride ? (
+                        <TeamsFilterOverride
+                            value={filters.submitterTeamId}
+                            onChange={handleTeamChange}
+                        />
+                    ) : (
+                        <InputComponent
+                            keyValue="submitterTeamId"
+                            onChange={handleTeamChange}
+                            value={filters.submitterTeamId}
+                            type="select"
+                            label={MESSAGES.submitterTeam}
+                            options={teamOptions}
+                        />
+                    )}
                     <InputComponent
                         keyValue="submitterId"
                         onChange={handleChange}

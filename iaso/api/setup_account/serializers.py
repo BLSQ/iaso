@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.contrib.auth.password_validation import validate_password
 from django.core.files import File
+from django.db import transaction
 from django.utils.translation import gettext as _
 from rest_framework import serializers
 
@@ -128,6 +129,7 @@ class SetupAccountSerializer(serializers.Serializer):
                 raise serializers.ValidationError("invalid_account_feature_flag")
         return feature_flags
 
+    @transaction.atomic
     def create(self, validated_data):
         data_source = DataSource.objects.create(name=validated_data["account_name"], description="via setup_account")
         source_version = SourceVersion.objects.create(data_source=data_source, number=1)
@@ -189,7 +191,11 @@ class SetupAccountSerializer(serializers.Serializer):
         initial_project = Project.objects.create(name="Main Project", account=account, app_id=app_id)
 
         # Add project feature flags
-        codes = [FeatureFlag.REQUIRE_AUTHENTICATION, FeatureFlag.FORMS_AUTO_UPLOAD, FeatureFlag.TAKE_GPS_ON_FORM]
+        codes = [
+            FeatureFlag.REQUIRE_AUTHENTICATION,
+            FeatureFlag.MOBILE_SYNCHRONIZE_WITH_ZIP,
+            FeatureFlag.TAKE_GPS_ON_FORM,
+        ]
         feature_flags = FeatureFlag.objects.filter(code__in=codes)
 
         found_codes = [ff.code for ff in feature_flags]
@@ -271,7 +277,9 @@ class SetupAccountSerializer(serializers.Serializer):
             profile = Profile.objects.get(user=user, account=account)
 
             # Send email invitation using existing logic with profile language
-            profile_viewset.send_email_invitation(profile=profile, language=profile.language)
+            transaction.on_commit(
+                lambda: profile_viewset.send_email_invitation(profile=profile, language=profile.language)
+            )
 
         validated_data["created_account_id"] = account.id
         return validated_data

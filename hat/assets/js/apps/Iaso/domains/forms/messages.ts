@@ -405,6 +405,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.orgUnitsTypes',
         defaultMessage: 'Org unit types',
     },
+    orgUnitsGroups: {
+        id: 'iaso.label.orgUnitsGroups',
+        defaultMessage: 'Org unit groups',
+    },
+    orgUnitGroupsInfo: {
+        id: 'iaso.forms.orgUnitGroupsInfo',
+        defaultMessage:
+            'You need to select at least one project to see the list of available org unit groups',
+    },
     deviceField: {
         id: 'iaso.label.deviceField',
         defaultMessage: 'Device field',

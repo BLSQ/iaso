@@ -79,6 +79,12 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 version_id="2020010101",
             )
 
+        # Form assigned to two projects in the same account — used to test IA-5214.
+        second_project = m.Project.objects.create(name="SW Project 2", app_id="sw.project2", account=star_wars)
+        cls.form_two_projects = m.Form.objects.create(name="Form Two Projects", form_id="test_preview_two_projects")
+        project.forms.add(cls.form_two_projects)
+        second_project.forms.add(cls.form_two_projects)
+
     def setUp(self):
         default_storage._root._children.clear()
         super().setUp()
@@ -335,6 +341,30 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 response = self.client.post(
                     PREVIEW_URL,
                     data={"form_id": self.form_with_version.id, "xls_file": xls_file},
+                    format="multipart",
+                )
+        self.assertJSONResponse(response, 200)
+
+    # -------------------------------------------------------------------------
+    # IA-5214 — form assigned to multiple projects
+    # -------------------------------------------------------------------------
+
+    def test_preview_form_assigned_to_two_projects_succeeds(self):
+        """Preview must succeed and use a bounded number of queries when the form belongs to
+        more than one project in the same account.
+
+        Root cause: filter_for_user_and_app_id joined on projects__account and returned duplicate
+        rows when a form was in multiple projects.  PrimaryKeyRelatedField.get_queryset().get(pk=…)
+        then raised MultipleObjectsReturned.  The Exists-based fix avoids row inflation entirely,
+        so the query count stays the same as the single-project case (5).
+        """
+        self.client.force_authenticate(self.yoda)
+        with open(FIXTURE_V1, "rb") as xls_file:
+            # Same query count as the single-project case — no N+1 from multiple projects.
+            with self.assertNumQueries(5):
+                response = self.client.post(
+                    PREVIEW_URL,
+                    data={"form_id": self.form_two_projects.id, "xls_file": xls_file},
                     format="multipart",
                 )
         self.assertJSONResponse(response, 200)

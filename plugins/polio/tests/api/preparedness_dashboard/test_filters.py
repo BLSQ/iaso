@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from unittest import mock
 
 from django.utils import timezone
@@ -52,13 +52,17 @@ class PreparednessScoreFilterAPITestCase(PreparednessDashboardAPIBase):
             content={"title": "Exact Date Sheet", "sheets": []},
             spread_id="exact-date",
         )
-        query_date = now - timedelta(days=1)
+        query_date = now
         SpreadSheetImport.objects.filter(pk=exact_date_ssi.pk).update(created_at=query_date)
 
         date_str = query_date.strftime("%Y-%m-%d")
         response = self.client.get(self.SCORE_URL, {"spread_id": exact_date_ssi.spread_id, "date": date_str})
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertIn("scores", data)
+        created_at = datetime.strptime(data["created_at"].split("T")[0], "%Y-%m-%d").date()
+        expected_created_at = query_date.date()
+        self.assertEqual(created_at, expected_created_at)
+        self.assertEqual(data["id"], exact_date_ssi.id)
 
     def test_filter_date_returns_empty_when_no_entries_before_date(self):
         """When all SpreadSheetImport entries are after the given date, the filter returns empty."""

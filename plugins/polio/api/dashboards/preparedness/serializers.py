@@ -8,6 +8,8 @@ from plugins.polio.preparedness.summary import preparedness_summary
 class PreparednessScoreSerializer(serializers.Serializer):
     campaign_details = serializers.SerializerMethodField()
     scores = serializers.SerializerMethodField()
+    created_at = serializers.DateTimeField()
+    id = serializers.IntegerField()
 
     def get_campaign_details(self, obj: SpreadSheetImport):
         if getattr(obj, "round_id", None) is None:

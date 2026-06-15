@@ -64,7 +64,7 @@ class CampaignViewSet(ModelViewSet):
     """
 
     results_key = "campaigns"
-    remove_results_key_if_paginated = True
+    remove_results_key_if_not_paginated = True
     filter_backends = [
         filters.OrderingFilter,
         DjangoFilterBackend,

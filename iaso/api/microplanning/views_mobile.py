@@ -17,7 +17,7 @@ class MobilePlanningViewSet(ModelViewSet):
     and his assignments
     """
 
-    remove_results_key_if_paginated = False
+    remove_results_key_if_not_paginated = False
     results_key = "plannings"
     permission_classes = [IsAuthenticated, ReadOnly]
     serializer_class = MobilePlanningSerializer

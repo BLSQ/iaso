@@ -30,7 +30,7 @@ class MobileReportsViewSet(ModelViewSet):
     """
 
     results_key = "result"
-    remove_results_key_if_paginated = True
+    remove_results_key_if_not_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
     permission_classes = [permissions.IsAuthenticated]
 

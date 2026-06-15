@@ -35,7 +35,7 @@ class TeamViewSet(AuditMixin, ModelViewSet):
     The tree assignation are handled by settings the child subteams (parent is readonly)
     """
 
-    remove_results_key_if_paginated = True
+    remove_results_key_if_not_paginated = True
     filter_backends = [
         TeamAncestorFilterBackend,
         filters.OrderingFilter,

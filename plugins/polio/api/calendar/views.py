@@ -32,7 +32,7 @@ class CampaignCalendarViewSet(ModelViewSet):
 
     results_key = "campaigns"
     http_method_names = ["get"]
-    remove_results_key_if_paginated = True
+    remove_results_key_if_not_paginated = True
     filter_backends = [
         DjangoFilterBackend,
         CalendarPeriodFilterBackend,

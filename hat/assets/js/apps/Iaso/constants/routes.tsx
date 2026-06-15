@@ -11,6 +11,9 @@ import { ValidationWorkflowInstances } from 'Iaso/domains/validationWorkflowInst
 import { ValidationWorkflowsConfiguration } from 'Iaso/domains/validationWorkflowsConfiguration';
 import { ValidationWorkflowConfigurationDetail } from 'Iaso/domains/validationWorkflowsConfiguration/details';
 import PageError from '../components/errors/PageError';
+import { Accounts } from '../domains/accounts';
+import AccountsDetails from '../domains/accounts/details';
+import { AccountsEdit } from '../domains/accounts/edit';
 import { Runs } from '../domains/algorithmRuns/Runs';
 import { Assignments } from '../domains/assignments';
 import Completeness from '../domains/completeness';
@@ -522,6 +525,28 @@ export const adminApiImportPath = {
     permissions: [Permission.ACCOUNT_MANAGEMENT],
     element: <ApiImports />,
 };
+
+export const accountsPath = {
+    baseUrl: baseUrls.accounts,
+    routerUrl: `${baseUrls.accounts}/*`,
+    element: <Accounts />,
+    permissions: [Permission.ACCOUNT_MANAGEMENT],
+};
+
+export const accountsDetailsPath = {
+    baseUrl: baseUrls.accountsDetail,
+    routerUrl: `${baseUrls.accountsDetail}/*`,
+    element: <AccountsDetails />,
+    permissions: [Permission.ACCOUNT_MANAGEMENT],
+};
+
+export const accountsEditPath = {
+    baseUrl: baseUrls.accountsEdit,
+    routerUrl: `${baseUrls.accountsEdit}/*`,
+    element: <AccountsEdit />,
+    permissions: [Permission.ACCOUNT_MANAGEMENT],
+};
+
 export const page401 = {
     baseUrl: baseUrls.error401,
     routerUrl: baseUrls.error401,
@@ -624,4 +649,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     validationWorkflowConfigurationPath,
     validationWorkflowsConfigurationDetailPath,
     validationWorkflowInstancesPath,
+    accountsPath,
+    accountsDetailsPath,
+    accountsEditPath,
 ];

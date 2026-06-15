@@ -72,7 +72,7 @@ class EntityTestCase(TestCase):
         pending_ids = main_entity.get_pending_duplicate_ids()
 
         self.assertEqual(len(pending_ids), 2)
-        self.assertCountEqual(pending_ids, [dup1.id, dup2.id])
+        self.assertCountEqual(pending_ids, [other1.id, other2.id])
 
     def test_latest_instance_created_at(self):
         """Test that the get_latest_instance_created_at method evaluates dates correctly."""

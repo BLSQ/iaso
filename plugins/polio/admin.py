@@ -25,8 +25,6 @@ from plugins.polio.preparedness.display_utils import (
 
 from .budget.models import BudgetProcess, BudgetStep, BudgetStepFile, BudgetStepLink, MailTemplate, WorkflowModel
 from .models import (
-    ROUND_DEPRECATED_VACCINE_MANAGEMENT_FIELD_NAMES,
-    ROUND_DEPRECATED_VACCINE_MANAGEMENT_HELP,
     Campaign,
     CampaignGroup,
     CampaignType,
@@ -514,7 +512,7 @@ class RoundAdmin(admin.ModelAdmin):
     search_fields = ("campaign__obr_name", "number")
     ordering = ("campaign__obr_name", "number")
     raw_id_fields = ("campaign", "budget_process")
-    readonly_fields = ("id",) + ROUND_DEPRECATED_VACCINE_MANAGEMENT_FIELD_NAMES
+    readonly_fields = ("id",)
     fieldsets = (
         (
             None,
@@ -541,14 +539,6 @@ class RoundAdmin(admin.ModelAdmin):
         (
             _("Preparedness"),
             {"classes": ("collapse",), "fields": ("preparedness_spreadsheet_url", "preparedness_sync_status")},
-        ),
-        (
-            _("Deprecated – round-level vaccine management"),
-            {
-                "classes": ("collapse",),
-                "description": ROUND_DEPRECATED_VACCINE_MANAGEMENT_HELP,
-                "fields": ROUND_DEPRECATED_VACCINE_MANAGEMENT_FIELD_NAMES,
-            },
         ),
     )
 

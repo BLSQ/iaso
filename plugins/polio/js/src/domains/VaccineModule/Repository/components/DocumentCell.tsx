@@ -2,9 +2,9 @@ import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 
 import { textPlaceholder } from 'bluesquare-components';
-import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
-import { PdfPreview } from '../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/PdfPreview';
-import { SxStyles } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
+import { DateCell } from 'Iaso/components/Cells/DateTimeCell';
+import { PdfPreview } from 'Iaso/components/files/pdf/PdfPreview';
+import { SxStyles } from 'Iaso/types/general';
 import { NO_PDF_COLOR, WITH_PDF_COLOR } from '../constants';
 import { DocumentData } from '../types';
 import { OpenButtonComponent } from './OpenButton';
@@ -46,7 +46,8 @@ export const DocumentCell: FunctionComponent<DocumentData> = ({
     date,
     file,
 }) => {
-    if (!date) return <Box sx={defaultStyles.noPdf}>{textPlaceholder}</Box>;
+    if (!date && !file)
+        return <Box sx={defaultStyles.noPdf}>{textPlaceholder}</Box>;
     if (!file)
         return <Box sx={defaultStyles.noPdf}>{DateCell({ value: date })}</Box>;
     return (

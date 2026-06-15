@@ -3,11 +3,17 @@ import { IntlMessage } from 'bluesquare-components';
 import { isEmpty } from 'lodash';
 import { UseQueryResult } from 'react-query';
 import { Team } from 'Iaso/domains/teams/types/team';
+import {
+    getProfilesDropdownQueryKey,
+    ProfilesDropdownParams,
+} from 'Iaso/domains/users/utils';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { makeUrlWithParams } from 'Iaso/libs/utils';
 import { DropdownOptions } from 'Iaso/types/utils';
 import MESSAGES from '../messages';
+
+const PROFILES_DROPDOWN_STALE_TIME = 1000 * 60 * 5;
 
 type UseGetProfilesDropdownParams = {
     query?: object;
@@ -31,46 +37,47 @@ export const useGetProfilesDropdown = ({
     DropdownOptions<number>,
     Error
 > => {
-    const baseParams = useMemo(
-        () => ({
-            ...(team?.users_details && {
-                search: `ids:${team.users_details.map(u => u.id).join(',')}`,
-            }),
-            ...(limit && { limit }),
-            ...(query ?? {}),
-        }),
-        [team?.users_details, limit, query],
-    );
+    const teamUserIds = team?.users_details?.map(u => u.id).join(',');
 
-    const params = useMemo(
+    const params: ProfilesDropdownParams = useMemo(
         () => ({
-            ...baseParams,
+            ...(teamUserIds && {
+                search: `ids:${teamUserIds}`,
+            }),
+            ...(limit && { limit: `${limit}` }),
+            ...(query ?? {}),
             ...(additionalFilters ?? {}),
         }),
-        [baseParams, additionalFilters],
+        [teamUserIds, limit, query, additionalFilters],
     );
 
     const shouldTriggerWithEmptyQuery =
         typeof triggerWithEmptyQuery === 'function'
             ? triggerWithEmptyQuery()
             : triggerWithEmptyQuery;
+
+    const hasParams = !isEmpty(params);
+    const enabled = hasParams || shouldTriggerWithEmptyQuery;
+
     return useSnackQuery({
-        queryKey: [
-            'profiles',
+        queryKey: getProfilesDropdownQueryKey(
             params,
-            shouldTriggerWithEmptyQuery ? 'triggerWithEmptyQuery' : undefined,
-        ],
+            shouldTriggerWithEmptyQuery,
+        ),
         queryFn: () => {
-            if (isEmpty(baseParams) && !shouldTriggerWithEmptyQuery) {
+            if (!hasParams && !shouldTriggerWithEmptyQuery) {
                 return Promise.resolve([]);
             }
             return getRequest(
                 makeUrlWithParams('/api/profiles/dropdown/', params),
             );
         },
-
         snackErrorMsg: errorMessage,
         options: {
+            enabled,
+            staleTime: PROFILES_DROPDOWN_STALE_TIME,
+            cacheTime: PROFILES_DROPDOWN_STALE_TIME * 2,
+            refetchOnMount: false,
             ...options,
             ...(limit
                 ? {

@@ -5,7 +5,7 @@ from typing import Optional, Tuple
 from django.core.management.base import BaseCommand
 from django.db.models import Q
 
-from iaso.utils.virus_scan.clamav import scan_disk_file_for_virus
+from iaso.utils.virus_scan.clamav import scan_stored_file_for_virus
 from iaso.utils.virus_scan.model import ModelWithFile, VirusScanStatus
 from plugins.polio.models import (
     DestructionReport,
@@ -30,11 +30,11 @@ class Command(BaseCommand):
         queryset = clazz.objects.filter(~Q(file_scan_status=VirusScanStatus.INFECTED))
         if not scan_all:
             queryset = queryset.filter(file_scan_status=VirusScanStatus.PENDING)
+        queryset = queryset.exclude(file="").exclude(file__isnull=True)
         self.stdout.write(f" - {name}: {queryset.count()}")
         clean, infected, errors = 0, 0, 0
-        for model_with_file in queryset.all():
-            # No need for try/except, `scan_disk_file_for_virus` is already wrapped.
-            result, timestamp = scan_disk_file_for_virus(model_with_file.file.path)
+        for model_with_file in queryset:
+            result, timestamp = scan_stored_file_for_virus(stored_file=model_with_file.file, raise_on_error=False)
             model_with_file.file_last_scan = timestamp
             model_with_file.file_scan_status = result
             model_with_file.save()

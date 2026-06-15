@@ -18,7 +18,7 @@ class PreparednessScoreFilter(django_filters.rest_framework.FilterSet):
         That's because it's used to see the score of campaigns that missed the preparedness objectives on the reference date.
         If we pick a later date, we risk showing cache data that meets the objectives
         """
-        queryset = queryset.filter(created_at__lte=value)
+        queryset = queryset.filter(created_at__date__lte=value)
         return queryset.order_by("-created_at")[:1]
 
     class Meta:

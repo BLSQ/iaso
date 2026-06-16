@@ -69,6 +69,51 @@ const MESSAGES = defineMessages({
         id: 'iaso.dataSources.defaultVersion',
         defaultMessage: 'Default version',
     },
+    changeDefaultVersionWarningTitle: {
+        id: 'iaso.dataSources.changeDefaultVersionWarning.title',
+        defaultMessage:
+            'You are about to change the default source version of the account. This has several impacts:',
+    },
+    changeDefaultVersionWarningPastData: {
+        id: 'iaso.dataSources.changeDefaultVersionWarning.pastData',
+        defaultMessage:
+            'Data collected in the past is linked to the org units of the previous version and will not appear when filtering on the org units of the new version.',
+    },
+    changeDefaultVersionWarningGroups: {
+        id: 'iaso.dataSources.changeDefaultVersionWarning.groups',
+        defaultMessage:
+            'Forms associated with org unit groups reference the groups of the previous version, so they will not be presented on the org units of the new version.',
+    },
+    changeDefaultVersionWarningUsers: {
+        id: 'iaso.dataSources.changeDefaultVersionWarning.users',
+        defaultMessage:
+            'Users restricted to specific org units reference org units of the previous version: they may lose access to data until their assigned org units are updated.',
+    },
+    changeDefaultVersionWarningPlanning: {
+        id: 'iaso.dataSources.changeDefaultVersionWarning.planning',
+        defaultMessage:
+            'Planning and microplanning assignments target org units of the previous version and will no longer match the new pyramid.',
+    },
+    changeDefaultVersionWarningReferences: {
+        id: 'iaso.dataSources.changeDefaultVersionWarning.references',
+        defaultMessage:
+            'Reference submissions set on org units, and links between submissions and org units, are version-specific and will not carry over.',
+    },
+    changeDefaultVersionWarningSavedViews: {
+        id: 'iaso.dataSources.changeDefaultVersionWarning.savedViews',
+        defaultMessage:
+            'Saved maps, dashboards, the registry and bookmarked filters referencing org unit or group IDs of the previous version will be empty or broken.',
+    },
+    changeDefaultVersionWarningOther: {
+        id: 'iaso.dataSources.changeDefaultVersionWarning.other',
+        defaultMessage:
+            'Other features that reference org units by version (change requests, payments, completeness statistics, entities, DHIS2 exports) may become inconsistent.',
+    },
+    changeDefaultVersionConfirm: {
+        id: 'iaso.dataSources.changeDefaultVersionWarning.confirm',
+        defaultMessage:
+            'I understand these impacts and want to change the default source version',
+    },
     dhisName: {
         id: 'iaso.dataSources.dhisName',
         defaultMessage: 'DHIS name',

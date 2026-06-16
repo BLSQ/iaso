@@ -111,7 +111,9 @@ export const useBulkSaveAssignments = (): UseMutationResult => {
     const onSuccess = () => {
         queryClient.invalidateQueries('orgUnits');
         queryClient.invalidateQueries('assignmentsList');
+        queryClient.invalidateQueries('planningDetails');
         queryClient.invalidateQueries('orgUnitsList');
+        queryClient.invalidateQueries('planningChildrenOrgUnitsPaginated');
     };
     return useSnackMutation({
         mutationFn: saveBulkAssignments,

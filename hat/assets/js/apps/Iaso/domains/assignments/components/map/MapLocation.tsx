@@ -3,6 +3,7 @@ import CircleMarkerComponent from 'Iaso/components/maps/markers/CircleMarkerComp
 import { PlanningOrgUnits } from 'Iaso/domains/plannings/types';
 import { MapToolTip } from 'Iaso/domains/registry/components/map/MapTooltip';
 import { circleColorMarkerOptions } from 'Iaso/utils/map/mapUtils';
+import { ASSIGNMENTS_TARGET_CLASS } from '../../constants/ui';
 
 type Props = {
     ou: PlanningOrgUnits;
@@ -26,10 +27,16 @@ export const MapLocation: FunctionComponent<Props> = ({
                 pane: 'popupPane',
                 label: ou.name,
             })}
-            markerProps={() => ({
-                ...circleColorMarkerOptions(getAssignmentColor(ou.id)),
-                radius: 12,
-            })}
+            markerProps={() => {
+                const options = circleColorMarkerOptions(
+                    getAssignmentColor(ou.id),
+                );
+                return {
+                    ...options,
+                    radius: 12,
+                    className: `${options.className} ${ASSIGNMENTS_TARGET_CLASS}`,
+                };
+            }}
         />
     );
 };

@@ -24,7 +24,11 @@ import {
     useGetPlanningOrgUnitsChildren,
     useGetPlanningOrgUnitsRoot,
 } from '../../../teams/hooks/requests/useGetPlanningOrgUnits';
-import { defaultHeight } from '../../constants/ui';
+import {
+    assignmentsMapStyles,
+    ASSIGNMENTS_ROOT_CLASS,
+    defaultHeight,
+} from '../../constants/ui';
 import { AssignmentsResult } from '../../types/assigment';
 import { AssignmentParams } from '../../types/assigment';
 import { defaultViewport, boundsOptions } from '../../utils';
@@ -169,13 +173,21 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
         isLoadingRootOrgUnit ||
         isSaving;
     return (
-        <Box position="relative">
-            {showBulkAssignDialog && selectedParentOrgUnit && (
+        <Box
+            position="relative"
+            className={
+                canAssign
+                    ? 'assignments-map--can-assign'
+                    : 'assignments-map--cannot-assign'
+            }
+            sx={assignmentsMapStyles}
+        >
+            {showBulkAssignDialog && selectedParentOrgUnit && planning && (
                 <BulkAssignDialog
                     open={showBulkAssignDialog}
                     onClose={handleCloseBulkAssignDialog}
                     selectedParentOrgUnit={selectedParentOrgUnit}
-                    planningId={planningId}
+                    planning={planning}
                 />
             )}
             {isLoading && <LoadingSpinner />}
@@ -209,6 +221,11 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                         <GeoJSON
                             key={rootOrgUnit?.id}
                             data={rootOrgUnit.geo_json}
+                            style={
+                                {
+                                    className: ASSIGNMENTS_ROOT_CLASS,
+                                } as Record<string, string>
+                            }
                         >
                             <MapToolTip
                                 pane="popupPane"

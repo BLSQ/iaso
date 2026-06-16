@@ -1,9 +1,13 @@
-import { Fragment, FunctionComponent } from 'react';
-import React from 'react';
-import { useMemo } from 'react';
+import React, {
+    Fragment,
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useRef,
+} from 'react';
 import { LoadingSpinner } from 'bluesquare-components';
-import { Pane } from 'react-leaflet';
-import { GeoJSON } from 'react-leaflet';
+import L from 'leaflet';
+import { Pane, GeoJSON } from 'react-leaflet';
 import CircleMarkerComponent from 'Iaso/components/maps/markers/CircleMarkerComponent';
 import { useGetParentOrgUnits } from 'Iaso/domains/assignments/hooks/requests/useGetParentOrgUnits';
 import {
@@ -12,12 +16,12 @@ import {
 } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { Planning, PlanningOrgUnits } from 'Iaso/domains/plannings/types';
 import { MapToolTip } from 'Iaso/domains/registry/components/map/MapTooltip';
-import { getColor } from 'Iaso/hooks/useGetColors';
-import { useGetColors } from 'Iaso/hooks/useGetColors';
+import { getColor, useGetColors } from 'Iaso/hooks/useGetColors';
 import {
     circleColorMarkerOptions,
     isValidCoordinate,
 } from 'Iaso/utils/map/mapUtils';
+import { ASSIGNMENTS_PARENT_CLASS } from '../../constants/ui';
 import { MAP_PANE_Z_INDEX } from './AssignmentsMap';
 
 type Props = {
@@ -37,6 +41,22 @@ export const ParentOrgUnits: FunctionComponent<Props> = ({
     handleClick,
     canAssign,
 }) => {
+    const canAssignRef = useRef(canAssign);
+    canAssignRef.current = canAssign;
+    const handleClickRef = useRef(handleClick);
+    handleClickRef.current = handleClick;
+
+    const getOnEachFeature = useCallback(
+        (ou: PlanningOrgUnits) => (_feature: unknown, layer: L.Layer) => {
+            layer.on('click', () => {
+                if (canAssignRef.current) {
+                    handleClickRef.current(ou);
+                }
+            });
+        },
+        [],
+    );
+
     // Remove target org unit types and un checked org unit types
     // keep original index to always compute same corlo per type
     const parentOrgUnitTypes = useMemo(() => {
@@ -107,15 +127,18 @@ export const ParentOrgUnits: FunctionComponent<Props> = ({
                                     <GeoJSON
                                         key={ou.id}
                                         data={ou.geo_json}
-                                        eventHandlers={{
-                                            click: () =>
-                                                canAssign && handleClick(ou),
-                                        }}
-                                        style={{
-                                            color,
-                                            fillOpacity: 0.3,
-                                            fill: color,
-                                        }}
+                                        onEachFeature={getOnEachFeature(ou)}
+                                        style={
+                                            {
+                                                color,
+                                                fillOpacity: 0.3,
+                                                fill: color,
+                                                className:
+                                                    ASSIGNMENTS_PARENT_CLASS,
+                                            } as L.PathOptions & {
+                                                fill: string;
+                                            }
+                                        }
                                     >
                                         <MapToolTip
                                             pane="popupPane"
@@ -142,6 +165,8 @@ export const ParentOrgUnits: FunctionComponent<Props> = ({
                                 colors,
                             );
                             if (isValidCoordinate(ou.latitude, ou.longitude)) {
+                                const markerOptions =
+                                    circleColorMarkerOptions(color);
                                 return (
                                     <CircleMarkerComponent
                                         key={ou.id}
@@ -155,8 +180,9 @@ export const ParentOrgUnits: FunctionComponent<Props> = ({
                                             label: ou.name,
                                         })}
                                         markerProps={() => ({
-                                            ...circleColorMarkerOptions(color),
+                                            ...markerOptions,
                                             radius: 12,
+                                            className: `${markerOptions.className} ${ASSIGNMENTS_PARENT_CLASS}`,
                                         })}
                                     />
                                 );

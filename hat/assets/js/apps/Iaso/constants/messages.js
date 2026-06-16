@@ -266,6 +266,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Pipelines',
         id: 'iaso.label.pipelines',
     },
+    accounts: {
+        defaultMessage: 'Accounts',
+        id: 'iaso.label.accounts',
+    },
 });
 
 export default MESSAGES;

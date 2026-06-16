@@ -34,7 +34,7 @@ class SetupAccountViewSet(CreateModelMixin, GenericViewSet):
             "language": request.data.get("language", "en"),
             "modules": request.data.get("modules", []),
             "feature_flags": request.data.get("feature_flags", []),
-            "project_feature_flags": [FeatureFlag.REQUIRE_AUTHENTICATION, FeatureFlag.FORMS_AUTO_UPLOAD],
+            "project_feature_flags": [FeatureFlag.REQUIRE_AUTHENTICATION, FeatureFlag.MOBILE_SYNCHRONIZE_WITH_ZIP],
             "requesting_user": request.user.username if request.user else None,
             "requesting_user_id": request.user.id if request.user else None,
             "create_main_org_unit": request.data.get("create_main_org_unit", True),

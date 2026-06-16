@@ -7,7 +7,7 @@ from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
 
 from iaso.modules import MODULES
-from iaso.permissions.core_permissions import CORE_MODULES_PERMISSION
+from iaso.permissions.core_permissions import CORE_ACCOUNT_MANAGEMENT_PERMISSION, CORE_MODULES_PERMISSION
 
 from ..common import HasPermission
 from .filters import ModuleFilter, ModuleOrderingFilter
@@ -37,12 +37,15 @@ from .serializers.list import ModuleListSerializer
 class ModulesViewSet(ListModelMixin, GenericViewSet):
     f"""Modules API
 
-    This API is restricted to authenticated users having the "{CORE_MODULES_PERMISSION}" permission for reading only
+    This API is restricted to authenticated users having the "{CORE_MODULES_PERMISSION}" or "{CORE_ACCOUNT_MANAGEMENT_PERMISSION}" permission for reading only
 
     GET /api/modules/
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_MODULES_PERMISSION)]  # type: ignore
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission(CORE_MODULES_PERMISSION, CORE_ACCOUNT_MANAGEMENT_PERMISSION),
+    ]
     http_method_names = ["get"]
     filter_backends = [DjangoFilterBackend, ModuleOrderingFilter]
     filterset_class = ModuleFilter
@@ -65,7 +68,7 @@ class ModulesViewSet(ListModelMixin, GenericViewSet):
             if not module.related_plugin or module.related_plugin in (settings.PLUGINS or [])
         ]
 
-    @extend_schema(operation_id="api_modules_dropdown_list")
+    @extend_schema(operation_id="api_modules_dropdown_list", responses={200: ModuleDropdownSerializer(many=True)})
     @action(detail=False, methods=["get"])
     def dropdown(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)

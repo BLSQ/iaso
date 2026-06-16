@@ -7,6 +7,7 @@ import React, {
 } from 'react';
 import { LangOptions } from 'bluesquare-components';
 import moment from 'moment';
+import { loadZodLocale } from 'Iaso/libs/zodUtils';
 import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
 
 const LocaleContext = createContext({
@@ -37,6 +38,12 @@ export const LocaleProvider = ({ children }) => {
     useEffect(() => {
         updateMomentLocale(defaultLanguage);
     }, []);
+
+    useEffect(() => {
+        loadZodLocale(locale).catch(() =>
+            console.warn(`Failed to load zod locale data for ${locale}`),
+        );
+    }, [locale]);
 
     const value: {
         locale: LangOptions;

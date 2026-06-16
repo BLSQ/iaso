@@ -279,6 +279,7 @@ class WorkflowVersionDetailSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "follow_ups",
+            "auto_first_step",
         ]
 
 
@@ -313,6 +314,7 @@ class WorkflowPostSerializer(serializers.Serializer):
 class WorkflowPartialUpdateSerializer(serializers.Serializer):
     status = serializers.CharField(required=False)
     name = serializers.CharField(required=False)
+    auto_first_step = serializers.BooleanField(required=False)
 
     def validate_status(self, new_status):
         from iaso.models.workflow import WorkflowVersionsStatus
@@ -331,6 +333,10 @@ class WorkflowPartialUpdateSerializer(serializers.Serializer):
 
         if "name" in validated_data:
             instance.name = validated_data["name"]
+            instance_changed = True
+
+        if "auto_first_step" in validated_data:
+            instance.auto_first_step = validated_data["auto_first_step"]
             instance_changed = True
 
         if "status" in validated_data:

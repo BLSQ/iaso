@@ -54,6 +54,7 @@ class MobileWorkflowVersionSerializer(serializers.ModelSerializer):
             "changes",
             "follow_ups",
             "name",
+            "auto_first_step",
         ]
 
 

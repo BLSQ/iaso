@@ -7,7 +7,7 @@ from rest_framework import status
 
 from plugins.polio.models.base import SpreadSheetImport
 
-from .common_data import PreparednessDashboardAPIBase
+from .common_data import MOCK_PREPAREDNESS_DATA, SCORE_RESPONSE_SCHEMA, PreparednessDashboardAPIBase
 
 
 INDICATOR_SCHEMA = {
@@ -208,7 +208,7 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
     def setUp(self):
         super().setUp()
         self.client.force_authenticate(self.user_polio)
-        self.VALID_SCORE_PARAMS = {**self.VALID_SCORE_PARAMS, "url": self.spreadsheet_url}
+        self.VALID_SCORE_PARAMS = {**self.VALID_SCORE_PARAMS, "spread_id": self.ssi.spread_id}
 
     def test_score_requires_authentication(self):
         self.client.force_authenticate(self.anon)
@@ -224,27 +224,27 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
         response = self.client.get(self.SCORE_URL)
         data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
-        self.assertIn("url", data)
+        self.assertIn("spread_id", data)
         self.assertIn("date", data)
 
     def test_score_raises_when_url_missing(self):
         response = self.client.get(self.SCORE_URL, {"date": "2030-01-01"})
         data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
-        self.assertIn("url", data)
+        self.assertIn("spread_id", data)
         self.assertNotIn("date", data)
 
     def test_score_raises_when_date_missing(self):
-        response = self.client.get(self.SCORE_URL, {"url": 1})
+        response = self.client.get(self.SCORE_URL, {"spread_id": 1})
         data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
         self.assertIn("date", data)
-        self.assertNotIn("url", data)
+        self.assertNotIn("spread_id", data)
 
     @mock.patch("plugins.polio.api.dashboards.preparedness.serializers.preparedness_summary")
     @mock.patch("plugins.polio.api.dashboards.preparedness.serializers.get_preparedness")
     def test_score_accessible_with_polio_permission(self, mock_get_preparedness, mock_summary):
-        mock_get_preparedness.return_value = {"totals": {"national": 80}}
+        mock_get_preparedness.return_value = MOCK_PREPAREDNESS_DATA
         mock_summary.return_value = {"overall_status_score": 80.0}
 
         response = self.client.get(self.SCORE_URL, self.VALID_SCORE_PARAMS)
@@ -253,7 +253,7 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
     @mock.patch("plugins.polio.api.dashboards.preparedness.serializers.preparedness_summary")
     @mock.patch("plugins.polio.api.dashboards.preparedness.serializers.get_preparedness")
     def test_score_accessible_with_config_permission(self, mock_get_preparedness, mock_summary):
-        mock_get_preparedness.return_value = {"totals": {"national": 80}}
+        mock_get_preparedness.return_value = MOCK_PREPAREDNESS_DATA
         mock_summary.return_value = {"overall_status_score": 80.0}
 
         self.client.force_authenticate(self.user_config)
@@ -261,7 +261,7 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_score_returns_empty_when_no_match(self):
-        response = self.client.get(self.SCORE_URL, {"url": 999999, "date": "2030-01-01"})
+        response = self.client.get(self.SCORE_URL, {"spread_id": 999999, "date": "2030-01-01"})
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(data, {})
@@ -269,22 +269,45 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
     @mock.patch("plugins.polio.api.dashboards.preparedness.serializers.preparedness_summary")
     @mock.patch("plugins.polio.api.dashboards.preparedness.serializers.get_preparedness")
     def test_score_returns_serialized_data(self, mock_get_preparedness, mock_summary):
-        mock_get_preparedness.return_value = {"totals": {"national": 80, "regional": 70, "district": 60}}
+        mock_get_preparedness.return_value = MOCK_PREPAREDNESS_DATA
         mock_summary.return_value = {"overall_status_score": 70.0}
 
         response = self.client.get(self.SCORE_URL, self.VALID_SCORE_PARAMS)
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        print("DATA", data)
 
-        self.assertIn("scores", data)
-        self.assertEqual(data["scores"]["score"], 70.0)
-        self.assertEqual(data["scores"]["national"], 80)
-        self.assertIn("campaign_details", data)
+        try:
+            jsonschema.validate(instance=data, schema=SCORE_RESPONSE_SCHEMA)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+
+        # campaign_details mirrors the round attributes attached by the view.
+        self.assertEqual(
+            data["campaign_details"],
+            {
+                "round_id": self.round_with_ssi.id,
+                "round_number": 4,
+                "campaign": "test-campaign",
+            },
+        )
+
+        scores = data["scores"]
+        # `score` comes from preparedness_summary, the rest is the spread get_preparedness() payload.
+        self.assertEqual(scores["score"], 70.0)
+        self.assertEqual(scores["format"], "v3.5")
+        self.assertEqual(scores["totals"], {"national_score": 97.5, "regional_score": 91.73, "district_score": 90.33})
+        self.assertEqual(scores["national"]["status_score"], 97.5)
+        self.assertEqual(scores["national"]["round"], "Round2")
+        self.assertEqual(set(scores["regions"].keys()), {"BIÉ", "LUNDA SUL"})
+        # Non-numeric indicator cells are passed through untouched.
+        self.assertEqual(scores["regions"]["LUNDA SUL"]["operational_fund"], "3 semanas")
+        self.assertEqual(scores["districts"]["Andulo"]["region"], "BIÉ")
+        # Broken "#REF!" districts keep the null score skeleton.
+        self.assertIsNone(scores["districts"]["#REF! (Reference does not exist.)"]["status_score"])
 
     @mock.patch("plugins.polio.api.dashboards.preparedness.serializers.preparedness_summary")
     @mock.patch("plugins.polio.api.dashboards.preparedness.serializers.get_preparedness")
     def test_score_returns_campaign_details_with_linked_round(self, mock_get_preparedness, mock_summary):
-        mock_get_preparedness.return_value = {"totals": {"national": 80}}
+        mock_get_preparedness.return_value = MOCK_PREPAREDNESS_DATA
         mock_summary.return_value = {"overall_status_score": 80.0}
 
         response = self.client.get(self.SCORE_URL, self.VALID_SCORE_PARAMS)
@@ -300,14 +323,15 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
         from plugins.polio.models.base import Round
 
         shared_url = "https://docs.google.com/spreadsheets/d/shared"
+        shared_spread_id = "shared"
         SpreadSheetImport.objects.create(
             url=shared_url,
             content={"title": "Shared", "sheets": []},
-            spread_id="shared",
+            spread_id=shared_spread_id,
         )
         Round.objects.create(campaign=self.campaign, number=10, preparedness_spreadsheet_url=shared_url)
         Round.objects.create(campaign=self.campaign, number=11, preparedness_spreadsheet_url=shared_url)
 
-        response = self.client.get(self.SCORE_URL, {"url": shared_url, "date": "2030-01-01"})
+        response = self.client.get(self.SCORE_URL, {"spread_id": shared_spread_id, "date": "2030-01-01"})
         data = self.assertJSONResponse(response, status.HTTP_409_CONFLICT)
-        self.assertIn("Found more than one round for url:", data["error"])
+        self.assertIn(f"Found more than one round for spreadsheet id {shared_spread_id}:", data["error"])

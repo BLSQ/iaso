@@ -15,6 +15,7 @@ import {
 import { Table } from 'bluesquare-components';
 import { PlanningOrgUnits } from 'Iaso/domains/plannings/types';
 import { useGetPlanningOrgUnitsChildrenPaginated } from 'Iaso/domains/teams/hooks/requests/useGetPlanningOrgUnits';
+import { stickyTableContainerStyles } from 'Iaso/styles/utils';
 import { SxStyles } from 'Iaso/types/general';
 import { useTableSelection } from 'Iaso/utils/table';
 import { AssignmentParams } from '../../types/assigment';
@@ -38,6 +39,7 @@ const styles: SxStyles = {
             display: 'none',
         },
     },
+    tableContainer: stickyTableContainerStyles,
 };
 
 export const BulkAssignDialog: FunctionComponent<Props> = ({
@@ -63,7 +65,6 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
         params,
     );
     const columns = useGetBulkAssignColumns();
-    console.log('selection', selection);
     return (
         <Dialog
             open={open}
@@ -98,31 +99,33 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
                     </IconButton>
                 </Tooltip>
             </Box>
-            <Table
-                data={data?.results ?? []}
-                count={data?.count ?? 0}
-                pages={data?.pages ?? 0}
-                marginBottom={false}
-                marginTop={false}
-                columns={columns}
-                extraProps={{
-                    loading: isLoading,
-                }}
-                multiSelect
-                selection={selection}
-                setTableSelection={(selectionType, items) =>
-                    handleTableSelection(selectionType, items, data?.count)
-                }
-                countOnTop={false}
-                defaultSorted={[{ id: 'name', desc: false }]}
-                onTableParamsChange={newParams =>
-                    setParams({
-                        ...params,
-                        ...newParams,
-                    })
-                }
-                elevation={0}
-            />
+            <Box sx={styles.tableContainer}>
+                <Table
+                    data={data?.results ?? []}
+                    count={data?.count ?? 0}
+                    pages={data?.pages ?? 0}
+                    marginBottom={false}
+                    marginTop={false}
+                    columns={columns}
+                    extraProps={{
+                        loading: isLoading,
+                    }}
+                    multiSelect
+                    selection={selection}
+                    setTableSelection={(selectionType, items) =>
+                        handleTableSelection(selectionType, items, data?.count)
+                    }
+                    countOnTop={false}
+                    defaultSorted={[{ id: 'name', desc: false }]}
+                    onTableParamsChange={newParams =>
+                        setParams({
+                            ...params,
+                            ...newParams,
+                        })
+                    }
+                    elevation={0}
+                />
+            </Box>
             <DialogActions>
                 <Button onClick={onClose}>Cancel</Button>
                 <Button onClick={onClose}>Assign</Button>

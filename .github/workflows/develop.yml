@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   config:
-    uses: ./.github/workflows/wc_config.yml
+    uses: BLSQ/iaso-ci/.github/workflows/wc_config.yml
     permissions:
       pull-requests: write
       contents: read
@@ -26,7 +26,7 @@ jobs:
 
   build_and_push_image:
     needs: config
-    uses: ./.github/workflows/wc_docker_build.yml
+    uses: BLSQ/iaso-ci/.github/workflows/wc_docker_build.yml
     with:
 #      branch: develop
       branch: develop-test
@@ -34,14 +34,14 @@ jobs:
     secrets: inherit
 
   tests:
-    uses: ./.github/workflows/wc_tests.yml
+    uses: BLSQ/iaso-ci/.github/workflows/wc_tests.yml
     with:
       branch: ${{ github.head_ref || github.ref_name }}
 
   deploy_on_staging:
 #    needs: [ build_and_push_image, tests ]
     needs: [ build_and_push_image ]
-    uses: ./.github/workflows/wc_docker_deploy.yml
+    uses: BLSQ/iaso-ci/.github/workflows/wc_docker_deploy.yml
     with:
 #      branch: develop
       branch: develop-test

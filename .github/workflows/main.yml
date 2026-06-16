@@ -36,7 +36,7 @@ jobs:
 
   build_and_push_image:
     needs: [ check_on_main, tests ]
-    uses: ./.github/workflows/wc_docker_build.yml
+    uses: BLSQ/iaso-ci/.github/workflows/wc_docker_build.yml
     with:
       #      branch: main
       branch: main-test

@@ -1,4 +1,4 @@
-from django.db import migrations, models
+from django.db import migrations
 
 
 def delete_show_pages_flag(apps, schema_editor):
@@ -13,14 +13,9 @@ def restore_show_pages_flag(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0391_alter_formattachment_file"),
+        ("iaso", "0393_workflowversion_auto_first_step"),
     ]
 
     operations = [
-        migrations.AddField(
-            model_name="form",
-            name="org_unit_groups",
-            field=models.ManyToManyField(blank=True, related_name="forms", to="iaso.group"),
-        ),
         migrations.RunPython(delete_show_pages_flag, restore_show_pages_flag),
     ]

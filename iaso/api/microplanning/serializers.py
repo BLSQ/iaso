@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.utils.translation import gettext_lazy as _
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
@@ -12,6 +13,40 @@ from iaso.models import Form, Group, OrgUnit, OrgUnitType, Project, Task
 from iaso.models.microplanning import Assignment, Planning, PlanningSamplingResult
 from iaso.models.org_unit import OrgUnitQuerySet
 from iaso.models.team import Team
+
+
+def validate_planning_has_org_unit_scope(planning: Planning):
+    sampling = planning.selected_sampling_result
+    if sampling and sampling.group_id:
+        return
+    if planning.org_unit_id and planning.target_org_unit_types.exists():
+        return
+    raise serializers.ValidationError(
+        {"planning": _("Planning is missing sampling group or target org unit scope")}
+    )
+
+
+def validate_planning_org_unit_type_id(planning: Planning, org_unit_type_id: int):
+    target_type_ids = [t.id for t in planning.target_org_unit_types.all()]
+    if target_type_ids and org_unit_type_id not in target_type_ids:
+        raise serializers.ValidationError(
+            {"org_unit_type_id": _("Org unit type is not a target type for this planning")}
+        )
+
+
+class PlanningOrgUnitChildrenFilterSerializer(serializers.Serializer):
+    orgUnitParentId = serializers.IntegerField(
+        required=False, allow_null=True, source="org_unit_parent_id"
+    )
+    orgUnitTypeId = serializers.IntegerField(required=False, allow_null=True, source="org_unit_type_id")
+
+    def validate(self, attrs):
+        planning = self.context["planning"]
+        validate_planning_has_org_unit_scope(planning)
+        org_unit_type_id = attrs.get("org_unit_type_id")
+        if org_unit_type_id is not None:
+            validate_planning_org_unit_type_id(planning, org_unit_type_id)
+        return attrs
 
 
 class NestedProjectSerializer(ModelSerializer):
@@ -348,6 +383,7 @@ class BulkAssignmentSerializer(serializers.Serializer):
     selected_ids = serializers.ListField(child=serializers.IntegerField(min_value=1), required=False, default=list)
     unselected_ids = serializers.ListField(child=serializers.IntegerField(min_value=1), required=False, default=list)
     org_unit_parent_id = serializers.IntegerField(required=False, allow_null=True)
+    org_unit_type_id = serializers.IntegerField(required=False, allow_null=True)
     search = serializers.CharField(required=False, allow_blank=True, default="")
 
     def __init__(self, *args, **kwargs):
@@ -357,7 +393,11 @@ class BulkAssignmentSerializer(serializers.Serializer):
         users_in_account = User.objects.filter(iaso_profile__account=account)
 
         self.fields["user"].queryset = users_in_account
-        self.fields["planning"].queryset = Planning.objects.filter_for_user(user)
+        self.fields["planning"].queryset = (
+            Planning.objects.filter_for_user(user)
+            .select_related("org_unit", "selected_sampling_result__group")
+            .prefetch_related("target_org_unit_types")
+        )
         self.fields["team"].queryset = Team.objects.filter_for_user(user)
 
     def validate(self, attrs):
@@ -379,6 +419,13 @@ class BulkAssignmentSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 {"selected_ids": "Must provide selection parameters (select_all or selected_ids)."}
             )
+
+        planning = attrs.get("planning")
+        if planning is not None:
+            validate_planning_has_org_unit_scope(planning)
+            org_unit_type_id = attrs.get("org_unit_type_id")
+            if org_unit_type_id is not None:
+                validate_planning_org_unit_type_id(planning, org_unit_type_id)
 
         return validated_data
 

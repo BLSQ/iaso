@@ -1,5 +1,5 @@
 from django.db import transaction
-from django.db.models import Count, Prefetch, Q
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -7,7 +7,6 @@ from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_spectacular.utils import extend_schema
 from rest_framework import filters, status
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -21,7 +20,6 @@ from iaso.api.common import (
     ReadOnlyOrHasPermission,
 )
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
-from iaso.api.query_params import ORG_UNIT_PARENT_ID
 from iaso.models.microplanning import Assignment, Planning
 from iaso.models.org_unit import OrgUnit
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
@@ -38,6 +36,7 @@ from .serializers import (
     AuditPlanningSerializer,
     BulkAssignmentSerializer,
     BulkDeleteAssignmentSerializer,
+    PlanningOrgUnitChildrenFilterSerializer,
     PlanningOrgUnitSerializer,
     PlanningOrgUnitTableSerializer,
     PlanningReadSerializer,
@@ -49,28 +48,43 @@ from .serializers import (
 )
 
 
-def _planning_children_org_units_queryset(planning, user, org_unit_parent_id=None):
+def _planning_children_org_units_queryset(planning, user, org_unit_parent_id=None, org_unit_type_id=None):
     base_queryset = OrgUnit.objects.filter_for_user(user).filter(validation_status=OrgUnit.VALIDATION_VALID)
     sampling = planning.selected_sampling_result
     root_org_unit = planning.org_unit
+    target_type_ids = [t.id for t in planning.target_org_unit_types.all()]
 
     if sampling and sampling.group_id:
         queryset = base_queryset.filter(pk__in=sampling.group.org_units.values_list("pk", flat=True))
-    elif root_org_unit:
-        target_type_ids = [t.id for t in planning.target_org_unit_types.all()]
-        if not target_type_ids:
-            raise ValidationError({"planning": [_("Planning is missing sampling group or target org unit scope")]})
+    elif root_org_unit and target_type_ids:
         queryset = base_queryset.descendants(root_org_unit).filter(org_unit_type_id__in=target_type_ids)
     else:
-        raise ValidationError({"planning": [_("Planning is missing sampling group or target org unit scope")]})
+        queryset = base_queryset.none()
 
-    queryset = queryset.filter(validation_status=OrgUnit.VALIDATION_VALID).order_by("id")
+    queryset = queryset.filter(validation_status=OrgUnit.VALIDATION_VALID)
 
     if org_unit_parent_id:
         parent = get_object_or_404(base_queryset, pk=org_unit_parent_id)
         queryset = queryset.hierarchy(parent).exclude(pk=org_unit_parent_id)
 
-    return queryset
+    if org_unit_type_id is not None:
+        queryset = queryset.filter(org_unit_type_id=org_unit_type_id)
+
+    return queryset.order_by("id")
+
+
+def _prefetch_planning_assignments(org_units, planning):
+    if not org_units:
+        return org_units
+    org_unit_ids = [org_unit.id for org_unit in org_units]
+    assignments = Assignment.objects.filter(
+        planning=planning, org_unit_id__in=org_unit_ids, deleted_at__isnull=True
+    ).select_related("user__iaso_profile", "team")
+    assignments_by_org_unit_id = {assignment.org_unit_id: assignment for assignment in assignments}
+    for org_unit in org_units:
+        assignment = assignments_by_org_unit_id.get(org_unit.id)
+        org_unit._planning_assignments_prefetched = [assignment] if assignment else []
+    return org_units
 
 
 @extend_schema(tags=["Micro plannings", "Org units", "Plannings"])
@@ -110,6 +124,14 @@ class PlanningOrgunitsViewSet(GenericViewSet):
         )
         return self._planning_for_orgunits
 
+    def _get_validated_children_filters(self, planning):
+        serializer = PlanningOrgUnitChildrenFilterSerializer(
+            data=self.request.query_params,
+            context={"planning": planning},
+        )
+        serializer.is_valid(raise_exception=True)
+        return serializer.validated_data
+
     def get_queryset(self):
         planning = self.get_planning()
         action = self.action
@@ -118,40 +140,17 @@ class PlanningOrgunitsViewSet(GenericViewSet):
         if action == "root":
             return OrgUnit.objects.with_geo_json().filter(pk=planning.org_unit_id)
 
-        qs = OrgUnit.objects
+        children_filters = self._get_validated_children_filters(planning)
+        queryset = _planning_children_org_units_queryset(
+            planning,
+            user,
+            org_unit_parent_id=children_filters.get("org_unit_parent_id"),
+            org_unit_type_id=children_filters.get("org_unit_type_id"),
+        )
+
         if action == "children":
-            qs = qs.with_geo_json()
-        base_queryset = qs.filter_for_user(user).filter(validation_status=OrgUnit.VALIDATION_VALID)
-        sampling = planning.selected_sampling_result
-        root_org_unit = planning.org_unit
+            queryset = queryset.with_geo_json()
 
-        if sampling and sampling.group_id:
-            queryset = base_queryset.filter(pk__in=sampling.group.org_units.values_list("pk", flat=True))
-        elif root_org_unit:
-            target_type_ids = [t.id for t in planning.target_org_unit_types.all()]
-            if not target_type_ids:
-                raise ValidationError({"planning": [_("Planning is missing sampling group or target org unit scope")]})
-            queryset = base_queryset.descendants(root_org_unit).filter(org_unit_type_id__in=target_type_ids)
-        else:
-            raise ValidationError({"planning": [_("Planning is missing sampling group or target org unit scope")]})
-
-        queryset = queryset.filter(validation_status=OrgUnit.VALIDATION_VALID).order_by("id")
-
-        org_unit_parent_id = self.request.query_params.get(ORG_UNIT_PARENT_ID)
-        if org_unit_parent_id and action in ("children", "children_paginated"):
-            parent = get_object_or_404(base_queryset, pk=org_unit_parent_id)
-            queryset = queryset.hierarchy(parent).exclude(pk=org_unit_parent_id)
-
-        if action == "children_paginated":
-            queryset = queryset.prefetch_related(
-                Prefetch(
-                    "assignment_set",
-                    queryset=Assignment.objects.filter(planning=planning, deleted_at__isnull=True).select_related(
-                        "user__iaso_profile", "team"
-                    ),
-                    to_attr="_planning_assignments_prefetched",
-                )
-            )
         return queryset
 
     def get_serializer_context(self):
@@ -168,11 +167,16 @@ class PlanningOrgunitsViewSet(GenericViewSet):
 
     @action(detail=False, methods=["get"], url_path="children-paginated")
     def children_paginated(self, request, *args, **kwargs):
+        planning = self.get_planning()
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
-        serializer = self.get_serializer(page if page is not None else queryset, many=True)
         if page is not None:
+            _prefetch_planning_assignments(page, planning)
+            serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
+        org_units = list(queryset)
+        _prefetch_planning_assignments(org_units, planning)
+        serializer = self.get_serializer(org_units, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=["get"])
@@ -335,7 +339,10 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
             .get(pk=planning.pk)
         )
         queryset = _planning_children_org_units_queryset(
-            planning, requester, serializer.validated_data.get("org_unit_parent_id")
+            planning,
+            requester,
+            serializer.validated_data.get("org_unit_parent_id"),
+            serializer.validated_data.get("org_unit_type_id"),
         )
         search = serializer.validated_data.get("search")
         if search:

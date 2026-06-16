@@ -1025,6 +1025,96 @@ class PlanningTestCase(APITestCase):
             [child_a1.id, child_a2.id],
         )
 
+    def test_planning_orgunits_children_filter_by_org_unit_type_id(self):
+        self.client.force_authenticate(self.user)
+        parent_type = OrgUnitType.objects.create(name="Region type multi")
+        parent_type.projects.add(self.project1)
+        aire_type = OrgUnitType.objects.create(name="Aire type")
+        aire_type.projects.add(self.project1)
+        centre_type = OrgUnitType.objects.create(name="Centre type")
+        centre_type.projects.add(self.project1)
+
+        polygon = Polygon(((0, 0), (0, 1), (1, 1), (0, 0)), srid=4326)
+        multipolygon = MultiPolygon(polygon, srid=4326)
+
+        root = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="root-multi-type",
+            org_unit_type=parent_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        aire = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="aire-1",
+            parent=root,
+            org_unit_type=aire_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        centre = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="centre-1",
+            parent=aire,
+            org_unit_type=centre_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+
+        planning = Planning.objects.create(
+            project=self.project1,
+            name="planning-orgunits-type-filter",
+            team=self.team1,
+            org_unit=root,
+            started_at="2025-01-01",
+            ended_at="2025-01-02",
+        )
+        planning.target_org_unit_types.set([aire_type, centre_type])
+
+        base = f"/api/microplanning/plannings/{planning.id}/orgunits/children/"
+        unfiltered = self.assertJSONResponse(self.client.get(base, format="json"), 200)
+        self.assertCountEqual([ou["id"] for ou in unfiltered], [aire.id, centre.id])
+
+        aires_only = self.assertJSONResponse(
+            self.client.get(f"{base}?orgUnitTypeId={aire_type.id}", format="json"),
+            200,
+        )
+        self.assertEqual([ou["id"] for ou in aires_only], [aire.id])
+
+        centres_only = self.assertJSONResponse(
+            self.client.get(f"{base}?orgUnitTypeId={centre_type.id}", format="json"),
+            200,
+        )
+        self.assertEqual([ou["id"] for ou in centres_only], [centre.id])
+
+        paginated_base = f"/api/microplanning/plannings/{planning.id}/orgunits/children-paginated/?limit=50&page=1"
+        paginated_all = self.assertJSONResponse(self.client.get(paginated_base, format="json"), 200)
+        self.assertEqual(paginated_all["count"], 2)
+
+        paginated_aires = self.assertJSONResponse(
+            self.client.get(f"{paginated_base}&orgUnitTypeId={aire_type.id}", format="json"),
+            200,
+        )
+        self.assertEqual(paginated_aires["count"], 1)
+        self.assertEqual(paginated_aires["results"][0]["id"], aire.id)
+
+        paginated_centres = self.assertJSONResponse(
+            self.client.get(f"{paginated_base}&orgUnitTypeId={centre_type.id}", format="json"),
+            200,
+        )
+        self.assertEqual(paginated_centres["count"], 1)
+        self.assertEqual(paginated_centres["results"][0]["id"], centre.id)
+
+        paginated_centres_under_aire = self.assertJSONResponse(
+            self.client.get(
+                f"{paginated_base}&orgUnitParentId={aire.id}&orgUnitTypeId={centre_type.id}",
+                format="json",
+            ),
+            200,
+        )
+        self.assertEqual(paginated_centres_under_aire["count"], 1)
+        self.assertEqual(paginated_centres_under_aire["results"][0]["id"], centre.id)
+
     def test_planning_orgunits_children_search_by_name(self):
         self.client.force_authenticate(self.user)
         parent_type = OrgUnitType.objects.create(name="Parent type search")

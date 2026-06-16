@@ -1,4 +1,4 @@
-from django.db import migrations
+from django.db import migrations, models
 
 
 def delete_show_pages_flag(apps, schema_editor):
@@ -17,5 +17,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AddField(
+            model_name="form",
+            name="org_unit_groups",
+            field=models.ManyToManyField(blank=True, related_name="forms", to="iaso.group"),
+        ),
         migrations.RunPython(delete_show_pages_flag, restore_show_pages_flag),
     ]

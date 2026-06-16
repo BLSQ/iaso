@@ -29,6 +29,7 @@ from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
 from .filters import (
     PlanningSearchFilterBackend,
     PublishingStatusFilterBackend,
+    apply_selection_filter,
 )
 from .pagination import PlanningOrgUnitChildrenPagination
 from .serializers import (
@@ -46,6 +47,30 @@ from .serializers import (
     PlanningSamplingResultWriteSerializer,
     PlanningWriteSerializer,
 )
+
+
+def _planning_children_org_units_queryset(planning, user, org_unit_parent_id=None):
+    base_queryset = OrgUnit.objects.filter_for_user(user).filter(validation_status=OrgUnit.VALIDATION_VALID)
+    sampling = planning.selected_sampling_result
+    root_org_unit = planning.org_unit
+
+    if sampling and sampling.group_id:
+        queryset = base_queryset.filter(pk__in=sampling.group.org_units.values_list("pk", flat=True))
+    elif root_org_unit:
+        target_type_ids = [t.id for t in planning.target_org_unit_types.all()]
+        if not target_type_ids:
+            raise ValidationError({"planning": [_("Planning is missing sampling group or target org unit scope")]})
+        queryset = base_queryset.descendants(root_org_unit).filter(org_unit_type_id__in=target_type_ids)
+    else:
+        raise ValidationError({"planning": [_("Planning is missing sampling group or target org unit scope")]})
+
+    queryset = queryset.filter(validation_status=OrgUnit.VALIDATION_VALID).order_by("id")
+
+    if org_unit_parent_id:
+        parent = get_object_or_404(base_queryset, pk=org_unit_parent_id)
+        queryset = queryset.hierarchy(parent).exclude(pk=org_unit_parent_id)
+
+    return queryset
 
 
 @extend_schema(tags=["Micro plannings", "Org units", "Plannings"])
@@ -303,7 +328,26 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
         planning = serializer.validated_data["planning"]
         requester = request.user
 
-        org_units = serializer.validated_data["org_units"]
+        planning = (
+            Planning.objects.filter_for_user(requester)
+            .select_related("org_unit", "selected_sampling_result__group")
+            .prefetch_related("target_org_unit_types")
+            .get(pk=planning.pk)
+        )
+        queryset = _planning_children_org_units_queryset(
+            planning, requester, serializer.validated_data.get("org_unit_parent_id")
+        )
+        search = serializer.validated_data.get("search")
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+        queryset = apply_selection_filter(
+            queryset,
+            serializer.validated_data.get("select_all", False),
+            serializer.validated_data.get("selected_ids", []),
+            serializer.validated_data.get("unselected_ids", []),
+        )
+        org_units = list(queryset)
+
         assignments_to_update = Assignment.objects.select_related("user", "team", "org_unit").filter(
             planning=planning, org_unit__in=org_units, deleted_at__isnull=True
         )

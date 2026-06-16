@@ -5,7 +5,10 @@ import { useSnackMutation } from '../../../../libs/apiHooks';
 
 import { SubTeam, User } from '../../../teams/types/team';
 import { ASSIGNMENTS_API_URL } from '../../constants/api';
-import { SaveAssignmentQuery } from '../../types/assigment';
+import {
+    BulkSaveAssignmentQuery,
+    SaveAssignmentQuery,
+} from '../../types/assigment';
 import { AssignmentsResult } from '../../types/assigment';
 
 export const saveAssignment = async (
@@ -101,7 +104,7 @@ export const useSaveAssignment = ({
     };
 };
 
-const saveBulkAssignments = (data: SaveAssignmentQuery) => {
+const saveBulkAssignments = (data: BulkSaveAssignmentQuery) => {
     const url = `${ASSIGNMENTS_API_URL}bulk_create_assignments/`;
     return postRequest(url, data);
 };

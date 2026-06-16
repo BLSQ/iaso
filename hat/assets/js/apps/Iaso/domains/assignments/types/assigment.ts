@@ -28,22 +28,25 @@ export type AssignmentApi = {
     org_unit_details: OrgUnitDetails;
 };
 
-export type SaveAssignmentQuery =
-    | {
-          id?: number;
-          planning: number;
-          org_unit: number;
-          team?: number | null;
-          user?: number | null;
-      }
-    | {
-          id?: number;
-          planning: number;
-          org_units: number[];
-          team?: number | null;
-          user?: number | null;
-      };
+export type SaveAssignmentQuery = {
+    id?: number;
+    planning: number;
+    org_unit: number;
+    team?: number | null;
+    user?: number | null;
+};
 
+export type BulkSaveAssignmentQuery = {
+    id?: number;
+    planning: number;
+    select_all: boolean;
+    selected_ids: number[];
+    unselected_ids: number[];
+    org_unit_parent_id?: number;
+    search?: string;
+    team?: number | null;
+    user?: number | null;
+};
 export type AssignmentsResult = {
     assignments: AssignmentApi[];
     allAssignments: AssignmentApi[];

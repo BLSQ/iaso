@@ -1513,6 +1513,7 @@ class AssignmentAPITestCase(APITestCase):
             started_at="2025-01-01",
             ended_at="2025-01-10",
         )
+        cls.planning.target_org_unit_types.set([org_unit_type])
         Assignment.objects.create(
             planning=cls.planning,
             user=cls.user,
@@ -1599,7 +1600,7 @@ class AssignmentAPITestCase(APITestCase):
         self.client.force_authenticate(user_with_perms)
         data = {
             "planning": self.planning.id,
-            "org_units": [self.child3.id, self.child4.id],
+            "selected_ids": [self.child3.id, self.child4.id],
             "team": self.team1.id,
         }
 
@@ -1617,7 +1618,7 @@ class AssignmentAPITestCase(APITestCase):
         self.client.force_authenticate(user_no_perms)
         data = {
             "planning": self.planning.id,
-            "org_units": [self.child3.id, self.child4.id],
+            "selected_ids": [self.child3.id, self.child4.id],
             "team": self.team1.id,
         }
 
@@ -1633,7 +1634,7 @@ class AssignmentAPITestCase(APITestCase):
         self.client.force_authenticate(user)
         data = {
             "planning": self.planning.id,
-            "org_units": [self.child3.id, self.child4.id],
+            "selected_ids": [self.child3.id, self.child4.id],
             "team": self.team1.id,
         }
 
@@ -1668,7 +1669,7 @@ class AssignmentAPITestCase(APITestCase):
         self.assertEqual(Modification.objects.count(), 2)
         data = {
             "planning": self.planning.id,
-            "org_units": [self.child2.id],
+            "selected_ids": [self.child2.id],
             "team": self.team1.id,
         }
 
@@ -1697,7 +1698,7 @@ class AssignmentAPITestCase(APITestCase):
         # Create additional assignments for the planning
         data = {
             "planning": self.planning.id,
-            "org_units": [self.child2.id, self.child3.id, self.child4.id],
+            "selected_ids": [self.child2.id, self.child3.id, self.child4.id],
             "team": self.team1.id,
         }
         self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
@@ -1742,14 +1743,14 @@ class AssignmentAPITestCase(APITestCase):
 
         data_team1 = {
             "planning": self.planning.id,
-            "org_units": [self.child2.id, self.child3.id],
+            "selected_ids": [self.child2.id, self.child3.id],
             "team": self.team1.id,
         }
         self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data_team1, format="json")
 
         data_team2 = {
             "planning": self.planning.id,
-            "org_units": [self.child4.id, self.child5.id],
+            "selected_ids": [self.child4.id, self.child5.id],
             "team": team2.id,
         }
         self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data_team2, format="json")
@@ -1800,14 +1801,14 @@ class AssignmentAPITestCase(APITestCase):
 
         data_user1 = {
             "planning": self.planning.id,
-            "org_units": [self.child2.id, self.child3.id],
+            "selected_ids": [self.child2.id, self.child3.id],
             "user": self.user.id,
         }
         self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data_user1, format="json")
 
         data_user2 = {
             "planning": self.planning.id,
-            "org_units": [self.child4.id, self.child5.id],
+            "selected_ids": [self.child4.id, self.child5.id],
             "user": user2.id,
         }
         self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data_user2, format="json")
@@ -1930,7 +1931,7 @@ class AssignmentAPITestCase(APITestCase):
         # Create additional assignments
         data = {
             "planning": self.planning.id,
-            "org_units": [self.child2.id, self.child3.id],
+            "selected_ids": [self.child2.id, self.child3.id],
             "team": self.team1.id,
         }
         self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
@@ -1973,7 +1974,7 @@ class AssignmentAPITestCase(APITestCase):
         # Create additional assignments
         data = {
             "planning": self.planning.id,
-            "org_units": [self.child2.id, self.child3.id],
+            "selected_ids": [self.child2.id, self.child3.id],
             "team": self.team1.id,
         }
         self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
@@ -2020,11 +2021,12 @@ class AssignmentAPITestCase(APITestCase):
             started_at="2025-01-01",
             ended_at="2025-01-10",
         )
+        other_planning.target_org_unit_types.set([self.root_org_unit.org_unit_type])
 
         # Create assignments for the other planning
         other_data = {
             "planning": other_planning.id,
-            "org_units": [self.child2.id, self.child3.id, self.child4.id],
+            "selected_ids": [self.child2.id, self.child3.id, self.child4.id],
             "team": self.team1.id,
         }
         self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=other_data, format="json")

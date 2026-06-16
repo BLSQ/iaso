@@ -344,7 +344,11 @@ class BulkAssignmentSerializer(serializers.Serializer):
     user = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.none(), write_only=True, required=False, allow_null=True
     )
-    org_units = serializers.PrimaryKeyRelatedField(queryset=OrgUnit.objects.none(), write_only=True, many=True)
+    select_all = serializers.BooleanField(default=False, required=False)
+    selected_ids = serializers.ListField(child=serializers.IntegerField(min_value=1), required=False, default=list)
+    unselected_ids = serializers.ListField(child=serializers.IntegerField(min_value=1), required=False, default=list)
+    org_unit_parent_id = serializers.IntegerField(required=False, allow_null=True)
+    search = serializers.CharField(required=False, allow_blank=True, default="")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -355,7 +359,6 @@ class BulkAssignmentSerializer(serializers.Serializer):
         self.fields["user"].queryset = users_in_account
         self.fields["planning"].queryset = Planning.objects.filter_for_user(user)
         self.fields["team"].queryset = Team.objects.filter_for_user(user)
-        self.fields["org_units"].child_relation.queryset = OrgUnit.objects.filter_for_user_and_app_id(user, None)
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)
@@ -363,6 +366,20 @@ class BulkAssignmentSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 {"team": "Cannot specify both user and teams", "user": "Cannot specify both user and teams"}
             )
+
+        select_all = validated_data.get("select_all", False)
+        selected_ids = validated_data.get("selected_ids", [])
+        unselected_ids = validated_data.get("unselected_ids", [])
+
+        if select_all and selected_ids:
+            raise serializers.ValidationError("You cannot set both `select_all` and `selected_ids`.")
+        if unselected_ids and not select_all:
+            raise serializers.ValidationError("You cannot set `unselected_ids` without `select_all`.")
+        if not select_all and not selected_ids:
+            raise serializers.ValidationError(
+                {"selected_ids": "Must provide selection parameters (select_all or selected_ids)."}
+            )
+
         return validated_data
 
 

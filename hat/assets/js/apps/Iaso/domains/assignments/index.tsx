@@ -247,6 +247,8 @@ export const Assignments: FunctionComponent = () => {
                                 setSelectedOrgUnitTypes={
                                     setSelectedOrgUnitTypes
                                 }
+                                selectedUser={selectedUser}
+                                selectedTeam={selectedTeam}
                             />
                         )}
                         {tab === 'list' && (

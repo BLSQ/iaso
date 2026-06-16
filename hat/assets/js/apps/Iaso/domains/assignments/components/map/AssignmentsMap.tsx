@@ -17,7 +17,7 @@ import {
 } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { PlanningOrgUnits } from 'Iaso/domains/plannings/types';
 import { MapToolTip } from 'Iaso/domains/registry/components/map/MapTooltip';
-import { Team } from 'Iaso/domains/teams/types/team';
+import { SubTeam, Team, User } from 'Iaso/domains/teams/types/team';
 import { Bounds, getOrgUnitsBounds } from 'Iaso/utils/map/mapUtils';
 import { Planning } from '../../../plannings/types';
 import {
@@ -116,6 +116,8 @@ type Props = {
     setSelectedOrgUnitTypes: Dispatch<
         SetStateAction<OrgUnitTypeHierarchyDropdownValue[]>
     >;
+    selectedUser?: User;
+    selectedTeam?: SubTeam;
 };
 
 export const AssignmentsMap: FunctionComponent<Props> = ({
@@ -132,6 +134,8 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
     orgUniTypeList,
     selectedOrgUnitTypes,
     setSelectedOrgUnitTypes,
+    selectedUser,
+    selectedTeam,
 }) => {
     const { data: childrenOrgUnits, isFetching: isLoadingChildrenOrgUnits } =
         useGetPlanningOrgUnitsChildren(planningId, params);
@@ -188,6 +192,8 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                     onClose={handleCloseBulkAssignDialog}
                     selectedParentOrgUnit={selectedParentOrgUnit}
                     planning={planning}
+                    selectedUser={selectedUser}
+                    selectedTeam={selectedTeam}
                 />
             )}
             {isLoading && <LoadingSpinner />}

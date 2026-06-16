@@ -10,12 +10,14 @@ import {
     IconButton,
     Tooltip,
 } from '@mui/material';
-import { Table, useSafeIntl } from 'bluesquare-components';
+import { LoadingSpinner, Table, useSafeIntl } from 'bluesquare-components';
 import { Planning, PlanningOrgUnits } from 'Iaso/domains/plannings/types';
 import { useGetPlanningOrgUnitsChildrenPaginated } from 'Iaso/domains/teams/hooks/requests/useGetPlanningOrgUnits';
+import { SubTeam, User } from 'Iaso/domains/teams/types/team';
 import { stickyTableContainerStyles } from 'Iaso/styles/utils';
 import { SxStyles } from 'Iaso/types/general';
 import { useTableSelection } from 'Iaso/utils/table';
+import { useBulkSaveAssignments } from '../../hooks/requests/useSaveAssignment';
 import MESSAGES from '../../messages';
 import { AssignmentParams } from '../../types/assigment';
 import { useGetBulkAssignColumns } from './useGetBulkAssignColumns';
@@ -25,6 +27,8 @@ type Props = {
     onClose: () => void;
     selectedParentOrgUnit: PlanningOrgUnits;
     planning: Planning;
+    selectedUser?: User;
+    selectedTeam?: SubTeam;
 };
 
 const defaultParams: Partial<AssignmentParams> = {
@@ -54,6 +58,8 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
     onClose,
     selectedParentOrgUnit,
     planning,
+    selectedUser,
+    selectedTeam,
 }) => {
     const [params, setParams] = useState<AssignmentParams>({
         ...defaultParams,
@@ -61,21 +67,47 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
         orgUnitParentId: `${selectedParentOrgUnit.id}`,
     });
 
+    const { data, isLoading } = useGetPlanningOrgUnitsChildrenPaginated(
+        `${planning.id}`,
+        params,
+    );
     const {
         selection,
         handleUnselectAll,
         handleSelectAll,
         handleTableSelection,
-    } = useTableSelection();
-    const { data, isLoading } = useGetPlanningOrgUnitsChildrenPaginated(
-        `${planning.id}`,
-        params,
-    );
+    } = useTableSelection<PlanningOrgUnits>({
+        count: data?.count ?? 0,
+        initialSelection: {
+            selectedItems: [],
+            unSelectedItems: [],
+            selectAll: true,
+            selectCount: 0,
+        },
+    });
     const columns = useGetBulkAssignColumns();
     const { formatMessage } = useSafeIntl();
     const targetOrgUnitType = planning.target_org_unit_type_details
         ?.map(t => t.name)
         .join(', ');
+    const { mutateAsync: saveBulkAssignments, isLoading: isSaving } =
+        useBulkSaveAssignments();
+    const handleSaveBulkAssignments = async () => {
+        await saveBulkAssignments({
+            planning: planning.id,
+            team: selectedTeam?.id,
+            user: selectedUser?.id,
+            org_unit_parent_id: selectedParentOrgUnit.id,
+            select_all: selection.selectAll,
+            selected_ids: selection.selectedItems.map((item: any) => item.id),
+            unselected_ids: selection.unSelectedItems.map(
+                (item: any) => item.id,
+            ),
+        });
+        onClose();
+    };
+    const assignButtonDisabled =
+        selection.selectedItems.length === 0 && !selection.selectAll;
     return (
         <Dialog
             open={open}
@@ -84,6 +116,7 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
             maxWidth="xl"
             sx={styles.root}
         >
+            {isSaving && <LoadingSpinner />}
             <DialogTitle>
                 {formatMessage(MESSAGES.bulkAssign, {
                     targetOrgUnitType: targetOrgUnitType ?? '',
@@ -150,7 +183,10 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
                 <Button onClick={onClose}>
                     {formatMessage(MESSAGES.cancel)}
                 </Button>
-                <Button onClick={onClose}>
+                <Button
+                    onClick={handleSaveBulkAssignments}
+                    disabled={assignButtonDisabled}
+                >
                     {formatMessage(MESSAGES.assign)}
                 </Button>
             </DialogActions>

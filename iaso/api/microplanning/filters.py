@@ -2,6 +2,15 @@ from django.db.models import Q
 from rest_framework import filters
 
 
+def apply_selection_filter(queryset, select_all, selected_ids, unselected_ids):
+    if not select_all:
+        if selected_ids:
+            queryset = queryset.filter(pk__in=selected_ids)
+    elif unselected_ids:
+        queryset = queryset.exclude(pk__in=unselected_ids)
+    return queryset
+
+
 class PlanningSearchFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         search = request.query_params.get("search")

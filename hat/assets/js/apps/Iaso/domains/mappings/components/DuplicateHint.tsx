@@ -1,15 +1,15 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import Alert from '@mui/lab/Alert';
 import { useSafeIntl } from 'bluesquare-components';
-import { isNeverMapped } from '../question_mappings';
 import MESSAGES from '../messages';
+import { isNeverMapped } from '../question_mappings';
 
 type Props = {
     mapping?: Record<string, any>;
     mappingVersion: Record<string, any>;
 };
 
-export const DuplicateHint = ({
+export const DuplicateHint: FunctionComponent<Props> = ({
     mapping = {} as Record<string, any>,
     mappingVersion,
 }) => {

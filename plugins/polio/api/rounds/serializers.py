@@ -5,7 +5,12 @@ from plugins.polio.api.rounds.round_date_history.serializers import RoundDateHis
 from plugins.polio.api.shared_serializers import (
     GroupSerializer,
 )
-from plugins.polio.models import ReasonForDelay, Round, RoundDateHistoryEntry, RoundScope
+from plugins.polio.models import (
+    ReasonForDelay,
+    Round,
+    RoundDateHistoryEntry,
+    RoundScope,
+)
 from plugins.polio.preparedness.summary import set_preparedness_cache_for_round
 
 
@@ -18,6 +23,8 @@ class RoundScopeSerializer(serializers.ModelSerializer):
 
 
 class RoundSerializer(serializers.ModelSerializer):
+    """Round API serializer."""
+
     class Meta:
         model = Round
         fields = "__all__"

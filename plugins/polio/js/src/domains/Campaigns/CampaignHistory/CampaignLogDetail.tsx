@@ -1,21 +1,20 @@
 import React, { FunctionComponent } from 'react';
-import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 
 import { Box, Table, TableBody } from '@mui/material';
-
-import {
-    useGetCampaignLogDetail,
-    CampaignLogDetailResult,
-    initialLogDetail,
-} from './hooks/useGetCampaignHistory';
+import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 
 import ErrorPaperComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/papers/ErrorPaperComponent';
 
 import MESSAGES from '../../../constants/messages';
 
-import { useGetMapLog } from './useGetMapLog';
 import { useGetConfig } from './config';
 import { Head } from './Head';
+import {
+    useGetCampaignLogDetail,
+    CampaignLogDetailResult,
+    initialLogDetail,
+} from './hooks/useGetCampaignHistory';
+import { useGetMapLog } from './useGetMapLog';
 
 type Props = {
     logId?: string;

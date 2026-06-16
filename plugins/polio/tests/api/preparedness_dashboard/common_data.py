@@ -6,6 +6,196 @@ from plugins.polio.permissions import POLIO_CONFIG_PERMISSION, POLIO_PERMISSION
 from plugins.polio.tests.api.test import PolioTestCaseMixin
 
 
+# The 10 preparedness indicators (everything in `parser.indicators` except `status_score`).
+INDICATOR_KEYS = [
+    "operational_fund",
+    "vaccine_and_droppers_received",
+    "vaccine_cold_chain_assessment",
+    "vaccine_monitors_training_and_deployment",
+    "penmarkers_supply",
+    "sia_training",
+    "sia_micro_planning",
+    "communication_sm_fund",
+    "communication_sm_activities",
+    "communication_c4d",
+]
+
+# Per-district section scores (computed from the score box, may be null).
+DISTRICT_SCORE_KEYS = [
+    "planning_score",
+    "training_score",
+    "monitoring_score",
+    "vaccine_score",
+    "advocacy_score",
+    "adverse_score",
+    "security_score",
+    "status_score",
+]
+
+# Indicator cells can hold a number, a leftover spreadsheet string ("3 semanas") or be empty/null.
+_INDICATOR_VALUE_SCHEMA = {"type": ["number", "string", "null"]}
+_SCORE_VALUE_SCHEMA = {"type": ["number", "null"]}
+
+_NATIONAL_SCHEMA = {
+    "type": "object",
+    "properties": {
+        **dict.fromkeys(INDICATOR_KEYS, _INDICATOR_VALUE_SCHEMA),
+        "status_score": _SCORE_VALUE_SCHEMA,
+        "round": {"type": "string"},
+    },
+    "required": INDICATOR_KEYS + ["status_score", "round"],
+}
+
+_REGION_SCHEMA = {
+    "type": "object",
+    "properties": {
+        **dict.fromkeys(INDICATOR_KEYS, _INDICATOR_VALUE_SCHEMA),
+        "status_score": _SCORE_VALUE_SCHEMA,
+    },
+    "required": INDICATOR_KEYS + ["status_score"],
+}
+
+# Districts always carry the section scores + a region, but indicators are optional
+# (broken "#REF!" rows only expose the score skeleton).
+_DISTRICT_SCHEMA = {
+    "type": "object",
+    "properties": {
+        **dict.fromkeys(DISTRICT_SCORE_KEYS, _SCORE_VALUE_SCHEMA),
+        "region": {"type": "string"},
+        **dict.fromkeys(INDICATOR_KEYS, _INDICATOR_VALUE_SCHEMA),
+    },
+    "required": DISTRICT_SCORE_KEYS + ["region"],
+}
+
+_TOTALS_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "national_score": {"type": "number"},
+        "regional_score": {"type": "number"},
+        "district_score": {"type": "number"},
+    },
+    "required": ["national_score", "regional_score", "district_score"],
+}
+
+SCORES_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "score": _SCORE_VALUE_SCHEMA,
+        "national": _NATIONAL_SCHEMA,
+        "regions": {"type": "object", "additionalProperties": _REGION_SCHEMA},
+        "districts": {"type": "object", "additionalProperties": _DISTRICT_SCHEMA},
+        "format": {"type": "string"},
+        "totals": _TOTALS_SCHEMA,
+    },
+    "required": ["score", "national", "regions", "districts", "format", "totals"],
+}
+
+SCORE_RESPONSE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "campaign_details": {
+            "type": "object",
+            "properties": {
+                "round_id": {"type": "integer"},
+                "round_number": {"type": "integer"},
+                "campaign": {"type": "string"},
+            },
+        },
+        "scores": SCORES_SCHEMA,
+    },
+    "required": ["campaign_details", "scores"],
+}
+
+# Realistic `get_preparedness()` payload (v2 / "v3.5" format) trimmed to a handful of
+# regions and districts while keeping every shape variation seen in production:
+#   - a non-numeric indicator value ("3 semanas")
+#   - a fully-null "#REF!" district with no indicator keys
+MOCK_PREPAREDNESS_DATA = {
+    "national": {
+        "operational_fund": 10,
+        "vaccine_and_droppers_received": 10,
+        "vaccine_cold_chain_assessment": 10,
+        "vaccine_monitors_training_and_deployment": 10,
+        "penmarkers_supply": 10,
+        "sia_training": 10,
+        "sia_micro_planning": 10,
+        "communication_sm_fund": 10,
+        "communication_sm_activities": 87.5,
+        "communication_c4d": 5,
+        "status_score": 97.5,
+        "round": "Round2",
+    },
+    "regions": {
+        "BIÉ": {
+            "operational_fund": 10,
+            "vaccine_and_droppers_received": 10,
+            "vaccine_cold_chain_assessment": 10,
+            "vaccine_monitors_training_and_deployment": 10,
+            "penmarkers_supply": 10,
+            "sia_training": 10,
+            "sia_micro_planning": 10,
+            "communication_sm_fund": 10,
+            "communication_sm_activities": 95.83333333333334,
+            "communication_c4d": 10,
+            "status_score": 99.16666666666669,
+        },
+        "LUNDA SUL": {
+            "operational_fund": "3 semanas",
+            "vaccine_and_droppers_received": 0,
+            "vaccine_cold_chain_assessment": 0,
+            "vaccine_monitors_training_and_deployment": 0,
+            "penmarkers_supply": 0,
+            "sia_training": 0,
+            "sia_micro_planning": 0,
+            "communication_sm_fund": 0,
+            "communication_sm_activities": 0,
+            "communication_c4d": 0,
+            "status_score": 0,
+        },
+    },
+    "districts": {
+        "Andulo": {
+            "planning_score": 100,
+            "training_score": 100,
+            "monitoring_score": 100,
+            "vaccine_score": 100,
+            "advocacy_score": 95.83333333333334,
+            "adverse_score": 99.16666666666669,
+            "security_score": None,
+            "status_score": 99.16666666666669,
+            "region": "BIÉ",
+            "operational_fund": 10,
+            "vaccine_and_droppers_received": 10,
+            "vaccine_cold_chain_assessment": 10,
+            "vaccine_monitors_training_and_deployment": 10,
+            "penmarkers_supply": 10,
+            "sia_training": 10,
+            "sia_micro_planning": 10,
+            "communication_sm_fund": 10,
+            "communication_sm_activities": 95.83333333333334,
+            "communication_c4d": 10,
+        },
+        "#REF! (Reference does not exist.)": {
+            "planning_score": None,
+            "training_score": None,
+            "monitoring_score": None,
+            "vaccine_score": None,
+            "advocacy_score": None,
+            "adverse_score": None,
+            "security_score": None,
+            "status_score": None,
+            "region": "BIÉ",
+        },
+    },
+    "format": "v3.5",
+    "totals": {
+        "national_score": 97.5,
+        "regional_score": 91.73,
+        "district_score": 90.33,
+    },
+}
+
+
 class PreparednessDashboardAPIBase(APITestCase, PolioTestCaseMixin):
     """
     Common setup for Preparedness Dashboard API tests.

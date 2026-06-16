@@ -1,11 +1,10 @@
+import { useMemo } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import * as yup from 'yup';
 import { mixed, object, ObjectSchema } from 'yup';
-import { useMemo } from 'react';
 
-import { useSafeIntl } from 'bluesquare-components';
-
-import { ValidationError } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { useAPIErrorValidator } from '../../../../../../../hat/assets/js/apps/Iaso/libs/validation';
+import { ValidationError } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 import MESSAGES from '../messages';
 

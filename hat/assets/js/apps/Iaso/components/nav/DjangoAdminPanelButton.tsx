@@ -1,10 +1,10 @@
 import React, { FunctionComponent } from 'react';
+import { AdminPanelSettings } from '@mui/icons-material';
 import { IconButton as MuiIconButton, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
 
 import MESSAGES from '../../domains/app/components/messages';
-import { AdminPanelSettings } from '@mui/icons-material';
 
 const useStyles = makeStyles(theme => ({
     djangoAdminPanelButton: {

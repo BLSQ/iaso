@@ -1,11 +1,11 @@
 import React, { FunctionComponent, useCallback } from 'react';
+import { Box } from '@mui/material';
 import { ConfirmCancelModal, makeFullModal } from 'bluesquare-components';
-import { CampaignAsyncSelect } from '../../../CampaignsAsyncSelect/CampaignsAsyncSelect';
 import { useFormikContext } from 'formik';
-import { AddIntegratedCampaignsButton } from './AddIntegratedCampaignsButton';
 import MESSAGES from '../../../../../constants/messages';
 import { PolioCampaignValues } from '../../../../../constants/types';
-import { Box } from '@mui/material';
+import { CampaignAsyncSelect } from '../../../CampaignsAsyncSelect/CampaignsAsyncSelect';
+import { AddIntegratedCampaignsButton } from './AddIntegratedCampaignsButton';
 
 type Props = {
     isOpen: boolean;
@@ -21,6 +21,7 @@ const AddIntegratedCampaignsModal: FunctionComponent<Props> = ({
 
     const handleConfirm = useCallback(() => {
         setFieldTouched('integrated_campaigns', true);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [setFieldValue, initialValues]);
 
     const handleCancel = useCallback(() => {

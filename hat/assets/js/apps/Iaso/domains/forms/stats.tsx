@@ -1,18 +1,18 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { makeStyles } from '@mui/styles';
-import TopBar from '../../components/nav/TopBarComponent';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { InstancesPerFormGraph } from '../../components/instancesGraph';
-import MESSAGES from './messages';
 import { InstancesTotalGraph } from '../../components/instancesTotalGraph';
-import { Filters } from './components/formStasts/Filters';
+import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { Filters } from './components/formStasts/Filters';
 import {
     useGetPerFormStats,
     useGetFormStatsSum,
 } from './hooks/UseGetFormStats';
+import MESSAGES from './messages';
 import { FormStatsParams } from './types/formStats';
 
 const baseUrl = baseUrls.formsStats;

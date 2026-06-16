@@ -1,19 +1,19 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import { useFormikContext } from 'formik';
-import { VaccineArrivalReport } from './VaccineArrivalReport';
+import { userHasOneOfPermissions } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import {
+    POLIO_SUPPLY_CHAIN_READ,
+    POLIO_SUPPLY_CHAIN_WRITE,
+} from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
+import { useCurrentUser } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { VAR } from '../../constants';
 import MESSAGES from '../../messages';
 import {
     MultiFormTab,
     useDosesPerVialDropDownForVaccine,
     useEmptyArrivalReport,
 } from '../shared';
-import { VAR } from '../../constants';
-import { useCurrentUser } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import {
-    POLIO_SUPPLY_CHAIN_READ,
-    POLIO_SUPPLY_CHAIN_WRITE,
-} from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
-import { userHasOneOfPermissions } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { VaccineArrivalReport } from './VaccineArrivalReport';
 
 type Props = { className?: string; items?: any[] };
 
@@ -27,6 +27,7 @@ export const VaccineArrivalReports: FunctionComponent<Props> = ({
     const emptyArrivalReport = useEmptyArrivalReport(dosesPerVaccineOptions);
     const onClick = useCallback(() => {
         setFieldValue(VAR, [...values[VAR], emptyArrivalReport]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [setFieldValue, values, vaccine]);
 
     const currentUser = useCurrentUser();
@@ -48,7 +49,7 @@ export const VaccineArrivalReports: FunctionComponent<Props> = ({
                 return (
                     <VaccineArrivalReport
                         index={index}
-                        key={index}
+                        key={index} // eslint-disable-line react/no-array-index-key
                         dosesForVaccineOptions={dosesPerVaccineOptions}
                     />
                 );

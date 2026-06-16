@@ -1,9 +1,9 @@
 import React, { FunctionComponent, useState } from 'react';
-import { useFormikContext } from 'formik';
 import { useSkipEffectOnMount, useDebounce } from 'bluesquare-components';
-import { ScopeField } from '../../Scope/ScopeField';
+import { useFormikContext } from 'formik';
 import { CampaignFormValues, Round } from '../../../../constants/types';
 import { useIsPolioCampaign } from '../../hooks/useIsPolioCampaignCheck';
+import { ScopeField } from '../../Scope/ScopeField';
 import { FilteredDistricts } from '../../Scope/Scopes/types';
 import { useFilteredDistricts } from '../../Scope/Scopes/utils';
 import { useGetSubActivityShapes } from '../hooks/api/subActivityShapes';

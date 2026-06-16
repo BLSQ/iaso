@@ -10,7 +10,6 @@ import { makeStyles } from '@mui/styles';
 import { commonStyles } from 'bluesquare-components';
 import classnames from 'classnames';
 import { isEqual } from 'lodash';
-import mapValues from 'lodash/mapValues';
 
 import { getValues, useFormState } from '../../../hooks/form';
 import {

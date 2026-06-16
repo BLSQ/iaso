@@ -5,7 +5,6 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { MutateFunction } from 'react-query';
 import { Alert, Box, Button, Typography } from '@mui/material';
 import LinearProgress, {
     LinearProgressProps,
@@ -17,14 +16,16 @@ import {
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
+import { MutateFunction } from 'react-query';
 
-import InputComponent from 'Iaso/components/forms/InputComponent.tsx';
+import InputComponent from 'Iaso/components/forms/InputComponent';
+import { Project } from 'Iaso/domains/projects/types/project';
+import { TaskApiResponse } from 'Iaso/domains/tasks/types';
 import { useTaskMonitor } from 'Iaso/hooks/taskMonitor';
 import { getRequest } from 'Iaso/libs/Api';
-import { TaskApiResponse } from 'Iaso/domains/tasks/types';
-import { Project, User } from 'Iaso/utils/usersUtils';
-import MESSAGES from '../messages';
+import { User } from 'Iaso/utils/usersUtils';
 import { SxStyles } from '../../../types/general';
+import MESSAGES from '../messages';
 
 const styles: SxStyles = {
     progressWrapper: {
@@ -158,6 +159,7 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<DialogProps> = ({
                 setPresignedUrl(resp.presigned_url),
             );
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [taskData]);
 
     return (

@@ -1,5 +1,5 @@
-import { Field } from 'formik';
 import React, { FunctionComponent } from 'react';
+import { Field } from 'formik';
 import { OrgUnit } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 import { CampaignFormValues } from '../../../constants/types';
 import { PolioVaccine } from '../../../constants/virus';

@@ -1,6 +1,6 @@
+import React, { useMemo } from 'react';
 import { Box } from '@mui/material';
 import { Column, useSafeIntl } from 'bluesquare-components';
-import React, { useMemo } from 'react';
 import { convertValueIfDate } from '../../../../../components/Cells/DateTimeCell';
 import { findDescriptorInChildren } from '../../../../../utils';
 import {
@@ -59,14 +59,15 @@ export const useDuplicationDetailsColumns = ({
                         updateCellState,
                     });
 
-                    const descr = findDescriptorInChildren(
-                        settings.row.original.entity1.value,
+                    const fieldDescriptor = findDescriptorInChildren(
+                        field.field,
                         descriptors.descriptor1,
                     );
+                    const descr = fieldDescriptor?.children?.find(
+                        child => child.name === entity1.value,
+                    );
                     const result = convertValueIfDate(
-                        descr
-                            ? formatLabel(descr)
-                            : settings.row.original.entity1.value,
+                        descr ? formatLabel(descr) : entity1.value,
                     );
 
                     return (
@@ -92,14 +93,15 @@ export const useDuplicationDetailsColumns = ({
                         state,
                         updateCellState,
                     });
-                    const descr = findDescriptorInChildren(
-                        settings.row.original.entity2.value,
+                    const fieldDescriptor = findDescriptorInChildren(
+                        field.field,
                         descriptors.descriptor2,
                     );
+                    const descr = fieldDescriptor?.children?.find(
+                        child => child.name === entity2.value,
+                    );
                     const result = convertValueIfDate(
-                        descr
-                            ? formatLabel(descr)
-                            : settings.row.original.entity2.value,
+                        descr ? formatLabel(descr) : entity2.value,
                     );
 
                     return (
@@ -118,10 +120,13 @@ export const useDuplicationDetailsColumns = ({
                 resizable: false,
                 sortable: false,
                 Cell: settings => {
-                    const { final } = settings.row.original;
-                    const descr = findDescriptorInChildren(
-                        final.value,
+                    const { field, final } = settings.row.original;
+                    const fieldDescriptor = findDescriptorInChildren(
+                        field.field,
                         descriptors.descriptor1,
+                    );
+                    const descr = fieldDescriptor?.children?.find(
+                        child => child.name === final.value,
                     );
                     const result = convertValueIfDate(
                         descr ? formatLabel(descr) : final.value,
@@ -132,6 +137,7 @@ export const useDuplicationDetailsColumns = ({
         }
 
         return columns;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         formatMessage,
         setQuery,

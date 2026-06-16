@@ -1,7 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 
-import { useSafeIntl, commonStyles } from 'bluesquare-components';
-
+import WarningIcon from '@mui/icons-material/Warning';
 import {
     Dialog,
     DialogTitle,
@@ -11,7 +10,7 @@ import {
     Box,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import WarningIcon from '@mui/icons-material/Warning';
+import { useSafeIntl, commonStyles } from 'bluesquare-components';
 
 import MESSAGES from '../messages';
 

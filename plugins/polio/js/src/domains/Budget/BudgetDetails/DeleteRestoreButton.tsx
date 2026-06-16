@@ -1,12 +1,12 @@
 import React, { FunctionComponent, useCallback } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
-import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import { PlaylistAdd } from '@mui/icons-material';
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import { Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { useSafeIntl } from 'bluesquare-components';
 import classNames from 'classnames';
-import { useDeleteRestoreBudgetStep } from '../hooks/api/useGetBudgetDetails';
 import MESSAGES from '../../../constants/messages';
+import { useDeleteRestoreBudgetStep } from '../hooks/api/useGetBudgetDetails';
 
 type Props = {
     stepId: number;

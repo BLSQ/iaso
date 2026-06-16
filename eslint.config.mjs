@@ -15,15 +15,66 @@ import globals from 'globals';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Frontend sources: main app + polio plugin JS bundle.
+const lintedJsPaths = [
+    'hat/assets/js/**/*.{js,jsx,ts,tsx}',
+    'plugins/polio/js/**/*.{js,jsx,ts,tsx}',
+];
+
 const compat = new FlatCompat({
     baseDirectory: __dirname,
     recommendedConfig: js.configs.recommended,
     allConfig: js.configs.all,
 });
 
-export default defineConfig([
-    globalIgnores(['**/node_modules/', '**/build/', '**/dist/', '**/*.min.js']),
+// Webpack Module Federation virtual modules (see hat/webpack.dev.js aliases)
+const IASO_MODULES_IMPORT_ORDER_PATH_GROUPS = [
     {
+        pattern: 'react',
+        group: 'external',
+        position: 'before',
+    },
+    {
+        pattern: 'IasoModules/**',
+        group: 'internal',
+    },
+    {
+        pattern: 'Iaso/**',
+        group: 'internal',
+    },
+];
+
+const importOrderRule = [
+    'error',
+    {
+        groups: [
+            'builtin',
+            'external',
+            'internal',
+            'parent',
+            'sibling',
+            'index',
+        ],
+        pathGroups: IASO_MODULES_IMPORT_ORDER_PATH_GROUPS,
+        pathGroupsExcludedImportTypes: ['react'],
+        alphabetize: {
+            order: 'asc',
+            caseInsensitive: true,
+        },
+    },
+];
+
+export default defineConfig([
+    globalIgnores([
+        '**/node_modules/',
+        '**/build/',
+        '**/dist/',
+        '**/*.min.js',
+        'hat/assets/js/apps/Iaso/bundle/**',
+    ]),
+    {
+        files: lintedJsPaths,
         extends: fixupConfigRules(
             compat.extends(
                 'plugin:react-hooks/recommended',
@@ -89,36 +140,16 @@ export default defineConfig([
                 { js: 'off', jsx: 'off', ts: 'off', tsx: 'off', mjs: 'off' },
             ],
 
-            'import/order': [
-                'error',
-                {
-                    groups: [
-                        'builtin',
-                        'external',
-                        'internal',
-                        'parent',
-                        'sibling',
-                        'index',
-                    ],
-                    pathGroups: [
-                        {
-                            pattern: 'react',
-                            group: 'external',
-                            position: 'before',
-                        },
-                    ],
-                    pathGroupsExcludedImportTypes: ['react'],
-                    alphabetize: {
-                        order: 'asc',
-                        caseInsensitive: true,
-                    },
-                },
-            ],
+            'import/order': importOrderRule,
 
             camelcase: 'off',
             'class-methods-use-this': 'warn',
             'constructor-super': 'warn',
             'import/no-extraneous-dependencies': 'off',
+            'import/no-unresolved': [
+                'warn',
+                { ignore: ['^IasoModules/'] },
+            ],
             'import/prefer-default-export': 'off',
             'jsx-a11y/anchor-is-valid': 'off',
             'jsx-a11y/click-events-have-key-events': 'off',
@@ -168,8 +199,8 @@ export default defineConfig([
                 { extensions: ['.js', '.jsx'] },
             ],
 
-            'react/jsx-indent': ['error', 4],
-            'react/jsx-indent-props': ['error', 4],
+            'react/jsx-indent': 'off',
+            'react/jsx-indent-props': 'off',
             'import/no-named-as-default': 'off',
             'react/jsx-one-expression-per-line': 'off',
             'react/jsx-props-no-spreading': 'off',
@@ -190,7 +221,7 @@ export default defineConfig([
         },
     },
     {
-        files: ['**/*.ts', '**/*.tsx'],
+        files: lintedJsPaths,
 
         extends: fixupConfigRules(
             compat.extends(
@@ -254,31 +285,7 @@ export default defineConfig([
                 { js: 'off', jsx: 'off', ts: 'off', tsx: 'off' },
             ],
 
-            'import/order': [
-                'error',
-                {
-                    groups: [
-                        'builtin',
-                        'external',
-                        'internal',
-                        'parent',
-                        'sibling',
-                        'index',
-                    ],
-                    pathGroups: [
-                        {
-                            pattern: 'react',
-                            group: 'external',
-                            position: 'before',
-                        },
-                    ],
-                    pathGroupsExcludedImportTypes: ['react'],
-                    alphabetize: {
-                        order: 'asc',
-                        caseInsensitive: true,
-                    },
-                },
-            ],
+            'import/order': importOrderRule,
 
             '@typescript-eslint/ban-ts-comment': 'off',
             '@typescript-eslint/no-explicit-any': 0,
@@ -293,7 +300,10 @@ export default defineConfig([
             'constructor-super': 'warn',
             'import/no-extraneous-dependencies': 'off',
             'import/no-named-as-default': 'warn',
-            'import/no-unresolved': 'warn',
+            'import/no-unresolved': [
+                'warn',
+                { ignore: ['^IasoModules/'] },
+            ],
             'import/prefer-default-export': 'off',
             'jsx-a11y/anchor-is-valid': 'off',
             'jsx-a11y/click-events-have-key-events': 'off',
@@ -343,8 +353,8 @@ export default defineConfig([
                 { extensions: ['.js', '.jsx', '.tsx', '.ts'] },
             ],
 
-            'react/jsx-indent': ['error', 4],
-            'react/jsx-indent-props': ['error', 4],
+            'react/jsx-indent': 'off',
+            'react/jsx-indent-props': 'off',
             'react/jsx-one-expression-per-line': 'off',
             'react/jsx-props-no-spreading': 'off',
             'react/jsx-wrap-multilines': 'off',
@@ -367,19 +377,29 @@ export default defineConfig([
             '**/*.test.tsx',
             '**/*.test.ts',
             '**/*.integration.test.tsx',
-            '**/*.integration.test.ts'
+            '**/*.integration.test.ts',
         ],
         plugins: {
             vitest,
         },
         rules: {
             ...vitest.configs.recommended.rules,
+            'vitest/no-disabled-tests': 'off',
         },
         languageOptions: {
             globals: {
                 ...vitest.environments.env.globals,
                 ...globals.jest,
             },
+        },
+    },
+    {
+        files: ['hat/assets/js/apps/Iaso/api/**/*.{ts,tsx}'],
+        rules: {
+            // Orval-generated files: disable rules that fire on generated code.
+            // eslint-disable in orval headers breaks models/index.ts merge (orval #346).
+            'max-len': 'off',
+            'no-nested-ternary': 'off',
         },
     },
     {

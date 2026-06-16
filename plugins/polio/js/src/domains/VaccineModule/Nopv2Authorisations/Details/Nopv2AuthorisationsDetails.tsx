@@ -1,15 +1,15 @@
 import React, { FunctionComponent } from 'react';
-import { commonStyles, useSafeIntl, useGoBack } from 'bluesquare-components';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { commonStyles, useSafeIntl, useGoBack } from 'bluesquare-components';
 import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
-import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
-import { VACCINE_AUTH_ADMIN } from '../../../../constants/permissions';
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
-import { Nopv2AuthorisationsDetailsTable } from './Nopv2AuthorisationsDetailsTable';
-import { CreateAuthorisationModal } from './Modals/CreateEdit/CreateEditAuthorisationModal';
-import { baseUrls } from '../../../../constants/urls';
+import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import MESSAGES from '../../../../constants/messages';
+import { VACCINE_AUTH_ADMIN } from '../../../../constants/permissions';
+import { baseUrls } from '../../../../constants/urls';
+import { CreateAuthorisationModal } from './Modals/CreateEdit/CreateEditAuthorisationModal';
+import { Nopv2AuthorisationsDetailsTable } from './Nopv2AuthorisationsDetailsTable';
 
 const useStyles = makeStyles(theme => ({ ...commonStyles(theme) }));
 

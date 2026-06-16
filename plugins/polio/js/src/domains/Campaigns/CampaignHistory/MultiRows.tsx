@@ -6,11 +6,11 @@ import {
     ExpandableItem,
     IntlMessage,
 } from 'bluesquare-components';
-import { Row } from './Row';
 import { Campaign } from '../../../constants/types';
+import { Head } from './Head';
+import { Row } from './Row';
 
 import { useGetMapLog } from './useGetMapLog';
-import { Head } from './Head';
 
 type RowObjectProps = {
     logKey: string;
@@ -58,6 +58,7 @@ export const MultiRows: FunctionComponent<RowObjectProps> = ({
                             return (
                                 <Row
                                     cellWithMargin={false}
+                                    // eslint-disable-next-line react/no-array-index-key
                                     key={`${logKey}-${index}`}
                                     value={
                                         <ExpandableItem

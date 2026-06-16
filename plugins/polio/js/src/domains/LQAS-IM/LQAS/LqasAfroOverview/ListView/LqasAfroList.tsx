@@ -5,8 +5,7 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
-import { cloneDeep, sortBy } from 'lodash';
+import MapIcon from '@mui/icons-material/Map';
 import {
     TableContainer,
     Table as MuiTable,
@@ -19,24 +18,25 @@ import {
     Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import MapIcon from '@mui/icons-material/Map';
-import { FAIL_COLOR, OK_COLOR } from '../../../../../styles/constants';
+import { useSafeIntl } from 'bluesquare-components';
+import { cloneDeep, sortBy } from 'lodash';
 import MESSAGES from '../../../../../constants/messages';
+import { Side } from '../../../../../constants/types';
+import { baseUrls } from '../../../../../constants/urls';
+import { FAIL_COLOR, OK_COLOR } from '../../../../../styles/constants';
 import { useStyles } from '../../../../../styles/theme';
-import { TableText } from '../../../../Campaigns/Scope/Scopes/TableText';
 import { TablePlaceHolder } from '../../../../Campaigns/Scope/Scopes/TablePlaceHolder';
-import { AfroMapParams } from '../types';
+import { TableText } from '../../../../Campaigns/Scope/Scopes/TableText';
+import { IN_SCOPE } from '../../../shared/constants';
+import { HasLocationIcon } from '../../../shared/HasLocationIcon';
+import { LQAS_FAIL, LQAS_PASS } from '../../constants';
+import { LqasAfroOverviewContext } from '../Context/LqasAfroOverviewContext';
 import {
     useAfroMapShapes,
     useGetZoomedInShapes,
 } from '../hooks/useAfroMapShapes';
+import { AfroMapParams } from '../types';
 import { getRound } from '../utils';
-import { LqasAfroOverviewContext } from '../Context/LqasAfroOverviewContext';
-import { HasLocationIcon } from '../../../shared/HasLocationIcon';
-import { IN_SCOPE } from '../../../shared/constants';
-import { LQAS_FAIL, LQAS_PASS } from '../../constants';
-import { Side } from '../../../../../constants/types';
-import { baseUrls } from '../../../../../constants/urls';
 
 type SortFocus =
     | 'DISTRICT'

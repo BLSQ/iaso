@@ -1,15 +1,15 @@
+import React, { FunctionComponent } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import { Box, Grid, Typography } from '@mui/material';
 import { IconButton } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
-
-import { baseUrls } from '../../../../constants/urls';
-import MESSAGES from '../../messages';
 
 import { DisplayIfUserHasPerm } from '../../../../components/DisplayIfUserHasPerm';
+import { baseUrls } from '../../../../constants/urls';
+
 import { SxStyles } from '../../../../types/general';
 import * as Permissions from '../../../../utils/permissions';
 import { OrgUnit } from '../../../orgUnits/types/orgUnit';
+import MESSAGES from '../../messages';
 import { RegistryParams } from '../../types';
 import { LinkToRegistry } from '../LinkToRegistry';
 

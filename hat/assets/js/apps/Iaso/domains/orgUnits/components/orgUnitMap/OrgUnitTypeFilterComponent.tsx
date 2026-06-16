@@ -154,6 +154,7 @@ const OrgUnitTypeFilterComponent: FunctionComponent<Props> = ({
         updateOrgUnitTypesSelected(newOrgUnitTypesSelected);
         setOrgUnitTypesList(newOrgUnitTypesList);
         return () => setOrgUnitTypesSelected([]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [orgUnitTypes]);
 
     return (

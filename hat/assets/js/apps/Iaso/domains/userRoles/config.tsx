@@ -1,5 +1,5 @@
-import { Column, IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import React, { ReactElement, useMemo } from 'react';
+import { Column, IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import PermissionCheckBoxes from '../users/components/PermissionCheckBoxes';

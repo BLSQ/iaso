@@ -1,12 +1,11 @@
+import { cleanupParams } from 'bluesquare-components';
 import _ from 'lodash';
 import { UseQueryResult } from 'react-query';
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
-import { cleanupParams } from 'bluesquare-components';
 
 type Params = {
-    // eslint-disable-next-line camelcase
     validation_status: string;
     withShapes?: 'true' | 'false';
     order: string;

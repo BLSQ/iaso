@@ -57,7 +57,7 @@ const orgUnitAsChangeRequestDetailsOldValues = (
     if (changeRequest == null) {
         return undefined;
     }
-    const orgUnit = changeRequest.org_unit
+    const orgUnit = changeRequest.org_unit;
     return {
         ...changeRequest,
         old_closed_date: orgUnit?.closed_date,

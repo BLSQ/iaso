@@ -1,5 +1,5 @@
-import * as yup from 'yup';
 import { useSafeIntl } from 'bluesquare-components';
+import * as yup from 'yup';
 import MESSAGES from '../messages';
 
 export const usePerformanceThresholdValidation = () => {

@@ -1,8 +1,7 @@
-import { Box, Divider, Grid, Typography } from '@mui/material';
-import { Field, FormikErrors, FormikTouched, useFormikContext } from 'formik';
 import React, { FunctionComponent, useCallback } from 'react';
-
+import { Box, Divider, Grid, Typography } from '@mui/material';
 import { ExpandableItem, useSafeIntl } from 'bluesquare-components';
+import { Field, FormikErrors, FormikTouched, useFormikContext } from 'formik';
 
 import { hasFormikFieldError } from '../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 import { DateInput } from '../../../components/Inputs';

@@ -197,14 +197,20 @@ type LinkToActionParams = {
     referenceFormId: Nullable<number>;
 };
 
-const renderTrigger =
-    (isAlreadyLinked: boolean) =>
-    ({ openDialog }) =>
-        isAlreadyLinked ? (
+const renderTrigger = (isAlreadyLinked: boolean) => {
+    const LinkToOrgUnitTrigger = ({
+        openDialog,
+    }: {
+        openDialog: () => void;
+    }) => {
+        return isAlreadyLinked ? (
             <LinkOffIcon onClick={openDialog} />
         ) : (
             <LinkIcon onClick={openDialog} />
         );
+    };
+    return LinkToOrgUnitTrigger;
+};
 
 export const useLinkToOrgUnitAction = ({
     currentInstance,

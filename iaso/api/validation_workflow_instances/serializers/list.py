@@ -28,6 +28,9 @@ class ValidationWorkflowInstanceListSerializer(ModelSerializer):
     requires_user_action = serializers.BooleanField(read_only=True, source="annotate_requires_user_action")
     last_updated = serializers.DateTimeField(read_only=True, source="annotate_last_updated")
     form = FormNestedSerializer(read_only=True)
+    general_validation_status = serializers.CharField(
+        read_only=True, allow_blank=True, source="get_general_validation_status_display"
+    )
 
     class Meta:
         model = Instance

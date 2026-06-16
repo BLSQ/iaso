@@ -1,4 +1,3 @@
-/* eslint-disable react/require-default-props */
 import React, { FunctionComponent } from 'react';
 import { Box, Table, TableBody } from '@mui/material';
 import { makeStyles } from '@mui/styles';

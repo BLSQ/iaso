@@ -1,14 +1,13 @@
 import React, { FunctionComponent } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
+import { Box, Typography } from '@mui/material';
 import { Theme } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
-import { Box, Typography } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
 
 import { Link } from 'react-router-dom';
+import { InfoPopper } from '../../../app/components/InfoPopper';
 import { iasoFields, xlsQuestionsTypesLink } from '../constants';
 import { MESSAGES } from '../messages';
-
-import { InfoPopper } from '../../../app/components/InfoPopper';
 
 const useStyles = makeStyles((theme: Theme) => ({
     subtitle1: {

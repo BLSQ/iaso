@@ -1564,137 +1564,6 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'You need to be part of a team to create or edit budget events',
     },
-    // DEPRECATED
-    vialsDestroyed: {
-        id: 'iaso.polio.label.vialsDestroyed',
-        defaultMessage: 'Unusable vials destroyed',
-    },
-    vials_destroyed: {
-        id: 'iaso.polio.label.vialsDestroyed',
-        defaultMessage: 'Unusable vials destroyed',
-    },
-    destructions: {
-        id: 'iaso.polio.label.destructions',
-        defaultMessage: 'Destructions',
-    },
-    destructionReceptionDate: {
-        id: 'iaso.polio.label.destructionReceptionDate',
-        defaultMessage: 'Reception of the destruction report',
-    },
-    destructionReportDate: {
-        id: 'iaso.polio.label.destructionReportDate',
-        defaultMessage: 'Date of the destruction report',
-    },
-    dateSignedVrf: {
-        id: 'iaso.polio.label.dateSignedVrf',
-        defaultMessage: 'Date signed VRF received',
-    },
-    date_signed_vrf_received: {
-        id: 'iaso.polio.label.dateSignedVrf',
-        defaultMessage: 'Date signed VRF received',
-    },
-    reportingDelays: {
-        id: 'iaso.polio.label.reportingDelays',
-        defaultMessage: 'Reporting delays',
-    },
-    reporting_delays_hc_to_district: {
-        id: 'iaso.polio.label.healthCentreToDistrict',
-        defaultMessage: 'Health centers to district',
-    },
-    reporting_delays_district_to_region: {
-        id: 'iaso.polio.label.districtToRegionalLevel',
-        defaultMessage: 'District to regional level',
-    },
-    reporting_delays_region_to_national: {
-        id: 'iaso.polio.label.regionalToNationalLevel',
-        defaultMessage: 'Regional to national level',
-    },
-    healthCentreToDistrict: {
-        id: 'iaso.polio.label.healthCentreToDistrict',
-        defaultMessage: 'Health centers to district',
-    },
-    districtToRegionalLevel: {
-        id: 'iaso.polio.label.districtToRegionalLevel',
-        defaultMessage: 'District to regional level',
-    },
-    regionalToNationalLevel: {
-        id: 'iaso.polio.label.regionalToNationalLevel',
-        defaultMessage: 'Regional to national level',
-    },
-    receptionPreAlert: {
-        id: 'iaso.polio.label.receptionPreAlert',
-        defaultMessage: 'Reception of the pre-alert',
-    },
-    receptionVaccineArrivalReport: {
-        id: 'iaso.polio.label.receptionVaccineArrivalReport',
-        defaultMessage: 'Reception of Arrival Report',
-    },
-
-    vialsShipped: {
-        id: 'iaso.polio.label.vialsShipped',
-        defaultMessage: 'Vials shipped',
-    },
-    vials_received: {
-        id: 'iaso.polio.label.vialsShipped',
-        defaultMessage: 'Vials shipped',
-    },
-    po_numbers: {
-        id: 'iaso.polio.label.poNumbers',
-        defaultMessage: 'PO numbers',
-    },
-    poNumbers: {
-        id: 'iaso.polio.label.poNumbers',
-        defaultMessage: 'PO numbers',
-    },
-    formAReception: {
-        id: 'iaso.polio.label.formAReception',
-        defaultMessage: 'Reception of national Form A',
-    },
-    forma_reception: {
-        id: 'iaso.polio.label.formAReception',
-        defaultMessage: 'Reception of national Form A',
-    },
-    formADate: {
-        id: 'iaso.polio.label.formADate',
-        defaultMessage: 'Form A date',
-    },
-    forma_date: {
-        id: 'iaso.polio.label.formADate',
-        defaultMessage: 'Form A date',
-    },
-    formAComment: {
-        id: 'iaso.polio.label.formAComment',
-        defaultMessage: 'Comment on form A',
-    },
-    forma_comment: {
-        id: 'iaso.polio.label.formAComment',
-        defaultMessage: 'Comment on form A',
-    },
-    formAUsableVials: {
-        id: 'iaso.polio.label.formAUsableVials',
-        defaultMessage: 'Usable vials',
-    },
-    forma_usable_vials: {
-        id: 'iaso.polio.label.formAUsableVials',
-        defaultMessage: 'Usable vials',
-    },
-    formAUnusableVials: {
-        id: 'iaso.polio.label.formAUnusableVials',
-        defaultMessage: 'Unusable vials',
-    },
-    forma_unusable_vials: {
-        id: 'iaso.polio.label.formAUnusableVials',
-        defaultMessage: 'Unusable vials',
-    },
-    formAMissingVials: {
-        id: 'iaso.polio.label.formAMissingVials',
-        defaultMessage: 'Number of missing vials from the national form',
-    },
-    forma_missing_vials: {
-        id: 'iaso.polio.label.formAMissingVials',
-        defaultMessage: 'Number of missing vials from the national form',
-    },
-    // END DEPRECATED
     days: {
         id: 'iaso.polio.label.days',
         defaultMessage: 'Days',
@@ -1718,10 +1587,6 @@ const MESSAGES = defineMessages({
     destruction: {
         id: 'iaso.polio.label.destruction',
         defaultMessage: 'Destruction',
-    },
-    date_destruction: {
-        id: 'iaso.polio.label.destructionDate',
-        defaultMessage: 'Destruction date',
     },
     addVaccine: {
         id: 'iaso.polio.label.addVaccine',
@@ -1754,23 +1619,6 @@ const MESSAGES = defineMessages({
     removeLastLink: {
         id: 'iaso.polio.label.removeLastLink',
         defaultMessage: 'Remove last link',
-    },
-    destructionDateAndVialsDestroyed: {
-        id: 'iaso.polio.label.destructionDateAndVialsDestroyed',
-        defaultMessage:
-            'Destruction date and Vials destroyed need to be filled together',
-    },
-    formaFieldsTogether: {
-        id: 'iaso.polio.label.formaFieldsTogether',
-        defaultMessage: 'All Form A fields need to be filled together',
-    },
-    shipmentFieldsTogether: {
-        id: 'iaso.polio.label.shipmentFieldsTogether',
-        defaultMessage: 'All shipment fields need to be filled together',
-    },
-    destructionFieldsTogether: {
-        id: 'iaso.polio.label.destructionFieldsTogether',
-        defaultMessage: 'All destruction fields need to be filled together',
     },
     scopeUnlockConditions: {
         id: 'iaso.polio.label.scopeUnlockConditions',

@@ -8,7 +8,7 @@ export const useGetCustomTranslations = (
     return useSnackQuery({
         queryKey: ['customTranslations', accountId],
         queryFn: () =>
-            getRequest(`/api/custom_translations/?account_id=${accountId}`),
+            getRequest(`/api/accounts/${accountId}/custom-translations/`),
         options: {
             retry: false,
             keepPreviousData: true,

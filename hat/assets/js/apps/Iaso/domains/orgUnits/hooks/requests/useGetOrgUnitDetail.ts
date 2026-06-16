@@ -3,9 +3,8 @@ import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 
-import { OrgUnit } from '../../types/orgUnit';
-
 import MESSAGES from '../../messages';
+import { OrgUnit } from '../../types/orgUnit';
 
 export const useGetOrgUnitDetail = (
     id?: number,

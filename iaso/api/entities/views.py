@@ -31,7 +31,7 @@ from iaso.api.entities.serializers import (
 )
 from iaso.models import Entity, EntityDuplicate, EntityType, Instance
 from iaso.models.deduplication import ValidationStatus
-from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION
+from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION, CORE_STORAGE_PERMISSION
 
 
 logger = getLogger(__name__)
@@ -86,6 +86,18 @@ class EntityViewSet(ModelViewSet):
         context = super().get_serializer_context()
         context["entity_type_columns"] = self.entity_type_columns
         return context
+
+    def get_serializer(self, *args, **kwargs):
+        serializer = super().get_serializer(*args, **kwargs)
+        account = self.request.user.iaso_profile.account
+        has_module = "EXTERNAL_STORAGE" in account.modules
+        has_perm = self.request.user.has_perm(CORE_STORAGE_PERMISSION.full_name())
+
+        if not has_perm or not has_module:
+            actual_serializer = serializer.child if hasattr(serializer, "child") else serializer
+            actual_serializer.fields.pop("nfc_cards", None)
+
+        return serializer
 
     def get_renderer_context(self):
         context = super().get_renderer_context()
@@ -142,12 +154,16 @@ class EntityViewSet(ModelViewSet):
             ),
             Prefetch(
                 "duplicates1",
-                queryset=EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING),
+                queryset=EntityDuplicate.objects.filter(
+                    validation_status=ValidationStatus.PENDING, entity2__deleted_at__isnull=True
+                ),
                 to_attr="pending_duplicates1",
             ),
             Prefetch(
                 "duplicates2",
-                queryset=EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING),
+                queryset=EntityDuplicate.objects.filter(
+                    validation_status=ValidationStatus.PENDING, entity1__deleted_at__isnull=True
+                ),
                 to_attr="pending_duplicates2",
             ),
         )
@@ -191,7 +207,7 @@ class EntityViewSet(ModelViewSet):
             attributes=instance,
             account=account,
         )
-        serializer = EntitySerializer(entity, many=False)
+        serializer = self.get_serializer(entity, many=False)
         return Response(serializer.data)
 
     @action(detail=False, methods=["POST", "GET"])
@@ -218,13 +234,14 @@ class EntityViewSet(ModelViewSet):
                 created_entities.append(entity)
             return JsonResponse(created_entities, safe=False)
         entities = Entity.objects.filter(account=request.user.iaso_profile.account)
-        serializer = EntitySerializer(entities, many=True)
+        serializer = self.get_serializer(entities, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
         queryset = Entity.objects.filter_for_user(self.request.user).distinct()
         entity = get_object_or_404(queryset, pk=pk)
-        return Response(EntitySerializer(entity, many=False).data)
+        serializer = self.get_serializer(entity, many=False)
+        return Response(serializer.data)
 
     def list(self, request: Request, *args, **kwargs):
         renderer = request.accepted_renderer
@@ -268,5 +285,5 @@ class EntityViewSet(ModelViewSet):
             audit_source=ENTITY_API,
             user=request.user,
         )
-
-        return Response(EntitySerializer(entity, many=False).data)
+        serializer = self.get_serializer(entity, many=False)
+        return Response(serializer.data)

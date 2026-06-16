@@ -11,7 +11,7 @@ import MESSAGES from './messages';
 
 type Props = {
     titleMessage: IntlMessage | string | React.ReactNode;
-    message: IntlMessage;
+    message?: IntlMessage;
     onConfirm: () => void;
     iconColor?: string;
     keyName?: string;
@@ -31,7 +31,7 @@ const DeleteDialog: FunctionComponent<Props> = ({
     triggerProps = {},
 }) => {
     const closeThenOnConfirm = useCallback(
-        closeDialog => {
+        (closeDialog: () => void) => {
             closeDialog();
             onConfirm();
         },

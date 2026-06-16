@@ -179,7 +179,8 @@ class FormsVersionAPITestCase(APITestCase):
         """GET /formversions/<form_id>: allowed"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/formversions/{self.form_2.form_versions.first().id}/?fields=:all")
+        with self.assertNumQueries(4):
+            response = self.client.get(f"/api/formversions/{self.form_2.form_versions.first().id}/?fields=:all")
         self.assertJSONResponse(response, 200)
         form_version_data = response.json()
         self.assertValidFormVersionData(form_version_data)
@@ -412,7 +413,9 @@ class FormsVersionAPITestCase(APITestCase):
             )
         self.assertJSONResponse(response, 400)
         self.assertHasError(
-            response.json(), "xls_file", "Invalid XLS file: Parsed version should be greater than previous version."
+            response.json(),
+            "xls_file",
+            "Invalid XLS form content: Invalid XLS file: Parsed version should be greater than previous version.",
         )
 
     def test_form_versions_create_invalid_xls_file(self):
@@ -430,7 +433,7 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertHasError(
             response.json(),
             "xls_file",
-            "Invalid XLS file: The survey sheet is either empty or missing important column headers.",
+            "Invalid XLS form content: Invalid XLS file: The survey sheet is either empty or missing important column headers.",
         )
 
     def test_form_versions_create_no_xls_file(self):
@@ -502,3 +505,110 @@ class FormsVersionAPITestCase(APITestCase):
         if check_annotated_fields:
             self.assertHasField(form_version_data, "mapped", bool)
             self.assertHasField(form_version_data, "full_name", str)
+
+
+class FormVersionsMultiProjectTest(APITestCase):
+    """IA-5214 — form assigned to multiple projects within the same account.
+
+    The get_queryset authenticated path filters via form__projects__account, which is a
+    JOIN that produces one row per (form_version × project).  For a form in N projects
+    this inflates the result set N-fold.  The Count("mapping_versions") annotation
+    happens to collapse the duplicates via its implicit GROUP BY, but that is an
+    accidental side-effect, not an intentional fix.
+
+    test_base_filter_no_duplicates  — directly tests the raw JOIN-based filter and
+        FAILS before the fix, proving the underlying queryset is inflated.
+    test_list_no_duplicates         — integration test through the full endpoint;
+        currently passes by accident (GROUP BY), passes by design after the fix.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        account = m.Account.objects.create(name="Rebel Alliance")
+        source = m.DataSource.objects.create(name="Rebel Source")
+        version = m.SourceVersion.objects.create(data_source=source, number=1)
+        account.default_version = version
+        account.save()
+
+        cls.user = cls.create_user_with_profile(username="leia", account=account, permissions=[CORE_FORMS_PERMISSION])
+
+        project_a = m.Project.objects.create(name="Project A", app_id="rebel.a", account=account)
+        project_b = m.Project.objects.create(name="Project B", app_id="rebel.b", account=account)
+
+        flag_1, _ = m.FeatureFlag.objects.get_or_create(code="rebel_flag_1", defaults={"name": "Rebel Flag 1"})
+        flag_2, _ = m.FeatureFlag.objects.get_or_create(code="rebel_flag_2", defaults={"name": "Rebel Flag 2"})
+        project_a.feature_flags.set([flag_1, flag_2])
+        project_b.feature_flags.set([flag_1, flag_2])
+
+        file_mock = mock.MagicMock(spec=File)
+        file_mock.name = "test.xml"
+
+        cls.form = m.Form.objects.create(name="Rebel Form", form_id="rebel_form")
+        project_a.forms.add(cls.form)
+        project_b.forms.add(cls.form)
+
+        with open("iaso/tests/fixtures/odk_form_valid_no_settings.xlsx", "rb") as xls:
+            from django.core.files.uploadedfile import UploadedFile
+
+            cls.form_version = cls.form.form_versions.create(
+                file=file_mock,
+                xls_file=UploadedFile(xls),
+                version_id="2020010101",
+            )
+
+    def setUp(self):
+        default_storage._root._children.clear()
+        super().setUp()
+
+    def test_base_filter_no_duplicates(self):
+        """The account filter in get_queryset must not produce duplicate form version rows.
+
+        The previous implementation used filter(form__projects__account=…), a JOIN that
+        yields one row per (form_version × project) pair.  For a form in N projects the
+        result set is N-fold inflated before the Count annotation's implicit GROUP BY
+        collapses it.  The Exists-based fix avoids the row inflation at source.
+
+        This test verifies the queryset via the API so it covers the full get_queryset
+        path including the fix.
+        """
+        self.client.force_authenticate(self.user)
+        # 2 queries regardless of how many projects the form belongs to — no N+1.
+        with self.assertNumQueries(2):
+            response = self.client.get("/api/formversions/")
+        data = self.assertJSONResponse(response, 200)
+        ids = [fv["id"] for fv in data["form_versions"]]
+        self.assertEqual(
+            len(ids),
+            len(set(ids)),
+            f"get_queryset returned duplicate form version IDs: {ids}",
+        )
+
+    def test_list_no_duplicates(self):
+        """GET /api/formversions/ must return each form version exactly once.
+
+        Currently passes by accident because the Count annotation GROUP BY collapses
+        duplicates.  After the Exists fix it passes by design.
+        """
+        self.client.force_authenticate(self.user)
+        # Query count must be bounded regardless of the number of projects the form is in.
+        with self.assertNumQueries(2):
+            response = self.client.get(f"/api/formversions/?form_id={self.form.id}")
+        data = self.assertJSONResponse(response, 200)
+        ids = [fv["id"] for fv in data["form_versions"]]
+        self.assertEqual(len(ids), 1, f"Expected 1 form version, got {ids}")
+
+    def test_forms_list_query_count_with_projects_and_feature_flags(self):
+        """GET /api/forms/ must use a bounded number of queries even when the form belongs to
+        multiple projects that each carry feature flags.
+
+        The forms view prefetches projects and their feature flags in bulk, so the query
+        count must stay flat regardless of how many projects or flags exist.
+        """
+        self.client.force_authenticate(self.user)
+        # 10 queries regardless of the number of projects or feature flags per project:
+        #   2 auth, 1 forms (Exists filter), 1 prefetch projects, 1 prefetch projects__feature_flags,
+        #   1 prefetch projectfeatureflags_set, 1 with_latest_version subquery, 1 prefetch form_versions, 1 prefetch orgunit_groups
+        #   1 prefetch org_unit_types (+ related)
+        with self.assertNumQueries(10):
+            response = self.client.get("/api/forms/")
+        self.assertJSONResponse(response, 200)

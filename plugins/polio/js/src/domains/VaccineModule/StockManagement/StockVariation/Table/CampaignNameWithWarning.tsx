@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import { REGULAR, ROUND_ON_HOLD } from '../../constants';
+import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import { Box, Tooltip } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
+import { REGULAR, ROUND_ON_HOLD } from '../../constants';
 import MESSAGES from '../../messages';
 
 type Props = {
@@ -23,12 +23,7 @@ export const CampaignNameWithWarning: FunctionComponent<Props> = ({
             ? formatMessage(MESSAGES.roundsOnHold)
             : formatMessage(MESSAGES[category]);
     return (
-        <Box
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            gap={2}
-        >
+        <Box display="flex" alignItems="center" justifyContent="center" gap={2}>
             <Tooltip
                 sx={{
                     color: theme => theme.palette.warning.main,

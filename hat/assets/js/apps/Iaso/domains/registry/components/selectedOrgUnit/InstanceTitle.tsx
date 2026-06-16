@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -6,22 +7,19 @@ import {
     useRedirectToReplace,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
 
 import moment from 'moment';
-import MESSAGES from '../../messages';
-
-import { useGetEnketoUrl } from '../../hooks/useGetEnketoUrl';
-
-import EnketoIcon from '../../../instances/components/EnketoIcon';
 
 import { DisplayIfUserHasPerm } from '../../../../components/DisplayIfUserHasPerm';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { baseUrls } from '../../../../constants/urls';
 import * as Permissions from '../../../../utils/permissions';
+import EnketoIcon from '../../../instances/components/EnketoIcon';
 import { LinkToInstance } from '../../../instances/components/LinkToInstance';
 import { Instance } from '../../../instances/types/instance';
 import { OrgUnit } from '../../../orgUnits/types/orgUnit';
+import { useGetEnketoUrl } from '../../hooks/useGetEnketoUrl';
+import MESSAGES from '../../messages';
 import { RegistryParams } from '../../types';
 
 type Props = {

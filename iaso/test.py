@@ -1,3 +1,4 @@
+import copy
 import csv
 import importlib
 import io
@@ -175,10 +176,18 @@ class SwaggerTestCaseMixin(BaseAPITestCase):
     This mixin purpose is to be able to validate any response against the generated swagger schema
     """
 
+    # The OpenAPI schema is identical for the whole test run (it only depends on the URL conf and
+    # serializers, not on the request). Generating it via drf-spectacular is expensive (~1s for the
+    # whole API), so we cache it once for the whole process instead of regenerating it on every
+    # `validate_openapi_response` call. See IA-5186.
+    _openapi_schema_cache = None
+
     def get_openapi_schema(self):
-        res = self.client.get(reverse("swagger-schema"), data={"format": "json"})
-        self.assertEqual(res.status_code, 200)
-        return res.json()
+        if SwaggerTestCaseMixin._openapi_schema_cache is None:
+            res = self.client.get(reverse("swagger-schema"), data={"format": "json"})
+            self.assertEqual(res.status_code, 200)
+            SwaggerTestCaseMixin._openapi_schema_cache = res.json()
+        return SwaggerTestCaseMixin._openapi_schema_cache
 
     def resolve_refs(self, schema):
         return jsonref.replace_refs(schema)
@@ -191,6 +200,13 @@ class SwaggerTestCaseMixin(BaseAPITestCase):
                     schema["type"] = [t, "null"]
                 elif isinstance(t, list) and "null" not in t:
                     schema["type"] = t + ["null"]
+                elif "allOf" in schema:
+                    schema["anyOf"] = [
+                        {"type": "null"},
+                        {"allOf": schema["allOf"]},
+                    ]
+                    schema.pop("allOf", None)
+
                 schema.pop("nullable", None)
 
             for v in schema.get("properties", {}).values():
@@ -206,17 +222,21 @@ class SwaggerTestCaseMixin(BaseAPITestCase):
 
         return schema
 
-    def get_component_schema(self, openapi_schema, name: str):
+    def get_component_schema(self, openapi_schema, name: str, as_array: bool = False):
+        if as_array:
+            return {"type": "array", "items": openapi_schema["components"]["schemas"][name]}
         return openapi_schema["components"]["schemas"][name]
 
-    def validate_openapi_response(self, data, schema_name: str):
-        openapi = self.get_openapi_schema()
+    def validate_openapi_response(self, data, schema_name: str, as_array: bool = False):
+        # Deep-copy the cached schema: `normalize_schema` mutates the schema in place, so we must not
+        # touch the shared cache (it is reused across every test of the run).
+        openapi = copy.deepcopy(self.get_openapi_schema())
 
         # resolve refs first
         resolved = self.resolve_refs(openapi)
 
         # extract schema AFTER resolution
-        schema = self.get_component_schema(resolved, schema_name)
+        schema = self.get_component_schema(resolved, schema_name, as_array=as_array)
 
         # normalize OpenAPI quirks
         schema = self.normalize_schema(schema)
@@ -224,9 +244,9 @@ class SwaggerTestCaseMixin(BaseAPITestCase):
         # validate
         Draft202012Validator(schema).validate(data)
 
-    def assertResponseCompliantToSwagger(self, data, schema):
+    def assertResponseCompliantToSwagger(self, data, schema, as_array=False):
         try:
-            self.validate_openapi_response(data, schema)
+            self.validate_openapi_response(data, schema, as_array=as_array)
         except jsonschema.ValidationError as ex:
             self.fail(msg=str(ex))
 

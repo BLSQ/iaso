@@ -1,4 +1,3 @@
-/* eslint-disable no-else-return */
 import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import {
@@ -177,7 +176,7 @@ export const csvPreview = async data => {
 };
 
 export const updateDefaultDataSource = ([accountId, defaultVersionId]) =>
-    putRequest(`/api/accounts/${accountId}/`, {
+    putRequest(`/api/accounts/${accountId}/set-default-version/`, {
         default_version: defaultVersionId,
     });
 
@@ -212,8 +211,10 @@ export const useSaveDataSource = setFieldErrors => {
 
     const saveDataSource = async form => {
         setIsSaving(true);
-        // eslint-disable-next-line camelcase
+
         const { is_default_source, ...campaignData } = getValues(form);
+        // UI-only confirmation field, not part of the data source payload
+        delete campaignData.confirm_default_version_change;
 
         try {
             if (campaignData.id) {
@@ -234,7 +235,6 @@ export const useSaveDataSource = setFieldErrors => {
             setIsSaving(false);
         }
 
-        // eslint-disable-next-line camelcase
         if (is_default_source && form.default_version_id.value) {
             await saveDefaultDataSourceMutation.mutateAsync([
                 currentUser.account.id,

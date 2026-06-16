@@ -1,3 +1,6 @@
+import { QueryKey } from 'react-query';
+import { RoutePath } from 'Iaso/constants/routes';
+import { MenuItem } from 'Iaso/domains/app/types';
 import { User } from 'Iaso/utils/usersUtils';
 
 /**
@@ -7,7 +10,7 @@ import { User } from 'Iaso/utils/usersUtils';
  * @param {Object} user
  * @return {Boolean}
  */
-export const userHasPermission = (permission, user) => {
+export const userHasPermission = (permission: string, user: User): boolean => {
     if (!user) {
         return false;
     }
@@ -48,7 +51,10 @@ export const userHasOneOfPermissions = (
  * @param {Object} user - User object to check permissions against.
  * @return {Boolean} - Returns true if user has all the permissions, otherwise false.
  */
-export const userHasAllPermissions = (permissions, user) => {
+export const userHasAllPermissions = (
+    permissions: string[],
+    user: User,
+): boolean => {
     if (!user || !Array.isArray(permissions) || permissions.length === 0) {
         return false;
     }
@@ -61,16 +67,22 @@ export const userHasAllPermissions = (permissions, user) => {
  * @param {Object} menuItem
  * @return {Array}
  */
-export const listMenuPermission = (menuItem, permissions = []) => {
+export const listMenuPermission = (
+    menuItem: MenuItem,
+    permissions: string[] = [],
+): string[] => {
     let permissionsTemp = [...permissions];
     if (menuItem) {
         if (
-            menuItem?.permissions?.length > 0 &&
-            !permissionsTemp.find(p => menuItem.permissions.includes(p)) // Avoid duplicate permission
+            menuItem.permissions &&
+            menuItem.permissions.length > 0 &&
+            !permissionsTemp.find(
+                p => menuItem.permissions?.includes(p) ?? false,
+            ) // Avoid duplicate permission
         ) {
             permissionsTemp = [...permissionsTemp, ...menuItem.permissions];
         }
-        menuItem.subMenu &&
+        if (menuItem.subMenu) {
             menuItem.subMenu.forEach(subMenuItem => {
                 const subPerms = listMenuPermission(
                     subMenuItem,
@@ -78,6 +90,7 @@ export const listMenuPermission = (menuItem, permissions = []) => {
                 ).filter(sp => !permissionsTemp.includes(sp)); // Avoid duplicate permission
                 permissionsTemp = [...permissionsTemp, ...subPerms];
             });
+        }
     }
     return permissionsTemp;
 };
@@ -85,17 +98,17 @@ export const listMenuPermission = (menuItem, permissions = []) => {
 /**
  * get the first permission of an user, ignoring root url permission
  *
- * @param {String} rootPermission
+ * @param {String[]} rootPermissions
  * @param {Object} user
  * @return {String}
  */
 export const getFirstAllowedUrl = (
-    rootPermissions,
-    userPermissions,
-    routes,
-) => {
+    rootPermissions: string[],
+    userPermissions: string[],
+    routes: RoutePath[],
+): string | undefined => {
     const untestedPermissions = [...userPermissions];
-    let newRoot;
+    let newRoot: string | undefined;
     userPermissions.forEach((p, i) => {
         if (!newRoot && !rootPermissions.includes(p)) {
             newRoot = p;
@@ -119,7 +132,7 @@ export const getFirstAllowedUrl = (
  * @param {Object} user
  * @return {Boolean} - Returns true if user account has specified module, otherwise false.
  */
-export const userHasAccessToModule = (module, user) => {
+export const userHasAccessToModule = (module: string, user: User): boolean => {
     if (!user) {
         return false;
     }
@@ -142,3 +155,14 @@ export const userHasOneOfRoles = (
         user.user_roles.some(role => userRoleIds.includes(role))
     );
 };
+
+export type ProfilesDropdownParams = Record<string, string>;
+export const getProfilesDropdownQueryKey = (
+    params: ProfilesDropdownParams,
+    triggerWithEmptyQuery = true,
+): QueryKey => [
+    'profiles',
+    'dropdown',
+    new URLSearchParams(params).toString(),
+    triggerWithEmptyQuery ? 'triggerWithEmptyQuery' : undefined,
+];

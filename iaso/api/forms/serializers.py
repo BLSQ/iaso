@@ -9,7 +9,7 @@ from hat.audit.models import FORM_API, log_modification
 from iaso.api.common import ModelSerializer, TimestampField
 from iaso.api.form_predefined_filters.serializers import FormPredefinedFilterSerializer
 from iaso.api.projects import ProjectSerializer
-from iaso.models import EntityDuplicateAnalyzis, Form, FormVersion, OrgUnitType, Project
+from iaso.models import EntityDuplicateAnalyzis, Form, FormVersion, Group, OrgUnitType, Project
 
 
 class FormVersionNestedSerializer(ModelSerializer):
@@ -32,6 +32,8 @@ class FormSerializer(DynamicFieldsModelSerializerBackwardCompatible):
             "location_field",
             "org_unit_types",
             "org_unit_type_ids",
+            "org_unit_groups",
+            "org_unit_group_ids",
             "projects",
             "project_ids",
             "period_type",
@@ -61,6 +63,8 @@ class FormSerializer(DynamicFieldsModelSerializerBackwardCompatible):
             "location_field",
             "org_unit_types",
             "org_unit_type_ids",
+            "org_unit_groups",
+            "org_unit_group_ids",
             "projects",
             "project_ids",
             "period_type",
@@ -89,6 +93,7 @@ class FormSerializer(DynamicFieldsModelSerializerBackwardCompatible):
             "id",
             "form_id",
             "org_unit_types",
+            "org_unit_groups",
             "projects",
             "instances_count",
             "instance_updated_at",
@@ -105,6 +110,24 @@ class FormSerializer(DynamicFieldsModelSerializerBackwardCompatible):
     org_unit_type_ids = serializers.PrimaryKeyRelatedField(
         source="org_unit_types", many=True, allow_empty=True, queryset=OrgUnitType.objects.all()
     )
+    org_unit_groups = serializers.SerializerMethodField()
+    org_unit_group_ids = serializers.PrimaryKeyRelatedField(
+        source="org_unit_groups", many=True, allow_empty=True, required=False, queryset=Group.objects.none()
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Restrict the writable org unit groups to the ones of the user's account that belong to the
+        # account's default source version (the data source version currently in use).
+        request = self.context.get("request")
+        if request and "org_unit_group_ids" in self.fields:
+            user = getattr(request, "user", None)
+            if user and user.is_authenticated and hasattr(user, "iaso_profile"):
+                default_version = user.iaso_profile.account.default_version
+                self.fields["org_unit_group_ids"].child_relation.queryset = Group.objects.filter_for_user(user).filter(
+                    source_version=default_version
+                )
+
     projects = ProjectSerializer(read_only=True, many=True)
     project_ids = serializers.PrimaryKeyRelatedField(
         source="projects", many=True, allow_empty=False, queryset=Project.objects.all()
@@ -124,6 +147,10 @@ class FormSerializer(DynamicFieldsModelSerializerBackwardCompatible):
     @staticmethod
     def get_org_unit_types(obj: Form):
         return [t.as_dict() for t in obj.org_unit_types.all()]
+
+    @staticmethod
+    def get_org_unit_groups(obj: Form):
+        return [g.as_dict(with_counts=False) for g in obj.org_unit_groups.all()]
 
     @staticmethod
     def get_reference_form_of_org_unit_types(obj: Form):

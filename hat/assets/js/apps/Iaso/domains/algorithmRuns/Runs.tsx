@@ -5,19 +5,19 @@ import { makeStyles } from '@mui/styles';
 
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import TopBar from '../../components/nav/TopBarComponent';
-import { useRunsTableColumns } from './hooks/useRunTableColumns';
+import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 
+import MESSAGES from '../links/messages';
+import { AlgoRunsFilters } from './AlgoRunsFilters';
 import {
     useGetAlgorithmRuns,
     tableDefaults,
 } from './hooks/api/useGetAlgorithmRuns';
-import { AlgoRunsFilters } from './AlgoRunsFilters';
-import { AddAlgorithmRun } from './Modal/AddAlgorithmRun';
-import MESSAGES from '../links/messages';
 import { useLaunchAlgorithmRun } from './hooks/api/useLaunchAlgorithmRun';
+import { useRunsTableColumns } from './hooks/useRunTableColumns';
+import { AddAlgorithmRun } from './Modal/AddAlgorithmRun';
 
 const baseUrl = baseUrls.algos;
 

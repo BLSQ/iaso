@@ -9,10 +9,10 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
+import { baseUrls } from '../../../constants/urls';
 import getDisplayName from '../../../utils/usersUtils';
 import { MESSAGES } from '../messages';
-import { baseUrls } from '../../../constants/urls';
-import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { useDeleteRun } from './api/useDeleteRun';
 
 export const useRunsTableColumns = (): Column[] => {

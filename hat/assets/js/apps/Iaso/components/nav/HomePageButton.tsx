@@ -1,11 +1,11 @@
 import React, { FunctionComponent } from 'react';
+import HomeIcon from '@mui/icons-material/Home';
 import { IconButton as MuiIconButton, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import HomeIcon from '@mui/icons-material/Home';
 import { useSafeIntl } from 'bluesquare-components';
 
-import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
+import MESSAGES from './messages';
 
 const useStyles = makeStyles(theme => ({
     homePageButton: {

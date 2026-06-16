@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import { useSafeIntl, useGoBack, commonStyles } from 'bluesquare-components';
-import { useLocation } from 'react-router-dom';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { useSafeIntl, useGoBack, commonStyles } from 'bluesquare-components';
+import { useLocation } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';

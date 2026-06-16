@@ -4,10 +4,10 @@ import {
     useSafeIntl,
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';
-import FormVersionsDialog from './FormVersionsDialogComponent';
 import { baseUrls } from '../../../constants/urls';
-import MESSAGES from '../messages';
 import { PERIOD_TYPE_DAY } from '../../periods/constants';
+import MESSAGES from '../messages';
+import FormVersionsDialog from './FormVersionsDialogComponent';
 import { FormVersionsTable } from './FormVersionsTable';
 
 const baseUrl = baseUrls.formDetail;

@@ -1,13 +1,13 @@
 import React, { FunctionComponent } from 'react';
-import { FormattedMessage } from 'react-intl';
 import { Box, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles } from 'bluesquare-components';
+import { FormattedMessage } from 'react-intl';
+import { innerDrawerStyles } from '../../../../components/nav/InnerDrawer/styles';
+import MESSAGES from '../../messages';
+import { OrgUnit } from '../../types/orgUnit';
 import MarkerInputs from './MarkerInputs';
 import ShapesButtons from './ShapesButtons';
-import MESSAGES from '../../messages';
-import { innerDrawerStyles } from '../../../../components/nav/InnerDrawer/styles';
-import { OrgUnit } from '../../types/orgUnit';
 
 //@ts-ignore
 const useStyles = makeStyles(theme => ({

@@ -1,6 +1,6 @@
+import React, { FunctionComponent, useCallback, useState } from 'react';
 import { Paper } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent, useCallback, useState } from 'react';
 import ImageGallery from '../../../components/dialogs/ImageGalleryComponent';
 import LazyImagesList from '../../../components/files/LazyImagesListComponent';
 import { SxStyles } from '../../../types/general';

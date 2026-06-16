@@ -43,7 +43,7 @@ const DeleteInstanceDialog: FunctionComponent<Props> = ({
     const renderTrigger = ({ openDialog }) => {
         const iconButtonProps = {
             onClick: selection.selectCount > 0 ? openDialog : () => null,
-            disabled: selection.selectCount === 0
+            disabled: selection.selectCount === 0,
         };
 
         return (

@@ -69,7 +69,6 @@ def setup_account(account_name, server_url, username, password, create_main_org_
         "feature_flags": [
             "SHOW_HOME_ONLINE",
             "SHOW_BENEFICIARY_TYPES_IN_LIST_MENU",
-            "SHOW_PAGES",
             "SHOW_LINK_INSTANCE_REFERENCE",
             "ALLOW_CATCHMENT_EDITION",
         ],

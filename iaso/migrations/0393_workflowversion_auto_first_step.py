@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0392_form_org_unit_groups"),
+        ("iaso", "0392_remove_feature_flag_and_alter_forms_groups"),
     ]
 
     operations = [

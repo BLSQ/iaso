@@ -24,13 +24,13 @@ jobs:
 
   build_and_push_image:
     needs: config
-    uses: BLSQ/iaso-ci/.github/workflows/wc_docker_build.yml
+    uses: BLSQ/iaso-ci/.github/workflows/wc_docker_build.yml@main
     with:
       branch: ${{ github.head_ref || github.ref_name }}
       image_tags: ${{ needs.config.outputs.image_tags }}
     secrets: inherit
 
   tests:
-    uses: BLSQ/iaso-ci/.github/workflows/wc_tests.yml
+    uses: BLSQ/iaso-ci/.github/workflows/wc_tests.yml@main
     with:
       branch: ${{ github.head_ref || github.ref_name }}

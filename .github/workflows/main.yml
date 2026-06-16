@@ -29,14 +29,14 @@ jobs:
 
   tests:
     needs: [ check_on_main ]
-    uses: ./.github/workflows/wc_tests.yml
+    uses: BLSQ/iaso-ci/.github/workflows/wc_tests.yml@main
     with:
       #      branch: main
       branch: main-test
 
   build_and_push_image:
     needs: [ check_on_main, tests ]
-    uses: BLSQ/iaso-ci/.github/workflows/wc_docker_build.yml
+    uses: BLSQ/iaso-ci/.github/workflows/wc_docker_build.yml@main
     with:
       #      branch: main
       branch: main-test

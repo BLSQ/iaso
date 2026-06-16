@@ -29,7 +29,7 @@ permissions:
 
 jobs:
   deploy:
-    uses: ./.github/workflows/wc_docker_deploy.yml
+    uses: BLSQ/iaso-ci/.github/workflows/wc_docker_deploy.yml@main
     with:
       image_tag: ${{ github.event.inputs.image_tag }}
       branch: ${{ github.event.inputs.branch }}

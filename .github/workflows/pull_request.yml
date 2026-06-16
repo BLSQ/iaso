@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   config:
-    uses: BLSQ/iaso-ci/.github/workflows/wc_config.yml
+    uses: BLSQ/iaso-ci/.github/workflows/wc_config.yml@main
     permissions:
       pull-requests: write
       contents: read

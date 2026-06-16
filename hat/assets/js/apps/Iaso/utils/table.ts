@@ -15,7 +15,11 @@ type UseTableSelection<T> = {
         items?: Array<any>,
         totalCount?: number,
     ) => void;
-    handleSelectAll: (items?: Array<any>, totalCount?: number) => void;
+    handleSelectAll: (
+        data: Array<T>,
+        items?: Array<any>,
+        totalCount?: number,
+    ) => void;
     handleUnselectAll: () => void;
 };
 

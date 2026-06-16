@@ -28,7 +28,7 @@ import { defaultHeight } from '../../constants/ui';
 import { AssignmentsResult } from '../../types/assigment';
 import { AssignmentParams } from '../../types/assigment';
 import { defaultViewport, boundsOptions } from '../../utils';
-import { BulkAssignDialog } from '../BulkAssignDialog';
+import { BulkAssignDialog } from '../dialog/BulkAssignDialog';
 import { MapTools } from './MapTools';
 import { ParentOrgUnits } from './ParentOrgUnits';
 import { TargetOrgUnits } from './TargetOrgUnits';
@@ -168,14 +168,14 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
         isLoadingAssignments ||
         isLoadingRootOrgUnit ||
         isSaving;
-
     return (
         <Box position="relative">
-            {showBulkAssignDialog && (
+            {showBulkAssignDialog && selectedParentOrgUnit && (
                 <BulkAssignDialog
                     open={showBulkAssignDialog}
                     onClose={handleCloseBulkAssignDialog}
                     selectedParentOrgUnit={selectedParentOrgUnit}
+                    planningId={planningId}
                 />
             )}
             {isLoading && <LoadingSpinner />}

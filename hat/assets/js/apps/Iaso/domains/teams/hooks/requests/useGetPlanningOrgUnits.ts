@@ -61,6 +61,7 @@ export const useGetPlanningOrgUnitsChildrenPaginated = (
         page: params?.page ?? tableDefaults.page,
         order: tableDefaults.order,
         search: params?.search,
+        orgUnitParentId: params?.orgUnitParentId,
     };
     const url = Boolean(planningId)
         ? makeUrlWithParams(

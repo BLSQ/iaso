@@ -114,7 +114,7 @@ export const ParentOrgUnits: FunctionComponent<Props> = ({
                                         style={{
                                             color,
                                             fillOpacity: 0.3,
-                                            fillColor: color,
+                                            fill: color,
                                         }}
                                     >
                                         <MapToolTip

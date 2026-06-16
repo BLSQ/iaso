@@ -14,6 +14,12 @@ from plugins.polio.preparedness.parser import get_preparedness, indicators
 logger = getLogger(__name__)
 
 
+def format_indicator(value, kind):
+    if kind == "percent":
+        return value / 10 if value else value
+    return value
+
+
 def get_summary(zones):
     r = {}
     for _, i, _, kind in indicators:
@@ -43,11 +49,6 @@ def preparedness_summary(prep_dict):
             indicators_per_zone["districts"]["status_score"],
         ]
     )
-
-    def format_indicator(value, kind):
-        if kind == "percent":
-            return value / 10 if value else value
-        return value
 
     # pivot
     r["indicators"] = {}

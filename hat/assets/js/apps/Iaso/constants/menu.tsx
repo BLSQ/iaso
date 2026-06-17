@@ -194,7 +194,9 @@ const menuItems = (
         //     icon: props => <ScienceIcon {...props} />,
         // },
     ];
-    if (currentUser.is_staff || currentUser.is_superuser) {
+    // Disable multi-Account setups for Trypelim
+    // if (currentUser.is_staff || currentUser.is_superuser) {
+    if (false) {
         settingsSubMenu.push({
             label: formatMessage(MESSAGES.accountSetup),
             key: 'setupAccount',

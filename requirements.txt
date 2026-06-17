@@ -74,6 +74,7 @@ python-magic==0.4.27 # https://github.com/ahupp/python-magic
 jsonref==1.1.0 # https://github.com/gazpachoking/jsonref
 django-simple-captcha==0.6.3  # https://github.com/mbi/django-simple-captcha/tags
 environs==14.4.0  # https://github.com/sloria/environs/tags
+jsonpatch==1.33 # https://github.com/stefankoegl/python-json-patch
 
 # Exporting tools.
 # ------------------------------------------------------------------------------
@@ -189,3 +190,4 @@ pydantic==2.11.3  # https://github.com/pydantic/pydantic/tags
 # Testing.
 # ------------------------------------------------------------------------------
 django-test-migrations==1.4.0 # https://github.com/wemake-services/django-test-migrations
+tblib==3.0.0  # https://github.com/ionelmc/python-tblib/tags - required by `manage.py test --parallel`

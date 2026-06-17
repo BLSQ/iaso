@@ -12,7 +12,7 @@ import MESSAGES from './messages';
 export const useAccountTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
-        const cols = [
+        return [
             {
                 Header: formatMessage(MESSAGES.name),
                 id: 'name',
@@ -33,17 +33,14 @@ export const useAccountTableColumns = (): Column[] => {
                 sortable: false,
                 Cell: (settings: Setting<any>) => {
                     return (
-                        <>
-                            <IconButton
-                                tooltipMessage={MESSAGES.view}
-                                icon="remove-red-eye"
-                                url={`/${baseUrls.accountsDetail}/id/${settings.row.original.id}/`}
-                            />
-                        </>
+                        <IconButton
+                            tooltipMessage={MESSAGES.view}
+                            icon="remove-red-eye"
+                            url={`/${baseUrls.accountsDetail}/id/${settings.row.original.id}/`}
+                        />
                     );
                 },
             },
         ];
-        return cols;
     }, [formatMessage]);
 };

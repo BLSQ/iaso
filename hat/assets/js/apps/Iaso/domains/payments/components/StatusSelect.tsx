@@ -1,5 +1,5 @@
-import { useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 import { usePaymentStatusOptions } from '../../orgUnits/reviewChanges/hooks/api/useGetPaymentStatusOptions';
 import MESSAGES from '../messages';

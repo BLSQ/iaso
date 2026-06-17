@@ -1,3 +1,10 @@
+import React, {
+    Dispatch,
+    FunctionComponent,
+    SetStateAction,
+    useCallback,
+    useState,
+} from 'react';
 import { Box, Paper, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -6,22 +13,14 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import classnames from 'classnames';
-import React, {
-    Dispatch,
-    FunctionComponent,
-    SetStateAction,
-    useCallback,
-    useState,
-} from 'react';
 import { baseUrls } from '../../../constants/urls';
-import MESSAGES from '../messages';
-
-import { OrgUnitChildrenMap } from './map/OrgUnitChildrenMap';
-
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
+
 import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
 import { OrgUnitListChildren } from '../hooks/useGetOrgUnit';
+import MESSAGES from '../messages';
 import { OrgUnitListTab, RegistryParams } from '../types';
+import { OrgUnitChildrenMap } from './map/OrgUnitChildrenMap';
 import { OrgUnitChildrenList } from './OrgUnitChildrenList';
 
 type Props = {

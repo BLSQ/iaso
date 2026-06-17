@@ -1,12 +1,12 @@
-import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks';
+import { UseMutationResult } from 'react-query';
 import { postRequest, getRequest } from 'Iaso/libs/Api';
+import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks';
+import { Url } from 'Iaso/routing/types';
+import { UuidAsString, DjangoError } from 'Iaso/types/general';
 import {
     ObrName,
     RefreshPreparednessResponse,
 } from '../../../../constants/types';
-import { Url } from 'Iaso/routing/types';
-import { UseMutationResult } from 'react-query';
-import { UuidAsString, DjangoError } from 'Iaso/types/general';
 
 export const useGetPreparednessData = (
     campaignId?: string,

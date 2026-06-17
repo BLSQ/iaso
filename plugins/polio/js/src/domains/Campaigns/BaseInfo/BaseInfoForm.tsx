@@ -122,6 +122,7 @@ export const BaseInfoForm: FunctionComponent = () => {
                 campaign_types: value.campaign_types,
             });
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [setFieldTouched, setFieldValue, values.integrated_to],
     );
 

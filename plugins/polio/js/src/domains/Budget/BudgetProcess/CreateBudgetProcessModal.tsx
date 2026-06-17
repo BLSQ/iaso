@@ -1,7 +1,5 @@
-import { Box, Divider, Grid } from '@mui/material';
-import { Field, FormikProvider, useFormik } from 'formik';
 import React, { FunctionComponent, useEffect, useState } from 'react';
-
+import { Box, Divider, Grid } from '@mui/material';
 import {
     AddButton,
     ConfirmCancelModal,
@@ -9,6 +7,7 @@ import {
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
+import { Field, FormikProvider, useFormik } from 'formik';
 
 import { MultiSelect } from '../../../components/Inputs/MultiSelect';
 import { SingleSelect } from '../../../components/Inputs/SingleSelect';

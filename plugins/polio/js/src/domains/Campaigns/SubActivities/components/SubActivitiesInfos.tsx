@@ -3,8 +3,8 @@ import { Box, Grid, Typography } from '@mui/material';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import { Round } from '../../../../constants/types';
-import MESSAGES from '../messages';
 import { dateFormat } from '../../../Calendar/campaignCalendar/constants';
+import MESSAGES from '../messages';
 import { CreateSubActivity } from './Modal/CreateEditSubActivity';
 
 type Props = {

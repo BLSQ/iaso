@@ -1,3 +1,4 @@
+import copy
 import csv
 import importlib
 import io
@@ -175,10 +176,18 @@ class SwaggerTestCaseMixin(BaseAPITestCase):
     This mixin purpose is to be able to validate any response against the generated swagger schema
     """
 
+    # The OpenAPI schema is identical for the whole test run (it only depends on the URL conf and
+    # serializers, not on the request). Generating it via drf-spectacular is expensive (~1s for the
+    # whole API), so we cache it once for the whole process instead of regenerating it on every
+    # `validate_openapi_response` call. See IA-5186.
+    _openapi_schema_cache = None
+
     def get_openapi_schema(self):
-        res = self.client.get(reverse("swagger-schema"), data={"format": "json"})
-        self.assertEqual(res.status_code, 200)
-        return res.json()
+        if SwaggerTestCaseMixin._openapi_schema_cache is None:
+            res = self.client.get(reverse("swagger-schema"), data={"format": "json"})
+            self.assertEqual(res.status_code, 200)
+            SwaggerTestCaseMixin._openapi_schema_cache = res.json()
+        return SwaggerTestCaseMixin._openapi_schema_cache
 
     def resolve_refs(self, schema):
         return jsonref.replace_refs(schema)
@@ -219,7 +228,9 @@ class SwaggerTestCaseMixin(BaseAPITestCase):
         return openapi_schema["components"]["schemas"][name]
 
     def validate_openapi_response(self, data, schema_name: str, as_array: bool = False):
-        openapi = self.get_openapi_schema()
+        # Deep-copy the cached schema: `normalize_schema` mutates the schema in place, so we must not
+        # touch the shared cache (it is reused across every test of the run).
+        openapi = copy.deepcopy(self.get_openapi_schema())
 
         # resolve refs first
         resolved = self.resolve_refs(openapi)

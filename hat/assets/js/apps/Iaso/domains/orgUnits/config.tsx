@@ -6,15 +6,15 @@ import {
     textPlaceholder,
     Column,
 } from 'bluesquare-components';
-import { baseUrls } from '../../constants/urls';
-import OrgUnitTooltip from './components/OrgUnitTooltip';
-import getDisplayName from '../../utils/usersUtils';
-import MESSAGES from './messages';
-import { useGetStatusMessage, getOrgUnitGroups } from './utils';
 import {
     DateTimeCell,
     DateTimeCellRfc,
 } from '../../components/Cells/DateTimeCell';
+import { baseUrls } from '../../constants/urls';
+import getDisplayName from '../../utils/usersUtils';
+import OrgUnitTooltip from './components/OrgUnitTooltip';
+import MESSAGES from './messages';
+import { useGetStatusMessage, getOrgUnitGroups } from './utils';
 
 export const useOrgUnitsTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -87,7 +87,7 @@ export const useOrgUnitsTableColumns = (): Column[] => {
                         {(settings.row.original.has_geo_json ||
                             Boolean(
                                 settings.row.original.latitude &&
-                                    settings.row.original.longitude,
+                                settings.row.original.longitude,
                             )) && (
                             <IconButton
                                 url={`/${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.id}/tab/map`}

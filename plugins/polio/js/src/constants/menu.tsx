@@ -3,6 +3,8 @@ import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import CalendarToday from '@mui/icons-material/CalendarToday';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import DataThresholdingIcon from '@mui/icons-material/DataThresholding';
 import DonutSmallIcon from '@mui/icons-material/DonutSmall';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
@@ -21,8 +23,6 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import StorageIcon from '@mui/icons-material/Storage';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import DataThresholdingIcon from '@mui/icons-material/DataThresholding';
 import { MenuItem } from '../../../../../hat/assets/js/apps/Iaso/domains/app/types';
 import MESSAGES from './messages';
 import {

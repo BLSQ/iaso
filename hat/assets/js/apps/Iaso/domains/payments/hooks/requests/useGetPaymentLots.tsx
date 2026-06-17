@@ -1,9 +1,9 @@
 import { UseQueryResult } from 'react-query';
-import { makeUrlWithParams } from '../../../../libs/utils';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
-import { PaymentLotsParams, PaymentLotPaginated } from '../../types';
+import { makeUrlWithParams } from '../../../../libs/utils';
 import { apiDateFormat, formatDateString } from '../../../../utils/dates';
+import { PaymentLotsParams, PaymentLotPaginated } from '../../types';
 
 const apiUrl = '/api/payments/lots/';
 

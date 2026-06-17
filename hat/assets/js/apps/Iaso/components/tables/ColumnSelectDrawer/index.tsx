@@ -50,7 +50,9 @@ const TooltipTitle: FunctionComponent<TooltipProps> = ({ option }) => {
 };
 type Props = {
     options: Option[];
-    setOptions: React.Dispatch<React.SetStateAction<Option[]>>;
+    setOptions:
+        | React.Dispatch<React.SetStateAction<Option[]>>
+        | ((options: Option[]) => void);
     minColumns?: number;
     disabled: boolean;
     disabledMessage?: string;

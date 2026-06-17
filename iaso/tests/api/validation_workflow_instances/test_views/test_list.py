@@ -175,8 +175,12 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
                 self.assertEqual(first_result["id"], self.other_instance.id)
                 self.assertEqual(second_result["id"], self.instance.id)
 
-                self.assertEqual(first_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING)
-                self.assertEqual(second_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING)
+                self.assertEqual(
+                    first_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING.label
+                )
+                self.assertEqual(
+                    second_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING.label
+                )
 
                 self.assertFalse(first_result["user_has_been_involved"])
                 self.assertFalse(second_result["user_has_been_involved"])
@@ -208,8 +212,8 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
             self.assertEqual(first_result["id"], self.other_instance.id)
             self.assertEqual(second_result["id"], self.instance.id)
 
-            self.assertEqual(first_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING)
-            self.assertEqual(second_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING)
+            self.assertEqual(first_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING.label)
+            self.assertEqual(second_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING.label)
 
             self.assertFalse(first_result["user_has_been_involved"])
             self.assertFalse(second_result["user_has_been_involved"])
@@ -229,8 +233,8 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
             self.assertEqual(first_result["id"], self.other_instance.id)
             self.assertEqual(second_result["id"], self.instance.id)
 
-            self.assertEqual(first_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING)
-            self.assertEqual(second_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING)
+            self.assertEqual(first_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING.label)
+            self.assertEqual(second_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING.label)
 
             self.assertTrue(first_result["user_has_been_involved"])
             self.assertTrue(second_result["user_has_been_involved"])
@@ -251,7 +255,7 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
 
             self.assertEqual(first_result["id"], self.instance.id)
 
-            self.assertEqual(first_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING)
+            self.assertEqual(first_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING.label)
 
             self.assertFalse(first_result["user_has_been_involved"])
 
@@ -292,8 +296,8 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
             self.assertEqual(first_result["id"], self.other_instance.id)
             self.assertEqual(second_result["id"], self.instance.id)
 
-            self.assertEqual(first_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING)
-            self.assertEqual(second_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING)
+            self.assertEqual(first_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING.label)
+            self.assertEqual(second_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING.label)
 
             self.assertFalse(first_result["user_has_been_involved"])
             self.assertFalse(second_result["user_has_been_involved"])
@@ -313,8 +317,8 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
             self.assertEqual(first_result["id"], self.other_instance.id)
             self.assertEqual(second_result["id"], self.instance.id)
 
-            self.assertEqual(first_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING)
-            self.assertEqual(second_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING)
+            self.assertEqual(first_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING.label)
+            self.assertEqual(second_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING.label)
 
             self.assertTrue(first_result["user_has_been_involved"])
             self.assertTrue(second_result["user_has_been_involved"])
@@ -335,7 +339,7 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
 
             self.assertEqual(first_result["id"], self.instance.id)
 
-            self.assertEqual(first_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING)
+            self.assertEqual(first_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING.label)
 
             self.assertFalse(first_result["user_has_been_involved"])
 
@@ -381,8 +385,8 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
             self.assertEqual(first_result["id"], self.other_instance.id)
             self.assertEqual(second_result["id"], self.instance.id)
 
-            self.assertEqual(first_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING)
-            self.assertEqual(second_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING)
+            self.assertEqual(first_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING.label)
+            self.assertEqual(second_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING.label)
 
             self.assertFalse(first_result["user_has_been_involved"])
             self.assertFalse(second_result["user_has_been_involved"])
@@ -402,8 +406,8 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
             self.assertEqual(first_result["id"], self.other_instance.id)
             self.assertEqual(second_result["id"], self.instance.id)
 
-            self.assertEqual(first_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING)
-            self.assertEqual(second_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING)
+            self.assertEqual(first_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING.label)
+            self.assertEqual(second_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING.label)
 
             self.assertTrue(first_result["user_has_been_involved"])
             self.assertTrue(second_result["user_has_been_involved"])
@@ -424,7 +428,7 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
 
             self.assertEqual(first_result["id"], self.instance.id)
 
-            self.assertEqual(first_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING)
+            self.assertEqual(first_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING.label)
 
             self.assertFalse(first_result["user_has_been_involved"])
 
@@ -573,7 +577,7 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
             self.assertValidVFInstanceListData(res_data, 2)
             self.assertCountEqual(
                 [x["general_validation_status"] for x in res_data["results"]],
-                [ValidationWorkflowArtefactStatus.PENDING.value, ValidationWorkflowArtefactStatus.REJECTED.value],
+                [ValidationWorkflowArtefactStatus.PENDING.label, ValidationWorkflowArtefactStatus.REJECTED.label],
             )
 
             res = self.client.get(
@@ -584,7 +588,7 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
             self.assertValidVFInstanceListData(res_data, 1)
             self.assertCountEqual(
                 [x["general_validation_status"] for x in res_data["results"]],
-                [ValidationWorkflowArtefactStatus.PENDING.value],
+                [ValidationWorkflowArtefactStatus.PENDING.label],
             )
 
             res = self.client.get(
@@ -595,12 +599,12 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
             self.assertValidVFInstanceListData(res_data, 1)
             self.assertCountEqual(
                 [x["general_validation_status"] for x in res_data["results"]],
-                [ValidationWorkflowArtefactStatus.REJECTED.value],
+                [ValidationWorkflowArtefactStatus.REJECTED.label],
             )
 
             res = self.client.get(
                 reverse("validation_workflow_instances-list"),
-                data={"status": ValidationWorkflowArtefactStatus.APPROVED.value},
+                data={"status": ValidationWorkflowArtefactStatus.APPROVED.name},
             )
             res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidVFInstanceListData(res_data, 0)

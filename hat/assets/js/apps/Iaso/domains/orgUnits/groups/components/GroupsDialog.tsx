@@ -1,13 +1,13 @@
 import React, { useState, useEffect, FunctionComponent } from 'react';
-import get from 'lodash/get';
 import { Grid } from '@mui/material';
-import { userHasPermission } from '../../../users/utils';
-import { useCurrentUser } from '../../../../utils/usersUtils';
+import { IntlMessage } from 'bluesquare-components';
+import get from 'lodash/get';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../../components/forms/InputComponent';
-import MESSAGES from '../messages';
 import * as Permission from '../../../../utils/permissions';
-import { IntlMessage } from 'bluesquare-components';
+import { useCurrentUser } from '../../../../utils/usersUtils';
+import { userHasPermission } from '../../../users/utils';
+import MESSAGES from '../messages';
 
 const initialGroup = currentGroup => {
     return {

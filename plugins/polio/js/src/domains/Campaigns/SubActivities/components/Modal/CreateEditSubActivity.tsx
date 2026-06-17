@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Divider, Grid } from '@mui/material';
 import {
     AddButton,
@@ -8,7 +9,6 @@ import {
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import { isEqual } from 'lodash';
-import React, { FunctionComponent, useCallback } from 'react';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import {
     DateInput,
@@ -69,7 +69,7 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
             scopes: subActivity?.scopes ?? [],
         },
         validationSchema,
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
+
         onSubmit: () => {},
     });
     const { values } = formik;

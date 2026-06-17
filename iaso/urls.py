@@ -72,6 +72,7 @@ from .api.forms.views_mobile import MobileFormViewSet
 from .api.group_sets.views import GroupSetsViewSet
 from .api.groups.views import GroupsViewSet
 from .api.hesabu_descriptors import HesabuDescriptorsViewSet
+from .api.instance_diff.views import InstanceDiffViewSet
 from .api.instances.views import InstancesViewSet
 from .api.instances.views_mobile import InstancesMobileViewSet
 from .api.links import LinkViewSet
@@ -93,7 +94,7 @@ from .api.mobile.groups import MobileGroupsViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.mobile.storage import MobileStoragePasswordViewSet
-from .api.modules import ModulesViewSet
+from .api.modules.views import ModulesViewSet
 from .api.notifications.views import NotificationViewSet
 from .api.openhexa.views import OpenHexaPipelinesViewSet
 from .api.org_unit_change_request_configurations.views import OrgUnitChangeRequestConfigurationViewSet
@@ -173,6 +174,7 @@ router.register(r"payments/options", PaymentOptionsViewSet, basename="paymentsop
 router.register(r"payments", PaymentsViewSet, basename="payments")
 router.register(r"instances", InstancesViewSet, basename="instances")
 router.register(r"mobile/instances", InstancesMobileViewSet, basename="mobile_instances")
+router.register(r"diff/instances/(?P<instance_id>\d+)", InstanceDiffViewSet, basename="instances_diff")
 router.register(r"forms", FormsViewSet, basename="forms")
 router.register(r"mobile/forms", MobileFormViewSet, basename="formsmobile")
 router.register(r"pages", PagesViewSet, basename="pages")

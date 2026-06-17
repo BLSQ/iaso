@@ -1,5 +1,5 @@
-import { UrlParams } from 'bluesquare-components';
 import { useMemo } from 'react';
+import { UrlParams } from 'bluesquare-components';
 import { cleanupParams } from '../utils/requests';
 
 export type FormattedUrlParams = UrlParams & Record<string, any>;

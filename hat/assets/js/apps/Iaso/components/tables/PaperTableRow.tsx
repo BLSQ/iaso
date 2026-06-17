@@ -1,6 +1,6 @@
+import React, { FunctionComponent } from 'react';
 import { TableCell, TableRow, Theme } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import { SxStyles } from '../../types/general';
 import { NumberCell } from '../Cells/NumberCell';
 

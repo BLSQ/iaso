@@ -1,5 +1,5 @@
-import { useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 import MESSAGES from '../messages';
 

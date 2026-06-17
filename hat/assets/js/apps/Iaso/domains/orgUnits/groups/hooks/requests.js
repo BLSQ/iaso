@@ -1,15 +1,14 @@
-import { useSnackQuery, useSnackMutation } from '../../../../libs/apiHooks';
+import { useDeleteTableRow } from 'Iaso/components/tables/TableWithDeepLink';
+import { baseUrls } from 'Iaso/constants/urls';
 import {
     getRequest,
     deleteRequest,
     postRequest,
     patchRequest,
 } from '../../../../libs/Api';
+import { useSnackQuery, useSnackMutation } from '../../../../libs/apiHooks';
 
 import MESSAGES from '../messages';
-import { useDeleteTableRow } from 'Iaso/components/tables/TableWithDeepLink';
-import { baseUrl } from '../config';
-import { baseUrls } from 'Iaso/constants/urls';
 
 export const useGetGroups = params => {
     const newParams = {
@@ -42,7 +41,6 @@ export const useGetGroups = params => {
     );
 };
 
-
 export const useSaveGroups = () =>
     useSnackMutation(
         body =>
@@ -68,7 +66,7 @@ export const useDeleteGroups = ({ params, count }) => {
         snackSuccessMessage: MESSAGES.deleteSuccess,
         snackErrorMsg: MESSAGES.deleteError,
         options: {
-            onSuccess
+            onSuccess,
         },
     });
-}
+};

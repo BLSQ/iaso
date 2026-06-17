@@ -70,9 +70,12 @@ vi.mock('Iaso/domains/assignments/hooks/requests/useSaveAssignment', () => ({
     useSaveAssignment: mockUseSaveAssignment,
 }));
 
-vi.mock('Iaso/domains/assignments/hooks/requests/useBulkDeleteAssignments', () => ({
-    useBulkDeleteAssignments: mockUseBulkDeleteAssignments,
-}));
+vi.mock(
+    'Iaso/domains/assignments/hooks/requests/useBulkDeleteAssignments',
+    () => ({
+        useBulkDeleteAssignments: mockUseBulkDeleteAssignments,
+    }),
+);
 
 vi.mock('bluesquare-components', async importOriginal => {
     const actual =
@@ -115,6 +118,7 @@ vi.mock('./components/AssignmentsTable', () => ({
 }));
 
 vi.mock('./components/teams/TeamTable', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const ReactImport = require('react') as typeof import('react');
     return {
         TeamTable: (props: {

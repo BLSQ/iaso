@@ -188,6 +188,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.updateFormVersionError',
         defaultMessage: 'An error occurred while updating a form version',
     },
+    previewFormVersionError: {
+        id: 'iaso.snackBar.previewFormVersionError',
+        defaultMessage: 'An error occurred while previewing the form version',
+    },
     updateFormError: {
         id: 'iaso.snackBar.updateFormError',
         defaultMessage: 'An error occurred while updating a form',

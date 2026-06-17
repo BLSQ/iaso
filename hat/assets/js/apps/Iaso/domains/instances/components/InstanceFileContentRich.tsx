@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-indent */
 import React, { useMemo, FunctionComponent, JSX } from 'react';
 import CommentIcon from '@mui/icons-material/Comment';
 import FunctionsIcon from '@mui/icons-material/Functions';

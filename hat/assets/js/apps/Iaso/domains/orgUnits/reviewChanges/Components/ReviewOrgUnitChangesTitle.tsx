@@ -1,6 +1,6 @@
+import React, { FunctionComponent, useState } from 'react';
 import InfoIcon from '@mui/icons-material/Info';
 import { Box, IconButton, Popover } from '@mui/material';
-import React, { FunctionComponent, useState } from 'react';
 import { OrgUnitChangeRequestDetails } from '../types';
 import {
     ReviewOrgUnitChangesInfos,

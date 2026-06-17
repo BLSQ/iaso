@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { Alert, Box } from '@mui/material';
 import {
     ConfirmCancelModal,
@@ -22,10 +22,15 @@ type Props = {
     closeDialog: () => void;
 };
 
-const EditAIApiKeyModal = ({ accountId, isOpen, closeDialog }: Props) => {
+const EditAIApiKeyModal: FunctionComponent<Props> = ({
+    accountId,
+    isOpen,
+    closeDialog,
+}) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: saveAIApiKey } = useApiAccountsAiApiKeyUpdate({
         mutation: {
+            onSuccess: () => closeDialog(),
             ignoreErrorCodes: [400],
         },
     });
@@ -40,7 +45,7 @@ const EditAIApiKeyModal = ({ accountId, isOpen, closeDialog }: Props) => {
             saveAIApiKey({
                 id: accountId,
                 data: values,
-            }).then(() => closeDialog()),
+            }),
         ),
     });
 

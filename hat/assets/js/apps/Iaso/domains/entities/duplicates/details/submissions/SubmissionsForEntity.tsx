@@ -1,11 +1,11 @@
 import React, { FunctionComponent } from 'react';
-import { ExpandableItem } from 'bluesquare-components';
 import { Divider } from '@mui/material';
+import { ExpandableItem } from 'bluesquare-components';
+import WidgetPaperComponent from '../../../../../components/papers/WidgetPaperComponent';
 import { InstanceDetailRaw } from '../../../../instances/compare/components/InstanceDetailRaw';
 import { useGetInstancesForEntity } from '../hooks/useGetInstancesForEntity';
-import WidgetPaperComponent from '../../../../../components/papers/WidgetPaperComponent';
-import { NoSubmission } from './NoSubmission';
 import ExpandableLabel from './ExpandableLabel';
+import { NoSubmission } from './NoSubmission';
 
 type Props = {
     entityId?: string;

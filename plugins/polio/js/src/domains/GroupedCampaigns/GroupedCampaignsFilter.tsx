@@ -1,6 +1,6 @@
+import React, { FunctionComponent, useState } from 'react';
 import FiltersIcon from '@mui/icons-material/FilterList';
 import { Box, Button, Grid } from '@mui/material';
-import React, { FunctionComponent, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';

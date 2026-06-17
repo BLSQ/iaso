@@ -9,11 +9,11 @@ import {
 } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 
-import MESSAGES from '../messages';
-import { ChronogramTaskMetaData } from '../../types';
-import { DeleteChronogramTask } from '../Modals/ChronogramTaskDeleteModal';
-import { EditChronogramTaskModal } from '../Modals/ChronogramTaskCreateEditModal';
 import * as Permission from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
+import { ChronogramTaskMetaData } from '../../types';
+import MESSAGES from '../messages';
+import { EditChronogramTaskModal } from '../Modals/ChronogramTaskCreateEditModal';
+import { DeleteChronogramTask } from '../Modals/ChronogramTaskDeleteModal';
 
 export const useChronogramDetailsTableColumn = (
     chronogramTaskMetaData: ChronogramTaskMetaData,

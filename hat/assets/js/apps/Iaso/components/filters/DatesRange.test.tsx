@@ -58,6 +58,7 @@ vi.mock('bluesquare-components', async () => {
                     return;
                 }
                 mounted.current = true;
+                // eslint-disable-next-line react-hooks/exhaustive-deps
             }, deps);
         },
         FormControl: ({

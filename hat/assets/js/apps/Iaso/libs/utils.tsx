@@ -13,18 +13,27 @@ import { DropdownOptions, Nullable, Optional } from '../types/utils';
 // url should include closing slash
 export const makeUrlWithParams = (
     url: string,
-    urlParams: Record<string, string | number | boolean | undefined>,
+    urlParams: Record<
+        string,
+        | string
+        | number
+        | boolean
+        | undefined
+        | Array<string | number | boolean | undefined>
+    >,
 ): string => {
     // @ts-ignore
     const urlSearchParams = new URLSearchParams();
 
     Object.entries(urlParams).forEach(([k, v]) => {
         if (Array.isArray(v)) {
-            v.forEach(p => urlSearchParams.append(k, p));
-        } else if (typeof v === 'number') {
-            urlSearchParams.append(k, v.toString());
+            v.forEach(p => {
+                if (p !== undefined) {
+                    urlSearchParams.append(k, `${p}`);
+                }
+            });
         } else if (v !== undefined) {
-            urlSearchParams.append(k, v);
+            urlSearchParams.append(k, `${v}`);
         }
     });
 
@@ -88,7 +97,7 @@ export const mapOptions = (
     data: OptionsResponse,
     fields?: string[],
 ): Record<string, DropdownOptions<string>[]> => {
-    const result = {};
+    const result: Record<string, DropdownOptions<string>[]> = {};
     if (!data) return result;
     // Convert object to 2 dimensional array
     Object.entries(data.actions.POST)
@@ -107,7 +116,9 @@ export const mapOptions = (
         .forEach(([key, dict]) => {
             // Allow selection of fields to return
             if (!fields || fields?.includes(key as string)) {
-                result[key as string] = dict;
+                (result as Record<string, DropdownOptions<string>[]>)[
+                    key as string
+                ] = dict as DropdownOptions<string>[];
             }
         });
     return result;

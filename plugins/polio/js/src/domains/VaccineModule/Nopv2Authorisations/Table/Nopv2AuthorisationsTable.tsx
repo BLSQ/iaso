@@ -1,10 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import { UrlParams } from 'bluesquare-components';
 import { TableWithDeepLink } from '../../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
-import { useGetLatestAuthorisations } from '../hooks/api';
-import { useNopv2AuthTableColumns } from './useNopv2AuthTableColumns';
-import { VaccineAuthParams } from '../types';
 import { baseUrls } from '../../../../constants/urls';
+import { useGetLatestAuthorisations } from '../hooks/api';
+import { VaccineAuthParams } from '../types';
+import { useNopv2AuthTableColumns } from './useNopv2AuthTableColumns';
 
 type Props = { params: VaccineAuthParams & Partial<UrlParams> };
 

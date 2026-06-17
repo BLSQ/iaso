@@ -50,7 +50,7 @@ export const useGetTeam = (teamId?: number): UseQueryResult<Team, Error> => {
     });
 };
 
-type TeamList = Paginated<Team>;
+export type TeamList = Paginated<Team>;
 
 const getTeams = async (
     options: TeamParams | TeamFilterParams,
@@ -76,7 +76,6 @@ export const useGetTeams = (
 ): UseQueryResult<TeamList, Error> => {
     const queryKey: any[] = ['teamsList', options];
     const { select } = options as Record<string, any>;
-    // @ts-ignore
     return useSnackQuery(queryKey, () => getTeams(options), undefined, {
         select,
         staleTime: Infinity,
@@ -102,7 +101,7 @@ export const useGetTeamsDropdown = (
     // This should be removed after planning page is refactored
     fullTeams = false,
 ): UseQueryResult<DropdownTeamsOptions[], Error> => {
-    const queryKey: any[] = ['teamsList', options, currentTeamId];
+    const queryKey: any[] = ['teamsDropdown', options];
     return useSnackQuery({
         queryKey,
         queryFn: () => getTeamsDropdown(options, fullTeams),
@@ -124,6 +123,8 @@ export const useGetTeamsDropdown = (
                     };
                 });
             },
+
+            keepPreviousData: true,
             staleTime: Infinity,
         },
     });

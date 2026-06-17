@@ -1,12 +1,11 @@
+import React, { FunctionComponent } from 'react';
 import { Box, Grid, Paper, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
-import { useStyles } from '../Styles';
 
 import MESSAGES from '../../../../constants/messages';
 import { polioVaccines, useMapLegend } from '../../../../constants/virus';
+import { useStyles } from '../Styles';
 
-// eslint-disable-next-line prettier/prettier
 type Vaccine = (typeof polioVaccines)[number];
 
 export const VaccinesLegend: FunctionComponent = () => {

@@ -1,7 +1,7 @@
+import React, { useCallback, useMemo } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { LoadingSpinner, Table, useSafeIntl } from 'bluesquare-components';
-import React, { useCallback, useMemo } from 'react';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import PERMISSIONS_GROUPS_MESSAGES from '../../users/permissionsGroupsMessages';

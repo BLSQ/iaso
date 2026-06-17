@@ -13,12 +13,12 @@ import { EditableTextFields } from '../../../components/forms/EditableTextFields
 import { baseUrls } from '../../../constants/urls';
 import { useFormState } from '../../../hooks/form';
 import { useSnackMutation } from '../../../libs/apiHooks';
-import { sendDhisOuImporterRequest } from '../requests';
-import { VersionDescription } from './VersionDescription';
-import { userHasPermission } from '../../users/utils';
 import * as Permission from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';
+import { userHasPermission } from '../../users/utils';
 import MESSAGES from '../messages';
+import { sendDhisOuImporterRequest } from '../requests';
+import { VersionDescription } from './VersionDescription';
 
 const initialFormState = sourceCredentials => {
     return {
@@ -133,9 +133,9 @@ export const AddTask: FunctionComponent<Props> = ({
 
     const formIsValid = Boolean(
         withExistingDhis2Settings ||
-            (form.dhis2_url.value &&
-                form.dhis2_login.value &&
-                form.dhis2_password.value),
+        (form.dhis2_url.value &&
+            form.dhis2_login.value &&
+            form.dhis2_password.value),
     );
     const allowConfirm = !mutation.isLoading && formIsValid;
 

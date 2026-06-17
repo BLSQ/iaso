@@ -13,6 +13,7 @@ export const VrfDocumentsCells = (cellInfo: {
         <>
             {value.map(({ date, file, is_not_required, is_missing }, index) => (
                 <VrfDocumentCell
+                    // eslint-disable-next-line react/no-array-index-key
                     key={`${file}${index}`}
                     date={date}
                     file={file}

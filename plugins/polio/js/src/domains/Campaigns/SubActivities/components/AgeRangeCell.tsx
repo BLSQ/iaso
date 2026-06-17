@@ -1,5 +1,5 @@
-import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import React from 'react';
+import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 
 export const AgeRangeCell = settings => {

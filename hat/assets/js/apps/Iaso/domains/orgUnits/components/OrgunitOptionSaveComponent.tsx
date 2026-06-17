@@ -1,10 +1,10 @@
 import React, { FunctionComponent } from 'react';
-import { FormattedMessage } from 'react-intl';
 import { Button, Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles } from 'bluesquare-components';
-import { OrgUnit } from '../types/orgUnit';
+import { FormattedMessage } from 'react-intl';
 import MESSAGES from '../messages';
+import { OrgUnit } from '../types/orgUnit';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

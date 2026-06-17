@@ -1,5 +1,5 @@
-import { useSafeIntl } from 'bluesquare-components';
 import { useCallback } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 
 export const useGetJSonLogicConverter = () => {

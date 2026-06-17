@@ -2,13 +2,13 @@ import React from 'react';
 import { faker } from '@faker-js/faker';
 import { screen, waitFor } from '@testing-library/react';
 import { axe } from 'jest-axe';
-import { delay, http, HttpResponse, type RequestHandlerOptions } from 'msw';
 import { setupServer } from 'msw/node';
 import { Route, Routes } from 'react-router';
 import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 import { getAccountFeatureFlagsMock } from 'Iaso/api/accountFeatureFlags/endpoints/account-feature-flags/account-feature-flags.msw';
 import { getAccountMock } from 'Iaso/api/accounts/endpoints/account/account.msw';
+import { getApiModulesDropdownListMockHandler } from 'Iaso/api/modules/endpoints/modules/modules.msw';
 import { baseUrls } from 'Iaso/constants/urls';
 import AccountsDetails from 'Iaso/domains/accounts/details';
 import {
@@ -16,7 +16,7 @@ import {
     TestingQueryClient,
 } from '../../../../tests/helpers';
 
-// todo : remove this once modules api and user api is switched to orval
+// todo : remove this once user api is switched to orval
 
 const { mockUserHasAccessToModule } = vi.hoisted(() => {
     return { mockUserHasAccessToModule: vi.fn() };
@@ -30,33 +30,10 @@ vi.mock('Iaso/domains/users/utils', async () => {
     };
 });
 
-export const getApiModuleListMockHandler = (
-    overrideResponse?: Array<{ label: string; value: string }>,
-    options?: RequestHandlerOptions,
-) => {
-    return http.get(
-        '*/api/modules/',
-        async (_info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
-            await delay(
-                (() =>
-                    process.env?.MSW_DELAY
-                        ? parseInt(process.env.MSW_DELAY)
-                        : 0)(),
-            );
-
-            return HttpResponse.json(
-                overrideResponse !== undefined ? overrideResponse : [],
-                { status: 200 },
-            );
-        },
-        options,
-    );
-};
-
 const server = setupServer(
     ...getAccountMock(),
     ...getAccountFeatureFlagsMock(),
-    ...[getApiModuleListMockHandler()],
+    ...[getApiModulesDropdownListMockHandler()],
 );
 
 const renderAccountDetail = (id: number = 1234) => {

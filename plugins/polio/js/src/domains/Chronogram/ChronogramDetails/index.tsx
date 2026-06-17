@@ -9,15 +9,15 @@ import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/ro
 import { baseUrls } from '../../../constants/urls';
 import { useStyles } from '../../../styles/theme';
 
-import MESSAGES from './messages';
-import { Chronogram } from '../Chronogram/types';
-import { ChronogramDetailsFilters } from './Filters/ChronogramDetailsFilters';
-import { ChronogramDetailsTable } from './Table/ChronogramDetailsTable';
-import { ChronogramTaskMetaData } from '../types';
-import { ChronogramTasksParams } from './types';
-import { defaultParams } from '../constants';
-import { useGetChronogram } from './api/useGetChronogram';
 import { useOptionChronogramTask } from '../api/useOptionChronogram';
+import { Chronogram } from '../Chronogram/types';
+import { defaultParams } from '../constants';
+import { ChronogramTaskMetaData } from '../types';
+import { useGetChronogram } from './api/useGetChronogram';
+import { ChronogramDetailsFilters } from './Filters/ChronogramDetailsFilters';
+import MESSAGES from './messages';
+import { ChronogramDetailsTable } from './Table/ChronogramDetailsTable';
+import { ChronogramTasksParams } from './types';
 
 export const ChronogramDetails: FunctionComponent = () => {
     const params = useParamsObject(

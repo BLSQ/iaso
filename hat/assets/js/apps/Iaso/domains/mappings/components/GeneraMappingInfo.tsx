@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
 
-import Alert from '@mui/material/Alert';
 import { Button } from '@mui/material';
+import Alert from '@mui/material/Alert';
 
 import { useSafeIntl } from 'bluesquare-components';
-import MESSAGES from '../messages';
 import InputComponent from '../../../components/forms/InputComponent';
+import MESSAGES from '../messages';
 
 const evenDateOptions = [
     {

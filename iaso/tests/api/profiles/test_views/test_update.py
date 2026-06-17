@@ -3,14 +3,17 @@ import jsonschema
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.urls import reverse
+from rest_framework import status
 
 from iaso.api.profiles.constants import PK_ME
 from iaso.models import Profile, Project, TenantUser, UserRole
+from iaso.modules import MODULE_DEFAULT, MODULE_VALIDATION_WORKFLOW
 from iaso.permissions.core_permissions import (
     CORE_FORMS_PERMISSION,
     CORE_ORG_UNITS_READ_PERMISSION,
     CORE_USERS_ADMIN_PERMISSION,
     CORE_USERS_MANAGED_PERMISSION,
+    CORE_VALIDATION_WORKFLOW_PERMISSION,
 )
 from iaso.tests.api.profiles.test_views.common import PROFILE_LOG_SCHEMA, BaseProfileAPITestCase
 
@@ -927,3 +930,103 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
         self.jom.refresh_from_db()
         self.assertEqual(self.jom.first_name, "Jom")
         self.assertEqual(self.jom.user_permissions.count(), 0)
+
+    def test_update_permissions_after_related_module_has_been_deactivated(self):
+        """
+        This test mimick the flow of the UI
+        - Activate module
+        - Add related module's permissions to the user
+        - Deactivate module
+        - Edit from the UI : aka retrieve + just submits with initial data => should not crash
+        """
+
+        self.client.force_authenticate(self.jim)
+        self.account.modules = [MODULE_DEFAULT.codename, MODULE_VALIDATION_WORKFLOW.codename]
+        self.account.save(update_fields=["modules"])
+
+        response = self.client.patch(
+            reverse("profiles-detail", kwargs={"pk": self.john.iaso_profile.id}),
+            data={
+                "user_permissions": [
+                    CORE_VALIDATION_WORKFLOW_PERMISSION.codename,
+                    CORE_USERS_MANAGED_PERMISSION.codename,
+                    CORE_USERS_ADMIN_PERMISSION.codename,
+                ]
+            },
+            format="json",
+        )
+
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        response = self.client.get(
+            reverse("profiles-detail", kwargs={"pk": self.john.iaso_profile.id}),
+        )
+
+        res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertIn(CORE_VALIDATION_WORKFLOW_PERMISSION.codename, res_data["permissions"])
+        self.assertIn(CORE_VALIDATION_WORKFLOW_PERMISSION.codename, res_data["user_permissions"])
+
+        self.assertIn(CORE_USERS_MANAGED_PERMISSION.codename, res_data["permissions"])
+        self.assertIn(CORE_USERS_MANAGED_PERMISSION.codename, res_data["user_permissions"])
+
+        self.assertIn(CORE_USERS_ADMIN_PERMISSION.codename, res_data["permissions"])
+        self.assertIn(CORE_USERS_ADMIN_PERMISSION.codename, res_data["user_permissions"])
+
+        self.account.modules = [MODULE_DEFAULT.codename]
+        self.account.save(update_fields=["modules"])
+
+        response = self.client.get(
+            reverse("profiles-detail", kwargs={"pk": self.john.iaso_profile.id}),
+        )
+
+        res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertNotIn(CORE_VALIDATION_WORKFLOW_PERMISSION.codename, res_data["permissions"])
+        self.assertNotIn(CORE_VALIDATION_WORKFLOW_PERMISSION.codename, res_data["user_permissions"])
+
+        self.assertIn(CORE_USERS_MANAGED_PERMISSION.codename, res_data["permissions"])
+        self.assertIn(CORE_USERS_MANAGED_PERMISSION.codename, res_data["user_permissions"])
+
+        self.assertIn(CORE_USERS_ADMIN_PERMISSION.codename, res_data["permissions"])
+        self.assertIn(CORE_USERS_ADMIN_PERMISSION.codename, res_data["user_permissions"])
+
+        response = self.client.patch(
+            reverse("profiles-detail", kwargs={"pk": self.john.iaso_profile.id}),
+            data={**res_data, "phone_number": ""},
+            format="json",
+        )
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+    def test_retrieve_returns_permissions_granted_through_a_role(self):
+        """
+        Regression test for IA-5223: permissions granted through a role (i.e. a Django group)
+        must be returned in `permissions`. They are delivered via `get_group_permissions()`
+        (fully-qualified `app_label.codename`) and were being wrongly filtered out against the
+        active-module codenames.
+        """
+        self.client.force_authenticate(self.jim)
+        self.account.modules = [MODULE_DEFAULT.codename, MODULE_VALIDATION_WORKFLOW.codename]
+        self.account.save(update_fields=["modules"])
+
+        role_group = Group.objects.create(name="role with validation workflow")
+        role_group.permissions.add(Permission.objects.get(codename=CORE_VALIDATION_WORKFLOW_PERMISSION.codename))
+        role = UserRole.objects.create(group=role_group, account=self.account)
+        self.jom.iaso_profile.user_roles.set([role])
+        # Assigning a role also adds the user to the underlying Django group (see ProfileViewSet),
+        # which is how role permissions are delivered through `get_group_permissions()`.
+        self.jom.groups.set([role_group])
+
+        response = self.client.get(reverse("profiles-detail", kwargs={"pk": self.jom.iaso_profile.id}))
+        res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        # The role permission is granted through the group, so it appears in `permissions`
+        # but not in `user_permissions` (which only holds directly-assigned permissions).
+        self.assertIn(CORE_VALIDATION_WORKFLOW_PERMISSION.codename, res_data["permissions"])
+        self.assertNotIn(CORE_VALIDATION_WORKFLOW_PERMISSION.codename, res_data["user_permissions"])
+
+        # Role permissions are still gated by active modules: deactivating the module removes them.
+        self.account.modules = [MODULE_DEFAULT.codename]
+        self.account.save(update_fields=["modules"])
+
+        response = self.client.get(reverse("profiles-detail", kwargs={"pk": self.jom.iaso_profile.id}))
+        res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertNotIn(CORE_VALIDATION_WORKFLOW_PERMISSION.codename, res_data["permissions"])

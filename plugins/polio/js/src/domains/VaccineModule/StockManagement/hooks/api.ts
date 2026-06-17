@@ -656,6 +656,7 @@ const checkDestructionDuplicate = (
     unusableVialsDestroyed: number,
     destructionReportId?: string,
 ) => {
+    // eslint-disable-next-line max-len
     const baseUrl = `${modalUrl}destruction_report/check_duplicate/?vaccine_stock=${vaccineStockId}&destruction_report_date=${destructionReportDate}&unusable_vials_destroyed=${unusableVialsDestroyed}`;
 
     const url = destructionReportId

@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unresolved */
 import { act, renderHook, waitFor } from '@testing-library/react';
 import {
     useApiValidationWorkflowsCreate,
@@ -25,7 +26,6 @@ describe('ValidationWorkflow api e2e tests', () => {
             is_staff: true,
         });
     });
-
     it.skip('CRUD accordingly', async () => {
         const { result: resultList } = renderHook(
             () =>

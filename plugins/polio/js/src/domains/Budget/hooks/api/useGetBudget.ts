@@ -3,10 +3,7 @@ import { groupBy } from 'lodash';
 import { UseQueryResult } from 'react-query';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
-import {
-    DropdownOptions,
-    Optional,
-} from 'Iaso/types/utils';
+import { DropdownOptions, Optional } from 'Iaso/types/utils';
 import { getApiParamDateString } from 'Iaso/utils/dates';
 import { createSearchParamsWithArray } from '../../../../utils';
 import { Budget, BudgetDetail, Workflow } from '../../types';
@@ -172,7 +169,15 @@ export const useGetBudgetForCampaign = (
     id: Optional<string>,
 ): UseQueryResult<Partial<Budget>> => {
     const params = {
-        fields: ['id', 'obr_name', 'current_state', 'next_transitions', 'possible_transitions' ,'rounds' ,' timeline'].join(',')
+        fields: [
+            'id',
+            'obr_name',
+            'current_state',
+            'next_transitions',
+            'possible_transitions',
+            'rounds',
+            ' timeline',
+        ].join(','),
     };
 
     return useSnackQuery({

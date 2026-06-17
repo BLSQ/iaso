@@ -264,6 +264,7 @@ export const useEntitiesDetailsColumns = (
                 ),
             },
         ],
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [formatMessage, columnsFromList, entityId],
     );
 };

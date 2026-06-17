@@ -2,11 +2,9 @@ import React, { useState, useEffect, useRef, FunctionComponent } from 'react';
 import PauseIcon from '@mui/icons-material/PauseCircleFilled';
 import PlayIcon from '@mui/icons-material/PlayCircleFilled';
 import { Box, IconButton } from '@mui/material';
-import moment from 'moment';
 import videojs from 'video.js';
 
 import 'video.js/dist/video-js.min.css';
-import { getFileName } from '../../utils/filesUtils';
 
 const styles = {
     root: {
@@ -96,7 +94,6 @@ const VideoItemComponent: FunctionComponent<Props> = ({
     const [playerPaused, setPlayerPaused] = useState(true);
     const playerRef = useRef<videojs.Player | null>(null);
     const videoNodeRef = useRef<HTMLVideoElement | null>(null);
-    const fileName = getFileName(videoPath);
 
     useEffect(() => {
         if (!playerRef.current) {

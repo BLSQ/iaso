@@ -1,14 +1,14 @@
 import React, { FunctionComponent } from 'react';
 import { Divider } from '@mui/material';
-import moment from 'moment';
 import {
     textPlaceholder,
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
-import MESSAGES from '../messages';
-import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
-import InstanceDetailsField from './InstanceDetailsField';
 import { useSafeIntl } from 'bluesquare-components';
+import moment from 'moment';
+import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
+import MESSAGES from '../messages';
+import InstanceDetailsField from './InstanceDetailsField';
 
 const formatUnixTimestamp = unix =>
     unix ? moment.unix(unix).format('LTS') : textPlaceholder;
@@ -44,6 +44,7 @@ const InstanceDetailsExportRequests: FunctionComponent<Props> = ({
             {currentInstance.export_statuses &&
                 currentInstance.export_statuses.length > 0 && <Divider />}
             {currentInstance.export_statuses.map((exportStatus, index) => (
+                // eslint-disable-next-line react/no-array-index-key
                 <React.Fragment key={index}>
                     <InstanceDetailsField
                         label={formatMessage(MESSAGES.exportStatus)}

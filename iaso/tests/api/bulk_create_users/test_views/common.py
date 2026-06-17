@@ -188,8 +188,6 @@ class BulkCreateAPITestCase(BulkCreateBaseAPITestCaseMixin):
         )
 
         correct_query_num = 47
-        if "trypelim" in settings.PLUGINS:  # extra queries because of trypelim_profile
-            correct_query_num += 9
 
         with self.assertNumQueries(correct_query_num):
             response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")

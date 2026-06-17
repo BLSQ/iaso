@@ -61,20 +61,28 @@ export const CurrentUserInfos: FunctionComponent<Props> = ({
     return (
         <>
             <Box
-                className={classes.currentUserInfos}
-                aria-owns={open ? 'mouse-over-popover' : undefined}
-                aria-haspopup="true"
-                onMouseEnter={handlePopoverOpen}
-                onMouseLeave={handlePopoverClose}
+                sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    flexWrap: 'nowrap',
+                }}
             >
-                {currentUser?.user_name}
+                <Box
+                    className={classes.currentUserInfos}
+                    aria-owns={open ? 'mouse-over-popover' : undefined}
+                    aria-haspopup="true"
+                    onMouseEnter={handlePopoverOpen}
+                    onMouseLeave={handlePopoverClose}
+                >
+                    {currentUser?.user_name}
+                </Box>
+                {currentUser.account && (
+                    <>
+                        <Box sx={{ mx: 1 }}>-</Box>
+                        <AccountSwitch />
+                    </>
+                )}
             </Box>
-            {currentUser.account && (
-                <>
-                    <Box sx={{ mx: 1 }}>-</Box>
-                    <AccountSwitch />
-                </>
-            )}
             <Popover
                 id="mouse-over-popover"
                 className={classes.popover}

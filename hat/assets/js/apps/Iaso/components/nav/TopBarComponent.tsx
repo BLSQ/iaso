@@ -3,7 +3,6 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import MenuIcon from '@mui/icons-material/Menu';
 import {
     Box,
-    Grid,
     IconButton,
     SxProps,
     Theme,
@@ -72,7 +71,6 @@ const TopBar: FunctionComponent<Props> = ({
     const classes = useStyles();
 
     const { APP_TITLE } = useContext(ThemeConfigContext);
-    // Set the page title from the top bar title.
     React.useEffect(() => {
         document.title = `${APP_TITLE} ${title ? `| ${title}` : ''}`;
     }, [title, APP_TITLE]);
@@ -103,20 +101,21 @@ const TopBar: FunctionComponent<Props> = ({
                         <Disclaimer />
                     </Box>
                 )}
-                <Grid
-                    container
-                    direction="row"
+                <Box
                     sx={{
-                        justifyContent: 'space-between',
+                        display: 'flex',
+                        width: '100%',
                         alignItems: 'center',
+                        justifyContent: 'space-between',
+                        minWidth: 0,
                     }}
                 >
-                    <Grid
-                        container
-                        direction="row"
-                        size={7}
+                    <Box
                         sx={{
+                            display: 'flex',
                             alignItems: 'center',
+                            minWidth: 0,
+                            flex: 1,
                         }}
                     >
                         {!displayBackButton && displayMenuButton && (
@@ -155,29 +154,23 @@ const TopBar: FunctionComponent<Props> = ({
                         >
                             {title}
                         </Typography>
-                    </Grid>
+                    </Box>
                     {currentUser && !isMobileLayout && (
-                        <Grid
-                            container
-                            size={5}
+                        <Box
                             sx={{
+                                display: 'flex',
+                                alignItems: 'center',
                                 justifyContent: 'flex-end',
+                                flexShrink: 0,
+                                flexWrap: 'nowrap',
                             }}
                         >
+                            <NotificationBadge />
                             <Box
                                 sx={{
                                     display: 'flex',
                                     alignItems: 'center',
-                                    justifyContent: 'flex-end',
-                                }}
-                            >
-                                <NotificationBadge />
-                            </Box>
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'flex-end',
+                                    pl: 1,
                                 }}
                             >
                                 <CurrentUserInfos
@@ -185,52 +178,30 @@ const TopBar: FunctionComponent<Props> = ({
                                     version={window.IASO_VERSION ?? ''}
                                 />
                             </Box>
-
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    pl: 2,
-                                }}
-                            >
+                            <Box sx={{ display: 'flex', pl: 2 }}>
                                 <HomePageButton />
                             </Box>
-
                             {currentUser.is_staff === true &&
                                 currentUser.is_superuser === true && (
-                                    <Box
-                                        sx={{
-                                            display: 'flex',
-                                            justifyContent: 'center',
-                                            pl: 1,
-                                        }}
-                                    >
+                                    <Box sx={{ display: 'flex', pl: 1 }}>
                                         <DjangoAdminPanelButton />
                                     </Box>
                                 )}
-
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    pl: 1,
-                                }}
-                            >
+                            <Box sx={{ display: 'flex', pl: 1 }}>
                                 <LogoutButton />
                             </Box>
                             <Box
                                 sx={{
                                     display: 'flex',
-                                    justifyContent: 'center',
                                     alignItems: 'center',
                                     pl: 1,
                                 }}
                             >
                                 <LangSwitch />
                             </Box>
-                        </Grid>
+                        </Box>
                     )}
-                </Grid>
+                </Box>
             </Toolbar>
             {children}
         </AppBar>

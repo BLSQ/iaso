@@ -16,6 +16,7 @@ import {
     IconButton,
     Tooltip,
     Grid,
+    Divider,
 } from '@mui/material';
 import { LoadingSpinner, Table, useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
@@ -60,8 +61,12 @@ const styles: SxStyles = {
         ...getStickyTableHeadStyles('60vh'),
     },
     multiSelectIcons: {
+        border: theme =>
+            // @ts-ignore
+            `1px solid ${theme.palette.ligthGray.border}`,
+        borderBottom: 'none',
         position: 'absolute',
-        top: 2,
+        top: '-35px',
         right: theme => theme.spacing(1),
         display: 'flex',
         justifyContent: 'flex-end',
@@ -78,6 +83,12 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
     selectedTeam,
     orgUniTypeList,
 }) => {
+    const hasMultipleTargets: boolean = Boolean(
+        planning.target_org_unit_type_details?.length &&
+        planning.target_org_unit_type_details?.length > 1,
+    );
+    const columns = useGetBulkAssignColumns(hasMultipleTargets);
+    const { formatMessage } = useSafeIntl();
     const [selectedOrgUnitTypes, setSelectedOrgUnitTypes] = useState<number[]>(
         planning.target_org_unit_type_details?.map(t => t.id) ?? [],
     );
@@ -87,13 +98,6 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
         orgUnitParentId: `${selectedParentOrgUnit.id}`,
         orgUnitTypeIds: selectedOrgUnitTypes.join(','),
     });
-    const orgUniTypesOptions = useMemo(() => {
-        return orgUniTypeList?.filter(t =>
-            planning.target_org_unit_type_details?.some(
-                ot => ot.id === t.value,
-            ),
-        );
-    }, [orgUniTypeList, planning.target_org_unit_type_details]);
     useEffect(() => {
         setParams(prev => ({
             ...prev,
@@ -101,6 +105,14 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
             page: '1',
         }));
     }, [selectedOrgUnitTypes]);
+
+    const orgUniTypesOptions = useMemo(() => {
+        return orgUniTypeList?.filter(t =>
+            planning.target_org_unit_type_details?.some(
+                ot => ot.id === t.value,
+            ),
+        );
+    }, [orgUniTypeList, planning.target_org_unit_type_details]);
 
     const { data, isLoading } = useGetPlanningOrgUnitsChildrenPaginated(
         `${planning.id}`,
@@ -120,8 +132,6 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
             selectCount: 0,
         },
     });
-    const columns = useGetBulkAssignColumns();
-    const { formatMessage } = useSafeIntl();
     const targetOrgUnitType = planning.target_org_unit_type_details
         ?.map(t => t.name)
         .join(', ');
@@ -149,9 +159,6 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
         },
         [setSelectedOrgUnitTypes, handleUnselectAll],
     );
-    const hasMultipleTargets =
-        planning.target_org_unit_type_details?.length &&
-        planning.target_org_unit_type_details?.length > 1;
     const assignButtonDisabled =
         selection.selectedItems.length === 0 && !selection.selectAll;
     return (
@@ -231,6 +238,7 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
                                 data?.count,
                             )
                         }
+                        params={params}
                         countOnTop={false}
                         defaultSorted={[{ id: 'name', desc: false }]}
                         onTableParamsChange={newParams =>
@@ -241,6 +249,7 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
                         }
                         elevation={0}
                     />
+                    <Divider />
                 </Box>
             </Box>
             <DialogActions>

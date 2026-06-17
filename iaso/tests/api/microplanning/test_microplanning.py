@@ -1429,6 +1429,7 @@ class PlanningTestCase(APITestCase):
         user_from_db = User.objects.select_related("iaso_profile").get(pk=self.user.pk)
         team_from_db = Team.objects.get(pk=self.team1.pk)
         self.assertEqual(rows[child.id]["assignment"]["assignment_type"], "user")
+        self.assertEqual(rows[child.id]["org_unit_type"], {"id": child_type.id, "name": child_type.name})
         self.assertEqual(
             rows[child.id]["assignment"]["user"],
             PlanningOrgUnitTableAssignmentUserSerializer(user_from_db).data,

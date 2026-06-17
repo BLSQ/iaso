@@ -11,13 +11,12 @@ export const useGetColumns = (): Column[] => {
         {
             Header: 'Id',
             accessor: 'id',
-            sortable: false,
             width: 50,
         },
         {
             Header: formatMessage(MESSAGES.name),
             accessor: 'name',
-            sortable: false,
+            id: 'name',
             Cell: ({
                 row: { original: orgUnit },
             }: {

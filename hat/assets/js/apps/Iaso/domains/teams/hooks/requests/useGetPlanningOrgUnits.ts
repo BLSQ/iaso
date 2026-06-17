@@ -11,7 +11,7 @@ import { PaginatedPlanningOrgUnits } from '../../../plannings/types';
 export const tableDefaults = {
     limit: 20,
     page: 1,
-    order: '-name',
+    order: 'name',
 };
 
 export const useGetPlanningOrgUnitsChildren = (
@@ -60,7 +60,7 @@ export const useGetPlanningOrgUnitsChildrenPaginated = (
     const apiParams = {
         limit: params?.pageSize ?? tableDefaults.limit,
         page: params?.page ?? tableDefaults.page,
-        order: tableDefaults.order,
+        order: params?.order ?? tableDefaults.order,
         search: params?.search,
         orgUnitParentId: params?.orgUnitParentId,
         orgUnitTypeIds: params?.orgUnitTypeIds,

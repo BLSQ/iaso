@@ -71,7 +71,7 @@ def _planning_children_org_units_queryset(planning, user, org_unit_parent_id=Non
     if org_unit_type_ids:
         queryset = queryset.filter(org_unit_type_id__in=org_unit_type_ids)
 
-    return queryset.order_by("id")
+    return queryset.select_related("org_unit_type").order_by("id")
 
 
 def _prefetch_planning_assignments(org_units, planning):
@@ -97,7 +97,7 @@ class PlanningOrgunitsViewSet(GenericViewSet):
     http_method_names = ["get", "head", "options"]
     permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]
     search_fields = ["name"]
-    ordering_fields = ["id", "name"]
+    ordering_fields = ["id", "name", "org_unit_type__name"]
     ordering = ["id"]
     pagination_class = PlanningOrgUnitChildrenPagination
     filter_backends = [filters.OrderingFilter, filters.SearchFilter]

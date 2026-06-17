@@ -125,9 +125,15 @@ export type PaginatedAssignment = {
     assignment_type: PlanningOrgUnitAssignmentType | null;
 };
 
+export type OrgUnitTypeDetails = {
+    id: number;
+    name: string;
+};
+
 export type PaginatedPlanningOrgUnit = {
     id: number;
     name: string;
+    org_unit_type: OrgUnitTypeDetails;
     assignment: PaginatedAssignment | null;
 };
 export interface PaginatedPlanningOrgUnits extends PaginationType {

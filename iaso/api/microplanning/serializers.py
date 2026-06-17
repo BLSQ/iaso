@@ -636,11 +636,12 @@ class PlanningOrgUnitTableAssignmentSerializer(ModelSerializer):
 class PlanningOrgUnitTableSerializer(ModelSerializer):
     """Paginated planning org units for tables (minimal columns + assignment for this planning)."""
 
+    org_unit_type = NestedOrgUnitTypeSerializer(read_only=True)
     assignment = serializers.SerializerMethodField()
 
     class Meta:
         model = OrgUnit
-        fields = ["id", "name", "assignment"]
+        fields = ["id", "name", "org_unit_type", "assignment"]
         read_only_fields = fields
 
     @extend_schema_field(PlanningOrgUnitTableAssignmentSerializer)

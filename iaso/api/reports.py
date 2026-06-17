@@ -28,7 +28,7 @@ class ReportsViewSet(ModelViewSet):
     """
 
     results_key = "result"
-    remove_results_key_if_not_paginated = True
+    include_results_key_if_not_paginated = False
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
     permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_REPORTS_PERMISSION)]
     pagination_class = LimitOffsetPagination

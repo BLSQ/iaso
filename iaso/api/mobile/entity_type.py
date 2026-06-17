@@ -74,7 +74,7 @@ class MobileEntityTypesViewSet(ModelViewSet):
     """
 
     results_key = "entitytypes"
-    remove_results_key_if_not_paginated = True
+    include_results_key_if_not_paginated = False
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
     pagination_class = LargeResultsSetPagination
 

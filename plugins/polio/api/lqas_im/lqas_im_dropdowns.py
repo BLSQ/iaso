@@ -75,7 +75,6 @@ class LqasImCountriesOptionsViewset(PolioOrgunitViewSet):
     http_method_names = ["get"]
     permission_classes = [ReadOnlyOrHasPermission(POLIO_PERMISSION, POLIO_CONFIG_PERMISSION)]
     filterset_class = LqasImCountryOptionsFilter
-    remove_results_key_if_not_paginated = False
     results_key = "results"
 
     # We need to override this method to override the serializer defined by the parent viewset
@@ -135,7 +134,6 @@ class LqasImCampaignOptionsViewset(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [ReadOnlyOrHasPermission(POLIO_PERMISSION, POLIO_CONFIG_PERMISSION)]
     filterset_class = LqasImCampaignOptionsFilter
-    remove_results_key_if_not_paginated = False
     results_key = "results"
     serializer_class = CampaignDropDownSerializer
 
@@ -194,7 +192,6 @@ class LqasImRoundOptionsViewset(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [ReadOnlyOrHasPermission(POLIO_PERMISSION, POLIO_CONFIG_PERMISSION)]
     filterset_class = LqasImRoundOptionsFilter
-    remove_results_key_if_not_paginated = False
     results_key = "results"
     serializer_class = RoundDropDownSerializer
 
@@ -272,7 +269,6 @@ class LqasImCountryBlockOptionsViewSet(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [HasPolioPermission | HasPolioAdminPermission]
     filterset_class = LqasImCountryBlockOptionsFilter
-    remove_results_key_if_not_paginated = False
     results_key = "results"
     serializer_class = CountryBlockDropDownSerializer
 

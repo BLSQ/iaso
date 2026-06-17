@@ -28,7 +28,6 @@ class WorkflowVersionViewSet(ModelViewSet):
     ordering_fields = ["name", "created_at", "updated_at", "id", "status"]
     serializer_class = ser.WorkflowVersionDetailSerializer
     results_key = "workflow_versions"
-    remove_results_key_if_not_paginated = False
     model = WorkflowVersion
     lookup_url_kwarg = "version_id"
     filterset_fields = {"workflow__entity_type": ["exact"], "status": ["exact"], "id": ["exact"]}

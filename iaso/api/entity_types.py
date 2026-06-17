@@ -46,7 +46,7 @@ class EntityTypeViewSet(ModelViewSet):
     """
 
     results_key = "types"
-    remove_results_key_if_not_paginated = True
+    include_results_key_if_not_paginated = False
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
 
     def get_serializer_class(self):

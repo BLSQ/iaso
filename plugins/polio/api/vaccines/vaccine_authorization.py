@@ -129,7 +129,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
     permission_classes = [HasVaccineAuthorizationsPermissions]
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
     results_key = "results"
-    remove_results_key_if_not_paginated = True
+    include_results_key_if_not_paginated = False
     serializer_class = VaccineAuthorizationSerializer
     pagination_class = Paginator
     ordering_fields = ["status", "current_expiration_date", "next_expiration_date", "expiration_date", "quantity"]

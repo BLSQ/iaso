@@ -148,7 +148,7 @@ class MobileEntityViewSet(ModelViewSet):
     """
 
     results_key = "results"
-    remove_results_key_if_not_paginated = True
+    include_results_key_if_not_paginated = False
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
     permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_ENTITIES_PERMISSION)]
     pagination_class = MobileEntitiesSetPagination
@@ -216,7 +216,7 @@ class MobileEntityDeletedViewSet(ModelViewSet):
     """
 
     results_key = "results"
-    remove_results_key_if_not_paginated = True
+    include_results_key_if_not_paginated = False
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
     permission_classes = [
         permissions.IsAuthenticated,

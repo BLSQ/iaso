@@ -58,7 +58,6 @@ class WorkflowFollowupViewSet(ModelViewSet):
     ordering_fields = ["order"]
     serializer_class = ser.WorkflowVersionDetailSerializer
     results_key = "workflow_followups"
-    remove_results_key_if_not_paginated = False
     model = WorkflowFollowup
     lookup_url_kwarg = "followup_id"
     filterset_fields = {"workflow_version": ["exact"]}

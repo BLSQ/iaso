@@ -17,7 +17,7 @@ class PolioOrgunitViewSet(ModelViewSet):
 
     results_key = "results"
     permission_classes = [permissions.IsAuthenticated]
-    remove_results_key_if_not_paginated = True
+    include_results_key_if_not_paginated = False
     http_method_names = ["get"]
 
     def get_serializer_class(self):

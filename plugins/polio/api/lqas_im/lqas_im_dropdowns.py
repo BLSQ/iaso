@@ -76,6 +76,7 @@ class LqasImCountriesOptionsViewset(PolioOrgunitViewSet):
     permission_classes = [ReadOnlyOrHasPermission(POLIO_PERMISSION, POLIO_CONFIG_PERMISSION)]
     filterset_class = LqasImCountryOptionsFilter
     results_key = "results"
+    include_results_key_if_not_paginated = True
 
     # We need to override this method to override the serializer defined by the parent viewset
     def get_serializer_class(self):

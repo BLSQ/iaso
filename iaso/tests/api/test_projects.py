@@ -3,6 +3,7 @@ import typing
 from itertools import chain
 
 from django.contrib.auth.models import Permission
+from rest_framework import status
 
 from hat.menupermissions.constants import FEATUREFLAGES_TO_EXCLUDE
 from iaso import models as m
@@ -89,14 +90,14 @@ class ProjectsAPITestCase(APITestCase):
         """GET /projects/ without auth should result in a 401"""
 
         response = self.client.get("/api/projects/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_projects_list_no_permission(self):
         """GET /projects/ with auth. User without the iaso_forms permission can list project"""
 
         self.client.force_authenticate(self.jim)
         response = self.client.get("/api/projects/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProjectListData(response.json(), 2)
 
     def test_projects_list_empty_for_user(self):
@@ -104,7 +105,7 @@ class ProjectsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.john)
         response = self.client.get("/api/projects/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProjectListData(response.json(), 0)
 
     def test_projects_list_ok(self):
@@ -112,7 +113,7 @@ class ProjectsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/projects/", headers={"Content-Type": "application/json"})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProjectListData(response.json(), 2)
         # Verify color is included
         self.assertIn("color", response.json()["projects"][0])
@@ -132,14 +133,14 @@ class ProjectsAPITestCase(APITestCase):
         self.client.force_authenticate(self.jane)
         with self.assertNumQueries(3):
             response = self.client.get("/api/projects/", headers={"Content-Type": "application/json"})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProjectListData(response.json(), 2)
 
     def test_projects_list_filter_by_app_id(self):
         """GET /projects/?app_id= should return only the matching project."""
         self.client.force_authenticate(self.jane)
         response = self.client.get(f"/api/projects/?app_id={self.project_1.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProjectListData(response.json(), 1)
         self.assertEqual(response.json()["projects"][0]["app_id"], self.project_1.app_id)
 
@@ -147,7 +148,7 @@ class ProjectsAPITestCase(APITestCase):
         """GET /projects/?app_id= with unknown value should return empty list."""
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/projects/?app_id=org.ghi.nope")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProjectListData(response.json(), 0)
 
     def test_projects_list_filter_by_app_id_with_restricted_user(self):
@@ -161,13 +162,13 @@ class ProjectsAPITestCase(APITestCase):
 
         # Can access the restricted project
         response = self.client.get(f"/api/projects/?app_id={project.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProjectListData(response.json(), 1)
         self.assertEqual(response.json()["projects"][0]["app_id"], project.app_id)
 
         # Cannot access project_1 because it's not in user's projects
         response = self.client.get(f"/api/projects/?app_id={self.project_1.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProjectListData(response.json(), 0)
 
     def test_projects_list_paginated(self):
@@ -175,7 +176,7 @@ class ProjectsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/projects/?limit=1&page=1", headers={"Content-Type": "application/json"})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertValidProjectListData(response_data, 1, True)
@@ -209,7 +210,7 @@ class ProjectsAPITestCase(APITestCase):
                 .values_list(key, flat=True)
             )
             response = self.client.get(f"/api/projects/?order={field}")
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
             actual = [project[key] for project in response.json()["projects"]]
             self.assertEqual(actual, expected, f"order={field}")
 
@@ -217,7 +218,7 @@ class ProjectsAPITestCase(APITestCase):
         """GET /projects/?bypass_restrictions=0 behaves like the default (no bypass)."""
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/projects/?bypass_restrictions=0")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProjectListData(response.json(), 2)
 
     def test_projects_list_pagination_returns_distinct_pages(self):
@@ -228,14 +229,14 @@ class ProjectsAPITestCase(APITestCase):
         )
 
         response = self.client.get("/api/projects/?limit=1&page=1")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         page_1 = response.json()
         self.assertValidProjectListData(page_1, 1, paginated=True)
         self.assertEqual(page_1["page"], 1)
         self.assertEqual(page_1["projects"][0]["id"], expected_ids[0])
 
         response = self.client.get("/api/projects/?limit=1&page=2")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         page_2 = response.json()
         self.assertValidProjectListData(page_2, 1, paginated=True)
         self.assertEqual(page_2["page"], 2)
@@ -247,7 +248,7 @@ class ProjectsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/featureflags/?limit=1&page=1", headers={"Content-Type": "application/json"})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertValidFeatureFlagListData(response_data, 1, True)
@@ -265,12 +266,12 @@ class ProjectsAPITestCase(APITestCase):
         user.iaso_profile.projects.set([project])
         self.assertFalse(user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()))
         response = self.client.get("/api/projects/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProjectListData(response.json(), 1)
 
         # You should NOT be able to bypass restrictions if you're not an admin.
         response = self.client.get("/api/projects/?bypass_restrictions=1")
-        json_response = self.assertJSONResponse(response, 403)
+        json_response = self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         self.assertEqual(
             json_response, {"detail": f"{CORE_USERS_ADMIN_PERMISSION} permission is required to access all projects."}
         )
@@ -281,7 +282,7 @@ class ProjectsAPITestCase(APITestCase):
         del user._user_perm_cache
         self.assertTrue(user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()))
         response = self.client.get("/api/projects/?bypass_restrictions=1")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         total_projects_for_account = m.Project.objects.filter(account=user.iaso_profile.account).count()
         self.assertValidProjectListData(response.json(), total_projects_for_account)
 
@@ -290,7 +291,7 @@ class ProjectsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/featureflags/", headers={"Content-Type": "application/json"})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFeatureFlagListData(response.json(), m.FeatureFlag.objects.count())
         # Assert on actual content, not only a DB-derived count: the flags created in the
         # fixture must be present in the payload.
@@ -314,7 +315,7 @@ class ProjectsAPITestCase(APITestCase):
             "/api/featureflags/except_no_activated_modules/", headers={"Content-Type": "application/json"}
         )
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         excluded_feature_flags = list(
             chain.from_iterable([featureflag for featureflag in FEATUREFLAGES_TO_EXCLUDE.values()])
         )
@@ -327,7 +328,7 @@ class ProjectsAPITestCase(APITestCase):
         response = self.client.get(
             "/api/featureflags/except_no_activated_modules/", headers={"Content-Type": "application/json"}
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         feature_flag_codes = [flag["code"] for flag in response.json()["featureflags"]]
         self.assertNotIn("MOBILE_STOCK", feature_flag_codes)
@@ -341,7 +342,7 @@ class ProjectsAPITestCase(APITestCase):
         response = self.client.get(
             "/api/featureflags/except_no_activated_modules/", headers={"Content-Type": "application/json"}
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         feature_flag_codes = [flag["code"] for flag in response.json()["featureflags"]]
         self.assertIn("MOBILE_STOCK", feature_flag_codes)
@@ -358,7 +359,7 @@ class ProjectsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/featureflags/", headers={"Content-Type": "application/json"})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         # Verify MOBILE_NO_ORG_UNIT is not in the response
         response_data = response.json()
@@ -383,7 +384,7 @@ class ProjectsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/featureflags/", headers={"Content-Type": "application/json"})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         # Verify MOBILE_NO_ORG_UNIT is in the response
         response_data = response.json()
@@ -404,7 +405,7 @@ class ProjectsAPITestCase(APITestCase):
         response = self.client.get(
             "/api/featureflags/except_no_activated_modules/", headers={"Content-Type": "application/json"}
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         # Verify MOBILE_NO_ORG_UNIT is not in the response
         response_data = response.json()
@@ -431,7 +432,7 @@ class ProjectsAPITestCase(APITestCase):
         response = self.client.get(
             "/api/featureflags/except_no_activated_modules/", headers={"Content-Type": "application/json"}
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         # Verify MOBILE_NO_ORG_UNIT is in the response
         response_data = response.json()
@@ -442,28 +443,28 @@ class ProjectsAPITestCase(APITestCase):
         """GET /projects/<project_id> without auth should result in a 401"""
 
         response = self.client.get(f"/api/projects/{self.project_1.id}/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_projects_retrieve_wrong_auth(self):
         """GET /projects/<project_id> with auth of unrelated user should result in a 404"""
 
         self.client.force_authenticate(self.john)
         response = self.client.get(f"/api/projects/{self.project_1.id}/")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_projects_retrieve_not_found(self):
         """GET /projects/<project_id>: id does not exist"""
 
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/projects/292003030/")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_projects_retrieve_ok(self):
         """GET /projects/<project_id> happy path"""
 
         self.client.force_authenticate(self.jane)
         response = self.client.get(f"/api/projects/{self.project_1.id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertValidProjectData(response_data)
@@ -483,7 +484,7 @@ class ProjectsAPITestCase(APITestCase):
             data={"name": "Nope", "app_id": "org.ghi.nope", "feature_flags": []},
             format="json",
         )
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_projects_create_ok(self):
         """POST /projects/ happy path"""
@@ -497,7 +498,7 @@ class ProjectsAPITestCase(APITestCase):
             "color": "#123456",
         }
         response = self.client.post("/api/projects/", data=payload, format="json")
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         response_data = response.json()
         self.assertValidProjectData(response_data)
         self.assertEqual("org.ghi.new", response_data["app_id"])
@@ -516,7 +517,7 @@ class ProjectsAPITestCase(APITestCase):
         self.client.force_authenticate(self.project_admin)
         payload = {"name": "Dup", "app_id": self.project_1.app_id, "feature_flags": []}
         response = self.client.post("/api/projects/", data=payload, format="json")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("app_id", response.json())
 
     def test_projects_update_without_permission(self):
@@ -524,7 +525,7 @@ class ProjectsAPITestCase(APITestCase):
         self.client.force_authenticate(self.jane)
         payload = {"name": "x", "app_id": self.project_1.app_id, "feature_flags": []}
         response = self.client.put(f"/api/projects/{self.project_1.id}/", data=payload, format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_projects_update_keeps_same_app_id(self):
         """PUT /projects/<id> resending the project's own app_id must not raise 'App id already used'."""
@@ -537,7 +538,7 @@ class ProjectsAPITestCase(APITestCase):
             "feature_flags": [],
         }
         response = self.client.put(f"/api/projects/{self.project_1.id}/", data=payload, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.project_1.refresh_from_db()
         self.assertEqual("Project 1 renamed", self.project_1.name)
         self.assertEqual("org.ghi.p1", self.project_1.app_id)
@@ -552,7 +553,7 @@ class ProjectsAPITestCase(APITestCase):
             "feature_flags": [],
         }
         response = self.client.put(f"/api/projects/{self.project_1.id}/", data=payload, format="json")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("app_id", response.json())
 
     def test_projects_update_flag_requires_authentication(self):
@@ -571,7 +572,7 @@ class ProjectsAPITestCase(APITestCase):
             ],
         }
         response = self.client.put(f"/api/projects/{self.project_1.id}/", data=payload, format="json")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
         payload["feature_flags"].append(
             {
@@ -581,7 +582,7 @@ class ProjectsAPITestCase(APITestCase):
             }
         )
         response = self.client.put(f"/api/projects/{self.project_1.id}/", data=payload, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         codes = [ff["code"] for ff in response.json()["feature_flags"]]
         self.assertIn(m.FeatureFlag.REQUIRE_AUTHENTICATION, codes)
         self.assertIn(self.flag_requires_auth.code, codes)
@@ -597,7 +598,7 @@ class ProjectsAPITestCase(APITestCase):
             "needs_authentication": True,
         }
         response = self.client.put(f"/api/projects/{self.project_1.id}/", data=payload, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         response_data = response.json()
         self.assertTrue(response_data["needs_authentication"])
         self.assertIn(m.FeatureFlag.REQUIRE_AUTHENTICATION, [ff["code"] for ff in response_data["feature_flags"]])
@@ -614,7 +615,7 @@ class ProjectsAPITestCase(APITestCase):
             ],
         }
         response = self.client.put(f"/api/projects/{self.project_1.id}/", data=payload, format="json")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_projects_update_configuration_ok(self):
         """A valid configuration is accepted and persisted."""
@@ -633,7 +634,7 @@ class ProjectsAPITestCase(APITestCase):
             ],
         }
         response = self.client.put(f"/api/projects/{self.project_1.id}/", data=payload, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         with_configuration = next(ff for ff in response.json()["feature_flags"] if ff["code"] == self.flag_config.code)
         self.assertEqual(100, with_configuration["configuration"]["distance"])
 
@@ -654,7 +655,7 @@ class ProjectsAPITestCase(APITestCase):
             ],
         }
         response = self.client.put(f"/api/projects/{self.project_1.id}/", data=payload, format="json")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_projects_update_configuration_wrong_type(self):
         """A configuration value of the wrong type is rejected."""
@@ -673,7 +674,7 @@ class ProjectsAPITestCase(APITestCase):
             ],
         }
         response = self.client.put(f"/api/projects/{self.project_1.id}/", data=payload, format="json")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_projects_update_all_configuration_types(self):
         """All supported configuration types are accepted."""
@@ -703,7 +704,7 @@ class ProjectsAPITestCase(APITestCase):
             ],
         }
         response = self.client.put(f"/api/projects/{self.project_1.id}/", data=payload, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_projects_update_configuration_bad_url(self):
         """A configuration url with a non-http(s) scheme is rejected."""
@@ -733,7 +734,7 @@ class ProjectsAPITestCase(APITestCase):
             ],
         }
         response = self.client.put(f"/api/projects/{self.project_1.id}/", data=payload, format="json")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_projects_update_forms_ok(self):
         """PUT /projects/<id> can assign forms reachable from the user's account."""
@@ -746,7 +747,7 @@ class ProjectsAPITestCase(APITestCase):
             "forms": [self.form_in_account.id],
         }
         response = self.client.put(f"/api/projects/{self.project_2.id}/", data=payload, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertIn(self.form_in_account, list(self.project_2.forms.all()))
 
     def test_projects_update_forms_not_in_account(self):
@@ -760,7 +761,7 @@ class ProjectsAPITestCase(APITestCase):
             "forms": [self.form_other.id],
         }
         response = self.client.put(f"/api/projects/{self.project_2.id}/", data=payload, format="json")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("forms", response.json())
 
     def test_projects_partial_update_color_only(self):
@@ -769,7 +770,7 @@ class ProjectsAPITestCase(APITestCase):
         self.assertEqual(1, self.project_1.feature_flags.count())
 
         response = self.client.patch(f"/api/projects/{self.project_1.id}/", data={"color": "#000000"}, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.project_1.refresh_from_db()
         self.assertEqual("#000000", self.project_1.color)
@@ -784,7 +785,7 @@ class ProjectsAPITestCase(APITestCase):
         self.project_1.save()
 
         response = self.client.patch(f"/api/projects/{self.project_1.id}/", data={"color": "#000000"}, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.project_1.refresh_from_db()
         self.assertEqual("#000000", self.project_1.color)
@@ -796,7 +797,7 @@ class ProjectsAPITestCase(APITestCase):
         """DELETE /projects/<project_id>: not exposed on the projects endpoint"""
         self.client.force_authenticate(self.project_admin)
         response = self.client.delete(f"/api/projects/{self.project_1.id}/", format="json")
-        self.assertJSONResponse(response, 405)
+        self.assertJSONResponse(response, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_project_color_in_api(self):
         """Test that color field is properly handled in API responses"""
@@ -804,33 +805,33 @@ class ProjectsAPITestCase(APITestCase):
 
         # Test color in list response
         response = self.client.get("/api/projects/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertIn("color", response.json()["projects"][0])
         self.assertEqual(response.json()["projects"][0]["color"], "#FF5733")
 
         # Test color in detail response
         response = self.client.get(f"/api/projects/{self.project_1.id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertIn("color", response.json())
         self.assertEqual(response.json()["color"], "#FF5733")
 
     def test_qr_code_unauthenticated(self):
         """GET /projects/<project_id>/qr_code/: return the proper QR code"""
         response = self.client.get(f"/api/projects/{self.project_1.id}/qr_code/")
-        self.assertEqual(401, response.status_code)
+        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
 
     def test_qr_code(self):
         """GET /projects/<project_id>/qr_code/: return the proper QR code"""
         self.client.force_authenticate(self.jane)
         response = self.client.get(f"/api/projects/{self.project_1.id}/qr_code/")
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual("image/png", response["Content-Type"])
 
     def test_qr_code_not_found(self):
         """GET /projects/<project_id>/qr_code/: return 404"""
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/projects/WRONG/qr_code/")
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
 
     def assertValidProjectListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(

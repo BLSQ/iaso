@@ -1,5 +1,7 @@
 import typing
 
+from rest_framework import status
+
 from iaso import models as m
 from iaso.models import FeatureFlag
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_PROJECTS_PERMISSION
@@ -123,31 +125,31 @@ class AppsAPITestCase(APITestCase):
         """DELETE /apps/<app_id>/ without auth should result in a 401 response"""
 
         response = self.client.delete("/api/apps/org.ghi.p1/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_apps_list(self):
         """GET /apps/ is not implemented, should result in a 404 response"""
 
         response = self.client.get("/api/apps/")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_apps_retrieve_current_not_found(self):
         """GET /apps/current/?app_id= with wrong app id"""
 
         response = self.client.get("/api/apps/current/?app_id=notanappid")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_apps_retrieve_current_no_app_id(self):
         """GET /apps/current/?app_id= without app id"""
 
         response = self.client.get("/api/apps/current/")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_apps_retrieve_current_ok_1(self):
         """GET /apps/current/?app_id= happy path"""
 
         response = self.client.get(f"/api/apps/current/?app_id={self.project_1.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertValidAppData(response_data)
@@ -157,7 +159,7 @@ class AppsAPITestCase(APITestCase):
         """GET /apps/current/?app_id= happy path (with feature flags)"""
 
         response = self.client.get(f"/api/apps/current/?app_id={self.project_2.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertValidAppData(response_data)
@@ -167,13 +169,13 @@ class AppsAPITestCase(APITestCase):
         """GET /apps/<app_id>/ with wrong app id"""
 
         response = self.client.get("/api/apps/org.nope.nope/")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_apps_retrieve_ok_1(self):
         """GET /apps/<app_id>/ happy path - standard detail endpoint, without ?app_id="""
 
         response = self.client.get(f"/api/apps/{self.project_1.app_id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertValidAppData(response_data)
@@ -183,7 +185,7 @@ class AppsAPITestCase(APITestCase):
         """GET /apps/<app_id>/ happy path (with feature flags) - standard detail endpoint, without ?app_id="""
 
         response = self.client.get(f"/api/apps/{self.project_2.app_id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertValidAppData(response_data)
@@ -194,7 +196,7 @@ class AppsAPITestCase(APITestCase):
 
         with self.assertNumQueries(3):
             response = self.client.get(f"/api/apps/{self.project_2.app_id}/")
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
             response_data = response.json()
             self.assertValidAppData(response_data)
             self.assertEqual(2, len(response_data["feature_flags"]))
@@ -209,7 +211,7 @@ class AppsAPITestCase(APITestCase):
         }
         self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.post("/api/apps/", candidate_app, format="json")
-        self.assertJSONResponse(response, 405)
+        self.assertJSONResponse(response, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_apps_create_without_auth(self):
         """POST /apps/ without auth is rejected before the method check."""
@@ -220,14 +222,14 @@ class AppsAPITestCase(APITestCase):
             "needs_authentication": False,
         }
         response = self.client.post("/api/apps/", candidate_app, format="json")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_apps_update_not_allowed(self):
         """PUT /apps/<app_id>/ is no longer supported. Project updates now go through /api/projects/."""
         candidate_app = {"name": "This is an existing app", "feature_flags": []}
         self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
-        self.assertJSONResponse(response, 405)
+        self.assertJSONResponse(response, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def assertValidAppData(self, app_data: typing.Mapping) -> None:
         self.assertHasField(app_data, "id", str)

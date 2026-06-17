@@ -49,7 +49,7 @@ export const SubTable: FunctionComponent<SubTableProps> = ({
                 ) : (
                     values.map((value, index) => (
                         // eslint-disable-next-line react/no-array-index-key
-                        <TableRow key={`${renderValue(value)}${index}`}>
+                        (<TableRow key={`${renderValue(value)}${index}`}>
                             <TableCell
                                 sx={{
                                     ...styles.tableCell,
@@ -61,7 +61,7 @@ export const SubTable: FunctionComponent<SubTableProps> = ({
                             >
                                 {renderValue(value) ?? textPlaceholder}
                             </TableCell>
-                        </TableRow>
+                        </TableRow>)
                     ))
                 )}
             </TableBody>

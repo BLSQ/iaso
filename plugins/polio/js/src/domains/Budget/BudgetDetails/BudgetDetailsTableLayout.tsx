@@ -33,17 +33,31 @@ export const BudgetDetailsTableLayout: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     return (
         <Paper elevation={2}>
-            <Box pt={2} pb={budgetDetails?.results.length === 0 ? 1 : 0}>
-                <Box px={2}>
+            <Box
+                sx={{
+                    pt: 2,
+                    pb: budgetDetails?.results.length === 0 ? 1 : 0
+                }}>
+                <Box sx={{
+                    px: 2
+                }}>
                     <GraphTitle
                         text={formatMessage(MESSAGES.steps)}
                         displayTrigger
                     />
                 </Box>
-                <Box mt={2} mb={1}>
+                <Box
+                    sx={{
+                        mt: 2,
+                        mb: 1
+                    }}>
                     <Divider />
                 </Box>
-                <Box px={2} pb={2}>
+                <Box
+                    sx={{
+                        px: 2,
+                        pb: 2
+                    }}>
                     <BudgetDetailsFilters
                         params={params}
                         stepsList={stepsList}

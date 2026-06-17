@@ -121,7 +121,7 @@ export const Details: FunctionComponent = () => {
             />
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 <Grid container spacing={2}>
-                    <Grid container item xs={6}>
+                    <Grid container size={6}>
                         <WidgetPaper
                             className={classes.infoPaper}
                             title={formatMessage(
@@ -135,7 +135,9 @@ export const Details: FunctionComponent = () => {
                         </WidgetPaper>
                     </Grid>
                 </Grid>
-                <Box mt={2}>
+                <Box sx={{
+                    mt: 2
+                }}>
                     <WidgetPaper
                         className={classes.fullWidth}
                         title={formatMessage(MESSAGES.dataSourceVersionTitle)}

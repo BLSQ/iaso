@@ -49,11 +49,12 @@ export const OrgUnitChildren: FunctionComponent<Props> = ({
                 groups={groups}
             />
             <Box
-                mt={2}
-                display="inline-flex"
-                justifyContent="flex-end"
                 style={{ width: '100%' }}
-            >
+                sx={{
+                    mt: 2,
+                    display: "inline-flex",
+                    justifyContent: "flex-end"
+                }}>
                 {Boolean(data?.orgunits?.length) && (
                     <DownloadButtonsComponent
                         csvUrl={csvUrl}

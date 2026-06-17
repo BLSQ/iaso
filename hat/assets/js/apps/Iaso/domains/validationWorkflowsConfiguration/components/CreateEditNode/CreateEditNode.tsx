@@ -89,7 +89,11 @@ export const CreateEditNode: FunctionComponent<Props> = ({
                 confirmMessage={MESSAGES.save}
                 cancelMessage={MESSAGES.cancel}
             >
-                <Box mb={2} mt={2}>
+                <Box
+                    sx={{
+                        mb: 2,
+                        mt: 2
+                    }}>
                     <Field
                         label={formatMessage(MESSAGES.name)}
                         name="name"
@@ -108,7 +112,9 @@ export const CreateEditNode: FunctionComponent<Props> = ({
                     name="can_skip_previous_nodes"
                     component={BooleanInput}
                 />
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <Field
                         label={formatMessage(MESSAGES.rolesRequired)}
                         name="roles_required"

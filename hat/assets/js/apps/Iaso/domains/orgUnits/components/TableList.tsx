@@ -125,7 +125,13 @@ export const TableList: FunctionComponent<Props> = ({
                 selection={selection}
                 saveMulti={saveMulti}
             />
-            <Box display="flex" justifyContent="flex-end" mb={2} mt={-4}>
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    mb: 2,
+                    mt: -4
+                }}>
                 <ColumnsSelectDrawer
                     options={options}
                     setOptions={setOptions}
@@ -135,7 +141,9 @@ export const TableList: FunctionComponent<Props> = ({
                     isDisabled={isDisabled}
                 />
             </Box>
-            <Box pb={2}>
+            <Box sx={{
+                pb: 2
+            }}>
                 <TableWithDeepLink
                     data={orgUnitsData?.orgunits || []}
                     count={orgUnitsData?.count}

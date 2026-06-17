@@ -151,16 +151,16 @@ export const CompletenessStats: FunctionComponent = () => {
                         fetchingForms={fetchingForms}
                     />
                 </Box>
-                <Grid
-                    container
-                    item
-                    style={{ paddingTop: '5px', paddingBottom: '5px' }}
-                >
-                    <Grid item container justifyContent="flex-end">
+                <Grid container style={{ paddingTop: '5px', paddingBottom: '5px' }}>
+                    <Grid container sx={{
+                        justifyContent: "flex-end"
+                    }}>
                         <CsvButton csvUrl={csvUrl} />
                     </Grid>
                 </Grid>
-                <Box mt={2}>
+                <Box sx={{
+                    mt: 2
+                }}>
                     <Tabs
                         value={tab}
                         onChange={(_, newtab) => handleChangeTab(newtab)}
@@ -174,8 +174,10 @@ export const CompletenessStats: FunctionComponent = () => {
                 </Box>
 
                 <Box
-                    width="100%"
                     className={tab === 'map' ? '' : classes.hiddenOpacity}
+                    sx={{
+                        width: "100%"
+                    }}
                 >
                     {selectedFormsIds.length !== 1 && (
                         <Paper
@@ -200,7 +202,9 @@ export const CompletenessStats: FunctionComponent = () => {
                     )}
                 </Box>
                 {tab === 'list' && (
-                    <Box mt={selectedFormsIds.length === 1 ? 0 : 2}>
+                    <Box sx={{
+                        mt: selectedFormsIds.length === 1 ? 0 : 2
+                    }}>
                         <TableWithDeepLink
                             marginTop={false}
                             data={completenessStats?.results ?? []}

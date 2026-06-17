@@ -88,17 +88,22 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
     const usableActionTypeOptions = useUsableActionTypeOptions();
     const placeholder = formatMessage(MESSAGES.all);
     return (
-        <Box sx={{ width: 'calc(100vw - 50px)' }} mb={4}>
+        <Box
+            sx={{
+                mb: 4,
+                width: 'calc(100vw - 50px)'
+            }}>
             <Grid
                 container
                 spacing={2}
-                justifyContent="flex-start"
-                pt={2}
-                pb={5}
-                ml={1}
-                sx={{ backgroundColor: '#e6e6e6' }}
-            >
-                <Grid item xs={2}>
+                sx={{
+                    justifyContent: "flex-start",
+                    pt: 2,
+                    pb: 5,
+                    ml: 1,
+                    backgroundColor: '#e6e6e6'
+                }}>
+                <Grid size={2}>
                     <Typography
                         variant="subtitle1"
                         sx={{
@@ -125,7 +130,7 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                         placeholder={placeholder}
                     />
                 </Grid>
-                <Grid item xs={2}>
+                <Grid size={2}>
                     <Typography
                         variant="subtitle1"
                         sx={{
@@ -152,7 +157,7 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                         placeholder={placeholder}
                     />
                 </Grid>
-                <Grid item xs={2}>
+                <Grid size={2}>
                     <Typography
                         variant="subtitle1"
                         sx={{
@@ -180,7 +185,7 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                     />
                 </Grid>
 
-                <Grid item xs={2}>
+                <Grid size={2}>
                     <Typography
                         variant="subtitle1"
                         sx={{

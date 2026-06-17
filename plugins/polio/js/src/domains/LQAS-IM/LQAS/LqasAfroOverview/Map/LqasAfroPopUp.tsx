@@ -53,7 +53,9 @@ export const LqasAfroPopup: FunctionComponent<Props> = ({
         <Popup className={classes.popup} ref={ref} pane="popupPane">
             <Card className={classes.popupCard}>
                 <CardContent className={classes.popupCardContent}>
-                    <Box mb={2}>
+                    <Box sx={{
+                        mb: 2
+                    }}>
                         <Typography
                             variant="h6"
                             className={classes.titleMessage}
@@ -61,7 +63,9 @@ export const LqasAfroPopup: FunctionComponent<Props> = ({
                         >
                             {title}
                         </Typography>
-                        <Box mt={1}>
+                        <Box sx={{
+                            mt: 1
+                        }}>
                             <Divider />
                         </Box>
                     </Box>
@@ -122,10 +126,13 @@ export const LqasAfroPopup: FunctionComponent<Props> = ({
                     <Grid
                         container
                         spacing={0}
-                        justifyContent="flex-end"
-                        alignItems="center"
-                    >
-                        <Box mt={2}>
+                        sx={{
+                            justifyContent: "flex-end",
+                            alignItems: "center"
+                        }}>
+                        <Box sx={{
+                            mt: 2
+                        }}>
                             <LinkButton
                                 buttonClassName={classes.marginLeft}
                                 variant="outlined"

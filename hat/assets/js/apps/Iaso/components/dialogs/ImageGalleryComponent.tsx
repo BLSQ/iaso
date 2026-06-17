@@ -262,10 +262,10 @@ const ImageGallery: FunctionComponent<Props> = ({
                 </Typography>
             )}
             <Box
-                sx={styles.content}
-                width={containerWidth}
-                height={containerHeight}
-            >
+                sx={[{
+                    width: containerWidth,
+                    height: containerHeight
+                }, styles.content]}>
                 <Box
                     component="img"
                     onLoad={handleOnLoad}

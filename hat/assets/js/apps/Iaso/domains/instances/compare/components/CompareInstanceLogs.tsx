@@ -140,10 +140,15 @@ export const CompareInstanceLogs: FunctionComponent = () => {
                 <Grid
                     container
                     spacing={3}
-                    display="flex"
-                    justifyContent="flex-end"
-                >
-                    <Grid xs={12} md={4.5} item>
+                    sx={{
+                        display: "flex",
+                        justifyContent: "flex-end"
+                    }}>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            md: 4.5
+                        }}>
                         <InstanceLogInfos
                             log="logA"
                             logTitle="Version A"
@@ -162,7 +167,11 @@ export const CompareInstanceLogs: FunctionComponent = () => {
                             dropDownLoading={isFetchingInstanceLogs}
                         />
                     </Grid>
-                    <Grid xs={12} md={4.5} item>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            md: 4.5
+                        }}>
                         <InstanceLogInfos
                             log="logB"
                             logTitle="Version B"
@@ -182,7 +191,11 @@ export const CompareInstanceLogs: FunctionComponent = () => {
                         />
                     </Grid>
 
-                    <Grid xs={12} md={12} item>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            md: 12
+                        }}>
                         <InstanceLogDetail
                             instanceLogContent={instanceLogContent}
                             isLogDetailLoading={isLogDetailLoading}

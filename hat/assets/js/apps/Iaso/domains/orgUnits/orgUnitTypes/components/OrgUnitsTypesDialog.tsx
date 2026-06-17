@@ -456,7 +456,6 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
                     />
                 )}
             </ConfirmCancelDialogComponent>
-
             {/* @ts-ignore */}
             <ConfirmCancelModal
                 onConfirm={() => handleDialogConfirm()}
@@ -475,9 +474,9 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
                 <Stack
                     direction="row"
                     spacing={1}
-                    alignItems="center"
-                    sx={styles.warningMessage}
-                >
+                    sx={[{
+                        alignItems: "center"
+                    }, styles.warningMessage]}>
                     <WarningAmberIcon />
                     <Typography>
                         {formatMessage(MESSAGES.eraseReferenceFormsWarning)}

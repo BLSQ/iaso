@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { CheckCircleOutline } from '@mui/icons-material';
+import { CheckCircleOutlineOutlined } from '@mui/icons-material';
 import ClearIcon from '@mui/icons-material/Clear';
 import FastForwardIcon from '@mui/icons-material/FastForward';
 import { Tooltip } from '@mui/material';
@@ -48,7 +48,7 @@ export const TimelineStepIcon: FunctionComponent<Props> = ({ item }) => {
             </Tooltip>
         );
     return (
-        <CheckCircleOutline
+        <CheckCircleOutlineOutlined
             className={classnames(
                 item.performed_by && classes.taskDone,
                 !item.performed_by && classes.taskPending,

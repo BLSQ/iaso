@@ -43,16 +43,17 @@ export const LinksCompare: FunctionComponent<Props> = ({
                 <Grid
                     container
                     spacing={0}
-                    alignItems="center"
-                    justifyContent="flex-start"
                     className={classes.title}
-                >
-                    <Grid item xs={11}>
+                    sx={{
+                        alignItems: "center",
+                        justifyContent: "flex-start"
+                    }}>
+                    <Grid size={11}>
                         <Typography variant="h6" component="h6" color="primary">
                             {`${title} - ${link.source}`}
                         </Typography>
                     </Grid>
-                    <Grid item xs={1}>
+                    <Grid size={1}>
                         <IconButton
                             url={`/${baseUrls.orgUnitDetails}/orgUnitId/${link.id}/tab/infos`}
                             icon="orgUnit"

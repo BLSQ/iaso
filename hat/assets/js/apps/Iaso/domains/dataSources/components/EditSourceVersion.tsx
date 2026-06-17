@@ -86,11 +86,13 @@ export const EditSourceVersion: FunctionComponent<Props> = ({
             onAdditionalButtonClick={undefined}
         >
             <>
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <Divider />
                 </Box>
                 <Grid container spacing={2} direction="row">
-                    <Grid item xs={12}>
+                    <Grid size={12}>
                         <InputComponent
                             type="text"
                             keyValue="description"

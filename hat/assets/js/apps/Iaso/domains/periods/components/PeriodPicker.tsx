@@ -143,12 +143,12 @@ const PeriodPicker: FunctionComponent<Props> = ({
     return (
         <Box
             id={keyName}
-            mt={2}
-            p={periodType === PERIOD_TYPE_DAY ? 0 : 1}
-            mb={2}
-            border={periodType === PERIOD_TYPE_DAY ? 0 : 1}
-            sx={displayError ? styles.borderError : styles.inputBorder}
-        >
+            sx={[{
+                mt: 2,
+                p: periodType === PERIOD_TYPE_DAY ? 0 : 1,
+                mb: 2,
+                border: periodType === PERIOD_TYPE_DAY ? 0 : 1
+            }, displayError ? styles.borderError : styles.inputBorder]}>
             {periodType === PERIOD_TYPE_DAY && (
                 <DatePicker
                     label={title}
@@ -159,7 +159,6 @@ const PeriodPicker: FunctionComponent<Props> = ({
                     onChange={handleChangeDay}
                 />
             )}
-
             {periodType !== PERIOD_TYPE_DAY && (
                 <>
                     {/* @ts-ignore */}
@@ -172,14 +171,12 @@ const PeriodPicker: FunctionComponent<Props> = ({
                             periodType as string,
                         ) && (
                             <Grid
-                                item
-                                sm={
-                                    periodType === PERIOD_TYPE_YEAR ||
+                                size={{
+                                    sm: periodType === PERIOD_TYPE_YEAR ||
                                     periodType === PERIOD_TYPE_FINANCIAL_NOV
                                         ? 12
                                         : 5
-                                }
-                            >
+                                }}>
                                 <InputComponent
                                     keyValue="year"
                                     onChange={handleChange}
@@ -194,7 +191,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
                         {[PERIOD_TYPE_PLACEHOLDER, NO_PERIOD].includes(
                             periodType as string,
                         ) && (
-                            <Grid item>
+                            <Grid>
                                 <Typography sx={styles.legend}>
                                     {message}
                                 </Typography>
@@ -206,7 +203,10 @@ const PeriodPicker: FunctionComponent<Props> = ({
                             periodType === PERIOD_TYPE_QUARTER_NOV ||
                             periodType === PERIOD_TYPE_SIX_MONTH ||
                             periodType === PERIOD_TYPE_WEEK) && (
-                            <Grid item sm={7}>
+                            <Grid
+                                size={{
+                                    sm: 7
+                                }}>
                                 {periodType === PERIOD_TYPE_MONTH && (
                                     <InputComponent
                                         keyValue="month"

@@ -42,16 +42,16 @@ const OrgUnitTypes: FunctionComponent = () => {
                 title={formatMessage(MESSAGES.orgUnitsTypes)}
                 displayBackButton={false}
             />
-
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={params} baseUrl={baseUrl} />
                 <Grid
                     container
                     spacing={0}
-                    justifyContent="flex-end"
-                    alignItems="center"
                     className={classes.marginTop}
-                >
+                    sx={{
+                        justifyContent: "flex-end",
+                        alignItems: "center"
+                    }}>
                     <OrgUnitsTypesDialog
                         titleMessage={MESSAGES.create}
                         renderTrigger={({ openDialog }) => (

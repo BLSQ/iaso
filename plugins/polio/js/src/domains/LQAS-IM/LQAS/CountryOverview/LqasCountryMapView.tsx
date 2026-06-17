@@ -72,7 +72,9 @@ export const LqasCountryMapView: FunctionComponent<Props> = ({
     const title = formatMessage(MESSAGES.lqasResults);
     const name = `LQASIMMap${roundNumber}-LQAS-${countryId}-${side}-${campaign?.obr_name}`;
     return (
-        <Box position="relative">
+        <Box sx={{
+            position: "relative"
+        }}>
             <MapLegendContainer>
                 <MapLegend
                     title={title}

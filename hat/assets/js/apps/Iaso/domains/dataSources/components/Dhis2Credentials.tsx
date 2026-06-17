@@ -29,8 +29,12 @@ export const Dhis2Credentials: FunctionComponent<Props> = ({ credentials }) => {
         return null;
     }
     return (
-        <Grid xs={12} item>
-            <Box display="flex" alignItems="center">
+        <Grid size={12}>
+            <Box
+                sx={{
+                    display: "flex",
+                    alignItems: "center"
+                }}>
                 <Typography variant="subtitle1" className={classes.subtitle}>
                     {formatMessage(MESSAGES.credentialsForExport)}
                 </Typography>

@@ -36,7 +36,11 @@ export const RefreshButton: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     return (
-        <Box display="flex" justifyContent="flex-end">
+        <Box
+            sx={{
+                display: "flex",
+                justifyContent: "flex-end"
+            }}>
             <Button
                 id="refresh-button"
                 variant="contained"

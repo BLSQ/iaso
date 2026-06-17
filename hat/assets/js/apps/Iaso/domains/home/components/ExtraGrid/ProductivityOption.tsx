@@ -47,7 +47,9 @@ export const ProductivityOption: FunctionComponent<Props> = ({
             <ExternalLink url={url}>
                 <span>{destinationName.toUpperCase()}</span>
             </ExternalLink>
-            <Box mt={4}>
+            <Box sx={{
+                mt: 4
+            }}>
                 <pre>{pipe}</pre>
             </Box>
         </Box>

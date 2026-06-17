@@ -13,12 +13,17 @@ export const SourceDescription: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     return (
-        <Box display="flex" width="100%">
+        <Box
+            sx={{
+                display: "flex",
+                width: "100%"
+            }}>
             <Typography
-                fontSize="12px"
-                textTransform="lowercase"
                 color="primary"
-            >
+                sx={{
+                    fontSize: "12px",
+                    textTransform: "lowercase"
+                }}>
                 {formatMessage(MESSAGES.source)}:{' '}
                 {sourceInfos?.sourceName || textPlaceholder}
                 {' - '}

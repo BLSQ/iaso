@@ -14,8 +14,17 @@ export const CampaignHistoryIconButton: FunctionComponent<Props> = ({
     const classes: Record<string, string> = useStyles();
     if (!selectedCampaign) return null;
     return (
-        <Grid item xs={12} md={4} className={classes.historyLink}>
-            <Box pr={4} alignItems="center">
+        <Grid
+            className={classes.historyLink}
+            size={{
+                xs: 12,
+                md: 4
+            }}>
+            <Box
+                sx={{
+                    pr: 4,
+                    alignItems: "center"
+                }}>
                 <IconButton
                     url={`/${baseUrls.campaignHistory}/campaignId/${selectedCampaign?.id}`}
                     icon="history"

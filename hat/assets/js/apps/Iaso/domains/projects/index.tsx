@@ -44,10 +44,11 @@ export const Projects: FunctionComponent = () => {
                 <Grid
                     container
                     spacing={0}
-                    justifyContent="flex-end"
-                    alignItems="center"
                     className={classes.marginTop}
-                >
+                    sx={{
+                        justifyContent: "flex-end",
+                        alignItems: "center"
+                    }}>
                     <CreateProjectDialog
                         saveProject={saveProject}
                         dialogType="create"

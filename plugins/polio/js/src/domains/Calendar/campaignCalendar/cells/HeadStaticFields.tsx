@@ -97,7 +97,12 @@ export const HeadStaticFieldsCells: FunctionComponent<Props> = ({
                             minWidth: f.width || defaultWidth,
                         }}
                     >
-                        <Box position="relative" width="100%" height="100%">
+                        <Box
+                            sx={{
+                                position: "relative",
+                                width: "100%",
+                                height: "100%"
+                            }}>
                             {f.sortKey && (
                                 <span
                                     onClick={() => handleSort(f, sort)}

@@ -220,8 +220,10 @@ export const DataSourceDialogComponent: FunctionComponent<Props> = ({
             allowConfirm={allowConfirm}
         >
             {isSaving && <LoadingSpinner fixed={false} />}
-            <Grid container spacing={2} justifyContent="flex-start">
-                <Grid xs={hasDhis2Module ? 6 : 12} item>
+            <Grid container spacing={2} sx={{
+                justifyContent: "flex-start"
+            }}>
+                <Grid size={hasDhis2Module ? 6 : 12}>
                     <InputComponent
                         keyValue="name"
                         onChange={setFieldValue}
@@ -295,7 +297,7 @@ export const DataSourceDialogComponent: FunctionComponent<Props> = ({
                 </Grid>
 
                 {hasDhis2Module && (
-                    <Grid xs={6} item>
+                    <Grid size={6}>
                         <InputComponent
                             value={form.credentials.value.dhis_name}
                             keyValue="dhis_name"
@@ -349,7 +351,7 @@ export const DataSourceDialogComponent: FunctionComponent<Props> = ({
                 )}
 
                 {willChangeDefaultVersion && (
-                    <Grid xs={12} item>
+                    <Grid size={12}>
                         <Alert severity="warning">
                             <AlertTitle>
                                 {formatMessage(

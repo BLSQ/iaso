@@ -18,7 +18,13 @@ export const ConfirmSyncPreview: FunctionComponent<Props> = ({
 
     return (
         <>
-            <Box display="flex" justifyContent="center" width="100%" my={2}>
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    width: "100%",
+                    my: 2
+                }}>
                 <Button
                     onClick={handleSeePreview}
                     color="primary"

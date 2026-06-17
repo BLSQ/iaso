@@ -38,7 +38,12 @@ export const Workflows: FunctionComponent = () => {
             <TopBar title={title} displayBackButton goBack={() => goBack()} />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={params} />
-                <Box mt={2} display="flex" justifyContent="flex-end">
+                <Box
+                    sx={{
+                        mt: 2,
+                        display: "flex",
+                        justifyContent: "flex-end"
+                    }}>
                     <AddVersionModal
                         entityTypeId={entityTypeId}
                         iconProps={{

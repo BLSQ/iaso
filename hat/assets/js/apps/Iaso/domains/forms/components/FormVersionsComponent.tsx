@@ -31,11 +31,12 @@ const FormVersionsComponent: FunctionComponent<Props> = ({
     return (
         <Box>
             <Box
-                mb={2}
-                justifyContent="flex-end"
-                alignItems="center"
-                display="flex"
-            >
+                sx={{
+                    mb: 2,
+                    justifyContent: "flex-end",
+                    alignItems: "center",
+                    display: "flex"
+                }}>
                 <Button
                     sx={{ mr: 2 }}
                     variant="outlined"

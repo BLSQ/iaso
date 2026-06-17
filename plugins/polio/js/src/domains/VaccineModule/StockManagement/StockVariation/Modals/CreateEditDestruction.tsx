@@ -117,7 +117,11 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                 confirmMessage={MESSAGES.save}
                 cancelMessage={MESSAGES.cancel}
             >
-                <Box mb={2} mt={2}>
+                <Box
+                    sx={{
+                        mb: 2,
+                        mt: 2
+                    }}>
                     <Field
                         label={formatMessage(MESSAGES.title)}
                         name="action"
@@ -140,7 +144,9 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                     component={DateInput}
                     required
                 />
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <Field
                         label={formatMessage(MESSAGES.vials_destroyed)}
                         name="unusable_vials_destroyed"
@@ -148,7 +154,9 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                         required
                     />
                 </Box>
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <Field
                         label={formatMessage(MESSAGES.doses_per_vial)}
                         name="doses_per_vial"
@@ -158,7 +166,9 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                         required
                     />
                 </Box>
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <Field
                         label={formatMessage(MESSAGES.comment)}
                         name="comment"
@@ -175,7 +185,9 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                         shrinkLabel={false}
                     />
                 </Box> */}
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <DocumentUploadWithPreview
                         errors={fileErrors}
                         onFilesSelect={files => {
@@ -188,7 +200,9 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                     />
                 </Box>
                 {hasDuplicatesData?.duplicate_exists && (
-                    <Box mb={2}>
+                    <Box sx={{
+                        mb: 2
+                    }}>
                         <Alert severity="warning">
                             {formatMessage(MESSAGES.duplicate_destruction)}
                         </Alert>

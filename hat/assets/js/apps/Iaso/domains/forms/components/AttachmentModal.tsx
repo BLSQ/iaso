@@ -59,7 +59,9 @@ const AttachmentModal: FunctionComponent<Props> = ({
                 multi={false}
                 placeholder={formatMessage(MESSAGES.attachment)}
             />
-            <Box mt={2}>
+            <Box sx={{
+                mt: 2
+            }}>
                 <Typography variant="caption">
                     {formatMessage(MESSAGES.attachmentModalContent)}
                 </Typography>

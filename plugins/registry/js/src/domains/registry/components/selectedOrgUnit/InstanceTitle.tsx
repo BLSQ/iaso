@@ -83,7 +83,7 @@ export const InstanceTitle: FunctionComponent<Props> = ({
     );
     return (
         <Grid container className={classes.paperTitle}>
-            <Grid xs={8} item>
+            <Grid size={8}>
                 <InputComponent
                     type="select"
                     disabled={isFetching}

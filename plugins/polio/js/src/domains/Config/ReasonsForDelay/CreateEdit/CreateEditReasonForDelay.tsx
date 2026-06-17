@@ -114,7 +114,9 @@ const CreateEditReasonForDelay: FunctionComponent<Props> = ({
                 closeOnConfirm={false}
             >
                 <Divider />
-                <Box mt={2}>
+                <Box sx={{
+                    mt: 2
+                }}>
                     {!id && (
                         <InputWithInfos
                             infos={formatMessage(MESSAGES.keyNameFormat)}
@@ -153,7 +155,9 @@ const CreateEditReasonForDelay: FunctionComponent<Props> = ({
                     .map(locale => {
                         const key = `name_${locale.code}`;
                         return (
-                            <Box mt={2} key={key}>
+                            <Box key={key} sx={{
+                                mt: 2
+                            }}>
                                 <InputComponent
                                     keyValue={key}
                                     onChange={onChange}

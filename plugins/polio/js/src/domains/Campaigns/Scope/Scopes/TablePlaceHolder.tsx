@@ -18,7 +18,11 @@ export const TablePlaceHolder: FunctionComponent<Props> = ({
     return (
         <TableRow>
             <TableCell colSpan={5}>
-                <Box textAlign="center" width="100%">
+                <Box
+                    sx={{
+                        textAlign: "center",
+                        width: "100%"
+                    }}>
                     {isFetching && formatMessage(MESSAGES.loading)}
                     {!isFetching &&
                         filteredDistricts?.length === 0 &&

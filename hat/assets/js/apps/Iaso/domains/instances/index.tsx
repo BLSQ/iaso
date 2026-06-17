@@ -170,16 +170,19 @@ const Instances = () => {
                     tab={tab}
                 />
                 {tab === 'list' && isSingleFormSearch && (
-                    <Grid container spacing={0} alignItems="center">
-                        <Grid xs={12} item className={classes.textAlignRight}>
+                    <Grid container spacing={0} sx={{
+                        alignItems: "center"
+                    }}>
+                        <Grid className={classes.textAlignRight} size={12}>
                             <DisplayIfUserHasPerm
                                 permissions={[Permission.SUBMISSIONS_UPDATE]}
                             >
                                 <Box
-                                    display="flex"
-                                    justifyContent="flex-end"
-                                    mb={2}
-                                >
+                                    sx={{
+                                        display: "flex",
+                                        justifyContent: "flex-end",
+                                        mb: 2
+                                    }}>
                                     <CreateReAssignDialog
                                         iconProps={{}}
                                         titleMessage={
@@ -204,7 +207,11 @@ const Instances = () => {
                     </Grid>
                 )}
                 {isSearchActive && (
-                    <Box display="flex" justifyContent="flex-end">
+                    <Box
+                        sx={{
+                            display: "flex",
+                            justifyContent: "flex-end"
+                        }}>
                         <Tooltip
                             title={
                                 isSingleFormSearch

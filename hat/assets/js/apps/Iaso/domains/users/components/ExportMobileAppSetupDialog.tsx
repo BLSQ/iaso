@@ -70,7 +70,9 @@ function LinearProgressWithLabel(
                 <LinearProgress variant="determinate" {...props} />
             </Box>
             <Box sx={styles.progressLabel}>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" sx={{
+                    color: "text.secondary"
+                }}>
                     {`${Math.round(props.value)}%`}
                 </Typography>
             </Box>
@@ -183,15 +185,21 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<DialogProps> = ({
         >
             {selectedUser.projects.length > 0 ? (
                 <>
-                    <Typography mb={2}>
+                    <Typography sx={{
+                        mb: 2
+                    }}>
                         {formatMessage(MESSAGES.exportMobileAppBody)}
                     </Typography>
-                    <Typography mb={0}>
+                    <Typography sx={{
+                        mb: 0
+                    }}>
                         {formatMessage(MESSAGES.exportMobileAppUser)}{' '}
                         <b>{fullUserName}</b>
                     </Typography>
                     {selectedUser.projects.length === 1 ? (
-                        <Typography mb={2}>
+                        <Typography sx={{
+                            mb: 2
+                        }}>
                             {formatMessage(MESSAGES.exportMobileAppProject)}{' '}
                             <b>{selectedProject.name}</b>
                         </Typography>
@@ -212,7 +220,9 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<DialogProps> = ({
                     )}
                     {isExporting && taskData && taskProgressValue !== null ? (
                         <>
-                            <Typography my={2}>
+                            <Typography sx={{
+                                my: 2
+                            }}>
                                 {formatMessage(
                                     MESSAGES.exportMobileAppInProgress,
                                 )}
@@ -266,7 +276,9 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<DialogProps> = ({
                                 value={password}
                                 errors={passwordErrors}
                             />
-                            <Typography my={2}>
+                            <Typography sx={{
+                                my: 2
+                            }}>
                                 {formatMessage(
                                     MESSAGES.exportMobileAppBodySure,
                                 )}

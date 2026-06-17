@@ -31,10 +31,16 @@ export const VialsSummary: FunctionComponent<Props> = ({
     const earmarkedVialsSubTitle = formatMessage(MESSAGES.totalEarmarkedVials);
     const earmarkedDosesSubTitle = formatMessage(MESSAGES.totalEarmarkedDoses);
     return (
-        <Box ml={3} my={4}>
+        <Box
+            sx={{
+                ml: 3,
+                my: 4
+            }}>
             <Paper elevation={0} sx={{ border: 'none' }}>
-                <Grid container justifyContent="flex-start" spacing={2}>
-                    <Grid item sx={{ textAlign: 'center' }}>
+                <Grid container spacing={2} sx={{
+                    justifyContent: "flex-start"
+                }}>
+                    <Grid sx={{ textAlign: 'center' }}>
                         <Typography
                             sx={{
                                 fontSize: '32px',
@@ -48,7 +54,7 @@ export const VialsSummary: FunctionComponent<Props> = ({
                             {vialsSubtitle}
                         </Typography>
                     </Grid>
-                    <Grid item sx={{ textAlign: 'center' }}>
+                    <Grid sx={{ textAlign: 'center' }}>
                         <Typography
                             sx={{
                                 fontSize: '32px',
@@ -64,7 +70,7 @@ export const VialsSummary: FunctionComponent<Props> = ({
                     </Grid>
                     {tab === 'usable' && (
                         <>
-                            <Grid item sx={{ textAlign: 'center' }}>
+                            <Grid sx={{ textAlign: 'center' }}>
                                 <Typography
                                     sx={{
                                         fontSize: '32px',
@@ -78,7 +84,7 @@ export const VialsSummary: FunctionComponent<Props> = ({
                                     {earmarkedVialsSubTitle}
                                 </Typography>
                             </Grid>
-                            <Grid item sx={{ textAlign: 'center' }}>
+                            <Grid sx={{ textAlign: 'center' }}>
                                 <Typography
                                     sx={{
                                         fontSize: '32px',

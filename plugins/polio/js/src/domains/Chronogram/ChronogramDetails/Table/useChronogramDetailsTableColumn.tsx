@@ -83,7 +83,9 @@ export const useChronogramDetailsTableColumn = (
                 sortable: false,
                 Cell: settings => {
                     return (
-                        <Box display="inline-flex">
+                        <Box sx={{
+                            display: "inline-flex"
+                        }}>
                             {/* @ts-ignore */}
                             <EditChronogramTaskModal
                                 chronogramTaskMetaData={chronogramTaskMetaData}

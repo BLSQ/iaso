@@ -168,6 +168,11 @@ module.exports = {
                     eager: true,
                     requiredVersion: false,
                 },
+                '@mui/x-date-pickers': {
+                    singleton: true,
+                    eager: true,
+                    requiredVersion: false,
+                },
                 // Exclude from shared when LIVE_COMPONENTS so resolve.alias to local src works
                 ...(process.env.LIVE_COMPONENTS !== 'true' && {
                     'bluesquare-components': {
@@ -235,6 +240,18 @@ module.exports = {
     resolve: {
         alias: {
             'react/jsx-runtime.js': 'react/jsx-runtime',
+            'react-transition-group/TransitionGroupContext': path.resolve(
+                __dirname,
+                '../node_modules/react-transition-group/cjs/TransitionGroupContext.js',
+            ),
+            '@mui/x-date-pickers': path.resolve(
+                __dirname,
+                '../node_modules/@mui/x-date-pickers',
+            ),
+            '@date-io/moment': path.resolve(
+                __dirname,
+                '../node_modules/@date-io/moment',
+            ),
             // Add alias for the combined config
             'IasoModules/plugins/configs': combinedConfigPath,
             'IasoModules/plugins/keys': pluginKeysPath,
@@ -269,6 +286,18 @@ module.exports = {
                     __dirname,
                     '../node_modules/@mui/material',
                 ),
+                '@mui/icons-material': path.resolve(
+                    __dirname,
+                    '../node_modules/@mui/icons-material',
+                ),
+                '@mui/x-tree-view': path.resolve(
+                    __dirname,
+                    '../node_modules/@mui/x-tree-view',
+                ),
+                '@mui/system': path.resolve(
+                    __dirname,
+                    '../node_modules/@mui/system',
+                ),
                 '@mui/styles': path.resolve(
                     __dirname,
                     '../node_modules/@mui/styles',
@@ -294,9 +323,6 @@ module.exports = {
             'node_modules',
             path.resolve(__dirname, '../plugins'),
             path.resolve(__dirname, 'assets/js/apps/'),
-            ...(process.env.LIVE_COMPONENTS === 'true'
-                ? ['../../bluesquare-components/node_modules/']
-                : []),
         ],
         extensions: ['.js', '.jsx', '.ts', '.tsx'],
     },

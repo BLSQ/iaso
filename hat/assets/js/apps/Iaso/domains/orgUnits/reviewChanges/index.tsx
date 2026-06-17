@@ -83,7 +83,12 @@ export const ReviewOrgUnitChanges: FunctionComponent = () => {
             <TopBar title={formatMessage(MESSAGES.reviewChangeProposals)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <ReviewOrgUnitChangesFilter params={params} />
-                <Box mb={2} display="flex" justifyContent="flex-end">
+                <Box
+                    sx={{
+                        mb: 2,
+                        display: "flex",
+                        justifyContent: "flex-end"
+                    }}>
                     <DownloadButtonsComponent csvUrl={csv_url} />
                 </Box>
 

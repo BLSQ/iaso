@@ -21,8 +21,15 @@ export const ModulesFilters = ({ params }: Props) => {
         });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
     return (
-        <Grid container spacing={8} justifyContent="flex-end">
-            <Grid item xs={12} sm={6} md={3}>
+        <Grid container spacing={8} sx={{
+            justifyContent: "flex-end"
+        }}>
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 3
+                }}>
                 <InputComponent
                     keyValue="search"
                     onChange={handleChange}
@@ -34,9 +41,17 @@ export const ModulesFilters = ({ params }: Props) => {
                     blockForbiddenChars
                 />
             </Grid>
-
-            <Grid item xs={12} sm={6} md={9}>
-                <Box mt={2} mb={2}>
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 9
+                }}>
+                <Box
+                    sx={{
+                        mt: 2,
+                        mb: 2
+                    }}>
                     <SearchButton
                         disabled={textSearchError || !filtersUpdated}
                         onSearch={handleSearch}

@@ -38,7 +38,7 @@ export const InstancesTopBar: FunctionComponent<Props> = ({
     return (
         <TopBar title={title}>
             <Grid container spacing={0}>
-                <Grid xs={10} item>
+                <Grid size={10}>
                     <Tabs
                         textColor="inherit"
                         indicatorColor="secondary"

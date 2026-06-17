@@ -36,12 +36,15 @@ const Mappings = () => {
     return (
         <>
             {mappingVersionsResults.isFetching && <LoadingSpinner />}
-
             <TopBar title={formatMessage(MESSAGES.dhis2Mappings)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={params} />
-                <Box mt={4}>
-                    <Grid container spacing={2} justifyContent="flex-end">
+                <Box sx={{
+                    mt: 4
+                }}>
+                    <Grid container spacing={2} sx={{
+                        justifyContent: "flex-end"
+                    }}>
                         <CreateMappingVersionDialogComponent />
                     </Grid>
                 </Box>
@@ -66,10 +69,11 @@ const Mappings = () => {
                     />
                     <Grid
                         container
-                        justifyContent="flex-end"
-                        alignItems="center"
                         className={classes.marginTop}
-                    />
+                        sx={{
+                            justifyContent: "flex-end",
+                            alignItems: "center"
+                        }} />
                 </Box>
             </Box>
         </>

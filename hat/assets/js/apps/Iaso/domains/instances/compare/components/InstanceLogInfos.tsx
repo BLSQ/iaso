@@ -119,7 +119,9 @@ export const InstanceLogInfos: FunctionComponent<Props> = ({
         ],
     );
     return (
-        <Box mt={2}>
+        <Box sx={{
+            mt: 2
+        }}>
             <Card>
                 {loading && (
                     <LoadingSpinner
@@ -130,15 +132,21 @@ export const InstanceLogInfos: FunctionComponent<Props> = ({
                     />
                 )}
                 {!loading && (
-                    <Grid container spacing={2} padding={2}>
-                        <Grid item xs={12}>
-                            <Typography variant="h5" fontWeight="bold">
+                    <Grid container spacing={2} sx={{
+                        padding: 2
+                    }}>
+                        <Grid size={12}>
+                            <Typography variant="h5" sx={{
+                                fontWeight: "bold"
+                            }}>
                                 {logTitle}
                             </Typography>
                         </Grid>
 
-                        <Grid item xs={12}>
-                            <Typography variant="body2" fontWeight="bold">
+                        <Grid size={12}>
+                            <Typography variant="body2" sx={{
+                                fontWeight: "bold"
+                            }}>
                                 {formatMessage(MESSAGES.selectVersionToCompare)}
                             </Typography>
                             <InputComponent
@@ -153,9 +161,13 @@ export const InstanceLogInfos: FunctionComponent<Props> = ({
                             />
                         </Grid>
 
-                        <Grid item xs={12}>
+                        <Grid size={12}>
                             <Grid container spacing={2}>
-                                <Grid item xs={12} md={6}>
+                                <Grid
+                                    size={{
+                                        xs: 12,
+                                        md: 6
+                                    }}>
                                     {firstLogInfos.map(logInfo => (
                                         <InstanceLogInfosRow
                                             key={logInfo.index}
@@ -165,7 +177,11 @@ export const InstanceLogInfos: FunctionComponent<Props> = ({
                                     ))}
                                 </Grid>
 
-                                <Grid item xs={12} md={6}>
+                                <Grid
+                                    size={{
+                                        xs: 12,
+                                        md: 6
+                                    }}>
                                     {secondLogInfos.map(logInfo => (
                                         <InstanceLogInfosRow
                                             key={logInfo.index}

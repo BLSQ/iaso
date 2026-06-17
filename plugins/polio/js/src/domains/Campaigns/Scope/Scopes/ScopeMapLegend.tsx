@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Box, FormControl, List, ListItem } from '@mui/material';
+import { Box, FormControl, List, ListItemButton } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { FieldInputProps } from 'formik';
 import { MapLegend } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/MapLegend';
@@ -43,9 +43,8 @@ export const ScopeMapLegend: FunctionComponent<Props> = ({
                 <FormControl id="vaccine">
                     <List>
                         {availableVaccines.map(vaccine => (
-                            <ListItem
+                            <ListItemButton
                                 key={vaccine.value}
-                                button
                                 className={classes.vaccinesList}
                                 onClick={() =>
                                     setSelectedVaccine(vaccine.value)
@@ -84,7 +83,7 @@ export const ScopeMapLegend: FunctionComponent<Props> = ({
                                         } ${formatMessage(MESSAGES.districts)}`}
                                     </span>
                                 </Box>
-                            </ListItem>
+                            </ListItemButton>
                         ))}
                     </List>
                 </FormControl>

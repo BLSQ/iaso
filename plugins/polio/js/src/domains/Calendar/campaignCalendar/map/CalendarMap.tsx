@@ -40,7 +40,9 @@ export const CalendarMap: FunctionComponent<Props> = ({
     });
 
     return (
-        <Box position="relative">
+        <Box sx={{
+            position: "relative"
+        }}>
             <MapContainer
                 style={{
                     height: !isPdf ? '72vh' : '800px',

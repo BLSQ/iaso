@@ -205,7 +205,11 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                 />
                 <Box className={classes.tabsContainerShadow} />
             </AppBar>
-            <Box px={4} mt={4}>
+            <Box
+                sx={{
+                    px: 4,
+                    mt: 4
+                }}>
                 {searches.map((_, searchIndex) => (
                     <Box
                         key={searchIndex}
@@ -231,9 +235,18 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                         />
                     </Box>
                 ))}
-                <Box mt={2} justifyContent="flex-end" display="flex">
+                <Box
+                    sx={{
+                        mt: 2,
+                        justifyContent: "flex-end",
+                        display: "flex"
+                    }}>
                     <DisplayIfUserHasPerm permissions={[ORG_UNITS]}>
-                        <Box display="inline-block" mr={2}>
+                        <Box
+                            sx={{
+                                display: "inline-block",
+                                mr: 2
+                            }}>
                             <Button
                                 variant="outlined"
                                 className={classnames(classes.button)}

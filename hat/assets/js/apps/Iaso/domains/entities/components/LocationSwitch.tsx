@@ -43,7 +43,9 @@ export const LocationSwitch: FunctionComponent<Props> = ({
     const classes = useStyles();
     return (
         <Paper elevation={1} className={classes.root}>
-            <Box p={2}>
+            <Box sx={{
+                p: 2
+            }}>
                 {locationOptions.map(option => (
                     <InputComponent
                         withMarginTop={false}

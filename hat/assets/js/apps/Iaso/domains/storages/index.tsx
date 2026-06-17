@@ -37,7 +37,12 @@ export const Storages: FunctionComponent = () => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={apiParams} />
-                <Box display="flex" justifyContent="flex-end" mt={2}>
+                <Box
+                    sx={{
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        mt: 2
+                    }}>
                     <DownloadButtonsComponent
                         csvUrl={`${apiUrl}&csv=true`}
                         xlsxUrl={`${apiUrl}&xlsx=true`}

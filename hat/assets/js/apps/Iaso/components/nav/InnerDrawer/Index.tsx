@@ -84,30 +84,33 @@ export const InnerDrawer: FunctionComponent<Props> = ({
 
     return (
         <Box
-            borderTop={withTopBorder ? 1 : 0}
-            borderColor="grey.300"
-            p={0}
             className={classes.boxContent}
             component="div"
-        >
+            sx={{
+                borderTop: withTopBorder ? 1 : 0,
+                borderColor: "grey.300",
+                p: 0
+            }}>
             <Grid container spacing={0}>
                 <Grid
-                    item
-                    xs={7}
-                    md={8}
-                    lg={9}
                     className={classes.mapContainer}
-                >
+                    size={{
+                        xs: 7,
+                        md: 8,
+                        lg: 9
+                    }}>
                     {children}
                 </Grid>
                 <Grid
-                    item
-                    xs={5}
-                    md={4}
-                    lg={3}
                     className={classes.innerDrawerToolContainer}
-                >
-                    <Box width="100%">
+                    size={{
+                        xs: 5,
+                        md: 4,
+                        lg: 3
+                    }}>
+                    <Box sx={{
+                        width: "100%"
+                    }}>
                         {(filtersOptionComponent ||
                             editOptionComponent ||
                             commentsOptionComponent) && (
@@ -163,36 +166,45 @@ export const InnerDrawer: FunctionComponent<Props> = ({
                             </Tabs>
                         )}
                         <Box
-                            display="flex"
-                            flexWrap="wrap"
                             className={classes.innerDrawerContentContainer}
-                            flexDirection="row"
-                        >
+                            sx={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                flexDirection: "row"
+                            }}>
                             {filtersOptionComponent && (
                                 <Box
-                                    width="100%"
                                     className={
                                         activeOption !== 'filters'
                                             ? classes.hiddenOpacity
                                             : ''
                                     }
+                                    sx={{
+                                        width: "100%"
+                                    }}
                                 >
                                     {filtersOptionComponent}
                                 </Box>
                             )}
 
                             {activeOption === 'edit' && (
-                                <Box width="100%">{editOptionComponent}</Box>
+                                <Box sx={{
+                                    width: "100%"
+                                }}>{editOptionComponent}</Box>
                             )}
 
                             {activeOption === 'comments' && (
-                                <Box width="100%">
+                                <Box sx={{
+                                    width: "100%"
+                                }}>
                                     {commentsOptionComponent}
                                 </Box>
                             )}
                             {activeOption === 'settings' &&
                                 settingsOptionComponent && (
-                                    <Box width="100%">
+                                    <Box sx={{
+                                        width: "100%"
+                                    }}>
                                         {settingsOptionComponent}
                                     </Box>
                                 )}

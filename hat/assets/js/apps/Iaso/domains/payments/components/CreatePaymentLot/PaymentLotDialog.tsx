@@ -138,7 +138,7 @@ const PaymentLotDialog: FunctionComponent<Props> = ({
             dataTestId="payment-lot-dialog"
         >
             <Grid container spacing={2}>
-                <Grid item xs={4}>
+                <Grid size={4}>
                     <InputComponent
                         type="text"
                         required
@@ -158,7 +158,7 @@ const PaymentLotDialog: FunctionComponent<Props> = ({
                         errors={getErrors('comment')}
                     />
                 </Grid>
-                <Grid item xs={4}>
+                <Grid size={4}>
                     <Box sx={styles.infos}>
                         <span>{formatMessage(MESSAGES.date)}:</span>
                         {moment().format('L')}
@@ -210,7 +210,13 @@ const AddButton: FunctionComponent<AddButtonProps> = ({
             size="small"
             disabled={disabled}
         >
-            <Box display="inline-block" mr={1} position="relative" top="4px">
+            <Box
+                sx={{
+                    display: "inline-block",
+                    mr: 1,
+                    position: "relative",
+                    top: "4px"
+                }}>
                 <Add fontSize="small" />
             </Box>
             {formatMessage(MESSAGES.createLot)}

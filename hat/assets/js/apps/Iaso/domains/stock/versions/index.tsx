@@ -73,10 +73,11 @@ const StockRulesVersionsList: FunctionComponent<Props> = ({ params }) => {
                 <Grid
                     container
                     spacing={0}
-                    justifyContent="flex-end"
-                    alignItems="center"
                     className={classes.marginTop}
-                >
+                    sx={{
+                        justifyContent: "flex-end",
+                        alignItems: "center"
+                    }}>
                     <AddVersionModal iconProps={{}} />
                 </Grid>
                 <Table
@@ -127,7 +128,7 @@ const StockRulesList: FunctionComponent<RulesProps> = ({
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Grid container spacing={2}>
-                    <Grid container item xs={3}>
+                    <Grid container size={3}>
                         <WidgetPaper
                             className={classes.infoPaper}
                             title={formatMessage(MESSAGES.infos)}
@@ -141,16 +142,19 @@ const StockRulesList: FunctionComponent<RulesProps> = ({
                         </WidgetPaper>
                     </Grid>
                 </Grid>
-                <Box mt={2}>
+                <Box sx={{
+                    mt: 2
+                }}>
                     <RulesFilters params={params} />
                 </Box>
                 <Grid
                     container
                     spacing={0}
-                    justifyContent="flex-end"
-                    alignItems="center"
                     className={classes.marginTop}
-                >
+                    sx={{
+                        justifyContent: "flex-end",
+                        alignItems: "center"
+                    }}>
                     {version?.status === 'DRAFT' && (
                         <AddRuleDialog
                             iconProps={{}}

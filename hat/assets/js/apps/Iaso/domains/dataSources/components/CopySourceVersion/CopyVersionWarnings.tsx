@@ -35,12 +35,12 @@ export const WarningMessage: FunctionComponent<Props> = ({
     return (
         <Grid
             container
-            item
             spacing={1}
-            justifyContent="center"
             data-test={`copyversion-warning-${destinationSourceName}`}
-        >
-            <Grid item>
+            sx={{
+                justifyContent: "center"
+            }}>
+            <Grid>
                 <Typography className={classes.source} variant="h6">
                     <FormattedMessage
                         {...MESSAGES.copiedVersion}
@@ -51,12 +51,12 @@ export const WarningMessage: FunctionComponent<Props> = ({
                     />
                 </Typography>
             </Grid>
-            <Grid item>
+            <Grid>
                 <Typography variant="h6">
                     <FormattedMessage {...MESSAGES.willBeCopied} />
                 </Typography>
             </Grid>
-            <Grid item>
+            <Grid>
                 <Typography className={classes.destination} variant="h6">
                     <FormattedMessage
                         {...MESSAGES.copyToSourceWithVersion}

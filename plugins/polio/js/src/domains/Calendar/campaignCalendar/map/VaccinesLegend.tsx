@@ -14,7 +14,9 @@ export const VaccinesLegend: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     return (
         <Paper elevation={1} className={classes.mapLegendVaccine}>
-            <Box p={2}>
+            <Box sx={{
+                p: 2
+            }}>
                 <Typography
                     variant="subtitle1"
                     className={classes.mapLegendTitle}
@@ -22,14 +24,18 @@ export const VaccinesLegend: FunctionComponent = () => {
                     {formatMessage(MESSAGES.vaccines)}
                 </Typography>
                 {legend.map((vaccine: Vaccine) => (
-                    <Box mt={1} key={vaccine.value}>
+                    <Box key={vaccine.value} sx={{
+                        mt: 1
+                    }}>
                         <Grid container spacing={1}>
                             <Grid
-                                item
-                                sm={4}
                                 container
-                                justifyContent="flex-start"
-                            >
+                                size={{
+                                    sm: 4
+                                }}
+                                sx={{
+                                    justifyContent: "flex-start"
+                                }}>
                                 <span
                                     className={classes.roundColor}
                                     style={{
@@ -40,12 +46,14 @@ export const VaccinesLegend: FunctionComponent = () => {
                                 />
                             </Grid>
                             <Grid
-                                item
-                                sm={8}
                                 container
-                                justifyContent="flex-end"
-                                alignItems="center"
-                            >
+                                size={{
+                                    sm: 8
+                                }}
+                                sx={{
+                                    justifyContent: "flex-end",
+                                    alignItems: "center"
+                                }}>
                                 {vaccine.label}
                             </Grid>
                         </Grid>

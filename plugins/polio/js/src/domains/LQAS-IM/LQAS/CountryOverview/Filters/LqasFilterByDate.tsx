@@ -96,10 +96,12 @@ export const LqasFilterByDate: FunctionComponent<Props> = ({
     );
 
     return (
-        <Box my={2}>
+        <Box sx={{
+            my: 2
+        }}>
             <Grid container spacing={2}>
-                <Grid container item xs={12} spacing={2}>
-                    <Grid item xs={6}>
+                <Grid container spacing={2} size={12}>
+                    <Grid size={6}>
                         <Select
                             keyValue={`${side}Month`}
                             label={formatMessage(MESSAGES.month)}
@@ -110,7 +112,7 @@ export const LqasFilterByDate: FunctionComponent<Props> = ({
                             onChange={value => onChange(`${side}Month`, value)}
                         />
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={6}>
                         <Select
                             keyValue={`${side}Year`}
                             label={formatMessage(MESSAGES.year)}
@@ -122,7 +124,7 @@ export const LqasFilterByDate: FunctionComponent<Props> = ({
                         />
                     </Grid>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={12}>
                     <Select
                         keyValue={`${side}Country`}
                         loading={isFetchingCountriesOptions}
@@ -134,7 +136,7 @@ export const LqasFilterByDate: FunctionComponent<Props> = ({
                         onChange={value => onChange(`${side}Country`, value)}
                     />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={12}>
                     <Select
                         keyValue={`${side}Campaign`}
                         loading={isFetchingCampaignsOptions}

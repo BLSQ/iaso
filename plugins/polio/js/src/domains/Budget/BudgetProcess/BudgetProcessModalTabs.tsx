@@ -24,7 +24,7 @@ export const BudgetProcessModalTabs: FunctionComponent<Props> = ({
 
     return (
         <>
-            <Grid item xs={12}>
+            <Grid size={12}>
                 <Tabs value={tab} onChange={(_, newtab) => setTab(newtab)}>
                     <Tab
                         value="approval"

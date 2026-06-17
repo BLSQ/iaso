@@ -256,10 +256,11 @@ export const LqasAfroList: FunctionComponent<Props> = ({
                                     }}
                                 >
                                     <Box
-                                        top="4px"
-                                        position="relative"
-                                        left="-3px"
-                                    >
+                                        sx={{
+                                            top: "4px",
+                                            position: "relative",
+                                            left: "-3px"
+                                        }}>
                                         <MapIcon
                                             fontSize="small"
                                             color="inherit"

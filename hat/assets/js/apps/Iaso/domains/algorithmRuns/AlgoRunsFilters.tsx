@@ -84,10 +84,18 @@ export const AlgoRunsFilters: FunctionComponent<Props> = ({
     const disabled = !filtersUpdated && filters.searchActive === 'true';
 
     return (
-        <Grid container item xs={12}>
-            <Grid container item xs={12} md={4} xl={3}>
-                <Grid item xs={12}>
-                    <Box mr={isXs ? 0 : 2}>
+        <Grid container size={12}>
+            <Grid
+                container
+                size={{
+                    xs: 12,
+                    md: 4,
+                    xl: 3
+                }}>
+                <Grid size={12}>
+                    <Box sx={{
+                        mr: isXs ? 0 : 2
+                    }}>
                         <InputComponent
                             dataTestId="links-algo-filter"
                             keyValue="algorithmId"
@@ -100,8 +108,12 @@ export const AlgoRunsFilters: FunctionComponent<Props> = ({
                         />
                     </Box>
                 </Grid>
-                <Grid item xs={12}>
-                    <Box mr={isXs ? 0 : 2} mt={2}>
+                <Grid size={12}>
+                    <Box
+                        sx={{
+                            mr: isXs ? 0 : 2,
+                            mt: 2
+                        }}>
                         <UserAsyncSelect
                             keyValue="launcher"
                             label={MESSAGES.launcher}
@@ -113,9 +125,17 @@ export const AlgoRunsFilters: FunctionComponent<Props> = ({
                 </Grid>
             </Grid>
             {/* origin source */}
-            <Grid container item xs={12} md={4} xl={3}>
-                <Grid item xs={12}>
-                    <Box mr={isXs ? 0 : 2}>
+            <Grid
+                container
+                size={{
+                    xs: 12,
+                    md: 4,
+                    xl: 3
+                }}>
+                <Grid size={12}>
+                    <Box sx={{
+                        mr: isXs ? 0 : 2
+                    }}>
                         <InputComponent
                             keyValue="origin"
                             label={MESSAGES.sourceorigin}
@@ -130,8 +150,10 @@ export const AlgoRunsFilters: FunctionComponent<Props> = ({
                     </Box>
                 </Grid>
                 {/* origin source version. disabled if only one version */}
-                <Grid item xs={12}>
-                    <Box mr={isXs ? 0 : 2}>
+                <Grid size={12}>
+                    <Box sx={{
+                        mr: isXs ? 0 : 2
+                    }}>
                         <InputComponent
                             keyValue="originVersion"
                             label={MESSAGES.sourceoriginversion}
@@ -147,8 +169,14 @@ export const AlgoRunsFilters: FunctionComponent<Props> = ({
                     </Box>
                 </Grid>
             </Grid>
-            <Grid container item xs={12} md={4} xl={3}>
-                <Grid item xs={12}>
+            <Grid
+                container
+                size={{
+                    xs: 12,
+                    md: 4,
+                    xl: 3
+                }}>
+                <Grid size={12}>
                     <InputComponent
                         keyValue="destination"
                         label={MESSAGES.sourcedestination}
@@ -161,7 +189,7 @@ export const AlgoRunsFilters: FunctionComponent<Props> = ({
                         loading={isLoadingSources}
                     />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={12}>
                     {/* origin destination version. disabled if only one version */}
                     <InputComponent
                         keyValue="destinationVersion"
@@ -177,14 +205,28 @@ export const AlgoRunsFilters: FunctionComponent<Props> = ({
                     />
                 </Grid>
             </Grid>
-            <Grid container item xs={12} xl={3} justifyContent="flex-end">
-                <Box mr={2} mt={2}>
+            <Grid
+                container
+                size={{
+                    xs: 12,
+                    xl: 3
+                }}
+                sx={{
+                    justifyContent: "flex-end"
+                }}>
+                <Box
+                    sx={{
+                        mr: 2,
+                        mt: 2
+                    }}>
                     <RefreshButton
                         forceRefresh={forceRefresh}
                         disabled={disableRefresh}
                     />
                 </Box>
-                <Box mt={2}>
+                <Box sx={{
+                    mt: 2
+                }}>
                     <SearchButton onSearch={handleSearch} disabled={disabled} />
                 </Box>
             </Grid>

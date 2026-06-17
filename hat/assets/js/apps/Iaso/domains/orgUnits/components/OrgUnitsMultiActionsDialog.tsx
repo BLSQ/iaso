@@ -342,12 +342,15 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
                         type="checkbox"
                         label={MESSAGES.useGPSFromSubmission}
                     />
-                    <Box position="relative">
+                    <Box sx={{
+                        position: "relative"
+                    }}>
                         <Box
-                            position="absolute"
-                            top={theme.spacing(3)}
-                            left={theme.spacing(-1)}
-                        >
+                            sx={{
+                                position: "absolute",
+                                top: theme.spacing(3),
+                                left: theme.spacing(-1)
+                            }}>
                             <Tooltip
                                 arrow
                                 title={formatMessage(MESSAGES.GPSWarning)}

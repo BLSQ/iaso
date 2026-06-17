@@ -220,7 +220,9 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                 onClose={() => null}
             >
                 <>
-                    <Box mt={1}>
+                    <Box sx={{
+                        mt: 1
+                    }}>
                         <InputComponent
                             type="textarea"
                             keyValue="comment"
@@ -242,7 +244,9 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                         required={requiredFields.includes('amount')}
                     />
 
-                    <Box mt={2}>
+                    <Box sx={{
+                        mt: 2
+                    }}>
                         <FilesUpload
                             files={values.files ?? []}
                             onFilesSelect={files => {
@@ -253,32 +257,45 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                             errors={getErrors('files')}
                         />
                     </Box>
-                    <Box mt={2}>
+                    <Box sx={{
+                        mt: 2
+                    }}>
                         <Divider />
                     </Box>
-                    <Box mt={2}>
+                    <Box sx={{
+                        mt: 2
+                    }}>
                         <AddMultipleLinks
                             required={requiredFields.includes('links')}
                         />
                     </Box>
-                    <Box mt={2} mb={2}>
+                    <Box
+                        sx={{
+                            mt: 2,
+                            mb: 2
+                        }}>
                         <Divider />
                     </Box>
                     {(recipientTeams ?? []).length > 0 && (
                         <>
-                            <Box mt={1} mb={1}>
+                            <Box
+                                sx={{
+                                    mt: 1,
+                                    mb: 1
+                                }}>
                                 <Typography>
                                     {formatMessage(MESSAGES.emailWillBeSentTo)}
                                 </Typography>
                                 {recipientTeams?.map(team => {
                                     return (
                                         <Box
-                                            mt={1}
-                                            mr={1}
-                                            mb={1}
-                                            display="inline-block"
                                             key={team}
-                                        >
+                                            sx={{
+                                                mt: 1,
+                                                mr: 1,
+                                                mb: 1,
+                                                display: "inline-block"
+                                            }}>
                                             <Chip
                                                 label={team}
                                                 variant="outlined"
@@ -288,7 +305,11 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                                     );
                                 })}
                             </Box>
-                            <Box mt={2} mb={2}>
+                            <Box
+                                sx={{
+                                    mt: 2,
+                                    mb: 2
+                                }}>
                                 <Divider />
                             </Box>
                         </>

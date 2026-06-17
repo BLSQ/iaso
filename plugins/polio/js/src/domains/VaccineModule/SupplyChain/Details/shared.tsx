@@ -37,13 +37,19 @@ export const MultiFormTab: FunctionComponent<Props> = ({
     const classes: Record<string, string> = useSharedStyles();
     return (
         <Box className={className}>
-            <Box mb={4}>
-                <Grid container justifyContent="space-between">
+            <Box sx={{
+                mb: 4
+            }}>
+                <Grid container sx={{
+                    justifyContent: "space-between"
+                }}>
                     <Typography variant="h5">
                         {formatMessage(titleMessage)}
                     </Typography>
                     {buttonMessage && (
-                        <Box mr={2}>
+                        <Box sx={{
+                            mr: 2
+                        }}>
                             <AddButton
                                 message={buttonMessage}
                                 onClick={onClick}

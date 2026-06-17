@@ -17,39 +17,69 @@ export const LqasDistrictsPassed: FunctionComponent<Props> = ({
     return (
         <>
             <Divider />
-            <Box ml={2} mb={2} mt={2}>
-                <Grid container justifyContent="flex-start">
-                    <Grid item xs={6} lg={5}>
+            <Box
+                sx={{
+                    ml: 2,
+                    mb: 2,
+                    mt: 2
+                }}>
+                <Grid container sx={{
+                    justifyContent: "flex-start"
+                }}>
+                    <Grid
+                        size={{
+                            xs: 6,
+                            lg: 5
+                        }}>
                         <Typography variant="button">
                             {`${formatMessage(
                                 MESSAGES.lqas_district_passing,
                             )}: `}
                         </Typography>
                     </Grid>
-                    <Grid item xs={6} lg={7}>
+                    <Grid
+                        size={{
+                            xs: 6,
+                            lg: 7
+                        }}>
                         <Typography variant="button">
                             {`${lqasDistrictsPassing ?? '--'}`}
                         </Typography>
                     </Grid>
                 </Grid>
             </Box>
-            <Box ml={2} mb={2} mt={2}>
+            <Box
+                sx={{
+                    ml: 2,
+                    mb: 2,
+                    mt: 2
+                }}>
                 <Grid container>
-                    <Grid item xs={6} lg={5}>
+                    <Grid
+                        size={{
+                            xs: 6,
+                            lg: 5
+                        }}>
                         <Typography variant="button">
                             {`${formatMessage(
                                 MESSAGES.lqas_district_failing,
                             )}: `}
                         </Typography>
                     </Grid>
-                    <Grid item xs={6} lg={7}>
+                    <Grid
+                        size={{
+                            xs: 6,
+                            lg: 7
+                        }}>
                         <Typography variant="button">
                             {`${lqasDistrictsFailing ?? '--'}`}
                         </Typography>
                     </Grid>
                 </Grid>
             </Box>
-            <Box mb={2}>
+            <Box sx={{
+                mb: 2
+            }}>
                 <Divider />
             </Box>
         </>

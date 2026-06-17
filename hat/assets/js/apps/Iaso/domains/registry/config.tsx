@@ -122,7 +122,12 @@ export const useGetOrgUnitsListColumns = (
         },
         {
             Header: (
-                <Box position="relative" top={4} left={0}>
+                <Box
+                    sx={{
+                        position: "relative",
+                        top: 4,
+                        left: 0
+                    }}>
                     <MapIcon fontSize="small" color="inherit" />
                 </Box>
             ),
@@ -140,7 +145,11 @@ export const useGetOrgUnitsListColumns = (
             width: 50,
             Cell: settings => (
                 <>
-                    <Box display="inline-block" mr={1}>
+                    <Box
+                        sx={{
+                            display: "inline-block",
+                            mr: 1
+                        }}>
                         <LinkToOrgUnit
                             orgUnit={settings.row.original}
                             useIcon

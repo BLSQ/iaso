@@ -134,7 +134,9 @@ export const useVersionsDialogTableColumns = (
                                     <Link
                                         href={gpkgUrl}
                                         download
-                                        lineHeight={0.6}
+                                        sx={{
+                                            lineHeight: 0.6
+                                        }}
                                     >
                                         <DownloadIcon color="action" />
                                     </Link>

@@ -1,5 +1,5 @@
 import React, { useCallback, useState, FunctionComponent } from 'react';
-import { Pagination } from '@mui/lab';
+import { Pagination } from '@mui/material';
 import { Box, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -99,7 +99,9 @@ export const OrgUnitsMapComments: FunctionComponent<Props> = ({
 
     return (
         <>
-            <Box px={2} component="div" className={classes.header}>
+            <Box component="div" className={classes.header} sx={{
+                px: 2
+            }}>
                 <Typography variant="body1">
                     {orgUnit?.name ?? formatMessage(MESSAGES.selectOrgUnit)}
                 </Typography>

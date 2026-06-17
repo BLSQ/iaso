@@ -192,10 +192,18 @@ export const ScopeInput: FunctionComponent<Props> = ({
     );
 
     return (
-        <Box width="100%" overflow="hidden">
+        <Box
+            sx={{
+                width: "100%",
+                overflow: "hidden"
+            }}>
             <Grid container spacing={2}>
-                <Grid xs={5} item>
-                    <Box mb={2} mt={searchInputWithMargin ? 2 : 0}>
+                <Grid size={5}>
+                    <Box
+                        sx={{
+                            mb: 2,
+                            mt: searchInputWithMargin ? 2 : 0
+                        }}>
                         {searchComponent}
                         <InputComponent
                             keyValue="searchScope"
@@ -222,7 +230,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
                         isPolio={isPolio}
                     />
                 </Grid>
-                <Grid xs={7} item>
+                <Grid size={7}>
                     {isFetching && <LoadingSpinner />}
                     <MapScope
                         field={field}

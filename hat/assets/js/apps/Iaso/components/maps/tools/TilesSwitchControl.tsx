@@ -105,7 +105,6 @@ export const TilesSwitchControl: FunctionComponent<Props> = ({
                     <Layers fontSize="small" />
                 </span>
             )}
-
             <Box
                 className={classNames(
                     tilePopup ? classes.open : classes.closed,
@@ -113,7 +112,9 @@ export const TilesSwitchControl: FunctionComponent<Props> = ({
                 )}
             >
                 {tilePopup && (
-                    <Box width={235}>
+                    <Box sx={{
+                        width: 235
+                    }}>
                         <Typography
                             variant="subtitle1"
                             className={classes.title}

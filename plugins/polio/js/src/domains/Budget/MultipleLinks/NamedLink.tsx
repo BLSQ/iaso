@@ -51,7 +51,7 @@ export const NamedLink: FunctionComponent<Props> = ({ index }) => {
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={4}>
+            <Grid size={4}>
                 <Field
                     label={formatMessage(MESSAGES.displayedName)}
                     name={`links[${index}].alias`}
@@ -59,7 +59,11 @@ export const NamedLink: FunctionComponent<Props> = ({ index }) => {
                     component={TextInput}
                 />
             </Grid>
-            <Grid item xs={5} lg={6}>
+            <Grid
+                size={{
+                    xs: 5,
+                    lg: 6
+                }}>
                 <Field
                     label={formatMessage(MESSAGES.url)}
                     name={`links[${index}].url`}
@@ -67,8 +71,15 @@ export const NamedLink: FunctionComponent<Props> = ({ index }) => {
                     className={classNames(classes.input, customStyle.linkInput)}
                 />
             </Grid>
-            <Grid container item xs={3} lg={2} direction="row" spacing={2}>
-                <Grid item xs={6}>
+            <Grid
+                container
+                direction="row"
+                spacing={2}
+                size={{
+                    xs: 3,
+                    lg: 2
+                }}>
+                <Grid size={6}>
                     <IconButtonComponent
                         overrideIcon={ClearIcon}
                         onClick={handleRemoveSelf}
@@ -77,7 +88,7 @@ export const NamedLink: FunctionComponent<Props> = ({ index }) => {
                     />
                 </Grid>
                 {/* IconButton from blsq-comp with url prop doesn't seem to work, so we're using the one from Material UI instead (cf Preparedness) */}
-                <Grid item xs={6}>
+                <Grid size={6}>
                     {/* TS complains about target and href props which are passed by IconButton to its rroot element (BaseButton) */}
                     {/* @ts-ignore */}
                     <IconButton

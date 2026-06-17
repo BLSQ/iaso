@@ -64,7 +64,9 @@ export const MapLegend: FunctionComponent<Props> = ({
             className={classes.root}
             style={{ top, left, right, bottom, width }}
         >
-            <Box p={padding}>
+            <Box sx={{
+                p: padding
+            }}>
                 {titleMessage && (
                     <Typography
                         variant="subtitle1"
@@ -78,7 +80,9 @@ export const MapLegend: FunctionComponent<Props> = ({
                     options.map((o, i) => (
                         <Box
                             key={o.value}
-                            mb={i + 1 === options.length ? 0 : 1}
+                            sx={{
+                                mb: i + 1 === options.length ? 0 : 1
+                            }}
                         >
                             <span
                                 className={classes.roundColor}

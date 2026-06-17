@@ -19,7 +19,9 @@ export const SubActivityForm: FunctionComponent<Props> = ({ round }) => {
     const columns = useSubActivitiesColumns(round);
     return (
         <>
-            <Box mb={-6}>
+            <Box sx={{
+                mb: -6
+            }}>
                 <SubActivitiesInfos round={round} />
             </Box>
             <Box

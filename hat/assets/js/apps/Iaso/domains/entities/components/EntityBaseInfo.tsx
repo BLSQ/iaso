@@ -36,10 +36,12 @@ const EntityTitle: FunctionComponent<{
     const { formatMessage } = useSafeIntl();
     return hasDuplicates && duplicateUrl ? (
         <Grid container>
-            <Grid item xs={6}>
+            <Grid size={6}>
                 {formatMessage(MESSAGES.entityInfo)}
             </Grid>
-            <Grid item xs={6} justifyContent="flex-end" container>
+            <Grid container size={6} sx={{
+                justifyContent: "flex-end"
+            }}>
                 <LinkButton to={duplicateUrl}>
                     {formatMessage(MESSAGES.seeDuplicates)}
                 </LinkButton>

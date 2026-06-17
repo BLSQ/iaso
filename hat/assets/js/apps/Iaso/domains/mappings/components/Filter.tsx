@@ -49,7 +49,11 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={12} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 3
+                }}>
                 <InputComponent
                     keyValue="search"
                     onChange={handleChange}
@@ -61,8 +65,11 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     onErrorChange={setTextSearchError}
                 />
             </Grid>
-
-            <Grid item xs={12} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 3
+                }}>
                 <InputComponent
                     keyValue="formId"
                     onChange={handleChange}
@@ -76,8 +83,11 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     multi
                 />
             </Grid>
-
-            <Grid item xs={12} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 3
+                }}>
                 <InputComponent
                     type="select"
                     onChange={handleChange}
@@ -89,8 +99,11 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     options={mappingTypeOptions ?? []}
                 />
             </Grid>
-
-            <Grid item xs={12} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 3
+                }}>
                 <InputComponent
                     type="select"
                     onChange={handleChange}
@@ -102,7 +115,11 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     options={orgUnitTypes ?? []}
                 />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 3
+                }}>
                 <InputComponent
                     keyValue="projectsIds"
                     onChange={handleChange}
@@ -116,9 +133,18 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     multi
                 />
             </Grid>
-
-            <Grid container item xs={12} md={12} justifyContent="flex-end">
-                <Box mt={isLargeLayout ? 3 : 0}>
+            <Grid
+                container
+                size={{
+                    xs: 12,
+                    md: 12
+                }}
+                sx={{
+                    justifyContent: "flex-end"
+                }}>
+                <Box sx={{
+                    mt: isLargeLayout ? 3 : 0
+                }}>
                     <Button
                         data-test="search-button"
                         disabled={!filtersUpdated || textSearchError}

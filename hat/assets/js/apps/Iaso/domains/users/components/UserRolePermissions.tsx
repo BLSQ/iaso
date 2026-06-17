@@ -35,7 +35,9 @@ export const UserRolePermissions: FunctionComponent<Props> = ({
                             key={key}
                             direction="row"
                             spacing={1}
-                            alignItems="center"
+                            sx={{
+                                alignItems: "center"
+                            }}
                         >
                             {hasPermission ? (
                                 <CheckedIcon

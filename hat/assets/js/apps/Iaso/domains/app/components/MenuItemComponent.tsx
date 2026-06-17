@@ -2,13 +2,14 @@ import React, { FunctionComponent } from 'react';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import {
-    ListItemIcon,
-    ListItem,
-    ListItemText,
-    Typography,
+    Box,
     Collapse,
     List,
-    Box,
+    ListItem,
+    ListItemButton,
+    ListItemIcon,
+    ListItemText,
+    Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -83,34 +84,38 @@ const MenuItem: FunctionComponent<Props> = ({
     if (hasSubMenu) {
         return (
             <>
-                <ListItem
-                    style={itemStyle}
-                    button
-                    onClick={() =>
-                        !hasSubMenu ? onClick(path, url) : toggleOpen()
-                    }
-                >
-                    {menuItem.icon && (
-                        <ListItemIcon className={classes.listItemIcon}>
-                            {menuItem.icon({ color })}
-                        </ListItemIcon>
-                    )}
-                    <ListItemText
-                        primary={
-                            <Box pl={menuItem.icon ? 0 : 2}>
-                                {/* type prop should be variant. Check impact on UI layout before changing */}
-                                {/* @ts-ignore */}
-                                <Typography type="body2" color={color}>
-                                    {menuItem.label.defaultMessage &&
-                                        menuItem.label.id &&
-                                        formatMessage(menuItem.label)}
-                                    {typeof menuItem.label === 'string' &&
-                                        menuItem.label}
-                                </Typography>
-                            </Box>
+                <ListItem disablePadding style={itemStyle}>
+                    <ListItemButton
+                        onClick={() =>
+                            !hasSubMenu ? onClick(path, url) : toggleOpen()
                         }
-                    />
-                    {hasSubMenu ? subMenuIcon : null}
+                    >
+                        {menuItem.icon && (
+                            <ListItemIcon className={classes.listItemIcon}>
+                                {menuItem.icon({ color })}
+                            </ListItemIcon>
+                        )}
+                        <ListItemText
+                            primary={
+                                <Box
+                                    sx={{
+                                        pl: menuItem.icon ? 0 : 2,
+                                    }}
+                                >
+                                    {/* type prop should be variant. Check impact on UI layout before changing */}
+                                    {/* @ts-ignore */}
+                                    <Typography type="body2" color={color}>
+                                        {menuItem.label.defaultMessage &&
+                                            menuItem.label.id &&
+                                            formatMessage(menuItem.label)}
+                                        {typeof menuItem.label === 'string' &&
+                                            menuItem.label}
+                                    </Typography>
+                                </Box>
+                            }
+                        />
+                        {hasSubMenu ? subMenuIcon : null}
+                    </ListItemButton>
                 </ListItem>
                 {hasSubMenu && (
                     <Collapse in={open} timeout="auto" unmountOnExit>
@@ -148,14 +153,12 @@ const MenuItem: FunctionComponent<Props> = ({
     }
 
     return (
-        <Link
-            className={classes.linkButton}
-            to={!hasSubMenu ? fullPath : ''}
-            target={urlLink ? '_blank' : ''}
-        >
-            <ListItem
-                style={itemStyle}
-                button
+        <ListItem disablePadding style={itemStyle}>
+            <ListItemButton
+                className={classes.linkButton}
+                component={Link}
+                to={!hasSubMenu ? fullPath : ''}
+                target={urlLink ? '_blank' : ''}
                 onClick={() =>
                     !hasSubMenu ? onClick(path, url) : toggleOpen()
                 }
@@ -167,7 +170,11 @@ const MenuItem: FunctionComponent<Props> = ({
                 )}
                 <ListItemText
                     primary={
-                        <Box pl={menuItem.icon ? 0 : 2}>
+                        <Box
+                            sx={{
+                                pl: menuItem.icon ? 0 : 2,
+                            }}
+                        >
                             {/* type prop should be variant. Check impact on UI layout before changing */}
                             {/* @ts-ignore */}
                             <Typography type="body2" color={color}>
@@ -181,8 +188,8 @@ const MenuItem: FunctionComponent<Props> = ({
                     }
                 />
                 {hasSubMenu ? subMenuIcon : null}
-            </ListItem>
-        </Link>
+            </ListItemButton>
+        </ListItem>
     );
 };
 

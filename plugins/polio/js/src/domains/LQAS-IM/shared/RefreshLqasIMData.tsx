@@ -151,7 +151,12 @@ export const RefreshLqasIMData: FunctionComponent<Props> = ({
     if (!countryId) return null;
     return (
         <>
-            <Box display="flex" justifyContent="flex-end" width="100%">
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    width: "100%"
+                }}>
                 <Button
                     size="small"
                     variant="contained"
@@ -159,7 +164,11 @@ export const RefreshLqasIMData: FunctionComponent<Props> = ({
                     onClick={launchRefresh}
                     disabled={disableButton}
                 >
-                    <Box mr={1} pt={1}>
+                    <Box
+                        sx={{
+                            mr: 1,
+                            pt: 1
+                        }}>
                         <RefreshIcon fontSize="small" />
                     </Box>
                     {buttonText}
@@ -173,18 +182,25 @@ export const RefreshLqasIMData: FunctionComponent<Props> = ({
                     )}
                 </Button>
             </Box>
-            <Box display="flex" justifyContent="flex-end" width="100%" mt={2}>
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    width: "100%",
+                    mt: 2
+                }}>
                 {`${formatMessage(
                     MESSAGES.latestManualRefresh,
                 )}: ${lastUpdate}`}
             </Box>
             <Box
-                display="flex"
-                justifyContent="flex-end"
-                width="100%"
-                mt={1}
-                mb={1}
-            >
+                sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    width: "100%",
+                    mt: 1,
+                    mb: 1
+                }}>
                 {`${formatMessage(MESSAGES.status)}: ${updateStatus}`}
             </Box>
         </>

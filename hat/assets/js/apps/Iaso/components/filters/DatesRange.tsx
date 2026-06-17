@@ -128,8 +128,16 @@ const DatesRange: FunctionComponent<Props> = ({
     // Converting the displayedDateFormat to this one onChange to avoid a nasty bug in Firefox
     return (
         <Grid container spacing={useCurrentBreakPointSpacing(xs, sm, md, lg)}>
-            <Grid item xs={xs} sm={sm} md={md} lg={lg}>
-                <Box mt={marginTop}>
+            <Grid
+                size={{
+                    xs: xs,
+                    sm: sm,
+                    md: md,
+                    lg: lg
+                }}>
+                <Box sx={{
+                    mt: marginTop
+                }}>
                     <FormControl errors={errors[0]}>
                         <DatePicker
                             maxDate={
@@ -157,9 +165,11 @@ const DatesRange: FunctionComponent<Props> = ({
                                     variant: 'outlined',
                                     required: dateFromRequired,
                                     error: errors[0].length > 0,
-                                    InputProps: {
-                                        // @ts-expect-error data-test for automated tests
-                                        'data-test': 'start-date',
+                                    slotProps: {
+                                        input: {
+                                            // @ts-expect-error data-test for automated tests
+                                            'data-test': 'start-date',
+                                        },
                                     },
                                 },
                             }}
@@ -180,8 +190,16 @@ const DatesRange: FunctionComponent<Props> = ({
                     </FormControl>
                 </Box>
             </Grid>
-            <Grid item xs={xs} sm={sm} md={md} lg={lg}>
-                <Box mt={marginTop}>
+            <Grid
+                size={{
+                    xs: xs,
+                    sm: sm,
+                    md: md,
+                    lg: lg
+                }}>
+                <Box sx={{
+                    mt: marginTop
+                }}>
                     <FormControl errors={errors[1]}>
                         <DatePicker
                             minDate={
@@ -209,9 +227,11 @@ const DatesRange: FunctionComponent<Props> = ({
                                     variant: 'outlined',
                                     required: dateToRequired,
                                     error: errors[1].length > 0,
-                                    InputProps: {
-                                        // @ts-expect-error data-test for automated tests
-                                        'data-test': 'end-date',
+                                    slotProps: {
+                                        input: {
+                                            // @ts-expect-error data-test for automated tests
+                                            'data-test': 'end-date',
+                                        },
                                     },
                                 },
                             }}

@@ -93,11 +93,10 @@ export const InstancePopup: FunctionComponent<Props> = ({
                             <Grid
                                 container
                                 spacing={0}
-                                justifyContent={
-                                    displayUseLocation ? 'center' : 'flex-end'
-                                }
-                                alignItems="center"
-                            >
+                                sx={{
+                                    justifyContent: displayUseLocation ? 'center' : 'flex-end',
+                                    alignItems: "center"
+                                }}>
                                 {displayUseLocation && (
                                     <ConfirmDialog
                                         btnSize="small"

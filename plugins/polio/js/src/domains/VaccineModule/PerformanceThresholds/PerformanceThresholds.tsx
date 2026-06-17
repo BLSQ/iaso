@@ -24,7 +24,12 @@ export const PerformanceThresholds: FunctionComponent = () => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={params} />
-                <Box mt={2} justifyContent="flex-end" display="flex">
+                <Box
+                    sx={{
+                        mt: 2,
+                        justifyContent: "flex-end",
+                        display: "flex"
+                    }}>
                     <DisplayIfUserHasPerm
                         permissions={[
                             POLIO_PERFORMANCE_THRESHOLD_WRITE_PERMISSION,

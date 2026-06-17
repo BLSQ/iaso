@@ -155,12 +155,15 @@ const MappingDetails = () => {
                 }}
             />
             {fetching && <LoadingSpinner />}
-
             {currentMappingVersion && (
                 <Box className={classes.containerFullHeightNoTabPadded}>
                     <Grid container spacing={4}>
                         {currentFormVersion && currentMappingVersion && (
-                            <Grid item xs={4} md={3}>
+                            <Grid
+                                size={{
+                                    xs: 4,
+                                    md: 3
+                                }}>
                                 <RecursiveTreeView
                                     formVersion={currentFormVersion}
                                     mappingVersion={currentMappingVersion}
@@ -170,7 +173,11 @@ const MappingDetails = () => {
                                 />
                             </Grid>
                         )}
-                        <Grid item xs={8} md={9}>
+                        <Grid
+                            size={{
+                                xs: 8,
+                                md: 9
+                            }}>
                             {currentQuestion == null &&
                                 currentMappingVersion && (
                                     <GeneraMappingInfo

@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
-import { Pagination } from '@mui/lab';
+import { Pagination } from '@mui/material';
 import { Box, Collapse, useMediaQuery, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -117,10 +117,11 @@ export const BudgetProcessList: FunctionComponent = () => {
             >
                 {isMobileLayout && (
                     <Box
-                        position="absolute"
-                        top={theme.spacing(2)}
-                        right={theme.spacing(2)}
-                    >
+                        sx={{
+                            position: "absolute",
+                            top: theme.spacing(2),
+                            right: theme.spacing(2)
+                        }}>
                         <SearchIcon
                             onClick={() => {
                                 setExpand(value => !value);
@@ -138,7 +139,9 @@ export const BudgetProcessList: FunctionComponent = () => {
                             buttonSize="small"
                             statesList={possibleStates}
                         />
-                        <Box mb={2}>
+                        <Box sx={{
+                            mb: 2
+                        }}>
                             <BudgetButtons
                                 csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
                                 isUserPolioBudgetAdmin={isUserPolioBudgetAdmin}
@@ -178,7 +181,9 @@ export const BudgetProcessList: FunctionComponent = () => {
                         {isFetching && <LoadingSpinner />}
                         {budgets?.results &&
                             budgets.results.map((budget: Budget) => (
-                                <Box key={budget.id} mb={1}>
+                                <Box key={budget.id} sx={{
+                                    mb: 1
+                                }}>
                                     <BudgetCard budget={budget} />
                                 </Box>
                             ))}

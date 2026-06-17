@@ -111,20 +111,27 @@ export const RoundDates: FunctionComponent<Props> = ({
             )}
             {hasInitialData && !isPlanned && (
                 <FormikProvider value={formik}>
-                    <Box mb={2}>
+                    <Box sx={{
+                        mb: 2
+                    }}>
                         <Divider />
                         <Grid container>
-                            <Grid item xs={8}>
-                                <Box ml={2} mb={2} mt={2}>
+                            <Grid size={8}>
+                                <Box
+                                    sx={{
+                                        ml: 2,
+                                        mb: 2,
+                                        mt: 2
+                                    }}>
                                     <Grid container>
-                                        <Grid item xs={4}>
+                                        <Grid size={4}>
                                             <Typography variant="button">
                                                 {`${formatMessage(
                                                     MESSAGES.startDate,
                                                 )}: `}
                                             </Typography>
                                         </Grid>
-                                        <Grid item xs={8}>
+                                        <Grid size={8}>
                                             <Typography variant="button">
                                                 {`${
                                                     currentStartDate
@@ -138,16 +145,20 @@ export const RoundDates: FunctionComponent<Props> = ({
                                     </Grid>
                                 </Box>
 
-                                <Box ml={2} mb={2}>
+                                <Box
+                                    sx={{
+                                        ml: 2,
+                                        mb: 2
+                                    }}>
                                     <Grid container>
-                                        <Grid item xs={4}>
+                                        <Grid size={4}>
                                             <Typography variant="button">
                                                 {`${formatMessage(
                                                     MESSAGES.endDate,
                                                 )}: `}
                                             </Typography>
                                         </Grid>
-                                        <Grid item xs={8}>
+                                        <Grid size={8}>
                                             <Typography variant="button">
                                                 {`${
                                                     currentEndDate
@@ -163,11 +174,11 @@ export const RoundDates: FunctionComponent<Props> = ({
                             </Grid>
                             <Grid
                                 container
-                                item
-                                xs={4}
-                                alignContent="center"
-                                justifyContent="flex-end"
-                            >
+                                size={4}
+                                sx={{
+                                    alignContent: "center",
+                                    justifyContent: "flex-end"
+                                }}>
                                 <Box style={{ display: 'flex' }}>
                                     <RoundDatesHistoryModal
                                         roundId={rounds[roundIndex]?.id}

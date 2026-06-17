@@ -33,7 +33,9 @@ const FormVersionsDiffTables: FunctionComponent<Props> = ({
     return (
         <>
             {removedQuestions.length > 0 && (
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <Typography variant="subtitle2" gutterBottom color="error">
                         {formatMessage(MESSAGES.removedQuestionsSection, {
                             count: removedQuestions.length,
@@ -70,7 +72,9 @@ const FormVersionsDiffTables: FunctionComponent<Props> = ({
                     <Typography
                         variant="subtitle2"
                         gutterBottom
-                        color="warning.main"
+                        sx={{
+                            color: "warning.main"
+                        }}
                     >
                         {formatMessage(MESSAGES.modifiedQuestionsSection, {
                             count: modifiedQuestions.length,

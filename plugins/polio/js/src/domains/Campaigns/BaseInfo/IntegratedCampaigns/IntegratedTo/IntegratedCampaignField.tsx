@@ -19,7 +19,7 @@ export const IntegratedCampaignField: FunctionComponent<Props> = ({
 }) => {
     return (
         <Grid container spacing={2}>
-            <Grid item xs={11}>
+            <Grid size={11}>
                 <CampaignAsyncSelect
                     keyValue="integrated_to"
                     handleChange={onChange}
@@ -27,8 +27,10 @@ export const IntegratedCampaignField: FunctionComponent<Props> = ({
                     label={label}
                 />
             </Grid>
-            <Grid item xs={1}>
-                <Box pt={0.5}>
+            <Grid size={1}>
+                <Box sx={{
+                    pt: 0.5
+                }}>
                     <LinkTo
                         url={`campaignId/${value?.id}`}
                         condition

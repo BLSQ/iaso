@@ -78,7 +78,9 @@ export const ImOverviewContainer: FunctionComponent<Props> = ({
 
     return (
         <Paper elevation={paperElevation}>
-            <Box mb={2}>
+            <Box sx={{
+                mb: 2
+            }}>
                 <LqasImMapHeader
                     round={round}
                     startDate={startDate}

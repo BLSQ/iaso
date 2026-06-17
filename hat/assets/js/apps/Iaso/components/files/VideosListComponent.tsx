@@ -19,7 +19,9 @@ const VideosListComponent: FunctionComponent<Props> = ({ videoList }) => {
         }
     }, []);
     return (
-        <Box ref={containerRef} overflow="hidden">
+        <Box ref={containerRef} sx={{
+            overflow: "hidden"
+        }}>
             {width > 0 && (
                 <Masonry columns={width < 500 ? 1 : 3} spacing={2}>
                     {videoList.map(file => {

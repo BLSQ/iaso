@@ -138,7 +138,9 @@ export const WorkflowBaseInfo = ({ workflow }: Props) => {
 
     return (
         <>
-            <Box p={2} className={classes.root}>
+            <Box className={classes.root} sx={{
+                p: 2
+            }}>
                 <InputComponent
                     withMarginTop={false}
                     keyValue="name"
@@ -178,7 +180,12 @@ export const WorkflowBaseInfo = ({ workflow }: Props) => {
                 </TableBody>
             </Table>
             <Divider />
-            <Box p={2} display="flex" justifyContent="flex-end">
+            <Box
+                sx={{
+                    p: 2,
+                    display: "flex",
+                    justifyContent: "flex-end"
+                }}>
                 <Button
                     onClick={() => {
                         save();

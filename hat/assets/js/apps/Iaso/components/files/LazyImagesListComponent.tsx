@@ -50,13 +50,11 @@ const LazyImagesList: FunctionComponent<Props> = ({
                 <Grid container spacing={2}>
                     {imageList.map((file, index) => (
                         <Grid
-                            item
-                            xs={width < 500 ? 6 : 3}
                             key={`${file.itemId}-${
                                 getFileName(file.path).name
                             }`}
                             sx={styles.imageItem}
-                        >
+                            size={width < 500 ? 6 : 3}>
                             <LazyImage
                                 src={file.path}
                                 visibilitySensorProps={{

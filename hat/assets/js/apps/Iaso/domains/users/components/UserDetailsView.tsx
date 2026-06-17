@@ -71,11 +71,17 @@ export const UserDetailsView = ({ userId }: Props) => {
                 <LoadingSpinner />
             ) : (
                 <Stack spacing={2}>
-                    <Box pt={4} px={2}>
+                    <Box
+                        sx={{
+                            pt: 4,
+                            px: 2
+                        }}>
                         <Stack
                             direction="row"
                             spacing={2}
-                            justifyContent="flex-end"
+                            sx={{
+                                justifyContent: "flex-end"
+                            }}
                         >
                             <TopActions
                                 saveProfile={saveProfile}

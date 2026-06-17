@@ -35,7 +35,11 @@ export const UserRoles: FunctionComponent = () => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <UserRolesFilters params={params} />
-                <Box display="flex" justifyContent="flex-end">
+                <Box
+                    sx={{
+                        display: "flex",
+                        justifyContent: "flex-end"
+                    }}>
                     <CreateUserRoleDialog dialogType="create" iconProps={{}} />
                 </Box>
                 <TableWithDeepLink

@@ -166,7 +166,9 @@ export const CaregiversTable: FunctionComponent<Props> = ({
                     data={data}
                     paperElevation={paperElevation}
                 />
-                <Box mt={marginTop ? 4 : 0}>
+                <Box sx={{
+                    mt: marginTop ? 4 : 0
+                }}>
                     <Table
                         countOnTop={false}
                         data={sortedData}

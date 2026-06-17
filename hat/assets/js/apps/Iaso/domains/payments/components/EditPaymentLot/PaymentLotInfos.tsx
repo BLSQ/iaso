@@ -50,15 +50,29 @@ export const PaymentLotInfos: FunctionComponent<Props> = ({
     return (
         <Grid container>
             {/* Styling with sx wouldn't override the width */}
-            <Grid container item xs={12} md={6} lg={5} xl={4} spacing={2}>
+            <Grid
+                container
+                spacing={2}
+                size={{
+                    xs: 12,
+                    md: 6,
+                    lg: 5,
+                    xl: 4
+                }}>
                 <Paper style={{ width: '100%' }} elevation={2}>
-                    <Box ml={2} my={2}>
+                    <Box
+                        sx={{
+                            ml: 2,
+                            my: 2
+                        }}>
                         <Typography color="primary" variant="h5">
                             {formatMessage(MESSAGES.paymentLotInfos)}
                         </Typography>
                     </Box>
-                    <Grid item xs={12}>
-                        <Box mx={2}>
+                    <Grid size={12}>
+                        <Box sx={{
+                            mx: 2
+                        }}>
                             <InputComponent
                                 type="text"
                                 required
@@ -69,8 +83,10 @@ export const PaymentLotInfos: FunctionComponent<Props> = ({
                             />
                         </Box>
                     </Grid>
-                    <Grid item xs={12}>
-                        <Box mx={2}>
+                    <Grid size={12}>
+                        <Box sx={{
+                            mx: 2
+                        }}>
                             <InputComponent
                                 type="text"
                                 multiline
@@ -81,20 +97,34 @@ export const PaymentLotInfos: FunctionComponent<Props> = ({
                             />
                         </Box>
                     </Grid>
-                    <Grid item xs={12}>
-                        <Box sx={componentStyle.infos} ml={2} mt={2}>
+                    <Grid size={12}>
+                        <Box
+                            sx={[{
+                                ml: 2,
+                                mt: 2
+                            }, componentStyle.infos]}>
                             <span>{formatMessage(MESSAGES.date)}:</span>
                             {moment().format('L')}
                         </Box>
                     </Grid>
-                    <Grid item xs={12}>
-                        <Box sx={componentStyle.infos} ml={2} mt={2}>
+                    <Grid size={12}>
+                        <Box
+                            sx={[{
+                                ml: 2,
+                                mt: 2
+                            }, componentStyle.infos]}>
                             <span>{formatMessage(MESSAGES.created_by)}:</span>
                             {getDisplayName(paymentLot.created_by)}
                         </Box>
                     </Grid>
-                    <Grid container item xs={12} justifyContent="flex-end">
-                        <Box mr={2} mb={2}>
+                    <Grid container size={12} sx={{
+                        justifyContent: "flex-end"
+                    }}>
+                        <Box
+                            sx={{
+                                mr: 2,
+                                mb: 2
+                            }}>
                             <Button
                                 color="primary"
                                 variant="contained"

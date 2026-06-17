@@ -292,7 +292,9 @@ export const DuplicateDetails: FunctionComponent = () => {
                 )}
             >
                 {hasNoData && (
-                    <Box mt={2}>
+                    <Box sx={{
+                        mt: 2
+                    }}>
                         <Alert severity="warning">
                             {formatMessage(MESSAGES.duplicateNotFound)}
                         </Alert>
@@ -301,8 +303,10 @@ export const DuplicateDetails: FunctionComponent = () => {
                 {!hasNoData && (
                     <>
                         <Grid container>
-                            <Grid item xs={12}>
-                                <Box pb={4}>
+                            <Grid size={12}>
+                                <Box sx={{
+                                    pb: 4
+                                }}>
                                     <DuplicateInfos
                                         unmatchedRemaining={unmatchedRemaining}
                                         formName={formName}
@@ -349,13 +353,13 @@ export const DuplicateDetails: FunctionComponent = () => {
                             </Paper>
                         </Box>
                         <Box>
-                            <Grid container item spacing={2}>
+                            <Grid container spacing={2}>
                                 <Grid
-                                    item
-                                    xs={12}
-                                    sm={6}
                                     data-test="duplicate-submissions-a"
-                                >
+                                    size={{
+                                        xs: 12,
+                                        sm: 6
+                                    }}>
                                     <SubmissionsForEntity
                                         entityId={entityIdA}
                                         title={formatMessage(
@@ -365,11 +369,11 @@ export const DuplicateDetails: FunctionComponent = () => {
                                     />
                                 </Grid>
                                 <Grid
-                                    item
-                                    xs={12}
-                                    sm={6}
                                     data-test="duplicate-submissions-b"
-                                >
+                                    size={{
+                                        xs: 12,
+                                        sm: 6
+                                    }}>
                                     <SubmissionsForEntity
                                         entityId={entityIdB}
                                         title={formatMessage(

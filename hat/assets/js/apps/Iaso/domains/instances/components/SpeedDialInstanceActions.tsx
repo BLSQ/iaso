@@ -61,9 +61,11 @@ const SpeedDialInstanceActions: FunctionComponent<Props> = ({
                 {actions.map(action => (
                     <SpeedDialAction
                         key={action.id}
-                        tooltipPlacement="bottom"
                         icon={action.icon}
-                        tooltipTitle={formatMessage(MESSAGES[action.id])}
+                        title={formatMessage(MESSAGES[action.id])}
+                        slotProps={{
+                            tooltip: { placement: 'bottom' },
+                        }}
                         disabled={action.disabled ?? false}
                         onClick={() => handleClick(action)}
                     />

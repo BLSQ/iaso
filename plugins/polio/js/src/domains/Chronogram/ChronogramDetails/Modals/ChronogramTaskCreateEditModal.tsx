@@ -94,10 +94,14 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
                 allowConfirm={allowConfirm}
                 cancelMessage={MESSAGES.modalWriteCancel}
             >
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <Divider />
                 </Box>
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <Field
                         label={formatMessage(MESSAGES.labelPeriod)}
                         name="period"
@@ -107,7 +111,9 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
                         disabled={!userHasReadAndWritePerm}
                     />
                 </Box>
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <Field
                         label={formatMessage(MESSAGES.labelDescriptionEn)}
                         name="description_en"
@@ -116,7 +122,9 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
                         disabled={!userHasReadAndWritePerm}
                     />
                 </Box>
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <Field
                         label={formatMessage(MESSAGES.labelDescriptionFr)}
                         name="description_fr"
@@ -124,7 +132,9 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
                         disabled={!userHasReadAndWritePerm}
                     />
                 </Box>
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <InputWithInfos
                         infos={formatMessage(
                             MESSAGES.labelStartOffsetInDaysTooltip,
@@ -141,7 +151,9 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
                         />
                     </InputWithInfos>
                 </Box>
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <Field
                         label={formatMessage(MESSAGES.labelStatus)}
                         name="status"
@@ -150,7 +162,9 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
                         required
                     />
                 </Box>
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <Field
                         label={formatMessage(MESSAGES.labelUserInCharge)}
                         name="user_in_charge"
@@ -161,7 +175,9 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
                         }
                     />
                 </Box>
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <Field
                         label={formatMessage(MESSAGES.labelComment)}
                         name="comment"

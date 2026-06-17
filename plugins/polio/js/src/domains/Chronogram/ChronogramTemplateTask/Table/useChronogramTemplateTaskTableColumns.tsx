@@ -42,7 +42,9 @@ export const useChronogramTemplateTaskTableColumns = (
                 sortable: false,
                 Cell: settings => {
                     return (
-                        <Box display="inline-flex">
+                        <Box sx={{
+                            display: "inline-flex"
+                        }}>
                             {/* @ts-ignore */}
                             <EditChronogramTemplateTaskModal
                                 chronogramTaskMetaData={chronogramTaskMetaData}

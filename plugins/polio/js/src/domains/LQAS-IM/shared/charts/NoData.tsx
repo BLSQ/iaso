@@ -23,8 +23,12 @@ export const NoData: FunctionComponent = () => {
     const classes = useStyles();
     return (
         <Grid container direction="column" className={classes.centerText}>
-            <Grid item>
-                <Box mt={4} mb={4}>
+            <Grid>
+                <Box
+                    sx={{
+                        mt: 4,
+                        mb: 4
+                    }}>
                     <Typography variant="h6" className={classes.boldText}>
                         {formatMessage(MESSAGES.noDataFound)}
                     </Typography>

@@ -26,7 +26,13 @@ export const DatesIgnored: FunctionComponent<Props> = ({ data, campaign }) => {
                 {`${formatMessage(MESSAGES.datesIgnored)}:`}
             </Typography>
             {datesArray.map(d => (
-                <Box mr={1} mb={1} display="inline-block" key={d}>
+                <Box
+                    key={d}
+                    sx={{
+                        mr: 1,
+                        mb: 1,
+                        display: "inline-block"
+                    }}>
                     <Chip label={d} variant="outlined" color="secondary" />
                 </Box>
             ))}

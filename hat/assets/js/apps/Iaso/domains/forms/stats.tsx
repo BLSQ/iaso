@@ -41,22 +41,21 @@ export const FormsStats: FunctionComponent = () => {
                 title={formatMessage(MESSAGES.statsTitle)}
                 displayBackButton={false}
             />
-
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Grid container spacing={3}>
-                    <Grid container item xs={12}>
-                        <Grid xs={12} item>
+                    <Grid container size={12}>
+                        <Grid size={12}>
                             <Filters params={params} baseUrl={baseUrl} />
                         </Grid>
                     </Grid>
-                    <Grid container item xs={12} spacing={2}>
-                        <Grid xs={6} item className={classes.card}>
+                    <Grid container spacing={2} size={12}>
+                        <Grid className={classes.card} size={6}>
                             <InstancesTotalGraph
                                 data={dataStatsSum}
                                 isLoading={isLoadingDataStatsSum}
                             />
                         </Grid>
-                        <Grid xs={6} item className={classes.card}>
+                        <Grid className={classes.card} size={6}>
                             <InstancesPerFormGraph
                                 data={dataStats}
                                 isLoading={isLoadingDataStats}

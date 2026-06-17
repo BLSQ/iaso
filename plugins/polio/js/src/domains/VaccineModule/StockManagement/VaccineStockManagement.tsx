@@ -36,7 +36,12 @@ export const VaccineStockManagement: FunctionComponent = () => {
                         POLIO_VACCINE_STOCK_READ,
                     ]}
                 >
-                    <Box mt={2} justifyContent="flex-end" display="flex">
+                    <Box
+                        sx={{
+                            mt: 2,
+                            justifyContent: "flex-end",
+                            display: "flex"
+                        }}>
                         <CreateVaccineStock iconProps={{}} />
                     </Box>
                 </DisplayIfUserHasPerm>

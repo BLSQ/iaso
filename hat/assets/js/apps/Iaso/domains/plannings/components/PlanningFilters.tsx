@@ -40,7 +40,11 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
     return (
         <Grid container spacing={0}>
             <Grid container spacing={2}>
-                <Grid item xs={12} md={4}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 4
+                    }}>
                     <InputComponent
                         keyValue="search"
                         onChange={handleChange}
@@ -52,7 +56,11 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                         blockForbiddenChars
                     />
                 </Grid>
-                <Grid item xs={12} md={4}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 4
+                    }}>
                     <DatesRange
                         onChangeDate={handleChange}
                         dateFrom={filters.dateFrom}
@@ -61,7 +69,11 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                         labelTo={MESSAGES.endDateUntil}
                     />
                 </Grid>
-                <Grid item xs={12} md={2}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 2
+                    }}>
                     <InputComponent
                         type="select"
                         multi={false}
@@ -72,7 +84,14 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                         label={MESSAGES.status}
                     />
                 </Grid>
-                <Grid item xs={12} md={2} justifyContent="flex-end">
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 2
+                    }}
+                    sx={{
+                        justifyContent: "flex-end"
+                    }}>
                     <Box
                         sx={{
                             display: 'flex',

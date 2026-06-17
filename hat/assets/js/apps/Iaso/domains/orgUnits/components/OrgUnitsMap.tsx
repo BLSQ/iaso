@@ -209,13 +209,13 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
     if (!bounds && orgUnitsTotal.length > 0) {
         return (
             <Grid container spacing={0}>
-                <Grid item xs={3} />
-                <Grid item xs={6}>
+                <Grid size={3} />
+                <Grid size={6}>
                     <ErrorPaperComponent
                         message={formatMessage(MESSAGES.missingGeolocation)}
                     />
                 </Grid>
-                <Grid item xs={3} />
+                <Grid size={3} />
             </Grid>
         );
     }
@@ -236,7 +236,9 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                     />
                 }
             >
-                <Box position="relative">
+                <Box sx={{
+                    position: "relative"
+                }}>
                     <MapToggleCluster
                         isClusterActive={isClusterActive}
                         setIsClusterActive={handleClusterActiveChange}

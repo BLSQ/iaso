@@ -70,7 +70,9 @@ export const useGetConfig = (): Record<string, any> => {
                             const lastArrayItem =
                                 log.org_units[log.org_units.length - 1];
                             return (
-                                <Box key={ouId} display="inline-block">
+                                <Box key={ouId} sx={{
+                                    display: "inline-block"
+                                }}>
                                     <Link
                                         target="_blank"
                                         href={`/dashboard/orgunits/detail/orgUnitId/${ouId}`}
@@ -364,7 +366,9 @@ export const useGetConfig = (): Record<string, any> => {
                                     const lastArrayItem =
                                         log.org_units[log.org_units.length - 1];
                                     return (
-                                        <Box key={ouId} display="inline-block">
+                                        <Box key={ouId} sx={{
+                                            display: "inline-block"
+                                        }}>
                                             <Link
                                                 target="_blank"
                                                 href={`/dashboard/orgunits/detail/orgUnitId/${ouId}`}

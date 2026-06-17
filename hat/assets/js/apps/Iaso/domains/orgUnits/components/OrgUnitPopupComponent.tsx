@@ -106,7 +106,9 @@ const OrgUnitPopupComponent: FunctionComponent<Props> = ({
                         )}
                     >
                         {titleMessage && (
-                            <Box mb={2}>
+                            <Box sx={{
+                                mb: 2
+                            }}>
                                 <Typography
                                     variant="h6"
                                     className={classes.titleMessage}
@@ -164,11 +166,10 @@ const OrgUnitPopupComponent: FunctionComponent<Props> = ({
                             <Grid
                                 container
                                 spacing={0}
-                                justifyContent={
-                                    displayUseLocation ? 'center' : 'flex-end'
-                                }
-                                alignItems="center"
-                            >
+                                sx={{
+                                    justifyContent: displayUseLocation ? 'center' : 'flex-end',
+                                    alignItems: "center"
+                                }}>
                                 {displayUseLocation && (
                                     <ConfirmDialog
                                         btnSize="small"

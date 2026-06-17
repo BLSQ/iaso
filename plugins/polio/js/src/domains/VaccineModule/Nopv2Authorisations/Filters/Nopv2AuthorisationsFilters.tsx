@@ -31,7 +31,12 @@ export const Nopv2AuthorisationsFilters: FunctionComponent<Props> = ({
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={6} md={4} lg={3}>
+            <Grid
+                size={{
+                    xs: 6,
+                    md: 4,
+                    lg: 3
+                }}>
                 <InputComponent
                     type="select"
                     multi
@@ -44,7 +49,12 @@ export const Nopv2AuthorisationsFilters: FunctionComponent<Props> = ({
                     labelString={formatMessage(MESSAGES.countryBlock)}
                 />
             </Grid>
-            <Grid item xs={6} md={4} lg={3}>
+            <Grid
+                size={{
+                    xs: 6,
+                    md: 4,
+                    lg: 3
+                }}>
                 <InputComponent
                     type="select"
                     multi
@@ -56,22 +66,35 @@ export const Nopv2AuthorisationsFilters: FunctionComponent<Props> = ({
                     labelString={formatMessage(MESSAGES.status)}
                 />
             </Grid>
-            <Grid container item xs={12} md={4} lg={6}>
+            <Grid
+                container
+                size={{
+                    xs: 12,
+                    md: 4,
+                    lg: 6
+                }}>
                 <Box
-                    display="flex"
-                    justifyContent="flex-end"
-                    alignItems="end"
-                    flexDirection="column"
-                    width="100%"
-                >
-                    <Box mt={2}>
+                    sx={{
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        alignItems: "end",
+                        flexDirection: "column",
+                        width: "100%"
+                    }}>
+                    <Box sx={{
+                        mt: 2
+                    }}>
                         <SearchButton
                             disabled={!filtersUpdated}
                             onSearch={handleSearch}
                         />
                     </Box>
                     {userHasPermission(VACCINE_AUTH_ADMIN, currentUser) && (
-                        <Box mt={2} mb={2}>
+                        <Box
+                            sx={{
+                                mt: 2,
+                                mb: 2
+                            }}>
                             <CreateAuthorisationModal
                                 iconProps={{
                                     message: MESSAGES.addAuthorisation,

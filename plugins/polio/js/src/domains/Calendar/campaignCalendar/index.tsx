@@ -41,7 +41,13 @@ const CampaignsCalendar: FunctionComponent<Props> = ({
     const classes = useStyles();
     const { headers, currentWeekIndex, firstMonday, lastSunday } = calendarData;
     return (
-        <Box mb={2} display="flex" alignItems="flex-start" position="relative">
+        <Box
+            sx={{
+                mb: 2,
+                display: "flex",
+                alignItems: "flex-start",
+                position: "relative"
+            }}>
             {!isPdf && (
                 <Nav
                     currentMonday={currentMonday}

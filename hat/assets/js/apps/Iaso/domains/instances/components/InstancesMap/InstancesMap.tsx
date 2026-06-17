@@ -57,7 +57,9 @@ export const InstancesMap: FunctionComponent<Props> = ({
 
     if (fetching) return null;
     return (
-        <Box className={classes.root} mt={2}>
+        <Box className={classes.root} sx={{
+            mt: 2
+        }}>
             <MapToggleCluster
                 isClusterActive={isClusterActive}
                 setIsClusterActive={setIsClusterActive}

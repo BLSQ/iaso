@@ -36,11 +36,14 @@ export const ReasonsForDelay: FunctionComponent = () => {
                 <Grid
                     container
                     spacing={0}
-                    justifyContent="flex-end"
-                    alignItems="center"
                     className={classes.marginTop}
-                />
-                <Grid container item justifyContent="flex-end" xs={12}>
+                    sx={{
+                        justifyContent: "flex-end",
+                        alignItems: "center"
+                    }} />
+                <Grid container size={12} sx={{
+                    justifyContent: "flex-end"
+                }}>
                     <CreateReasonForDelay iconProps={{}} />
                 </Grid>
                 <TableWithDeepLink

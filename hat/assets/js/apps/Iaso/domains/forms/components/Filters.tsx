@@ -83,8 +83,12 @@ const Filters = ({ params, forms, isLoadingForms }: Props) => {
 
     return (
         <Grid container>
-            <Grid container item xs={12} spacing={2}>
-                <Grid item xs={12} md={3}>
+            <Grid container spacing={2} size={12}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 3
+                    }}>
                     <InputComponent
                         keyValue="search"
                         onChange={handleChange}
@@ -96,7 +100,11 @@ const Filters = ({ params, forms, isLoadingForms }: Props) => {
                         onErrorChange={setTextSearchError}
                     />
                 </Grid>
-                <Grid item xs={12} md={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 3
+                    }}>
                     <InputComponent
                         keyValue="projectsIds"
                         onChange={handleChange}
@@ -111,7 +119,11 @@ const Filters = ({ params, forms, isLoadingForms }: Props) => {
                     />
                 </Grid>
 
-                <Grid item xs={12} md={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 3
+                    }}>
                     <InputComponent
                         type="select"
                         onChange={handleChange}
@@ -123,7 +135,11 @@ const Filters = ({ params, forms, isLoadingForms }: Props) => {
                         options={orgUnitTypes ?? []}
                     />
                 </Grid>
-                <Grid item xs={12} md={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 3
+                    }}>
                     <PlanningsDropdown
                         handleChange={handleChange}
                         value={filters.planning}
@@ -141,8 +157,12 @@ const Filters = ({ params, forms, isLoadingForms }: Props) => {
                     )}
                 </Grid>
             </Grid>
-            <Grid container item xs={12} spacing={2}>
-                <Grid item xs={12} md={3}>
+            <Grid container spacing={2} size={12}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 3
+                    }}>
                     {hasPlanningPermission && (
                         <InputComponent
                             keyValue="onlyDeleted"
@@ -153,12 +173,17 @@ const Filters = ({ params, forms, isLoadingForms }: Props) => {
                         />
                     )}
                 </Grid>
-                <Grid item xs={12} md={9}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 9
+                    }}>
                     <Box
-                        mt={isLargeLayout ? 3 : 0}
-                        display="flex"
-                        justifyContent="flex-end"
-                    >
+                        sx={{
+                            mt: isLargeLayout ? 3 : 0,
+                            display: "flex",
+                            justifyContent: "flex-end"
+                        }}>
                         <DisplayIfUserHasPerm permissions={[Permission.FORMS]}>
                             <Button
                                 variant="outlined"
@@ -179,7 +204,12 @@ const Filters = ({ params, forms, isLoadingForms }: Props) => {
                             onSearch={handleSearch}
                         />
                     </Box>
-                    <Box mt={2} display="flex" justifyContent="flex-end">
+                    <Box
+                        sx={{
+                            mt: 2,
+                            display: "flex",
+                            justifyContent: "flex-end"
+                        }}>
                         <DownloadButtonsComponent
                             variant="outlined"
                             xlsxUrl={xlsxUrl}

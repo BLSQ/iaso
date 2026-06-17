@@ -104,9 +104,13 @@ export const LqasFilterByCountry: FunctionComponent<Props> = ({
         ? `/${baseUrls.campaigns}/campaignId/${campaignObj.id}/search/${campaignObj.obr_name}`
         : null;
     return (
-        <Box my={2} width="100%">
-            <Grid container item spacing={2}>
-                <Grid item xs={4}>
+        <Box
+            sx={{
+                my: 2,
+                width: "100%"
+            }}>
+            <Grid container spacing={2}>
+                <Grid size={4}>
                     <Select
                         keyValue="countries"
                         label={formatMessage(MESSAGES.country)}
@@ -118,7 +122,7 @@ export const LqasFilterByCountry: FunctionComponent<Props> = ({
                         onChange={value => onChange(`${side}Country`, value)}
                     />
                 </Grid>
-                <Grid item xs={4}>
+                <Grid size={4}>
                     <Select
                         keyValue="campaigns"
                         label={formatMessage(MESSAGES.campaign)}
@@ -133,7 +137,10 @@ export const LqasFilterByCountry: FunctionComponent<Props> = ({
                     />
                 </Grid>
                 {campaignLink && (
-                    <Grid item md={1}>
+                    <Grid
+                        size={{
+                            md: 1
+                        }}>
                         <IconButton
                             target="_blank"
                             url={campaignLink}
@@ -146,7 +153,10 @@ export const LqasFilterByCountry: FunctionComponent<Props> = ({
                 )}
 
                 <DisplayIfUserHasPerm permissions={[POLIO_ADMIN]}>
-                    <Grid item md={campaignLink ? 3 : 4}>
+                    <Grid
+                        size={{
+                            md: campaignLink ? 3 : 4
+                        }}>
                         <RefreshLqasIMData countryId={country} />
                     </Grid>
                 </DisplayIfUserHasPerm>

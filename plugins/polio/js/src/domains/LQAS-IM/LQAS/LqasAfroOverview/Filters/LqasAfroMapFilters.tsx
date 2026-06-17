@@ -70,7 +70,11 @@ export const LqasAfroMapFilters: FunctionComponent<Props> = ({
     const infos = formatMessage(MESSAGES.afroMapfilterInfo);
     return (
         <Grid container spacing={2}>
-            <Grid item xs={6} md={6}>
+            <Grid
+                size={{
+                    xs: 6,
+                    md: 6
+                }}>
                 {chooseDates && (
                     <InputWithInfos infos={infos}>
                         <DatesRange
@@ -115,8 +119,18 @@ export const LqasAfroMapFilters: FunctionComponent<Props> = ({
                     />
                 </FormGroup>
             </Grid>
-            <Grid container item xs={12} sm={6} justifyContent="flex-end">
-                <Box mt={2}>
+            <Grid
+                container
+                size={{
+                    xs: 12,
+                    sm: 6
+                }}
+                sx={{
+                    justifyContent: "flex-end"
+                }}>
+                <Box sx={{
+                    mt: 2
+                }}>
                     <SearchButton
                         disabled={!filtersUpdated}
                         onSearch={handleSearch}

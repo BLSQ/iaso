@@ -22,8 +22,14 @@ export const HorizontalDivider: FunctionComponent<Props> = ({
     return (
         <>
             {displayTrigger && (
-                <Grid item xs={12}>
-                    <Box mt={mt} mr={mr} ml={ml} mb={mb}>
+                <Grid size={12}>
+                    <Box
+                        sx={{
+                            mt: mt,
+                            mr: mr,
+                            ml: ml,
+                            mb: mb
+                        }}>
                         <Divider className={classes.divider} />
                     </Box>
                 </Grid>

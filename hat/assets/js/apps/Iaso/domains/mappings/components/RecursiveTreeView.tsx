@@ -2,7 +2,7 @@ import React from 'react';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { makeStyles } from '@mui/styles';
-import { TreeItem, TreeView } from '@mui/x-tree-view';
+import { SimpleTreeView, TreeItem } from '@mui/x-tree-view';
 import _ from 'lodash';
 import Descriptor from '../descriptor';
 
@@ -29,8 +29,11 @@ const RecursiveTreeView = props => {
     const { descriptor } = formVersion;
     const indexedQuestions = Descriptor.indexQuestions(descriptor);
 
-    const onNodeSelected = (event, value) => {
-        const val = indexedQuestions[value];
+    const onNodeSelected = (_event, itemId) => {
+        if (!itemId) {
+            return;
+        }
+        const val = indexedQuestions[itemId];
         if (val && val.type !== 'group') {
             onQuestionSelected(val);
         }
@@ -65,7 +68,7 @@ const RecursiveTreeView = props => {
         return (
             <TreeItem
                 key={Descriptor.getKey(node)}
-                nodeId={Descriptor.getKey(node)}
+                itemId={Descriptor.getKey(node)}
                 label={label}
                 title={Descriptor.getHumanLabel(node)}
                 className={className}
@@ -79,15 +82,17 @@ const RecursiveTreeView = props => {
 
     return (
         <div className={classes.root}>
-            <TreeView
+            <SimpleTreeView
                 className={classes.root}
-                defaultCollapseIcon={<ExpandMoreIcon />}
-                defaultExpanded={[descriptor.name]}
-                defaultExpandIcon={<ChevronRightIcon />}
-                onNodeSelect={onNodeSelected}
+                defaultExpandedItems={[descriptor.name]}
+                slots={{
+                    collapseIcon: ExpandMoreIcon,
+                    expandIcon: ChevronRightIcon,
+                }}
+                onSelectedItemsChange={onNodeSelected}
             >
                 {renderTree(descriptor, true)}
-            </TreeView>
+            </SimpleTreeView>
         </div>
     );
 };

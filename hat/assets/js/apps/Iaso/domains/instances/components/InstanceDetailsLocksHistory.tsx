@@ -44,11 +44,13 @@ const InstanceDetailsLocksHistory: FunctionComponent<{
         >
             {isLoading && <LoadingSpinner fixed={false} />}
             {!hasLocks && (
-                <Grid xs={5} container item>
+                <Grid container size={5}>
                     <Typography
                         variant="body2"
-                        color="inherit"
                         title={formatMessage(MESSAGES.lockAuthorLabel)}
+                        sx={{
+                            color: "inherit"
+                        }}
                     >
                         {formatMessage(MESSAGES.NoLocksHistory)}
                     </Typography>

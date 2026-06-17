@@ -95,7 +95,7 @@ export const WidgetPaper = ({
         <Paper className={`${classes.root} ${className}`} id={id} {...props}>
             {showHeader && (
                 <div className={classes.paperTitle}>
-                    <Grid xs={IconButton ? 10 : 12} item>
+                    <Grid size={IconButton ? 10 : 12}>
                         <Box
                             onClick={handleClick}
                             className={
@@ -125,12 +125,12 @@ export const WidgetPaper = ({
                     </Grid>
                     {IconButton && (
                         <Grid
-                            xs={2}
-                            item
                             container
-                            justifyContent="flex-end"
                             className={classes.paperTitleButtonContainer}
-                        >
+                            size={2}
+                            sx={{
+                                justifyContent: "flex-end"
+                            }}>
                             <div className={classes.paperTitleButton}>
                                 <IconButton {...iconButtonProps} />
                             </div>
@@ -140,7 +140,6 @@ export const WidgetPaper = ({
                     <Divider />
                 </div>
             )}
-
             <Collapse in={open} timeout="auto" unmountOnExit>
                 <div
                     className={padded ? classes.padded : undefined}

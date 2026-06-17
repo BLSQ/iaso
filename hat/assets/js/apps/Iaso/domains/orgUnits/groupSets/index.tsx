@@ -39,12 +39,15 @@ const GroupSets = () => {
                 title={formatMessage(MESSAGES.groupSets)}
                 displayBackButton={false}
             />
-
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={params} />
 
-                <Box mt={4}>
-                    <Grid container spacing={2} justifyContent="flex-end">
+                <Box sx={{
+                    mt: 4
+                }}>
+                    <Grid container spacing={2} sx={{
+                        justifyContent: "flex-end"
+                    }}>
                         <AddButtonComponent
                             onClick={createGroupSet}
                             dataTestId="create-groupset"

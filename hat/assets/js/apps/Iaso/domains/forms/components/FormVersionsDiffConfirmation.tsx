@@ -13,7 +13,9 @@ const FormVersionsDiffConfirmation: FunctionComponent<Props> = ({ diff }) => {
     const { formatMessage } = useSafeIntl();
 
     return (
-        <Box mt={1}>
+        <Box sx={{
+            mt: 1
+        }}>
             <Alert severity="warning" sx={{ mb: 2 }}>
                 {formatMessage(MESSAGES.diffWarning, {
                     versionId: diff.previous_version_id ?? '—',

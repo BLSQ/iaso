@@ -20,11 +20,15 @@ const UsersDialogTabDisabled: FunctionComponent<Props> = ({
     ...tabProps
 }) => {
     return (
-        <Grid container alignItems="center" sx={styles.tab}>
-            <Grid item>
+        <Grid
+            container
+            sx={[{
+                alignItems: "center"
+            }, styles.tab]}>
+            <Grid>
                 <Tab label={tabProps.label} disabled={tabProps.disabled} />
             </Grid>
-            <Grid item>
+            <Grid>
                 <Tooltip title={tooltipMessage} arrow>
                     <InfoIcon color="primary" style={{ cursor: 'pointer' }} />
                 </Tooltip>

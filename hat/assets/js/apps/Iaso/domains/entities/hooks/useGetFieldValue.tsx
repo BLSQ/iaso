@@ -88,7 +88,11 @@ export const useGetFieldValue = (
                 const latitude = fileContent[fieldKey]?.split(' ')[0];
                 const longitude = fileContent[fieldKey]?.split(' ')[1];
                 return (
-                    <Box width="100%" height="100%">
+                    <Box
+                        sx={{
+                            width: "100%",
+                            height: "100%"
+                        }}>
                         <MarkerMap
                             longitude={longitude}
                             latitude={latitude}

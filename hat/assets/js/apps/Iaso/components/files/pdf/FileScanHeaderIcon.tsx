@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { CheckCircleOutline } from '@mui/icons-material';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import { CheckCircleOutlineOutlined } from '@mui/icons-material';
+import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import {
     fileScanResultInfected,
@@ -28,10 +28,10 @@ export const FileScanHeaderIcon: FunctionComponent<FileScanHeaderIconProps> = ({
     scanResult,
 }) => {
     if (scanResult === fileScanResultClean) {
-        return <CheckCircleOutline sx={styles.colorCleanFile} />;
+        return <CheckCircleOutlineOutlined sx={styles.colorCleanFile} />;
     }
     if (scanResult === fileScanResultInfected) {
-        return <ErrorOutlineIcon sx={styles.colorInfectedFile} />;
+        return <ErrorOutlineOutlinedIcon sx={styles.colorInfectedFile} />;
     }
     return <WarningAmberIcon sx={styles.colorPendingFile} />;
 };

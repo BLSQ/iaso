@@ -116,22 +116,22 @@ const LogCompareComponent: FunctionComponent<Props> = ({
                 <Grid container spacing={0} className={classes.seeAll}>
                     <Grid
                         container
-                        item
-                        xs={6}
-                        justifyContent="flex-start"
-                        alignItems="center"
-                    >
+                        size={6}
+                        sx={{
+                            justifyContent: "flex-start",
+                            alignItems: "center"
+                        }}>
                         <Typography variant="h6" component="h6" color="primary">
                             {title}
                         </Typography>
                     </Grid>
                     <Grid
                         container
-                        item
-                        xs={6}
-                        justifyContent="flex-end"
-                        alignItems="center"
-                    >
+                        size={6}
+                        sx={{
+                            justifyContent: "flex-end",
+                            alignItems: "center"
+                        }}>
                         <Tooltip
                             title={formatMessage(
                                 showAllFields
@@ -180,15 +180,15 @@ const LogCompareComponent: FunctionComponent<Props> = ({
                         ))}
                     </TableBody>
                 </Table>
-
                 <Grid
                     container
                     spacing={2}
-                    alignItems="center"
-                    justifyContent="center"
-                >
+                    sx={{
+                        alignItems: "center",
+                        justifyContent: "center"
+                    }}>
                     {showButtons && (
-                        <Grid xs={6} item>
+                        <Grid size={6}>
                             <ConfirmDialog
                                 btnMessage={formatMessage(
                                     LOG_MESSAGES.goToRevision,
@@ -204,7 +204,7 @@ const LogCompareComponent: FunctionComponent<Props> = ({
                         </Grid>
                     )}
                     {isNewValue && showButtons && (
-                        <Grid xs={6} item>
+                        <Grid size={6}>
                             <ConfirmDialog
                                 btnMessage={formatMessage(
                                     LOG_MESSAGES.goToRevisionChanges,

@@ -53,11 +53,12 @@ export const Runs: FunctionComponent = () => {
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <AlgoRunsFilters baseUrl={baseUrl} params={params} />
                 <Box
-                    display="inline-flex"
-                    justifyContent="flex-end"
-                    mt={2}
                     style={{ width: '100%' }}
-                >
+                    sx={{
+                        display: "inline-flex",
+                        justifyContent: "flex-end",
+                        mt: 2
+                    }}>
                     <AddAlgorithmRun
                         launchRun={launchRun}
                         isSaving={isSaving}

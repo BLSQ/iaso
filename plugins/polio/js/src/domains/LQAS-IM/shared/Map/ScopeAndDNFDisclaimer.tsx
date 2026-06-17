@@ -45,9 +45,11 @@ export const ScopeAndDNFDisclaimer: FunctionComponent<Props> = ({
     return (
         <Grid container direction="column" className={classes.centerText}>
             {hasScope === false && (
-                <Grid container item direction="column">
-                    <Grid item>
-                        <Box mt={2}>
+                <Grid container direction="column">
+                    <Grid>
+                        <Box sx={{
+                            mt: 2
+                        }}>
                             <Typography
                                 variant="h6"
                                 className={classes.boldText}
@@ -56,8 +58,10 @@ export const ScopeAndDNFDisclaimer: FunctionComponent<Props> = ({
                             </Typography>
                         </Box>
                     </Grid>
-                    <Grid item>
-                        <Box mb={allDistrictsFound ? 4 : 0}>
+                    <Grid>
+                        <Box sx={{
+                            mb: allDistrictsFound ? 4 : 0
+                        }}>
                             <Typography variant="body1">
                                 {formatMessage(MESSAGES.noScopeFound)}
                             </Typography>
@@ -66,10 +70,12 @@ export const ScopeAndDNFDisclaimer: FunctionComponent<Props> = ({
                 </Grid>
             )}
             {districtsNotFound !== undefined && !allDistrictsFound && (
-                <Grid container item className={classes.justifyCenter}>
+                <Grid container className={classes.justifyCenter}>
                     {' '}
-                    <Grid item>
-                        <Box mt={2}>
+                    <Grid>
+                        <Box sx={{
+                            mt: 2
+                        }}>
                             <Typography
                                 variant="h6"
                                 className={classes.boldText}
@@ -78,8 +84,13 @@ export const ScopeAndDNFDisclaimer: FunctionComponent<Props> = ({
                             </Typography>
                         </Box>
                     </Grid>
-                    <Grid item>
-                        <Box mb={2} ml={2} mr={2}>
+                    <Grid>
+                        <Box
+                            sx={{
+                                mb: 2,
+                                ml: 2,
+                                mr: 2
+                            }}>
                             <Typography
                                 variant="body1"
                                 className={classes.alignTextLeft}

@@ -112,7 +112,13 @@ const AddButton: FunctionComponent<PropsIcon> = ({ onClick }) => {
             onClick={onClick}
             size="small"
         >
-            <Box display="inline-block" mr={1} position="relative" top="4px">
+            <Box
+                sx={{
+                    display: "inline-block",
+                    mr: 1,
+                    position: "relative",
+                    top: "4px"
+                }}>
                 <Add fontSize="small" />
             </Box>
             {formatMessage(MESSAGES.createLegend)}

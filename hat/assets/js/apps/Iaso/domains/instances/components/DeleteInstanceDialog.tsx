@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
-import { DialogContentText, IconButton } from '@mui/material';
+import { DialogContentText } from '@mui/material';
 import { FormattedMessage } from 'react-intl';
 import { useBoundState } from 'Iaso/hooks/useBoundState';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
@@ -41,15 +41,21 @@ const DeleteInstanceDialog: FunctionComponent<Props> = ({
     };
 
     const renderTrigger = ({ openDialog }) => {
-        const iconButtonProps = {
-            onClick: selection.selectCount > 0 ? openDialog : () => null,
-            disabled: selection.selectCount === 0,
-        };
+        const disabled = selection.selectCount === 0;
+        const Icon = isUnDeleteAction ? RestoreFromTrashIcon : DeleteIcon;
 
         return (
-            <IconButton {...iconButtonProps}>
-                {isUnDeleteAction ? <RestoreFromTrashIcon /> : <DeleteIcon />}
-            </IconButton>
+            <Icon
+                color={disabled ? 'disabled' : 'inherit'}
+                onClick={
+                    disabled
+                        ? undefined
+                        : event => {
+                              event.stopPropagation();
+                              openDialog();
+                          }
+                }
+            />
         );
     };
     const titleMessage = isUnDeleteAction

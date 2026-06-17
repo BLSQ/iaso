@@ -20,7 +20,7 @@ const CompletenessFiltersComponent: FunctionComponent<Props> = ({
 }) => {
     return (
         <Grid container spacing={2}>
-            <Grid item xs={3}>
+            <Grid size={3}>
                 <InputComponent
                     type="select"
                     clearable={false}
@@ -31,8 +31,10 @@ const CompletenessFiltersComponent: FunctionComponent<Props> = ({
                     keyValue="periodType"
                 />
             </Grid>
-            <Grid item xs={3} />
-            <Grid item container xs={6} justifyContent="flex-end">
+            <Grid size={3} />
+            <Grid container size={6} sx={{
+                justifyContent: "flex-end"
+            }}>
                 <ChipListComponent
                     options={instanceStatusOptions}
                     value={activeInstanceStatuses}

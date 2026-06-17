@@ -104,17 +104,21 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
             onAdditionalButtonClick={undefined}
         >
             <>
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <Divider />
                 </Box>
                 <Grid
                     container
                     spacing={2}
                     direction="row"
-                    justifyContent="space-around"
+                    sx={{
+                        justifyContent: "space-around"
+                    }}
                 >
-                    <Grid container item xs={12}>
-                        <Grid item xs={12}>
+                    <Grid container size={12}>
+                        <Grid size={12}>
                             <InputComponent
                                 keyValue={GROUPED_CAMPAIGN_NAME}
                                 type="text"
@@ -126,7 +130,7 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
                                 required
                             />
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid size={12}>
                             <InputComponent
                                 keyValue={CHILDREN_CAMPAIGNS}
                                 type="select"

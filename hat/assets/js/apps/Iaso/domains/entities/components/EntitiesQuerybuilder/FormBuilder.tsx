@@ -103,7 +103,7 @@ export const FormBuilder: FunctionComponent<Props> = ({
     return (
         <Paper elevation={0} sx={styles.root}>
             <Grid container spacing={2}>
-                <Grid item xs={6}>
+                <Grid size={6}>
                     <InputComponent
                         keyValue="form_id"
                         onChange={handleChangeForm}
@@ -115,7 +115,7 @@ export const FormBuilder: FunctionComponent<Props> = ({
                         label={MESSAGES.selectForm}
                     />
                 </Grid>
-                <Grid item xs={2}>
+                <Grid size={2}>
                     <InputComponent
                         labelString=""
                         keyValue="operator"
@@ -125,7 +125,7 @@ export const FormBuilder: FunctionComponent<Props> = ({
                         options={formsOperators}
                     />
                 </Grid>
-                <Grid item xs={4} sx={styles.deleteButtonContainer}>
+                <Grid sx={styles.deleteButtonContainer} size={4}>
                     <IconButton
                         color="secondary"
                         onClick={deleteForm}
@@ -147,7 +147,9 @@ export const FormBuilder: FunctionComponent<Props> = ({
                 </Box>
             )}
             {form_id && !isLoading && (
-                <Box mt={2}>
+                <Box sx={{
+                    mt: 2
+                }}>
                     <QueryBuilder
                         logic={logic}
                         fields={fields}

@@ -92,9 +92,17 @@ export const ScopeForm: FunctionComponent = () => {
     }, [filteredDistricts]);
 
     return (
-        <Box width="100%">
-            <Grid container spacing={4} justifyContent="space-between">
-                <Grid xs={12} md={6} item>
+        <Box sx={{
+            width: "100%"
+        }}>
+            <Grid container spacing={4} sx={{
+                justifyContent: "space-between"
+            }}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 6
+                    }}>
                     <Field
                         name="separate_scopes_per_round"
                         component={BooleanInput}

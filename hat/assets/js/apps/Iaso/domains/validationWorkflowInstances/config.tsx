@@ -25,7 +25,11 @@ export const useValidationWorkflowInstanceSearchColumns = (): Column[] => {
                 sortable: false,
                 Cell: settings => {
                     return (
-                        <Box display={'flex'} justifyContent={'space-around'}>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'space-around'
+                            }}>
                             {settings?.row?.original
                                 ?.user_has_been_involved && (
                                 <Tooltip

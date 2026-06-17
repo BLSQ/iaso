@@ -30,7 +30,12 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 3
+                }}>
                 <InputComponent
                     keyValue="search"
                     onChange={handleChange}
@@ -42,8 +47,12 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     onErrorChange={setTextSearchError}
                 />
             </Grid>
-
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 3
+                }}>
                 <InputComponent
                     keyValue="needs_authentication"
                     label={MESSAGES.needsAuthentication}
@@ -56,8 +65,15 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     ]}
                 />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-                <Box mt={2}>
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 3
+                }}>
+                <Box sx={{
+                    mt: 2
+                }}>
                     <UserAsyncSelect
                         keyValue="userId"
                         label={MESSAGES.users}
@@ -67,8 +83,15 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     />
                 </Box>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-                <Box mt={2}>
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 3
+                }}>
+                <Box sx={{
+                    mt: 2
+                }}>
                     <UserRolesSelect
                         keyValue="userRoleIds"
                         label={MESSAGES.userRoles}
@@ -77,8 +100,12 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     />
                 </Box>
             </Grid>
-            <Grid container item xs={12} justifyContent="flex-end">
-                <Box mt={2}>
+            <Grid container size={12} sx={{
+                justifyContent: "flex-end"
+            }}>
+                <Box sx={{
+                    mt: 2
+                }}>
                     <SearchButton
                         onSearch={handleSearch}
                         disabled={!filtersUpdated}

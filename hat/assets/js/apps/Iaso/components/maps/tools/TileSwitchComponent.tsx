@@ -3,7 +3,7 @@ import RadioButtonChecked from '@mui/icons-material/RadioButtonChecked';
 import RadioButtonUnchecked from '@mui/icons-material/RadioButtonUnchecked';
 import Box from '@mui/material/Box';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
@@ -50,17 +50,18 @@ const TileSwitchComponent: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     return (
-        <Box py={2} component="div">
+        <Box component="div" sx={{
+            py: 2
+        }}>
             <List className={classes.list}>
                 {Object.keys(tiles).map(key => {
                     const tile = tiles[key];
                     const isCurrentTile = currentTile.url === tile.url;
                     return (
-                        <ListItem
+                        <ListItemButton
                             selected={isCurrentTile}
                             className={classes.listItem}
                             key={key}
-                            button
                             onClick={() => setCurrentTile(tile)}
                         >
                             {isCurrentTile && (
@@ -80,7 +81,7 @@ const TileSwitchComponent: FunctionComponent<Props> = ({
                                     primary: classes.item,
                                 }}
                             />
-                        </ListItem>
+                        </ListItemButton>
                     );
                 })}
             </List>

@@ -56,7 +56,7 @@ export const VersionPicker: FunctionComponent<Props> = ({
     }, [resetTrigger, onChange, group.key]);
     return (
         <>
-            <Grid xs={6} item>
+            <Grid size={6}>
                 <InputComponent
                     type="select"
                     keyValue={version.key}
@@ -98,8 +98,10 @@ export const VersionPicker: FunctionComponent<Props> = ({
                     />
                 )}
             </Grid>
-            <Grid xs={6} item>
-                <Box mt={-2}>
+            <Grid size={6}>
+                <Box sx={{
+                    mt: -2
+                }}>
                     <OrgUnitTreeviewModal
                         onConfirm={value => {
                             onChange(orgUnit.key, value?.id ?? null);

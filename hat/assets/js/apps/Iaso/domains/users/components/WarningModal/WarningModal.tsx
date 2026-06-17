@@ -33,7 +33,9 @@ export const WarningModal: FunctionComponent<Props> = ({
             cancelMessage={MESSAGES.cancel}
         >
             <Divider />
-            <Box mt={2}>
+            <Box sx={{
+                mt: 2
+            }}>
                 <Typography>{bodyMessage}</Typography>
             </Box>
         </ConfirmCancelModal>

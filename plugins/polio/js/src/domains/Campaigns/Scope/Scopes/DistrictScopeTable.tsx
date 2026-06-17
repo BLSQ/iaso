@@ -177,7 +177,12 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                     width: '70px',
                                 }}
                             >
-                                <Box top="4px" position="relative" left="-3px">
+                                <Box
+                                    sx={{
+                                        top: "4px",
+                                        position: "relative",
+                                        left: "-3px"
+                                    }}>
                                     <MapIcon fontSize="small" color="inherit" />
                                 </Box>
                             </TableCell>

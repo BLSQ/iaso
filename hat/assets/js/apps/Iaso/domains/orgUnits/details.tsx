@@ -574,10 +574,12 @@ const OrgUnitDetail: FunctionComponent = () => {
                                 <div data-test="comments-tab">
                                     <Grid
                                         container
-                                        justifyContent="center"
                                         className={classes.commentsWrapper}
+                                        sx={{
+                                            justifyContent: "center"
+                                        }}
                                     >
-                                        <Grid item xs={6}>
+                                        <Grid size={6}>
                                             <OrgUnitsMapComments
                                                 className={classes.comments}
                                                 orgUnit={

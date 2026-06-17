@@ -354,7 +354,11 @@ export const PlanningForm: FunctionComponent<Props> = ({
             </ConfirmCancelModal>
             <FormikProvider value={formik}>
                 <Grid container spacing={2}>
-                    <Grid xs={12} md={4} item>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            md: 4
+                        }}>
                         <InputComponent
                             keyValue="name"
                             onChange={onChange}
@@ -390,7 +394,11 @@ export const PlanningForm: FunctionComponent<Props> = ({
                         />
                     </Grid>
 
-                    <Grid xs={12} md={4} item>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            md: 4
+                        }}>
                         <InputWithInfos
                             infos={formatMessage(
                                 MESSAGES.projectSelectHelperText,
@@ -398,7 +406,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                         >
                             <Box sx={styles.paper}>
                                 <Grid container spacing={2}>
-                                    <Grid xs={6} item>
+                                    <Grid size={6}>
                                         <InputComponent
                                             type="select"
                                             keyValue="project"
@@ -415,7 +423,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                             loading={isFetchingProjects}
                                         />
                                     </Grid>
-                                    <Grid xs={6} item>
+                                    <Grid size={6}>
                                         <InputComponent
                                             type="select"
                                             keyValue="selectedTeam"
@@ -471,7 +479,11 @@ export const PlanningForm: FunctionComponent<Props> = ({
                         )}
                     </Grid>
 
-                    <Grid xs={12} md={4} item>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            md: 4
+                        }}>
                         <InputWithInfos
                             infos={formatMessage(
                                 MESSAGES.targetOrgUnitTypeInfos,
@@ -515,8 +527,15 @@ export const PlanningForm: FunctionComponent<Props> = ({
                             </Box>
                         </InputWithInfos>
                         <Grid container spacing={2}>
-                            <Grid xs={6} lg={5} item>
-                                <Box sx={styles.paper} mt={2}>
+                            <Grid
+                                size={{
+                                    xs: 6,
+                                    lg: 5
+                                }}>
+                                <Box
+                                    sx={[{
+                                        mt: 2
+                                    }, styles.paper]}>
                                     <InputComponent
                                         type="radio"
                                         keyValue="publishingStatus"
@@ -529,15 +548,20 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                     />
                                 </Box>
                             </Grid>
-                            <Grid item xs={6} lg={7}>
+                            <Grid
+                                size={{
+                                    xs: 6,
+                                    lg: 7
+                                }}>
                                 <Box
-                                    display="flex"
-                                    gap={2}
-                                    flexDirection="column"
-                                    justifyContent="flex-end"
-                                    alignItems="flex-end"
-                                    mt={2}
-                                >
+                                    sx={{
+                                        display: "flex",
+                                        gap: 2,
+                                        flexDirection: "column",
+                                        justifyContent: "flex-end",
+                                        alignItems: "flex-end",
+                                        mt: 2
+                                    }}>
                                     <Button
                                         disabled={!allowConfirm}
                                         color="primary"
@@ -600,9 +624,10 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                                 )}
                                             </LinkButton>
                                             <Box
-                                                display="flex"
-                                                sx={{ flexWrap: 'nowrap' }}
-                                            >
+                                                sx={{
+                                                    display: "flex",
+                                                    flexWrap: 'nowrap'
+                                                }}>
                                                 {Boolean(planning) && (
                                                     <DeleteDialog
                                                         iconColor="error"

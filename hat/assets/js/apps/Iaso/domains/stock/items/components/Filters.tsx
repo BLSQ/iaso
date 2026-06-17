@@ -56,7 +56,12 @@ const ItemsFilters: FunctionComponent<Props> = ({ params }) => {
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 3
+                }}>
                 <InputComponent
                     keyValue="sku"
                     onChange={handleChange}
@@ -69,8 +74,11 @@ const ItemsFilters: FunctionComponent<Props> = ({ params }) => {
                     loading={isFetchingSkus}
                 />
             </Grid>
-
-            <Grid item xs={12} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 3
+                }}>
                 <OrgUnitTreeviewModal
                     toggleOnLabelClick={false}
                     titleMessage={MESSAGES.orgUnit}
@@ -84,14 +92,16 @@ const ItemsFilters: FunctionComponent<Props> = ({ params }) => {
                 />
             </Grid>
             <Grid
-                item
-                xs={6}
-                sm={6}
-                md={6}
                 container
-                justifyContent="flex-end"
-                alignItems="center"
-            >
+                size={{
+                    xs: 6,
+                    sm: 6,
+                    md: 6
+                }}
+                sx={{
+                    justifyContent: "flex-end",
+                    alignItems: "center"
+                }}>
                 <Button
                     data-test="search-button"
                     disabled={!filtersUpdated}
@@ -151,7 +161,12 @@ const DetailsFilters: FunctionComponent<Props> = ({ params }) => {
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 3
+                }}>
                 <InputComponent
                     keyValue="impact"
                     onChange={handleChange}
@@ -176,7 +191,12 @@ const DetailsFilters: FunctionComponent<Props> = ({ params }) => {
                     labelTo={MESSAGES.createdDateTo}
                 />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 3
+                }}>
                 <InputComponent
                     keyValue="value"
                     onChange={handleChange}
@@ -211,7 +231,12 @@ const DetailsFilters: FunctionComponent<Props> = ({ params }) => {
                     options={impacts}
                 />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 3
+                }}>
                 <InputComponent
                     keyValue="question"
                     onChange={handleChange}
@@ -225,14 +250,16 @@ const DetailsFilters: FunctionComponent<Props> = ({ params }) => {
                 />
             </Grid>
             <Grid
-                item
-                xs={12}
-                sm={12}
-                md={3}
                 container
-                justifyContent="flex-end"
-                alignItems="center"
-            >
+                size={{
+                    xs: 12,
+                    sm: 12,
+                    md: 3
+                }}
+                sx={{
+                    justifyContent: "flex-end",
+                    alignItems: "center"
+                }}>
                 <Button
                     data-test="search-button"
                     disabled={textSearchError || !filtersUpdated}

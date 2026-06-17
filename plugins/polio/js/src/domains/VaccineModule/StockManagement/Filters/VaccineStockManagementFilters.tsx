@@ -27,7 +27,12 @@ export const VaccineStockManagementFilters: FunctionComponent<Props> = ({
     return (
         <>
             <Grid container spacing={2}>
-                <Grid item xs={6} md={3} lg={3}>
+                <Grid
+                    size={{
+                        xs: 6,
+                        md: 3,
+                        lg: 3
+                    }}>
                     <InputComponent
                         type="search"
                         clearable
@@ -39,7 +44,12 @@ export const VaccineStockManagementFilters: FunctionComponent<Props> = ({
                         onEnterPressed={handleSearch}
                     />
                 </Grid>
-                <Grid item xs={6} md={3} lg={3}>
+                <Grid
+                    size={{
+                        xs: 6,
+                        md: 3,
+                        lg: 3
+                    }}>
                     <InputComponent
                         type="select"
                         clearable
@@ -50,15 +60,24 @@ export const VaccineStockManagementFilters: FunctionComponent<Props> = ({
                         labelString={formatMessage(MESSAGES.vaccine)}
                     />
                 </Grid>
-                <Grid container item xs={12} md={6} lg={6}>
+                <Grid
+                    container
+                    size={{
+                        xs: 12,
+                        md: 6,
+                        lg: 6
+                    }}>
                     <Box
-                        display="flex"
-                        justifyContent="flex-end"
-                        alignItems="end"
-                        flexDirection="column"
-                        width="100%"
-                    >
-                        <Box mt={2}>
+                        sx={{
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            alignItems: "end",
+                            flexDirection: "column",
+                            width: "100%"
+                        }}>
+                        <Box sx={{
+                            mt: 2
+                        }}>
                             <SearchButton
                                 disabled={!filtersUpdated}
                                 onSearch={handleSearch}
@@ -68,7 +87,12 @@ export const VaccineStockManagementFilters: FunctionComponent<Props> = ({
                 </Grid>
             </Grid>
             <Grid container spacing={2}>
-                <Grid item xs={6} md={3} lg={3}>
+                <Grid
+                    size={{
+                        xs: 6,
+                        md: 3,
+                        lg: 3
+                    }}>
                     <InputComponent
                         type="select"
                         clearable
@@ -81,7 +105,12 @@ export const VaccineStockManagementFilters: FunctionComponent<Props> = ({
                         labelString={formatMessage(MESSAGES.country)}
                     />
                 </Grid>
-                <Grid item xs={6} md={3} lg={3}>
+                <Grid
+                    size={{
+                        xs: 6,
+                        md: 3,
+                        lg: 3
+                    }}>
                     <InputComponent
                         type="select"
                         clearable

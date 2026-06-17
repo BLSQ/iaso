@@ -117,11 +117,11 @@ export const UserLogCompare: FunctionComponent<Props> = ({
                         <Grid container spacing={0} className={classes.seeAll}>
                             <Grid
                                 container
-                                item
-                                xs={6}
-                                justifyContent="flex-start"
-                                alignItems="center"
-                            >
+                                size={6}
+                                sx={{
+                                    justifyContent: "flex-start",
+                                    alignItems: "center"
+                                }}>
                                 <Typography
                                     variant="h6"
                                     component="h6"
@@ -132,11 +132,11 @@ export const UserLogCompare: FunctionComponent<Props> = ({
                             </Grid>
                             <Grid
                                 container
-                                item
-                                xs={6}
-                                justifyContent="flex-end"
-                                alignItems="center"
-                            >
+                                size={6}
+                                sx={{
+                                    justifyContent: "flex-end",
+                                    alignItems: "center"
+                                }}>
                                 <Tooltip
                                     title={formatMessage(
                                         showAllFields

@@ -12,8 +12,14 @@ export const BudgetProcessFundsRelease: FunctionComponent = () => {
     const { setFieldValue, values } = useFormikContext<BudgetDetail>();
     return (
         <>
-            <Grid item xs={12} lg={6}>
-                <Box mb={2}>
+            <Grid
+                size={{
+                    xs: 12,
+                    lg: 6
+                }}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <Field
                         name="payment_mode"
                         component={PaymentField}
@@ -40,14 +46,20 @@ export const BudgetProcessFundsRelease: FunctionComponent = () => {
                     fullWidth
                 />
             </Grid>
-            <Grid item xs={12} lg={6}>
+            <Grid
+                size={{
+                    xs: 12,
+                    lg: 6
+                }}>
                 <Field
                     label={formatMessage(MESSAGES.disbursedToMohUnicef)}
                     name="unicef_disbursed_to_moh_at"
                     component={DateInput}
                     fullWidth
                 />
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <Field
                         label={formatMessage(MESSAGES.district_count)}
                         name="district_count"

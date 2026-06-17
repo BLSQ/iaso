@@ -22,8 +22,15 @@ export const UsersHistoryFilters: FunctionComponent<Props> = ({ params }) => {
     return (
         <>
             <Grid container spacing={2}>
-                <Grid item xs={12} md={4} lg={3}>
-                    <Box mt={2}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 4,
+                        lg: 3
+                    }}>
+                    <Box sx={{
+                        mt: 2
+                    }}>
                         <UserAsyncSelect
                             keyValue="user_ids"
                             handleChange={handleChange}
@@ -31,7 +38,12 @@ export const UsersHistoryFilters: FunctionComponent<Props> = ({ params }) => {
                         />
                     </Box>
                 </Grid>
-                <Grid item xs={12} md={4} lg={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 4,
+                        lg: 3
+                    }}>
                     <OrgUnitTreeviewModal
                         toggleOnLabelClick={false}
                         titleMessage={MESSAGES.location}
@@ -42,7 +54,12 @@ export const UsersHistoryFilters: FunctionComponent<Props> = ({ params }) => {
                     />
                 </Grid>
 
-                <Grid item xs={12} md={4} lg={6}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 4,
+                        lg: 6
+                    }}>
                     <DatesRange
                         xs={12}
                         sm={12}
@@ -58,9 +75,21 @@ export const UsersHistoryFilters: FunctionComponent<Props> = ({ params }) => {
                     />
                 </Grid>
             </Grid>
-            <Grid container justifyContent="flex-end">
-                <Grid item xs={12} md={4} lg={3}>
-                    <Box mt={2} display="flex" justifyContent="flex-end">
+            <Grid container sx={{
+                justifyContent: "flex-end"
+            }}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 4,
+                        lg: 3
+                    }}>
+                    <Box
+                        sx={{
+                            mt: 2,
+                            display: "flex",
+                            justifyContent: "flex-end"
+                        }}>
                         <SearchButton
                             disabled={!filtersUpdated}
                             onSearch={handleSearch}

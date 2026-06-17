@@ -68,7 +68,12 @@ const VersionFilters: FunctionComponent<VersionProps> = ({ params }) => {
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 3
+                }}>
                 <InputComponent
                     keyValue="search"
                     onChange={handleChange}
@@ -80,8 +85,11 @@ const VersionFilters: FunctionComponent<VersionProps> = ({ params }) => {
                     blockForbiddenChars
                 />
             </Grid>
-
-            <Grid item xs={12} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 3
+                }}>
                 <InputComponent
                     type="select"
                     onChange={handleChange}
@@ -92,14 +100,16 @@ const VersionFilters: FunctionComponent<VersionProps> = ({ params }) => {
                 />
             </Grid>
             <Grid
-                item
-                xs={6}
-                sm={6}
-                md={6}
                 container
-                justifyContent="flex-end"
-                alignItems="center"
-            >
+                size={{
+                    xs: 6,
+                    sm: 6,
+                    md: 6
+                }}
+                sx={{
+                    justifyContent: "flex-end",
+                    alignItems: "center"
+                }}>
                 <Button
                     data-test="search-button"
                     disabled={textSearchError || !filtersUpdated}
@@ -167,7 +177,12 @@ const RulesFilters: FunctionComponent<RulesProps> = ({ params }) => {
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 3
+                }}>
                 <InputComponent
                     type="select"
                     keyValue="skuId"
@@ -178,8 +193,11 @@ const RulesFilters: FunctionComponent<RulesProps> = ({ params }) => {
                     options={allSkus ?? []}
                 />
             </Grid>
-
-            <Grid item xs={12} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 3
+                }}>
                 <InputComponent
                     type="select"
                     keyValue="formId"
@@ -191,14 +209,16 @@ const RulesFilters: FunctionComponent<RulesProps> = ({ params }) => {
                 />
             </Grid>
             <Grid
-                item
-                xs={6}
-                sm={6}
-                md={6}
                 container
-                justifyContent="flex-end"
-                alignItems="center"
-            >
+                size={{
+                    xs: 6,
+                    sm: 6,
+                    md: 6
+                }}
+                sx={{
+                    justifyContent: "flex-end",
+                    alignItems: "center"
+                }}>
                 <Button
                     data-test="search-button"
                     disabled={

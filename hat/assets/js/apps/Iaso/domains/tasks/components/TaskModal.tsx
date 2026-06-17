@@ -49,18 +49,17 @@ const TaskModal: FunctionComponent<Props> = ({
             maxWidth="md"
         >
             <Grid container spacing={2}>
-                <Grid item xs={6}>
+                <Grid size={6}>
                     <WidgetPaper title={formatMessage(MESSAGES.task)}>
                         <TaskBaseInfo size="small" task={fetchedTask ?? task} />
                     </WidgetPaper>
                 </Grid>
                 {taskParams && taskParams.length > 0 ? (
-                    <Grid item xs={6}>
+                    <Grid size={6}>
                         <TaskParameters taskParams={taskParams} />
                     </Grid>
                 ) : null}
             </Grid>
-
             <Box
                 sx={{
                     mt: 2,
@@ -74,13 +73,12 @@ const TaskModal: FunctionComponent<Props> = ({
             </Box>
             {(isFetching || isRunning) && (
                 <Box
-                    mt={2}
                     sx={{
+                        mt: 2,
                         display: 'flex',
                         justifyContent: 'center',
-                        alignItems: 'center',
-                    }}
-                >
+                        alignItems: 'center'
+                    }}>
                     <CircularProgress color="primary" />
                 </Box>
             )}

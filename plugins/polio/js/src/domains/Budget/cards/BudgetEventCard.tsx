@@ -87,7 +87,7 @@ export const BudgetEventCard: FunctionComponent<Props> = ({ step }) => {
     return (
         <Card>
             <Grid container>
-                <Grid item xs={10}>
+                <Grid size={10}>
                     <CardActionArea
                         className={allowOpenModal ? '' : classes.inactiveCard}
                         disableRipple={!allowOpenModal}
@@ -150,13 +150,13 @@ export const BudgetEventCard: FunctionComponent<Props> = ({ step }) => {
 
                 <Grid
                     container
-                    item
-                    xs={2}
                     direction="column"
-                    justifyContent="center"
-                    alignItems="flex-start"
                     onClick={toggleStepStatus}
-                >
+                    size={2}
+                    sx={{
+                        justifyContent: "center",
+                        alignItems: "flex-start"
+                    }}>
                     <Divider orientation="vertical" />
                     {!isStepDeleted && <RemoveCircleIcon color="action" />}
                     {isStepDeleted && <PlaylistAdd className={textColor} />}

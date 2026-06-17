@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
@@ -46,11 +46,13 @@ export const Modules: FunctionComponent = () => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <Grid container alignContent="stretch" spacing={1}>
+                <Grid container spacing={1} sx={{
+                    alignContent: "stretch"
+                }}>
                     <Grid>
-                        <HelpOutlineIcon />
+                        <HelpOutlineOutlinedIcon />
                     </Grid>
-                    <Grid item>
+                    <Grid>
                         {formatMessage(MESSAGES.modulesInformation)}
                     </Grid>
                 </Grid>

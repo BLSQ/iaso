@@ -69,16 +69,20 @@ export const MapLegend: FunctionComponent<Props> = ({
     }
     return (
         <Paper elevation={1} className={classes.root}>
-            <Box p={2}>
+            <Box sx={{
+                p: 2
+            }}>
                 {options &&
                     options.map((option, i) => (
                         <Box
                             key={option.value}
-                            mb={i + 1 === options.length ? 0 : 1}
                             onClick={() => handleClick(i)}
                             role="button"
                             tabIndex={0}
                             className={classes.option}
+                            sx={{
+                                mb: i + 1 === options.length ? 0 : 1
+                            }}
                         >
                             <span
                                 className={classes.roundColor}

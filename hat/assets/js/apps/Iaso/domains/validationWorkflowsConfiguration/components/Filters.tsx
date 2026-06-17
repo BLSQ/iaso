@@ -16,7 +16,12 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
         useGetFormsDropdownOptions();
     return (
         <Grid container spacing={2}>
-            <Grid item xs={12} sm={3} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 3,
+                    md: 3
+                }}>
                 <InputComponent
                     keyValue="name"
                     onChange={handleChange}
@@ -27,7 +32,12 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                     clearable
                 />
             </Grid>
-            <Grid item xs={12} sm={3} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 3,
+                    md: 3
+                }}>
                 <InputComponent
                     keyValue="forms"
                     onChange={handleChange}
@@ -41,16 +51,17 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                     multi
                 />
             </Grid>
-
             <Grid
-                item
-                xs={12}
-                sm={6}
-                md={6}
                 container
-                justifyContent="flex-end"
-                alignItems="center"
-            >
+                size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 6
+                }}
+                sx={{
+                    justifyContent: "flex-end",
+                    alignItems: "center"
+                }}>
                 <SearchButton
                     disabled={!filtersUpdated}
                     onSearch={handleSearch}

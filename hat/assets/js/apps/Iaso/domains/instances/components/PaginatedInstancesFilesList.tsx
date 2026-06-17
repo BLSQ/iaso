@@ -222,19 +222,22 @@ export const PaginatedInstancesFilesList: FunctionComponent<
             </Tabs>
             {loadingFiles && (
                 <Box
-                    p={2}
-                    display="flex"
-                    justifyContent="center"
-                    alignContent="center"
-                    height="30vh"
-                >
+                    sx={{
+                        p: 2,
+                        display: "flex",
+                        justifyContent: "center",
+                        alignContent: "center",
+                        height: "30vh"
+                    }}>
                     <LoadingSpinner absolute={false} fixed={false} />
                 </Box>
             )}
             {!loadingFiles && (
                 <>
                     {displayedFiles.length === 0 && (
-                        <Box p={2}>{formatMessage(MESSAGES.missingFile)}</Box>
+                        <Box sx={{
+                            p: 2
+                        }}>{formatMessage(MESSAGES.missingFile)}</Box>
                     )}
                     {displayedFiles.length > 0 && (
                         <>
@@ -251,7 +254,10 @@ export const PaginatedInstancesFilesList: FunctionComponent<
                                 />
                             </Box>
                             {tab === 'videos' && (
-                                <Box sx={styles.tabContainer} mt={2}>
+                                <Box
+                                    sx={[{
+                                        mt: 2
+                                    }, styles.tabContainer]}>
                                     <VideosList videoList={displayedFiles} />
                                 </Box>
                             )}

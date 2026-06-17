@@ -64,10 +64,14 @@ export const SelectedOrgUnit: FunctionComponent<Props> = ({
         return null;
     }
     return (
-        <Box position="relative" width="100%" minHeight={HEIGHT}>
+        <Box
+            sx={{
+                position: "relative",
+                width: "100%",
+                minHeight: HEIGHT
+            }}>
             {(isFetchingCurrentInstance || isFetchingOrgUnit) &&
                 params.fullScreen !== 'true' && <LoadingSpinner absolute />}
-
             <Paper className={classes.paper}>
                 <OrgUnitTitle orgUnit={orgUnit} params={params} />
                 <Divider />

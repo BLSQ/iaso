@@ -8,7 +8,11 @@ export const UserHasTeamWarning: FunctionComponent = () => {
     return (
         <>
             <Divider />
-            <Box mb={2} mt={2}>
+            <Box
+                sx={{
+                    mb: 2,
+                    mt: 2
+                }}>
                 <Typography style={{ fontWeight: 'bold' }}>
                     {formatMessage(MESSAGES.userNeedsTeam)}
                 </Typography>

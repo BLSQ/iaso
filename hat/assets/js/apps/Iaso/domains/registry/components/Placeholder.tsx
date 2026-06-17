@@ -5,23 +5,35 @@ import { HEIGHT } from '../config';
 
 export const Placeholder: FunctionComponent = () => {
     return (
-        <Box mt={2} width="100%">
+        <Box
+            sx={{
+                mt: 2,
+                width: "100%"
+            }}>
             <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 6
+                    }}>
                     <Skeleton
                         variant="rectangular"
                         width="100%"
                         height={HEIGHT}
                     />
                 </Grid>
-                <Grid item xs={12} md={6}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 6
+                    }}>
                     <Skeleton
                         variant="rectangular"
                         width="100%"
                         height={HEIGHT}
                     />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={12}>
                     <Skeleton
                         variant="rectangular"
                         width="100%"

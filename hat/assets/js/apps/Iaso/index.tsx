@@ -3,6 +3,10 @@ import React from 'react';
 import { GlobalStyles } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
+import {
+    StylesProvider,
+    ThemeProvider as StylesThemeProvider,
+} from '@mui/styles';
 import { theme } from 'bluesquare-components';
 import { SnackbarProvider } from 'notistack';
 import ReactDOM from 'react-dom';
@@ -65,32 +69,39 @@ const IasoApp: React.FC<{
             <PluginsContext.Provider value={{ plugins }}>
                 <ThemeConfigContext.Provider value={themeConfig}>
                     <ThemeProvider theme={usedTheme}>
-                        <CssBaseline />
-                        <GlobalStyles styles={getGlobalOverrides(theme)} />
-                        <SidebarProvider>
-                            <LocaleProvider>
-                                <LocalizedAppComponent
-                                    userHomePage={
-                                        pluginHomePage || userHomePage
-                                    }
-                                >
-                                    <SnackbarProvider
-                                        maxSnack={3}
-                                        autoHideDuration={4000}
-                                        anchorOrigin={{
-                                            vertical: 'bottom',
-                                            horizontal: 'center',
-                                        }}
-                                    >
-                                        <App
+                        <StylesThemeProvider theme={usedTheme}>
+                            <StylesProvider injectFirst>
+                                <CssBaseline />
+                                <GlobalStyles
+                                    styles={getGlobalOverrides(theme)}
+                                />
+                                <SidebarProvider>
+                                    <LocaleProvider>
+                                        <LocalizedAppComponent
                                             userHomePage={
                                                 pluginHomePage || userHomePage
                                             }
-                                        />
-                                    </SnackbarProvider>
-                                </LocalizedAppComponent>
-                            </LocaleProvider>
-                        </SidebarProvider>
+                                        >
+                                            <SnackbarProvider
+                                                maxSnack={3}
+                                                autoHideDuration={4000}
+                                                anchorOrigin={{
+                                                    vertical: 'bottom',
+                                                    horizontal: 'center',
+                                                }}
+                                            >
+                                                <App
+                                                    userHomePage={
+                                                        pluginHomePage ||
+                                                        userHomePage
+                                                    }
+                                                />
+                                            </SnackbarProvider>
+                                        </LocalizedAppComponent>
+                                    </LocaleProvider>
+                                </SidebarProvider>
+                            </StylesProvider>
+                        </StylesThemeProvider>
                     </ThemeProvider>
                 </ThemeConfigContext.Provider>
             </PluginsContext.Provider>

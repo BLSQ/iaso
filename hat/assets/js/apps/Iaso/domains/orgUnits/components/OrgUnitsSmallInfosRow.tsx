@@ -16,21 +16,21 @@ const OrgUnitsSmallInfosRow: FunctionComponent<Props> = ({ label, value }) => {
     return (
         <Grid container spacing={0}>
             <Grid
-                xs={5}
-                item
                 container
-                justifyContent="flex-end"
-                alignContent="flex-start"
-            >
+                size={5}
+                sx={{
+                    justifyContent: "flex-end",
+                    alignContent: "flex-start"
+                }}>
                 <span className={classes.label}>{`${label} :`}</span>
             </Grid>
             <Grid
-                xs={7}
-                item
                 container
-                justifyContent="flex-start"
-                alignContent="flex-start"
-            >
+                size={7}
+                sx={{
+                    justifyContent: "flex-start",
+                    alignContent: "flex-start"
+                }}>
                 {value}
             </Grid>
         </Grid>

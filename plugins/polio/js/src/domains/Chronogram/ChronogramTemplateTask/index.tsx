@@ -41,7 +41,9 @@ export const ChronogramTemplateTask: FunctionComponent = () => {
             {isFetchingMetaData && <LoadingSpinner />}
             {!isFetchingMetaData && (
                 <Box className={classes.containerFullHeightNoTabPadded}>
-                    <Grid container justifyContent="flex-end">
+                    <Grid container sx={{
+                        justifyContent: "flex-end"
+                    }}>
                         <Box>
                             <CreateChronogramTemplateTaskModal
                                 iconProps={{

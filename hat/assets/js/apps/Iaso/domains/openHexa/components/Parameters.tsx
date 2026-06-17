@@ -224,7 +224,9 @@ export const Parameters: React.FC<ParametersProps> = ({
                         <Typography
                             key={parameter.code}
                             variant="body2"
-                            color="text.secondary"
+                            sx={{
+                                color: "text.secondary"
+                            }}
                         >
                             {formatMessage(MESSAGES.unknownParameterType)}:{' '}
                             {parameter.type}

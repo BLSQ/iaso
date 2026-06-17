@@ -99,11 +99,13 @@ const CreateChronogramModal: FunctionComponent<Props> = ({
                     cancelMessage={MESSAGES.cancel}
                     maxWidth="xs"
                 >
-                    <Box mb={2}>
+                    <Box sx={{
+                        mb: 2
+                    }}>
                         <Divider />
                     </Box>
                     <Grid container direction="row" spacing={2}>
-                        <Grid item xs={12}>
+                        <Grid size={12}>
                             <Field
                                 label={formatMessage(MESSAGES.labelCountry)}
                                 name="country"
@@ -111,7 +113,7 @@ const CreateChronogramModal: FunctionComponent<Props> = ({
                                 options={dropdownsData?.countries || []}
                             />
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid size={12}>
                             <Field
                                 label={formatMessage(MESSAGES.labelCampaign)}
                                 name="campaign"
@@ -119,7 +121,7 @@ const CreateChronogramModal: FunctionComponent<Props> = ({
                                 options={currentCampaignOptions}
                             />
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid size={12}>
                             <Field
                                 label={formatMessage(MESSAGES.labelRound)}
                                 name="round"

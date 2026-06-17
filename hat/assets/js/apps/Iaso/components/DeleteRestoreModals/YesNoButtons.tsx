@@ -18,7 +18,9 @@ export const YesNoButtons: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
 
     return (
-        <Grid container justifyContent="flex-end" spacing={2}>
+        <Grid container spacing={2} sx={{
+            justifyContent: "flex-end"
+        }}>
             <Grid>
                 <Button
                     onClick={() => {

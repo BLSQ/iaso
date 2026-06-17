@@ -23,7 +23,13 @@ export const CampaignNameWithWarning: FunctionComponent<Props> = ({
             ? formatMessage(MESSAGES.roundsOnHold)
             : formatMessage(MESSAGES[category]);
     return (
-        <Box display="flex" alignItems="center" justifyContent="center" gap={2}>
+        <Box
+            sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 2
+            }}>
             <Tooltip
                 sx={{
                     color: theme => theme.palette.warning.main,

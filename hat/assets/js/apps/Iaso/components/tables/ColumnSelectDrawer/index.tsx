@@ -125,7 +125,11 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
                             onClick={toggleDrawer(true)}
                             id="ColumnsSelectDrawer-toggleDrawer"
                         >
-                            <Box mr={1} display="inline-flex">
+                            <Box
+                                sx={{
+                                    mr: 1,
+                                    display: "inline-flex"
+                                }}>
                                 <ViewColumnIcon />
                             </Box>
                             {formatMessage(MESSAGES.columnSelect)}
@@ -141,7 +145,11 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
                     onClick={toggleDrawer(true)}
                     id="ColumnsSelectDrawer-toggleDrawer"
                 >
-                    <Box mr={1} display="inline-flex">
+                    <Box
+                        sx={{
+                            mr: 1,
+                            display: "inline-flex"
+                        }}>
                         <ViewColumnIcon />
                     </Box>
                     {formatMessage(MESSAGES.columnSelect)}

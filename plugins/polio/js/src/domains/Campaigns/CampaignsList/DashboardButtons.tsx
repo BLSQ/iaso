@@ -28,11 +28,14 @@ export const DashboardButtons: FunctionComponent<Props> = ({ exportToCSV }) => {
             container
             className={classes.marginBottom}
             spacing={2}
-            justifyContent="flex-end"
-            alignItems="center"
-        >
+            sx={{
+                justifyContent: "flex-end",
+                alignItems: "center"
+            }}>
             {isUserAdmin && (
-                <Box mr={2}>
+                <Box sx={{
+                    mr: 2
+                }}>
                     <LinkButton
                         buttonClassName={classes.marginLeft}
                         variant="contained"

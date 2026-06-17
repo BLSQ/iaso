@@ -100,8 +100,12 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
     return (
         <Grid container spacing={0}>
             {/* Line 1 */}
-            <Grid container item spacing={2}>
-                <Grid item xs={12} md={3}>
+            <Grid container spacing={2}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 3
+                    }}>
                     <InputComponent
                         type="search"
                         keyValue="search"
@@ -111,7 +115,11 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                         label={MESSAGES.search}
                     />
                 </Grid>
-                <Grid item xs={12} md={6}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 6
+                    }}>
                     <DatesRange
                         keyDateFrom="start_date"
                         keyDateTo="end_date"
@@ -122,7 +130,11 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                         labelTo={MESSAGES.endDateUntil}
                     />
                 </Grid>
-                <Grid item xs={12} md={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 3
+                    }}>
                     <InputComponent
                         type="select"
                         multi
@@ -137,8 +149,12 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                 </Grid>
             </Grid>
             {/* line 2 */}
-            <Grid container item spacing={2}>
-                <Grid item xs={12} md={3}>
+            <Grid container spacing={2}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 3
+                    }}>
                     <InputComponent
                         type="select"
                         keyValue="submitter_team"
@@ -150,8 +166,14 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                         loading={isFetchingTeams}
                     />
                 </Grid>
-                <Grid item xs={12} md={3}>
-                    <Box mt={2}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 3
+                    }}>
+                    <Box sx={{
+                        mt: 2
+                    }}>
                         <UserAsyncSelect
                             keyValue="submitter"
                             handleChange={handleChange}
@@ -161,7 +183,11 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                         />
                     </Box>
                 </Grid>
-                <Grid item xs={12} md={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 3
+                    }}>
                     <InputComponent
                         type="select"
                         keyValue="algorithm"
@@ -173,7 +199,11 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                     />
                 </Grid>
 
-                <Grid item xs={12} md={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 3
+                    }}>
                     <InputComponent
                         type="select"
                         keyValue="similarity"
@@ -196,8 +226,12 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                 </Grid>
             </Grid>
             {/* line 3 */}
-            <Grid container item spacing={2}>
-                <Grid item xs={12} md={3}>
+            <Grid container spacing={2}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 3
+                    }}>
                     <InputComponent
                         type="select"
                         keyValue="form"
@@ -208,7 +242,11 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                         loading={isFetchingForms}
                     />
                 </Grid>
-                <Grid item xs={12} md={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 3
+                    }}>
                     <InputComponent
                         type="select"
                         multi
@@ -220,7 +258,11 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                         loading={isFetchingFields}
                     />
                 </Grid>
-                <Grid item xs={12} md={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 3
+                    }}>
                     <Box id="ou-tree-input">
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}
@@ -232,9 +274,17 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                     </Box>
                 </Grid>
 
-                <Grid item xs={12} md={3}>
-                    <Grid container item spacing={2}>
-                        <Grid item xs={4} md={6}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 3
+                    }}>
+                    <Grid container spacing={2}>
+                        <Grid
+                            size={{
+                                xs: 4,
+                                md: 6
+                            }}>
                             <InputComponent
                                 type="checkbox"
                                 value={showIgnored}
@@ -244,7 +294,11 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                                 label={MESSAGES.showIgnored}
                             />
                         </Grid>
-                        <Grid item xs={4} md={6}>
+                        <Grid
+                            size={{
+                                xs: 4,
+                                md: 6
+                            }}>
                             <InputComponent
                                 type="checkbox"
                                 value={showMerged}
@@ -258,8 +312,14 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                 </Grid>
             </Grid>
             {/* line 4 */}
-            <Grid container item xs={12} justifyContent="flex-end" spacing={2}>
-                <Box mb={2} mt={2}>
+            <Grid container spacing={2} size={12} sx={{
+                justifyContent: "flex-end"
+            }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                        mt: 2
+                    }}>
                     <SearchButton
                         disabled={!filtersUpdated}
                         onSearch={handleSearch}

@@ -106,6 +106,11 @@ module.exports = {
                     eager: true,
                     requiredVersion: false,
                 },
+                '@mui/x-date-pickers': {
+                    singleton: true,
+                    eager: true,
+                    requiredVersion: false,
+                },
                 'bluesquare-components': {
                     singleton: true,
                     eager: true,
@@ -274,6 +279,18 @@ module.exports = {
     resolve: {
         alias: {
             'react/jsx-runtime.js': 'react/jsx-runtime',
+            'react-transition-group/TransitionGroupContext': path.resolve(
+                __dirname,
+                '../node_modules/react-transition-group/cjs/TransitionGroupContext.js',
+            ),
+            '@mui/x-date-pickers': path.resolve(
+                __dirname,
+                '../node_modules/@mui/x-date-pickers',
+            ),
+            '@date-io/moment': path.resolve(
+                __dirname,
+                '../node_modules/@date-io/moment',
+            ),
             // Add alias for the combined config
             'IasoModules/plugins/configs': combinedConfigPath,
             'IasoModules/plugins/keys': pluginKeysPath,
@@ -283,6 +300,55 @@ module.exports = {
                 'bluesquare-components': path.resolve(
                     __dirname,
                     '../../bluesquare-components/src/',
+                ),
+                react: path.resolve(__dirname, '../node_modules/react'),
+                'react-dom': path.resolve(
+                    __dirname,
+                    '../node_modules/react-dom',
+                ),
+                'react-router': path.resolve(
+                    __dirname,
+                    '../node_modules/react-router',
+                ),
+                'react-router-dom': path.resolve(
+                    __dirname,
+                    '../node_modules/react-router-dom',
+                ),
+                'react-intl': path.resolve(
+                    __dirname,
+                    '../node_modules/react-intl',
+                ),
+                '@mui/material': path.resolve(
+                    __dirname,
+                    '../node_modules/@mui/material',
+                ),
+                '@mui/icons-material': path.resolve(
+                    __dirname,
+                    '../node_modules/@mui/icons-material',
+                ),
+                '@mui/x-tree-view': path.resolve(
+                    __dirname,
+                    '../node_modules/@mui/x-tree-view',
+                ),
+                '@mui/system': path.resolve(
+                    __dirname,
+                    '../node_modules/@mui/system',
+                ),
+                '@mui/styles': path.resolve(
+                    __dirname,
+                    '../node_modules/@mui/styles',
+                ),
+                '@emotion/react': path.resolve(
+                    __dirname,
+                    '../node_modules/@emotion/react',
+                ),
+                '@emotion/styled': path.resolve(
+                    __dirname,
+                    '../node_modules/@emotion/styled',
+                ),
+                'react-query': path.resolve(
+                    __dirname,
+                    '../node_modules/react-query',
                 ),
             }),
         },

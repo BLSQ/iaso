@@ -46,7 +46,7 @@ export const LinksDetails: FunctionComponent<Props> = ({
                 {link && (
                     <>
                         <Grid container spacing={2}>
-                            <Grid item xs={6}>
+                            <Grid size={6}>
                                 <LinksCompare
                                     validated={validated}
                                     title={formatMessage(MESSAGES.destination)}
@@ -54,7 +54,7 @@ export const LinksDetails: FunctionComponent<Props> = ({
                                     compareLink={link.source}
                                 />
                             </Grid>
-                            <Grid item xs={6}>
+                            <Grid size={6}>
                                 <LinksCompare
                                     validated={validated}
                                     title={formatMessage(MESSAGES.origin)}
@@ -63,7 +63,9 @@ export const LinksDetails: FunctionComponent<Props> = ({
                                 />
                             </Grid>
                         </Grid>
-                        <Grid container spacing={2} justifyContent="center">
+                        <Grid container spacing={2} sx={{
+                            justifyContent: "center"
+                        }}>
                             <Button
                                 className={classes.marginTop}
                                 variant="contained"

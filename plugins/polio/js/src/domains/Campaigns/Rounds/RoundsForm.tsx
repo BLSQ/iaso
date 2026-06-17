@@ -96,10 +96,20 @@ export const RoundsForm: FunctionComponent = () => {
     }, [rounds]);
 
     return (
-        <Box width="100%">
-            <Box mt={rounds.length > 0 ? -4 : 0} display="flex">
+        <Box sx={{
+            width: "100%"
+        }}>
+            <Box
+                sx={{
+                    mt: rounds.length > 0 ? -4 : 0,
+                    display: "flex"
+                }}>
                 {displayAddZeroRound && (
-                    <Box mr={rounds.length === 0 ? 2 : 0} mt="14px">
+                    <Box
+                        sx={{
+                            mr: rounds.length === 0 ? 2 : 0,
+                            mt: "14px"
+                        }}>
                         <Button
                             className={
                                 rounds.length > 0 ? classes.addRoundButton : ''
@@ -115,7 +125,9 @@ export const RoundsForm: FunctionComponent = () => {
                     </Box>
                 )}
 
-                <Box className={classes.tabsContainer} display="flex">
+                <Box className={classes.tabsContainer} sx={{
+                    display: "flex"
+                }}>
                     {rounds.length > 1 && (
                         <ul className={classes.removeContainer}>
                             {rounds.map(round => (
@@ -185,7 +197,11 @@ export const RoundsForm: FunctionComponent = () => {
                     )}
                 </Box>
                 {(!lastRound || lastRound?.number < maxRoundsCount) && (
-                    <Box mt="14px" ml={2}>
+                    <Box
+                        sx={{
+                            mt: "14px",
+                            ml: 2
+                        }}>
                         <Button
                             className={
                                 rounds.length > 0 ? classes.addRoundButton : ''

@@ -61,7 +61,12 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 4
+                }}>
                 <InputComponent
                     keyValue="search"
                     onChange={handleChange}
@@ -73,16 +78,17 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     blockForbiddenChars
                 />
             </Grid>
-
             <Grid
-                item
-                xs={12}
-                sm={6}
-                md={8}
                 container
-                justifyContent="flex-end"
-                alignItems="center"
-            >
+                size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 8
+                }}
+                sx={{
+                    justifyContent: "flex-end",
+                    alignItems: "center"
+                }}>
                 <Button
                     data-test="search-button"
                     disabled={textSearchError || !filtersUpdated}

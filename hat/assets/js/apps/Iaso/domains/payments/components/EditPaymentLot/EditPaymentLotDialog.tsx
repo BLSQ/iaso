@@ -168,7 +168,12 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
             closeDialog={closeDialog}
             maxWidth="xl"
         >
-            <Box mt={2} ml={2} mb={4}>
+            <Box
+                sx={{
+                    mt: 2,
+                    ml: 2,
+                    mb: 4
+                }}>
                 <PaymentLotInfos
                     name={name}
                     comment={comment}
@@ -181,9 +186,15 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
             <Box sx={localStyles.table}>
                 {/* <Divider /> */}
                 <Paper elevation={2}>
-                    <Box my={2} mr={2}>
-                        <Grid container spacing={2} justifyContent="flex-end">
-                            <Grid item>
+                    <Box
+                        sx={{
+                            my: 2,
+                            mr: 2
+                        }}>
+                        <Grid container spacing={2} sx={{
+                            justifyContent: "flex-end"
+                        }}>
+                            <Grid>
                                 <Box>
                                     <Button
                                         variant="outlined"
@@ -197,7 +208,7 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
                                     </Button>
                                 </Box>
                             </Grid>
-                            <Grid item>
+                            <Grid>
                                 <Button
                                     variant="outlined"
                                     color="primary"
@@ -209,7 +220,7 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
                                     {formatMessage(MESSAGES.unSelectAll)}
                                 </Button>
                             </Grid>
-                            <Grid item>
+                            <Grid>
                                 <BulkEditPaymentDialog
                                     selection={selection}
                                     resetSelection={handleUnselectAll}

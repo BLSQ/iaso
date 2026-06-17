@@ -2,7 +2,7 @@
 import React, { ReactElement, useMemo } from 'react';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import MergeIcon from '@mui/icons-material/Merge';
-import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import RemoveCircleOutlineOutlinedIcon from '@mui/icons-material/RemoveCircleOutlineOutlined';
 import { Box } from '@mui/material';
 import { useSafeIntl, IconButton, Column } from 'bluesquare-components';
 import { StarsComponent } from '../../../../components/stars/StarsComponent';
@@ -22,7 +22,11 @@ export const useDuplicationTableColumns = (): Column[] => {
                 sortable: true,
                 Cell: settings => {
                     return (
-                        <Box display="flex" justifyContent="center">
+                        <Box
+                            sx={{
+                                display: "flex",
+                                justifyContent: "center"
+                            }}>
                             <StarsComponent
                                 starCount={5}
                                 fullStars={
@@ -99,7 +103,7 @@ export const useDuplicationTableColumns = (): Column[] => {
                         retVal = (
                             <IconButton
                                 color="disabled"
-                                overrideIcon={RemoveCircleOutlineIcon}
+                                overrideIcon={RemoveCircleOutlineOutlinedIcon}
                                 tooltipMessage={MESSAGES.alreadyIgnored}
                             />
                         );

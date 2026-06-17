@@ -123,7 +123,11 @@ const AnalysisModal: FunctionComponent<Props> = ({
             dataTestId=""
         >
             <Grid container>
-                <Grid item xs={12} md={12}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 12
+                    }}>
                     <InputComponent
                         type="select"
                         keyValue="entity_type"
@@ -134,7 +138,11 @@ const AnalysisModal: FunctionComponent<Props> = ({
                         loading={isFetchingEntityTypes}
                     />
                 </Grid>
-                <Grid item xs={12} md={12}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 12
+                    }}>
                     <InputComponent
                         type="select"
                         keyValue="algorithm"
@@ -144,7 +152,11 @@ const AnalysisModal: FunctionComponent<Props> = ({
                         options={ALGORITHM_DROPDOWN}
                     />
                 </Grid>
-                <Grid item xs={12} md={12}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 12
+                    }}>
                     <InputComponent
                         type="select"
                         multi

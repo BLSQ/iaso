@@ -69,13 +69,21 @@ export const LqasSummary: FunctionComponent<Props> = ({
     return (
         <>
             {data && campaign && data[campaign] && (
-                <Box pt={2} pb={2}>
+                <Box
+                    sx={{
+                        pt: 2,
+                        pb: 2
+                    }}>
                     <Grid
                         container
                         direction="row"
                         className={classes.containerGrid}
                     >
-                        <Grid item xs={3} sm={2}>
+                        <Grid
+                            size={{
+                                xs: 3,
+                                sm: 2
+                            }}>
                             <Typography
                                 variant="body1"
                                 className={classes.centerText}
@@ -89,10 +97,18 @@ export const LqasSummary: FunctionComponent<Props> = ({
                                 {`${summary.passed}`}
                             </Typography>
                         </Grid>
-                        <Box mt={-2} mb={-2}>
+                        <Box
+                            sx={{
+                                mt: -2,
+                                mb: -2
+                            }}>
                             <Divider orientation="vertical" />
                         </Box>
-                        <Grid item xs={3} sm={2}>
+                        <Grid
+                            size={{
+                                xs: 3,
+                                sm: 2
+                            }}>
                             <Typography
                                 variant="body1"
                                 className={classes.centerText}
@@ -106,10 +122,18 @@ export const LqasSummary: FunctionComponent<Props> = ({
                                 {`${summary.failed}`}
                             </Typography>
                         </Grid>
-                        <Box mt={-2} mb={-2}>
+                        <Box
+                            sx={{
+                                mt: -2,
+                                mb: -2
+                            }}>
                             <Divider orientation="vertical" />
                         </Box>
-                        <Grid item xs={3} sm={2}>
+                        <Grid
+                            size={{
+                                xs: 3,
+                                sm: 2
+                            }}>
                             <Typography
                                 variant="body1"
                                 className={classes.centerText}
@@ -123,10 +147,18 @@ export const LqasSummary: FunctionComponent<Props> = ({
                                 {`${scopeCount}`}
                             </Typography>
                         </Grid>
-                        <Box mt={-2} mb={-2}>
+                        <Box
+                            sx={{
+                                mt: -2,
+                                mb: -2
+                            }}>
                             <Divider orientation="vertical" />
                         </Box>
-                        <Grid item xs={3} sm={2}>
+                        <Grid
+                            size={{
+                                xs: 3,
+                                sm: 2
+                            }}>
                             <Typography
                                 variant="body1"
                                 className={classes.centerText}

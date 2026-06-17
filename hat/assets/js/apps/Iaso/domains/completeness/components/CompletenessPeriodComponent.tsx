@@ -110,18 +110,17 @@ const CompletenessPeriodComponent: FunctionComponent<Props> = ({
             {derivedInstanceMutation.isLoading && <LoadingSpinner />}
             <Grid container spacing={0}>
                 <Grid
-                    xs={6}
-                    item
                     container
-                    justifyContent="flex-start"
-                    alignItems="center"
-                >
+                    size={6}
+                    sx={{
+                        justifyContent: "flex-start",
+                        alignItems: "center"
+                    }}>
                     <Typography variant="h5" gutterBottom>
                         {formatPeriod(period.periodString)}
                     </Typography>
                 </Grid>
             </Grid>
-
             <section className={classes.reactTable}>
                 <Table
                     data={forms}

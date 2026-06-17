@@ -49,20 +49,26 @@ export const Details: FunctionComponent = () => {
             />
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 <Grid container spacing={2}>
-                    <Grid container item xs={4}>
+                    <Grid container size={4}>
                         <WidgetPaper title={formatMessage(MESSAGES.info)}>
                             <Infos storage={storageDetail} />
                         </WidgetPaper>
                     </Grid>
                 </Grid>
-                <Box mt={2}>
+                <Box sx={{
+                    mt: 2
+                }}>
                     <WidgetPaper
                         className={classes.fullWith}
                         title={formatMessage(MESSAGES.logs)}
                     >
-                        <Box position="relative">
+                        <Box sx={{
+                            position: "relative"
+                        }}>
                             <LogsFilters params={params} />
-                            <Box mb={-4}>
+                            <Box sx={{
+                                mb: -4
+                            }}>
                                 <TableWithDeepLink
                                     marginTop={false}
                                     countOnTop={false}
@@ -82,7 +88,11 @@ export const Details: FunctionComponent = () => {
                             {storageDetailLogs.length > 0 && (
                                 <>
                                     <Divider />
-                                    <Box mb={2} mt={2}>
+                                    <Box
+                                        sx={{
+                                            mb: 2,
+                                            mt: 2
+                                        }}>
                                         <DownloadButtonsComponent
                                             csvUrl={`${apiUrl}&csv=true`}
                                             xlsxUrl={`${apiUrl}&xlsx=true`}

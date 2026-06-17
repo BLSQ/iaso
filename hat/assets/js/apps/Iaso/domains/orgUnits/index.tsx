@@ -156,7 +156,6 @@ export const OrgUnits: FunctionComponent = () => {
         <>
             {isLoading && <LoadingSpinner fixed={false} absolute />}
             <TopBar title={formatMessage(MESSAGES.title)} disableShadow />
-
             <MainWrapper sx={styles.mainWrapper}>
                 <OrgUnitFiltersContainer
                     params={params}
@@ -170,12 +169,13 @@ export const OrgUnits: FunctionComponent = () => {
                     orgUnitsData &&
                     orgUnitsData?.orgunits?.length > 0 && (
                         <Box
-                            mb={2}
-                            mt={2}
-                            mr={4}
-                            display="flex"
-                            justifyContent="flex-end"
-                        >
+                            sx={{
+                                mb: 2,
+                                mt: 2,
+                                mr: 4,
+                                display: "flex",
+                                justifyContent: "flex-end"
+                            }}>
                             <DownloadButtonsComponent
                                 csvUrl={getUrl(true, 'csv')}
                                 xlsxUrl={getUrl(true, 'xlsx')}
@@ -184,7 +184,9 @@ export const OrgUnits: FunctionComponent = () => {
                         </Box>
                     )}
 
-                <Box px={4}>
+                <Box sx={{
+                    px: 4
+                }}>
                     <Tabs
                         value={tab}
                         classes={{

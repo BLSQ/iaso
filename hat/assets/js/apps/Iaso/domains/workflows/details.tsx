@@ -188,7 +188,7 @@ export const Details: FunctionComponent = () => {
             />
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 <Grid container spacing={2}>
-                    <Grid container item xs={4}>
+                    <Grid container size={4}>
                         <WidgetPaper
                             className={classes.infoPaper}
                             title={formatMessage(MESSAGES.infos)}
@@ -206,7 +206,9 @@ export const Details: FunctionComponent = () => {
                         </WidgetPaper>
                     </Grid>
                 </Grid>
-                <Box mt={2} data-test="follow-ups">
+                <Box data-test="follow-ups" sx={{
+                    mt: 2
+                }}>
                     <WidgetPaper
                         className={classes.infoPaper}
                         title={formatMessage(MESSAGES.followUps)}
@@ -242,8 +244,16 @@ export const Details: FunctionComponent = () => {
                             )}
                         </>
                         {workflowVersion?.status === 'DRAFT' && (
-                            <Box m={2} textAlign="right">
-                                <Box display="inline-block" mr={2}>
+                            <Box
+                                sx={{
+                                    m: 2,
+                                    textAlign: "right"
+                                }}>
+                                <Box
+                                    sx={{
+                                        display: "inline-block",
+                                        mr: 2
+                                    }}>
                                     <Button
                                         color="primary"
                                         disabled={!isFollowUpOrderChange}
@@ -255,7 +265,11 @@ export const Details: FunctionComponent = () => {
                                     </Button>
                                 </Box>
 
-                                <Box display="inline-block" mr={2}>
+                                <Box
+                                    sx={{
+                                        display: "inline-block",
+                                        mr: 2
+                                    }}>
                                     <Button
                                         color="primary"
                                         disabled={!isFollowUpOrderChange}
@@ -281,7 +295,9 @@ export const Details: FunctionComponent = () => {
                         )}
                     </WidgetPaper>
                 </Box>
-                <Box mt={2} data-test="changes">
+                <Box data-test="changes" sx={{
+                    mt: 2
+                }}>
                     <WidgetPaper
                         className={classes.infoPaper}
                         title={formatMessage(MESSAGES.changes)}
@@ -309,7 +325,11 @@ export const Details: FunctionComponent = () => {
                             }}
                         />
                         {workflowVersion?.status === 'DRAFT' && (
-                            <Box m={2} textAlign="right">
+                            <Box
+                                sx={{
+                                    m: 2,
+                                    textAlign: "right"
+                                }}>
                                 <AddChangeModal
                                     versionId={versionId}
                                     changes={changes || []}

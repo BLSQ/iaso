@@ -16,7 +16,12 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
     return (
         <>
             <Grid container spacing={2}>
-                <Grid item xs={12} md={6} lg={4}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 6,
+                        lg: 4
+                    }}>
                     <InputComponent
                         type="search"
                         clearable
@@ -28,15 +33,24 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                         onEnterPressed={handleSearch}
                     />
                 </Grid>
-                <Grid container item xs={12} md={6} lg={8}>
+                <Grid
+                    container
+                    size={{
+                        xs: 12,
+                        md: 6,
+                        lg: 8
+                    }}>
                     <Box
-                        display="flex"
-                        justifyContent="flex-end"
-                        alignItems="end"
-                        flexDirection="column"
-                        width="100%"
-                    >
-                        <Box mt={2}>
+                        sx={{
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            alignItems: "end",
+                            flexDirection: "column",
+                            width: "100%"
+                        }}>
+                        <Box sx={{
+                            mt: 2
+                        }}>
                             <SearchButton
                                 disabled={!filtersUpdated}
                                 onSearch={handleSearch}

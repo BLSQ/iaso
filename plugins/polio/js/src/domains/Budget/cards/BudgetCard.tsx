@@ -58,9 +58,11 @@ export const BudgetCard: FunctionComponent<Props> = ({ budget }) => {
     return (
         <Card>
             <Grid container>
-                <Grid item xs={10}>
+                <Grid size={10}>
                     <CardContent className={classes.cardContent}>
-                        <Box display="flex">
+                        <Box sx={{
+                            display: "flex"
+                        }}>
                             <Typography
                                 variant="h6"
                                 className={classes.title}
@@ -85,12 +87,12 @@ export const BudgetCard: FunctionComponent<Props> = ({ budget }) => {
                 </Grid>
                 <Grid
                     container
-                    item
-                    xs={2}
                     direction="column"
-                    justifyContent="center"
-                    alignItems="center"
-                >
+                    size={2}
+                    sx={{
+                        justifyContent: "center",
+                        alignItems: "center"
+                    }}>
                     <Divider orientation="vertical" />
 
                     <IconButton

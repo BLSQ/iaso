@@ -158,14 +158,18 @@ const OrgUnitTypeFilterComponent: FunctionComponent<Props> = ({
     }, [orgUnitTypes]);
 
     return (
-        <Box m={4}>
-            <Box mb={2}>
+        <Box sx={{
+            m: 4
+        }}>
+            <Box sx={{
+                mb: 2
+            }}>
                 <Typography variant="body2">
                     {formatMessage(MESSAGES.ouTypesHelperText)}:
                 </Typography>
             </Box>
             <Grid container spacing={2}>
-                <Grid item xs={10}>
+                <Grid size={10}>
                     <Select
                         keyValue="ou-types"
                         label={formatMessage(MESSAGES.org_unit_type)}
@@ -187,12 +191,12 @@ const OrgUnitTypeFilterComponent: FunctionComponent<Props> = ({
                     />
                 </Grid>
                 <Grid
-                    item
-                    xs={2}
-                    display="flex"
-                    justifyContent="flex-start"
-                    alignItems="center"
-                >
+                    size={2}
+                    sx={{
+                        display: "flex",
+                        justifyContent: "flex-start",
+                        alignItems: "center"
+                    }}>
                     <IconButton
                         onClick={triggerFitBounds}
                         icon="remove-red-eye"

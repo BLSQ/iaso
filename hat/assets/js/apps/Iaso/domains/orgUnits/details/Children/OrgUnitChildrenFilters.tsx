@@ -46,7 +46,11 @@ export const OrgUnitChildrenFilters: FunctionComponent<Props> = ({
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={12} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 3
+                }}>
                 <InputComponent
                     type="search"
                     keyValue={`${OU_CHILDREN_PREFIX}Search`}
@@ -73,7 +77,11 @@ export const OrgUnitChildrenFilters: FunctionComponent<Props> = ({
                     label={MESSAGES.onlyDirectChildren}
                 />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 3
+                }}>
                 <InputComponent
                     type="select"
                     keyValue={`${OU_CHILDREN_PREFIX}WithLocation`}
@@ -91,7 +99,11 @@ export const OrgUnitChildrenFilters: FunctionComponent<Props> = ({
                     label={MESSAGES.shape}
                 />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 3
+                }}>
                 <InputComponent
                     type="select"
                     keyValue={`${OU_CHILDREN_PREFIX}Group`}
@@ -121,8 +133,18 @@ export const OrgUnitChildrenFilters: FunctionComponent<Props> = ({
                     label={MESSAGES.validationStatus}
                 />
             </Grid>
-            <Grid container item xs={12} md={3} justifyContent="flex-end">
-                <Box mt={2}>
+            <Grid
+                container
+                size={{
+                    xs: 12,
+                    md: 3
+                }}
+                sx={{
+                    justifyContent: "flex-end"
+                }}>
+                <Box sx={{
+                    mt: 2
+                }}>
                     <SearchButton
                         onSearch={handleSearch}
                         disabled={!filtersUpdated}

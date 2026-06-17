@@ -90,7 +90,12 @@ export const WorkflowBaseInfo: FunctionComponent<Props> = ({
             {workflowVersion?.status === 'DRAFT' && (
                 <>
                     <Divider />
-                    <Box p={2} display="flex" justifyContent="flex-end">
+                    <Box
+                        sx={{
+                            p: 2,
+                            display: "flex",
+                            justifyContent: "flex-end"
+                        }}>
                         <PublishVersionModal
                             workflowVersion={workflowVersion}
                             invalidateQueryKey="workflowVersion"

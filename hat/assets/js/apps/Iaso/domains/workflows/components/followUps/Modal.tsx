@@ -120,12 +120,15 @@ const FollowUpsModal: FunctionComponent<Props> = ({
             id="workflow-follow-up"
             onClose={() => null}
         >
-            <Box position="relative" data-test="follow-up-modal">
+            <Box data-test="follow-up-modal" sx={{
+                position: "relative"
+            }}>
                 <Box
-                    position="absolute"
-                    top={theme.spacing(-7)}
-                    right={theme.spacing(-3)}
-                >
+                    sx={{
+                        position: "absolute",
+                        top: theme.spacing(-7),
+                        right: theme.spacing(-3)
+                    }}>
                     <Popper />
                 </Box>
                 {fields && (
@@ -144,7 +147,9 @@ const FollowUpsModal: FunctionComponent<Props> = ({
                             />
                         </Tabs>
                         {tab === 'query' && (
-                            <Box mt={2}>
+                            <Box sx={{
+                                mt: 2
+                            }}>
                                 <QueryBuilder
                                     logic={logic}
                                     fields={fields}
@@ -164,7 +169,11 @@ const FollowUpsModal: FunctionComponent<Props> = ({
                     </>
                 )}
                 <Grid container spacing={2}>
-                    <Grid item xs={12} md={8}>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            md: 8
+                        }}>
                         <InputComponent
                             type="select"
                             keyValue="forms"
@@ -179,7 +188,11 @@ const FollowUpsModal: FunctionComponent<Props> = ({
                             loading={isFetchingForms}
                         />
                     </Grid>
-                    <Grid item xs={12} md={4} />
+                    <Grid
+                        size={{
+                            xs: 12,
+                            md: 4
+                        }} />
                 </Grid>
             </Box>
         </ConfirmCancelModal>

@@ -135,7 +135,11 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
     const disabled = !hasManagementPermission && !isNewOrgunit;
     return (
         <Grid container spacing={2}>
-            <Grid item xs={12} md={4}>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 4
+                }}>
                 <InputComponent
                     keyValue="name"
                     type="text"
@@ -201,8 +205,11 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     {disabled && <div className={classes.divAliasOverlay} />}
                 </div>
             </Grid>
-
-            <Grid item xs={12} md={4}>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 4
+                }}>
                 <InputComponent
                     keyValue="validation_status"
                     clearable={false}
@@ -265,12 +272,14 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                 <DisplayIfUserHasPerm permissions={[ORG_UNITS]}>
                     <Grid
                         container
-                        item
-                        xs={12}
-                        justifyContent="flex-end"
-                        alignItems="center"
-                    >
-                        <Box mt={1}>
+                        size={12}
+                        sx={{
+                            justifyContent: "flex-end",
+                            alignItems: "center"
+                        }}>
+                        <Box sx={{
+                            mt: 1
+                        }}>
                             {!isNewOrgunit && (
                                 <Button
                                     className={classes.marginLeft}
@@ -295,13 +304,17 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     </Grid>
                 </DisplayIfUserHasPerm>
             </Grid>
-
-            <Grid item xs={12} md={4}>
-                <Box mt={2}>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 4
+                }}>
+                <Box sx={{
+                    mt: 2
+                }}>
                     <OrgUnitCreationDetails orgUnit={orgUnit} params={params} />
                 </Box>
             </Grid>
-
             {referenceInstances && referenceInstances.length > 0 && (
                 <OrgUnitMultiReferenceInstances
                     referenceInstances={referenceInstances}

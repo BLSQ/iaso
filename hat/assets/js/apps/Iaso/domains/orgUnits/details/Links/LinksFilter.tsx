@@ -40,7 +40,12 @@ export const LinksFilter: FunctionComponent<Props> = ({
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 3
+                }}>
                 <InputComponent
                     keyValue="linksParamsSearch"
                     label={MESSAGES.search}
@@ -76,7 +81,12 @@ export const LinksFilter: FunctionComponent<Props> = ({
                     loading={isLoadingAlgos}
                 />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 3
+                }}>
                 {/* validation status */}
                 <InputComponent
                     keyValue="linksParamsValidated"
@@ -89,7 +99,9 @@ export const LinksFilter: FunctionComponent<Props> = ({
                     options={statuses}
                 />
                 {/* validator */}
-                <Box mt={2}>
+                <Box sx={{
+                    mt: 2
+                }}>
                     <UserAsyncSelect
                         keyValue="linksParamsValidatorId"
                         handleChange={handleChange}
@@ -99,7 +111,12 @@ export const LinksFilter: FunctionComponent<Props> = ({
                     />
                 </Box>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 3
+                }}>
                 {/* origin source */}
                 <InputComponent
                     keyValue="linksParamsOrigin"
@@ -132,8 +149,18 @@ export const LinksFilter: FunctionComponent<Props> = ({
                     }}
                 />
             </Grid>
-            <Grid container item xs={12} md={3} justifyContent="flex-end">
-                <Box mt={2}>
+            <Grid
+                container
+                size={{
+                    xs: 12,
+                    md: 3
+                }}
+                sx={{
+                    justifyContent: "flex-end"
+                }}>
+                <Box sx={{
+                    mt: 2
+                }}>
                     <SearchButton
                         onSearch={handleSearch}
                         disabled={!filtersUpdated}

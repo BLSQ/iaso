@@ -9,25 +9,39 @@ type Props = {
 };
 const ColorLegend: FunctionComponent<Props> = ({ legendItems }) => {
     return (
-        <Grid item xs={12} md={12} container justifyContent="flex-end">
-            <Box display="flex" alignItems="center" sx={{ marginTop: 2 }}>
+        <Grid
+            container
+            size={{
+                xs: 12,
+                md: 12
+            }}
+            sx={{
+                justifyContent: "flex-end"
+            }}>
+            <Box
+                sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginTop: 2
+                }}>
                 {legendItems.map(item => (
                     <Box
                         key={item.color}
-                        display="flex"
-                        alignItems="center"
                         sx={{
+                            display: "flex",
+                            alignItems: "center",
+
                             '&:not(:last-child)': {
                                 marginRight: 2,
-                            },
-                        }}
-                    >
+                            }
+                        }}>
                         <Box
-                            width={16}
-                            height={16}
-                            bgcolor={item.color}
-                            marginRight={1}
-                        />
+                            sx={{
+                                width: 16,
+                                height: 16,
+                                bgcolor: item.color,
+                                marginRight: 1
+                            }} />
                         <Typography variant="body2">{item.label}</Typography>
                     </Box>
                 ))}

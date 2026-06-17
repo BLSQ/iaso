@@ -86,7 +86,11 @@ export const UsersInfos: FunctionComponent<Props> = ({
                 </Alert>
             )}
             <Grid container spacing={2}>
-                <Grid item sm={12} md={6}>
+                <Grid
+                    size={{
+                        sm: 12,
+                        md: 6
+                    }}>
                     <InputComponent
                         keyValue="user_name"
                         onChange={(key, value) =>
@@ -183,7 +187,11 @@ export const UsersInfos: FunctionComponent<Props> = ({
                         </>
                     )}
                 </Grid>
-                <Grid item sm={12} md={6}>
+                <Grid
+                    size={{
+                        sm: 12,
+                        md: 6
+                    }}>
                     <InputComponent
                         keyValue="phone_number"
                         onChange={handlePhoneNumberChange}
@@ -244,7 +252,12 @@ export const UsersInfos: FunctionComponent<Props> = ({
                     />
 
                     {mode === 'edit' && (
-                        <Box pt={3} display="flex" justifyContent="flex-end">
+                        <Box
+                            sx={{
+                                pt: 3,
+                                display: "flex",
+                                justifyContent: "flex-end"
+                            }}>
                             <EditPasswordUserWithButtonDialog
                                 titleMessage={MESSAGES.updateUserPassword}
                                 savePassword={savePassword}

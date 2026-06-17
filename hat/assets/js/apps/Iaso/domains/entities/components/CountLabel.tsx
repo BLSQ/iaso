@@ -16,12 +16,13 @@ export const CountLabel: FunctionComponent<CountDisplayProps> = ({
 
     return (
         <Box
-            display="flex"
-            justifyContent="flex-end"
-            alignItems="center"
-            mb={1}
-            height={24}
-        >
+            sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                mb: 1,
+                height: 24
+            }}>
             {isFetching ? (
                 <CircularProgress size={16} color="inherit" />
             ) : (

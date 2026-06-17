@@ -55,7 +55,11 @@ const CreateVaccineStock: FunctionComponent<Props> = ({
                 confirmMessage={MESSAGES.save}
                 cancelMessage={MESSAGES.cancel}
             >
-                <Box mb={2} mt={2}>
+                <Box
+                    sx={{
+                        mb: 2,
+                        mt: 2
+                    }}>
                     <Field
                         label={formatMessage(MESSAGES.country)}
                         name="country"

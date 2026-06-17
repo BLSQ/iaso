@@ -63,10 +63,11 @@ export const EntityTypes: FunctionComponent = () => {
                 <Grid
                     container
                     spacing={0}
-                    justifyContent="flex-end"
-                    alignItems="center"
                     className={classes.marginTop}
-                >
+                    sx={{
+                        justifyContent: "flex-end",
+                        alignItems: "center"
+                    }}>
                     {userHasPermission(
                         Permission.ENTITY_TYPE_WRITE,
                         currentUser,

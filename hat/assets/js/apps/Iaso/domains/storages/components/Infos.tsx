@@ -60,7 +60,11 @@ export const Infos: FunctionComponent<Props> = ({ storage }) => {
                         {storage && (
                             <>
                                 <StatusCell status={storage.storage_status} />
-                                <Box ml={2} display="inline-block">
+                                <Box
+                                    sx={{
+                                        ml: 2,
+                                        display: "inline-block"
+                                    }}>
                                     <StatusModal storage={storage} />
                                 </Box>
                             </>

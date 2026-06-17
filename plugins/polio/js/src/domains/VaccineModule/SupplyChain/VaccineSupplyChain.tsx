@@ -49,8 +49,12 @@ export const VaccineSupplyChain: FunctionComponent = () => {
                         POLIO_SUPPLY_CHAIN_READ,
                     ]}
                 >
-                    <Grid container justifyContent="flex-end">
-                        <Box mt={2}>
+                    <Grid container sx={{
+                        justifyContent: "flex-end"
+                    }}>
+                        <Box sx={{
+                            mt: 2
+                        }}>
                             <AddButton
                                 onClick={() =>
                                     redirectTo(

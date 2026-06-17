@@ -108,11 +108,17 @@ export const PreparednessConfig: FunctionComponent<Props> = ({
         : formatMessage(MESSAGES.preparednessIntro);
 
     return (
-        <Box mt={4}>
+        <Box sx={{
+            mt: 4
+        }}>
             <Grid container spacing={2}>
-                <Grid item>{message}</Grid>
-                <Grid container direction="row" item spacing={2}>
-                    <Grid xs={12} md={8} item>
+                <Grid>{message}</Grid>
+                <Grid container direction="row" spacing={2}>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            md: 8
+                        }}>
                         <Field
                             placeholder={formatMessage(
                                 MESSAGES.enterOrCreateGoogleSheet,
@@ -133,7 +139,10 @@ export const PreparednessConfig: FunctionComponent<Props> = ({
                     </Grid>
                     {(preparedness_spreadsheet_url?.trim().length ?? 0) > 0 && (
                         <>
-                            <Grid item md={1}>
+                            <Grid
+                                size={{
+                                    md: 1
+                                }}>
                                 <IconButton
                                     target="_blank"
                                     href={preparedness_spreadsheet_url ?? ''}
@@ -142,7 +151,10 @@ export const PreparednessConfig: FunctionComponent<Props> = ({
                                     <OpenInNewIcon />
                                 </IconButton>
                             </Grid>
-                            <Grid item md={3}>
+                            <Grid
+                                size={{
+                                    md: 3
+                                }}>
                                 <Button
                                     variant="contained"
                                     color="primary"
@@ -161,13 +173,15 @@ export const PreparednessConfig: FunctionComponent<Props> = ({
                     )}
                     {!preparedness_spreadsheet_url?.trim().length && (
                         <Grid
-                            xs={12}
-                            md={4}
-                            item
                             direction="column"
                             container
-                            alignContent="space-between"
-                        >
+                            size={{
+                                xs: 12,
+                                md: 4
+                            }}
+                            sx={{
+                                alignContent: "space-between"
+                            }}>
                             <Tooltip
                                 title={
                                     dirty || !values.id
@@ -197,7 +211,7 @@ export const PreparednessConfig: FunctionComponent<Props> = ({
                         </Grid>
                     )}
                     {/* the padding bottom is a horrible quick fix to remove */}
-                    <Grid xs={12} item style={{ paddingBottom: 20 }}>
+                    <Grid style={{ paddingBottom: 20 }} size={12}>
                         {isLoading ||
                         previewMutation.isLoading ||
                         isGeneratingSpreadsheet ? (

@@ -99,16 +99,28 @@ export const ColorPicker: FunctionComponent<Props> = ({
 
     return (
         <Box>
-            <Box display="flex" alignItems="center">
+            <Box
+                sx={{
+                    display: "flex",
+                    alignItems: "center"
+                }}>
                 {displayLabel && (
-                    <Box mr={1} display="inline-block">
+                    <Box
+                        sx={{
+                            mr: 1,
+                            display: "inline-block"
+                        }}>
                         <FormLabel>
                             <FormattedMessage {...MESSAGES.color} />:
                         </FormLabel>
                     </Box>
                 )}
                 <ClickAwayListener onClickAway={handleClickAway}>
-                    <Box display="flex" alignItems="center">
+                    <Box
+                        sx={{
+                            display: "flex",
+                            alignItems: "center"
+                        }}>
                         <Tooltip
                             open={open}
                             arrow

@@ -59,16 +59,24 @@ export const OrgUnitChangeRequestConfigs: FunctionComponent = () => {
                 <OrgUnitChangeRequestConfigsFilter params={params} />
                 <Grid
                     container
-                    alignItems="flex-start"
-                    justifyContent="space-between"
                     spacing={2}
-                >
-                    <Grid item xs={12} sm="auto" md={8}>
+                    sx={{
+                        alignItems: "flex-start",
+                        justifyContent: "space-between"
+                    }}>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            sm: "auto",
+                            md: 8
+                        }}>
                         <Stack
                             direction="row"
                             spacing={1}
-                            alignItems="center"
                             className={classes.warningMessage}
+                            sx={{
+                                alignItems: "center"
+                            }}
                         >
                             <WarningAmberIcon />
                             <Typography>
@@ -79,12 +87,14 @@ export const OrgUnitChangeRequestConfigs: FunctionComponent = () => {
                         </Stack>
                     </Grid>
                     <Grid
-                        item
-                        xs={12}
-                        sm="auto"
                         container
-                        justifyContent="flex-end"
-                    >
+                        size={{
+                            xs: 12,
+                            sm: "auto"
+                        }}
+                        sx={{
+                            justifyContent: "flex-end"
+                        }}>
                         <OrgUnitChangeRequestConfigDialogCreateFirstStep
                             iconProps={{}}
                             openCreationSecondStepDialog={handleSecondStep}

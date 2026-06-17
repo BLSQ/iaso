@@ -109,13 +109,21 @@ export const AccountsEdit: FunctionComponent = () => {
                         </Alert>
                     )}
                     <Grid container spacing={2}>
-                        <Grid item xs={12} md={6}>
+                        <Grid
+                            size={{
+                                xs: 12,
+                                md: 6
+                            }}>
                             <GeneralInfoEditPanel />
                             <FeatureFlagsEditPanel
                                 accountFeatureFlags={accountFeatureFlags}
                             />
                         </Grid>
-                        <Grid item xs={12} md={6}>
+                        <Grid
+                            size={{
+                                xs: 12,
+                                md: 6
+                            }}>
                             <ModulesEditPanel modules={modulesData} />
                             <Box
                                 sx={{

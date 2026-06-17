@@ -115,7 +115,11 @@ export const ListItemSecondaryText = ({
     }
     return (
         <>
-            <Typography color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+            <Typography
+                sx={{
+                    color: "text.secondary",
+                    fontSize: '0.7rem'
+                }}>
                 {formatMessage(MESSAGES.validationTimelineByOn, {
                     user: timelineItem.updated_by as string,
                     date: moment(timelineItem.updated_at).format(
@@ -127,9 +131,11 @@ export const ListItemSecondaryText = ({
                 formatMessage(MESSAGES.validationTimelineComment, {
                     firstTag: (chunks: ReactNode[]) => (
                         <Typography
-                            fontWeight={'bold'}
                             component={'span'}
                             variant={'body2'}
+                            sx={{
+                                fontWeight: 'bold'
+                            }}
                         >
                             {chunks}
                         </Typography>

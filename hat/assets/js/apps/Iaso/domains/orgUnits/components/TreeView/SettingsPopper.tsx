@@ -123,7 +123,9 @@ export const SettingsPopper: FunctionComponent<Props> = ({
                     }}
                 >
                     <Paper sx={styles.paper} elevation={1}>
-                        <Box py={0.5}>
+                        <Box sx={{
+                            py: 0.5
+                        }}>
                             <FormControlLabel
                                 control={
                                     <Switch
@@ -137,7 +139,9 @@ export const SettingsPopper: FunctionComponent<Props> = ({
                             />
                         </Box>
                         {POSSIBLE_ORG_UNIT_STATUSES.map(status => (
-                            <Box py={0.5} key={status}>
+                            <Box key={status} sx={{
+                                py: 0.5
+                            }}>
                                 <FormControlLabel
                                     control={
                                         <Switch

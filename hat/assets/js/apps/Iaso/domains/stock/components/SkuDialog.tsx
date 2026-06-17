@@ -182,7 +182,12 @@ const SkuDialog: FunctionComponent<Props> = ({
                                 required
                             />
                             <Grid container spacing={2}>
-                                <Grid item xs={6} sm={6} md={6}>
+                                <Grid
+                                    size={{
+                                        xs: 6,
+                                        sm: 6,
+                                        md: 6
+                                    }}>
                                     <InputComponent
                                         keyValue="display_unit"
                                         onChange={onChange}
@@ -192,7 +197,12 @@ const SkuDialog: FunctionComponent<Props> = ({
                                         label={MESSAGES.displayUnit}
                                     />
                                 </Grid>
-                                <Grid item xs={6} sm={6} md={6}>
+                                <Grid
+                                    size={{
+                                        xs: 6,
+                                        sm: 6,
+                                        md: 6
+                                    }}>
                                     <InputComponent
                                         keyValue="display_precision"
                                         onChange={onChange}

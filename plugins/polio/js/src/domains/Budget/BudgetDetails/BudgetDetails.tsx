@@ -127,7 +127,9 @@ export const BudgetProcessDetails: FunctionComponent = () => {
             />
             {/* @ts-ignore */}
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <BudgetDetailsInfos
                         budgetProcess={budgetProcess ?? {}}
                         nextSteps={nextSteps}
@@ -156,7 +158,7 @@ export const BudgetProcessDetails: FunctionComponent = () => {
                         </>
                     )}
                     {!isMobileLayout && (
-                        <Grid item xs={12}>
+                        <Grid size={12}>
                             <BudgetDetailsTableLayout
                                 budgetDetails={budgetDetails}
                                 params={params}

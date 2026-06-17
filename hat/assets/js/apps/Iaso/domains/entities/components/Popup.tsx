@@ -73,7 +73,9 @@ export const PopupComponent: FunctionComponent<Props> = ({
             <Card className={classes.popupCard}>
                 <CardContent className={classNames(classes.popupCardContent)}>
                     {titleMessage && (
-                        <Box mb={2}>
+                        <Box sx={{
+                            mb: 2
+                        }}>
                             <Typography
                                 variant="h6"
                                 className={classes.titleMessage}
@@ -114,9 +116,10 @@ export const PopupComponent: FunctionComponent<Props> = ({
                                 <Grid
                                     container
                                     spacing={0}
-                                    justifyContent="flex-end"
-                                    alignItems="center"
-                                >
+                                    sx={{
+                                        justifyContent: "flex-end",
+                                        alignItems: "center"
+                                    }}>
                                     <Button
                                         variant="outlined"
                                         color="primary"

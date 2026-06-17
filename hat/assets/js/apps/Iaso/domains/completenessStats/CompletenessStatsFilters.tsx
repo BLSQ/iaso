@@ -159,7 +159,11 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
     return (
         <>
             <Grid container spacing={2}>
-                <Grid item xs={12} md={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 3
+                    }}>
                     <InputComponent
                         keyValue="projectIds"
                         onChange={handleChangeForm}
@@ -191,7 +195,11 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                     />
                 </Grid>
 
-                <Grid item xs={12} md={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 3
+                    }}>
                     <InputComponent
                         type="select"
                         disabled={isFetchingGroups}
@@ -220,7 +228,11 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                     />
                 </Grid>
 
-                <Grid item xs={12} md={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 3
+                    }}>
                     <Box id="ou-tree-input-parent">
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}
@@ -242,8 +254,14 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                     />
                 </Grid>
 
-                <Grid item xs={12} md={3}>
-                    <Box mt={2}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 3
+                    }}>
+                    <Box sx={{
+                        mt: 2
+                    }}>
                         <UserAsyncSelect
                             handleChange={handleChange}
                             filterUsers={filters.userIds}
@@ -262,7 +280,13 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                     />
                 </Grid>
             </Grid>
-            <Box display="flex" justifyContent="flex-end" mb={1} mt={2}>
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    mb: 1,
+                    mt: 2
+                }}>
                 <SearchButton
                     disabled={!filtersUpdated}
                     onSearch={handleSearch}

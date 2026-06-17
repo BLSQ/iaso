@@ -59,7 +59,7 @@ export const useGroupedCampaignsColumns = (
                 sortable: false,
                 Cell: (settings): ReactElement => (
                     // TODO: limit to user permissions
-                    <section>
+                    (<section>
                         <GroupedCampaignDialog
                             type="edit"
                             name={settings.row.original.name}
@@ -89,7 +89,7 @@ export const useGroupedCampaignsColumns = (
                                 deleteGroupedCampaign(settings.row.original.id);
                             }}
                         />
-                    </section>
+                    </section>)
                 ),
             },
         ],

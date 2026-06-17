@@ -98,7 +98,11 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
     return (
         <Box data-test="duplicate-infos">
             <Grid container>
-                <Grid item xs={12} md={4}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 4
+                    }}>
                     <WidgetPaper
                         className={classnames(classes.table)}
                         title={formName}
@@ -119,12 +123,14 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                 ) && (
                     <Grid
                         container
-                        item
-                        xs={12}
-                        md={8}
-                        justifyContent="flex-end"
-                        alignItems="flex-end"
-                    >
+                        size={{
+                            xs: 12,
+                            md: 8
+                        }}
+                        sx={{
+                            justifyContent: "flex-end",
+                            alignItems: "flex-end"
+                        }}>
                         <Box>
                             <Button
                                 color="primary"
@@ -154,12 +160,13 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                             ENTITY_DUPLICATES_SOFT_DELETE,
                         ) && (
                             <Box
-                                ml={2}
-                                mr={2}
                                 style={{
                                     display: 'inline-flex',
                                 }}
-                            >
+                                sx={{
+                                    ml: 2,
+                                    mr: 2
+                                }}>
                                 <Box>
                                     <Button
                                         variant="contained"
@@ -181,7 +188,9 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                                         )}
                                     </Button>
                                 </Box>
-                                <Box ml={2}>
+                                <Box sx={{
+                                    ml: 2
+                                }}>
                                     <Button
                                         variant="contained"
                                         color="primary"
@@ -208,7 +217,11 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                             currentUser,
                             ENTITY_DUPLICATES_SOFT_DELETE,
                         ) && (
-                            <Box ml={2} mr={2}>
+                            <Box
+                                sx={{
+                                    ml: 2,
+                                    mr: 2
+                                }}>
                                 <Button
                                     variant="contained"
                                     color="primary"

@@ -41,9 +41,16 @@ export const BudgetFilters: FunctionComponent<Props> = ({
         useGetGroupDropdown({ blockOfCountries: 'true' });
     const countriesList = (data && data.orgUnits) || [];
     return (
-        <Box mb={isXSLayout ? 4 : 2}>
+        <Box sx={{
+            mb: isXSLayout ? 4 : 2
+        }}>
             <Grid container spacing={isXSLayout ? 0 : 2}>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        sm: 6,
+                        md: 3
+                    }}>
                     <InputComponent
                         keyValue="search"
                         onChange={handleChange}
@@ -64,7 +71,12 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                         label={MESSAGES.status}
                     />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        sm: 6,
+                        md: 3
+                    }}>
                     <InputComponent
                         loading={isFetchingGroupedOrgUnits}
                         keyValue="org_unit_groups"
@@ -77,7 +89,12 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                         label={MESSAGES.countryBlock}
                     />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        sm: 6,
+                        md: 3
+                    }}>
                     <InputComponent
                         loading={isFetchingCountries}
                         keyValue="countries"
@@ -93,8 +110,18 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                         label={MESSAGES.country}
                     />
                 </Grid>
-                <Grid container item xs={12} md={3} justifyContent="flex-end">
-                    <Box mt={2}>
+                <Grid
+                    container
+                    size={{
+                        xs: 12,
+                        md: 3
+                    }}
+                    sx={{
+                        justifyContent: "flex-end"
+                    }}>
+                    <Box sx={{
+                        mt: 2
+                    }}>
                         <SearchButton
                             disabled={textSearchError || !filtersUpdated}
                             onSearch={handleSearch}

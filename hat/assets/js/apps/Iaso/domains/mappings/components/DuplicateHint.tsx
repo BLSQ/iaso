@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import Alert from '@mui/lab/Alert';
+import Alert from '@mui/material/Alert';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { isNeverMapped } from '../question_mappings';

@@ -52,24 +52,20 @@ export const LqasImDates: FunctionComponent<Props> = ({ type, date }) => {
     return (
         <>
             <Grid
-                item
                 className={
                     type === 'start' ? classes.labelStart : classes.labelEnd
                 }
-                xs={12}
-            >
+                size={12}>
                 {`${formatMessage(label)}: `}
             </Grid>
             <Grid
-                item
                 className={
                     isDateOk ? classes.dateTextOK : classes.dateTextDefault
-                }
-            >
+                }>
                 {`${displayedDate}`}
             </Grid>
             {date?.isDefault && (
-                <Grid item>
+                <Grid>
                     <Tooltip title={formatMessage(MESSAGES.lqasImDateTooltip)}>
                         <InfoOutlinedIcon className={classes.infoIcon} />
                     </Tooltip>

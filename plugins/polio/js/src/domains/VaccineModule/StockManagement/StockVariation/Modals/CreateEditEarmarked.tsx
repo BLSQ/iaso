@@ -128,7 +128,9 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
                 confirmMessage={MESSAGES.save}
                 cancelMessage={MESSAGES.cancel}
             >
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <Field
                         label={formatMessage(MESSAGES.movement)}
                         name="earmarked_stock_type"
@@ -138,7 +140,9 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
                         withMarginTop
                     />
                 </Box>
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <Field
                         label={formatMessage(MESSAGES.campaign)}
                         name="campaign"
@@ -149,7 +153,9 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
                         disabled={!countryName}
                     />
                 </Box>
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <Field
                         label={formatMessage(MESSAGES.round)}
                         name="round_number"
@@ -160,7 +166,9 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
                         disabled={!formik.values.campaign}
                     />
                 </Box>
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <Field
                         label={formatMessage(MESSAGES.earmarked_vials)}
                         name="vials_earmarked"
@@ -169,7 +177,9 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
                         required
                     />
                 </Box>
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <Field
                         label={formatMessage(MESSAGES.doses_per_vial)}
                         name="doses_per_vial"
@@ -179,7 +189,9 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
                         required
                     />
                 </Box>
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <Field
                         label={formatMessage(MESSAGES.comment)}
                         name="comment"
@@ -188,7 +200,9 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
                         shrinkLabel={false}
                     />
                 </Box>
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <Field
                         label={formatMessage(MESSAGES.temporary_campaign_name)}
                         name="temporary_campaign_name"

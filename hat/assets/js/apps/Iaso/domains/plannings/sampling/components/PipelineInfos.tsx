@@ -66,10 +66,14 @@ export const PipelineInfos: FunctionComponent<Props> = ({
                 taskLogs.end_value > 0 && (
                     <Box sx={styles.progressContainer}>
                         <Box sx={styles.progressLabel}>
-                            <Typography variant="body2" color="text.secondary">
+                            <Typography variant="body2" sx={{
+                                color: "text.secondary"
+                            }}>
                                 {formatMessage(MESSAGES.progress)}
                             </Typography>
-                            <Typography variant="body2" color="text.secondary">
+                            <Typography variant="body2" sx={{
+                                color: "text.secondary"
+                            }}>
                                 {taskLogs.progress_value}/{taskLogs.end_value}
                             </Typography>
                         </Box>

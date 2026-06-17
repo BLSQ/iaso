@@ -107,8 +107,10 @@ const GroupDialog: FunctionComponent<Props> = ({
             renderTrigger={renderTrigger}
             maxWidth="sm"
         >
-            <Grid container spacing={4} justifyContent="flex-start">
-                <Grid xs={12} item>
+            <Grid container spacing={4} sx={{
+                justifyContent: "flex-start"
+            }}>
+                <Grid size={12}>
                     <InputComponent
                         keyValue="name"
                         onChange={(key, value) => setFieldValue(key, value)}

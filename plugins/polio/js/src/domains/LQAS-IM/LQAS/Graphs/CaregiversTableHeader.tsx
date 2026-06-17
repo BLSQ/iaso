@@ -39,7 +39,12 @@ export const CaregiversTableHeader: FunctionComponent<Props> = ({
             : [];
     return (
         <Paper elevation={paperElevation} className={classes.paper}>
-            <Box p={2} display="flex" justifyContent="space-between">
+            <Box
+                sx={{
+                    p: 2,
+                    display: "flex",
+                    justifyContent: "space-between"
+                }}>
                 <Typography variant="h6">
                     {`${formatMessage(
                         MESSAGES.totalCaregiversSurveyed,

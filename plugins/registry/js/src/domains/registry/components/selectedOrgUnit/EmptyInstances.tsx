@@ -1,4 +1,4 @@
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import { Box, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
@@ -28,8 +28,10 @@ export const EmptyInstances: FunctionComponent = () => {
     return (
         <Box className={classes.emptyPaper}>
             <Typography component="p" className={classes.emptyPaperTypo}>
-                <ErrorOutlineIcon className={classes.emptyPaperIcon} />
-                <Box component="span" ml={2}>
+                <ErrorOutlineOutlinedIcon className={classes.emptyPaperIcon} />
+                <Box component="span" sx={{
+                    ml: 2
+                }}>
                     {formatMessage(MESSAGES.noInstance)}
                 </Box>
             </Typography>

@@ -26,7 +26,12 @@ export const ValidationWorkflowInstanceSearchFilter = ({ params }) => {
     return (
         <>
             <Grid container spacing={2}>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        sm: 6,
+                        md: 3
+                    }}>
                     <ValidationWorkflowDropdown
                         keyValue={'validation_workflows'}
                         label={MESSAGES.validationWorkflows}
@@ -36,7 +41,12 @@ export const ValidationWorkflowInstanceSearchFilter = ({ params }) => {
                         multi
                     />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        sm: 6,
+                        md: 3
+                    }}>
                     <InputComponent
                         type={'select'}
                         keyValue={'status'}
@@ -46,7 +56,12 @@ export const ValidationWorkflowInstanceSearchFilter = ({ params }) => {
                         value={filters.status}
                     />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        sm: 6,
+                        md: 3
+                    }}>
                     <InputComponent
                         keyValue="forms"
                         onChange={handleChange}
@@ -60,7 +75,12 @@ export const ValidationWorkflowInstanceSearchFilter = ({ params }) => {
                         multi
                     />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        sm: 6,
+                        md: 3
+                    }}>
                     <InputComponent
                         type={'select'}
                         options={requiresUserActionOptions}
@@ -71,7 +91,12 @@ export const ValidationWorkflowInstanceSearchFilter = ({ params }) => {
                         clearable
                     />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        sm: 6,
+                        md: 3
+                    }}>
                     <InputComponent
                         keyValue="projects"
                         onChange={handleChange}
@@ -86,12 +111,12 @@ export const ValidationWorkflowInstanceSearchFilter = ({ params }) => {
                     />
                 </Grid>
                 <Grid
-                    item
-                    xs={12}
-                    justifyContent={'flex-end'}
-                    display={'flex'}
                     spacing={2}
-                >
+                    size={12}
+                    sx={{
+                        justifyContent: 'flex-end',
+                        display: 'flex'
+                    }}>
                     <SearchButton
                         disabled={!filtersUpdated}
                         onSearch={handleSearch}

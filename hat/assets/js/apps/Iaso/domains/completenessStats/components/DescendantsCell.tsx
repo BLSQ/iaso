@@ -39,7 +39,9 @@ export const DescendantsCell = ({ value }: FormStatRow): ReactElement => {
         <Box sx={styles.root}>
             <Tooltip
                 title={
-                    <Box p={1}>
+                    <Box sx={{
+                        p: 1
+                    }}>
                         <Legend threshold={effectiveThreshold} />
                     </Box>
                 }

@@ -79,11 +79,7 @@ export const ImStats: FunctionComponent = () => {
                     params={params}
                 />
                 <Grid container spacing={2} direction="row">
-                    <Grid
-                        item
-                        xs={6}
-                        key={`IM-map-round round_${selectedRounds[0]}_${0}`}
-                    >
+                    <Grid key={`IM-map-round round_${selectedRounds[0]}_${0}`} size={6}>
                         <ImOverviewContainer
                             round={selectedRounds[0]}
                             campaign={campaign}
@@ -100,11 +96,7 @@ export const ImStats: FunctionComponent = () => {
                             options={dropDownOptions}
                         />
                     </Grid>
-                    <Grid
-                        item
-                        xs={6}
-                        key={`IM-map-round round_${selectedRounds[1]}_${1}`}
-                    >
+                    <Grid key={`IM-map-round round_${selectedRounds[1]}_${1}`} size={6}>
                         <ImOverviewContainer
                             round={selectedRounds[1]}
                             campaign={campaign}
@@ -132,18 +124,14 @@ export const ImStats: FunctionComponent = () => {
                             displayTrigger
                         />
                         <Grid container spacing={2} direction="row">
-                            <Grid item xs={12}>
+                            <Grid size={12}>
                                 <GraphTitle
                                     text={formatMessage(MESSAGES.imPerRegion)}
                                     displayTrigger={campaign}
                                 />
                             </Grid>
                             {selectedRounds.map((rnd, index) => (
-                                <Grid
-                                    item
-                                    xs={6}
-                                    key={`IM-bar-chart ${rnd}_${index}`}
-                                >
+                                <Grid key={`IM-bar-chart ${rnd}_${index}`} size={6}>
                                     <Paper elevation={paperElevation}>
                                         <LqasImHorizontalChart
                                             type={imType}
@@ -167,7 +155,7 @@ export const ImStats: FunctionComponent = () => {
                                     displayTrigger
                                 />
                                 <Grid container spacing={2} direction="row">
-                                    <Grid item xs={12}>
+                                    <Grid size={12}>
                                         <GraphTitle
                                             text={formatMessage(
                                                 MESSAGES.reasonsNoFingerMarked,
@@ -178,9 +166,11 @@ export const ImStats: FunctionComponent = () => {
                                         />
                                     </Grid>
                                     {chartData.nfm.map(d => (
-                                        <Grid item xs={6} key={d.chartKey}>
+                                        <Grid key={d.chartKey} size={6}>
                                             <Paper elevation={paperElevation}>
-                                                <Box p={2}>
+                                                <Box sx={{
+                                                    p: 2
+                                                }}>
                                                     <LqasImVerticalChart
                                                         data={d.data}
                                                         chartKey={d.chartKey}
@@ -203,7 +193,7 @@ export const ImStats: FunctionComponent = () => {
                                     displayTrigger
                                 />
                                 <Grid container spacing={2} direction="row">
-                                    <Grid item xs={12}>
+                                    <Grid size={12}>
                                         <GraphTitle
                                             text={formatMessage(
                                                 MESSAGES.reasonsForAbsence,
@@ -214,9 +204,11 @@ export const ImStats: FunctionComponent = () => {
                                         />
                                     </Grid>
                                     {chartData.rfa.map(d => (
-                                        <Grid item xs={6} key={d.chartKey}>
+                                        <Grid key={d.chartKey} size={6}>
                                             <Paper elevation={paperElevation}>
-                                                <Box p={2}>
+                                                <Box sx={{
+                                                    p: 2
+                                                }}>
                                                     <LqasImVerticalChart
                                                         data={d.data}
                                                         chartKey={d.chartKey}
@@ -244,20 +236,20 @@ export const ImStats: FunctionComponent = () => {
                                     mr={-4}
                                     displayTrigger
                                 />
-                                <Grid container item>
-                                    <Grid item xs={4}>
+                                <Grid container>
+                                    <Grid size={4}>
                                         <DistrictsNotFound
                                             campaign={campaign}
                                             data={imData?.stats}
                                         />
                                     </Grid>
-                                    <Grid item xs={4}>
+                                    <Grid size={4}>
                                         <DatesIgnored
                                             campaign={campaign}
                                             data={imData}
                                         />
                                     </Grid>
-                                    <Grid item xs={4}>
+                                    <Grid size={4}>
                                         <BadRoundNumbers
                                             formsWithBadRoundNumber={
                                                 imData?.stats[campaign]

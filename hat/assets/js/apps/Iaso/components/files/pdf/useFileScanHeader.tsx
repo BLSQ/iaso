@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { CheckCircleOutline } from '@mui/icons-material';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import { CheckCircleOutlineOutlined } from '@mui/icons-material';
+import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { Box, Typography } from '@mui/material';
 import { useSafeIntl, displayDateFromTimestamp } from 'bluesquare-components';
@@ -69,10 +69,10 @@ export const useFileScanHeader = (
 
     const headerIcon = useMemo(() => {
         if (scanResult === fileScanResultClean) {
-            return <CheckCircleOutline sx={styles.colorCleanFile} />;
+            return <CheckCircleOutlineOutlined sx={styles.colorCleanFile} />;
         }
         if (scanResult === fileScanResultInfected) {
-            return <ErrorOutlineIcon sx={styles.colorInfectedFile} />;
+            return <ErrorOutlineOutlinedIcon sx={styles.colorInfectedFile} />;
         }
         return <WarningAmberIcon sx={styles.colorPendingFile} />;
     }, [scanResult]);
@@ -94,7 +94,9 @@ export const useFileScanHeader = (
         <Box sx={headerStyle}>
             {headerIcon}
             <Box>
-                <Typography fontWeight="bold">{headerText}</Typography>
+                <Typography sx={{
+                    fontWeight: "bold"
+                }}>{headerText}</Typography>
                 {scanTimestamp && (
                     <Typography variant="body2">
                         {formatMessage(MESSAGES.fileScanTimestamp, {

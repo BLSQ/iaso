@@ -119,8 +119,16 @@ export const CampaignDetails: FunctionComponent = () => {
                         <ActiveForm />
                     </Form>
                 </FormikProvider>
-                <Grid container spacing={2} justifyContent="flex-end" mt={2}>
-                    <Box mr={2}>
+                <Grid
+                    container
+                    spacing={2}
+                    sx={{
+                        justifyContent: "flex-end",
+                        mt: 2
+                    }}>
+                    <Box sx={{
+                        mr: 2
+                    }}>
                         <Button
                             onClick={handleCancel}
                             color="primary"

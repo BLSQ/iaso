@@ -137,8 +137,10 @@ const FormForm: FunctionComponent<FormFormProps> = ({
     const logsUrl = `/${baseUrls.apiLogs}/?objectId=${currentForm.id.value}&contentType=iaso.form`;
     return (
         <>
-            <Grid container spacing={2} justifyContent="flex-start">
-                <Grid xs={6} item>
+            <Grid container spacing={2} sx={{
+                justifyContent: "flex-start"
+            }}>
+                <Grid size={6}>
                     {/* Splitting the Typography to be able to align it with the checkbox */}
                     <InputComponent
                         keyValue="name"
@@ -163,7 +165,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                     <Grid container spacing={2}>
                         {displayPeriods && (
                             <>
-                                <Grid item xs={6}>
+                                <Grid size={6}>
                                     <InputComponent
                                         keyValue="periods_before_allowed"
                                         disabled={
@@ -186,7 +188,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                                         required
                                     />
                                 </Grid>
-                                <Grid item xs={6}>
+                                <Grid size={6}>
                                     <InputComponent
                                         keyValue="periods_after_allowed"
                                         disabled={
@@ -209,7 +211,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                                         required
                                     />
                                 </Grid>
-                                <Grid item xs={6}>
+                                <Grid size={6}>
                                     <InputComponent
                                         className={classes.radio}
                                         dataTestId="single_per_period"
@@ -260,8 +262,8 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                                 </Grid>
                             </>
                         )}
-                        <Grid item xs={2} />
-                        <Grid item xs={displayPeriods ? 4 : 18}>
+                        <Grid size={2} />
+                        <Grid size={displayPeriods ? 4 : 18}>
                             <FormLegendInput
                                 currentForm={currentForm}
                                 setFieldValue={setFieldValue}
@@ -269,7 +271,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                         </Grid>
                     </Grid>
                 </Grid>
-                <Grid xs={6} item>
+                <Grid size={6}>
                     <InputComponent
                         multi
                         clearable
@@ -441,11 +443,13 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                 </Grid>
             </Grid>
             {currentForm.id.value && (
-                <Grid justifyContent="flex-end" container spacing={2}>
+                <Grid container spacing={2} sx={{
+                    justifyContent: "flex-end"
+                }}>
                     <DisplayIfUserHasPerm
                         permissions={[SUBMISSIONS, SUBMISSIONS_UPDATE]}
                     >
-                        <Grid item>
+                        <Grid>
                             <LinkWithLocation
                                 className={classes.linkWithIcon}
                                 to={`/${baseUrls.instances}/formIds/${currentForm.id.value}/tab/list`}
@@ -455,7 +459,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                             </LinkWithLocation>
                         </Grid>
                     </DisplayIfUserHasPerm>
-                    <Grid item>
+                    <Grid>
                         <ExternalLink url={logsUrl}>
                             <Typography className={classes.linkWithIcon}>
                                 <History />

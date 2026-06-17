@@ -90,7 +90,7 @@ export const InstanceTitle: FunctionComponent<Props> = ({
     );
     return (
         <Grid container className={classes.paperTitle}>
-            <Grid xs={8} item>
+            <Grid size={8}>
                 <InputComponent
                     type="select"
                     disabled={isFetching}
@@ -112,13 +112,13 @@ export const InstanceTitle: FunctionComponent<Props> = ({
                     ]}
                 >
                     <Grid
-                        xs={4}
-                        item
                         container
-                        justifyContent="flex-end"
-                        alignItems="center"
                         className={classes.paperTitleButtonContainer}
-                    >
+                        size={4}
+                        sx={{
+                            justifyContent: "flex-end",
+                            alignItems: "center"
+                        }}>
                         <Box className={classes.paperTitleButton}>
                             <DisplayIfUserHasPerm
                                 permissions={[Permissions.SUBMISSIONS_UPDATE]}

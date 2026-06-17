@@ -94,7 +94,9 @@ export const OffLineLangSwitch: FunctionComponent = () => {
         <>
             {appLocales.map((locale, index) => {
                 return (
-                    <Box key={locale.code} ml={index === 1 ? 2 : undefined}>
+                    <Box key={locale.code} sx={{
+                        ml: index === 1 ? 2 : undefined
+                    }}>
                         <Button
                             onClick={() => handleClick(locale.code)}
                             className={classes.languageSwitchButton}

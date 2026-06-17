@@ -7,7 +7,7 @@ import {
     Drawer,
     IconButton,
     List,
-    ListItem,
+    ListItemButton,
     ListItemIcon,
     ListItemText,
     Tooltip,
@@ -140,9 +140,8 @@ const SidebarMenu: FunctionComponent<Props> = ({ location }) => {
                             placement="top-start"
                             title={formatMessage(MESSAGES.viewUserManual)}
                         >
-                            <ListItem
+                            <ListItemButton
                                 className={classes.bottomLinkItem}
-                                button
                                 component="a"
                                 href={userGuideUrl}
                                 target="_blank"
@@ -160,7 +159,7 @@ const SidebarMenu: FunctionComponent<Props> = ({ location }) => {
                                         </Typography>
                                     }
                                 />
-                            </ListItem>
+                            </ListItemButton>
                         </Tooltip>
                     )}
                     {forumGuideUrl && (
@@ -169,9 +168,8 @@ const SidebarMenu: FunctionComponent<Props> = ({ location }) => {
                             placement="top-start"
                             title={formatMessage(MESSAGES.viewForum)}
                         >
-                            <ListItem
+                            <ListItemButton
                                 className={classes.bottomLinkItem}
-                                button
                                 component="a"
                                 href={forumGuideUrl}
                                 target="_blank"
@@ -189,7 +187,7 @@ const SidebarMenu: FunctionComponent<Props> = ({ location }) => {
                                         </Typography>
                                     }
                                 />
-                            </ListItem>
+                            </ListItemButton>
                         </Tooltip>
                     )}
                 </List>

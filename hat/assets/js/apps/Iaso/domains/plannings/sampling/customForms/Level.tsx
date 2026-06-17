@@ -125,8 +125,10 @@ export const Level: FunctionComponent<Props> = ({
     );
     return (
         <Box key={`level_${index}`}>
-            <Grid container spacing={1} alignItems="center">
-                <Grid item xs={index === 0 ? 11 : 10}>
+            <Grid container spacing={1} sx={{
+                alignItems: "center"
+            }}>
+                <Grid size={index === 0 ? 11 : 10}>
                     <InputComponent
                         withMarginTop={false}
                         type="select"
@@ -144,12 +146,12 @@ export const Level: FunctionComponent<Props> = ({
                 </Grid>
                 {index !== 0 && (
                     <Grid
-                        item
-                        xs={1}
-                        display="flex"
-                        justifyContent="center"
-                        alignItems="center"
-                    >
+                        size={1}
+                        sx={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center"
+                        }}>
                         <Box>
                             <IconButton
                                 icon="delete"
@@ -162,12 +164,12 @@ export const Level: FunctionComponent<Props> = ({
                 )}
 
                 <Grid
-                    item
-                    xs={1}
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
-                >
+                    size={1}
+                    sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center"
+                    }}>
                     <Box>
                         <IconButton
                             size="small"
@@ -185,7 +187,7 @@ export const Level: FunctionComponent<Props> = ({
             <Collapse in={isExpanded}>
                 <Box sx={styles.collapse}>
                     <Grid container spacing={1.2} sx={styles.grid}>
-                        <Grid item xs={8}>
+                        <Grid size={8}>
                             <InputComponent
                                 withMarginTop={false}
                                 type="select"
@@ -206,7 +208,7 @@ export const Level: FunctionComponent<Props> = ({
                                 options={criteriaOptions}
                             />
                         </Grid>
-                        <Grid item xs={4}>
+                        <Grid size={4}>
                             <InputComponent
                                 withMarginTop={false}
                                 type="number"
@@ -227,7 +229,7 @@ export const Level: FunctionComponent<Props> = ({
                                 }
                             />
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid size={12}>
                             <ExcludedOrgUnits
                                 index={index}
                                 selectedOrgUnitIds={selectedOrgUnitTypeId}

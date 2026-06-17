@@ -1,7 +1,7 @@
 import React from 'react';
 import { CallMerge } from '@mui/icons-material';
-import CheckCircleOutline from '@mui/icons-material/CheckCircleOutline';
-import ErrorOutline from '@mui/icons-material/ErrorOutline';
+import CheckCircleOutlineOutlined from '@mui/icons-material/CheckCircleOutlineOutlined';
+import ErrorOutlineOutlined from '@mui/icons-material/ErrorOutlineOutlined';
 import HourglassEmpty from '@mui/icons-material/HourglassEmpty';
 
 import { IconButton, Tooltip } from '@mui/material';
@@ -34,8 +34,8 @@ const STATUS_COLUMN_SIZES = {
 
 const STATUS_COLUMN_ICONS = {
     ready: HourglassEmpty,
-    error: ErrorOutline,
-    exported: CheckCircleOutline,
+    error: ErrorOutlineOutlined,
+    exported: CheckCircleOutlineOutlined,
 };
 
 const getBaseColumns = (formatMessage): Array<Column> => [

@@ -54,7 +54,12 @@ export const Head: FunctionComponent<Props> = ({
                         align="center"
                         colSpan={year.daysCount}
                     >
-                        <Box position="relative" width="100%" height="100%">
+                        <Box
+                            sx={{
+                                position: "relative",
+                                width: "100%",
+                                height: "100%"
+                            }}>
                             <Typography
                                 className={classes.tableCellSpan}
                                 variant="h5"
@@ -90,7 +95,12 @@ export const Head: FunctionComponent<Props> = ({
                         align="center"
                         colSpan={month.daysCount}
                     >
-                        <Box position="relative" width="100%" height="100%">
+                        <Box
+                            sx={{
+                                position: "relative",
+                                width: "100%",
+                                height: "100%"
+                            }}>
                             <span className={classes.tableCellSpan}>
                                 {month.value}
                             </span>
@@ -122,7 +132,12 @@ export const Head: FunctionComponent<Props> = ({
                         align="center"
                         colSpan={7}
                     >
-                        <Box position="relative" width="100%" height="100%">
+                        <Box
+                            sx={{
+                                position: "relative",
+                                width: "100%",
+                                height: "100%"
+                            }}>
                             <Box
                                 className={classes.tableCellSpan}
                                 sx={{ fontSize: 9 }}

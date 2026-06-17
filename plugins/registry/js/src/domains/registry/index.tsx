@@ -168,7 +168,7 @@ export const Registry: FunctionComponent = () => {
             }}
         >
             <Grid container spacing={2}>
-                <Grid item xs={12} sx={styles.breadCrumbContainer}>
+                <Grid sx={styles.breadCrumbContainer} size={12}>
                     <Box sx={isFullScreen ? styles.fullScreenBreadcrumb : {}}>
                         <Box sx={styles.treeContainer}>
                             <OrgUnitTreeviewModal
@@ -183,7 +183,12 @@ export const Registry: FunctionComponent = () => {
                                 appId={config.app_id}
                             />
                         </Box>
-                        <Box display="inline-block" ml={1} mr={2}>
+                        <Box
+                            sx={{
+                                display: "inline-block",
+                                ml: 1,
+                                mr: 2
+                            }}>
                             {`>`}
                         </Box>
                         {!orgUnitId && '...'}
@@ -198,7 +203,11 @@ export const Registry: FunctionComponent = () => {
                 </Grid>
                 {orgUnit && (
                     <>
-                        <Grid item xs={12} md={6}>
+                        <Grid
+                            size={{
+                                xs: 12,
+                                md: 6
+                            }}>
                             <OrgUnitPaper
                                 orgUnit={orgUnit}
                                 subOrgUnitTypes={subOrgUnitTypes}
@@ -214,12 +223,14 @@ export const Registry: FunctionComponent = () => {
                             />
                         </Grid>
                         <Grid
-                            item
-                            xs={12}
-                            md={6}
-                            alignItems="flex-start"
                             container
-                        >
+                            size={{
+                                xs: 12,
+                                md: 6
+                            }}
+                            sx={{
+                                alignItems: "flex-start"
+                            }}>
                             {orgUnit && (
                                 <SelectedOrgUnit
                                     registrySlug={config.slug}

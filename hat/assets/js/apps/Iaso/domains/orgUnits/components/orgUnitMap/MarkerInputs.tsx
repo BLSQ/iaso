@@ -60,7 +60,11 @@ const MarkerInputs: FunctionComponent<Props> = ({
     return (
         <Box>
             {!orgUnit.geo_json && !hasMarker && (
-                <Box mb={2} mt={2}>
+                <Box
+                    sx={{
+                        mb: 2,
+                        mt: 2
+                    }}>
                     <Button
                         variant="outlined"
                         disabled={actionBusy}
@@ -146,7 +150,11 @@ const MarkerInputs: FunctionComponent<Props> = ({
                             })
                         }
                     />
-                    <Box mb={2} mt={2}>
+                    <Box
+                        sx={{
+                            mb: 2,
+                            mt: 2
+                        }}>
                         <Button
                             disabled={actionBusy}
                             variant="outlined"

@@ -25,27 +25,27 @@ export const CursorPagination: React.FC<CursorPaginationProps> = ({
 }) => {
     return (
         <Box
-            display="flex"
-            justifyContent="flex-end"
-            alignItems="center"
-            px={2}
-        >
+            sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                px: 2
+            }}>
             <Box
                 sx={{
+                    mr: 4,
+
                     //  Reset `mr={8}` on PageRowSelect
                     '& > div': {
                         marginRight: '0 !important',
-                    },
-                }}
-                mr={4}
-            >
+                    }
+                }}>
                 <PageRowSelect
                     rowsPerPage={pageSize}
                     rowsPerPageOptions={pageSizeOptions}
                     selectRowsPerPage={onPageSizeChange}
                 />
             </Box>
-
             <Stack direction="row" spacing={1}>
                 <PaginationItem
                     type="previous"

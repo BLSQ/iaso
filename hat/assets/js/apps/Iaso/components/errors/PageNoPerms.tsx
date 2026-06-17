@@ -20,18 +20,23 @@ const PageNoPerms: React.FunctionComponent = () => {
     return (
         <>
             <TopBar displayBackButton={false} />
-            <Box mt={5}>
+            <Box sx={{
+                mt: 5
+            }}>
                 <Container maxWidth="md">
                     <Paper>
                         <Box
-                            py={6}
-                            px={2}
-                            justifyContent="center"
-                            alignItems="center"
-                            display="flex"
-                            flexDirection="column"
-                        >
-                            <Box pt={3}>
+                            sx={{
+                                py: 6,
+                                px: 2,
+                                justifyContent: "center",
+                                alignItems: "center",
+                                display: "flex",
+                                flexDirection: "column"
+                            }}>
+                            <Box sx={{
+                                pt: 3
+                            }}>
                                 <Typography variant="h2" id="error-code">
                                     <FormattedMessage
                                         {...MESSAGES.noPermissionsTitle}
@@ -39,7 +44,11 @@ const PageNoPerms: React.FunctionComponent = () => {
                                 </Typography>
                             </Box>
                             <>
-                                <Box pt={2} pb={2}>
+                                <Box
+                                    sx={{
+                                        pt: 2,
+                                        pb: 2
+                                    }}>
                                     <Typography variant="h5">
                                         <FormattedMessage
                                             {...MESSAGES.noPermissions}

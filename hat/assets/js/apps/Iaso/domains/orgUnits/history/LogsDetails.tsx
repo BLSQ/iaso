@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import Alert from '@mui/lab/Alert';
+import Alert from '@mui/material/Alert';
 import { Container, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -48,8 +48,10 @@ export const LogsDetails: FunctionComponent<Props> = ({
             {log && (
                 <>
                     {log.org_unit_change_request_id && (
-                        <Grid container spacing={2} mb={2}>
-                            <Grid item xs={12}>
+                        <Grid container spacing={2} sx={{
+                            mb: 2
+                        }}>
+                            <Grid size={12}>
                                 <Alert severity="info">
                                     <LinkWithLocation
                                         className={classes.link}
@@ -70,7 +72,7 @@ export const LogsDetails: FunctionComponent<Props> = ({
                     )}
                     {log.past_value.length > 0 && log.new_value.length > 0 && (
                         <Grid container spacing={2}>
-                            <Grid item xs={6}>
+                            <Grid size={6}>
                                 <LogCompareComponent
                                     title={formatMessage(MESSAGES.before)}
                                     log={log.past_value}
@@ -79,7 +81,7 @@ export const LogsDetails: FunctionComponent<Props> = ({
                                     showButtons={showButtons}
                                 />
                             </Grid>
-                            <Grid item xs={6}>
+                            <Grid size={6}>
                                 <LogCompareComponent
                                     title={formatMessage(MESSAGES.after)}
                                     log={log.new_value}
@@ -94,7 +96,7 @@ export const LogsDetails: FunctionComponent<Props> = ({
                     {log.past_value.length > 0 &&
                         log.new_value.length === 0 && (
                             <Grid container spacing={2}>
-                                <Grid item xs={6}>
+                                <Grid size={6}>
                                     <h4 className="margin-bottom">
                                         {formatMessage(MESSAGES.deleted)}
                                     </h4>
@@ -105,7 +107,7 @@ export const LogsDetails: FunctionComponent<Props> = ({
                     {log.past_value.length === 0 &&
                         log.new_value.length > 0 && (
                             <Grid container spacing={2}>
-                                <Grid item xs={6}>
+                                <Grid size={6}>
                                     <h4 className="margin-bottom">
                                         {formatMessage(MESSAGES.created)}
                                     </h4>

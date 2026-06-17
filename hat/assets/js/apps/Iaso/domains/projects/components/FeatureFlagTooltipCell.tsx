@@ -1,6 +1,6 @@
 import React from 'react';
 
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { Box, Tooltip } from '@mui/material';
 
@@ -25,7 +25,7 @@ export const FeatureFlagTooltipCell: React.FunctionComponent<Props> = ({
                 {iconVariant === 'warning' ? (
                     <WarningAmberIcon color="warning" />
                 ) : (
-                    <HelpOutlineIcon color="primary" />
+                    <HelpOutlineOutlinedIcon color="primary" />
                 )}
             </Tooltip>
         </Box>

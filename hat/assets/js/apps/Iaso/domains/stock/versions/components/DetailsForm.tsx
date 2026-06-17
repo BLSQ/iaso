@@ -36,7 +36,10 @@ export const DetailsForm: FunctionComponent<Props> = ({ version }) => {
     }, [name, updateVersion, version.id]);
     const saveDisabled = name === version.name || name === '';
     return (
-        <Box p={2} sx={styles.root}>
+        <Box
+            sx={[{
+                p: 2
+            }, styles.root]}>
             <InputComponent
                 withMarginTop={false}
                 keyValue="name"

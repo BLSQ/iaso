@@ -197,9 +197,13 @@ export const VaccineSupplyChainDetails: FunctionComponent = () => {
                             <Grid
                                 container
                                 spacing={2}
-                                justifyContent="flex-end"
+                                sx={{
+                                    justifyContent: "flex-end"
+                                }}
                             >
-                                <Box style={{ display: 'inline-flex' }} mr={3}>
+                                <Box style={{ display: 'inline-flex' }} sx={{
+                                    mr: 3
+                                }}>
                                     <VaccineSupplyChainConfirmButtons
                                         className={classes.button}
                                         tab={tab}

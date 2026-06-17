@@ -28,8 +28,13 @@ export const DuplicateDetailsTableButtons: FunctionComponent<Props> = ({
     const currentUser = useCurrentUser();
     return (
         <Grid container>
-            <Grid item xs={4}>
-                <Box pb={2} pt={2} pl={2}>
+            <Grid size={4}>
+                <Box
+                    sx={{
+                        pb: 2,
+                        pt: 2,
+                        pl: 2
+                    }}>
                     <InputComponent
                         withMarginTop={false}
                         type="checkbox"
@@ -47,14 +52,17 @@ export const DuplicateDetailsTableButtons: FunctionComponent<Props> = ({
                 currentUser,
             ) &&
                 !hasFeatureFlag(currentUser, ENTITY_DUPLICATES_SOFT_DELETE) && (
-                    <Grid container item xs={8} justifyContent="flex-end">
+                    <Grid container size={8} sx={{
+                        justifyContent: "flex-end"
+                    }}>
                         <Box
-                            py={2}
-                            pr={2}
                             style={{
                                 display: 'inline-flex',
                             }}
-                        >
+                            sx={{
+                                py: 2,
+                                pr: 2
+                            }}>
                             <Box>
                                 <Button
                                     variant="contained"
@@ -65,7 +73,9 @@ export const DuplicateDetailsTableButtons: FunctionComponent<Props> = ({
                                     {formatMessage(MESSAGES.takeValuesFromA)}
                                 </Button>
                             </Box>
-                            <Box ml={2}>
+                            <Box sx={{
+                                ml: 2
+                            }}>
                                 <Button
                                     variant="contained"
                                     color="primary"
@@ -75,7 +85,9 @@ export const DuplicateDetailsTableButtons: FunctionComponent<Props> = ({
                                     {formatMessage(MESSAGES.takeValuesFromB)}
                                 </Button>
                             </Box>
-                            <Box ml={2}>
+                            <Box sx={{
+                                ml: 2
+                            }}>
                                 <Button
                                     variant="contained"
                                     color="primary"

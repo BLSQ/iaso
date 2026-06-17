@@ -144,7 +144,7 @@ export const ImportGeoPkgDialog: FC<Props> = ({
         >
             {mutation.isLoading && <LoadingSpinner />}
             <Grid container spacing={4}>
-                <Grid item>
+                <Grid>
                     <Typography>
                         <FormattedMessage
                             id="iaso.datasources.gpkg.explication"
@@ -160,7 +160,7 @@ export const ImportGeoPkgDialog: FC<Props> = ({
                         />
                     </Typography>
                 </Grid>
-                <Grid xs={12} item>
+                <Grid size={12}>
                     <FileInputComponent
                         keyValue="file"
                         value={form.file.value}

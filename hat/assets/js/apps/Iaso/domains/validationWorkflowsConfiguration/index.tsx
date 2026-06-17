@@ -41,16 +41,18 @@ export const ValidationWorkflowsConfiguration = () => {
             <TopBar
                 title={formatMessage(MESSAGES.configureInstancesValidation)}
             />
-
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 <Filters params={params} />
                 <Grid
                     container
                     spacing={2}
-                    justifyContent="flex-end"
-                    alignItems="center"
-                >
-                    <Box mt={2}>
+                    sx={{
+                        justifyContent: "flex-end",
+                        alignItems: "center"
+                    }}>
+                    <Box sx={{
+                        mt: 2
+                    }}>
                         <LinkButton
                             buttonClassName={classes.marginLeft}
                             variant="contained"

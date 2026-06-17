@@ -25,10 +25,12 @@ const PopupItemComponent: FunctionComponent<Props> = ({
 
     return (
         <Grid container spacing={0}>
-            <Grid item xs={labelSize} className={classes.popupListItemLabel}>
-                <Box mr={1}>{label}:</Box>
+            <Grid className={classes.popupListItemLabel} size={labelSize}>
+                <Box sx={{
+                    mr: 1
+                }}>{label}:</Box>
             </Grid>
-            <Grid item xs={valueSize} className={classes.popuplistItem}>
+            <Grid className={classes.popuplistItem} size={valueSize}>
                 {value || textPlaceholder}
             </Grid>
         </Grid>

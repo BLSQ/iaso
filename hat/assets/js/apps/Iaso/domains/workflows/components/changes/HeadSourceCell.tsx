@@ -39,9 +39,15 @@ export const HeadSourceCell: FunctionComponent<Props> = ({
         [change?.form.id, changes, forms],
     );
     return (
-        <Box mb={2}>
+        <Box sx={{
+            mb: 2
+        }}>
             <Grid container spacing={2}>
-                <Grid item xs={12} md={7}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 7
+                    }}>
                     <InputComponent
                         type="select"
                         keyValue="forms"
@@ -54,7 +60,11 @@ export const HeadSourceCell: FunctionComponent<Props> = ({
                         clearable={false}
                     />
                 </Grid>
-                <Grid item xs={12} md={5}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 5
+                    }}>
                     <InputComponent
                         type="select"
                         keyValue="sourceVersion"

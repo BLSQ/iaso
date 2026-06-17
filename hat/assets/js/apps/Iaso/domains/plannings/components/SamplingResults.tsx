@@ -62,7 +62,7 @@ export const SamplingResults: FunctionComponent<Props> = ({ planning }) => {
     return (
         <Paper sx={styles.paper}>
             <Grid container spacing={2}>
-                <Grid item xs={8}>
+                <Grid size={8}>
                     <Typography
                         color="primary"
                         variant="h6"
@@ -71,7 +71,7 @@ export const SamplingResults: FunctionComponent<Props> = ({ planning }) => {
                         {formatMessage(MESSAGES.samplingResults)}
                     </Typography>
                 </Grid>
-                <Grid item xs={4}>
+                <Grid size={4}>
                     {planning && planning?.pipeline_uuids?.length > 0 && (
                         <Box
                             sx={{

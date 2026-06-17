@@ -20,27 +20,32 @@ const PushBulkGpsWarning: FunctionComponent<Props> = ({
     if (!condition) return null;
 
     return (
-        <Grid
-            item
-            xs={12}
-            container
-            spacing={2}
-            alignItems="center"
-            direction="row"
-        >
-            <Grid item xs={8}>
+        <Grid container spacing={2} direction="row" size={12} sx={{
+            alignItems: "center"
+        }}>
+            <Grid size={8}>
                 <Typography component="ul" sx={{ color: 'warning.main' }}>
                     <Typography component="li">
                         {formatMessage(message)}
                     </Typography>
                 </Typography>
             </Grid>
-            <Grid item xs={1} display="flex" justifyContent="flex-start">
+            <Grid
+                size={1}
+                sx={{
+                    display: "flex",
+                    justifyContent: "flex-start"
+                }}>
                 {/* <LinkWithLocation to={linkTo}>
                     {formatMessage(MESSAGES.seeAll)}
                 </LinkWithLocation> */}
             </Grid>
-            <Grid item xs={3} display="flex" justifyContent="flex-end">
+            <Grid
+                size={3}
+                sx={{
+                    display: "flex",
+                    justifyContent: "flex-end"
+                }}>
                 <Button
                     variant="outlined"
                     color={approveCondition ? 'primary' : 'warning'}

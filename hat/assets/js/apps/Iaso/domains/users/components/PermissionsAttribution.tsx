@@ -160,10 +160,13 @@ const PermissionsAttribution: React.FunctionComponent<Props> = ({
                     {formatMessage(MESSAGES.isSuperUser)}
                 </Typography>
             )}
-
             {!isSuperUser && (
                 <>
-                    <Box mb={2} width="50%">
+                    <Box
+                        sx={{
+                            mb: 2,
+                            width: "50%"
+                        }}>
                         <InputComponent
                             keyValue="user_roles"
                             onChange={handleChangeUserRoles}

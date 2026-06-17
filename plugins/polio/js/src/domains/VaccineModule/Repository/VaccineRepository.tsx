@@ -73,7 +73,11 @@ export const VaccineRepository: FunctionComponent = () => {
                         <Typography variant="h4" color="primary" sx={{ mb: 2 }}>
                             {formatMessage(MESSAGES.title)}
                         </Typography>
-                        <Box sx={{ display: 'flex' }} mt={1}>
+                        <Box
+                            sx={{
+                                mt: 1,
+                                display: 'flex'
+                            }}>
                             <OffLineLangSwitch />
                         </Box>
                     </Box>

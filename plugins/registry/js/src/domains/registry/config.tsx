@@ -119,7 +119,12 @@ export const useGetOrgUnitsListColumns = (
         },
         {
             Header: (
-                <Box position="relative" top={4} left={0}>
+                <Box
+                    sx={{
+                        position: "relative",
+                        top: 4,
+                        left: 0
+                    }}>
                     <MapIcon fontSize="small" color="inherit" />
                 </Box>
             ),

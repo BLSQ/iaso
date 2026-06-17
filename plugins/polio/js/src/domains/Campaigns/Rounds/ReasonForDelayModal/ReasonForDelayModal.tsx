@@ -46,7 +46,9 @@ const ReasonForDelayModal: FunctionComponent<Props> = ({
             allowConfirm={allowConfirm}
         >
             <Divider />
-            <Box mt={2}>
+            <Box sx={{
+                mt: 2
+            }}>
                 <Field
                     label={formatMessage(MESSAGES.startDate)}
                     name="startDate"

@@ -3,6 +3,10 @@ import { faker } from '@faker-js/faker';
 import { GlobalStyles } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
+import {
+    StylesProvider,
+    ThemeProvider as StylesThemeProvider,
+} from '@mui/styles';
 import { render, RenderOptions } from '@testing-library/react';
 import { screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -53,9 +57,13 @@ function Wrapper({ children }: { children: React.ReactNode }) {
     return (
         <QueryClientProvider client={queryClient}>
             <ThemeProvider theme={theme}>
-                <CssBaseline />
-                <GlobalStyles styles={getGlobalOverrides(theme)} />
-                {children}
+                <StylesThemeProvider theme={theme}>
+                    <StylesProvider injectFirst>
+                        <CssBaseline />
+                        <GlobalStyles styles={getGlobalOverrides(theme)} />
+                        {children}
+                    </StylesProvider>
+                </StylesThemeProvider>
             </ThemeProvider>
         </QueryClientProvider>
     );

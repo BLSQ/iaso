@@ -82,7 +82,13 @@ export const RoundPopper: FunctionComponent<Props> = ({
     return (
         <Popper id={id} open={open} anchorEl={anchorEl} sx={styles.popper}>
             <Paper elevation={1}>
-                <Box pt={6} pb={2} pr={2} pl={2}>
+                <Box
+                    sx={{
+                        pt: 6,
+                        pb: 2,
+                        pr: 2,
+                        pl: 2
+                    }}>
                     <IconButton
                         onClick={() => handleClose()}
                         sx={styles.popperClose}
@@ -91,44 +97,118 @@ export const RoundPopper: FunctionComponent<Props> = ({
                         <CloseIcon color="primary" />
                     </IconButton>
                     <Grid container spacing={1}>
-                        <Grid item sm={6} container justifyContent="flex-end">
+                        <Grid
+                            container
+                            size={{
+                                sm: 6
+                            }}
+                            sx={{
+                                justifyContent: "flex-end"
+                            }}>
                             {formatMessage(MESSAGES.startDate)}:
                         </Grid>
-                        <Grid item sm={6} container justifyContent="flex-start">
+                        <Grid
+                            container
+                            size={{
+                                sm: 6
+                            }}
+                            sx={{
+                                justifyContent: "flex-start"
+                            }}>
                             {round.start && round.start.format('L')}
                         </Grid>
 
-                        <Grid item sm={6} container justifyContent="flex-end">
+                        <Grid
+                            container
+                            size={{
+                                sm: 6
+                            }}
+                            sx={{
+                                justifyContent: "flex-end"
+                            }}>
                             {formatMessage(MESSAGES.endDate)}:
                         </Grid>
-                        <Grid item sm={6} container justifyContent="flex-start">
+                        <Grid
+                            container
+                            size={{
+                                sm: 6
+                            }}
+                            sx={{
+                                justifyContent: "flex-start"
+                            }}>
                             {round.end && round.end.format('L')}
                         </Grid>
 
-                        <Grid item sm={6} container justifyContent="flex-end">
+                        <Grid
+                            container
+                            size={{
+                                sm: 6
+                            }}
+                            sx={{
+                                justifyContent: "flex-end"
+                            }}>
                             {formatMessage(MESSAGES.targetPopulation)}:
                         </Grid>
-                        <Grid item sm={6} container justifyContent="flex-start">
+                        <Grid
+                            container
+                            size={{
+                                sm: 6
+                            }}
+                            sx={{
+                                justifyContent: "flex-start"
+                            }}>
                             {round.target_population
                                 ? formatNumber(round.target_population)
                                 : textPlaceholder}
                         </Grid>
 
-                        <Grid item sm={6} container justifyContent="flex-end">
+                        <Grid
+                            container
+                            size={{
+                                sm: 6
+                            }}
+                            sx={{
+                                justifyContent: "flex-end"
+                            }}>
                             {formatMessage(MESSAGES.preventiveShort)}:
                         </Grid>
-                        <Grid item sm={6} container justifyContent="flex-start">
+                        <Grid
+                            container
+                            size={{
+                                sm: 6
+                            }}
+                            sx={{
+                                justifyContent: "flex-start"
+                            }}>
                             {campaign.isPreventive
                                 ? formatMessage(MESSAGES.yes)
                                 : formatMessage(MESSAGES.no)}
                         </Grid>
-                        <Grid item sm={6} container justifyContent="flex-end">
+                        <Grid
+                            container
+                            size={{
+                                sm: 6
+                            }}
+                            sx={{
+                                justifyContent: "flex-end"
+                            }}>
                             {formatMessage(MESSAGES.description)}:
                         </Grid>
-                        <Grid item sm={6} container justifyContent="flex-start">
+                        <Grid
+                            container
+                            size={{
+                                sm: 6
+                            }}
+                            sx={{
+                                justifyContent: "flex-start"
+                            }}>
                             {campaign.original.description || '--'}
                         </Grid>
-                        <Grid item sm={12} container>
+                        <Grid
+                            container
+                            size={{
+                                sm: 12
+                            }}>
                             {groupIds && (
                                 <CsvButton csvUrl={url} variant="text" />
                             )}

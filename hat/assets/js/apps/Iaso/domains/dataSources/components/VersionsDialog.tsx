@@ -153,7 +153,7 @@ export const VersionsDialog: FunctionComponent<Props> = ({
                     />
                 </Typography>
             )}
-            <Grid item>
+            <Grid>
                 {hasDhis2Module && (
                     <AddTask
                         renderTrigger={({ openDialog }) => (

@@ -82,11 +82,12 @@ export const useColumns = (
                 sortable: false,
                 Cell: (settings): ReactElement => (
                     <Box
-                        display="flex"
-                        alignItems="center"
-                        gap={1}
-                        justifyContent="center"
-                    >
+                        sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            justifyContent: "center"
+                        }}>
                         <EditProjectDialog
                             initialData={settings.row.original}
                             saveProject={saveProject}

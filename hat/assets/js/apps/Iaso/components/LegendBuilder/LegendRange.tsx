@@ -56,18 +56,23 @@ export const LegendRange: FunctionComponent<LegendRowProps> = ({
         <Grid
             container
             className={classes.legendItem}
-            alignContent="center"
-            justifyContent="center"
-        >
+            sx={{
+                alignContent: "center",
+                justifyContent: "center"
+            }}>
             <Grid
-                item
-                xs={12}
-                sm={2}
                 container
-                alignContent="center"
-                justifyContent="center"
-            >
-                <Box pt="2px">
+                size={{
+                    xs: 12,
+                    sm: 2
+                }}
+                sx={{
+                    alignContent: "center",
+                    justifyContent: "center"
+                }}>
+                <Box sx={{
+                    pt: "2px"
+                }}>
                     <ColorPicker
                         currentColor={rangeItem.color}
                         // @ts-ignore
@@ -78,17 +83,25 @@ export const LegendRange: FunctionComponent<LegendRowProps> = ({
                 </Box>
             </Grid>
             <Grid
-                item
-                xs={12}
-                sm={3}
                 container
-                alignContent="center"
-                justifyContent="center"
-            >
+                size={{
+                    xs: 12,
+                    sm: 3
+                }}
+                sx={{
+                    alignContent: "center",
+                    justifyContent: "center"
+                }}>
                 <Typography variant="h6">{` < `}</Typography>
             </Grid>
-            <Grid item xs={12} sm={5}>
-                <Box my={1}>
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 5
+                }}>
+                <Box sx={{
+                    my: 1
+                }}>
                     <InputComponent
                         keyValue={`percent-${rangeItem.id}`}
                         className={classes.input}
@@ -112,13 +125,15 @@ export const LegendRange: FunctionComponent<LegendRowProps> = ({
                 </Box>
             </Grid>
             <Grid
-                item
-                xs={12}
-                sm={2}
                 container
-                alignContent="center"
-                justifyContent="flex-end"
-            >
+                size={{
+                    xs: 12,
+                    sm: 2
+                }}
+                sx={{
+                    alignContent: "center",
+                    justifyContent: "flex-end"
+                }}>
                 {index !== 0 && (
                     <IconButton
                         size="small"

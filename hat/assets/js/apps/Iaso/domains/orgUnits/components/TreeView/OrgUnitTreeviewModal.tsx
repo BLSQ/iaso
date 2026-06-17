@@ -283,9 +283,15 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
             >
                 <SettingsPopper setSettings={setSettings} settings={settings} />
             </Box>
-            <Box position="relative">
+            <Box sx={{
+                position: "relative"
+            }}>
                 {isFetchingOrgUnit && <LoadingSpinner absolute />}
-                <Box mt={1} minHeight="350px">
+                <Box
+                    sx={{
+                        mt: 1,
+                        minHeight: "350px"
+                    }}>
                     <TreeViewWithSearch
                         getChildrenData={getChildrenWithSource}
                         getRootData={getRootDataWithSource}

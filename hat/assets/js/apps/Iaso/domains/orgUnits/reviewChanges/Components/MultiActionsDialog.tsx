@@ -172,7 +172,9 @@ export const MultiActionsDialog: FunctionComponent<Props> = ({
             closeOnConfirm={false}
             allowConfirm={!!status}
         >
-            <Box mb={2}>
+            <Box sx={{
+                mb: 2
+            }}>
                 <Alert severity="warning">
                     {formatMessage(
                         MESSAGES.changeSelectedChangeRequestsWarning,
@@ -189,7 +191,9 @@ export const MultiActionsDialog: FunctionComponent<Props> = ({
                 labelString={formatMessage(MESSAGES.status)}
             />
             {status === 'rejected' && (
-                <Box mt={2}>
+                <Box sx={{
+                    mt: 2
+                }}>
                     <InputComponent
                         type="textarea"
                         keyValue=""
@@ -203,7 +207,6 @@ export const MultiActionsDialog: FunctionComponent<Props> = ({
                     />
                 </Box>
             )}
-
             <Dialog
                 open={openConfirmDialog}
                 onClose={(event, reason) => {

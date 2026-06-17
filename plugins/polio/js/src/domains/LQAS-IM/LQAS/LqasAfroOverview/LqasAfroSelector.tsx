@@ -28,7 +28,7 @@ export const LqasAfroSelector: FunctionComponent<Props> = ({
         side === 'left' ? 'displayedShapesLeft' : 'displayedShapesRight';
     return (
         <Grid container spacing={4}>
-            <Grid item xs={6}>
+            <Grid size={6}>
                 <InputComponent
                     type="select"
                     multi={false}
@@ -40,8 +40,13 @@ export const LqasAfroSelector: FunctionComponent<Props> = ({
                     label={MESSAGES.round}
                 />
             </Grid>
-            <Grid item xs={6}>
-                <Box mt={3} display="flex" justifyContent="center">
+            <Grid size={6}>
+                <Box
+                    sx={{
+                        mt: 3,
+                        display: "flex",
+                        justifyContent: "center"
+                    }}>
                     <RadioGroup
                         row
                         name="displayedShapes"

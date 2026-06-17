@@ -44,18 +44,17 @@ export const OrgUnitTitle: FunctionComponent<Props> = ({ orgUnit, params }) => {
     const isRootOrgUnit = params.orgUnitId === `${orgUnit?.id}`;
     return (
         <Grid container spacing={0}>
-            <Grid xs={9} item sx={styles.titleContainer}>
+            <Grid sx={styles.titleContainer} size={9}>
                 <Typography color="primary" variant="h6" sx={styles.title}>
                     {orgUnit.name} ({orgUnit.org_unit_type_name})
                 </Typography>
             </Grid>
             <Grid
-                xs={3}
-                item
                 container
-                justifyContent="flex-end"
-                sx={styles.paperTitleButtonContainer}
-            >
+                size={3}
+                sx={[{
+                    justifyContent: "flex-end"
+                }, styles.paperTitleButtonContainer]}>
                 <Box sx={styles.paperTitleButton}>
                     <DisplayIfUserHasPerm
                         permissions={[Permissions.REGISTRY_WRITE]}

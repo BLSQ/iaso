@@ -276,10 +276,16 @@ const FormVersionsDialogComponent: FunctionComponent<Props> = ({
                 {step === 'confirming' && diff ? (
                     <FormVersionsDiffConfirmation diff={diff} />
                 ) : (
-                    <Grid container spacing={4} justifyContent="flex-start">
-                        <Grid xs={12} item>
+                    <Grid container spacing={4} sx={{
+                        justifyContent: "flex-start"
+                    }}>
+                        <Grid size={12}>
                             {!formState.id.value && (
-                                <Box mt={1} mb="4px">
+                                <Box
+                                    sx={{
+                                        mt: 1,
+                                        mb: "4px"
+                                    }}>
                                     <FileInputComponent
                                         keyValue="xls_file"
                                         onChange={(key, value) => {
@@ -334,12 +340,18 @@ const FormVersionsDialogComponent: FunctionComponent<Props> = ({
                                 }
                             />
                             {startPeriodInvalid && (
-                                <Box mb={2} mt={-1}>
+                                <Box
+                                    sx={{
+                                        mb: 2,
+                                        mt: -1
+                                    }}>
                                     <Typography
                                         id="start-invalid"
                                         variant="body1"
                                         color="error"
-                                        fontSize="small"
+                                        sx={{
+                                            fontSize: "small"
+                                        }}
                                     >
                                         {intl.formatMessage(
                                             errorTypes.invalid.message,
@@ -362,12 +374,18 @@ const FormVersionsDialogComponent: FunctionComponent<Props> = ({
                                 }
                             />
                             {endPeriodInvalid && (
-                                <Box mb={2} mt={-1}>
+                                <Box
+                                    sx={{
+                                        mb: 2,
+                                        mt: -1
+                                    }}>
                                     <Typography
                                         id="end-invalid"
                                         variant="body1"
                                         color="error"
-                                        fontSize="small"
+                                        sx={{
+                                            fontSize: "small"
+                                        }}
                                     >
                                         {intl.formatMessage(
                                             errorTypes.invalid.message,
@@ -376,12 +394,18 @@ const FormVersionsDialogComponent: FunctionComponent<Props> = ({
                                 </Box>
                             )}
                             {chronologicalError && (
-                                <Box mb={2} mt={-1}>
+                                <Box
+                                    sx={{
+                                        mb: 2,
+                                        mt: -1
+                                    }}>
                                     <Typography
                                         id="chronological-error"
                                         variant="body1"
                                         color="error"
-                                        fontSize="small"
+                                        sx={{
+                                            fontSize: "small"
+                                        }}
                                     >
                                         {intl.formatMessage(
                                             errorTypes.chronological.message,

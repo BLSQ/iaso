@@ -88,12 +88,12 @@ const Filters: FunctionComponent<Props> = ({
                 .map(column => (
                     <Grid
                         container
-                        item
-                        xs={12}
-                        md={3}
                         className={classes.column}
                         key={`column-${column}`}
-                    >
+                        size={{
+                            xs: 12,
+                            md: 3
+                        }}>
                         <FiltersComponent
                             params={params}
                             baseUrl={baseUrl}
@@ -103,15 +103,21 @@ const Filters: FunctionComponent<Props> = ({
                         />
                     </Grid>
                 ))}
-
             <Grid
-                item
                 container
-                justifyContent="flex-end"
-                xs={12}
-                md={filtersColumnsCount === 3 ? 3 : 12}
-            >
-                <Box mb={2} mt={filtersColumnsCount === 3 ? 2 : 0} p={0}>
+                size={{
+                    xs: 12,
+                    md: filtersColumnsCount === 3 ? 3 : 12
+                }}
+                sx={{
+                    justifyContent: "flex-end"
+                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                        mt: filtersColumnsCount === 3 ? 2 : 0,
+                        p: 0
+                    }}>
                     {extraComponent}
                     <Button
                         data-test="search-button"

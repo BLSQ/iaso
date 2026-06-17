@@ -32,13 +32,12 @@ export const UserOrgUnitWriteTypes: FunctionComponent<Props> = ({
                 <Stack
                     direction="row"
                     spacing={1}
-                    alignItems="center"
                     sx={{
+                        alignItems: "center",
                         paddingLeft: '15px',
                         marginRight: '100px',
-                        color: theme => theme.palette.warning.main,
-                    }}
-                >
+                        color: theme => theme.palette.warning.main
+                    }}>
                     <WarningAmberIcon />
                     <Typography>
                         {formatMessage(

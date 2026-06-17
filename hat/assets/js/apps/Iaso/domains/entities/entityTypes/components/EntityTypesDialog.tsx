@@ -215,10 +215,16 @@ const EntityTypesDialog: FunctionComponent<Props> = ({
             >
                 <div id="entity-types-dialog">
                     {!isNew && formName && (
-                        <Box mb={2}>
+                        <Box sx={{
+                            mb: 2
+                        }}>
                             {`${formatMessage(MESSAGES.referenceForm)}: `}
                             {formName}
-                            <Box ml={1} display="inline-block">
+                            <Box
+                                sx={{
+                                    ml: 1,
+                                    display: "inline-block"
+                                }}>
                                 <IconButton
                                     url={`/${baseUrls.formDetail}/formId/${values.reference_form}`}
                                     icon="remove-red-eye"

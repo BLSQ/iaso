@@ -48,7 +48,12 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
     return (
         <>
             <Grid container spacing={2}>
-                <Grid item xs={12} md={3} lg={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 3,
+                        lg: 3
+                    }}>
                     <InputComponent
                         type="search"
                         keyValue="search"
@@ -58,7 +63,12 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                         label={MESSAGES.filterLabelSearch}
                     />
                 </Grid>
-                <Grid item xs={12} md={3} lg={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 3,
+                        lg: 3
+                    }}>
                     <InputComponent
                         loading={isFetchingCountries}
                         keyValue="country"
@@ -74,7 +84,12 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                         label={MESSAGES.filterLabelCountry}
                     />
                 </Grid>
-                <Grid item xs={12} md={3} lg={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 3,
+                        lg: 3
+                    }}>
                     <InputComponent
                         loading={isFetchingMetaData}
                         keyValue="campaign"
@@ -89,7 +104,12 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                 </Grid>
             </Grid>
             <Grid container spacing={2}>
-                <Grid item xs={12} md={3} lg={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 3,
+                        lg: 3
+                    }}>
                     <InputComponent
                         type="select"
                         clearable
@@ -100,7 +120,12 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                         label={MESSAGES.filterLabelOnTime}
                     />
                 </Grid>
-                <Grid item xs={12} md={3} lg={3}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 3,
+                        lg: 3
+                    }}>
                     <InputComponent
                         type="select"
                         clearable
@@ -111,15 +136,21 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                         label={MESSAGES.labelIsOnHold}
                     />
                 </Grid>
-                <Grid item xs={12} md={6} lg={6}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 6,
+                        lg: 6
+                    }}>
                     <Box
-                        display="flex"
-                        justifyContent="flex-end"
-                        mt={2}
-                        alignItems="center"
-                        alignContent="center"
-                        textAlign="center"
-                    >
+                        sx={{
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            mt: 2,
+                            alignItems: "center",
+                            alignContent: "center",
+                            textAlign: "center"
+                        }}>
                         <SearchButton
                             disabled={!filtersUpdated}
                             onSearch={handleSearch}
@@ -128,8 +159,15 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                 </Grid>
             </Grid>
             <DisplayIfUserHasPerm permissions={[Permission.POLIO_CHRONOGRAM]}>
-                <Grid container item justifyContent="flex-end" mt={4}>
-                    <Box mr={2}>
+                <Grid
+                    container
+                    sx={{
+                        justifyContent: "flex-end",
+                        mt: 4
+                    }}>
+                    <Box sx={{
+                        mr: 2
+                    }}>
                         <Button
                             variant="contained"
                             href={`/dashboard/${baseUrls.chronogramTemplateTask}`}

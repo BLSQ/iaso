@@ -71,25 +71,30 @@ export const AnalysisTooltipTitle: FunctionComponent<Props> = ({
         [analysis, formatMessage, parameters, entytypeName],
     );
     return (
-        <Box width={300}>
+        <Box sx={{
+            width: 300
+        }}>
             <Grid container spacing={1}>
-                <Grid item xs={5}>
+                <Grid size={5}>
                     {data.map(item => (
                         <Box
                             key={item.label}
-                            justifyContent="flex-end"
-                            display="flex"
-                        >
+                            sx={{
+                                justifyContent: "flex-end",
+                                display: "flex"
+                            }}>
                             {item.label}:
                         </Box>
                     ))}
                 </Grid>
-                <Grid item xs={7}>
+                <Grid size={7}>
                     {data.map((item, index) => (
                         // eslint-disable-next-line react/no-array-index-key
-                        <Box key={`${item.value}-${index}`} display="block">
+                        (<Box key={`${item.value}-${index}`} sx={{
+                        display: "block"
+                    }}>
                             {item.value}
-                        </Box>
+                        </Box>)
                     ))}
                 </Grid>
             </Grid>

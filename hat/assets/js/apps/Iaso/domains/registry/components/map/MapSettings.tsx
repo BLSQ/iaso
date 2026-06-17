@@ -111,7 +111,6 @@ export const MapSettings: FunctionComponent<Props> = ({
                     </Box>
                 </Box>
             )}
-
             <Box
                 sx={{
                     ...styles.container,
@@ -128,7 +127,11 @@ export const MapSettings: FunctionComponent<Props> = ({
                                 tooltipMessage={MESSAGES.close}
                             />
                         </Box>
-                        <Box px={3} pt="20px">
+                        <Box
+                            sx={{
+                                px: 3,
+                                pt: "20px"
+                            }}>
                             <FormControlLabel
                                 label={formatMessage(MESSAGES.showNames)}
                                 control={
@@ -143,7 +146,11 @@ export const MapSettings: FunctionComponent<Props> = ({
                                 }
                             />
                         </Box>
-                        <Box px={3} pt={1}>
+                        <Box
+                            sx={{
+                                px: 3,
+                                pt: 1
+                            }}>
                             <FormControlLabel
                                 label={formatMessage(MESSAGES.markerClustering)}
                                 control={

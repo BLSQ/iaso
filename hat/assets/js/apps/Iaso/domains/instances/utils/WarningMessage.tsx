@@ -17,14 +17,13 @@ const WarningMessage: FunctionComponent<Props> = ({
     <Stack
         direction="row"
         spacing={1}
-        alignItems="center"
         sx={{
+            alignItems: "center",
             paddingLeft,
             paddingTop,
             marginRight,
-            color: theme => theme.palette.warning.main,
-        }}
-    >
+            color: theme => theme.palette.warning.main
+        }}>
         <WarningAmberIcon />
         <Typography>{message}</Typography>
     </Stack>

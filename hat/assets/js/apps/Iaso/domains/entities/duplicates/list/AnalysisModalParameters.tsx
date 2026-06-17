@@ -136,13 +136,15 @@ const AnalysisModalParameters: FunctionComponent<Props> = ({
     const addParametersButton = useMemo(() => {
         return (
             <Grid
-                item
-                xs={6}
-                md={4}
-                display="flex"
-                justifyContent="flex-end"
-                marginTop={1}
-            >
+                size={{
+                    xs: 6,
+                    md: 4
+                }}
+                sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    marginTop: 1
+                }}>
                 <IconButton
                     overrideIcon={AddCircleIcon}
                     onClick={onChangeParameters}
@@ -157,28 +159,30 @@ const AnalysisModalParameters: FunctionComponent<Props> = ({
     return (
         <>
             <Grid
-                item
-                xs={6}
-                md={8}
-                display="flex"
-                justifyContent="flex-start"
-                marginTop={2}
-            >
+                size={{
+                    xs: 6,
+                    md: 8
+                }}
+                sx={{
+                    display: "flex",
+                    justifyContent: "flex-start",
+                    marginTop: 2
+                }}>
                 <Typography>{formatMessage(MESSAGES.parameters)}:</Typography>
             </Grid>
             {parameterComponents.length === 0 && addParametersButton}
-
             {parameterComponents.map((parameter, index) => {
                 const param = parameters[index] || {};
                 return (
-                    <Grid
-                        container
-                        item
-                        spacing={3}
-                        style={{ marginTop: '-24px' }}
-                        key={parameter}
-                    >
-                        <Grid item xs={5} md={7} alignItems="center">
+                    <Grid container spacing={3} style={{ marginTop: '-24px' }} key={parameter}>
+                        <Grid
+                            size={{
+                                xs: 5,
+                                md: 7
+                            }}
+                            sx={{
+                                alignItems: "center"
+                            }}>
                             <InputComponent
                                 type="select"
                                 keyValue="parameters"
@@ -190,7 +194,14 @@ const AnalysisModalParameters: FunctionComponent<Props> = ({
                                 options={notSelectedOptions(index)}
                             />
                         </Grid>
-                        <Grid item xs={5} md={4} alignItems="center">
+                        <Grid
+                            size={{
+                                xs: 5,
+                                md: 4
+                            }}
+                            sx={{
+                                alignItems: "center"
+                            }}>
                             <InputComponent
                                 type={paramValueType}
                                 keyValue="parameter_value"
@@ -203,13 +214,15 @@ const AnalysisModalParameters: FunctionComponent<Props> = ({
                             />
                         </Grid>
                         <Grid
-                            item
-                            xs={2}
-                            md={1}
-                            display="flex"
-                            justifyContent="center"
-                            alignItems="center"
-                        >
+                            size={{
+                                xs: 2,
+                                md: 1
+                            }}
+                            sx={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center"
+                            }}>
                             <IconButton
                                 overrideIcon={RemoveCircleIcon}
                                 onClick={() => removeParameter(index)}
@@ -220,13 +233,15 @@ const AnalysisModalParameters: FunctionComponent<Props> = ({
                 );
             })}
             <Grid
-                item
-                xs={6}
-                md={8}
-                display="flex"
-                justifyContent="flex-start"
-                marginTop={2}
-            />
+                size={{
+                    xs: 6,
+                    md: 8
+                }}
+                sx={{
+                    display: "flex",
+                    justifyContent: "flex-start",
+                    marginTop: 2
+                }} />
             {parameterComponents.length > 0 &&
                 !parametersOptionsAvailable &&
                 addParametersButton}

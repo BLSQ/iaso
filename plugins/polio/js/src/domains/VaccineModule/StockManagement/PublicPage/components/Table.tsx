@@ -57,8 +57,16 @@ export const Table: FunctionComponent<Props> = ({
     return (
         <>
             {isLoading && <LoadingSpinner />}
-            <Box ml={1} mr={1} sx={{ overflow: 'auto', maxHeight: '500px' }}>
-                <Box ml={2}>
+            <Box
+                sx={{
+                    ml: 1,
+                    mr: 1,
+                    overflow: 'auto',
+                    maxHeight: '500px'
+                }}>
+                <Box sx={{
+                    ml: 2
+                }}>
                     <Typography
                         variant="h5"
                         sx={{ color: '#808080', fontWeight: 'bold' }}

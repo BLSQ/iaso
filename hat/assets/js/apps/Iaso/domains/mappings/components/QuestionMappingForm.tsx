@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import Alert from '@mui/lab/Alert';
+import Alert from '@mui/material/Alert';
 import { Button } from '@mui/material';
 import { LoadingSpinner, Select, useSafeIntl } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
@@ -266,7 +266,6 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
             )}
             {/* TODO see if this needs translation */}
             <div>{JSON.stringify(repeatGroupMapping)}</div>
-
             {isMapped(questionMapping) && (
                 <>
                     <DuplicateHint
@@ -331,7 +330,6 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
                     mapOptions={mapToMapping}
                 />
             )}
-
             {
                 /* there's no relation from data elements to programs, need to fetch program's stages data elements */
                 mapping.mapping.mapping_type === 'EVENT' && (
@@ -344,7 +342,6 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
                     />
                 )
             }
-
             {mapping.mapping.mapping_type === 'EVENT_TRACKER' && (
                 <div>
                     <Select
@@ -388,11 +385,10 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
                     {questionMapping.map &&
                         questionMapping.map((q, index) => (
                             // eslint-disable-next-line react/no-array-index-key
-                            <ObjectDumper key={index} object={q} />
+                            (<ObjectDumper key={index} object={q} />)
                         ))}
                 </div>
             )}
-
             {newQuestionMapping && (
                 <>
                     <br />

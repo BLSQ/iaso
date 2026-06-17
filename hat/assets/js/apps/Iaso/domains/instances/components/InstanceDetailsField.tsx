@@ -39,14 +39,16 @@ const InstanceDetailsField: FunctionComponent<Props> = ({
     const classes: Record<string, string> = useStyles();
     return (
         <Grid container spacing={1}>
-            <Grid xs={5} item>
+            <Grid size={5}>
                 <div className={classes.labelContainer}>
                     {Icon && <Icon />}
                     <Typography
                         variant="body2"
                         noWrap
-                        color="inherit"
                         title={label}
+                        sx={{
+                            color: "inherit"
+                        }}
                     >
                         {label}
                     </Typography>
@@ -54,17 +56,19 @@ const InstanceDetailsField: FunctionComponent<Props> = ({
                 </div>
             </Grid>
             <Grid
-                xs={7}
                 container
-                item
-                justifyContent="flex-start"
-                alignItems="center"
-            >
+                size={7}
+                sx={{
+                    justifyContent: "flex-start",
+                    alignItems: "center"
+                }}>
                 <Typography
                     variant="body1"
-                    color="inherit"
                     title={valueTitle !== '' ? valueTitle : value}
                     className={classes.value}
+                    sx={{
+                        color: "inherit"
+                    }}
                 >
                     {renderValue && renderValue(value)}
                     {!renderValue && (value || textPlaceholder)}

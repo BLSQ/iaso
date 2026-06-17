@@ -18,7 +18,12 @@ export const UserRolesFilters: FunctionComponent<Props> = ({ params }) => {
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
     return (
         <Grid container spacing={0}>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 3
+                }}>
                 <InputComponent
                     keyValue="search"
                     onChange={handleChange}
@@ -30,17 +35,22 @@ export const UserRolesFilters: FunctionComponent<Props> = ({ params }) => {
                     blockForbiddenChars
                 />
             </Grid>
-
             <Grid
                 container
-                item
-                xs={12}
-                sm={6}
-                md={9}
-                justifyContent="flex-end"
                 spacing={0}
-            >
-                <Box mt={2} mb={2}>
+                size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 9
+                }}
+                sx={{
+                    justifyContent: "flex-end"
+                }}>
+                <Box
+                    sx={{
+                        mt: 2,
+                        mb: 2
+                    }}>
                     <SearchButton
                         disabled={textSearchError || !filtersUpdated}
                         onSearch={handleSearch}

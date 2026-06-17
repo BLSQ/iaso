@@ -44,7 +44,9 @@ const MapRoundSelector: FunctionComponent<Props> = ({
             dataTestId="editMapRound"
             onClose={() => null}
         >
-            <Box display="block">
+            <Box sx={{
+                display: "block"
+            }}>
                 <InputComponent
                     type="radio"
                     keyValue="showRound"

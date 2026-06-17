@@ -103,25 +103,31 @@ export const HomeOnline: FunctionComponent = () => {
                 sx={{ backgroundImage: `url("${window.STATIC_URL}${iasoBg}")` }}
             >
                 <Grid className={classes.topMenu} container spacing={2}>
-                    <Grid container item xs={6} justifyContent="flex-end">
+                    <Grid container size={6} sx={{
+                        justifyContent: "flex-end"
+                    }}>
                         <Box
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="flex-end"
-                        >
+                            sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "flex-end"
+                            }}>
                             <CurrentUserInfos
                                 currentUser={currentUser}
                                 version={(window as any).IASO_VERSION}
                             />
                         </Box>
                         <Box
-                            pr={4}
-                            pt={4}
-                            pb={4}
-                            display="flex"
-                            alignItems="center"
-                        >
-                            <Box pl={2}>
+                            sx={{
+                                pr: 4,
+                                pt: 4,
+                                pb: 4,
+                                display: "flex",
+                                alignItems: "center"
+                            }}>
+                            <Box sx={{
+                                pl: 2
+                            }}>
                                 <LogoutButton color="primary" />
                             </Box>
                         </Box>
@@ -129,11 +135,12 @@ export const HomeOnline: FunctionComponent = () => {
                 </Grid>
                 <Container maxWidth="md">
                     <Box
-                        justifyContent="center"
-                        alignItems="center"
-                        display="flex"
-                        flexDirection="column"
-                    >
+                        sx={{
+                            justifyContent: "center",
+                            alignItems: "center",
+                            display: "flex",
+                            flexDirection: "column"
+                        }}>
                         <Box>
                             <Box className={classes.logo}>
                                 {APP_TITLE !== 'Iaso' && LOGO_PATH && (
@@ -151,15 +158,17 @@ export const HomeOnline: FunctionComponent = () => {
                     </Box>
 
                     <Container className={classes.container} maxWidth="sm">
-                        <Grid container spacing={2} justifyContent="center">
+                        <Grid container spacing={2} sx={{
+                            justifyContent: "center"
+                        }}>
                             {homeButtons.map(button => (
                                 <Grid
-                                    item
-                                    xs={12}
-                                    sm={6}
-                                    md={4}
                                     key={button.label}
-                                >
+                                    size={{
+                                        xs: 12,
+                                        sm: 6,
+                                        md: 4
+                                    }}>
                                     <Link
                                         className={classes.logoButton}
                                         key={button.label}

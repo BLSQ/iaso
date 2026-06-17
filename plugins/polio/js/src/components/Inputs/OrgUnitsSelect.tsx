@@ -42,7 +42,9 @@ export const OrgUnitsLevels: FunctionComponent<Props> = ({
     const errors = backendErrors ?? getErrors(touched, formErrors, name);
     const { data: initialOrgUnit, isLoading } = useGetOrgUnit(initialOrgUnitId);
     return (
-        <Box position="relative">
+        <Box sx={{
+            position: "relative"
+        }}>
             <OrgUnitTreeviewModal
                 titleMessage={label}
                 toggleOnLabelClick={false}
@@ -61,15 +63,16 @@ export const OrgUnitsLevels: FunctionComponent<Props> = ({
             />
             {isLoading && (
                 <Box
-                    display="flex"
-                    justifyContent="center"
-                    position="absolute"
-                    width="100%"
-                    height="100%"
-                    alignItems="center"
-                    top="0"
-                    left="0"
-                >
+                    sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        position: "absolute",
+                        width: "100%",
+                        height: "100%",
+                        alignItems: "center",
+                        top: "0",
+                        left: "0"
+                    }}>
                     <CircularProgress size={20} />
                 </Box>
             )}

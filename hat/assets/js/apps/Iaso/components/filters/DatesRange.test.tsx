@@ -22,7 +22,7 @@ vi.mock('../../utils/dates', () => ({
 vi.mock('@mui/x-date-pickers/DesktopDatePicker', () => ({
     DesktopDatePicker: (props: Record<string, any>) => {
         const testId =
-            props?.slotProps?.textField?.InputProps?.['data-test'] ??
+            props?.slotProps?.textField?.slotProps?.input?.['data-test'] ??
             'date-picker';
         pickerPropsByTestId[testId] = props;
         return (

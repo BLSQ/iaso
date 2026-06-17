@@ -37,7 +37,9 @@ export const DetailsForm: FunctionComponent<Props> = ({ workflowVersion }) => {
     }, [name, updateWorkflowVersion, workflowVersion.version_id]);
     const saveDisabled = name === workflowVersion.name || name === '';
     return (
-        <Box p={2} className={classes.root}>
+        <Box className={classes.root} sx={{
+            p: 2
+        }}>
             <InputComponent
                 withMarginTop={false}
                 keyValue="name"

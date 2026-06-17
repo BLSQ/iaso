@@ -37,7 +37,12 @@ export const ChronogramDetailsFilters: FunctionComponent<Props> = ({
     return (
         <>
             <Grid container spacing={2}>
-                <Grid item xs={12} md={4} lg={4}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 4,
+                        lg: 4
+                    }}>
                     <InputComponent
                         type="select"
                         clearable
@@ -48,7 +53,12 @@ export const ChronogramDetailsFilters: FunctionComponent<Props> = ({
                         labelString={formatMessage(MESSAGES.labelPeriod)}
                     />
                 </Grid>
-                <Grid item xs={12} md={4} lg={4}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 4,
+                        lg: 4
+                    }}>
                     <InputComponent
                         type="select"
                         clearable
@@ -60,8 +70,12 @@ export const ChronogramDetailsFilters: FunctionComponent<Props> = ({
                     />
                 </Grid>
             </Grid>
-            <Grid container item justifyContent="flex-end">
-                <Box mt={2}>
+            <Grid container sx={{
+                justifyContent: "flex-end"
+            }}>
+                <Box sx={{
+                    mt: 2
+                }}>
                     <SearchButton
                         disabled={!filtersUpdated}
                         onSearch={handleSearch}
@@ -69,7 +83,12 @@ export const ChronogramDetailsFilters: FunctionComponent<Props> = ({
                 </Box>
             </Grid>
             <DisplayIfUserHasPerm permissions={[Permission.POLIO_CHRONOGRAM]}>
-                <Grid container item justifyContent="flex-end" mt={4}>
+                <Grid
+                    container
+                    sx={{
+                        justifyContent: "flex-end",
+                        mt: 4
+                    }}>
                     <CreateChronogramTaskModal
                         iconProps={{
                             message: MESSAGES.modalAddTitle,

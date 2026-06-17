@@ -46,11 +46,14 @@ export const StockKeepingUnits: FunctionComponent = () => {
                 <Grid
                     container
                     spacing={0}
-                    justifyContent="flex-end"
-                    alignItems="center"
                     className={classes.marginTop}
-                >
-                    <Grid mr={3} item>
+                    sx={{
+                        justifyContent: "flex-end",
+                        alignItems: "center"
+                    }}>
+                    <Grid sx={{
+                        mr: 3
+                    }}>
                         <Button
                             color="primary"
                             onClick={() =>
@@ -62,7 +65,7 @@ export const StockKeepingUnits: FunctionComponent = () => {
                             {formatMessage(MESSAGES.rules)}
                         </Button>
                     </Grid>
-                    <Grid item>
+                    <Grid>
                         <AddSkuDialog
                             titleMessage={formatMessage(MESSAGES.add)}
                             saveSku={saveSku}

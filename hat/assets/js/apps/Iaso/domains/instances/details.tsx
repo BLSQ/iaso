@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import Alert from '@mui/lab/Alert';
+import Alert from '@mui/material/Alert';
 import { Box, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
@@ -134,7 +134,11 @@ const InstanceDetails: FunctionComponent = () => {
                         />
                     )}
                     <Grid container spacing={4}>
-                        <Grid xs={12} md={4} item>
+                        <Grid
+                            size={{
+                                xs: 12,
+                                md: 4
+                            }}>
                             {currentInstance.deleted && (
                                 <Alert
                                     severity="warning"
@@ -173,7 +177,7 @@ const InstanceDetails: FunctionComponent = () => {
 
                                 {currentInstance && showHistoryLink && (
                                     <Grid container spacing={1}>
-                                        <Grid xs={5} item>
+                                        <Grid size={5}>
                                             <div
                                                 className={
                                                     classes.labelContainer
@@ -182,8 +186,10 @@ const InstanceDetails: FunctionComponent = () => {
                                                 <Typography
                                                     variant="body2"
                                                     noWrap
-                                                    color="inherit"
                                                     title="Historique"
+                                                    sx={{
+                                                        color: "inherit"
+                                                    }}
                                                 >
                                                     {formatMessage(
                                                         MESSAGES.history,
@@ -193,15 +199,17 @@ const InstanceDetails: FunctionComponent = () => {
                                         </Grid>
 
                                         <Grid
-                                            xs={7}
                                             container
-                                            item
-                                            justifyContent="flex-start"
-                                            alignItems="center"
-                                        >
+                                            size={7}
+                                            sx={{
+                                                justifyContent: "flex-start",
+                                                alignItems: "center"
+                                            }}>
                                             <Typography
                                                 variant="body1"
-                                                color="inherit"
+                                                sx={{
+                                                    color: "inherit"
+                                                }}
                                             >
                                                 <LinkWithLocation
                                                     to={`/${baseUrls.compareInstanceLogs}/instanceIds/${currentInstance.id}`}
@@ -270,7 +278,11 @@ const InstanceDetails: FunctionComponent = () => {
                             )}
                         </Grid>
 
-                        <Grid xs={12} md={8} item>
+                        <Grid
+                            size={{
+                                xs: 12,
+                                md: 8
+                            }}>
                             <WidgetPaper
                                 id="form-contents"
                                 title={formatMessage(MESSAGES.submission)}

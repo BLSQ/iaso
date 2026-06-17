@@ -160,7 +160,6 @@ export const FiltersComponent: FunctionComponent<Props> = ({
                                     withMarginTop={filter.withMarginTop}
                                 />
                             )}
-
                             {filter.type === 'search' && (
                                 <InputComponent
                                     disabled={filter.isDisabled || false}
@@ -181,9 +180,8 @@ export const FiltersComponent: FunctionComponent<Props> = ({
                                     onEnterPressed={onEnterPressed}
                                 />
                             )}
-
                             {filter.type === 'checkbox' && ( // TODO: check with team
-                                <InputComponent
+                                (<InputComponent
                                     withMarginTop={filter.withMarginTop}
                                     disabled={filter.isDisabled || false}
                                     keyValue={filter.urlKey}
@@ -201,7 +199,7 @@ export const FiltersComponent: FunctionComponent<Props> = ({
                                     }
                                     type="checkbox"
                                     label={filter.label}
-                                />
+                                />)
                             )}
                         </Fragment>
                     );

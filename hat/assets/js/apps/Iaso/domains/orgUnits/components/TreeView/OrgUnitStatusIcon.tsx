@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 import FlareIcon from '@mui/icons-material/Flare';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import { Box, Tooltip } from '@mui/material';
@@ -53,7 +53,7 @@ export const OrgUnitStatusIcon: FunctionComponent<Props> = ({ orgUnit }) => {
         return (
             <Tooltip title={formatMessage(MESSAGES.statusValid)}>
                 <Box sx={style}>
-                    <CheckCircleOutlineIcon
+                    <CheckCircleOutlineOutlinedIcon
                         fontSize="small"
                         className={classes.valid}
                     />

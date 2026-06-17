@@ -132,7 +132,11 @@ const InstancesFilesList: FunctionComponent<Props> = ({
 
     if (fetching || !files) return null;
     if (files.length === 0) {
-        return <Box p={2}>{formatMessage(MESSAGES.missingFile)}</Box>;
+        return (
+            <Box sx={{
+                p: 2
+            }}>{formatMessage(MESSAGES.missingFile)}</Box>
+        );
     }
 
     return (

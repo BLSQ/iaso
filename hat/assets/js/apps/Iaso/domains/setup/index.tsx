@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 import ContactSupportIcon from '@mui/icons-material/ContactSupport';
 import ExitIcon from '@mui/icons-material/ExitToApp';
 import { Box, Button, Paper, Typography } from '@mui/material';
@@ -144,7 +144,7 @@ export const SetupAccount = () => {
                                         variant="h6"
                                         className={classes.confirmMessage}
                                     >
-                                        <CheckCircleOutlineIcon
+                                        <CheckCircleOutlineOutlinedIcon
                                             className={
                                                 classes.confirmMessageIcon
                                             }
@@ -152,10 +152,11 @@ export const SetupAccount = () => {
                                         {formatMessage(MESSAGES.confirmMessage)}
                                     </Typography>
                                     <Box
-                                        mt={2}
-                                        display="flex"
-                                        justifyContent="flex-end"
-                                    >
+                                        sx={{
+                                            mt: 2,
+                                            display: "flex",
+                                            justifyContent: "flex-end"
+                                        }}>
                                         <Button
                                             size="small"
                                             color="primary"
@@ -163,10 +164,11 @@ export const SetupAccount = () => {
                                             variant="contained"
                                         >
                                             <Box
-                                                mr={1}
-                                                display="flex"
-                                                alignContent="center"
-                                            >
+                                                sx={{
+                                                    mr: 1,
+                                                    display: "flex",
+                                                    alignContent: "center"
+                                                }}>
                                                 <ExitIcon fontSize="small" />
                                             </Box>
                                             {formatMessage(MESSAGES.logout)}
@@ -300,10 +302,11 @@ export const SetupAccount = () => {
                                             onChange={onChange}
                                         />
                                         <Box
-                                            mt={2}
-                                            display="flex"
-                                            justifyContent="flex-end"
-                                        >
+                                            sx={{
+                                                mt: 2,
+                                                display: "flex",
+                                                justifyContent: "flex-end"
+                                            }}>
                                             <Button
                                                 data-test="confirm-button"
                                                 onClick={() => handleSubmit()}
@@ -325,14 +328,17 @@ export const SetupAccount = () => {
                         </>
                     )}
                     {!isAdmin && (
-                        <Box textAlign="center">
+                        <Box sx={{
+                            textAlign: "center"
+                        }}>
                             <Box
-                                pt={2}
-                                pb={2}
-                                display="flex"
-                                justifyContent="center"
-                                flexDirection="column"
-                            >
+                                sx={{
+                                    pt: 2,
+                                    pb: 2,
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    flexDirection: "column"
+                                }}>
                                 <Typography variant="h6">
                                     {formatMessage(MESSAGES.notAdmin, {
                                         displayName:

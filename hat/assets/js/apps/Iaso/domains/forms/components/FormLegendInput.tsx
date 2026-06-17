@@ -42,20 +42,22 @@ export const FormLegendInput: FunctionComponent<FormFormProps> = ({
             {currentForm.legend_threshold?.value !== undefined && (
                 <>
                     {!isEmpty(currentForm.legend_threshold?.value) && (
-                        <Box position="relative" className={classes.fakeField}>
+                        <Box className={classes.fakeField} sx={{
+                            position: "relative"
+                        }}>
                             <Grid container spacing={1}>
-                                <Grid item xs={6}>
+                                <Grid size={6}>
                                     <span className={classes.label}>
                                         {formatMessage(MESSAGES.legend)}
                                     </span>
                                 </Grid>
                                 <Grid
-                                    item
-                                    xs={6}
                                     container
-                                    justifyContent="flex-end"
-                                    alignContent="flex-start"
-                                >
+                                    size={6}
+                                    sx={{
+                                        justifyContent: "flex-end",
+                                        alignContent: "flex-start"
+                                    }}>
                                     <EditLegendDialog
                                         iconProps={{}}
                                         titleMessage={MESSAGES.edit}
@@ -81,7 +83,7 @@ export const FormLegendInput: FunctionComponent<FormFormProps> = ({
                                         <DeleteIcon />
                                     </IconButton>
                                 </Grid>
-                                <Grid item xs={12}>
+                                <Grid size={12}>
                                     <Legend
                                         threshold={
                                             currentForm.legend_threshold.value
@@ -93,10 +95,11 @@ export const FormLegendInput: FunctionComponent<FormFormProps> = ({
                     )}
                     {isEmpty(currentForm.legend_threshold.value) && (
                         <Box
-                            display="flex"
-                            justifyContent="flex-end"
-                            alignContent="flex-start"
-                        >
+                            sx={{
+                                display: "flex",
+                                justifyContent: "flex-end",
+                                alignContent: "flex-start"
+                            }}>
                             <AddLegendDialog
                                 iconProps={{}}
                                 titleMessage={MESSAGES.createLegend}

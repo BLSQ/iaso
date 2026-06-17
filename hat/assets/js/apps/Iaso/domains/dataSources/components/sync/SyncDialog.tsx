@@ -194,7 +194,7 @@ export const SyncDialog: FunctionComponent<Props> = ({ dataSource }) => {
                     <Grid container spacing={2}>
                         {isCSVLoading && <LoadingSpinner />}
                         {/* Data to export  */}
-                        <Grid item xs={12}>
+                        <Grid size={12}>
                             <Typography
                                 variant="subtitle1"
                                 sx={{ fontWeight: 'bold' }}
@@ -202,7 +202,7 @@ export const SyncDialog: FunctionComponent<Props> = ({ dataSource }) => {
                                 {formatMessage(MESSAGES.origin)}:
                             </Typography>
                         </Grid>
-                        <Grid container item spacing={2}>
+                        <Grid container spacing={2}>
                             <VersionPicker
                                 fields={toCompareWithFields}
                                 onChange={setExportDataField}
@@ -214,12 +214,12 @@ export const SyncDialog: FunctionComponent<Props> = ({ dataSource }) => {
                                 exportData={exportData}
                                 setExportDataField={setExportDataField}
                             />
-                            <Grid xs={12} item>
+                            <Grid size={12}>
                                 <Divider />
                             </Grid>
                         </Grid>
                         {/* End data to export */}
-                        <Grid item xs={12}>
+                        <Grid size={12}>
                             <Typography
                                 variant="subtitle1"
                                 sx={{ fontWeight: 'bold' }}
@@ -227,7 +227,7 @@ export const SyncDialog: FunctionComponent<Props> = ({ dataSource }) => {
                                 {formatMessage(MESSAGES.target)}:
                             </Typography>
                         </Grid>
-                        <Grid container item spacing={2}>
+                        <Grid container spacing={2}>
                             <VersionPicker
                                 fields={toUpdateFields}
                                 onChange={setExportDataField}

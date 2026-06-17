@@ -49,12 +49,13 @@ const Groups = () => {
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={params} />
                 <Box
-                    mt={1}
                     mp={2}
-                    display="flex"
-                    justifyContent="flex-end"
-                    alignItems="end"
-                >
+                    sx={{
+                        mt: 1,
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        alignItems: "end"
+                    }}>
                     <GroupsDialog
                         saveGroup={saveGroup}
                         titleMessage={MESSAGES.create}
@@ -69,12 +70,13 @@ const Groups = () => {
                 </Box>
                 {data && data?.groups?.length > 0 && (
                     <Box
-                        mt={1}
-                        mb={2}
-                        display="flex"
-                        justifyContent="flex-end"
-                        alignItems="end"
-                    >
+                        sx={{
+                            mt: 1,
+                            mb: 2,
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            alignItems: "end"
+                        }}>
                         <DownloadButtonsComponent
                             csvUrl={csvUrl}
                             xlsxUrl={xlsxUrl}

@@ -47,8 +47,15 @@ export const PaymentLotsFilters: FunctionComponent<Props> = ({ params }) => {
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={12} md={4} lg={3}>
-                <Box mt={2}>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 4,
+                    lg: 3
+                }}>
+                <Box sx={{
+                    mt: 2
+                }}>
                     <UserAsyncSelect
                         handleChange={handleChange}
                         filterUsers={filters.users}
@@ -65,7 +72,12 @@ export const PaymentLotsFilters: FunctionComponent<Props> = ({ params }) => {
                     labelString={formatMessage(MESSAGES.status)}
                 />
             </Grid>
-            <Grid item xs={12} md={4} lg={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 4,
+                    lg: 3
+                }}>
                 <DatesRange
                     xs={12}
                     sm={12}
@@ -80,8 +92,12 @@ export const PaymentLotsFilters: FunctionComponent<Props> = ({ params }) => {
                     labelTo={MESSAGES.createdDateTo}
                 />
             </Grid>
-
-            <Grid item xs={12} md={4} lg={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 4,
+                    lg: 3
+                }}>
                 <OrgUnitTreeviewModal
                     toggleOnLabelClick={false}
                     titleMessage={MESSAGES.parent}
@@ -91,8 +107,18 @@ export const PaymentLotsFilters: FunctionComponent<Props> = ({ params }) => {
                     initialSelection={initialOrgUnit}
                 />
             </Grid>
-            <Grid item xs={12} md={4} lg={3}>
-                <Box mt={2} display="flex" justifyContent="flex-end">
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 4,
+                    lg: 3
+                }}>
+                <Box
+                    sx={{
+                        mt: 2,
+                        display: "flex",
+                        justifyContent: "flex-end"
+                    }}>
                     <SearchButton
                         disabled={!filtersUpdated}
                         onSearch={handleSearch}

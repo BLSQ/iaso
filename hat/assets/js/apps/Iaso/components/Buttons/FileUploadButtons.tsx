@@ -28,8 +28,10 @@ export const FileUploadButtons: FunctionComponent<Props> = ({
         ? formatMessage(MESSAGES.cancel)
         : formatMessage(MESSAGES.close);
     return (
-        <Grid container justifyContent="space-between">
-            <Grid item>
+        <Grid container sx={{
+            justifyContent: "space-between"
+        }}>
+            <Grid>
                 <Button
                     data-test="csv-export-button"
                     className={buttonStyles.button}

@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import ErrorOutline from '@mui/icons-material/ErrorOutline';
-import HelpOutline from '@mui/icons-material/HelpOutline';
+import ErrorOutlineOutlined from '@mui/icons-material/ErrorOutlineOutlined';
+import HelpOutlineOutlined from '@mui/icons-material/HelpOutlineOutlined';
 import NotAuthorized from '@mui/icons-material/NotInterested';
 import { Paper, Container, Box, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -41,26 +41,35 @@ const PageError: FunctionComponent<Props> = ({
                     displayMenuButton={displayMenuButton}
                 />
             )}
-            <Box mt={5}>
+            <Box sx={{
+                mt: 5
+            }}>
                 <Container maxWidth="md">
                     {/* p prop is unknonw. Check it doesn't break the page before removing */}
                     {/* @ts-ignore */}
                     <Paper p={3}>
                         <Box
-                            py={6}
-                            px={2}
-                            justifyContent="center"
-                            alignItems="center"
-                            display="flex"
-                            flexDirection="column"
-                        >
-                            <Box pt={3}>
+                            sx={{
+                                py: 6,
+                                px: 2,
+                                justifyContent: "center",
+                                alignItems: "center",
+                                display: "flex",
+                                flexDirection: "column"
+                            }}>
+                            <Box sx={{
+                                pt: 3
+                            }}>
                                 <Typography variant="h2" id="error-code">
                                     {errorCode}
                                 </Typography>
                             </Box>
                             {customMessage && (
-                                <Box pt={2} pb={2}>
+                                <Box
+                                    sx={{
+                                        pt: 2,
+                                        pb: 2
+                                    }}>
                                     <Typography variant="h5">
                                         {customMessage}
                                     </Typography>
@@ -70,7 +79,11 @@ const PageError: FunctionComponent<Props> = ({
                                 <>
                                     {errorCode === '401' && (
                                         <>
-                                            <Box pt={2} pb={2}>
+                                            <Box
+                                                sx={{
+                                                    pt: 2,
+                                                    pb: 2
+                                                }}>
                                                 <Typography variant="h5">
                                                     <FormattedMessage
                                                         {...MESSAGES.notAuthenticated}
@@ -84,7 +97,11 @@ const PageError: FunctionComponent<Props> = ({
                                     )}
                                     {errorCode === '403' && (
                                         <>
-                                            <Box pt={2} pb={2}>
+                                            <Box
+                                                sx={{
+                                                    pt: 2,
+                                                    pb: 2
+                                                }}>
                                                 <Typography variant="h5">
                                                     <FormattedMessage
                                                         {...MESSAGES.unauthorized}
@@ -98,28 +115,36 @@ const PageError: FunctionComponent<Props> = ({
                                     )}
                                     {errorCode === '404' && (
                                         <>
-                                            <Box pt={2} pb={2}>
+                                            <Box
+                                                sx={{
+                                                    pt: 2,
+                                                    pb: 2
+                                                }}>
                                                 <Typography variant="h5">
                                                     <FormattedMessage
                                                         {...MESSAGES.notFound}
                                                     />
                                                 </Typography>
                                             </Box>
-                                            <HelpOutline
+                                            <HelpOutlineOutlined
                                                 className={classes.icon}
                                             />
                                         </>
                                     )}
                                     {errorCode === '500' && (
                                         <>
-                                            <Box pt={2} pb={2}>
+                                            <Box
+                                                sx={{
+                                                    pt: 2,
+                                                    pb: 2
+                                                }}>
                                                 <Typography variant="h5">
                                                     <FormattedMessage
                                                         {...MESSAGES.labelError}
                                                     />
                                                 </Typography>
                                             </Box>
-                                            <ErrorOutline
+                                            <ErrorOutlineOutlined
                                                 className={classes.icon}
                                             />
                                         </>

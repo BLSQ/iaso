@@ -17,7 +17,11 @@ export const useLinksTableColumns = validateLink => {
                 align: 'center',
                 accessor: 'similarity_score',
                 Cell: settings => (
-                    <Box display="flex" justifyContent="center">
+                    <Box
+                        sx={{
+                            display: "flex",
+                            justifyContent: "center"
+                        }}>
                         <StarsComponent
                             maxScore={100}
                             displayCount

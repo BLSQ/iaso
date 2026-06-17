@@ -186,17 +186,21 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
             onAdditionalButtonClick={hasTaskPermission ? onRedirect : undefined}
         >
             <>
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <Divider />
                 </Box>
                 <Grid
                     container
                     spacing={2}
                     direction="row"
-                    justifyContent="space-around"
+                    sx={{
+                        justifyContent: "space-around"
+                    }}
                 >
-                    <Grid container item xs={6}>
-                        <Grid item xs={12}>
+                    <Grid container size={6}>
+                        <Grid size={12}>
                             <InputComponent
                                 keyValue={destinationSourceKey}
                                 type="select"
@@ -209,7 +213,7 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
                             />
                         </Grid>
                     </Grid>
-                    <Grid container item xs={12}>
+                    <Grid container size={12}>
                         <WarningMessage
                             dataSourceName={dataSourceName}
                             dataSourceVersionNumber={dataSourceVersionNumber}

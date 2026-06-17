@@ -59,13 +59,13 @@ export const AddNewEmptyVersion: FunctionComponent<Props> = ({
         >
             {createSourceVersion.isLoading && <LoadingSpinner />}
             <Grid container spacing={4}>
-                <Grid item>
+                <Grid>
                     <Typography>
                         {formatMessage(MESSAGES.newEmptyVersionDescription)}
                     </Typography>
                 </Grid>
 
-                <Grid xs={12} item>
+                <Grid size={12}>
                     <VersionDescription
                         formValue={description}
                         onChangeDescription={onChangeDescription}

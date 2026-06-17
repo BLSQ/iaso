@@ -50,8 +50,15 @@ export const OrgUnitMultiReferenceInstances: FunctionComponent<Props> = ({
     };
 
     return (
-        <Grid container item xs={12} md={8}>
-            <Box mt={4} className={classes.formContents}>
+        <Grid
+            container
+            size={{
+                xs: 12,
+                md: 8
+            }}>
+            <Box className={classes.formContents} sx={{
+                mt: 4
+            }}>
                 {referenceInstances.length > 1 && (
                     <InputComponent
                         type="select"

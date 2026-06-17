@@ -1,5 +1,5 @@
 import React from 'react';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import { Tooltip, Box } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import PERMISSIONS_MESSAGES from '../permissionsMessages';
@@ -26,7 +26,7 @@ const PermissionTooltip: React.FunctionComponent<Props> = ({ codename }) => {
                         placement="left-start"
                         arrow
                     >
-                        <HelpOutlineIcon color="primary" />
+                        <HelpOutlineOutlinedIcon color="primary" />
                     </Tooltip>
                 </Box>
             )}

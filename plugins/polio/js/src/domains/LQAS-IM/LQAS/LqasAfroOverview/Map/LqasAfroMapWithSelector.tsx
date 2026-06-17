@@ -81,7 +81,11 @@ export const LqasAfroMapWithSelector: FunctionComponent<Props> = ({
                     <Tab value={MAP} label={formatMessage(MESSAGES.map)} />
                     <Tab value={LIST} label={formatMessage(MESSAGES.list)} />
                 </Tabs>
-                <Box px={2} mt={2}>
+                <Box
+                    sx={{
+                        px: 2,
+                        mt: 2
+                    }}>
                     <LqasAfroSelector
                         selectedRound={selectedRound}
                         onRoundChange={onRoundChange}
@@ -92,12 +96,13 @@ export const LqasAfroMapWithSelector: FunctionComponent<Props> = ({
                 </Box>
 
                 <Box
-                    m={2}
-                    pb={2}
                     className={
                         tab === MAP ? classes.mapContainer : classes.hidden
                     }
-                >
+                    sx={{
+                        m: 2,
+                        pb: 2
+                    }}>
                     <LqasAfroMap
                         params={params}
                         side={side}
@@ -106,12 +111,13 @@ export const LqasAfroMapWithSelector: FunctionComponent<Props> = ({
                 </Box>
 
                 <Box
-                    m={2}
-                    pb={2}
                     className={
                         tab === LIST ? classes.mapContainer : classes.hidden
                     }
-                >
+                    sx={{
+                        m: 2,
+                        pb: 2
+                    }}>
                     <LqasAfroList
                         params={params}
                         side={side}

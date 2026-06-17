@@ -250,8 +250,16 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={12} sm={4}>
-                <Box mt={4} mb={2}>
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 4
+                }}>
+                <Box
+                    sx={{
+                        mt: 4,
+                        mb: 2
+                    }}>
                     <ColorPicker
                         currentColor={currentColor}
                         onChangeColor={color =>
@@ -291,7 +299,9 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     options={dataSources}
                     loading={isFetchingDataSources}
                 />
-                <Box mt={2}>
+                <Box sx={{
+                    mt: 2
+                }}>
                     <DatePicker
                         label={formatMessage(MESSAGES.openDate)}
                         clearMessage={MESSAGES.clear}
@@ -344,8 +354,11 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     </>
                 )}
             </Grid>
-
-            <Grid item xs={12} sm={4}>
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 4
+                }}>
                 <InputComponent
                     type="select"
                     multi
@@ -395,7 +408,9 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 {currentTab === 'map' && (
                     <>
                         <Divider />
-                        <Box mt={2}>
+                        <Box sx={{
+                            mt: 2
+                        }}>
                             <LocationLimit
                                 keyValue="locationLimit"
                                 onChange={handleLocationLimitChange}
@@ -406,9 +421,14 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     </>
                 )}
             </Grid>
-
-            <Grid item xs={12} sm={4}>
-                <Box mb={1}>
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 4
+                }}>
+                <Box sx={{
+                    mb: 1
+                }}>
                     <OrgUnitTreeviewModal
                         toggleOnLabelClick={false}
                         titleMessage={MESSAGES.parent}
@@ -421,7 +441,9 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         initialSelection={initialOrgUnit}
                     />
                 </Box>
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <InputComponent
                         type="select"
                         keyValue="geography"
@@ -450,7 +472,9 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         ]}
                     />
                 </Box>
-                <Box mt={1}>
+                <Box sx={{
+                    mt: 1
+                }}>
                     <InputComponent
                         type="select"
                         keyValue="hasInstances"

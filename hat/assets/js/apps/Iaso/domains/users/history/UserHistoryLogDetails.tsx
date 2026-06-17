@@ -37,14 +37,14 @@ export const UserHistoryLogDetails: FunctionComponent<Props> = ({ logId }) => {
                 <>
                     {log.past_value.length > 0 && log.new_value.length > 0 && (
                         <Grid container spacing={2}>
-                            <Grid item xs={6}>
+                            <Grid size={6}>
                                 <UserLogCompare
                                     title={formatMessage(MESSAGES.before)}
                                     log={log.past_value}
                                     compareLog={log.new_value}
                                 />
                             </Grid>
-                            <Grid item xs={6}>
+                            <Grid size={6}>
                                 {log.new_value[0].deleted_at && (
                                     <h4 className="margin-bottom">
                                         {formatMessage(MESSAGES.deleted_at)}
@@ -62,7 +62,7 @@ export const UserHistoryLogDetails: FunctionComponent<Props> = ({ logId }) => {
                     {log.past_value.length === 0 &&
                         log.new_value.length > 0 && (
                             <Grid container spacing={2}>
-                                <Grid item xs={6}>
+                                <Grid size={6}>
                                     <h4 className="margin-bottom">
                                         {formatMessage(MESSAGES.created)}
                                     </h4>

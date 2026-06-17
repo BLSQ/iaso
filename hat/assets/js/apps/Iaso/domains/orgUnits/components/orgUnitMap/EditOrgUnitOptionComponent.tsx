@@ -62,24 +62,27 @@ const EditOrgUnitOptionComponent: FunctionComponent<Props> = ({
     const hasMarker = orgUnit.latitude !== null || orgUnit.longitude !== null;
     return (
         <Box
-            display="flex"
-            flexWrap="wrap"
             className={classes.innerDrawerContent}
-            flexDirection="column"
-        >
+            sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                flexDirection: "column"
+            }}>
             <Box
                 component="div"
-                display="flex"
-                flexWrap="wrap"
-                flexDirection="column"
-            >
+                sx={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    flexDirection: "column"
+                }}>
                 <Box>
                     <Box
-                        px={0}
                         component="div"
                         className={classes.marginTop}
-                        mb={2}
-                    >
+                        sx={{
+                            px: 0,
+                            mb: 2
+                        }}>
                         <Typography variant="subtitle1" color="primary">
                             <FormattedMessage {...MESSAGES.location} />
                         </Typography>
@@ -104,7 +107,9 @@ const EditOrgUnitOptionComponent: FunctionComponent<Props> = ({
                     {!hasMarker && (
                         <>
                             {!canEditLocation && orgUnit.geo_json && (
-                                <Box mb={2}>
+                                <Box sx={{
+                                    mb: 2
+                                }}>
                                     <FormattedMessage
                                         {...MESSAGES.editLocationDisabled}
                                     />
@@ -133,13 +138,20 @@ const EditOrgUnitOptionComponent: FunctionComponent<Props> = ({
                     )}
                 </Box>
                 <Box>
-                    <Box px={0} component="div" mb={2}>
+                    <Box
+                        component="div"
+                        sx={{
+                            px: 0,
+                            mb: 2
+                        }}>
                         <Typography variant="subtitle1" color="secondary">
                             <FormattedMessage {...MESSAGES.catchment} />
                         </Typography>
                     </Box>
                     {!canEditCatchment && (
-                        <Box mb={2}>
+                        <Box sx={{
+                            mb: 2
+                        }}>
                             <FormattedMessage
                                 {...MESSAGES.editCatchmentDisabled}
                             />

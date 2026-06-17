@@ -128,10 +128,13 @@ const AccountsDetails: FunctionComponent = () => {
                     />
                 </Tabs>
             </TopBar>
-
             <MainWrapper sx={{ p: 4 }} navHasTabs>
                 <CustomTabPanel index={'general'} value={tab} spacing={2}>
-                    <Grid xs={12} md={6} item>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            md: 6
+                        }}>
                         <GeneralInfoPanel
                             accountId={accountId}
                             account={account}
@@ -143,7 +146,11 @@ const AccountsDetails: FunctionComponent = () => {
                             account={account}
                         />
                     </Grid>
-                    <Grid xs={12} md={6} item>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            md: 6
+                        }}>
                         <ModulePanel
                             accountId={accountId}
                             account={account}

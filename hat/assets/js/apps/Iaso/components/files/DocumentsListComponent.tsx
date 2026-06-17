@@ -35,11 +35,11 @@ const DocumentsListComponent: FunctionComponent<Props> = ({
         <Grid container spacing={2} sx={styles.root}>
             {docsList.map(file => (
                 <Grid
-                    item
-                    sm={2}
-                    md={maxWidth}
                     key={`${file.itemId}-${getFileName(file.path).name}`}
-                >
+                    size={{
+                        sm: 2,
+                        md: maxWidth
+                    }}>
                     <DocumentsItem
                         url={url}
                         urlLabel={urlLabel}

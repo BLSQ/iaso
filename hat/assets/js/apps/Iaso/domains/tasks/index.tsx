@@ -58,7 +58,11 @@ const Tasks = () => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <TaskFilters params={params} />
-                <Box display="flex" justifyContent="flex-end">
+                <Box
+                    sx={{
+                        display: "flex",
+                        justifyContent: "flex-end"
+                    }}>
                     <Button
                         id="refresh-button"
                         variant="contained"

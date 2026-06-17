@@ -45,7 +45,7 @@ const InstanceDetailsExportRequests: FunctionComponent<Props> = ({
                 currentInstance.export_statuses.length > 0 && <Divider />}
             {currentInstance.export_statuses.map((exportStatus, index) => (
                 // eslint-disable-next-line react/no-array-index-key
-                <React.Fragment key={index}>
+                (<React.Fragment key={index}>
                     <InstanceDetailsField
                         label={formatMessage(MESSAGES.exportStatus)}
                         value={exportStatus.status}
@@ -59,7 +59,6 @@ const InstanceDetailsExportRequests: FunctionComponent<Props> = ({
                             .filter(c => c && c !== '')
                             .join(' - ')}
                     />
-
                     {exportStatus.export_request.last_error_message && (
                         <InstanceDetailsField
                             label={formatMessage(MESSAGES.lastErrorMessage)}
@@ -75,7 +74,7 @@ const InstanceDetailsExportRequests: FunctionComponent<Props> = ({
                     {index !== currentInstance.export_statuses.length - 1 && (
                         <Divider />
                     )}
-                </React.Fragment>
+                </React.Fragment>)
             ))}
         </WidgetPaper>
     );

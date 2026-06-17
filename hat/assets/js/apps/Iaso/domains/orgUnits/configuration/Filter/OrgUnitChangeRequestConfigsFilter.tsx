@@ -28,7 +28,12 @@ export const OrgUnitChangeRequestConfigsFilter: FunctionComponent<Props> = ({
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={12} md={4} lg={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 4,
+                    lg: 3
+                }}>
                 <InputComponent
                     keyValue="project_id"
                     onChange={handleChange}
@@ -41,7 +46,12 @@ export const OrgUnitChangeRequestConfigsFilter: FunctionComponent<Props> = ({
                     clearable
                 />
             </Grid>
-            <Grid item xs={12} md={4} lg={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 4,
+                    lg: 3
+                }}>
                 <InputComponent
                     type="select"
                     clearable
@@ -52,7 +62,12 @@ export const OrgUnitChangeRequestConfigsFilter: FunctionComponent<Props> = ({
                     labelString={formatMessage(MESSAGES.type)}
                 />
             </Grid>
-            <Grid item xs={12} md={4} lg={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 4,
+                    lg: 3
+                }}>
                 <InputComponent
                     type="select"
                     clearable
@@ -65,15 +80,19 @@ export const OrgUnitChangeRequestConfigsFilter: FunctionComponent<Props> = ({
                 />
             </Grid>
             <Grid
-                item
-                xs={12}
-                md={4}
-                lg={3}
                 container
-                justifyContent="flex-end"
-                alignItems="center"
-            >
-                <Box mb={{ xs: 2, sm: 0 }}>
+                size={{
+                    xs: 12,
+                    md: 4,
+                    lg: 3
+                }}
+                sx={{
+                    justifyContent: "flex-end",
+                    alignItems: "center"
+                }}>
+                <Box sx={{
+                    mb: { xs: 2, sm: 0 }
+                }}>
                     <SearchButton
                         disabled={!filtersUpdated}
                         onSearch={handleSearch}

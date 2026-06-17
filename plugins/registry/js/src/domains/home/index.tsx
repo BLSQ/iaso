@@ -39,7 +39,11 @@ export const Home = () => {
             <Box sx={styles.container}>
                 <Box sx={styles.content}>
                     <Grid container spacing={6}>
-                        <Grid item xs={12} sm={4}>
+                        <Grid
+                            size={{
+                                xs: 12,
+                                sm: 4
+                            }}>
                             <Box sx={styles.logoContainer}>
                                 <Box sx={styles.logo}>
                                     <img
@@ -94,7 +98,12 @@ export const Home = () => {
                                 </a>
                             </Box>
                         </Grid>
-                        <Grid item xs={12} sm={8} sx={styles.boxContainer}>
+                        <Grid
+                            sx={styles.boxContainer}
+                            size={{
+                                xs: 12,
+                                sm: 8
+                            }}>
                             <Box sx={styles.blueBox}>
                                 {formatMessage(MESSAGES.texte1)}
                                 <Box sx={styles.link}>
@@ -106,7 +115,10 @@ export const Home = () => {
                                     </Link>
                                 </Box>
                             </Box>
-                            <Box mt={2} sx={styles.whiteBox}>
+                            <Box
+                                sx={[{
+                                    mt: 2
+                                }, styles.whiteBox]}>
                                 {formatMessage(MESSAGES.texte2)}
                             </Box>
                         </Grid>
@@ -114,7 +126,11 @@ export const Home = () => {
                 </Box>
                 <Box sx={styles.footer}>
                     <Grid container spacing={6}>
-                        <Grid item xs={12} sm={4}>
+                        <Grid
+                            size={{
+                                xs: 12,
+                                sm: 4
+                            }}>
                             <Typography sx={styles.footerText}>
                                 {formatMessage(MESSAGES.footer)}
                                 <a href="mailto:">
@@ -122,7 +138,11 @@ export const Home = () => {
                                 </a>
                             </Typography>
                         </Grid>
-                        <Grid item xs={12} sm={4}>
+                        <Grid
+                            size={{
+                                xs: 12,
+                                sm: 4
+                            }}>
                             <Typography sx={styles.footerTitle}>
                                 {formatMessage(MESSAGES.footerTitle1)}
                             </Typography>
@@ -153,7 +173,11 @@ export const Home = () => {
                                 </a>
                             </Box>
                         </Grid>
-                        <Grid item xs={12} sm={4}>
+                        <Grid
+                            size={{
+                                xs: 12,
+                                sm: 4
+                            }}>
                             <Typography sx={styles.footerTitle}>
                                 {formatMessage(MESSAGES.footerTitle2)}
                             </Typography>

@@ -27,7 +27,9 @@ const OrgunitOptionSaveComponent: FunctionComponent<Props> = ({
     const classes: Record<string, string> = useStyles();
     return (
         <>
-            <Box mb={2}>
+            <Box sx={{
+                mb: 2
+            }}>
                 <Button
                     className={classes.button}
                     disabled={saveDisabled}

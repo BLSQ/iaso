@@ -11,22 +11,27 @@ const options = [
 export const Productivity: FunctionComponent = () => {
     return (
         <Box style={{ width: '100%' }}>
-            <Box style={{ width: '100%', fontSize: '48px' }} mb={30}>
+            <Box style={{ width: '100%', fontSize: '48px' }} sx={{
+                mb: 30
+            }}>
                 <Box
                     style={{
                         border: '2px solid #33FF00',
                         width: '50%',
                         margin: 'auto',
                     }}
-                    py={4}
+                    sx={{
+                        py: 4
+                    }}
                 >
                     CHOOSE YOUR DESTINY
                 </Box>
             </Box>
-
-            <Grid container justifyContent="space-evenly" spacing={2}>
+            <Grid container spacing={2} sx={{
+                justifyContent: "space-evenly"
+            }}>
                 {options.map(option => (
-                    <Grid item key={`${option.name}-${option.url}`}>
+                    <Grid key={`${option.name}-${option.url}`}>
                         <Box>
                             <ProductivityOption
                                 destinationName={option.name}
@@ -35,7 +40,7 @@ export const Productivity: FunctionComponent = () => {
                         </Box>
                     </Grid>
                 ))}
-                <Grid item key="backtoiaso">
+                <Grid key="backtoiaso">
                     <Box>
                         <ProductivityOption
                             destinationName="Back to Iaso"

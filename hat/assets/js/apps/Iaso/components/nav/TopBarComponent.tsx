@@ -105,17 +105,14 @@ const TopBar: FunctionComponent<Props> = ({
                 )}
                 <Grid
                     container
-                    justifyContent="space-between"
-                    alignItems="center"
                     direction="row"
-                >
-                    <Grid
-                        container
-                        item
-                        direction="row"
-                        xs={7}
-                        alignItems="center"
-                    >
+                    sx={{
+                        justifyContent: "space-between",
+                        alignItems: "center"
+                    }}>
+                    <Grid container direction="row" size={7} sx={{
+                        alignItems: "center"
+                    }}>
                         {!displayBackButton && displayMenuButton && (
                             <IconButton
                                 className={classes.menuButton}
@@ -140,63 +137,78 @@ const TopBar: FunctionComponent<Props> = ({
                         )}
                         <Typography
                             variant="h6"
-                            color="inherit"
                             id="top-bar-title"
                             sx={{
+                                color: "inherit",
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                                 maxWidth: '80%',
-                                display: 'block',
-                            }}
-                        >
+                                display: 'block'
+                            }}>
                             {title}
                         </Typography>
                     </Grid>
                     {currentUser && !isMobileLayout && (
-                        <Grid container item xs={5} justifyContent="flex-end">
+                        <Grid container size={5} sx={{
+                            justifyContent: "flex-end"
+                        }}>
                             <Box
-                                display="flex"
-                                alignItems="center"
-                                justifyContent="flex-end"
-                            >
+                                sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "flex-end"
+                                }}>
                                 <NotificationBadge />
                             </Box>
                             <Box
-                                display="flex"
-                                alignItems="center"
-                                justifyContent="flex-end"
-                            >
+                                sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "flex-end"
+                                }}>
                                 <CurrentUserInfos
                                     currentUser={currentUser}
                                     version={window.IASO_VERSION ?? ''}
                                 />
                             </Box>
 
-                            <Box display="flex" justifyContent="center" pl={2}>
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    pl: 2
+                                }}>
                                 <HomePageButton />
                             </Box>
 
                             {currentUser.is_staff === true &&
                                 currentUser.is_superuser === true && (
                                     <Box
-                                        display="flex"
-                                        justifyContent="center"
-                                        pl={1}
-                                    >
+                                        sx={{
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            pl: 1
+                                        }}>
                                         <DjangoAdminPanelButton />
                                     </Box>
                                 )}
 
-                            <Box display="flex" justifyContent="center" pl={1}>
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    pl: 1
+                                }}>
                                 <LogoutButton />
                             </Box>
                             <Box
-                                display="flex"
-                                justifyContent="center"
-                                alignItems="center"
-                                pl={1}
-                            >
+                                sx={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    pl: 1
+                                }}>
                                 <LangSwitch />
                             </Box>
                         </Grid>

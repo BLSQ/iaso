@@ -60,9 +60,14 @@ export const LqasImMapHeader: FunctionComponent<Props> = ({
     return (
         <Box>
             <Grid container direction="row">
-                <Grid container item xs={6} direction="row">
-                    <Grid item xs={12}>
-                        <Box ml={2} mr={2} mb={2}>
+                <Grid container direction="row" size={6}>
+                    <Grid size={12}>
+                        <Box
+                            sx={{
+                                ml: 2,
+                                mr: 2,
+                                mb: 2
+                            }}>
                             {options.length > 0 && (
                                 <InputComponent
                                     type="select"
@@ -105,15 +110,15 @@ export const LqasImMapHeader: FunctionComponent<Props> = ({
 
                 <Grid
                     container
-                    item
                     direction="row"
-                    xs={3}
-                    alignItems="center"
                     className={classNames(
                         classes.dividerOffset,
                         classes.paddingY,
                     )}
-                >
+                    size={3}
+                    sx={{
+                        alignItems: "center"
+                    }}>
                     <LqasImDates type="start" date={startDate} />
                 </Grid>
                 <Divider
@@ -123,12 +128,12 @@ export const LqasImMapHeader: FunctionComponent<Props> = ({
                 />
                 <Grid
                     container
-                    item
                     direction="row"
-                    xs={3}
-                    alignItems="center"
                     className={classes.paddingY}
-                >
+                    size={3}
+                    sx={{
+                        alignItems: "center"
+                    }}>
                     <LqasImDates type="end" date={endDate} />
                 </Grid>
             </Grid>

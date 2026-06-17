@@ -51,7 +51,12 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 3
+                }}>
                 <InputComponent
                     keyValue="appId"
                     onChange={(_key, value) => handleChange('appId', value)}
@@ -63,7 +68,11 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     blockForbiddenChars
                 />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 3
+                }}>
                 <InputComponent
                     keyValue="importType"
                     onChange={(_key, value) =>
@@ -76,7 +85,11 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     options={typeOptions}
                 />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 3
+                }}>
                 <InputComponent
                     keyValue="hasProblem"
                     onChange={(_key, value) =>
@@ -89,16 +102,17 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     options={yesNoOptions}
                 />
             </Grid>
-
             <Grid
-                item
-                xs={12}
-                sm={6}
-                md={3}
                 container
-                justifyContent="flex-end"
-                alignItems="center"
-            >
+                size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 3
+                }}
+                sx={{
+                    justifyContent: "flex-end",
+                    alignItems: "center"
+                }}>
                 <Button
                     data-test="search-button"
                     disabled={textSearchError || !filtersUpdated}

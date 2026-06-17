@@ -41,10 +41,10 @@ const CompareSubmissions: FunctionComponent = () => {
                     {instanceIds.map((instanceId: string) => (
                         <Grid
                             key={instanceId}
-                            xs={12}
-                            md={colSize as GridSize}
-                            item
-                        >
+                            size={{
+                                xs: 12,
+                                md: colSize as GridSize
+                            }}>
                             <InstanceDetail instanceId={instanceId} />
                         </Grid>
                     ))}

@@ -49,7 +49,9 @@ export const LqasImCountryMap: FunctionComponent<Props> = ({
     getMainLayerStyles,
 }) => {
     return (
-        <Box position="relative">
+        <Box sx={{
+            position: "relative"
+        }}>
             <MapLegendContainer>
                 <MapLegend
                     title={title}

@@ -15,7 +15,9 @@ export const GeneralInfoEditPanel: FunctionComponent = () => {
             title={formatMessage(MESSAGES.generalInfoTitle)}
             sx={{ mb: 2 }}
         >
-            <Box m={2}>
+            <Box sx={{
+                m: 2
+            }}>
                 <Field
                     label={formatMessage(MESSAGES.name)}
                     name="name"

@@ -183,8 +183,10 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
             {isLoadingCheckResult ? (
                 <LoadingSpinner absolute />
             ) : (
-                <Grid container spacing={4} alignItems="center">
-                    <Grid item xs={12}>
+                <Grid container spacing={4} sx={{
+                    alignItems: "center"
+                }}>
+                    <Grid size={12}>
                         <Typography variant="subtitle1">
                             {isError ? (
                                 <WarningMessage
@@ -221,7 +223,7 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
                         }
                     />
                     {!approved && (
-                        <Grid item xs={12}>
+                        <Grid size={12}>
                             <Typography variant="subtitle1">
                                 <WarningMessage
                                     message={formatMessage(

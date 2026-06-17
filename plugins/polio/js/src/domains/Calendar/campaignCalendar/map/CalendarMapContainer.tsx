@@ -65,7 +65,6 @@ export const CalendarMapContainer: FunctionComponent<Props> = ({
     return (
         <>
             {(loadingCampaigns || loadingShapes) && <LoadingSpinner absolute />}
-
             <div className={classes.mapLegend}>
                 <MapRoundSelector
                     selection={selection}
@@ -76,15 +75,20 @@ export const CalendarMapContainer: FunctionComponent<Props> = ({
                     iconProps={{ selection, zoom }}
                 />
                 {zoom > boundariesZoomLimit && (
-                    <Box mt={2}>
+                    <Box sx={{
+                        mt: 2
+                    }}>
                         <CampaignsLegend campaigns={campaigns} />
                     </Box>
                 )}
-                <Box display="flex" justifyContent="flex-end">
+                <Box
+                    sx={{
+                        display: "flex",
+                        justifyContent: "flex-end"
+                    }}>
                     <VaccinesLegend />
                 </Box>
             </div>
-
             <PaneWithPattern
                 name="CalendarMap"
                 patterns={[ScopeHashedPattern]}

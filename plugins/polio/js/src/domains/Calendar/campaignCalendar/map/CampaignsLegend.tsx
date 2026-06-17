@@ -73,18 +73,21 @@ export const CampaignsLegend: FunctionComponent<Props> = ({ campaigns }) => {
                 </Typography>
             </AccordionSummary>
             <AccordionDetails sx={styles.details}>
-                <Box display="block">
+                <Box sx={{
+                    display: "block"
+                }}>
                     {campaigns.length === 0 &&
                         formatMessage(MESSAGES.noCampaign)}
                     {campaigns.map(c => (
                         <Grid container spacing={0} key={c.id}>
                             <Grid
-                                item
-                                sm={3}
                                 container
-                                sx={styles.mapLegendLabel}
-                                justifyContent="flex-start"
-                            >
+                                size={{
+                                    sm: 3
+                                }}
+                                sx={[{
+                                    justifyContent: "flex-start"
+                                }, styles.mapLegendLabel]}>
                                 <Box
                                     sx={{
                                         ...styles.roundColor,
@@ -92,7 +95,10 @@ export const CampaignsLegend: FunctionComponent<Props> = ({ campaigns }) => {
                                     }}
                                 />
                             </Grid>
-                            <Grid item sm={9}>
+                            <Grid
+                                size={{
+                                    sm: 9
+                                }}>
                                 <Box sx={styles.label}>{c.name}</Box>
                             </Grid>
                         </Grid>

@@ -127,9 +127,10 @@ export const PopupComponent: FunctionComponent<Props> = ({
                         <Grid
                             container
                             spacing={0}
-                            justifyContent="flex-end"
-                            alignItems="center"
-                        >
+                            sx={{
+                                justifyContent: "flex-end",
+                                alignItems: "center"
+                            }}>
                             {location.has_children && (
                                 <Button
                                     variant="outlined"

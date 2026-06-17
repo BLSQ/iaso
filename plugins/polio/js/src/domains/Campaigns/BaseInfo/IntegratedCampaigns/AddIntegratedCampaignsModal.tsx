@@ -63,7 +63,9 @@ const AddIntegratedCampaignsModal: FunctionComponent<Props> = ({
             titleMessage={MESSAGES.addIntegratedCampaigns}
             allowConfirm={allowConfirm}
         >
-            <Box mt={2}>
+            <Box sx={{
+                mt: 2
+            }}>
                 <CampaignAsyncSelect
                     keyValue="integrated_campaigns"
                     handleChange={handleChange}

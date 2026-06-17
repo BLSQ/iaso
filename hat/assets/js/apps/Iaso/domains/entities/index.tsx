@@ -158,10 +158,17 @@ export const Entities: FunctionComponent = () => {
                     isFetching={isFetching}
                     isSearchActive={isSearchActive}
                 />
-                <Box position="relative" width="100%" mt={2}>
+                <Box
+                    sx={{
+                        position: "relative",
+                        width: "100%",
+                        mt: 2
+                    }}>
                     <Box
-                        width="100%"
                         className={tab === 'map' ? '' : classes.hiddenOpacity}
+                        sx={{
+                            width: "100%"
+                        }}
                     >
                         {!isFetching && (
                             <ListMap

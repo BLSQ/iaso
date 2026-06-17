@@ -240,9 +240,8 @@ export const AddTask: FunctionComponent<Props> = ({
             {...additionalButtonProps}
         >
             {mutation.isLoading && <LoadingSpinner />}
-
             <Grid container spacing={4}>
-                <Grid item>
+                <Grid>
                     <Typography>
                         {sourceVersionNumber ? (
                             <FormattedMessage
@@ -264,7 +263,7 @@ export const AddTask: FunctionComponent<Props> = ({
                     </Typography>
                 </Grid>
 
-                <Grid xs={12} item>
+                <Grid size={12}>
                     {!withExistingDhis2Settings &&
                         renderWithOptionalFields(sourceCredentials.is_valid)}
                     {renderDefaultLayout(

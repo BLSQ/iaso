@@ -93,7 +93,9 @@ export const BudgetTimeline: FunctionComponent<Props> = ({
                                                 key={`${
                                                     item.step_id || item.label
                                                 }-${index}`}
-                                                mb={1}
+                                                sx={{
+                                                    mb: 1
+                                                }}
                                             >
                                                 <Box
                                                     className={classnames(

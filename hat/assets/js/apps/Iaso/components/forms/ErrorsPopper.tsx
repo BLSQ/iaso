@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { HelpOutline } from '@mui/icons-material';
+import { HelpOutlineOutlined } from '@mui/icons-material';
 import { Box, IconButton, List, ListItem, Paper, Popper } from '@mui/material';
 import { red } from '@mui/material/colors';
 
@@ -23,7 +23,11 @@ export const ErrorsPopper: React.FC<Props> = ({
     if (!errors || errors.length === 0) return null;
 
     return (
-        <Box display="flex" alignItems="center">
+        <Box
+            sx={{
+                display: "flex",
+                alignItems: "center"
+            }}>
             <Box
                 sx={{
                     color: theme => theme.palette.error.main,
@@ -38,7 +42,7 @@ export const ErrorsPopper: React.FC<Props> = ({
                 size="small"
                 aria-describedby={open ? 'errors-popper' : undefined}
             >
-                <HelpOutline fontSize="small" color="error" />
+                <HelpOutlineOutlined fontSize="small" color="error" />
             </IconButton>
             <Popper
                 id="errors-popper"

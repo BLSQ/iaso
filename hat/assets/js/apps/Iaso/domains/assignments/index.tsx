@@ -95,15 +95,20 @@ export const Assignments: FunctionComponent = () => {
                 displayBackButton
                 goBack={goBack}
             />
-
             <MainWrapper sx={{ p: 4 }}>
                 {planning && (
-                    <Box display="flex" justifyContent="space-between" mb={2}>
+                    <Box
+                        sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            mb: 2
+                        }}>
                         <Typography
                             variant="h6"
-                            display="flex"
-                            alignItems="center"
-                        >
+                            sx={{
+                                display: "flex",
+                                alignItems: "center"
+                            }}>
                             {planning.org_unit_details?.name}
                             <ChevronRight sx={{ fontSize: 40, px: 1 }} />
                             {planning.target_org_unit_type_details
@@ -145,9 +150,17 @@ export const Assignments: FunctionComponent = () => {
                 )}
 
                 <Grid container spacing={2}>
-                    <Grid item xs={12} md={8}>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            md: 8
+                        }}>
                         <Grid container spacing={0}>
-                            <Grid item xs={12} md={8}>
+                            <Grid
+                                size={{
+                                    xs: 12,
+                                    md: 8
+                                }}>
                                 <Tabs value={tab} onChange={handleChangeTab}>
                                     <Tab
                                         value="map"
@@ -159,7 +172,11 @@ export const Assignments: FunctionComponent = () => {
                                     />
                                 </Tabs>
                             </Grid>
-                            <Grid item xs={12} md={4}>
+                            <Grid
+                                size={{
+                                    xs: 12,
+                                    md: 4
+                                }}>
                                 <Box
                                     sx={{
                                         marginTop: '-15px',
@@ -206,7 +223,11 @@ export const Assignments: FunctionComponent = () => {
                             />
                         )}
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            md: 4
+                        }}>
                         <TeamTable
                             planningId={planningId}
                             rootTeam={rootTeam}

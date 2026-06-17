@@ -16,7 +16,12 @@ export const AnalysisModalButton: FunctionComponent<Props> = ({ onClick }) => {
             onClick={onClick}
             size="small"
         >
-            <Box display="inline-block" mr={1} pt="6px">
+            <Box
+                sx={{
+                    display: "inline-block",
+                    mr: 1,
+                    pt: "6px"
+                }}>
                 <LaunchIcon fontSize="small" />
             </Box>
             {formatMessage(MESSAGES.launchAnalysis)}

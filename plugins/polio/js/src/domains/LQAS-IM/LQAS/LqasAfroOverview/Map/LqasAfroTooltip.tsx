@@ -24,11 +24,15 @@ export const LqasAfroTooltip: FunctionComponent<Props> = ({ name, shape }) => {
     return (
         // @ts-ignore
         <Tooltip title={shape.name} pane="popupPane">
-            <Box display="block">
+            <Box sx={{
+                display: "block"
+            }}>
                 <span className={classes.label}>{name}</span>
             </Box>
             {shape.data?.campaign && (
-                <Box display="block">
+                <Box sx={{
+                    display: "block"
+                }}>
                     <span className={classes.label}>
                         {formatMessage(MESSAGES.obrName)}:{' '}
                     </span>
@@ -36,7 +40,9 @@ export const LqasAfroTooltip: FunctionComponent<Props> = ({ name, shape }) => {
                 </Box>
             )}
             {shape.data?.round_number && (
-                <Box display="block">
+                <Box sx={{
+                    display: "block"
+                }}>
                     <span className={classes.label}>
                         {formatMessage(MESSAGES.round)}:{' '}
                     </span>

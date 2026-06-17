@@ -31,7 +31,12 @@ export const NotificationsFilters: FunctionComponent<Props> = ({
     return (
         <>
             <Grid container spacing={2}>
-                <Grid item xs={12} md={4} lg={4}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 4,
+                        lg: 4
+                    }}>
                     <InputComponent
                         type="select"
                         clearable
@@ -42,7 +47,12 @@ export const NotificationsFilters: FunctionComponent<Props> = ({
                         labelString={formatMessage(MESSAGES.labelCountry)}
                     />
                 </Grid>
-                <Grid item xs={12} md={4} lg={4}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 4,
+                        lg: 4
+                    }}>
                     <InputComponent
                         type="select"
                         clearable
@@ -53,7 +63,12 @@ export const NotificationsFilters: FunctionComponent<Props> = ({
                         labelString={formatMessage(MESSAGES.labelVdpvCategory)}
                     />
                 </Grid>
-                <Grid item xs={12} md={4} lg={4}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 4,
+                        lg: 4
+                    }}>
                     <InputComponent
                         type="select"
                         clearable
@@ -64,7 +79,12 @@ export const NotificationsFilters: FunctionComponent<Props> = ({
                         labelString={formatMessage(MESSAGES.labelSource)}
                     />
                 </Grid>
-                <Grid item xs={12} md={9} lg={6}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 9,
+                        lg: 6
+                    }}>
                     <DatesRange
                         onChangeDate={handleChange}
                         dateFrom={filters.date_of_onset_after}
@@ -77,13 +97,17 @@ export const NotificationsFilters: FunctionComponent<Props> = ({
                 </Grid>
                 <Grid
                     container
-                    item
-                    xs={12}
-                    md={3}
-                    lg={6}
-                    justifyContent="flex-end"
-                >
-                    <Box mt={2}>
+                    size={{
+                        xs: 12,
+                        md: 3,
+                        lg: 6
+                    }}
+                    sx={{
+                        justifyContent: "flex-end"
+                    }}>
+                    <Box sx={{
+                        mt: 2
+                    }}>
                         <SearchButton
                             disabled={!filtersUpdated}
                             onSearch={handleSearch}
@@ -91,12 +115,28 @@ export const NotificationsFilters: FunctionComponent<Props> = ({
                     </Box>
                 </Grid>
             </Grid>
-            <Grid container item xs={12} md={12} justifyContent="flex-end">
-                <Box ml={2} mt={2}>
+            <Grid
+                container
+                size={{
+                    xs: 12,
+                    md: 12
+                }}
+                sx={{
+                    justifyContent: "flex-end"
+                }}>
+                <Box
+                    sx={{
+                        ml: 2,
+                        mt: 2
+                    }}>
                     {/* @ts-ignore */}
                     <BulkImportNotificationModal />
                 </Box>
-                <Box ml={2} mt={2}>
+                <Box
+                    sx={{
+                        ml: 2,
+                        mt: 2
+                    }}>
                     <CreateNotificationModal
                         iconProps={{ message: MESSAGES.modalAddTitle }}
                         notificationsMetaData={notificationsMetaData}

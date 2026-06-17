@@ -102,7 +102,11 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
             className={classes.paper}
         >
             <Grid container spacing={0}>
-                <Grid item xs={12} sm={4}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        sm: 4
+                    }}>
                     <Table size={isMobileLayout ? 'small' : 'medium'}>
                         <TableBody>
                             <TableRow>
@@ -135,22 +139,22 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
                 </Grid>
 
                 <Grid
-                    item
-                    xs={12}
-                    sm={8}
                     container
                     spacing={0}
                     className={classes.buttonContainer}
-                >
+                    size={{
+                        xs: 12,
+                        sm: 8
+                    }}>
                     <Grid
-                        item
-                        xs={12}
                         container
                         spacing={isMobileLayout ? 1 : 2}
-                        justifyContent="flex-end"
-                        alignItems="center"
                         className={classes.buttonGrid}
-                    >
+                        size={12}
+                        sx={{
+                            justifyContent: "flex-end",
+                            alignItems: "center"
+                        }}>
                         {nextSteps && (
                             <>
                                 {nextSteps.regular &&
@@ -162,10 +166,8 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
 
                                             return (
                                                 <Grid
-                                                    item
                                                     // eslint-disable-next-line react/no-array-index-key
-                                                    key={`${step.key}-${index}`}
-                                                >
+                                                    key={`${step.key}-${index}`}>
                                                     <CreateBudgetStep
                                                         isMobileLayout={
                                                             isMobileLayout
@@ -209,7 +211,7 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
                                 <DisplayIfUserHasPerm
                                     permissions={[BUDGET_ADMIN]}
                                 >
-                                    <Grid item>
+                                    <Grid>
                                         {/* Ignore missing iconProps as it's not really mandatory (typing error in the component) */}
                                         {/* @ts-ignore */}
                                         <CreateOverrideStep
@@ -230,7 +232,9 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
             </Grid>
             {/* temporary hide the budget timeline waiting to fix the workflow process */}
             {isTabletOrDesktopLayout && (
-                <Box py={2}>
+                <Box sx={{
+                    py: 2
+                }}>
                     <BudgetTimeline categories={categories} />
                 </Box>
             )}

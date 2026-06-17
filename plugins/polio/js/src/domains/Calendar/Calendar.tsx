@@ -159,7 +159,6 @@ export const Calendar: FunctionComponent = () => {
                     }}
                 />
             )}
-
             <div id="pdf">
                 <Box
                     className={classnames(
@@ -170,7 +169,9 @@ export const Calendar: FunctionComponent = () => {
                 >
                     {!isPdf && (
                         <>
-                            <Box mb={4}>
+                            <Box sx={{
+                                mb: 4
+                            }}>
                                 <CampaignsFilters
                                     disableDates
                                     disableOnlyDeleted
@@ -184,19 +185,28 @@ export const Calendar: FunctionComponent = () => {
                             <Grid
                                 container
                                 spacing={1}
-                                display="flex"
-                                justifyContent="flex-end"
-                            >
-                                <Grid item>
-                                    <Box mb={2} mt={2}>
+                                sx={{
+                                    display: "flex",
+                                    justifyContent: "flex-end"
+                                }}>
+                                <Grid>
+                                    <Box
+                                        sx={{
+                                            mb: 2,
+                                            mt: 2
+                                        }}>
                                         <PdfExportButton
                                             setPdf={setPdf}
                                             disabled={!isCalendarAndMapLoaded}
                                         />
                                     </Box>
                                 </Grid>
-                                <Grid item>
-                                    <Box mb={2} mt={2}>
+                                <Grid>
+                                    <Box
+                                        sx={{
+                                            mb: 2,
+                                            mt: 2
+                                        }}>
                                         <XlsxButton xlsxUrl={xlsx_url}>
                                             {formatMessage(
                                                 MESSAGES.exportToExcel,
@@ -204,8 +214,12 @@ export const Calendar: FunctionComponent = () => {
                                         </XlsxButton>
                                     </Box>
                                 </Grid>
-                                <Grid item>
-                                    <Box mb={2} mt={2}>
+                                <Grid>
+                                    <Box
+                                        sx={{
+                                            mb: 2,
+                                            mt: 2
+                                        }}>
                                         <ExportCsvModal
                                             params={params}
                                             iconProps={{}}
@@ -218,21 +232,35 @@ export const Calendar: FunctionComponent = () => {
 
                     <Grid container spacing={2}>
                         {isPdf && (
-                            <Grid item xs={12}>
+                            <Grid size={12}>
                                 <Typography variant="h3" color="primary">
                                     {formatMessage(MESSAGES.calendarPdfTitle)}
                                 </Typography>
                             </Grid>
                         )}
-                        <Grid item xs={12} lg={!isPdf ? 8 : 12}>
-                            <Box display="flex" justifyContent="flex-end">
-                                <Box mr={2}>
+                        <Grid
+                            size={{
+                                xs: 12,
+                                lg: !isPdf ? 8 : 12
+                            }}>
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    justifyContent: "flex-end"
+                                }}>
+                                <Box sx={{
+                                    mr: 2
+                                }}>
                                     <IntegratedCampaignsLegend />
                                 </Box>
-                                <Box mr={2}>
+                                <Box sx={{
+                                    mr: 2
+                                }}>
                                     <IsOnHoldLegend />
                                 </Box>
-                                <Box mr={2}>
+                                <Box sx={{
+                                    mr: 2
+                                }}>
                                     <HasSubActivityLegend />
                                 </Box>
                                 {!isPdf && (
@@ -242,7 +270,9 @@ export const Calendar: FunctionComponent = () => {
                                     />
                                 )}
                             </Box>
-                            <Box mt={!isPdf ? 1 : 0}>
+                            <Box sx={{
+                                mt: !isPdf ? 1 : 0
+                            }}>
                                 <CampaignsCalendar
                                     params={params}
                                     orders={params.order as CalendarOrdering}
@@ -257,7 +287,11 @@ export const Calendar: FunctionComponent = () => {
                                 />
                             </Box>
                         </Grid>
-                        <Grid item xs={12} lg={!isPdf ? 4 : 12}>
+                        <Grid
+                            size={{
+                                xs: 12,
+                                lg: !isPdf ? 4 : 12
+                            }}>
                             <CalendarMap
                                 params={params}
                                 campaigns={filteredCampaigns}

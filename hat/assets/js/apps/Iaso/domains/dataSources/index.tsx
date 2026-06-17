@@ -55,10 +55,11 @@ const DataSources: FunctionComponent = () => {
                     <Filters params={params} baseUrl={baseUrl} />
                     <DisplayIfUserHasPerm permissions={[SOURCE_WRITE]}>
                         <Box
-                            display="inline-flex"
-                            justifyContent="flex-end"
                             style={{ width: '100%' }}
-                        >
+                            sx={{
+                                display: "inline-flex",
+                                justifyContent: "flex-end"
+                            }}>
                             <DataSourceDialogComponent
                                 defaultSourceVersion={defaultSourceVersion}
                                 renderTrigger={({ openDialog }) => (

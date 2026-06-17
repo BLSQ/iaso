@@ -55,12 +55,12 @@ vi.mock('bluesquare-components', async () => {
 type FormValues = { users: string };
 
 const baseField = (value: number[] | undefined): FieldInputProps<number[]> =>
-    ({
+    (({
         name: 'users',
         value,
         onBlur: vi.fn(),
-        onChange: vi.fn(),
-    }) as FieldInputProps<number[]>;
+        onChange: vi.fn()
+    }) as FieldInputProps<number[]>);
 
 const baseForm = (
     setFieldValue: ReturnType<typeof vi.fn>,

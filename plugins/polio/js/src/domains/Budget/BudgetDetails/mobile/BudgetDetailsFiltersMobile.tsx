@@ -19,9 +19,15 @@ export const BudgetDetailsFiltersMobile: FunctionComponent<Props> = ({
 }) => {
     const [expand, setExpand] = useState<boolean>(false);
     return (
-        <Box width="100%" mb={2}>
-            <Grid container justifyContent="space-between">
-                <Grid item>
+        <Box
+            sx={{
+                width: "100%",
+                mb: 2
+            }}>
+            <Grid container sx={{
+                justifyContent: "space-between"
+            }}>
+                <Grid>
                     <MoreHorizIcon
                         color="action"
                         onClick={() => {

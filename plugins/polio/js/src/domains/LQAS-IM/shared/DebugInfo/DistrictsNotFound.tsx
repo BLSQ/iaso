@@ -22,9 +22,17 @@ export const DistrictsNotFound: FunctionComponent<Props> = ({
             <Typography variant="h6">
                 {`${formatMessage(MESSAGES.districtsNotFound)}:`}
             </Typography>
-            <Box mt={2}>
+            <Box sx={{
+                mt: 2
+            }}>
                 {districtsNotFound.map(d => (
-                    <Box mr={1} mb={1} display="inline-block" key={d}>
+                    <Box
+                        key={d}
+                        sx={{
+                            mr: 1,
+                            mb: 1,
+                            display: "inline-block"
+                        }}>
                         <Chip label={d} variant="outlined" color="secondary" />
                     </Box>
                 ))}

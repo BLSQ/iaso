@@ -133,9 +133,15 @@ export const Instances: FunctionComponent<Props> = ({
                             />
                         ))}
                     </Tabs>
-                    <Box mt={2}>
+                    <Box sx={{
+                        mt: 2
+                    }}>
                         <Grid container spacing={2}>
-                            <Grid item xs={12} md={3}>
+                            <Grid
+                                size={{
+                                    xs: 12,
+                                    md: 3
+                                }}>
                                 <InputComponent
                                     keyValue="formIds"
                                     clearable={false}
@@ -149,14 +155,16 @@ export const Instances: FunctionComponent<Props> = ({
                                 />
                             </Grid>
                             <Grid
-                                item
                                 container
-                                xs={12}
-                                md={9}
-                                justifyContent="flex-end"
-                                alignItems="baseline"
-                                alignContent="center"
-                            >
+                                size={{
+                                    xs: 12,
+                                    md: 9
+                                }}
+                                sx={{
+                                    justifyContent: "flex-end",
+                                    alignItems: "baseline",
+                                    alignContent: "center"
+                                }}>
                                 {formIds && currentForm && (
                                     <ColumnSelect
                                         params={params}

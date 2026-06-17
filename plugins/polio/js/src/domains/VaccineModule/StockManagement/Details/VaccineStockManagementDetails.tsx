@@ -92,10 +92,14 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
     return (
         <>
             <TopBar title={title} displayBackButton goBack={goBack} />
-
             <Box className={classes.containerFullHeightPadded}>
                 <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            sm: 6,
+                            md: 4
+                        }}>
                         <VaccineStockManagementSummary
                             isLoading={isLoadingSummary}
                             data={summary}
@@ -103,13 +107,20 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
                     </Grid>
                     <Grid
                         container
-                        item
-                        xs={12}
-                        sm={6}
-                        md={8}
-                        justifyContent="flex-end"
-                    >
-                        <Box display="flex" flexDirection="column" gap={2}>
+                        size={{
+                            xs: 12,
+                            sm: 6,
+                            md: 8
+                        }}
+                        sx={{
+                            justifyContent: "flex-end"
+                        }}>
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: 2
+                            }}>
                             <Button
                                 variant="contained"
                                 color="primary"
@@ -158,7 +169,11 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
                     /> */}
                 </Tabs>
                 <Paper elevation={2} className={classes.marginTop}>
-                    <Box pt={2} px={2}>
+                    <Box
+                        sx={{
+                            pt: 2,
+                            px: 2
+                        }}>
                         <Typography variant="h5" color="primary">
                             {formatMessage(MESSAGES[tab])}
                         </Typography>

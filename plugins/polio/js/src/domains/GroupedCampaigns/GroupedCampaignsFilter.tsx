@@ -39,9 +39,13 @@ export const GroupedCampaignsFilter: FunctionComponent<Props> = ({
 
     return (
         <>
-            <Box display="inline-flex" width="85%">
+            <Box
+                sx={{
+                    display: "inline-flex",
+                    width: "85%"
+                }}>
                 <Grid container spacing={2}>
-                    <Grid item xs={3}>
+                    <Grid size={3}>
                         <InputComponent
                             keyValue="search"
                             onChange={handleChange}
@@ -83,15 +87,29 @@ export const GroupedCampaignsFilter: FunctionComponent<Props> = ({
                     </Grid> */}
                 </Grid>
             </Box>
-            <Box display="inline-flex" width="15%" justifyContent="flex-end">
-                <Box position="relative" top={16}>
+            <Box
+                sx={{
+                    display: "inline-flex",
+                    width: "15%",
+                    justifyContent: "flex-end"
+                }}>
+                <Box
+                    sx={{
+                        position: "relative",
+                        top: 16
+                    }}>
                     <Button
                         disabled={textSearchError || !filtersUpdated}
                         variant="contained"
                         color="primary"
                         onClick={handleSearch}
                     >
-                        <Box mr={1} top={3} position="relative">
+                        <Box
+                            sx={{
+                                mr: 1,
+                                top: 3,
+                                position: "relative"
+                            }}>
                             <FiltersIcon />
                         </Box>
                         <FormattedMessage {...MESSAGES.filter} />

@@ -270,7 +270,12 @@ const FormDetail: FunctionComponent = () => {
                     setFieldValue={onChange}
                     originalSinglePerPeriod={originalSinglePerPeriod}
                 />
-                <Box mt={2} justifyContent="flex-end" display="flex">
+                <Box
+                    sx={{
+                        mt: 2,
+                        justifyContent: "flex-end",
+                        display: "flex"
+                    }}>
                     {currentForm.id.value !== '' && (
                         <Button
                             data-id="form-detail-cancel"

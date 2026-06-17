@@ -54,7 +54,9 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
 
     if (isLoading)
         return (
-            <Box height={height}>
+            <Box sx={{
+                height: height
+            }}>
                 <LoadingSpinner
                     fixed={false}
                     transparent
@@ -70,17 +72,21 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
     return (
         <>
             {showTitle && (
-                <Box display="flex" alignItems="center">
+                <Box
+                    sx={{
+                        display: "flex",
+                        alignItems: "center"
+                    }}>
                     <Typography variant={titleVariant} color={titleColor}>
                         {`${formatMessage(MESSAGES.submissionTitle)} - ${
                             data?.id
                         }`}
                     </Typography>
                     <Box
-                        display="inline-block"
-                        ml={1}
-                        sx={styles.iconContainer}
-                    >
+                        sx={[{
+                            display: "inline-block",
+                            ml: 1
+                        }, styles.iconContainer]}>
                         <IconButtonComponent
                             size="small"
                             iconSize="small"
@@ -100,7 +106,9 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
                         {formatMessage(MESSAGES.infos)}
                     </AccordionSummary>
                     <AccordionDetails>
-                        <Box p={2}>
+                        <Box sx={{
+                            p: 2
+                        }}>
                             <InstanceDetailsInfos
                                 instance_metas_fields={INSTANCE_METAS_FIELDS}
                                 currentInstance={data}
@@ -117,7 +125,9 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
                         {formatMessage(MESSAGES.location)}
                     </AccordionSummary>
                     <AccordionDetails>
-                        <Box p={2}>
+                        <Box sx={{
+                            p: 2
+                        }}>
                             <InstanceDetailsLocation currentInstance={data} />
                         </Box>
                     </AccordionDetails>

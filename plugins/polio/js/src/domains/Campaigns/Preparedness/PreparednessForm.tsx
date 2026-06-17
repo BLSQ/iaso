@@ -28,7 +28,11 @@ export const PreparednessForm: FunctionComponent = () => {
     };
 
     return (
-        <Box mt={-4} width={'100%'}>
+        <Box
+            sx={{
+                mt: -4,
+                width: '100%'
+            }}>
             <TabContext value={currentTab}>
                 <TabList onChange={handleChangeTab} className={classes.subTabs}>
                     {sortedRounds.map(round => (

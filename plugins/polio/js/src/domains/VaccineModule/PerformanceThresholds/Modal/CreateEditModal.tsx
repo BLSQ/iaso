@@ -156,7 +156,11 @@ export const CreateEditModal: FunctionComponent<Props> = ({
                 confirmMessage={MESSAGES.save}
                 cancelMessage={MESSAGES.cancel}
             >
-                <Box mb={2} mt={2}>
+                <Box
+                    sx={{
+                        mb: 2,
+                        mt: 2
+                    }}>
                     <Field
                         label={formatMessage(MESSAGES.indicator)}
                         name="indicator"
@@ -164,7 +168,9 @@ export const CreateEditModal: FunctionComponent<Props> = ({
                         required
                     />
                 </Box>
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <QueryBuilderInput
                         label={MESSAGES.successThreshold}
                         onChange={logic =>
@@ -175,7 +181,9 @@ export const CreateEditModal: FunctionComponent<Props> = ({
                         iconProps={successIconProps}
                     />
                 </Box>
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <QueryBuilderInput
                         label={MESSAGES.warningThreshold}
                         onChange={logic =>
@@ -186,7 +194,9 @@ export const CreateEditModal: FunctionComponent<Props> = ({
                         iconProps={warningIconProps}
                     />
                 </Box>
-                <Box mb={2}>
+                <Box sx={{
+                    mb: 2
+                }}>
                     <QueryBuilderInput
                         label={MESSAGES.failThreshold}
                         onChange={logic =>

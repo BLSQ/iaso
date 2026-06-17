@@ -22,8 +22,15 @@ if __name__ == "__main__":
     version = os.environ["VERSION_NAME"]
 
     # # If the argument correspond to one of the env, deploy to it
-    # if sys.argv[1].lower() in [x.lower() for x in eb_envs.keys()]:
-    #     exit(eb_deploy(sys.argv[1], version_name=version))
+    if sys.argv[1].lower() in [x.lower() for x in eb_envs.keys()]:
+        env_details = eb_envs[sys.argv[1]]
+        m = re.search(r"Python|Docker", env_details["PlatformArn"])
+        if not m:
+            exit(f"Platform could not be retrieved for {sys.argv[1]}")
+        platform = m.group().lower()
+        if platform != sys.argv[2].lower():
+            exit(f"Platform mismatch on {sys.argv[1]}: the platform is running {platform}, you passed {sys.argv[2].lower()}")
+        exit(eb_deploy(sys.argv[1], version_name=version))
 
     # otherwise consider it's a tag and update all the environment with the same `env` tag
     tag_envs = {}
@@ -43,7 +50,7 @@ if __name__ == "__main__":
         tag_envs[env_name] = tags
         if "env" in tags and tags["env"].lower() == sys.argv[1].lower():
             if platform != sys.argv[2].lower():
-                print(f"Platform mismatch on {env_name}: want {sys.argv[2].lower()}, got {platform}")
+                print(f"Platform mismatch on {env_name}: the platform is running {platform}, you passed {sys.argv[2].lower()}")
                 continue
             print(f"{env_name} is a {platform} based environment")
             target_envs.append(env_name)

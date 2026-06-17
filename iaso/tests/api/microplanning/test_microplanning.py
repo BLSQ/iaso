@@ -1584,23 +1584,52 @@ class AssignmentAPITestCase(APITestCase):
         org_unit_type = OrgUnitType.objects.create(name="test type")
         project = account.project_set.first()
         org_unit_type.projects.add(project)
-        cls.root_org_unit = root_org_unit = OrgUnit.objects.create(version=version, org_unit_type=org_unit_type)
+        cls.root_org_unit = root_org_unit = OrgUnit.objects.create(
+            version=version,
+            org_unit_type=org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+        )
         cls.child1 = OrgUnit.objects.create(
-            version=version, parent=root_org_unit, name="child1", org_unit_type=org_unit_type
+            version=version,
+            parent=root_org_unit,
+            name="child1",
+            org_unit_type=org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.child2 = OrgUnit.objects.create(
-            version=version, parent=root_org_unit, name="child2", org_unit_type=org_unit_type
+            version=version,
+            parent=root_org_unit,
+            name="child2",
+            org_unit_type=org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.child3 = OrgUnit.objects.create(
-            version=version, parent=root_org_unit, name="child3", org_unit_type=org_unit_type
+            version=version,
+            parent=root_org_unit,
+            name="child3",
+            org_unit_type=org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.child4 = OrgUnit.objects.create(
-            version=version, parent=root_org_unit, name="child4", org_unit_type=org_unit_type
+            version=version,
+            parent=root_org_unit,
+            name="child4",
+            org_unit_type=org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.child5 = OrgUnit.objects.create(
-            version=version, parent=root_org_unit, name="child4", org_unit_type=org_unit_type
+            version=version,
+            parent=root_org_unit,
+            name="child4",
+            org_unit_type=org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
-        OrgUnit.objects.create(version=version, parent=root_org_unit, name="child2")
+        OrgUnit.objects.create(
+            version=version,
+            parent=root_org_unit,
+            name="child2",
+            validation_status=OrgUnit.VALIDATION_VALID,
+        )
 
         cls.planning = Planning.objects.create(
             project=project1,

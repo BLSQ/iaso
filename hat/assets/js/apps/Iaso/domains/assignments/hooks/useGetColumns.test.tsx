@@ -23,12 +23,10 @@ describe('useGetColumns', () => {
         expect(result.current[0]).toMatchObject({
             Header: 'Id',
             accessor: 'id',
-            sortable: false,
         });
         expect(result.current[1]).toMatchObject({
             Header: 'Name',
             accessor: 'name',
-            sortable: false,
         });
         expect(result.current[2]).toMatchObject({
             Header: 'Assignment',

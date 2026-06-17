@@ -44,7 +44,11 @@ export const useTableSelection = <T>(
     const [selection, setSelection] = useState<Selection<T>>(initialSelection);
     const defaultCount = count ?? 0;
     const handleTableSelection = useCallback(
-        (selectionType: any, items: Array<any> = [], totalCount = defaultCount) => {
+        (
+            selectionType: any,
+            items: Array<any> = [],
+            totalCount = defaultCount,
+        ) => {
             const newSelection: Selection<T> = setTableSelection(
                 selection,
                 selectionType,

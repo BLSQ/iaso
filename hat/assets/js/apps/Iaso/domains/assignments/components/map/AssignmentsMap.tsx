@@ -77,7 +77,8 @@ import { TargetOrgUnits } from './TargetOrgUnits';
  *
  * Only **parent** layers use a zIndex range (20 slots: 210–229). All org units of the
  * same target category share a single pane zIndex regardless of type. Stack parent
- * panes with `parentShapesMin + hierarchyIndex` (index from `orgUniTypeList`).
+ * panes with `parentShapesMin + hierarchyIndex` (index f    if target_type_ids and org_unit_type_id not in target_type_ids:
+            raise ValidationError({"org_unit_type_id": [_("Org unit type is not a target type for this planning")]})rom `orgUniTypeList`).
  *
  *
  * Example hierarchy

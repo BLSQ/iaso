@@ -106,9 +106,9 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
         });
         onClose();
     };
-    const hasMultipleTargets =
-        planning.target_org_unit_type_details?.length &&
-        planning.target_org_unit_type_details?.length > 1;
+    // const hasMultipleTargets =
+    //     planning.target_org_unit_type_details?.length &&
+    //     planning.target_org_unit_type_details?.length > 1;
     const assignButtonDisabled =
         selection.selectedItems.length === 0 && !selection.selectAll;
     return (

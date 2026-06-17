@@ -35,6 +35,7 @@ from .serializers import (
     AuditAssignmentSerializer,
     AuditPlanningSerializer,
     BulkAssignmentSerializer,
+    BulkDeleteAssignmentResponseSerializer,
     BulkDeleteAssignmentSerializer,
     PlanningOrgUnitChildrenFilterSerializer,
     PlanningOrgUnitSerializer,
@@ -320,7 +321,20 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
         user = self.request.user
         return self.queryset.filter_for_user(user).select_related("user", "team", "org_unit", "org_unit__org_unit_type")
 
-    @action(methods=["POST"], detail=False)
+    @extend_schema(
+        request=BulkAssignmentSerializer,
+        responses=AssignmentSerializer(many=True),
+        parameters=[],
+        filters=False,
+        description=(
+            "Bulk create or update assignments for org units selected from the planning children scope. "
+            "Optional `org_unit_parent_id`, `org_unit_type_id`, and `search` narrow the scope "
+            "(same rules as children-paginated). Selection is applied with `select_all`, "
+            "`selected_ids`, and `unselected_ids`. Exactly one of `team` or `user` must be set. "
+            "Existing assignments for the same planning and org unit are updated in place."
+        ),
+    )
+    @action(methods=["POST"], detail=False, filter_backends=[], pagination_class=None)
     def bulk_create_assignments(self, request):
         """More a bulk create or update, since existing assignments would be modified"""
         serializer = BulkAssignmentSerializer(data=request.data, context={"request": request})
@@ -414,7 +428,14 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
         return_serializer = AssignmentSerializer(assignments_list, many=True, context={"request": request})
         return Response(return_serializer.data)
 
-    @action(methods=["POST"], detail=False)
+    @extend_schema(
+        request=BulkDeleteAssignmentSerializer,
+        responses=BulkDeleteAssignmentResponseSerializer,
+        parameters=[],
+        filters=False,
+        description=("Soft-delete assignments for a planning, optionally filtered by `user` and/or `team`."),
+    )
+    @action(methods=["POST"], detail=False, filter_backends=[], pagination_class=None)
     def bulk_delete_assignments(self, request):
         """Bulk soft delete all assignments for a specific planning.
 

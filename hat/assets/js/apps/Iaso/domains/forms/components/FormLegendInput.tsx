@@ -42,9 +42,12 @@ export const FormLegendInput: FunctionComponent<FormFormProps> = ({
             {currentForm.legend_threshold?.value !== undefined && (
                 <>
                     {!isEmpty(currentForm.legend_threshold?.value) && (
-                        <Box className={classes.fakeField} sx={{
-                            position: "relative"
-                        }}>
+                        <Box
+                            className={classes.fakeField}
+                            sx={{
+                                position: 'relative',
+                            }}
+                        >
                             <Grid container spacing={1}>
                                 <Grid size={6}>
                                     <span className={classes.label}>
@@ -55,9 +58,10 @@ export const FormLegendInput: FunctionComponent<FormFormProps> = ({
                                     container
                                     size={6}
                                     sx={{
-                                        justifyContent: "flex-end",
-                                        alignContent: "flex-start"
-                                    }}>
+                                        justifyContent: 'flex-end',
+                                        alignContent: 'flex-start',
+                                    }}
+                                >
                                     <EditLegendDialog
                                         iconProps={{}}
                                         titleMessage={MESSAGES.edit}
@@ -96,10 +100,11 @@ export const FormLegendInput: FunctionComponent<FormFormProps> = ({
                     {isEmpty(currentForm.legend_threshold.value) && (
                         <Box
                             sx={{
-                                display: "flex",
-                                justifyContent: "flex-end",
-                                alignContent: "flex-start"
-                            }}>
+                                display: 'flex',
+                                justifyContent: 'flex-end',
+                                alignContent: 'flex-start',
+                            }}
+                        >
                             <AddLegendDialog
                                 iconProps={{}}
                                 titleMessage={MESSAGES.createLegend}

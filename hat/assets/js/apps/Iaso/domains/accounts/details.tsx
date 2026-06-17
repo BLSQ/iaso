@@ -133,8 +133,9 @@ const AccountsDetails: FunctionComponent = () => {
                     <Grid
                         size={{
                             xs: 12,
-                            md: 6
-                        }}>
+                            md: 6,
+                        }}
+                    >
                         <GeneralInfoPanel
                             accountId={accountId}
                             account={account}
@@ -149,8 +150,9 @@ const AccountsDetails: FunctionComponent = () => {
                     <Grid
                         size={{
                             xs: 12,
-                            md: 6
-                        }}>
+                            md: 6,
+                        }}
+                    >
                         <ModulePanel
                             accountId={accountId}
                             account={account}

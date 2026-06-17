@@ -96,9 +96,11 @@ export const ListMap: FunctionComponent<Props> = ({
 
     return (
         <section className={classes.mapContainer}>
-            <Box sx={{
-                position: "relative"
-            }}>
+            <Box
+                sx={{
+                    position: 'relative',
+                }}
+            >
                 {isFetchingLocations && <LoadingSpinner absolute />}
                 <LocationSwitch
                     displayedLocation={displayedLocation}

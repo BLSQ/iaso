@@ -36,7 +36,7 @@ export const UserRolePermissions: FunctionComponent<Props> = ({
                             direction="row"
                             spacing={1}
                             sx={{
-                                alignItems: "center"
+                                alignItems: 'center',
                             }}
                         >
                             {hasPermission ? (

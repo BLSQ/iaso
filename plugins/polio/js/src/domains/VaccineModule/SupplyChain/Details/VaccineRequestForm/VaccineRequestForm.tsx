@@ -105,15 +105,24 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
         return processErrorDocsBase(errors.file);
     }, [errors.file]);
     return (
-        <Box className={className} sx={{
-            mb: 3
-        }}>
-            <Box sx={{
-                mb: 2
-            }}>
-                <Grid container spacing={2} sx={{
-                    alignItems: "center"
-                }}>
+        <Box
+            className={className}
+            sx={{
+                mb: 3,
+            }}
+        >
+            <Box
+                sx={{
+                    mb: 2,
+                }}
+            >
+                <Grid
+                    container
+                    spacing={2}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <Grid size={9}>
                         <Typography variant="h5">
                             {formatMessage(MESSAGES.vrfTitle)}
@@ -141,8 +150,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                         <Grid
                             size={{
                                 xs: 6,
-                                md: 3
-                            }}>
+                                md: 3,
+                            }}
+                        >
                             <Field
                                 label={formatMessage(MESSAGES.country)}
                                 name="vrf.country"
@@ -159,8 +169,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                         <Grid
                             size={{
                                 xs: 6,
-                                md: 3
-                            }}>
+                                md: 3,
+                            }}
+                        >
                             <Field
                                 label={formatMessage(MESSAGES.campaign)}
                                 name="vrf.campaign"
@@ -180,8 +191,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                         <Grid
                             size={{
                                 xs: 6,
-                                md: 3
-                            }}>
+                                md: 3,
+                            }}
+                        >
                             <Field
                                 label={formatMessage(MESSAGES.vaccine)}
                                 name="vrf.vaccine_type"
@@ -201,8 +213,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                         <Grid
                             size={{
                                 xs: 6,
-                                md: 3
-                            }}>
+                                md: 3,
+                            }}
+                        >
                             <Field
                                 label={formatMessage(MESSAGES.roundNumbers)}
                                 name="vrf.rounds"
@@ -223,8 +236,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                         <Grid
                             size={{
                                 xs: 6,
-                                md: 3
-                            }}>
+                                md: 3,
+                            }}
+                        >
                             <Field
                                 label={formatMessage(
                                     MESSAGES.quantities_ordered_in_doses,
@@ -238,8 +252,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                         <Grid
                             size={{
                                 xs: 6,
-                                md: 3
-                            }}>
+                                md: 3,
+                            }}
+                        >
                             <Field
                                 label={formatMessage(MESSAGES.wastageRatio)}
                                 name="vrf.wastage_rate_used_on_vrf"
@@ -254,8 +269,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                         <Grid
                             size={{
                                 xs: 6,
-                                md: 3
-                            }}>
+                                md: 3,
+                            }}
+                        >
                             <Field
                                 label={formatMessage(MESSAGES.targetPopulation)}
                                 name="vrf.target_population"
@@ -268,8 +284,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                             <Grid
                                 size={{
                                     xs: 6,
-                                    md: 3
-                                }}>
+                                    md: 3,
+                                }}
+                            >
                                 <Field
                                     label={formatMessage(
                                         MESSAGES.date_vrf_signature,
@@ -287,8 +304,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 <Grid
                                     size={{
                                         xs: 6,
-                                        md: 3
-                                    }}>
+                                        md: 3,
+                                    }}
+                                >
                                     <Field
                                         label={formatMessage(
                                             MESSAGES.date_vrf_reception,
@@ -301,8 +319,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 <Grid
                                     size={{
                                         xs: 6,
-                                        md: 3
-                                    }}>
+                                        md: 3,
+                                    }}
+                                >
                                     <Field
                                         label={formatMessage(
                                             MESSAGES.date_vrf_submission_to_orpg,
@@ -315,8 +334,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 <Grid
                                     size={{
                                         xs: 6,
-                                        md: 3
-                                    }}>
+                                        md: 3,
+                                    }}
+                                >
                                     <Field
                                         label={formatMessage(
                                             MESSAGES.quantities_approved_by_orpg_in_doses,
@@ -329,8 +349,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 <Grid
                                     size={{
                                         xs: 6,
-                                        md: 3
-                                    }}>
+                                        md: 3,
+                                    }}
+                                >
                                     <Field
                                         label={formatMessage(
                                             MESSAGES.date_rrt_orpg_approval,
@@ -345,8 +366,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 <Grid
                                     size={{
                                         xs: 12,
-                                        lg: 6
-                                    }}>
+                                        lg: 6,
+                                    }}
+                                >
                                     <InputComponent
                                         type="textarea"
                                         keyValue="vrf.comment"
@@ -361,8 +383,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 <Grid
                                     size={{
                                         xs: 6,
-                                        md: 3
-                                    }}>
+                                        md: 3,
+                                    }}
+                                >
                                     <Box>
                                         <DocumentUploadWithPreview
                                             errors={documentErrors}

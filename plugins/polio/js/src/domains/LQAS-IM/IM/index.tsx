@@ -79,7 +79,10 @@ export const ImStats: FunctionComponent = () => {
                     params={params}
                 />
                 <Grid container spacing={2} direction="row">
-                    <Grid key={`IM-map-round round_${selectedRounds[0]}_${0}`} size={6}>
+                    <Grid
+                        key={`IM-map-round round_${selectedRounds[0]}_${0}`}
+                        size={6}
+                    >
                         <ImOverviewContainer
                             round={selectedRounds[0]}
                             campaign={campaign}
@@ -96,7 +99,10 @@ export const ImStats: FunctionComponent = () => {
                             options={dropDownOptions}
                         />
                     </Grid>
-                    <Grid key={`IM-map-round round_${selectedRounds[1]}_${1}`} size={6}>
+                    <Grid
+                        key={`IM-map-round round_${selectedRounds[1]}_${1}`}
+                        size={6}
+                    >
                         <ImOverviewContainer
                             round={selectedRounds[1]}
                             campaign={campaign}
@@ -131,7 +137,10 @@ export const ImStats: FunctionComponent = () => {
                                 />
                             </Grid>
                             {selectedRounds.map((rnd, index) => (
-                                <Grid key={`IM-bar-chart ${rnd}_${index}`} size={6}>
+                                <Grid
+                                    key={`IM-bar-chart ${rnd}_${index}`}
+                                    size={6}
+                                >
                                     <Paper elevation={paperElevation}>
                                         <LqasImHorizontalChart
                                             type={imType}
@@ -168,9 +177,11 @@ export const ImStats: FunctionComponent = () => {
                                     {chartData.nfm.map(d => (
                                         <Grid key={d.chartKey} size={6}>
                                             <Paper elevation={paperElevation}>
-                                                <Box sx={{
-                                                    p: 2
-                                                }}>
+                                                <Box
+                                                    sx={{
+                                                        p: 2,
+                                                    }}
+                                                >
                                                     <LqasImVerticalChart
                                                         data={d.data}
                                                         chartKey={d.chartKey}
@@ -206,9 +217,11 @@ export const ImStats: FunctionComponent = () => {
                                     {chartData.rfa.map(d => (
                                         <Grid key={d.chartKey} size={6}>
                                             <Paper elevation={paperElevation}>
-                                                <Box sx={{
-                                                    p: 2
-                                                }}>
+                                                <Box
+                                                    sx={{
+                                                        p: 2,
+                                                    }}
+                                                >
                                                     <LqasImVerticalChart
                                                         data={d.data}
                                                         chartKey={d.chartKey}

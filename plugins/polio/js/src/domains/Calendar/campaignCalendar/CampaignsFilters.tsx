@@ -196,8 +196,9 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="search"
                     onChange={(key, value) => {
@@ -242,8 +243,9 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     loading={isFetchingCountries}
                     keyValue="campaignCategory"
@@ -291,8 +293,9 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 {!disableDates && (
                     <DatesRange
                         xs={12}
@@ -354,9 +357,11 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                     </>
                 )}
                 {!disableOnlyDeleted && (
-                    <Box sx={{
-                        mt: 1
-                    }}>
+                    <Box
+                        sx={{
+                            mt: 1,
+                        }}
+                    >
                         <InputComponent
                             keyValue="showOnlyDeleted"
                             onChange={(key, value) => {
@@ -370,9 +375,11 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                     </Box>
                 )}
                 {!isCalendar && (
-                    <Box sx={{
-                        mt: disableOnlyDeleted ? 1 : undefined
-                    }}>
+                    <Box
+                        sx={{
+                            mt: disableOnlyDeleted ? 1 : undefined,
+                        }}
+                    >
                         <InputComponent
                             keyValue="show_test"
                             onChange={(key, value) => {
@@ -391,14 +398,17 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                 container
                 size={{
                     xs: 12,
-                    md: !disableDates || isCalendar ? 3 : 6
+                    md: !disableDates || isCalendar ? 3 : 6,
                 }}
                 sx={{
-                    justifyContent: "flex-end"
-                }}>
-                <Box sx={{
-                    mt: isLargeLayout ? 2 : 0
-                }}>
+                    justifyContent: 'flex-end',
+                }}
+            >
+                <Box
+                    sx={{
+                        mt: isLargeLayout ? 2 : 0,
+                    }}
+                >
                     <Button
                         disabled={textSearchError || !filtersUpdated}
                         variant="contained"
@@ -409,8 +419,9 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                             sx={{
                                 mr: 1,
                                 top: 3,
-                                position: "relative"
-                            }}>
+                                position: 'relative',
+                            }}
+                        >
                             <FiltersIcon />
                         </Box>
                         <FormattedMessage {...MESSAGES.filter} />

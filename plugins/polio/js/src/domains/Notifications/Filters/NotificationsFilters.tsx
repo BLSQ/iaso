@@ -35,8 +35,9 @@ export const NotificationsFilters: FunctionComponent<Props> = ({
                     size={{
                         xs: 12,
                         md: 4,
-                        lg: 4
-                    }}>
+                        lg: 4,
+                    }}
+                >
                     <InputComponent
                         type="select"
                         clearable
@@ -51,8 +52,9 @@ export const NotificationsFilters: FunctionComponent<Props> = ({
                     size={{
                         xs: 12,
                         md: 4,
-                        lg: 4
-                    }}>
+                        lg: 4,
+                    }}
+                >
                     <InputComponent
                         type="select"
                         clearable
@@ -67,8 +69,9 @@ export const NotificationsFilters: FunctionComponent<Props> = ({
                     size={{
                         xs: 12,
                         md: 4,
-                        lg: 4
-                    }}>
+                        lg: 4,
+                    }}
+                >
                     <InputComponent
                         type="select"
                         clearable
@@ -83,8 +86,9 @@ export const NotificationsFilters: FunctionComponent<Props> = ({
                     size={{
                         xs: 12,
                         md: 9,
-                        lg: 6
-                    }}>
+                        lg: 6,
+                    }}
+                >
                     <DatesRange
                         onChangeDate={handleChange}
                         dateFrom={filters.date_of_onset_after}
@@ -100,14 +104,17 @@ export const NotificationsFilters: FunctionComponent<Props> = ({
                     size={{
                         xs: 12,
                         md: 3,
-                        lg: 6
+                        lg: 6,
                     }}
                     sx={{
-                        justifyContent: "flex-end"
-                    }}>
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                        justifyContent: 'flex-end',
+                    }}
+                >
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <SearchButton
                             disabled={!filtersUpdated}
                             onSearch={handleSearch}
@@ -119,24 +126,27 @@ export const NotificationsFilters: FunctionComponent<Props> = ({
                 container
                 size={{
                     xs: 12,
-                    md: 12
+                    md: 12,
                 }}
                 sx={{
-                    justifyContent: "flex-end"
-                }}>
+                    justifyContent: 'flex-end',
+                }}
+            >
                 <Box
                     sx={{
                         ml: 2,
-                        mt: 2
-                    }}>
+                        mt: 2,
+                    }}
+                >
                     {/* @ts-ignore */}
                     <BulkImportNotificationModal />
                 </Box>
                 <Box
                     sx={{
                         ml: 2,
-                        mt: 2
-                    }}>
+                        mt: 2,
+                    }}
+                >
                     <CreateNotificationModal
                         iconProps={{ message: MESSAGES.modalAddTitle }}
                         notificationsMetaData={notificationsMetaData}

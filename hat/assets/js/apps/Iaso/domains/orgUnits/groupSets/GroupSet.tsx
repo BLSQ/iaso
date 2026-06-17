@@ -110,9 +110,11 @@ const GroupSet = () => {
             />
             <FormikProvider value={formik}>
                 <Container maxWidth="sm" sx={{ mt: theme => theme.spacing(4) }}>
-                    <Box sx={{
-                        mb: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mb: 2,
+                        }}
+                    >
                         <Field
                             label={formatMessage(MESSAGES.name)}
                             name="name"
@@ -122,9 +124,11 @@ const GroupSet = () => {
                         />
                     </Box>
 
-                    <Box sx={{
-                        mb: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mb: 2,
+                        }}
+                    >
                         <Field
                             label={formatMessage(MESSAGES.sourceVersion)}
                             name="source_version_id"
@@ -135,9 +139,11 @@ const GroupSet = () => {
                         />
                     </Box>
 
-                    <Box sx={{
-                        mb: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mb: 2,
+                        }}
+                    >
                         <Field
                             label={formatMessage(MESSAGES.groups)}
                             name="group_ids"
@@ -147,9 +153,11 @@ const GroupSet = () => {
                         />
                     </Box>
 
-                    <Box sx={{
-                        mb: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mb: 2,
+                        }}
+                    >
                         <Field
                             label={formatMessage(MESSAGES.source_ref)}
                             name="source_ref"
@@ -158,9 +166,11 @@ const GroupSet = () => {
                         />
                     </Box>
 
-                    <Box sx={{
-                        mb: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mb: 2,
+                        }}
+                    >
                         <Field
                             label={formatMessage(MESSAGES.group_belonging)}
                             name="group_belonging"
@@ -173,9 +183,10 @@ const GroupSet = () => {
                     </Box>
                     <Box
                         sx={{
-                            display: "flex",
-                            justifyContent: "flex-end"
-                        }}>
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                        }}
+                    >
                         <Button
                             type="submit"
                             disabled={!allowConfirm}

@@ -129,8 +129,9 @@ export const PreAlert: FunctionComponent<Props> = ({
                         <Grid
                             size={{
                                 xs: 6,
-                                md: 4
-                            }}>
+                                md: 4,
+                            }}
+                        >
                             <Field
                                 label={formatMessage(
                                     MESSAGES.date_pre_alert_reception,
@@ -156,9 +157,11 @@ export const PreAlert: FunctionComponent<Props> = ({
                                 onBlur={onDosesBlur}
                                 required
                             />
-                            <Box sx={{
-                                mt: 2
-                            }}>
+                            <Box
+                                sx={{
+                                    mt: 2,
+                                }}
+                            >
                                 <DocumentUploadWithPreview
                                     errors={documentErrors}
                                     onFilesSelect={files => {
@@ -193,11 +196,14 @@ export const PreAlert: FunctionComponent<Props> = ({
                         <Grid
                             size={{
                                 xs: 6,
-                                md: 4
-                            }}>
-                            <Box sx={{
-                                mb: 2
-                            }}>
+                                md: 4,
+                            }}
+                        >
+                            <Box
+                                sx={{
+                                    mb: 2,
+                                }}
+                            >
                                 <Field
                                     label={formatMessage(MESSAGES.po_number)}
                                     name={`pre_alerts[${index}].po_number`}
@@ -227,8 +233,9 @@ export const PreAlert: FunctionComponent<Props> = ({
                         <Grid
                             size={{
                                 xs: 6,
-                                md: 4
-                            }}>
+                                md: 4,
+                            }}
+                        >
                             <Field
                                 label={formatMessage(
                                     MESSAGES.estimated_arrival_time,
@@ -261,9 +268,11 @@ export const PreAlert: FunctionComponent<Props> = ({
             </Paper>
             {/* Box is necessay to avoid bad tooltip placement */}
             {pre_alerts?.[index].can_edit && (
-                <Box sx={{
-                    ml: 2
-                }}>
+                <Box
+                    sx={{
+                        ml: 2,
+                    }}
+                >
                     {!pre_alerts?.[index].to_delete && (
                         <DeleteIconButton
                             onClick={onDelete}

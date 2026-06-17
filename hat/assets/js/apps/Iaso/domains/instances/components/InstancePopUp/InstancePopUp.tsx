@@ -94,9 +94,12 @@ export const InstancePopup: FunctionComponent<Props> = ({
                                 container
                                 spacing={0}
                                 sx={{
-                                    justifyContent: displayUseLocation ? 'center' : 'flex-end',
-                                    alignItems: "center"
-                                }}>
+                                    justifyContent: displayUseLocation
+                                        ? 'center'
+                                        : 'flex-end',
+                                    alignItems: 'center',
+                                }}
+                            >
                                 {displayUseLocation && (
                                     <ConfirmDialog
                                         btnSize="small"

@@ -48,9 +48,11 @@ export const WarningModal: FunctionComponent<Props> = ({
         >
             <>
                 <Divider />
-                <Box sx={{
-                    mt: 2
-                }}>
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Typography>{body}</Typography>
                 </Box>
             </>

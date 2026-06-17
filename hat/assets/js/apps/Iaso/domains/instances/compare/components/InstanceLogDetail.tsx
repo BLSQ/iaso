@@ -35,9 +35,11 @@ export const InstanceLogDetail: FunctionComponent<Props> = ({
             )}
             <Paper>
                 {isLoading && (
-                    <Box sx={{
-                        height: "30vh"
-                    }}>
+                    <Box
+                        sx={{
+                            height: '30vh',
+                        }}
+                    >
                         <LoadingSpinner
                             fixed={false}
                             transparent

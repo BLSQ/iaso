@@ -107,9 +107,13 @@ const GroupDialog: FunctionComponent<Props> = ({
             renderTrigger={renderTrigger}
             maxWidth="sm"
         >
-            <Grid container spacing={4} sx={{
-                justifyContent: "flex-start"
-            }}>
+            <Grid
+                container
+                spacing={4}
+                sx={{
+                    justifyContent: 'flex-start',
+                }}
+            >
                 <Grid size={12}>
                     <InputComponent
                         keyValue="name"

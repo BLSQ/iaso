@@ -51,12 +51,13 @@ export const FollowUpsTable: FunctionComponent<Props> = ({
             />
             <Box
                 sx={{
-                    display: "flex",
-                    justifyContent: "flex-end",
+                    display: 'flex',
+                    justifyContent: 'flex-end',
                     pr: 2,
                     pb: 2,
-                    mt: -2
-                }}>
+                    mt: -2,
+                }}
+            >
                 {`${formatThousand(workflowVersion?.follow_ups.length ?? 0)} `}
                 {formatMessage(MESSAGES.results)}
             </Box>

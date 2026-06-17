@@ -99,12 +99,18 @@ const Pages = () => {
             <TopBar title={formatMessage(MESSAGES.pages)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={params} />
-                <Box sx={{
-                    mt: 4
-                }}>
-                    <Grid container spacing={2} sx={{
-                        justifyContent: "flex-end"
-                    }}>
+                <Box
+                    sx={{
+                        mt: 4,
+                    }}
+                >
+                    <Grid
+                        container
+                        spacing={2}
+                        sx={{
+                            justifyContent: 'flex-end',
+                        }}
+                    >
                         <Button
                             variant="contained"
                             onClick={handleClickCreateButton}

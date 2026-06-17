@@ -99,9 +99,13 @@ export const OrgUnitsMapComments: FunctionComponent<Props> = ({
 
     return (
         <>
-            <Box component="div" className={classes.header} sx={{
-                px: 2
-            }}>
+            <Box
+                component="div"
+                className={classes.header}
+                sx={{
+                    px: 2,
+                }}
+            >
                 <Typography variant="body1">
                     {orgUnit?.name ?? formatMessage(MESSAGES.selectOrgUnit)}
                 </Typography>

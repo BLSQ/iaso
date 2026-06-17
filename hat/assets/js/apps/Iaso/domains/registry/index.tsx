@@ -168,10 +168,11 @@ export const Registry: FunctionComponent = () => {
                             </Box>
                             <Box
                                 sx={{
-                                    display: "inline-block",
+                                    display: 'inline-block',
                                     ml: 1,
-                                    mr: 2
-                                }}>
+                                    mr: 2,
+                                }}
+                            >
                                 {`>`}
                             </Box>
                             {!orgUnitId && '...'}
@@ -190,8 +191,9 @@ export const Registry: FunctionComponent = () => {
                             <Grid
                                 size={{
                                     xs: 12,
-                                    md: 6
-                                }}>
+                                    md: 6,
+                                }}
+                            >
                                 <OrgUnitPaper
                                     orgUnit={orgUnit}
                                     subOrgUnitTypes={subOrgUnitTypes}
@@ -214,11 +216,12 @@ export const Registry: FunctionComponent = () => {
                                 container
                                 size={{
                                     xs: 12,
-                                    md: 6
+                                    md: 6,
                                 }}
                                 sx={{
-                                    alignItems: "flex-start"
-                                }}>
+                                    alignItems: 'flex-start',
+                                }}
+                            >
                                 {orgUnit && (
                                     <SelectedOrgUnit
                                         orgUnit={

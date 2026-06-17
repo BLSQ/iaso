@@ -119,9 +119,10 @@ export const UserLogCompare: FunctionComponent<Props> = ({
                                 container
                                 size={6}
                                 sx={{
-                                    justifyContent: "flex-start",
-                                    alignItems: "center"
-                                }}>
+                                    justifyContent: 'flex-start',
+                                    alignItems: 'center',
+                                }}
+                            >
                                 <Typography
                                     variant="h6"
                                     component="h6"
@@ -134,9 +135,10 @@ export const UserLogCompare: FunctionComponent<Props> = ({
                                 container
                                 size={6}
                                 sx={{
-                                    justifyContent: "flex-end",
-                                    alignItems: "center"
-                                }}>
+                                    justifyContent: 'flex-end',
+                                    alignItems: 'center',
+                                }}
+                            >
                                 <Tooltip
                                     title={formatMessage(
                                         showAllFields

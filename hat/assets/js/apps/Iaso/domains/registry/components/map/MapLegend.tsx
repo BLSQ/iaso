@@ -69,9 +69,11 @@ export const MapLegend: FunctionComponent<Props> = ({
     }
     return (
         <Paper elevation={1} className={classes.root}>
-            <Box sx={{
-                p: 2
-            }}>
+            <Box
+                sx={{
+                    p: 2,
+                }}
+            >
                 {options &&
                     options.map((option, i) => (
                         <Box
@@ -81,7 +83,7 @@ export const MapLegend: FunctionComponent<Props> = ({
                             tabIndex={0}
                             className={classes.option}
                             sx={{
-                                mb: i + 1 === options.length ? 0 : 1
+                                mb: i + 1 === options.length ? 0 : 1,
                             }}
                         >
                             <span

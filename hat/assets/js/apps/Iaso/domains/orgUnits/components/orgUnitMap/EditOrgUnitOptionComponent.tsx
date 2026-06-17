@@ -64,25 +64,28 @@ const EditOrgUnitOptionComponent: FunctionComponent<Props> = ({
         <Box
             className={classes.innerDrawerContent}
             sx={{
-                display: "flex",
-                flexWrap: "wrap",
-                flexDirection: "column"
-            }}>
+                display: 'flex',
+                flexWrap: 'wrap',
+                flexDirection: 'column',
+            }}
+        >
             <Box
                 component="div"
                 sx={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    flexDirection: "column"
-                }}>
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    flexDirection: 'column',
+                }}
+            >
                 <Box>
                     <Box
                         component="div"
                         className={classes.marginTop}
                         sx={{
                             px: 0,
-                            mb: 2
-                        }}>
+                            mb: 2,
+                        }}
+                    >
                         <Typography variant="subtitle1" color="primary">
                             <FormattedMessage {...MESSAGES.location} />
                         </Typography>
@@ -107,9 +110,11 @@ const EditOrgUnitOptionComponent: FunctionComponent<Props> = ({
                     {!hasMarker && (
                         <>
                             {!canEditLocation && orgUnit.geo_json && (
-                                <Box sx={{
-                                    mb: 2
-                                }}>
+                                <Box
+                                    sx={{
+                                        mb: 2,
+                                    }}
+                                >
                                     <FormattedMessage
                                         {...MESSAGES.editLocationDisabled}
                                     />
@@ -142,16 +147,19 @@ const EditOrgUnitOptionComponent: FunctionComponent<Props> = ({
                         component="div"
                         sx={{
                             px: 0,
-                            mb: 2
-                        }}>
+                            mb: 2,
+                        }}
+                    >
                         <Typography variant="subtitle1" color="secondary">
                             <FormattedMessage {...MESSAGES.catchment} />
                         </Typography>
                     </Box>
                     {!canEditCatchment && (
-                        <Box sx={{
-                            mb: 2
-                        }}>
+                        <Box
+                            sx={{
+                                mb: 2,
+                            }}
+                        >
                             <FormattedMessage
                                 {...MESSAGES.editCatchmentDisabled}
                             />

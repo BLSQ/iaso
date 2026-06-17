@@ -281,9 +281,11 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                 confirmMessage={MESSAGES.save}
                 cancelMessage={MESSAGES.cancel}
             >
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.stockCorrection)}
                         name="stock_correction"
@@ -294,9 +296,11 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                     />
                 </Box>
 
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.title)}
                         name="title"
@@ -305,9 +309,11 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                         shrinkLabel={false}
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }} />
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                />
                 <Field
                     label={formatMessage(
                         MESSAGES.incident_report_received_by_rrt,
@@ -328,9 +334,11 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                     currentMovementType !== 'inventoryRemove' &&
                     currentMovementType !== 'inOutMovement' &&
                     hasUsableStock && (
-                        <Box sx={{
-                            mb: 2
-                        }}>
+                        <Box
+                            sx={{
+                                mb: 2,
+                            }}
+                        >
                             <Field
                                 label={formatMessage(
                                     getMovementLabel(currentMovementType),
@@ -350,9 +358,11 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                 {currentMovementType === 'inOutMovement' && (
                     <>
                         {hasUsableStock && (
-                            <Box sx={{
-                                mb: 2
-                            }}>
+                            <Box
+                                sx={{
+                                    mb: 2,
+                                }}
+                            >
                                 <Field
                                     label={formatMessage(MESSAGES.usableVials)}
                                     name="usable_vials"
@@ -368,9 +378,11 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                             </Box>
                         )}
                         {hasUnusableStock && (
-                            <Box sx={{
-                                mb: 2
-                            }}>
+                            <Box
+                                sx={{
+                                    mb: 2,
+                                }}
+                            >
                                 <Field
                                     label={formatMessage(
                                         MESSAGES.unusableVials,
@@ -392,9 +404,11 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                 {(currentMovementType === 'inventoryAdd' ||
                     currentMovementType === 'inventoryRemove') && (
                     <>
-                        <Box sx={{
-                            mb: 2
-                        }}>
+                        <Box
+                            sx={{
+                                mb: 2,
+                            }}
+                        >
                             <FormControl component="fieldset">
                                 <FormLabel id="stock-type-choice-label">
                                     {formatMessage(MESSAGES.stockToModify)}
@@ -422,9 +436,11 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                                 </RadioGroup>
                             </FormControl>
                         </Box>
-                        <Box sx={{
-                            mb: 2
-                        }}>
+                        <Box
+                            sx={{
+                                mb: 2,
+                            }}
+                        >
                             <Field
                                 label={formatMessage(
                                     inventoryType === 'usable'
@@ -442,9 +458,11 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                         </Box>
                     </>
                 )}
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.doses_per_vial)}
                         name="doses_per_vial"
@@ -458,9 +476,11 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                         required
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.comment)}
                         name="comment"
@@ -469,9 +489,11 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                         shrinkLabel={false}
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <DocumentUploadWithPreview
                         errors={fileErrors}
                         onFilesSelect={files => {

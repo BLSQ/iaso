@@ -84,8 +84,9 @@ export const LqasAfroMapWithSelector: FunctionComponent<Props> = ({
                 <Box
                     sx={{
                         px: 2,
-                        mt: 2
-                    }}>
+                        mt: 2,
+                    }}
+                >
                     <LqasAfroSelector
                         selectedRound={selectedRound}
                         onRoundChange={onRoundChange}
@@ -101,8 +102,9 @@ export const LqasAfroMapWithSelector: FunctionComponent<Props> = ({
                     }
                     sx={{
                         m: 2,
-                        pb: 2
-                    }}>
+                        pb: 2,
+                    }}
+                >
                     <LqasAfroMap
                         params={params}
                         side={side}
@@ -116,8 +118,9 @@ export const LqasAfroMapWithSelector: FunctionComponent<Props> = ({
                     }
                     sx={{
                         m: 2,
-                        pb: 2
-                    }}>
+                        pb: 2,
+                    }}
+                >
                     <LqasAfroList
                         params={params}
                         side={side}

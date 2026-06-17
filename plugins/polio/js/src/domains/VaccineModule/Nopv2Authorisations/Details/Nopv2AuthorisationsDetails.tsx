@@ -37,9 +37,12 @@ export const Nopv2AuthorisationsDetails: FunctionComponent = () => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <DisplayIfUserHasPerm permissions={[VACCINE_AUTH_ADMIN]}>
-                    <Grid container sx={{
-                        justifyContent: "flex-end"
-                    }}>
+                    <Grid
+                        container
+                        sx={{
+                            justifyContent: 'flex-end',
+                        }}
+                    >
                         <CreateAuthorisationModal
                             countryName={params.countryName}
                             countryId={params.country}

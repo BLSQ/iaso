@@ -86,15 +86,19 @@ const CreateEditAuthorisationModal: FunctionComponent<Props> = ({
                 allowConfirm={allowConfirm}
                 cancelMessage={MESSAGES.cancel}
             >
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Divider />
                 </Box>
                 {!countryId && (
-                    <Box sx={{
-                        mb: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mb: 2,
+                        }}
+                    >
                         <Field
                             label={formatMessage(MESSAGES.country)}
                             name="country"
@@ -147,9 +151,11 @@ const CreateEditAuthorisationModal: FunctionComponent<Props> = ({
                     options={options}
                     withMarginTop
                 />
-                <Box sx={{
-                    mt: 2
-                }}>
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.comment)}
                         name="comment"

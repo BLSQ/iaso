@@ -15,15 +15,17 @@ export const SourceDescription: FunctionComponent<Props> = ({
     return (
         <Box
             sx={{
-                display: "flex",
-                width: "100%"
-            }}>
+                display: 'flex',
+                width: '100%',
+            }}
+        >
             <Typography
                 color="primary"
                 sx={{
-                    fontSize: "12px",
-                    textTransform: "lowercase"
-                }}>
+                    fontSize: '12px',
+                    textTransform: 'lowercase',
+                }}
+            >
                 {formatMessage(MESSAGES.source)}:{' '}
                 {sourceInfos?.sourceName || textPlaceholder}
                 {' - '}

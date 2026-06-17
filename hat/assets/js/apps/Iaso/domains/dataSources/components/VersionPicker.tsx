@@ -99,9 +99,11 @@ export const VersionPicker: FunctionComponent<Props> = ({
                 )}
             </Grid>
             <Grid size={6}>
-                <Box sx={{
-                    mt: -2
-                }}>
+                <Box
+                    sx={{
+                        mt: -2,
+                    }}
+                >
                     <OrgUnitTreeviewModal
                         onConfirm={value => {
                             onChange(orgUnit.key, value?.id ?? null);

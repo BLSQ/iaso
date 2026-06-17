@@ -21,27 +21,33 @@ export const HeadTargetCell: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     return (
-        <Box sx={{
-            mb: 2
-        }}>
+        <Box
+            sx={{
+                mb: 2,
+            }}
+        >
             <Grid container spacing={2}>
                 <Grid
                     container
                     size={{
                         xs: 12,
-                        md: 7
+                        md: 7,
                     }}
                     sx={{
-                        alignContent: "center"
-                    }}>
-                    <Box sx={{
-                        mt: 1
-                    }}>
+                        alignContent: 'center',
+                    }}
+                >
+                    <Box
+                        sx={{
+                            mt: 1,
+                        }}
+                    >
                         <Box
                             sx={{
-                                display: "inline-block",
-                                mr: 1
-                            }}>
+                                display: 'inline-block',
+                                mr: 1,
+                            }}
+                        >
                             {formatMessage(MESSAGES.targetForm)}:
                         </Box>
                         <b>{referenceForm?.name}</b>
@@ -50,8 +56,9 @@ export const HeadTargetCell: FunctionComponent<Props> = ({
                 <Grid
                     size={{
                         xs: 12,
-                        md: 5
-                    }}>
+                        md: 5,
+                    }}
+                >
                     <InputComponent
                         type="select"
                         keyValue="targetVersion"

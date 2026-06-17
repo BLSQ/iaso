@@ -112,8 +112,9 @@ export const AccountsEdit: FunctionComponent = () => {
                         <Grid
                             size={{
                                 xs: 12,
-                                md: 6
-                            }}>
+                                md: 6,
+                            }}
+                        >
                             <GeneralInfoEditPanel />
                             <FeatureFlagsEditPanel
                                 accountFeatureFlags={accountFeatureFlags}
@@ -122,8 +123,9 @@ export const AccountsEdit: FunctionComponent = () => {
                         <Grid
                             size={{
                                 xs: 12,
-                                md: 6
-                            }}>
+                                md: 6,
+                            }}
+                        >
                             <ModulesEditPanel modules={modulesData} />
                             <Box
                                 sx={{

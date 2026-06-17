@@ -37,9 +37,13 @@ export const DetailsForm: FunctionComponent<Props> = ({ version }) => {
     const saveDisabled = name === version.name || name === '';
     return (
         <Box
-            sx={[{
-                p: 2
-            }, styles.root]}>
+            sx={[
+                {
+                    p: 2,
+                },
+                styles.root,
+            ]}
+        >
             <InputComponent
                 withMarginTop={false}
                 keyValue="name"

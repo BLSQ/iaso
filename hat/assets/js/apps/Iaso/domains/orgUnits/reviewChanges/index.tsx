@@ -86,9 +86,10 @@ export const ReviewOrgUnitChanges: FunctionComponent = () => {
                 <Box
                     sx={{
                         mb: 2,
-                        display: "flex",
-                        justifyContent: "flex-end"
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                    }}
+                >
                     <DownloadButtonsComponent csvUrl={csv_url} />
                 </Box>
 

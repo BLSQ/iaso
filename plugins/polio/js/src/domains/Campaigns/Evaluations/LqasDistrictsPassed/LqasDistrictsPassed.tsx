@@ -21,16 +21,21 @@ export const LqasDistrictsPassed: FunctionComponent<Props> = ({
                 sx={{
                     ml: 2,
                     mb: 2,
-                    mt: 2
-                }}>
-                <Grid container sx={{
-                    justifyContent: "flex-start"
-                }}>
+                    mt: 2,
+                }}
+            >
+                <Grid
+                    container
+                    sx={{
+                        justifyContent: 'flex-start',
+                    }}
+                >
                     <Grid
                         size={{
                             xs: 6,
-                            lg: 5
-                        }}>
+                            lg: 5,
+                        }}
+                    >
                         <Typography variant="button">
                             {`${formatMessage(
                                 MESSAGES.lqas_district_passing,
@@ -40,8 +45,9 @@ export const LqasDistrictsPassed: FunctionComponent<Props> = ({
                     <Grid
                         size={{
                             xs: 6,
-                            lg: 7
-                        }}>
+                            lg: 7,
+                        }}
+                    >
                         <Typography variant="button">
                             {`${lqasDistrictsPassing ?? '--'}`}
                         </Typography>
@@ -52,14 +58,16 @@ export const LqasDistrictsPassed: FunctionComponent<Props> = ({
                 sx={{
                     ml: 2,
                     mb: 2,
-                    mt: 2
-                }}>
+                    mt: 2,
+                }}
+            >
                 <Grid container>
                     <Grid
                         size={{
                             xs: 6,
-                            lg: 5
-                        }}>
+                            lg: 5,
+                        }}
+                    >
                         <Typography variant="button">
                             {`${formatMessage(
                                 MESSAGES.lqas_district_failing,
@@ -69,17 +77,20 @@ export const LqasDistrictsPassed: FunctionComponent<Props> = ({
                     <Grid
                         size={{
                             xs: 6,
-                            lg: 7
-                        }}>
+                            lg: 7,
+                        }}
+                    >
                         <Typography variant="button">
                             {`${lqasDistrictsFailing ?? '--'}`}
                         </Typography>
                     </Grid>
                 </Grid>
             </Box>
-            <Box sx={{
-                mb: 2
-            }}>
+            <Box
+                sx={{
+                    mb: 2,
+                }}
+            >
                 <Divider />
             </Box>
         </>

@@ -28,9 +28,13 @@ export const Popper: FunctionComponent = () => {
             <Typography variant="subtitle1" className={classes.subtitle1}>
                 {formatMessage(MESSAGES.supportedTypeFields)}:
             </Typography>
-            <Box sx={{
-                mb: 1
-            }}>{activeFields}</Box>
+            <Box
+                sx={{
+                    mb: 1,
+                }}
+            >
+                {activeFields}
+            </Box>
             <Link target="_blank" to={xlsQuestionsTypesLink} reloadDocument>
                 {formatMessage(MESSAGES.xlsQuestionsTypesLink)}
             </Link>

@@ -81,14 +81,18 @@ const CreateEditNotificationModal: FunctionComponent<Props> = ({
                 allowConfirm={allowConfirm}
                 cancelMessage={MESSAGES.modalWriteCancel}
             >
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Divider />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.labelEpid)}
                         name="epid_number"
@@ -96,9 +100,11 @@ const CreateEditNotificationModal: FunctionComponent<Props> = ({
                         required
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.labelVdpvCategory)}
                         name="vdpv_category"
@@ -108,9 +114,11 @@ const CreateEditNotificationModal: FunctionComponent<Props> = ({
                         clearable={false}
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.labelSource)}
                         name="source"
@@ -120,9 +128,11 @@ const CreateEditNotificationModal: FunctionComponent<Props> = ({
                         clearable={false}
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(
                             MESSAGES.labelVdpvNucleotideDiffSabin2,
@@ -131,9 +141,11 @@ const CreateEditNotificationModal: FunctionComponent<Props> = ({
                         component={TextInput}
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         required
                         component={OrgUnitSelect}
@@ -144,45 +156,55 @@ const CreateEditNotificationModal: FunctionComponent<Props> = ({
                         }
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.labelSiteName)}
                         name="site_name"
                         component={TextInput}
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.labelLineage)}
                         name="lineage"
                         component={TextInput}
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.labelDateOfOnset)}
                         name="date_of_onset"
                         component={DateInput}
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.labelClosestMatchVdpv2)}
                         name="closest_match_vdpv2"
                         component={TextInput}
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.labelDateResultsReceived)}
                         name="date_results_received"

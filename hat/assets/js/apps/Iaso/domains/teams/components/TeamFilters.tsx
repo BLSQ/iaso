@@ -30,8 +30,9 @@ export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 12,
                     md: 3,
-                    lg: 3
-                }}>
+                    lg: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="search"
                     onChange={handleChange}
@@ -42,9 +43,11 @@ export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
                     onErrorChange={setTextSearchError}
                     blockForbiddenChars
                 />
-                <Box sx={{
-                    mt: 2
-                }}>
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <UserAsyncSelect
                         keyValue="managers"
                         handleChange={handleChange}
@@ -57,8 +60,9 @@ export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 12,
                     md: 3,
-                    lg: 3
-                }}>
+                    lg: 3,
+                }}
+            >
                 <InputComponent
                     type="select"
                     keyValue="types"
@@ -94,14 +98,16 @@ export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 12,
                     md: 6,
-                    lg: 6
-                }}>
+                    lg: 6,
+                }}
+            >
                 <Box
                     sx={{
                         mt: 2,
-                        display: "flex",
-                        justifyContent: "flex-end"
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                    }}
+                >
                     <SearchButton
                         disabled={textSearchError || !filtersUpdated}
                         onSearch={handleSearch}

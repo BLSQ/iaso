@@ -128,8 +128,9 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
                             <Box
                                 sx={{
                                     mr: 1,
-                                    display: "inline-flex"
-                                }}>
+                                    display: 'inline-flex',
+                                }}
+                            >
                                 <ViewColumnIcon />
                             </Box>
                             {formatMessage(MESSAGES.columnSelect)}
@@ -148,8 +149,9 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
                     <Box
                         sx={{
                             mr: 1,
-                            display: "inline-flex"
-                        }}>
+                            display: 'inline-flex',
+                        }}
+                    >
                         <ViewColumnIcon />
                     </Box>
                     {formatMessage(MESSAGES.columnSelect)}

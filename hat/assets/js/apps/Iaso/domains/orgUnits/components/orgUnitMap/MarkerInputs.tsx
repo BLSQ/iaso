@@ -63,8 +63,9 @@ const MarkerInputs: FunctionComponent<Props> = ({
                 <Box
                     sx={{
                         mb: 2,
-                        mt: 2
-                    }}>
+                        mt: 2,
+                    }}
+                >
                     <Button
                         variant="outlined"
                         disabled={actionBusy}
@@ -153,8 +154,9 @@ const MarkerInputs: FunctionComponent<Props> = ({
                     <Box
                         sx={{
                             mb: 2,
-                            mt: 2
-                        }}>
+                            mt: 2,
+                        }}
+                    >
                         <Button
                             disabled={actionBusy}
                             variant="outlined"

@@ -82,9 +82,11 @@ export const Dashboard: FunctionComponent = () => {
                     setCampaignType={setCampaignType}
                     campaignType={campaignType}
                 />
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <DashboardButtons exportToCSV={exportToCSV} />
                 </Box>
                 {/* @ts-ignore */}

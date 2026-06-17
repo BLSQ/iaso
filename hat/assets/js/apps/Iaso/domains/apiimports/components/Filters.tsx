@@ -55,8 +55,9 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 12,
                     sm: 6,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="appId"
                     onChange={(_key, value) => handleChange('appId', value)}
@@ -71,8 +72,9 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="importType"
                     onChange={(_key, value) =>
@@ -88,8 +90,9 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="hasProblem"
                     onChange={(_key, value) =>
@@ -107,12 +110,13 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 12,
                     sm: 6,
-                    md: 3
+                    md: 3,
                 }}
                 sx={{
-                    justifyContent: "flex-end",
-                    alignItems: "center"
-                }}>
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                }}
+            >
                 <Button
                     data-test="search-button"
                     disabled={textSearchError || !filtersUpdated}

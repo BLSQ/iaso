@@ -138,8 +138,9 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
             <Grid
                 size={{
                     xs: 12,
-                    md: 4
-                }}>
+                    md: 4,
+                }}
+            >
                 <InputComponent
                     keyValue="name"
                     type="text"
@@ -208,8 +209,9 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
             <Grid
                 size={{
                     xs: 12,
-                    md: 4
-                }}>
+                    md: 4,
+                }}
+            >
                 <InputComponent
                     keyValue="validation_status"
                     clearable={false}
@@ -274,12 +276,15 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                         container
                         size={12}
                         sx={{
-                            justifyContent: "flex-end",
-                            alignItems: "center"
-                        }}>
-                        <Box sx={{
-                            mt: 1
-                        }}>
+                            justifyContent: 'flex-end',
+                            alignItems: 'center',
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                mt: 1,
+                            }}
+                        >
                             {!isNewOrgunit && (
                                 <Button
                                     className={classes.marginLeft}
@@ -307,11 +312,14 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
             <Grid
                 size={{
                     xs: 12,
-                    md: 4
-                }}>
-                <Box sx={{
-                    mt: 2
-                }}>
+                    md: 4,
+                }}
+            >
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <OrgUnitCreationDetails orgUnit={orgUnit} params={params} />
                 </Box>
             </Grid>

@@ -68,14 +68,19 @@ export const Details: FunctionComponent = () => {
             {isLoading && <LoadingSpinner />}
             {!isLoading && (
                 <Box className={`${classes.containerFullHeightNoTabPadded}`}>
-                    <Grid container spacing={2} sx={{
-                        alignItems: "flex-start"
-                    }}>
+                    <Grid
+                        container
+                        spacing={2}
+                        sx={{
+                            alignItems: 'flex-start',
+                        }}
+                    >
                         <Grid
                             size={{
                                 xs: 12,
-                                md: 4
-                            }}>
+                                md: 4,
+                            }}
+                        >
                             <EntityBaseInfo
                                 entity={entity}
                                 fields={entityFields}
@@ -87,8 +92,9 @@ export const Details: FunctionComponent = () => {
                         <Grid
                             size={{
                                 xs: 12,
-                                md: 8
-                            }}>
+                                md: 8,
+                            }}
+                        >
                             <WidgetPaper
                                 className={classes.fullWidth}
                                 title={formatMessage(MESSAGES.submissions)}

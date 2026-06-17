@@ -56,9 +56,11 @@ const ShapesButtons: FunctionComponent<Props> = ({
     const classes: Record<string, string> = useStyles();
     return (
         <>
-            <Box sx={{
-                mb: 2
-            }}>
+            <Box
+                sx={{
+                    mb: 2,
+                }}
+            >
                 <Button
                     disabled={disabled || deleteEnabled || editEnabled}
                     variant="outlined"
@@ -78,9 +80,11 @@ const ShapesButtons: FunctionComponent<Props> = ({
             </Box>
             {hasShape && (
                 <>
-                    <Box sx={{
-                        mb: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mb: 2,
+                        }}
+                    >
                         <Button
                             disabled={disabled || deleteEnabled || addEnabled}
                             variant="outlined"
@@ -96,9 +100,11 @@ const ShapesButtons: FunctionComponent<Props> = ({
                             />
                         </Button>
                     </Box>
-                    <Box sx={{
-                        mb: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mb: 2,
+                        }}
+                    >
                         <Button
                             disabled={disabled || editEnabled || addEnabled}
                             variant="outlined"

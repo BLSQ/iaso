@@ -82,14 +82,18 @@ const CreateEditNationalLogisticsPlanModal: FunctionComponent<Props> = ({
                 allowConfirm={allowConfirm}
                 cancelMessage={MESSAGES.cancel}
             >
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Divider />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.country)}
                         name="country_id"
@@ -101,9 +105,11 @@ const CreateEditNationalLogisticsPlanModal: FunctionComponent<Props> = ({
                         isSearchable={false}
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.date)}
                         name="date"
@@ -111,9 +117,11 @@ const CreateEditNationalLogisticsPlanModal: FunctionComponent<Props> = ({
                         required
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.status)}
                         name="status"
@@ -124,9 +132,11 @@ const CreateEditNationalLogisticsPlanModal: FunctionComponent<Props> = ({
                         isSearchable={false}
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.antigen)}
                         name="vaccine"
@@ -137,9 +147,11 @@ const CreateEditNationalLogisticsPlanModal: FunctionComponent<Props> = ({
                         isSearchable={false}
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.latestPhysicalInventory)}
                         name="physical_inventory"

@@ -36,11 +36,14 @@ export const BudgetDetailsTableLayout: FunctionComponent<Props> = ({
             <Box
                 sx={{
                     pt: 2,
-                    pb: budgetDetails?.results.length === 0 ? 1 : 0
-                }}>
-                <Box sx={{
-                    px: 2
-                }}>
+                    pb: budgetDetails?.results.length === 0 ? 1 : 0,
+                }}
+            >
+                <Box
+                    sx={{
+                        px: 2,
+                    }}
+                >
                     <GraphTitle
                         text={formatMessage(MESSAGES.steps)}
                         displayTrigger
@@ -49,15 +52,17 @@ export const BudgetDetailsTableLayout: FunctionComponent<Props> = ({
                 <Box
                     sx={{
                         mt: 2,
-                        mb: 1
-                    }}>
+                        mb: 1,
+                    }}
+                >
                     <Divider />
                 </Box>
                 <Box
                     sx={{
                         px: 2,
-                        pb: 2
-                    }}>
+                        pb: 2,
+                    }}
+                >
                     <BudgetDetailsFilters
                         params={params}
                         stepsList={stepsList}

@@ -29,9 +29,12 @@ export const EmptyInstances: FunctionComponent = () => {
         <Box className={classes.emptyPaper}>
             <Typography component="p" className={classes.emptyPaperTypo}>
                 <ErrorOutlineOutlinedIcon className={classes.emptyPaperIcon} />
-                <Box component="span" sx={{
-                    ml: 2
-                }}>
+                <Box
+                    component="span"
+                    sx={{
+                        ml: 2,
+                    }}
+                >
                     {formatMessage(MESSAGES.noInstance)}
                 </Box>
             </Typography>

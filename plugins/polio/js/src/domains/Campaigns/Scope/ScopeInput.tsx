@@ -194,16 +194,18 @@ export const ScopeInput: FunctionComponent<Props> = ({
     return (
         <Box
             sx={{
-                width: "100%",
-                overflow: "hidden"
-            }}>
+                width: '100%',
+                overflow: 'hidden',
+            }}
+        >
             <Grid container spacing={2}>
                 <Grid size={5}>
                     <Box
                         sx={{
                             mb: 2,
-                            mt: searchInputWithMargin ? 2 : 0
-                        }}>
+                            mt: searchInputWithMargin ? 2 : 0,
+                        }}
+                    >
                         {searchComponent}
                         <InputComponent
                             keyValue="searchScope"

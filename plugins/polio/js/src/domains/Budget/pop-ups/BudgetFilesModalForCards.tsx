@@ -65,17 +65,20 @@ export const BudgetFilesModalForCards: FunctionComponent<Props> = ({
                         <>
                             {(files?.length > 0 ||
                                 (links?.length ?? []) > 0) && (
-                                <Box sx={{
-                                    mt: 4
-                                }}>
+                                <Box
+                                    sx={{
+                                        mt: 4,
+                                    }}
+                                >
                                     <Divider />
                                 </Box>
                             )}
                             <Box
                                 sx={{
                                     mb: 2,
-                                    mt: 2
-                                }}>
+                                    mt: 2,
+                                }}
+                            >
                                 <Typography style={{ fontWeight: 'bold' }}>
                                     {formatMessage(MESSAGES.notes)}
                                 </Typography>

@@ -127,9 +127,11 @@ export const BudgetProcessDetails: FunctionComponent = () => {
             />
             {/* @ts-ignore */}
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <BudgetDetailsInfos
                         budgetProcess={budgetProcess ?? {}}
                         nextSteps={nextSteps}

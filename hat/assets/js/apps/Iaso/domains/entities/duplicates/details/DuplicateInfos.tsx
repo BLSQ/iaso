@@ -101,8 +101,9 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                 <Grid
                     size={{
                         xs: 12,
-                        md: 4
-                    }}>
+                        md: 4,
+                    }}
+                >
                     <WidgetPaper
                         className={classnames(classes.table)}
                         title={formName}
@@ -125,12 +126,13 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                         container
                         size={{
                             xs: 12,
-                            md: 8
+                            md: 8,
                         }}
                         sx={{
-                            justifyContent: "flex-end",
-                            alignItems: "flex-end"
-                        }}>
+                            justifyContent: 'flex-end',
+                            alignItems: 'flex-end',
+                        }}
+                    >
                         <Box>
                             <Button
                                 color="primary"
@@ -165,8 +167,9 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                                 }}
                                 sx={{
                                     ml: 2,
-                                    mr: 2
-                                }}>
+                                    mr: 2,
+                                }}
+                            >
                                 <Box>
                                     <Button
                                         variant="contained"
@@ -188,9 +191,11 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                                         )}
                                     </Button>
                                 </Box>
-                                <Box sx={{
-                                    ml: 2
-                                }}>
+                                <Box
+                                    sx={{
+                                        ml: 2,
+                                    }}
+                                >
                                     <Button
                                         variant="contained"
                                         color="primary"
@@ -220,8 +225,9 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                             <Box
                                 sx={{
                                     ml: 2,
-                                    mr: 2
-                                }}>
+                                    mr: 2,
+                                }}
+                            >
                                 <Button
                                     variant="contained"
                                     color="primary"

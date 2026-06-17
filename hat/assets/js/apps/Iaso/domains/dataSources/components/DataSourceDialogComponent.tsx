@@ -220,9 +220,13 @@ export const DataSourceDialogComponent: FunctionComponent<Props> = ({
             allowConfirm={allowConfirm}
         >
             {isSaving && <LoadingSpinner fixed={false} />}
-            <Grid container spacing={2} sx={{
-                justifyContent: "flex-start"
-            }}>
+            <Grid
+                container
+                spacing={2}
+                sx={{
+                    justifyContent: 'flex-start',
+                }}
+            >
                 <Grid size={hasDhis2Module ? 6 : 12}>
                     <InputComponent
                         keyValue="name"

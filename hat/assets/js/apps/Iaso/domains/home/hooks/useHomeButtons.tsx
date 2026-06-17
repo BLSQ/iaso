@@ -1,9 +1,9 @@
 import React, { ReactElement, useMemo } from 'react';
-import ListAlt from '@mui/icons-material/ListAlt';
-import Storage from '@mui/icons-material/Storage';
 import Assignment from '@mui/icons-material/Assignment';
-import SupervisorAccount from '@mui/icons-material/SupervisorAccount';
+import ListAlt from '@mui/icons-material/ListAlt';
 import PhonelinkSetupIcon from '@mui/icons-material/PhonelinkSetup';
+import Storage from '@mui/icons-material/Storage';
+import SupervisorAccount from '@mui/icons-material/SupervisorAccount';
 import { useSafeIntl } from 'bluesquare-components';
 
 import EntitySvg from '../../../components/svg/Entity';

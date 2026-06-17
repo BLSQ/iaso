@@ -54,12 +54,16 @@ const SourcesFilterComponent: FunctionComponent<Props> = ({
         }
     };
     return (
-        <Box sx={{
-            m: 4
-        }}>
-            <Box sx={{
-                mb: 2
-            }}>
+        <Box
+            sx={{
+                m: 4,
+            }}
+        >
+            <Box
+                sx={{
+                    mb: 2,
+                }}
+            >
                 <Typography variant="body2">
                     {formatMessage(MESSAGES.sourcesHelperText)}:
                 </Typography>

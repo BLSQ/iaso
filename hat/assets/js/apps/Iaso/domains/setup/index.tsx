@@ -154,9 +154,10 @@ export const SetupAccount = () => {
                                     <Box
                                         sx={{
                                             mt: 2,
-                                            display: "flex",
-                                            justifyContent: "flex-end"
-                                        }}>
+                                            display: 'flex',
+                                            justifyContent: 'flex-end',
+                                        }}
+                                    >
                                         <Button
                                             size="small"
                                             color="primary"
@@ -166,9 +167,10 @@ export const SetupAccount = () => {
                                             <Box
                                                 sx={{
                                                     mr: 1,
-                                                    display: "flex",
-                                                    alignContent: "center"
-                                                }}>
+                                                    display: 'flex',
+                                                    alignContent: 'center',
+                                                }}
+                                            >
                                                 <ExitIcon fontSize="small" />
                                             </Box>
                                             {formatMessage(MESSAGES.logout)}
@@ -304,9 +306,10 @@ export const SetupAccount = () => {
                                         <Box
                                             sx={{
                                                 mt: 2,
-                                                display: "flex",
-                                                justifyContent: "flex-end"
-                                            }}>
+                                                display: 'flex',
+                                                justifyContent: 'flex-end',
+                                            }}
+                                        >
                                             <Button
                                                 data-test="confirm-button"
                                                 onClick={() => handleSubmit()}
@@ -328,17 +331,20 @@ export const SetupAccount = () => {
                         </>
                     )}
                     {!isAdmin && (
-                        <Box sx={{
-                            textAlign: "center"
-                        }}>
+                        <Box
+                            sx={{
+                                textAlign: 'center',
+                            }}
+                        >
                             <Box
                                 sx={{
                                     pt: 2,
                                     pb: 2,
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    flexDirection: "column"
-                                }}>
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    flexDirection: 'column',
+                                }}
+                            >
                                 <Typography variant="h6">
                                     {formatMessage(MESSAGES.notAdmin, {
                                         displayName:

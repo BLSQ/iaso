@@ -21,14 +21,16 @@ export const SubActivitiesInfos: FunctionComponent<Props> = ({ round }) => {
                     sx={{
                         ml: 2,
                         mb: 2,
-                        mt: 2
-                    }}>
+                        mt: 2,
+                    }}
+                >
                     <Grid container>
                         <Grid
                             size={{
                                 xs: 3,
-                                xl: 2
-                            }}>
+                                xl: 2,
+                            }}
+                        >
                             <Typography variant="button">
                                 {`${formatMessage(MESSAGES.startDate)}: `}
                             </Typography>
@@ -36,8 +38,9 @@ export const SubActivitiesInfos: FunctionComponent<Props> = ({ round }) => {
                         <Grid
                             size={{
                                 xs: 9,
-                                xl: 10
-                            }}>
+                                xl: 10,
+                            }}
+                        >
                             <Typography variant="button">
                                 {`${
                                     round?.started_at
@@ -54,14 +57,16 @@ export const SubActivitiesInfos: FunctionComponent<Props> = ({ round }) => {
                 <Box
                     sx={{
                         ml: 2,
-                        mb: 2
-                    }}>
+                        mb: 2,
+                    }}
+                >
                     <Grid container>
                         <Grid
                             size={{
                                 xs: 3,
-                                xl: 2
-                            }}>
+                                xl: 2,
+                            }}
+                        >
                             <Typography variant="button">
                                 {`${formatMessage(MESSAGES.endDate)}: `}
                             </Typography>
@@ -69,8 +74,9 @@ export const SubActivitiesInfos: FunctionComponent<Props> = ({ round }) => {
                         <Grid
                             size={{
                                 xs: 9,
-                                xl: 10
-                            }}>
+                                xl: 10,
+                            }}
+                        >
                             <Typography variant="button">
                                 {`${
                                     round?.ended_at
@@ -88,9 +94,10 @@ export const SubActivitiesInfos: FunctionComponent<Props> = ({ round }) => {
                 container
                 size={4}
                 sx={{
-                    alignContent: "center",
-                    justifyContent: "flex-end"
-                }}>
+                    alignContent: 'center',
+                    justifyContent: 'flex-end',
+                }}
+            >
                 <CreateSubActivity iconProps={{}} round={round} />
             </Grid>
         </Grid>

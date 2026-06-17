@@ -33,9 +33,10 @@ export const SubActivitiesForm: FunctionComponent = () => {
     return (
         <Box
             sx={{
-                width: "100%",
-                mt: -4
-            }}>
+                width: '100%',
+                mt: -4,
+            }}
+        >
             <TabContext value={tab}>
                 <TabList onChange={handleChangeTab}>
                     {excludedTestAndOnHoldRounds.map(rnd => (
@@ -54,9 +55,11 @@ export const SubActivitiesForm: FunctionComponent = () => {
                         />
                     ))}
                 </TabList>
-                <Box sx={{
-                    mt: 2
-                }}>
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <SubActivityForm round={round} />
                 </Box>
             </TabContext>

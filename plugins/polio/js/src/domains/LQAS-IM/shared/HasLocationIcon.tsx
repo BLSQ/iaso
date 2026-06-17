@@ -28,9 +28,11 @@ export const HasLocationIcon: FunctionComponent<Props> = ({ shape }) => {
         <>
             {(shape?.geo_json || shape?.has_geo_json) && (
                 <Tooltip arrow title={formatMessage(MESSAGES.withShape)}>
-                    <Box sx={{
-                        mt: "4px"
-                    }}>
+                    <Box
+                        sx={{
+                            mt: '4px',
+                        }}
+                    >
                         <ShapeSvg fontSize="small" />
                     </Box>
                 </Tooltip>
@@ -40,9 +42,11 @@ export const HasLocationIcon: FunctionComponent<Props> = ({ shape }) => {
                     arrow
                     title={formatMessage(MESSAGES.noGeographicalData)}
                 >
-                    <Box sx={{
-                        mt: "4px"
-                    }}>
+                    <Box
+                        sx={{
+                            mt: '4px',
+                        }}
+                    >
                         <LocationDisabledIcon fontSize="small" />
                     </Box>
                 </Tooltip>

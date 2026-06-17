@@ -208,8 +208,9 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
             <Box
                 sx={{
                     px: 4,
-                    mt: 4
-                }}>
+                    mt: 4,
+                }}
+            >
                 {searches.map((_, searchIndex) => (
                     <Box
                         key={searchIndex}
@@ -238,15 +239,17 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                 <Box
                     sx={{
                         mt: 2,
-                        justifyContent: "flex-end",
-                        display: "flex"
-                    }}>
+                        justifyContent: 'flex-end',
+                        display: 'flex',
+                    }}
+                >
                     <DisplayIfUserHasPerm permissions={[ORG_UNITS]}>
                         <Box
                             sx={{
-                                display: "inline-block",
-                                mr: 2
-                            }}>
+                                display: 'inline-block',
+                                mr: 2,
+                            }}
+                        >
                             <Button
                                 variant="outlined"
                                 className={classnames(classes.button)}

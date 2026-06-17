@@ -200,8 +200,9 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         <Box
                             sx={{
                                 mb: 2,
-                                mt: 2
-                            }}>
+                                mt: 2,
+                            }}
+                        >
                             {uiState.showTemporaryStatusField && (
                                 <InputComponent
                                     type="checkbox"
@@ -240,9 +241,11 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                                 />
                             )}
                         </Box>
-                        <Box sx={{
-                            mb: 2
-                        }}>
+                        <Box
+                            sx={{
+                                mb: 2,
+                            }}
+                        >
                             <Field
                                 label={formatMessage(MESSAGES.round)}
                                 name="round"
@@ -263,8 +266,9 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                     <Box
                         sx={{
                             mb: 2,
-                            mt: 2
-                        }}>
+                            mt: 2,
+                        }}
+                    >
                         <Field
                             label={formatMessage(MESSAGES.customObrName)}
                             name="alternative_campaign"
@@ -298,9 +302,11 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                     disabled={!uiState.canEditReceptionDate}
                     required={!uiState.isTemporary}
                 />
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.forma_vials_used)}
                         name="usable_vials_used"
@@ -309,9 +315,11 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         required
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.doses_per_vial)}
                         name="doses_per_vial"
@@ -323,9 +331,11 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         required
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.comment)}
                         name="comment"
@@ -335,9 +345,11 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         disabled={!uiState.canEditComment}
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <DocumentUploadWithPreview
                         errors={fileErrors}
                         onFilesSelect={files => {

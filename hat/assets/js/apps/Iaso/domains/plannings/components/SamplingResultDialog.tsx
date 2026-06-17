@@ -105,8 +105,9 @@ const SamplingResultDialog: FunctionComponent<Props> = ({
                     <Grid
                         size={{
                             sm: 6,
-                            xs: 12
-                        }}>
+                            xs: 12,
+                        }}
+                    >
                         <Typography sx={styles.label} variant="body2">
                             {formatMessage(MESSAGES.created_at)}
                         </Typography>
@@ -119,8 +120,9 @@ const SamplingResultDialog: FunctionComponent<Props> = ({
                     <Grid
                         size={{
                             sm: 6,
-                            xs: 12
-                        }}>
+                            xs: 12,
+                        }}
+                    >
                         <Typography sx={styles.label} variant="body2">
                             {formatMessage(MESSAGES.pipeline)}
                         </Typography>
@@ -131,8 +133,9 @@ const SamplingResultDialog: FunctionComponent<Props> = ({
                     <Grid
                         size={{
                             sm: 6,
-                            xs: 12
-                        }}>
+                            xs: 12,
+                        }}
+                    >
                         <Typography sx={styles.label} variant="body2">
                             {formatMessage(MESSAGES.orgUnitsCount)}
                         </Typography>
@@ -144,8 +147,9 @@ const SamplingResultDialog: FunctionComponent<Props> = ({
                     <Grid
                         size={{
                             sm: 6,
-                            xs: 12
-                        }}>
+                            xs: 12,
+                        }}
+                    >
                         <Typography sx={styles.label} variant="body2">
                             {formatMessage(MESSAGES.samplingResultCreatedBy)}
                         </Typography>
@@ -161,9 +165,10 @@ const SamplingResultDialog: FunctionComponent<Props> = ({
                         {isFetchingPipeline && (
                             <Box
                                 sx={{
-                                    position: "relative",
-                                    minHeight: 50
-                                }}>
+                                    position: 'relative',
+                                    minHeight: 50,
+                                }}
+                            >
                                 <LoadingSpinner absolute fixed={false} />
                             </Box>
                         )}

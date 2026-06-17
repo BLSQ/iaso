@@ -89,9 +89,12 @@ export const SubmissionAccordion = ({
                     <Box
                         sx={{ display: 'flex', flexDirection: 'column', ml: 1 }}
                     >
-                        <Typography component={'span'} sx={{
-                            fontWeight: 'bold'
-                        }}>
+                        <Typography
+                            component={'span'}
+                            sx={{
+                                fontWeight: 'bold',
+                            }}
+                        >
                             {formatMessage(MESSAGES.submissionOrder, {
                                 number: order,
                             })}
@@ -99,9 +102,10 @@ export const SubmissionAccordion = ({
                         <Typography
                             component={'span'}
                             sx={{
-                                color: "text.secondary",
-                                fontSize: '0.7rem'
-                            }}>
+                                color: 'text.secondary',
+                                fontSize: '0.7rem',
+                            }}
+                        >
                             {formatMessage(MESSAGES.validationTimelineByOn, {
                                 user: createdBy,
                                 date: moment(createdAt).format(
@@ -117,8 +121,9 @@ export const SubmissionAccordion = ({
                         )}
                         sx={{
                             fontWeight: 'bold',
-                            textTransform: 'uppercase'
-                        }}>
+                            textTransform: 'uppercase',
+                        }}
+                    >
                         {formatMessage(
                             MESSAGES[
                                 submission.general_validation_status.toLowerCase() as

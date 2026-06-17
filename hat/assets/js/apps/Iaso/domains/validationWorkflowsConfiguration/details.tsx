@@ -80,17 +80,20 @@ export const ValidationWorkflowConfigurationDetail = () => {
         <>
             <TopBar title={title} goBack={goBack} displayBackButton />
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Grid container spacing={2}>
                         <Grid
                             container
                             size={{
                                 xs: 12,
                                 md: 8,
-                                lg: 6
-                            }}>
+                                lg: 6,
+                            }}
+                        >
                             <WidgetPaper
                                 className={classes.infoPaper}
                                 title={formatMessage(MESSAGES.infos)}
@@ -120,13 +123,15 @@ export const ValidationWorkflowConfigurationDetail = () => {
                     <Box
                         sx={{
                             m: 2,
-                            textAlign: "right"
-                        }}>
+                            textAlign: 'right',
+                        }}
+                    >
                         <Box
                             sx={{
-                                display: "inline-block",
-                                mr: 2
-                            }}>
+                                display: 'inline-block',
+                                mr: 2,
+                            }}
+                        >
                             <Button
                                 color="primary"
                                 disabled={!isOrderChanged}
@@ -140,9 +145,10 @@ export const ValidationWorkflowConfigurationDetail = () => {
 
                         <Box
                             sx={{
-                                display: "inline-block",
-                                mr: 2
-                            }}>
+                                display: 'inline-block',
+                                mr: 2,
+                            }}
+                        >
                             <Button
                                 color="primary"
                                 disabled={!isOrderChanged}

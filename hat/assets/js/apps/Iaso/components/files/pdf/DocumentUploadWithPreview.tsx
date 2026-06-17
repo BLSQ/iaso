@@ -62,9 +62,13 @@ const DocumentUploadWithPreview: React.FC<DocumentUploadWithPreviewProps> = ({
         mainGridSize = 10;
     }
     return (
-        <Grid container spacing={2} sx={{
-            alignItems: "center"
-        }}>
+        <Grid
+            container
+            spacing={2}
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             <Grid size={mainGridSize}>
                 <FilesUpload
                     accept={acceptPDF}
@@ -78,7 +82,10 @@ const DocumentUploadWithPreview: React.FC<DocumentUploadWithPreviewProps> = ({
             </Grid>
             {pdfUrl && (
                 <>
-                    <Grid sx={{ textAlign: 'right' }} size={enableDelete ? 3 : 2}>
+                    <Grid
+                        sx={{ textAlign: 'right' }}
+                        size={enableDelete ? 3 : 2}
+                    >
                         {enableDelete && (
                             <IconButton
                                 icon="delete"

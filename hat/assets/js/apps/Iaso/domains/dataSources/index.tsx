@@ -57,9 +57,10 @@ const DataSources: FunctionComponent = () => {
                         <Box
                             style={{ width: '100%' }}
                             sx={{
-                                display: "inline-flex",
-                                justifyContent: "flex-end"
-                            }}>
+                                display: 'inline-flex',
+                                justifyContent: 'flex-end',
+                            }}
+                        >
                             <DataSourceDialogComponent
                                 defaultSourceVersion={defaultSourceVersion}
                                 renderTrigger={({ openDialog }) => (

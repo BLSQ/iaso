@@ -58,9 +58,13 @@ export const FileScanHeader: FunctionComponent<FileScanHeaderProps> = ({
         <Box sx={headerStyle()}>
             <FileScanHeaderIcon scanResult={scanResult} />
             <Box>
-                <Typography sx={{
-                    fontWeight: "bold"
-                }}>{headerText}</Typography>
+                <Typography
+                    sx={{
+                        fontWeight: 'bold',
+                    }}
+                >
+                    {headerText}
+                </Typography>
                 {scanTimestamp && (
                     <Typography variant="body2">
                         {formatMessage(MESSAGES.fileScanTimestamp, {

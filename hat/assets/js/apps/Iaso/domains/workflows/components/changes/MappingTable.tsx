@@ -211,10 +211,11 @@ export const MappingTable: FunctionComponent<Props> = ({
             {form && (
                 <Box
                     sx={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        mt: 2
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        mt: 2,
+                    }}
+                >
                     <AddButton
                         onClick={handleAdd}
                         dataTestId="create-change-button"

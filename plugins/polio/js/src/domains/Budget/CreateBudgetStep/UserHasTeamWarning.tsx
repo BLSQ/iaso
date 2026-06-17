@@ -11,8 +11,9 @@ export const UserHasTeamWarning: FunctionComponent = () => {
             <Box
                 sx={{
                     mb: 2,
-                    mt: 2
-                }}>
+                    mt: 2,
+                }}
+            >
                 <Typography style={{ fontWeight: 'bold' }}>
                     {formatMessage(MESSAGES.userNeedsTeam)}
                 </Typography>

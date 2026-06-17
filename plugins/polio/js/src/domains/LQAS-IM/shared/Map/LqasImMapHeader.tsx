@@ -66,8 +66,9 @@ export const LqasImMapHeader: FunctionComponent<Props> = ({
                             sx={{
                                 ml: 2,
                                 mr: 2,
-                                mb: 2
-                            }}>
+                                mb: 2,
+                            }}
+                        >
                             {options.length > 0 && (
                                 <InputComponent
                                     type="select"
@@ -117,8 +118,9 @@ export const LqasImMapHeader: FunctionComponent<Props> = ({
                     )}
                     size={3}
                     sx={{
-                        alignItems: "center"
-                    }}>
+                        alignItems: 'center',
+                    }}
+                >
                     <LqasImDates type="start" date={startDate} />
                 </Grid>
                 <Divider
@@ -132,8 +134,9 @@ export const LqasImMapHeader: FunctionComponent<Props> = ({
                     className={classes.paddingY}
                     size={3}
                     sx={{
-                        alignItems: "center"
-                    }}>
+                        alignItems: 'center',
+                    }}
+                >
                     <LqasImDates type="end" date={endDate} />
                 </Grid>
             </Grid>

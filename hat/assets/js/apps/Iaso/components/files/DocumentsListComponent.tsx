@@ -38,8 +38,9 @@ const DocumentsListComponent: FunctionComponent<Props> = ({
                     key={`${file.itemId}-${getFileName(file.path).name}`}
                     size={{
                         sm: 2,
-                        md: maxWidth
-                    }}>
+                        md: maxWidth,
+                    }}
+                >
                     <DocumentsItem
                         url={url}
                         urlLabel={urlLabel}

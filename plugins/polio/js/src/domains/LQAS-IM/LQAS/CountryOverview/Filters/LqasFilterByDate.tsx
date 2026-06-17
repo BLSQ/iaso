@@ -96,9 +96,11 @@ export const LqasFilterByDate: FunctionComponent<Props> = ({
     );
 
     return (
-        <Box sx={{
-            my: 2
-        }}>
+        <Box
+            sx={{
+                my: 2,
+            }}
+        >
             <Grid container spacing={2}>
                 <Grid container spacing={2} size={12}>
                     <Grid size={6}>

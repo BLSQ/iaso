@@ -50,9 +50,12 @@ const TileSwitchComponent: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     return (
-        <Box component="div" sx={{
-            py: 2
-        }}>
+        <Box
+            component="div"
+            sx={{
+                py: 2,
+            }}
+        >
             <List className={classes.list}>
                 {Object.keys(tiles).map(key => {
                     const tile = tiles[key];

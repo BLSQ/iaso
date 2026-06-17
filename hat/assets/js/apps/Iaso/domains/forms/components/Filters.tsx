@@ -87,8 +87,9 @@ const Filters = ({ params, forms, isLoadingForms }: Props) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <InputComponent
                         keyValue="search"
                         onChange={handleChange}
@@ -103,8 +104,9 @@ const Filters = ({ params, forms, isLoadingForms }: Props) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <InputComponent
                         keyValue="projectsIds"
                         onChange={handleChange}
@@ -122,8 +124,9 @@ const Filters = ({ params, forms, isLoadingForms }: Props) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <InputComponent
                         type="select"
                         onChange={handleChange}
@@ -138,8 +141,9 @@ const Filters = ({ params, forms, isLoadingForms }: Props) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <PlanningsDropdown
                         handleChange={handleChange}
                         value={filters.planning}
@@ -161,8 +165,9 @@ const Filters = ({ params, forms, isLoadingForms }: Props) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     {hasPlanningPermission && (
                         <InputComponent
                             keyValue="onlyDeleted"
@@ -176,14 +181,16 @@ const Filters = ({ params, forms, isLoadingForms }: Props) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 9
-                    }}>
+                        md: 9,
+                    }}
+                >
                     <Box
                         sx={{
                             mt: isLargeLayout ? 3 : 0,
-                            display: "flex",
-                            justifyContent: "flex-end"
-                        }}>
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                        }}
+                    >
                         <DisplayIfUserHasPerm permissions={[Permission.FORMS]}>
                             <Button
                                 variant="outlined"
@@ -207,9 +214,10 @@ const Filters = ({ params, forms, isLoadingForms }: Props) => {
                     <Box
                         sx={{
                             mt: 2,
-                            display: "flex",
-                            justifyContent: "flex-end"
-                        }}>
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                        }}
+                    >
                         <DownloadButtonsComponent
                             variant="outlined"
                             xlsxUrl={xlsxUrl}

@@ -52,8 +52,9 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                     size={{
                         xs: 12,
                         md: 3,
-                        lg: 3
-                    }}>
+                        lg: 3,
+                    }}
+                >
                     <InputComponent
                         type="search"
                         keyValue="search"
@@ -67,8 +68,9 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                     size={{
                         xs: 12,
                         md: 3,
-                        lg: 3
-                    }}>
+                        lg: 3,
+                    }}
+                >
                     <InputComponent
                         loading={isFetchingCountries}
                         keyValue="country"
@@ -88,8 +90,9 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                     size={{
                         xs: 12,
                         md: 3,
-                        lg: 3
-                    }}>
+                        lg: 3,
+                    }}
+                >
                     <InputComponent
                         loading={isFetchingMetaData}
                         keyValue="campaign"
@@ -108,8 +111,9 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                     size={{
                         xs: 12,
                         md: 3,
-                        lg: 3
-                    }}>
+                        lg: 3,
+                    }}
+                >
                     <InputComponent
                         type="select"
                         clearable
@@ -124,8 +128,9 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                     size={{
                         xs: 12,
                         md: 3,
-                        lg: 3
-                    }}>
+                        lg: 3,
+                    }}
+                >
                     <InputComponent
                         type="select"
                         clearable
@@ -140,17 +145,19 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                     size={{
                         xs: 12,
                         md: 6,
-                        lg: 6
-                    }}>
+                        lg: 6,
+                    }}
+                >
                     <Box
                         sx={{
-                            display: "flex",
-                            justifyContent: "flex-end",
+                            display: 'flex',
+                            justifyContent: 'flex-end',
                             mt: 2,
-                            alignItems: "center",
-                            alignContent: "center",
-                            textAlign: "center"
-                        }}>
+                            alignItems: 'center',
+                            alignContent: 'center',
+                            textAlign: 'center',
+                        }}
+                    >
                         <SearchButton
                             disabled={!filtersUpdated}
                             onSearch={handleSearch}
@@ -162,12 +169,15 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                 <Grid
                     container
                     sx={{
-                        justifyContent: "flex-end",
-                        mt: 4
-                    }}>
-                    <Box sx={{
-                        mr: 2
-                    }}>
+                        justifyContent: 'flex-end',
+                        mt: 4,
+                    }}
+                >
+                    <Box
+                        sx={{
+                            mr: 2,
+                        }}
+                    >
                         <Button
                             variant="contained"
                             href={`/dashboard/${baseUrls.chronogramTemplateTask}`}

@@ -17,15 +17,19 @@ export const BudgetButtons: FunctionComponent<Props> = ({
     isMobileLayout = false,
 }) => {
     return (
-        <Grid container sx={{
-            justifyContent: "flex-end"
-        }}>
+        <Grid
+            container
+            sx={{
+                justifyContent: 'flex-end',
+            }}
+        >
             {isUserPolioBudgetAdmin && (
                 <Box
                     sx={{
                         mb: isMobileLayout ? 2 : 0,
-                        mr: isMobileLayout ? 0 : 2
-                    }}>
+                        mr: isMobileLayout ? 0 : 2,
+                    }}
+                >
                     <CreateBudgetProcessModal
                         iconProps={{
                             message: MESSAGES.createBudgetProcessTitle,

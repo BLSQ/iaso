@@ -45,10 +45,11 @@ export const FormPredefinedFilters: FunctionComponent<Props> = ({ params }) => {
             <Box
                 sx={{
                     mb: 2,
-                    justifyContent: "flex-end",
-                    alignItems: "center",
-                    display: "flex"
-                }}>
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                    display: 'flex',
+                }}
+            >
                 <PredefinedFilterModal
                     iconProps={{}}
                     save={save}

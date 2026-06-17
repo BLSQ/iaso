@@ -77,8 +77,9 @@ const TaskModal: FunctionComponent<Props> = ({
                         mt: 2,
                         display: 'flex',
                         justifyContent: 'center',
-                        alignItems: 'center'
-                    }}>
+                        alignItems: 'center',
+                    }}
+                >
                     <CircularProgress color="primary" />
                 </Box>
             )}

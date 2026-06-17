@@ -177,9 +177,11 @@ const PredefinedfilterModal: FunctionComponent<Props> = ({
                     </Box>
                 )}
                 {tab === 'query' && (
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <QueryBuilder
                             logic={values.json_logic || {}}
                             fields={fields}

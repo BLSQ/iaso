@@ -60,9 +60,10 @@ export const GroupedCampaigns: FunctionComponent = () => {
                     spacing={0}
                     className={classes.marginTop}
                     sx={{
-                        justifyContent: "flex-end",
-                        alignItems: "center"
-                    }}>
+                        justifyContent: 'flex-end',
+                        alignItems: 'center',
+                    }}
+                >
                     <GroupedCampaignDialog
                         renderTrigger={({ openDialog }) => (
                             <AddButtonComponent

@@ -31,9 +31,11 @@ export const LogsFilters: FunctionComponent<Props> = ({ params }) => {
         useSafeIntl();
     const operationTypes = useGetOperationsTypes();
     return (
-        <Box sx={{
-            p: 2
-        }}>
+        <Box
+            sx={{
+                p: 2,
+            }}
+        >
             <Grid container spacing={2}>
                 <Grid size={4}>
                     <InputComponent
@@ -47,9 +49,11 @@ export const LogsFilters: FunctionComponent<Props> = ({ params }) => {
                     />
                 </Grid>
                 <Grid size={4}>
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <DatePicker
                             label={formatMessage(MESSAGES.date)}
                             clearMessage={MESSAGES.clear}
@@ -66,10 +70,11 @@ export const LogsFilters: FunctionComponent<Props> = ({ params }) => {
             </Grid>
             <Box
                 sx={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    mt: 2
-                }}>
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    mt: 2,
+                }}
+            >
                 <SearchButton
                     disabled={!filtersUpdated}
                     onSearch={handleSearch}

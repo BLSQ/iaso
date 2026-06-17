@@ -76,8 +76,9 @@ export const VaccineRepository: FunctionComponent = () => {
                         <Box
                             sx={{
                                 mt: 1,
-                                display: 'flex'
-                            }}>
+                                display: 'flex',
+                            }}
+                        >
                             <OffLineLangSwitch />
                         </Box>
                     </Box>

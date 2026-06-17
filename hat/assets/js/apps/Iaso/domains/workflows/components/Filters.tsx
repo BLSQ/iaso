@@ -32,8 +32,9 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="search"
                     onChange={handleChange}
@@ -48,8 +49,9 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     type="select"
                     keyValue="status"
@@ -63,18 +65,20 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                 container
                 size={{
                     xs: 12,
-                    md: 6
+                    md: 6,
                 }}
                 sx={{
-                    justifyContent: "flex-end"
-                }}>
+                    justifyContent: 'flex-end',
+                }}
+            >
                 <Box
                     sx={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        alignItems: "start",
-                        mt: isLargeLayout ? 2 : 0
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        alignItems: 'start',
+                        mt: isLargeLayout ? 2 : 0,
+                    }}
+                >
                     <SearchButton
                         disabled={textSearchError || !filtersUpdated}
                         onSearch={handleSearch}

@@ -27,9 +27,10 @@ export const PerformanceThresholds: FunctionComponent = () => {
                 <Box
                     sx={{
                         mt: 2,
-                        justifyContent: "flex-end",
-                        display: "flex"
-                    }}>
+                        justifyContent: 'flex-end',
+                        display: 'flex',
+                    }}
+                >
                     <DisplayIfUserHasPerm
                         permissions={[
                             POLIO_PERFORMANCE_THRESHOLD_WRITE_PERMISSION,

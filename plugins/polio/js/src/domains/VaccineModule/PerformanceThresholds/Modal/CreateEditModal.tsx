@@ -159,8 +159,9 @@ export const CreateEditModal: FunctionComponent<Props> = ({
                 <Box
                     sx={{
                         mb: 2,
-                        mt: 2
-                    }}>
+                        mt: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.indicator)}
                         name="indicator"
@@ -168,9 +169,11 @@ export const CreateEditModal: FunctionComponent<Props> = ({
                         required
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <QueryBuilderInput
                         label={MESSAGES.successThreshold}
                         onChange={logic =>
@@ -181,9 +184,11 @@ export const CreateEditModal: FunctionComponent<Props> = ({
                         iconProps={successIconProps}
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <QueryBuilderInput
                         label={MESSAGES.warningThreshold}
                         onChange={logic =>
@@ -194,9 +199,11 @@ export const CreateEditModal: FunctionComponent<Props> = ({
                         iconProps={warningIconProps}
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <QueryBuilderInput
                         label={MESSAGES.failThreshold}
                         onChange={logic =>

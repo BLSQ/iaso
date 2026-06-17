@@ -273,9 +273,10 @@ const FormDetail: FunctionComponent = () => {
                 <Box
                     sx={{
                         mt: 2,
-                        justifyContent: "flex-end",
-                        display: "flex"
-                    }}>
+                        justifyContent: 'flex-end',
+                        display: 'flex',
+                    }}
+                >
                     {currentForm.id.value !== '' && (
                         <Button
                             data-id="form-detail-cancel"

@@ -39,9 +39,10 @@ export const VaccineStockManagement: FunctionComponent = () => {
                     <Box
                         sx={{
                             mt: 2,
-                            justifyContent: "flex-end",
-                            display: "flex"
-                        }}>
+                            justifyContent: 'flex-end',
+                            display: 'flex',
+                        }}
+                    >
                         <CreateVaccineStock iconProps={{}} />
                     </Box>
                 </DisplayIfUserHasPerm>

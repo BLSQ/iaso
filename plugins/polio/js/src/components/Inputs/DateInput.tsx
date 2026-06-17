@@ -31,9 +31,11 @@ export const DateInput: FunctionComponent<Props> = ({
         form.errors &&
         Boolean(get(form.errors, field.name) && get(form.touched, field.name));
     return (
-        <Box sx={{
-            mb: 2
-        }}>
+        <Box
+            sx={{
+                mb: 2,
+            }}
+        >
             <DatePicker
                 label={label}
                 required={required}

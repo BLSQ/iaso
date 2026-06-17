@@ -186,9 +186,11 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
             onAdditionalButtonClick={hasTaskPermission ? onRedirect : undefined}
         >
             <>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Divider />
                 </Box>
                 <Grid
@@ -196,7 +198,7 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
                     spacing={2}
                     direction="row"
                     sx={{
-                        justifyContent: "space-around"
+                        justifyContent: 'space-around',
                     }}
                 >
                     <Grid container size={6}>

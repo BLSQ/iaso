@@ -75,17 +75,20 @@ export const CalendarMapContainer: FunctionComponent<Props> = ({
                     iconProps={{ selection, zoom }}
                 />
                 {zoom > boundariesZoomLimit && (
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <CampaignsLegend campaigns={campaigns} />
                     </Box>
                 )}
                 <Box
                     sx={{
-                        display: "flex",
-                        justifyContent: "flex-end"
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                    }}
+                >
                     <VaccinesLegend />
                 </Box>
             </div>

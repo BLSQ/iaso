@@ -71,9 +71,11 @@ export const LqasAfroOverview: FunctionComponent = () => {
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <LqasAfroMapFilters params={params} currentUrl={currentUrl} />
 
-                <Box sx={{
-                    mt: 2
-                }}>
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Grid container spacing={2} direction="row">
                         <Grid size={6}>
                             <LqasAfroMapWithSelector

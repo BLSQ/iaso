@@ -28,9 +28,11 @@ export const IntegratedCampaignField: FunctionComponent<Props> = ({
                 />
             </Grid>
             <Grid size={1}>
-                <Box sx={{
-                    pt: 0.5
-                }}>
+                <Box
+                    sx={{
+                        pt: 0.5,
+                    }}
+                >
                     <LinkTo
                         url={`campaignId/${value?.id}`}
                         condition

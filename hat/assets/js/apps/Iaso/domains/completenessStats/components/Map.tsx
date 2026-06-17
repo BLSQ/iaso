@@ -188,9 +188,11 @@ export const Map: FunctionComponent<Props> = ({
     const getParentPageUrl = useGetParentPageUrl();
     return (
         <section className={classes.mapContainer}>
-            <Box sx={{
-                position: "relative"
-            }}>
+            <Box
+                sx={{
+                    position: 'relative',
+                }}
+            >
                 {(isLoading || isLoadingAssignments) && (
                     <LoadingSpinner absolute />
                 )}

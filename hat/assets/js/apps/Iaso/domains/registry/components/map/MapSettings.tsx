@@ -130,8 +130,9 @@ export const MapSettings: FunctionComponent<Props> = ({
                         <Box
                             sx={{
                                 px: 3,
-                                pt: "20px"
-                            }}>
+                                pt: '20px',
+                            }}
+                        >
                             <FormControlLabel
                                 label={formatMessage(MESSAGES.showNames)}
                                 control={
@@ -149,8 +150,9 @@ export const MapSettings: FunctionComponent<Props> = ({
                         <Box
                             sx={{
                                 px: 3,
-                                pt: 1
-                            }}>
+                                pt: 1,
+                            }}
+                        >
                             <FormControlLabel
                                 label={formatMessage(MESSAGES.markerClustering)}
                                 control={

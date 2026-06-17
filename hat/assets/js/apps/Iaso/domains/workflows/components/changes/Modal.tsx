@@ -244,9 +244,12 @@ const Modal: FunctionComponent<Props> = ({
                 <Popper />
             </Box>
             {isFetchingSourcePossibleFields && <LoadingSpinner absolute />}
-            <Box data-test="change-modal" sx={{
-                position: "relative"
-            }}>
+            <Box
+                data-test="change-modal"
+                sx={{
+                    position: 'relative',
+                }}
+            >
                 <MappingTable
                     setIsTouched={setIsTouched}
                     mappingArray={mappingArray}

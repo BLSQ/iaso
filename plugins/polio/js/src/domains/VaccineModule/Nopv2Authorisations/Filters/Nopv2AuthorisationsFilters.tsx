@@ -35,8 +35,9 @@ export const Nopv2AuthorisationsFilters: FunctionComponent<Props> = ({
                 size={{
                     xs: 6,
                     md: 4,
-                    lg: 3
-                }}>
+                    lg: 3,
+                }}
+            >
                 <InputComponent
                     type="select"
                     multi
@@ -53,8 +54,9 @@ export const Nopv2AuthorisationsFilters: FunctionComponent<Props> = ({
                 size={{
                     xs: 6,
                     md: 4,
-                    lg: 3
-                }}>
+                    lg: 3,
+                }}
+            >
                 <InputComponent
                     type="select"
                     multi
@@ -71,19 +73,23 @@ export const Nopv2AuthorisationsFilters: FunctionComponent<Props> = ({
                 size={{
                     xs: 12,
                     md: 4,
-                    lg: 6
-                }}>
+                    lg: 6,
+                }}
+            >
                 <Box
                     sx={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        alignItems: "end",
-                        flexDirection: "column",
-                        width: "100%"
-                    }}>
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        alignItems: 'end',
+                        flexDirection: 'column',
+                        width: '100%',
+                    }}
+                >
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <SearchButton
                             disabled={!filtersUpdated}
                             onSearch={handleSearch}
@@ -93,8 +99,9 @@ export const Nopv2AuthorisationsFilters: FunctionComponent<Props> = ({
                         <Box
                             sx={{
                                 mt: 2,
-                                mb: 2
-                            }}>
+                                mb: 2,
+                            }}
+                        >
                             <CreateAuthorisationModal
                                 iconProps={{
                                     message: MESSAGES.addAuthorisation,

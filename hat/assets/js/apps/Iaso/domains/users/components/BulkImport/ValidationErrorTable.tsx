@@ -104,7 +104,8 @@ export const ValidationErrorTable = ({ errors }: ValidationErrorTableProps) => {
                                                         <Typography
                                                             variant="body2"
                                                             sx={{
-                                                                fontWeight: "bold"
+                                                                fontWeight:
+                                                                    'bold',
                                                             }}
                                                         >
                                                             {error.row}

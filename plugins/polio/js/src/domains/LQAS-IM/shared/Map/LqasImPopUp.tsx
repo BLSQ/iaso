@@ -45,7 +45,7 @@ export const LqasImPopup: FunctionComponent<Props> = ({
     return dataForShape ? (
         // removing the pane prop causes zIndex bug
         // @ts-ignore
-        (<Popup ref={ref} pane="popupPane">
+        <Popup ref={ref} pane="popupPane">
             <Card className={classes.popupCard}>
                 <CardContent className={classes.popupCardContent}>
                     <PopupItemComponent
@@ -68,7 +68,7 @@ export const LqasImPopup: FunctionComponent<Props> = ({
                     />
                 </CardContent>
             </Card>
-        </Popup>)
+        </Popup>
     ) : null;
 };
 

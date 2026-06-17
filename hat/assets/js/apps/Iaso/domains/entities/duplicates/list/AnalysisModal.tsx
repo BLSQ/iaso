@@ -126,8 +126,9 @@ const AnalysisModal: FunctionComponent<Props> = ({
                 <Grid
                     size={{
                         xs: 12,
-                        md: 12
-                    }}>
+                        md: 12,
+                    }}
+                >
                     <InputComponent
                         type="select"
                         keyValue="entity_type"
@@ -141,8 +142,9 @@ const AnalysisModal: FunctionComponent<Props> = ({
                 <Grid
                     size={{
                         xs: 12,
-                        md: 12
-                    }}>
+                        md: 12,
+                    }}
+                >
                     <InputComponent
                         type="select"
                         keyValue="algorithm"
@@ -155,8 +157,9 @@ const AnalysisModal: FunctionComponent<Props> = ({
                 <Grid
                     size={{
                         xs: 12,
-                        md: 12
-                    }}>
+                        md: 12,
+                    }}
+                >
                     <InputComponent
                         type="select"
                         multi

@@ -43,8 +43,9 @@ const CompareSubmissions: FunctionComponent = () => {
                             key={instanceId}
                             size={{
                                 xs: 12,
-                                md: colSize as GridSize
-                            }}>
+                                md: colSize as GridSize,
+                            }}
+                        >
                             <InstanceDetail instanceId={instanceId} />
                         </Grid>
                     ))}

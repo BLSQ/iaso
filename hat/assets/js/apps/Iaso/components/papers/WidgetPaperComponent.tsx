@@ -129,8 +129,9 @@ export const WidgetPaper = ({
                             className={classes.paperTitleButtonContainer}
                             size={2}
                             sx={{
-                                justifyContent: "flex-end"
-                            }}>
+                                justifyContent: 'flex-end',
+                            }}
+                        >
                             <div className={classes.paperTitleButton}>
                                 <IconButton {...iconButtonProps} />
                             </div>

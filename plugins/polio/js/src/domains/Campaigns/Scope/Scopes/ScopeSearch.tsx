@@ -13,14 +13,20 @@ export const ScopeSearch: FunctionComponent<Props> = ({
     setSearch,
 }) => {
     return (
-        <Grid container spacing={2} size={12} sx={{
-            alignItems: "center"
-        }}>
+        <Grid
+            container
+            spacing={2}
+            size={12}
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             <Grid
                 size={{
                     xs: 12,
-                    md: 8
-                }}>
+                    md: 8,
+                }}
+            >
                 <InputComponent
                     variant="contained"
                     keyValue="search"

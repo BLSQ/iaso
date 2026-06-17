@@ -107,12 +107,18 @@ const TopBar: FunctionComponent<Props> = ({
                     container
                     direction="row"
                     sx={{
-                        justifyContent: "space-between",
-                        alignItems: "center"
-                    }}>
-                    <Grid container direction="row" size={7} sx={{
-                        alignItems: "center"
-                    }}>
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                    }}
+                >
+                    <Grid
+                        container
+                        direction="row"
+                        size={7}
+                        sx={{
+                            alignItems: 'center',
+                        }}
+                    >
                         {!displayBackButton && displayMenuButton && (
                             <IconButton
                                 className={classes.menuButton}
@@ -139,34 +145,41 @@ const TopBar: FunctionComponent<Props> = ({
                             variant="h6"
                             id="top-bar-title"
                             sx={{
-                                color: "inherit",
+                                color: 'inherit',
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                                 maxWidth: '80%',
-                                display: 'block'
-                            }}>
+                                display: 'block',
+                            }}
+                        >
                             {title}
                         </Typography>
                     </Grid>
                     {currentUser && !isMobileLayout && (
-                        <Grid container size={5} sx={{
-                            justifyContent: "flex-end"
-                        }}>
+                        <Grid
+                            container
+                            size={5}
+                            sx={{
+                                justifyContent: 'flex-end',
+                            }}
+                        >
                             <Box
                                 sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "flex-end"
-                                }}>
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'flex-end',
+                                }}
+                            >
                                 <NotificationBadge />
                             </Box>
                             <Box
                                 sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "flex-end"
-                                }}>
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'flex-end',
+                                }}
+                            >
                                 <CurrentUserInfos
                                     currentUser={currentUser}
                                     version={window.IASO_VERSION ?? ''}
@@ -175,10 +188,11 @@ const TopBar: FunctionComponent<Props> = ({
 
                             <Box
                                 sx={{
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    pl: 2
-                                }}>
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    pl: 2,
+                                }}
+                            >
                                 <HomePageButton />
                             </Box>
 
@@ -186,29 +200,32 @@ const TopBar: FunctionComponent<Props> = ({
                                 currentUser.is_superuser === true && (
                                     <Box
                                         sx={{
-                                            display: "flex",
-                                            justifyContent: "center",
-                                            pl: 1
-                                        }}>
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            pl: 1,
+                                        }}
+                                    >
                                         <DjangoAdminPanelButton />
                                     </Box>
                                 )}
 
                             <Box
                                 sx={{
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    pl: 1
-                                }}>
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    pl: 1,
+                                }}
+                            >
                                 <LogoutButton />
                             </Box>
                             <Box
                                 sx={{
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                    pl: 1
-                                }}>
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    pl: 1,
+                                }}
+                            >
                                 <LangSwitch />
                             </Box>
                         </Grid>

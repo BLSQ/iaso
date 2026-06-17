@@ -125,9 +125,13 @@ export const Level: FunctionComponent<Props> = ({
     );
     return (
         <Box key={`level_${index}`}>
-            <Grid container spacing={1} sx={{
-                alignItems: "center"
-            }}>
+            <Grid
+                container
+                spacing={1}
+                sx={{
+                    alignItems: 'center',
+                }}
+            >
                 <Grid size={index === 0 ? 11 : 10}>
                     <InputComponent
                         withMarginTop={false}
@@ -148,10 +152,11 @@ export const Level: FunctionComponent<Props> = ({
                     <Grid
                         size={1}
                         sx={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center"
-                        }}>
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                        }}
+                    >
                         <Box>
                             <IconButton
                                 icon="delete"
@@ -166,10 +171,11 @@ export const Level: FunctionComponent<Props> = ({
                 <Grid
                     size={1}
                     sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center"
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
+                >
                     <Box>
                         <IconButton
                             size="small"

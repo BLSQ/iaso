@@ -48,9 +48,10 @@ export const ReviewOrgUnitChangesDetailsTableHead: FunctionComponent<Props> = ({
                         <Box
                             className={classes.head}
                             sx={{
-                                display: "flex",
-                                justifyContent: "center"
-                            }}>
+                                display: 'flex',
+                                justifyContent: 'center',
+                            }}
+                        >
                             {formatMessage(MESSAGES.selection)}
                         </Box>
                     </TableCell>

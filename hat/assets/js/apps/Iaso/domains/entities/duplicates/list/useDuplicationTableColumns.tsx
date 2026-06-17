@@ -24,9 +24,10 @@ export const useDuplicationTableColumns = (): Column[] => {
                     return (
                         <Box
                             sx={{
-                                display: "flex",
-                                justifyContent: "center"
-                            }}>
+                                display: 'flex',
+                                justifyContent: 'center',
+                            }}
+                        >
                             <StarsComponent
                                 starCount={5}
                                 fullStars={

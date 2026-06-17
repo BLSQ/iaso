@@ -62,7 +62,8 @@ export const Lqas = () => {
                     <Grid container spacing={2} direction="row">
                         <Grid
                             key={`left-${leftCountry}-${leftCampaign}-${leftMonth}-${leftRound}-${leftTab}`}
-                            size={6}>
+                            size={6}
+                        >
                             <LqasCountryView
                                 side="left"
                                 params={params}
@@ -71,7 +72,8 @@ export const Lqas = () => {
                         </Grid>
                         <Grid
                             key={`right-${rightCountry}-${rightCampaign}-${rightMonth}-${rightRound}-${rightTab}`}
-                            size={6}>
+                            size={6}
+                        >
                             <LqasCountryView
                                 side="right"
                                 params={params}

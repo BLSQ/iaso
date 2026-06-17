@@ -367,9 +367,13 @@ const InputComponent: React.FC<InputComponentProps> = ({
     };
     return (
         <Box
-            sx={[{
-                mt: withMarginTop ? 2 : 0
-            }, ...(Array.isArray(wrapperSx) ? wrapperSx : [wrapperSx])]}>
+            sx={[
+                {
+                    mt: withMarginTop ? 2 : 0,
+                },
+                ...(Array.isArray(wrapperSx) ? wrapperSx : [wrapperSx]),
+            ]}
+        >
             {renderInput()}
         </Box>
     );

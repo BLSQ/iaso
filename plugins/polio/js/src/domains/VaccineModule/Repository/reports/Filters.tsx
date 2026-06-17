@@ -83,8 +83,9 @@ export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     loading={isFetchingGroupedOrgUnits}
                     keyValue="reportCountryBlock"
@@ -118,8 +119,9 @@ export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="reportFileType"
                     clearable
@@ -147,14 +149,17 @@ export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
                 container
                 size={{
                     xs: 12,
-                    md: 6
+                    md: 6,
                 }}
                 sx={{
-                    justifyContent: "flex-end"
-                }}>
-                <Box sx={{
-                    mt: 2
-                }}>
+                    justifyContent: 'flex-end',
+                }}
+            >
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Button
                         disabled={!filtersUpdated}
                         variant="contained"
@@ -165,8 +170,9 @@ export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
                             sx={{
                                 mr: 1,
                                 top: 3,
-                                position: "relative"
-                            }}>
+                                position: 'relative',
+                            }}
+                        >
                             <FiltersIcon />
                         </Box>
                         <FormattedMessage {...MESSAGES.filter} />

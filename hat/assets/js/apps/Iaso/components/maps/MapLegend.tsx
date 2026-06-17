@@ -64,9 +64,11 @@ export const MapLegend: FunctionComponent<Props> = ({
             className={classes.root}
             style={{ top, left, right, bottom, width }}
         >
-            <Box sx={{
-                p: padding
-            }}>
+            <Box
+                sx={{
+                    p: padding,
+                }}
+            >
                 {titleMessage && (
                     <Typography
                         variant="subtitle1"
@@ -81,7 +83,7 @@ export const MapLegend: FunctionComponent<Props> = ({
                         <Box
                             key={o.value}
                             sx={{
-                                mb: i + 1 === options.length ? 0 : 1
+                                mb: i + 1 === options.length ? 0 : 1,
                             }}
                         >
                             <span

@@ -172,8 +172,9 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
                 sx={{
                     mt: 2,
                     ml: 2,
-                    mb: 4
-                }}>
+                    mb: 4,
+                }}
+            >
                 <PaymentLotInfos
                     name={name}
                     comment={comment}
@@ -189,11 +190,16 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
                     <Box
                         sx={{
                             my: 2,
-                            mr: 2
-                        }}>
-                        <Grid container spacing={2} sx={{
-                            justifyContent: "flex-end"
-                        }}>
+                            mr: 2,
+                        }}
+                    >
+                        <Grid
+                            container
+                            spacing={2}
+                            sx={{
+                                justifyContent: 'flex-end',
+                            }}
+                        >
                             <Grid>
                                 <Box>
                                     <Button

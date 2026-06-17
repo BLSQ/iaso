@@ -134,23 +134,27 @@ export const RiskAssessmentForm: FunctionComponent = () => {
                         <Box
                             sx={{
                                 mb: 2,
-                                px: 2
-                            }}>
+                                px: 2,
+                            }}
+                        >
                             <Typography variant="button">
                                 {`${formatMessage(MESSAGES.status)}: ${status}`}
                             </Typography>
                         </Box>
-                        <Box sx={{
-                            mr: 2
-                        }}>
+                        <Box
+                            sx={{
+                                mr: 2,
+                            }}
+                        >
                             <Divider style={{ width: '50%' }} />
                         </Box>
                     </Grid>
                 </Grid>
                 <Grid
                     size={{
-                        md: 6
-                    }}>
+                        md: 6,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.fieldInvestigationDate)}
                         name="investigation_at"
@@ -193,9 +197,11 @@ export const RiskAssessmentForm: FunctionComponent = () => {
                         fullWidth
                         onChange={updateDGAuthorized}
                     /> */}
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <Field
                             label={formatMessage(MESSAGES.verificationScore)}
                             name="verification_score"
@@ -208,13 +214,17 @@ export const RiskAssessmentForm: FunctionComponent = () => {
                 </Grid>
                 <Grid
                     size={{
-                        md: 6
-                    }}>
+                        md: 6,
+                    }}
+                >
                     {rounds.map((round, i) => {
                         return (
-                            <Box key={round.number} sx={{
-                                mt: i === 0 ? 0 : 2
-                            }}>
+                            <Box
+                                key={round.number}
+                                sx={{
+                                    mt: i === 0 ? 0 : 2,
+                                }}
+                            >
                                 <Field
                                     key={round.number}
                                     label={`${formatMessage(

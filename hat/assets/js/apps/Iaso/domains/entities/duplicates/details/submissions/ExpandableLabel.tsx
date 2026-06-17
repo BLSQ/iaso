@@ -14,9 +14,13 @@ interface Props {
 
 const ExpandableLabel: React.FunctionComponent<Props> = ({ instance }) => {
     return (
-        <Stack direction="row" spacing={1} sx={{
-            alignItems: "center"
-        }}>
+        <Stack
+            direction="row"
+            spacing={1}
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             <Typography variant="h6">
                 {`${instance.form_name} - ${displayDateFromTimestamp(instance.source_created_at)}`}
             </Typography>

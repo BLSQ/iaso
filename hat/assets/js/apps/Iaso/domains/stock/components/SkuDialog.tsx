@@ -186,8 +186,9 @@ const SkuDialog: FunctionComponent<Props> = ({
                                     size={{
                                         xs: 6,
                                         sm: 6,
-                                        md: 6
-                                    }}>
+                                        md: 6,
+                                    }}
+                                >
                                     <InputComponent
                                         keyValue="display_unit"
                                         onChange={onChange}
@@ -201,8 +202,9 @@ const SkuDialog: FunctionComponent<Props> = ({
                                     size={{
                                         xs: 6,
                                         sm: 6,
-                                        md: 6
-                                    }}>
+                                        md: 6,
+                                    }}
+                                >
                                     <InputComponent
                                         keyValue="display_precision"
                                         onChange={onChange}

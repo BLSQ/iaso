@@ -63,9 +63,12 @@ const ReferenceInstances: FunctionComponent<ReferenceInstancesProps> = ({
         <>
             {!instances || (instances.length === 0 && textPlaceholder)}
             {instances.map(instance => (
-                <Box key={instance.id} sx={{
-                    mb: 1
-                }}>
+                <Box
+                    key={instance.id}
+                    sx={{
+                        mb: 1,
+                    }}
+                >
                     <InstanceDetail
                         instanceId={`${instance.id}`}
                         height="150px"

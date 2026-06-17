@@ -52,8 +52,9 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="search"
                     onChange={handleChange}
@@ -68,8 +69,9 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="formId"
                     onChange={handleChange}
@@ -86,8 +88,9 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     type="select"
                     onChange={handleChange}
@@ -102,8 +105,9 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     type="select"
                     onChange={handleChange}
@@ -118,8 +122,9 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="projectsIds"
                     onChange={handleChange}
@@ -137,14 +142,17 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                 container
                 size={{
                     xs: 12,
-                    md: 12
+                    md: 12,
                 }}
                 sx={{
-                    justifyContent: "flex-end"
-                }}>
-                <Box sx={{
-                    mt: isLargeLayout ? 3 : 0
-                }}>
+                    justifyContent: 'flex-end',
+                }}
+            >
+                <Box
+                    sx={{
+                        mt: isLargeLayout ? 3 : 0,
+                    }}
+                >
                     <Button
                         data-test="search-button"
                         disabled={!filtersUpdated || textSearchError}

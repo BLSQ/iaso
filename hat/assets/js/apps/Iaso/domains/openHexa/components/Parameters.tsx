@@ -225,7 +225,7 @@ export const Parameters: React.FC<ParametersProps> = ({
                             key={parameter.code}
                             variant="body2"
                             sx={{
-                                color: "text.secondary"
+                                color: 'text.secondary',
                             }}
                         >
                             {formatMessage(MESSAGES.unknownParameterType)}:{' '}

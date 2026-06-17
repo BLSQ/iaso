@@ -65,9 +65,10 @@ export const EntityTypes: FunctionComponent = () => {
                     spacing={0}
                     className={classes.marginTop}
                     sx={{
-                        justifyContent: "flex-end",
-                        alignItems: "center"
-                    }}>
+                        justifyContent: 'flex-end',
+                        alignItems: 'center',
+                    }}
+                >
                     {userHasPermission(
                         Permission.ENTITY_TYPE_WRITE,
                         currentUser,

@@ -108,9 +108,11 @@ export const MapScope: FunctionComponent<Props> = ({
     );
 
     return (
-        <Box sx={{
-            position: "relative"
-        }}>
+        <Box
+            sx={{
+                position: 'relative',
+            }}
+        >
             <MapComponent
                 name="ScopeMap"
                 mainLayer={districts}

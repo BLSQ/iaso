@@ -72,8 +72,9 @@ export const LqasSummary: FunctionComponent<Props> = ({
                 <Box
                     sx={{
                         pt: 2,
-                        pb: 2
-                    }}>
+                        pb: 2,
+                    }}
+                >
                     <Grid
                         container
                         direction="row"
@@ -82,8 +83,9 @@ export const LqasSummary: FunctionComponent<Props> = ({
                         <Grid
                             size={{
                                 xs: 3,
-                                sm: 2
-                            }}>
+                                sm: 2,
+                            }}
+                        >
                             <Typography
                                 variant="body1"
                                 className={classes.centerText}
@@ -100,15 +102,17 @@ export const LqasSummary: FunctionComponent<Props> = ({
                         <Box
                             sx={{
                                 mt: -2,
-                                mb: -2
-                            }}>
+                                mb: -2,
+                            }}
+                        >
                             <Divider orientation="vertical" />
                         </Box>
                         <Grid
                             size={{
                                 xs: 3,
-                                sm: 2
-                            }}>
+                                sm: 2,
+                            }}
+                        >
                             <Typography
                                 variant="body1"
                                 className={classes.centerText}
@@ -125,15 +129,17 @@ export const LqasSummary: FunctionComponent<Props> = ({
                         <Box
                             sx={{
                                 mt: -2,
-                                mb: -2
-                            }}>
+                                mb: -2,
+                            }}
+                        >
                             <Divider orientation="vertical" />
                         </Box>
                         <Grid
                             size={{
                                 xs: 3,
-                                sm: 2
-                            }}>
+                                sm: 2,
+                            }}
+                        >
                             <Typography
                                 variant="body1"
                                 className={classes.centerText}
@@ -150,15 +156,17 @@ export const LqasSummary: FunctionComponent<Props> = ({
                         <Box
                             sx={{
                                 mt: -2,
-                                mb: -2
-                            }}>
+                                mb: -2,
+                            }}
+                        >
                             <Divider orientation="vertical" />
                         </Box>
                         <Grid
                             size={{
                                 xs: 3,
-                                sm: 2
-                            }}>
+                                sm: 2,
+                            }}
+                        >
                             <Typography
                                 variant="body1"
                                 className={classes.centerText}

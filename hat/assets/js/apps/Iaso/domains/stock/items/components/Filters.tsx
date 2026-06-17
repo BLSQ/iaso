@@ -60,8 +60,9 @@ const ItemsFilters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 12,
                     sm: 6,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="sku"
                     onChange={handleChange}
@@ -77,8 +78,9 @@ const ItemsFilters: FunctionComponent<Props> = ({ params }) => {
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <OrgUnitTreeviewModal
                     toggleOnLabelClick={false}
                     titleMessage={MESSAGES.orgUnit}
@@ -96,12 +98,13 @@ const ItemsFilters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 6,
                     sm: 6,
-                    md: 6
+                    md: 6,
                 }}
                 sx={{
-                    justifyContent: "flex-end",
-                    alignItems: "center"
-                }}>
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                }}
+            >
                 <Button
                     data-test="search-button"
                     disabled={!filtersUpdated}
@@ -165,8 +168,9 @@ const DetailsFilters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 12,
                     sm: 6,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="impact"
                     onChange={handleChange}
@@ -195,8 +199,9 @@ const DetailsFilters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 12,
                     sm: 6,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="value"
                     onChange={handleChange}
@@ -235,8 +240,9 @@ const DetailsFilters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 12,
                     sm: 6,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="question"
                     onChange={handleChange}
@@ -254,12 +260,13 @@ const DetailsFilters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 12,
                     sm: 12,
-                    md: 3
+                    md: 3,
                 }}
                 sx={{
-                    justifyContent: "flex-end",
-                    alignItems: "center"
-                }}>
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                }}
+            >
                 <Button
                     data-test="search-button"
                     disabled={textSearchError || !filtersUpdated}

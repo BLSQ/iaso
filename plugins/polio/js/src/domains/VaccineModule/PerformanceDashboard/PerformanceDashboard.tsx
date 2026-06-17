@@ -21,25 +21,29 @@ export const PerformanceDashboard: FunctionComponent = () => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <Box sx={{
-                    mt: 5
-                }}>
+                <Box
+                    sx={{
+                        mt: 5,
+                    }}
+                >
                     <Container maxWidth="lg">
                         <Paper>
                             <Box
                                 sx={{
                                     py: 6,
                                     px: 2,
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                    display: "flex",
-                                    flexDirection: "column"
-                                }}>
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                }}
+                            >
                                 <Box
                                     sx={{
                                         pt: 2,
-                                        pb: 2
-                                    }}>
+                                        pb: 2,
+                                    }}
+                                >
                                     <Typography variant="h5">
                                         {formatMessage(
                                             MESSAGES.followLinkBelow,
@@ -49,8 +53,9 @@ export const PerformanceDashboard: FunctionComponent = () => {
                                 <Box
                                     sx={{
                                         pt: 2,
-                                        pb: 2
-                                    }}>
+                                        pb: 2,
+                                    }}
+                                >
                                     <ExternalLink url="https://www.poliooutbreaks.com/pages/performance_indicator/">
                                         <Typography variant="h5">
                                             {formatMessage(

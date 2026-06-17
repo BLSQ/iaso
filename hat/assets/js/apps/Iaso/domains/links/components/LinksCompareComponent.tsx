@@ -45,9 +45,10 @@ export const LinksCompare: FunctionComponent<Props> = ({
                     spacing={0}
                     className={classes.title}
                     sx={{
-                        alignItems: "center",
-                        justifyContent: "flex-start"
-                    }}>
+                        alignItems: 'center',
+                        justifyContent: 'flex-start',
+                    }}
+                >
                     <Grid size={11}>
                         <Typography variant="h6" component="h6" color="primary">
                             {`${title} - ${link.source}`}

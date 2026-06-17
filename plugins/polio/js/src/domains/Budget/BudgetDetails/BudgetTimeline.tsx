@@ -94,7 +94,7 @@ export const BudgetTimeline: FunctionComponent<Props> = ({
                                                     item.step_id || item.label
                                                 }-${index}`}
                                                 sx={{
-                                                    mb: 1
+                                                    mb: 1,
                                                 }}
                                             >
                                                 <Box

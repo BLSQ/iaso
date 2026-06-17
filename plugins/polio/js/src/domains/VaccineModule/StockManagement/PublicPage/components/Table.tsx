@@ -62,11 +62,14 @@ export const Table: FunctionComponent<Props> = ({
                     ml: 1,
                     mr: 1,
                     overflow: 'auto',
-                    maxHeight: '500px'
-                }}>
-                <Box sx={{
-                    ml: 2
-                }}>
+                    maxHeight: '500px',
+                }}
+            >
+                <Box
+                    sx={{
+                        ml: 2,
+                    }}
+                >
                     <Typography
                         variant="h5"
                         sx={{ color: '#808080', fontWeight: 'bold' }}

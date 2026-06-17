@@ -127,8 +127,9 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 12,
                     sm: 6,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="search"
                     onChange={handleChange}
@@ -143,8 +144,9 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="project_ids"
                     onChange={handleChangeSelect}
@@ -161,8 +163,9 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="dataSource"
                     onChange={handleChangeSelect}
@@ -179,8 +182,9 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="version"
                     onChange={handleChangeSelect}
@@ -198,11 +202,12 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                 container
                 size={{
                     xs: 12,
-                    md: 12
+                    md: 12,
                 }}
                 sx={{
-                    justifyContent: "flex-end"
-                }}>
+                    justifyContent: 'flex-end',
+                }}
+            >
                 <Button
                     data-test="search-button"
                     disabled={!filtersUpdated || textSearchError}

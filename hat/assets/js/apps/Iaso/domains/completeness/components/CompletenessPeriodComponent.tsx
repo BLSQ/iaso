@@ -113,9 +113,10 @@ const CompletenessPeriodComponent: FunctionComponent<Props> = ({
                     container
                     size={6}
                     sx={{
-                        justifyContent: "flex-start",
-                        alignItems: "center"
-                    }}>
+                        justifyContent: 'flex-start',
+                        alignItems: 'center',
+                    }}
+                >
                     <Typography variant="h5" gutterBottom>
                         {formatPeriod(period.periodString)}
                     </Typography>

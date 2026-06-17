@@ -183,9 +183,13 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
             {isLoadingCheckResult ? (
                 <LoadingSpinner absolute />
             ) : (
-                <Grid container spacing={4} sx={{
-                    alignItems: "center"
-                }}>
+                <Grid
+                    container
+                    spacing={4}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <Grid size={12}>
                         <Typography variant="subtitle1">
                             {isError ? (

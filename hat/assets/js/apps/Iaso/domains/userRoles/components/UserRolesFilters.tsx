@@ -22,8 +22,9 @@ export const UserRolesFilters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 12,
                     sm: 6,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="search"
                     onChange={handleChange}
@@ -41,16 +42,18 @@ export const UserRolesFilters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 12,
                     sm: 6,
-                    md: 9
+                    md: 9,
                 }}
                 sx={{
-                    justifyContent: "flex-end"
-                }}>
+                    justifyContent: 'flex-end',
+                }}
+            >
                 <Box
                     sx={{
                         mt: 2,
-                        mb: 2
-                    }}>
+                        mb: 2,
+                    }}
+                >
                     <SearchButton
                         disabled={textSearchError || !filtersUpdated}
                         onSearch={handleSearch}

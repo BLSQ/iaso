@@ -12,9 +12,13 @@ const InstanceLogInfosRow: React.FunctionComponent<Props> = ({
     value,
     valueColor = 'inherit',
 }) => (
-    <Stack direction="row" spacing={1} sx={{
-        alignItems: "center"
-    }}>
+    <Stack
+        direction="row"
+        spacing={1}
+        sx={{
+            alignItems: 'center',
+        }}
+    >
         <Typography variant="body2" color={valueColor}>
             <b>{label} :</b>
         </Typography>

@@ -474,9 +474,13 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
                 <Stack
                     direction="row"
                     spacing={1}
-                    sx={[{
-                        alignItems: "center"
-                    }, styles.warningMessage]}>
+                    sx={[
+                        {
+                            alignItems: 'center',
+                        },
+                        styles.warningMessage,
+                    ]}
+                >
                     <WarningAmberIcon />
                     <Typography>
                         {formatMessage(MESSAGES.eraseReferenceFormsWarning)}

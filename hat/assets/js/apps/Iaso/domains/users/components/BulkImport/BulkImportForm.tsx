@@ -82,9 +82,11 @@ export const BulkImportForm = ({ cancelUrl }: BulkImportFormProps) => {
     return (
         <Container maxWidth="md" sx={{ mt: 6 }}>
             {isLoading && <LoadingSpinner />}
-            <Box sx={{
-                mt: 2
-            }}>
+            <Box
+                sx={{
+                    mt: 2,
+                }}
+            >
                 <FilesUpload
                     accept={{
                         'text/csv': ['.csv'],
@@ -105,13 +107,16 @@ export const BulkImportForm = ({ cancelUrl }: BulkImportFormProps) => {
             <Box
                 sx={{
                     mt: 2,
-                    fontSize: '12px'
-                }}>
+                    fontSize: '12px',
+                }}
+            >
                 {formatMessage(MESSAGES.bulkImportDialogDescription)}
             </Box>
-            <Box sx={{
-                mt: 2
-            }}>
+            <Box
+                sx={{
+                    mt: 2,
+                }}
+            >
                 <DropdownSampleDownload
                     options={[
                         {
@@ -130,9 +135,11 @@ export const BulkImportForm = ({ cancelUrl }: BulkImportFormProps) => {
                     buttonText={formatMessage(MESSAGES.downloadTemplate)}
                 />
             </Box>
-            <Box sx={{
-                mt: 2
-            }}>
+            <Box
+                sx={{
+                    mt: 2,
+                }}
+            >
                 <FormControlLabel
                     control={
                         <Checkbox
@@ -145,9 +152,11 @@ export const BulkImportForm = ({ cancelUrl }: BulkImportFormProps) => {
                 />
             </Box>
             <Collapse in={showDefaults} unmountOnExit={false}>
-                <Box sx={{
-                    mt: 1
-                }}>
+                <Box
+                    sx={{
+                        mt: 1,
+                    }}
+                >
                     <DefaultValuesSection
                         defaults={values}
                         errors={errors}
@@ -156,9 +165,11 @@ export const BulkImportForm = ({ cancelUrl }: BulkImportFormProps) => {
                 </Box>
             </Collapse>
             {fileContentErrors?.length > 0 && (
-                <Box sx={{
-                    mt: 2
-                }}>
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Alert severity="error" sx={{ mb: 2 }}>
                         <Typography variant="subtitle1">
                             {formatMessage(MESSAGES.validationFailed)}
@@ -176,8 +187,9 @@ export const BulkImportForm = ({ cancelUrl }: BulkImportFormProps) => {
                 sx={{
                     mt: 2,
                     display: 'flex',
-                    justifyContent: cancelUrl ? 'space-between' : 'flex-end'
-                }}>
+                    justifyContent: cancelUrl ? 'space-between' : 'flex-end',
+                }}
+            >
                 {cancelUrl && (
                     <Button
                         variant={'contained'}

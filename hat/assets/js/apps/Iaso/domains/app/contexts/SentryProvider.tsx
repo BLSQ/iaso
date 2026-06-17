@@ -154,9 +154,11 @@ export const SentryProvider: FunctionComponent<Props> = ({
                 sx={{ maxWidth: '100%' }}
             >
                 <Paper sx={styles.paper}>
-                    <Box sx={{
-                        mb: 1
-                    }}>
+                    <Box
+                        sx={{
+                            mb: 1,
+                        }}
+                    >
                         <DialogTitle sx={styles.title}>
                             {formatMessage(MESSAGES.analyticsConsent)}
                         </DialogTitle>

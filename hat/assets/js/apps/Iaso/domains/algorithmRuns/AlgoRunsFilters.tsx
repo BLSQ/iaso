@@ -90,12 +90,15 @@ export const AlgoRunsFilters: FunctionComponent<Props> = ({
                 size={{
                     xs: 12,
                     md: 4,
-                    xl: 3
-                }}>
+                    xl: 3,
+                }}
+            >
                 <Grid size={12}>
-                    <Box sx={{
-                        mr: isXs ? 0 : 2
-                    }}>
+                    <Box
+                        sx={{
+                            mr: isXs ? 0 : 2,
+                        }}
+                    >
                         <InputComponent
                             dataTestId="links-algo-filter"
                             keyValue="algorithmId"
@@ -112,8 +115,9 @@ export const AlgoRunsFilters: FunctionComponent<Props> = ({
                     <Box
                         sx={{
                             mr: isXs ? 0 : 2,
-                            mt: 2
-                        }}>
+                            mt: 2,
+                        }}
+                    >
                         <UserAsyncSelect
                             keyValue="launcher"
                             label={MESSAGES.launcher}
@@ -130,12 +134,15 @@ export const AlgoRunsFilters: FunctionComponent<Props> = ({
                 size={{
                     xs: 12,
                     md: 4,
-                    xl: 3
-                }}>
+                    xl: 3,
+                }}
+            >
                 <Grid size={12}>
-                    <Box sx={{
-                        mr: isXs ? 0 : 2
-                    }}>
+                    <Box
+                        sx={{
+                            mr: isXs ? 0 : 2,
+                        }}
+                    >
                         <InputComponent
                             keyValue="origin"
                             label={MESSAGES.sourceorigin}
@@ -151,9 +158,11 @@ export const AlgoRunsFilters: FunctionComponent<Props> = ({
                 </Grid>
                 {/* origin source version. disabled if only one version */}
                 <Grid size={12}>
-                    <Box sx={{
-                        mr: isXs ? 0 : 2
-                    }}>
+                    <Box
+                        sx={{
+                            mr: isXs ? 0 : 2,
+                        }}
+                    >
                         <InputComponent
                             keyValue="originVersion"
                             label={MESSAGES.sourceoriginversion}
@@ -174,8 +183,9 @@ export const AlgoRunsFilters: FunctionComponent<Props> = ({
                 size={{
                     xs: 12,
                     md: 4,
-                    xl: 3
-                }}>
+                    xl: 3,
+                }}
+            >
                 <Grid size={12}>
                     <InputComponent
                         keyValue="destination"
@@ -209,24 +219,28 @@ export const AlgoRunsFilters: FunctionComponent<Props> = ({
                 container
                 size={{
                     xs: 12,
-                    xl: 3
+                    xl: 3,
                 }}
                 sx={{
-                    justifyContent: "flex-end"
-                }}>
+                    justifyContent: 'flex-end',
+                }}
+            >
                 <Box
                     sx={{
                         mr: 2,
-                        mt: 2
-                    }}>
+                        mt: 2,
+                    }}
+                >
                     <RefreshButton
                         forceRefresh={forceRefresh}
                         disabled={disableRefresh}
                     />
                 </Box>
-                <Box sx={{
-                    mt: 2
-                }}>
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <SearchButton onSearch={handleSearch} disabled={disabled} />
                 </Box>
             </Grid>

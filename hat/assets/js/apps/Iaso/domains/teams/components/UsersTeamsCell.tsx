@@ -21,9 +21,11 @@ export const UsersTeamsCell: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     return (
-        <Box sx={{
-            pt: 1
-        }}>
+        <Box
+            sx={{
+                pt: 1,
+            }}
+        >
             {type === TEAM_OF_TEAMS && (
                 <>
                     {subTeamsDetails.map(team => {
@@ -39,8 +41,9 @@ export const UsersTeamsCell: FunctionComponent<Props> = ({
                                 sx={{
                                     pl: 1,
                                     pb: 1,
-                                    display: "inline-block"
-                                }}>
+                                    display: 'inline-block',
+                                }}
+                            >
                                 {team.deleted_at && (
                                     <Tooltip
                                         arrow
@@ -79,8 +82,9 @@ export const UsersTeamsCell: FunctionComponent<Props> = ({
                             sx={{
                                 pl: 1,
                                 pb: 1,
-                                display: "inline-block"
-                            }}>
+                                display: 'inline-block',
+                            }}
+                        >
                             <Chip
                                 size="small"
                                 label={user.username}

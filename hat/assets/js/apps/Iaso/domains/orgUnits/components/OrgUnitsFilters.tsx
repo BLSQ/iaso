@@ -253,13 +253,15 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
             <Grid
                 size={{
                     xs: 12,
-                    sm: 4
-                }}>
+                    sm: 4,
+                }}
+            >
                 <Box
                     sx={{
                         mt: 4,
-                        mb: 2
-                    }}>
+                        mb: 2,
+                    }}
+                >
                     <ColorPicker
                         currentColor={currentColor}
                         onChangeColor={color =>
@@ -299,9 +301,11 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     options={dataSources}
                     loading={isFetchingDataSources}
                 />
-                <Box sx={{
-                    mt: 2
-                }}>
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <DatePicker
                         label={formatMessage(MESSAGES.openDate)}
                         clearMessage={MESSAGES.clear}
@@ -357,8 +361,9 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
             <Grid
                 size={{
                     xs: 12,
-                    sm: 4
-                }}>
+                    sm: 4,
+                }}
+            >
                 <InputComponent
                     type="select"
                     multi
@@ -408,9 +413,11 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 {currentTab === 'map' && (
                     <>
                         <Divider />
-                        <Box sx={{
-                            mt: 2
-                        }}>
+                        <Box
+                            sx={{
+                                mt: 2,
+                            }}
+                        >
                             <LocationLimit
                                 keyValue="locationLimit"
                                 onChange={handleLocationLimitChange}
@@ -424,11 +431,14 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
             <Grid
                 size={{
                     xs: 12,
-                    sm: 4
-                }}>
-                <Box sx={{
-                    mb: 1
-                }}>
+                    sm: 4,
+                }}
+            >
+                <Box
+                    sx={{
+                        mb: 1,
+                    }}
+                >
                     <OrgUnitTreeviewModal
                         toggleOnLabelClick={false}
                         titleMessage={MESSAGES.parent}
@@ -441,9 +451,11 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         initialSelection={initialOrgUnit}
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <InputComponent
                         type="select"
                         keyValue="geography"
@@ -472,9 +484,11 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         ]}
                     />
                 </Box>
-                <Box sx={{
-                    mt: 1
-                }}>
+                <Box
+                    sx={{
+                        mt: 1,
+                    }}
+                >
                     <InputComponent
                         type="select"
                         keyValue="hasInstances"

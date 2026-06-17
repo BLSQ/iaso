@@ -54,7 +54,8 @@ const LazyImagesList: FunctionComponent<Props> = ({
                                 getFileName(file.path).name
                             }`}
                             sx={styles.imageItem}
-                            size={width < 500 ? 6 : 3}>
+                            size={width < 500 ? 6 : 3}
+                        >
                             <LazyImage
                                 src={file.path}
                                 visibilitySensorProps={{

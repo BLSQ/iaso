@@ -49,8 +49,9 @@ export const ReviewOrgUnitChangesConfirmDialogButtons: FunctionComponent<
             <Box
                 sx={{
                     pl: 1,
-                    display: "inline-block"
-                }}>
+                    display: 'inline-block',
+                }}
+            >
                 <Button
                     data-test="cancel-comment-button"
                     onClick={() => onClose()}
@@ -59,9 +60,11 @@ export const ReviewOrgUnitChangesConfirmDialogButtons: FunctionComponent<
                     {formatMessage(MESSAGES.cancel)}
                 </Button>
             </Box>
-            <Box sx={{
-                display: "inline-block"
-            }}>
+            <Box
+                sx={{
+                    display: 'inline-block',
+                }}
+            >
                 <Button
                     data-test="confirm-comment-button"
                     onClick={handleConfirm}

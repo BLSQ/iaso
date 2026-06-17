@@ -116,9 +116,10 @@ export const InstanceTitle: FunctionComponent<Props> = ({
                         className={classes.paperTitleButtonContainer}
                         size={4}
                         sx={{
-                            justifyContent: "flex-end",
-                            alignItems: "center"
-                        }}>
+                            justifyContent: 'flex-end',
+                            alignItems: 'center',
+                        }}
+                    >
                         <Box className={classes.paperTitleButton}>
                             <DisplayIfUserHasPerm
                                 permissions={[Permissions.SUBMISSIONS_UPDATE]}

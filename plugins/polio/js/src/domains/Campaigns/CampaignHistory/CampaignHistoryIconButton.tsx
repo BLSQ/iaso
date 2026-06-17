@@ -18,13 +18,15 @@ export const CampaignHistoryIconButton: FunctionComponent<Props> = ({
             className={classes.historyLink}
             size={{
                 xs: 12,
-                md: 4
-            }}>
+                md: 4,
+            }}
+        >
             <Box
                 sx={{
                     pr: 4,
-                    alignItems: "center"
-                }}>
+                    alignItems: 'center',
+                }}
+            >
                 <IconButton
                     url={`/${baseUrls.campaignHistory}/campaignId/${selectedCampaign?.id}`}
                     icon="history"

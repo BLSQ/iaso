@@ -60,9 +60,11 @@ export const BudgetCard: FunctionComponent<Props> = ({ budget }) => {
             <Grid container>
                 <Grid size={10}>
                     <CardContent className={classes.cardContent}>
-                        <Box sx={{
-                            display: "flex"
-                        }}>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                            }}
+                        >
                             <Typography
                                 variant="h6"
                                 className={classes.title}
@@ -90,9 +92,10 @@ export const BudgetCard: FunctionComponent<Props> = ({ budget }) => {
                     direction="column"
                     size={2}
                     sx={{
-                        justifyContent: "center",
-                        alignItems: "center"
-                    }}>
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
+                >
                     <Divider orientation="vertical" />
 
                     <IconButton

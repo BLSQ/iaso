@@ -53,8 +53,9 @@ export const SubactivityPopper: FunctionComponent<Props> = ({
                         pt: 4,
                         pb: 2,
                         pr: 2,
-                        pl: 2
-                    }}>
+                        pl: 2,
+                    }}
+                >
                     <IconButton
                         onClick={() => handleClose()}
                         sx={styles.popperClose}
@@ -62,76 +63,94 @@ export const SubactivityPopper: FunctionComponent<Props> = ({
                     >
                         <CloseIcon color="primary" />
                     </IconButton>
-                    <Grid container spacing={1} sx={{
-                        mb: 1
-                    }}>
+                    <Grid
+                        container
+                        spacing={1}
+                        sx={{
+                            mb: 1,
+                        }}
+                    >
                         <Grid
                             container
                             size={{
-                                sm: 6
+                                sm: 6,
                             }}
                             sx={{
-                                justifyContent: "flex-end"
-                            }}>
+                                justifyContent: 'flex-end',
+                            }}
+                        >
                             {formatMessage(MESSAGES.subactivityName)}:
                         </Grid>
                         <Grid
                             container
                             size={{
-                                sm: 6
+                                sm: 6,
                             }}
                             sx={{
-                                justifyContent: "flex-start"
-                            }}>
+                                justifyContent: 'flex-start',
+                            }}
+                        >
                             {subactivity.name}
                         </Grid>
                     </Grid>
-                    <Grid container spacing={1} sx={{
-                        mb: 1
-                    }}>
+                    <Grid
+                        container
+                        spacing={1}
+                        sx={{
+                            mb: 1,
+                        }}
+                    >
                         <Grid
                             container
                             size={{
-                                sm: 6
+                                sm: 6,
                             }}
                             sx={{
-                                justifyContent: "flex-end"
-                            }}>
+                                justifyContent: 'flex-end',
+                            }}
+                        >
                             {formatMessage(MESSAGES.startDate)}:
                         </Grid>
                         <Grid
                             container
                             size={{
-                                sm: 6
+                                sm: 6,
                             }}
                             sx={{
-                                justifyContent: "flex-start"
-                            }}>
+                                justifyContent: 'flex-start',
+                            }}
+                        >
                             {subactivity.start_date &&
                                 subactivity.start_date.format('L')}
                         </Grid>
                     </Grid>
-                    <Grid container spacing={1} sx={{
-                        mb: 1
-                    }}>
+                    <Grid
+                        container
+                        spacing={1}
+                        sx={{
+                            mb: 1,
+                        }}
+                    >
                         <Grid
                             container
                             size={{
-                                sm: 6
+                                sm: 6,
                             }}
                             sx={{
-                                justifyContent: "flex-end"
-                            }}>
+                                justifyContent: 'flex-end',
+                            }}
+                        >
                             {formatMessage(MESSAGES.endDate)}:
                         </Grid>
                         <Grid
                             container
                             size={{
-                                sm: 6
+                                sm: 6,
                             }}
                             sx={{
-                                justifyContent: "flex-start"
-                            }}>
+                                justifyContent: 'flex-start',
+                            }}
+                        >
                             {subactivity.end_date &&
                                 subactivity.end_date.format('L')}
                         </Grid>

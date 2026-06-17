@@ -29,16 +29,18 @@ export const BudgetDetailsCardsLayout: FunctionComponent<Props> = ({
         ? (page as number)
         : parseInt(page as string, 10);
     return (
-        <Box sx={{
-            width: "100%"
-        }}>
+        <Box
+            sx={{
+                width: '100%',
+            }}
+        >
             {budgetDetails?.results.map((budgetStep, i) => {
                 return (
                     <Box
                         // eslint-disable-next-line react/no-array-index-key
                         key={`event-${budgetStep.transition_key}-${i}`}
                         sx={{
-                            mb: 1
+                            mb: 1,
                         }}
                     >
                         <BudgetEventCard step={budgetStep} />

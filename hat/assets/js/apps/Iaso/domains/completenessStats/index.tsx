@@ -151,16 +151,24 @@ export const CompletenessStats: FunctionComponent = () => {
                         fetchingForms={fetchingForms}
                     />
                 </Box>
-                <Grid container style={{ paddingTop: '5px', paddingBottom: '5px' }}>
-                    <Grid container sx={{
-                        justifyContent: "flex-end"
-                    }}>
+                <Grid
+                    container
+                    style={{ paddingTop: '5px', paddingBottom: '5px' }}
+                >
+                    <Grid
+                        container
+                        sx={{
+                            justifyContent: 'flex-end',
+                        }}
+                    >
                         <CsvButton csvUrl={csvUrl} />
                     </Grid>
                 </Grid>
-                <Box sx={{
-                    mt: 2
-                }}>
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Tabs
                         value={tab}
                         onChange={(_, newtab) => handleChangeTab(newtab)}
@@ -176,7 +184,7 @@ export const CompletenessStats: FunctionComponent = () => {
                 <Box
                     className={tab === 'map' ? '' : classes.hiddenOpacity}
                     sx={{
-                        width: "100%"
+                        width: '100%',
                     }}
                 >
                     {selectedFormsIds.length !== 1 && (
@@ -202,9 +210,11 @@ export const CompletenessStats: FunctionComponent = () => {
                     )}
                 </Box>
                 {tab === 'list' && (
-                    <Box sx={{
-                        mt: selectedFormsIds.length === 1 ? 0 : 2
-                    }}>
+                    <Box
+                        sx={{
+                            mt: selectedFormsIds.length === 1 ? 0 : 2,
+                        }}
+                    >
                         <TableWithDeepLink
                             marginTop={false}
                             data={completenessStats?.results ?? []}

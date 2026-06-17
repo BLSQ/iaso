@@ -133,11 +133,14 @@ const DatesRange: FunctionComponent<Props> = ({
                     xs: xs,
                     sm: sm,
                     md: md,
-                    lg: lg
-                }}>
-                <Box sx={{
-                    mt: marginTop
-                }}>
+                    lg: lg,
+                }}
+            >
+                <Box
+                    sx={{
+                        mt: marginTop,
+                    }}
+                >
                     <FormControl errors={errors[0]}>
                         <DatePicker
                             maxDate={
@@ -195,11 +198,14 @@ const DatesRange: FunctionComponent<Props> = ({
                     xs: xs,
                     sm: sm,
                     md: md,
-                    lg: lg
-                }}>
-                <Box sx={{
-                    mt: marginTop
-                }}>
+                    lg: lg,
+                }}
+            >
+                <Box
+                    sx={{
+                        mt: marginTop,
+                    }}
+                >
                     <FormControl errors={errors[1]}>
                         <DatePicker
                             minDate={

@@ -93,9 +93,10 @@ export const WorkflowBaseInfo: FunctionComponent<Props> = ({
                     <Box
                         sx={{
                             p: 2,
-                            display: "flex",
-                            justifyContent: "flex-end"
-                        }}>
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                        }}
+                    >
                         <PublishVersionModal
                             workflowVersion={workflowVersion}
                             invalidateQueryKey="workflowVersion"

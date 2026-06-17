@@ -99,9 +99,10 @@ export const StepActionCell: FunctionComponent<Props> = ({
             {repeatTransition && (
                 <Box
                     sx={{
-                        display: "inline-block",
-                        mr: 1
-                    }}>
+                        display: 'inline-block',
+                        mr: 1,
+                    }}
+                >
                     <CreateBudgetStepIcon
                         isMobileLayout={isMobileLayout}
                         budgetProcessId={budgetProcessId}

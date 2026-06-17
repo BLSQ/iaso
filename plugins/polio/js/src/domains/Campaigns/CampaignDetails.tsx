@@ -123,12 +123,15 @@ export const CampaignDetails: FunctionComponent = () => {
                     container
                     spacing={2}
                     sx={{
-                        justifyContent: "flex-end",
-                        mt: 2
-                    }}>
-                    <Box sx={{
-                        mr: 2
-                    }}>
+                        justifyContent: 'flex-end',
+                        mt: 2,
+                    }}
+                >
+                    <Box
+                        sx={{
+                            mr: 2,
+                        }}
+                    >
                         <Button
                             onClick={handleCancel}
                             color="primary"

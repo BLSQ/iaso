@@ -105,8 +105,9 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
                 <Grid
                     size={{
                         xs: 12,
-                        sm: 4
-                    }}>
+                        sm: 4,
+                    }}
+                >
                     <Table size={isMobileLayout ? 'small' : 'medium'}>
                         <TableBody>
                             <TableRow>
@@ -144,17 +145,19 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
                     className={classes.buttonContainer}
                     size={{
                         xs: 12,
-                        sm: 8
-                    }}>
+                        sm: 8,
+                    }}
+                >
                     <Grid
                         container
                         spacing={isMobileLayout ? 1 : 2}
                         className={classes.buttonGrid}
                         size={12}
                         sx={{
-                            justifyContent: "flex-end",
-                            alignItems: "center"
-                        }}>
+                            justifyContent: 'flex-end',
+                            alignItems: 'center',
+                        }}
+                    >
                         {nextSteps && (
                             <>
                                 {nextSteps.regular &&
@@ -167,7 +170,8 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
                                             return (
                                                 <Grid
                                                     // eslint-disable-next-line react/no-array-index-key
-                                                    key={`${step.key}-${index}`}>
+                                                    key={`${step.key}-${index}`}
+                                                >
                                                     <CreateBudgetStep
                                                         isMobileLayout={
                                                             isMobileLayout
@@ -232,9 +236,11 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
             </Grid>
             {/* temporary hide the budget timeline waiting to fix the workflow process */}
             {isTabletOrDesktopLayout && (
-                <Box sx={{
-                    py: 2
-                }}>
+                <Box
+                    sx={{
+                        py: 2,
+                    }}
+                >
                     <BudgetTimeline categories={categories} />
                 </Box>
             )}

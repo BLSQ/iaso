@@ -152,17 +152,20 @@ const Filters: FunctionComponent<Props> = ({
 
     const { url: apiUrl } = useGetEntitiesApiParams(params);
     return (
-        <Box sx={{
-            mb: 1
-        }}>
+        <Box
+            sx={{
+                mb: 1,
+            }}
+        >
             <UserOrgUnitRestriction />
             <Grid container spacing={2}>
                 <Grid
                     size={{
                         xs: 12,
                         sm: 6,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <InputComponent
                         keyValue="search"
                         onChange={handleChange}
@@ -219,9 +222,11 @@ const Filters: FunctionComponent<Props> = ({
                         />
                     </Box>
                     {params.tab === 'map' && (
-                        <Box sx={{
-                            mt: 2
-                        }}>
+                        <Box
+                            sx={{
+                                mt: 2,
+                            }}
+                        >
                             <LocationLimit
                                 keyValue="locationLimit"
                                 onChange={handleChange}
@@ -234,8 +239,9 @@ const Filters: FunctionComponent<Props> = ({
                     size={{
                         xs: 12,
                         sm: 6,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <DatesRange
                         xs={12}
                         sm={12}
@@ -268,8 +274,9 @@ const Filters: FunctionComponent<Props> = ({
                     size={{
                         xs: 12,
                         sm: 6,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <InputComponent
                         keyValue="submitterTeamId"
                         onChange={handleTeamChange}
@@ -278,9 +285,11 @@ const Filters: FunctionComponent<Props> = ({
                         label={MESSAGES.submitterTeam}
                         options={teamOptions}
                     />
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <UserAsyncSelect
                             keyValue="submitterId"
                             handleChange={handleChange}
@@ -294,15 +303,18 @@ const Filters: FunctionComponent<Props> = ({
                     </Box>
                 </Grid>
             </Grid>
-            <Box sx={{
-                mt: -2
-            }}>
+            <Box
+                sx={{
+                    mt: -2,
+                }}
+            >
                 <Grid container columnSpacing={2}>
                     <Grid
                         size={{
                             xs: 12,
-                            sm: 6
-                        }}>
+                            sm: 6,
+                        }}
+                    >
                         <EntitiesQueryBuilder
                             fieldsSearchJson={fieldsSearchJson}
                             handleChange={handleChange}
@@ -311,19 +323,23 @@ const Filters: FunctionComponent<Props> = ({
                     <Grid
                         size={{
                             xs: 12,
-                            sm: 6
-                        }}>
+                            sm: 6,
+                        }}
+                    >
                         <Box
                             sx={{
                                 mt: 2,
-                                display: "flex",
-                                justifyContent: "flex-end",
-                                alignItems: "end",
-                                flexDirection: "column"
-                            }}>
-                            <Box sx={{
-                                mb: 2
-                            }}>
+                                display: 'flex',
+                                justifyContent: 'flex-end',
+                                alignItems: 'end',
+                                flexDirection: 'column',
+                            }}
+                        >
+                            <Box
+                                sx={{
+                                    mb: 2,
+                                }}
+                            >
                                 <Button
                                     data-test="search-button"
                                     disabled={textSearchError || !searchEnabled}

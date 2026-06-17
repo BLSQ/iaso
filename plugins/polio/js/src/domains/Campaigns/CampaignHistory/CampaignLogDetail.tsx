@@ -37,9 +37,11 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
 
     if (isLoading)
         return (
-            <Box sx={{
-                height: "70vh"
-            }}>
+            <Box
+                sx={{
+                    height: '70vh',
+                }}
+            >
                 <LoadingSpinner
                     fixed={false}
                     transparent

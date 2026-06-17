@@ -178,9 +178,11 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
                 onClose={() => null}
             >
                 <>
-                    <Box sx={{
-                        mb: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mb: 2,
+                        }}
+                    >
                         <InputComponent
                             type="select"
                             multi={false}
@@ -214,9 +216,11 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
                         required={requiredFields.includes('amount')}
                     />
 
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <FilesUpload
                             files={values.files ?? []}
                             onFilesSelect={files => {
@@ -227,14 +231,18 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
                             errors={getErrors('files')}
                         />
                     </Box>
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <Divider />
                     </Box>
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <AddMultipleLinks
                             required={requiredFields.includes('links')}
                         />
@@ -242,8 +250,9 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
                     <Box
                         sx={{
                             mt: 2,
-                            mb: 2
-                        }}>
+                            mb: 2,
+                        }}
+                    >
                         <Divider />
                     </Box>
                     {(recipientTeams ?? []).length > 0 && (
@@ -251,8 +260,9 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
                             <Box
                                 sx={{
                                     mt: 1,
-                                    mb: 1
-                                }}>
+                                    mb: 1,
+                                }}
+                            >
                                 <Typography>
                                     {formatMessage(MESSAGES.emailWillBeSentTo)}
                                 </Typography>
@@ -264,8 +274,9 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
                                                 mt: 1,
                                                 mr: 1,
                                                 mb: 1,
-                                                display: "inline-block"
-                                            }}>
+                                                display: 'inline-block',
+                                            }}
+                                        >
                                             <Chip
                                                 label={team}
                                                 variant="outlined"
@@ -278,8 +289,9 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
                             <Box
                                 sx={{
                                     mt: 2,
-                                    mb: 2
-                                }}>
+                                    mb: 2,
+                                }}
+                            >
                                 <Divider />
                             </Box>
                         </>

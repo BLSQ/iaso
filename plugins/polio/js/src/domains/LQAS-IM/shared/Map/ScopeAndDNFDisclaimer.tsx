@@ -47,9 +47,11 @@ export const ScopeAndDNFDisclaimer: FunctionComponent<Props> = ({
             {hasScope === false && (
                 <Grid container direction="column">
                     <Grid>
-                        <Box sx={{
-                            mt: 2
-                        }}>
+                        <Box
+                            sx={{
+                                mt: 2,
+                            }}
+                        >
                             <Typography
                                 variant="h6"
                                 className={classes.boldText}
@@ -59,9 +61,11 @@ export const ScopeAndDNFDisclaimer: FunctionComponent<Props> = ({
                         </Box>
                     </Grid>
                     <Grid>
-                        <Box sx={{
-                            mb: allDistrictsFound ? 4 : 0
-                        }}>
+                        <Box
+                            sx={{
+                                mb: allDistrictsFound ? 4 : 0,
+                            }}
+                        >
                             <Typography variant="body1">
                                 {formatMessage(MESSAGES.noScopeFound)}
                             </Typography>
@@ -73,9 +77,11 @@ export const ScopeAndDNFDisclaimer: FunctionComponent<Props> = ({
                 <Grid container className={classes.justifyCenter}>
                     {' '}
                     <Grid>
-                        <Box sx={{
-                            mt: 2
-                        }}>
+                        <Box
+                            sx={{
+                                mt: 2,
+                            }}
+                        >
                             <Typography
                                 variant="h6"
                                 className={classes.boldText}
@@ -89,8 +95,9 @@ export const ScopeAndDNFDisclaimer: FunctionComponent<Props> = ({
                             sx={{
                                 mb: 2,
                                 ml: 2,
-                                mr: 2
-                            }}>
+                                mr: 2,
+                            }}
+                        >
                             <Typography
                                 variant="body1"
                                 className={classes.alignTextLeft}

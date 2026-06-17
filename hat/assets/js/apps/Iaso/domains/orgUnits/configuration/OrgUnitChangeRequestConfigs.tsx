@@ -61,21 +61,23 @@ export const OrgUnitChangeRequestConfigs: FunctionComponent = () => {
                     container
                     spacing={2}
                     sx={{
-                        alignItems: "flex-start",
-                        justifyContent: "space-between"
-                    }}>
+                        alignItems: 'flex-start',
+                        justifyContent: 'space-between',
+                    }}
+                >
                     <Grid
                         size={{
                             xs: 12,
-                            sm: "auto",
-                            md: 8
-                        }}>
+                            sm: 'auto',
+                            md: 8,
+                        }}
+                    >
                         <Stack
                             direction="row"
                             spacing={1}
                             className={classes.warningMessage}
                             sx={{
-                                alignItems: "center"
+                                alignItems: 'center',
                             }}
                         >
                             <WarningAmberIcon />
@@ -90,11 +92,12 @@ export const OrgUnitChangeRequestConfigs: FunctionComponent = () => {
                         container
                         size={{
                             xs: 12,
-                            sm: "auto"
+                            sm: 'auto',
                         }}
                         sx={{
-                            justifyContent: "flex-end"
-                        }}>
+                            justifyContent: 'flex-end',
+                        }}
+                    >
                         <OrgUnitChangeRequestConfigDialogCreateFirstStep
                             iconProps={{}}
                             openCreationSecondStepDialog={handleSecondStep}

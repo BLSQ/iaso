@@ -20,8 +20,9 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                     size={{
                         xs: 12,
                         md: 6,
-                        lg: 4
-                    }}>
+                        lg: 4,
+                    }}
+                >
                     <InputComponent
                         type="search"
                         clearable
@@ -38,19 +39,23 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                     size={{
                         xs: 12,
                         md: 6,
-                        lg: 8
-                    }}>
+                        lg: 8,
+                    }}
+                >
                     <Box
                         sx={{
-                            display: "flex",
-                            justifyContent: "flex-end",
-                            alignItems: "end",
-                            flexDirection: "column",
-                            width: "100%"
-                        }}>
-                        <Box sx={{
-                            mt: 2
-                        }}>
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            alignItems: 'end',
+                            flexDirection: 'column',
+                            width: '100%',
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                mt: 2,
+                            }}
+                        >
                             <SearchButton
                                 disabled={!filtersUpdated}
                                 onSearch={handleSearch}

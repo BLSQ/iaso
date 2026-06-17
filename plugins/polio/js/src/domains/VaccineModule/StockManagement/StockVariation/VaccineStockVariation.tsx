@@ -150,12 +150,17 @@ export const VaccineStockVariation: FunctionComponent = () => {
             </TopBar>
             <Box className={classes.containerFullHeightPadded}>
                 <Paper elevation={2} className={classes.marginTop}>
-                    <Box sx={{
-                        padding: 2
-                    }}>
-                        <Grid container sx={{
-                            justifyContent: "space-between"
-                        }}>
+                    <Box
+                        sx={{
+                            padding: 2,
+                        }}
+                    >
+                        <Grid
+                            container
+                            sx={{
+                                justifyContent: 'space-between',
+                            }}
+                        >
                             <Typography variant="h5" color="primary">
                                 {formatMessage(MESSAGES[`${tab}Reports`])}
                             </Typography>

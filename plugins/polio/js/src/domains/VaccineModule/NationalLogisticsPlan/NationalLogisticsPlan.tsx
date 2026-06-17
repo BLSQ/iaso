@@ -41,12 +41,17 @@ export const NationalLogisticsPlan: FunctionComponent = () => {
                         POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
                     ]}
                 >
-                    <Grid container sx={{
-                        justifyContent: "flex-end"
-                    }}>
-                        <Box sx={{
-                            mt: 2
-                        }}>
+                    <Grid
+                        container
+                        sx={{
+                            justifyContent: 'flex-end',
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                mt: 2,
+                            }}
+                        >
                             <CreateNationalLogisticsPlanModal iconProps={{}} />
                         </Box>
                     </Grid>

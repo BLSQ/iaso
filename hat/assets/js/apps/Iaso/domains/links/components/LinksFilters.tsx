@@ -82,8 +82,9 @@ export const LinksFilters: FunctionComponent<Props> = ({ baseUrl, params }) => {
                 size={{
                     xs: 12,
                     sm: 6,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="search"
                     label={MESSAGES.search}
@@ -144,8 +145,9 @@ export const LinksFilters: FunctionComponent<Props> = ({ baseUrl, params }) => {
                 size={{
                     xs: 12,
                     sm: 6,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 {/* validation status */}
                 <InputComponent
                     keyValue="validated"
@@ -158,9 +160,11 @@ export const LinksFilters: FunctionComponent<Props> = ({ baseUrl, params }) => {
                     options={statuses}
                 />
                 {/* validator */}
-                <Box sx={{
-                    mt: 2
-                }}>
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <UserAsyncSelect
                         keyValue="validatorId"
                         handleChange={handleChange}
@@ -187,8 +191,9 @@ export const LinksFilters: FunctionComponent<Props> = ({ baseUrl, params }) => {
                 size={{
                     xs: 12,
                     sm: 6,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 {/* origin source */}
                 <InputComponent
                     keyValue="origin"
@@ -220,8 +225,9 @@ export const LinksFilters: FunctionComponent<Props> = ({ baseUrl, params }) => {
                 size={{
                     xs: 12,
                     sm: 6,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="destination"
                     label={MESSAGES.sourcedestination}
@@ -247,9 +253,13 @@ export const LinksFilters: FunctionComponent<Props> = ({ baseUrl, params }) => {
                     loading={isLoadingSources}
                 />
             </Grid>
-            <Grid container size={12} sx={{
-                justifyContent: "flex-end"
-            }}>
+            <Grid
+                container
+                size={12}
+                sx={{
+                    justifyContent: 'flex-end',
+                }}
+            >
                 <SearchButton onSearch={handleSearch} disabled={disabled} />
             </Grid>
         </Grid>

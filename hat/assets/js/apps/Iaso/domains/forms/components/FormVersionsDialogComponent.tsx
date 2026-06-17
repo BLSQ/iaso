@@ -276,16 +276,21 @@ const FormVersionsDialogComponent: FunctionComponent<Props> = ({
                 {step === 'confirming' && diff ? (
                     <FormVersionsDiffConfirmation diff={diff} />
                 ) : (
-                    <Grid container spacing={4} sx={{
-                        justifyContent: "flex-start"
-                    }}>
+                    <Grid
+                        container
+                        spacing={4}
+                        sx={{
+                            justifyContent: 'flex-start',
+                        }}
+                    >
                         <Grid size={12}>
                             {!formState.id.value && (
                                 <Box
                                     sx={{
                                         mt: 1,
-                                        mb: "4px"
-                                    }}>
+                                        mb: '4px',
+                                    }}
+                                >
                                     <FileInputComponent
                                         keyValue="xls_file"
                                         onChange={(key, value) => {
@@ -343,14 +348,15 @@ const FormVersionsDialogComponent: FunctionComponent<Props> = ({
                                 <Box
                                     sx={{
                                         mb: 2,
-                                        mt: -1
-                                    }}>
+                                        mt: -1,
+                                    }}
+                                >
                                     <Typography
                                         id="start-invalid"
                                         variant="body1"
                                         color="error"
                                         sx={{
-                                            fontSize: "small"
+                                            fontSize: 'small',
                                         }}
                                     >
                                         {intl.formatMessage(
@@ -377,14 +383,15 @@ const FormVersionsDialogComponent: FunctionComponent<Props> = ({
                                 <Box
                                     sx={{
                                         mb: 2,
-                                        mt: -1
-                                    }}>
+                                        mt: -1,
+                                    }}
+                                >
                                     <Typography
                                         id="end-invalid"
                                         variant="body1"
                                         color="error"
                                         sx={{
-                                            fontSize: "small"
+                                            fontSize: 'small',
                                         }}
                                     >
                                         {intl.formatMessage(
@@ -397,14 +404,15 @@ const FormVersionsDialogComponent: FunctionComponent<Props> = ({
                                 <Box
                                     sx={{
                                         mb: 2,
-                                        mt: -1
-                                    }}>
+                                        mt: -1,
+                                    }}
+                                >
                                     <Typography
                                         id="chronological-error"
                                         variant="body1"
                                         color="error"
                                         sx={{
-                                            fontSize: "small"
+                                            fontSize: 'small',
                                         }}
                                     >
                                         {intl.formatMessage(

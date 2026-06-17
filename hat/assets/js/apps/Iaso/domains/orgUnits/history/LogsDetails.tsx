@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import Alert from '@mui/material/Alert';
 import { Container, Grid } from '@mui/material';
+import Alert from '@mui/material/Alert';
 import { makeStyles } from '@mui/styles';
 import {
     LoadingSpinner,
@@ -48,9 +48,13 @@ export const LogsDetails: FunctionComponent<Props> = ({
             {log && (
                 <>
                     {log.org_unit_change_request_id && (
-                        <Grid container spacing={2} sx={{
-                            mb: 2
-                        }}>
+                        <Grid
+                            container
+                            spacing={2}
+                            sx={{
+                                mb: 2,
+                            }}
+                        >
                             <Grid size={12}>
                                 <Alert severity="info">
                                     <LinkWithLocation

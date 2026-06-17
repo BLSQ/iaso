@@ -49,9 +49,10 @@ const OrgUnitTypes: FunctionComponent = () => {
                     spacing={0}
                     className={classes.marginTop}
                     sx={{
-                        justifyContent: "flex-end",
-                        alignItems: "center"
-                    }}>
+                        justifyContent: 'flex-end',
+                        alignItems: 'center',
+                    }}
+                >
                     <OrgUnitsTypesDialog
                         titleMessage={MESSAGES.create}
                         renderTrigger={({ openDialog }) => (

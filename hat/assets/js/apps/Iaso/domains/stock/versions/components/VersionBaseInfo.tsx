@@ -72,9 +72,10 @@ export const VersionBaseInfo: FunctionComponent<Props> = ({ version }) => {
                     <Box
                         sx={{
                             p: 2,
-                            display: "flex",
-                            justifyContent: "flex-end"
-                        }}>
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                        }}
+                    >
                         <PublishVersionModal
                             version={version}
                             iconProps={{

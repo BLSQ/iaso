@@ -11,9 +11,12 @@ const options = [
 export const Productivity: FunctionComponent = () => {
     return (
         <Box style={{ width: '100%' }}>
-            <Box style={{ width: '100%', fontSize: '48px' }} sx={{
-                mb: 30
-            }}>
+            <Box
+                style={{ width: '100%', fontSize: '48px' }}
+                sx={{
+                    mb: 30,
+                }}
+            >
                 <Box
                     style={{
                         border: '2px solid #33FF00',
@@ -21,15 +24,19 @@ export const Productivity: FunctionComponent = () => {
                         margin: 'auto',
                     }}
                     sx={{
-                        py: 4
+                        py: 4,
                     }}
                 >
                     CHOOSE YOUR DESTINY
                 </Box>
             </Box>
-            <Grid container spacing={2} sx={{
-                justifyContent: "space-evenly"
-            }}>
+            <Grid
+                container
+                spacing={2}
+                sx={{
+                    justifyContent: 'space-evenly',
+                }}
+            >
                 {options.map(option => (
                     <Grid key={`${option.name}-${option.url}`}>
                         <Box>

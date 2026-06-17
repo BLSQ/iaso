@@ -46,9 +46,10 @@ export const Projects: FunctionComponent = () => {
                     spacing={0}
                     className={classes.marginTop}
                     sx={{
-                        justifyContent: "flex-end",
-                        alignItems: "center"
-                    }}>
+                        justifyContent: 'flex-end',
+                        alignItems: 'center',
+                    }}
+                >
                     <CreateProjectDialog
                         saveProject={saveProject}
                         dialogType="create"

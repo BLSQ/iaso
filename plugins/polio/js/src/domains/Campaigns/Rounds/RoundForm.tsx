@@ -186,17 +186,20 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 6
-                    }}>
+                        md: 6,
+                    }}
+                >
                     <RoundDates
                         roundNumber={roundNumber}
                         roundIndex={roundIndex}
                         setParentFieldValue={setFieldValue}
                         parentFieldValue={rounds[roundIndex]}
                     />
-                    <Box sx={{
-                        mt: 6
-                    }}>
+                    <Box
+                        sx={{
+                            mt: 6,
+                        }}
+                    >
                         <Field
                             label={formatMessage(
                                 MESSAGES.percentage_covered_target_population,
@@ -206,9 +209,11 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                             required={isRequiredForPlannedRnd}
                         />
                     </Box>
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <Field
                             label={formatMessage(MESSAGES.targetPopulation)}
                             name={`rounds[${roundIndex}].target_population`}
@@ -216,9 +221,11 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                             required={isRequiredForPlannedRnd}
                         />
                     </Box>
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <Field
                             label={formatMessage(MESSAGES.onHoldRound)}
                             name={`rounds[${roundIndex}].on_hold`}
@@ -240,11 +247,14 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 6
-                    }}>
-                    <Box sx={{
-                        mb: 2
-                    }}>
+                        md: 6,
+                    }}
+                >
+                    <Box
+                        sx={{
+                            mb: 2,
+                        }}
+                    >
                         <Field
                             label={formatMessage(MESSAGES.ageUnit)}
                             name={`rounds[${roundIndex}].age_type`}
@@ -257,9 +267,11 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                             ]}
                         />
                     </Box>
-                    <Box sx={{
-                        mb: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mb: 2,
+                        }}
+                    >
                         <Field
                             label={formatMessage(MESSAGES.ageMin)}
                             name={`rounds[${roundIndex}].age_min`}
@@ -267,9 +279,11 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                             fullWidth
                         />
                     </Box>
-                    <Box sx={{
-                        mb: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mb: 2,
+                        }}
+                    >
                         <Field
                             label={formatMessage(MESSAGES.ageMax)}
                             name={`rounds[${roundIndex}].age_max`}

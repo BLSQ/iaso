@@ -55,13 +55,15 @@ export const LqasImDates: FunctionComponent<Props> = ({ type, date }) => {
                 className={
                     type === 'start' ? classes.labelStart : classes.labelEnd
                 }
-                size={12}>
+                size={12}
+            >
                 {`${formatMessage(label)}: `}
             </Grid>
             <Grid
                 className={
                     isDateOk ? classes.dateTextOK : classes.dateTextDefault
-                }>
+                }
+            >
                 {`${displayedDate}`}
             </Grid>
             {date?.isDefault && (

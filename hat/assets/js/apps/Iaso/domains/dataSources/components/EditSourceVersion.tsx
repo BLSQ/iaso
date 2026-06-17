@@ -86,9 +86,11 @@ export const EditSourceVersion: FunctionComponent<Props> = ({
             onAdditionalButtonClick={undefined}
         >
             <>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Divider />
                 </Box>
                 <Grid container spacing={2} direction="row">

@@ -99,9 +99,11 @@ const CreateChronogramModal: FunctionComponent<Props> = ({
                     cancelMessage={MESSAGES.cancel}
                     maxWidth="xs"
                 >
-                    <Box sx={{
-                        mb: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mb: 2,
+                        }}
+                    >
                         <Divider />
                     </Box>
                     <Grid container direction="row" spacing={2}>

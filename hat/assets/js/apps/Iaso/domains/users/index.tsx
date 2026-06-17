@@ -157,9 +157,10 @@ export const Users = () => {
                         spacing={0}
                         className={classes.marginTop}
                         sx={{
-                            justifyContent: "flex-end",
-                            alignItems: "center"
-                        }}>
+                            justifyContent: 'flex-end',
+                            alignItems: 'center',
+                        }}
+                    >
                         <CreateUserDialog
                             titleMessage={MESSAGES.create}
                             allowSendEmailInvitation
@@ -170,9 +171,11 @@ export const Users = () => {
                                 canBypassProjectRestrictions
                             }
                         />
-                        <Box sx={{
-                            ml: 2
-                        }}>
+                        <Box
+                            sx={{
+                                ml: 2,
+                            }}
+                        >
                             {/* @ts-ignore */}
                             <Button
                                 color="primary"

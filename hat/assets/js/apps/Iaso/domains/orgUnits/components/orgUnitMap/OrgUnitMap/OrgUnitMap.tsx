@@ -564,7 +564,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                         )}
                     {!state.location.value.edit && (
                         // Shapes section. Shapes come first so the markers are rendered above them
-                        (<>
+                        <>
                             <SourcesSelectedShapes
                                 mappedSourcesSelected={mappedSourcesSelected}
                                 updateOrgUnitLocation={updateOrgUnitLocation}
@@ -577,7 +577,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                                 mappedSourcesSelected={mappedSourcesSelected}
                                 updateOrgUnitLocation={updateOrgUnitLocation}
                             />
-                        </>)
+                        </>
                     )}
                     {/* Markers section  */}
 

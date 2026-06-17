@@ -31,8 +31,9 @@ export const NationalLogisticsPlanFilters: FunctionComponent<Props> = ({
             <Grid
                 size={{
                     xs: 6,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     type="select"
                     clearable
@@ -47,8 +48,9 @@ export const NationalLogisticsPlanFilters: FunctionComponent<Props> = ({
             <Grid
                 size={{
                     xs: 6,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     type="select"
                     clearable
@@ -64,15 +66,17 @@ export const NationalLogisticsPlanFilters: FunctionComponent<Props> = ({
             <Grid
                 size={{
                     xs: 12,
-                    md: 6
-                }}>
+                    md: 6,
+                }}
+            >
                 <Box
                     sx={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        alignItems: "flex-end",
-                        height: "100%"
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        alignItems: 'flex-end',
+                        height: '100%',
+                    }}
+                >
                     <SearchButton
                         disabled={!filtersUpdated}
                         onSearch={handleSearch}

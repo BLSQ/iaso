@@ -98,8 +98,9 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
                         size={{
                             xs: 12,
                             sm: 6,
-                            md: 4
-                        }}>
+                            md: 4,
+                        }}
+                    >
                         <VaccineStockManagementSummary
                             isLoading={isLoadingSummary}
                             data={summary}
@@ -110,17 +111,19 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
                         size={{
                             xs: 12,
                             sm: 6,
-                            md: 8
+                            md: 8,
                         }}
                         sx={{
-                            justifyContent: "flex-end"
-                        }}>
+                            justifyContent: 'flex-end',
+                        }}
+                    >
                         <Box
                             sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                gap: 2
-                            }}>
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 2,
+                            }}
+                        >
                             <Button
                                 variant="contained"
                                 color="primary"
@@ -172,8 +175,9 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
                     <Box
                         sx={{
                             pt: 2,
-                            px: 2
-                        }}>
+                            px: 2,
+                        }}
+                    >
                         <Typography variant="h5" color="primary">
                             {formatMessage(MESSAGES[tab])}
                         </Typography>

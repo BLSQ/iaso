@@ -42,9 +42,10 @@ export const CaregiversTableHeader: FunctionComponent<Props> = ({
             <Box
                 sx={{
                     p: 2,
-                    display: "flex",
-                    justifyContent: "space-between"
-                }}>
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                }}
+            >
                 <Typography variant="h6">
                     {`${formatMessage(
                         MESSAGES.totalCaregiversSurveyed,

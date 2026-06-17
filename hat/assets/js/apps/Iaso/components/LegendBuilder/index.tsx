@@ -116,12 +116,13 @@ export const LegendBuilder: FunctionComponent<LegendBuilderProps> = ({
                 ))}
                 <Box
                     sx={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        width: "100%",
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        width: '100%',
                         mr: 1,
-                        mt: -1
-                    }}>
+                        mt: -1,
+                    }}
+                >
                     <IconButton size="small" onClick={addRangeValue}>
                         <AddIcon />
                     </IconButton>

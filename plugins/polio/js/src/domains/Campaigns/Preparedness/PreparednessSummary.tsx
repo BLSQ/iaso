@@ -29,8 +29,9 @@ export const PreparednessSummary: FunctionComponent<Props> = ({
             <Grid container direction="row">
                 <Grid
                     size={{
-                        md: 4
-                    }}>
+                        md: 4,
+                    }}
+                >
                     <Typography>
                         {`${formatMessage(MESSAGES.national)}: ${
                             preparedness.national_score
@@ -39,8 +40,9 @@ export const PreparednessSummary: FunctionComponent<Props> = ({
                 </Grid>
                 <Grid
                     size={{
-                        md: 4
-                    }}>
+                        md: 4,
+                    }}
+                >
                     <Typography>
                         {`${formatMessage(MESSAGES.regional)}: ${
                             preparedness.regional_score
@@ -49,8 +51,9 @@ export const PreparednessSummary: FunctionComponent<Props> = ({
                 </Grid>
                 <Grid
                     size={{
-                        md: 4
-                    }}>
+                        md: 4,
+                    }}
+                >
                     <Typography>
                         {`${formatMessage(MESSAGES.districtScore)}: ${
                             preparedness.district_score

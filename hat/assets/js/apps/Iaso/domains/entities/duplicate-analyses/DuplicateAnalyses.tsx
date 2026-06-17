@@ -51,10 +51,11 @@ export const DuplicateAnalyses: FC = () => {
                 <DuplicateAnalysesFilters params={params} />
                 <Box
                     sx={{
-                        display: "flex",
+                        display: 'flex',
                         gap: 2,
-                        justifyContent: "flex-end"
-                    }}>
+                        justifyContent: 'flex-end',
+                    }}
+                >
                     <RefreshButton forceRefresh={setForceRefresh} />
                     <AnalysisModal iconProps={{}} onApply={setForceRefresh} />
                 </Box>

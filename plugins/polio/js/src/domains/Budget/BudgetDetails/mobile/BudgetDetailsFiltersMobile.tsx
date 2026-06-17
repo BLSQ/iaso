@@ -21,12 +21,16 @@ export const BudgetDetailsFiltersMobile: FunctionComponent<Props> = ({
     return (
         <Box
             sx={{
-                width: "100%",
-                mb: 2
-            }}>
-            <Grid container sx={{
-                justifyContent: "space-between"
-            }}>
+                width: '100%',
+                mb: 2,
+            }}
+        >
+            <Grid
+                container
+                sx={{
+                    justifyContent: 'space-between',
+                }}
+            >
                 <Grid>
                     <MoreHorizIcon
                         color="action"

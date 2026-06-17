@@ -62,8 +62,9 @@ export const NamedLink: FunctionComponent<Props> = ({ index }) => {
             <Grid
                 size={{
                     xs: 5,
-                    lg: 6
-                }}>
+                    lg: 6,
+                }}
+            >
                 <Field
                     label={formatMessage(MESSAGES.url)}
                     name={`links[${index}].url`}
@@ -77,8 +78,9 @@ export const NamedLink: FunctionComponent<Props> = ({ index }) => {
                 spacing={2}
                 size={{
                     xs: 3,
-                    lg: 2
-                }}>
+                    lg: 2,
+                }}
+            >
                 <Grid size={6}>
                     <IconButtonComponent
                         overrideIcon={ClearIcon}

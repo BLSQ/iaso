@@ -251,12 +251,15 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                         <Grid
                             size={{
                                 xs: 6,
-                                md: 3
-                            }}>
+                                md: 3,
+                            }}
+                        >
                             {/* TODO Add errors */}
-                            <Box sx={{
-                                mb: 2
-                            }}>
+                            <Box
+                                sx={{
+                                    mb: 2,
+                                }}
+                            >
                                 <Field
                                     label={formatMessage(MESSAGES.po_number)}
                                     name={`${VAR}[${index}].po_number`}
@@ -289,8 +292,9 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                         <Grid
                             size={{
                                 xs: 6,
-                                md: 3
-                            }}>
+                                md: 3,
+                            }}
+                        >
                             <Field
                                 label={formatMessage(
                                     MESSAGES.arrival_report_date,
@@ -320,8 +324,9 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                         <Grid
                             size={{
                                 xs: 6,
-                                md: 3
-                            }}>
+                                md: 3,
+                            }}
+                        >
                             <Field
                                 label={formatMessage(MESSAGES.doses_shipped)}
                                 name={`${VAR}[${index}].doses_shipped`}
@@ -335,9 +340,11 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                                 onChange={handleDosesShippedUpdate}
                                 required
                             />
-                            <Box sx={{
-                                mt: 2
-                            }}>
+                            <Box
+                                sx={{
+                                    mt: 2,
+                                }}
+                            >
                                 <Field
                                     label={formatMessage(
                                         MESSAGES.doses_per_vial,
@@ -360,8 +367,9 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                         <Grid
                             size={{
                                 xs: 6,
-                                md: 3
-                            }}>
+                                md: 3,
+                            }}
+                        >
                             <Field
                                 label={formatMessage(MESSAGES.doses_received)}
                                 name={`${VAR}[${index}].doses_received`}
@@ -381,9 +389,11 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
             </Paper>
             {/* Box is necessay to avoid bad tooltip placemement */}
             {arrival_reports?.[index].can_edit && (
-                <Box sx={{
-                    ml: 2
-                }}>
+                <Box
+                    sx={{
+                        ml: 2,
+                    }}
+                >
                     {!arrival_reports?.[index].to_delete && (
                         <DeleteIconButton
                             onClick={() => {

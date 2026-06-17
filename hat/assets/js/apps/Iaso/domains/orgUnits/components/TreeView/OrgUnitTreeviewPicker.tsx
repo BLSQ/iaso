@@ -119,8 +119,9 @@ const OrgUnitTreeviewPicker: React.FC<Props> = ({
         <Box
             sx={{
                 mt: 2,
-                mb: 2
-            }}>
+                mb: 2,
+            }}
+        >
             <FormControl errors={errors}>
                 {/* @ts-ignore: Unresolved issue with ReactNodeLike types, needs further investigation */}
                 <>

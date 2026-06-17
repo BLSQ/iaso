@@ -153,10 +153,11 @@ export const RefreshLqasIMData: FunctionComponent<Props> = ({
         <>
             <Box
                 sx={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    width: "100%"
-                }}>
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    width: '100%',
+                }}
+            >
                 <Button
                     size="small"
                     variant="contained"
@@ -167,8 +168,9 @@ export const RefreshLqasIMData: FunctionComponent<Props> = ({
                     <Box
                         sx={{
                             mr: 1,
-                            pt: 1
-                        }}>
+                            pt: 1,
+                        }}
+                    >
                         <RefreshIcon fontSize="small" />
                     </Box>
                     {buttonText}
@@ -184,23 +186,25 @@ export const RefreshLqasIMData: FunctionComponent<Props> = ({
             </Box>
             <Box
                 sx={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    width: "100%",
-                    mt: 2
-                }}>
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    width: '100%',
+                    mt: 2,
+                }}
+            >
                 {`${formatMessage(
                     MESSAGES.latestManualRefresh,
                 )}: ${lastUpdate}`}
             </Box>
             <Box
                 sx={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    width: "100%",
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    width: '100%',
                     mt: 1,
-                    mb: 1
-                }}>
+                    mb: 1,
+                }}
+            >
                 {`${formatMessage(MESSAGES.status)}: ${updateStatus}`}
             </Box>
         </>

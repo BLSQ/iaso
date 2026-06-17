@@ -54,10 +54,11 @@ export const FormsTable: FunctionComponent<Props> = ({
             {displayColumnsSelectDrawer && (
                 <Box
                     sx={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        mt: 2
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        mt: 2,
+                    }}
+                >
                     <ColumnsSelectDrawer
                         options={options}
                         setOptions={setOptions}

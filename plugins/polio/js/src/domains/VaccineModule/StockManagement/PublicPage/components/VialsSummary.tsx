@@ -34,12 +34,17 @@ export const VialsSummary: FunctionComponent<Props> = ({
         <Box
             sx={{
                 ml: 3,
-                my: 4
-            }}>
+                my: 4,
+            }}
+        >
             <Paper elevation={0} sx={{ border: 'none' }}>
-                <Grid container spacing={2} sx={{
-                    justifyContent: "flex-start"
-                }}>
+                <Grid
+                    container
+                    spacing={2}
+                    sx={{
+                        justifyContent: 'flex-start',
+                    }}
+                >
                     <Grid sx={{ textAlign: 'center' }}>
                         <Typography
                             sx={{

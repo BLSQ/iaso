@@ -28,8 +28,9 @@ export const HorizontalDivider: FunctionComponent<Props> = ({
                             mt: mt,
                             mr: mr,
                             ml: ml,
-                            mb: mb
-                        }}>
+                            mb: mb,
+                        }}
+                    >
                         <Divider className={classes.divider} />
                     </Box>
                 </Grid>

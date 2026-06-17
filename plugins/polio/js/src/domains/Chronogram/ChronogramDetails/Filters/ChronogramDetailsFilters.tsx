@@ -41,8 +41,9 @@ export const ChronogramDetailsFilters: FunctionComponent<Props> = ({
                     size={{
                         xs: 12,
                         md: 4,
-                        lg: 4
-                    }}>
+                        lg: 4,
+                    }}
+                >
                     <InputComponent
                         type="select"
                         clearable
@@ -57,8 +58,9 @@ export const ChronogramDetailsFilters: FunctionComponent<Props> = ({
                     size={{
                         xs: 12,
                         md: 4,
-                        lg: 4
-                    }}>
+                        lg: 4,
+                    }}
+                >
                     <InputComponent
                         type="select"
                         clearable
@@ -70,12 +72,17 @@ export const ChronogramDetailsFilters: FunctionComponent<Props> = ({
                     />
                 </Grid>
             </Grid>
-            <Grid container sx={{
-                justifyContent: "flex-end"
-            }}>
-                <Box sx={{
-                    mt: 2
-                }}>
+            <Grid
+                container
+                sx={{
+                    justifyContent: 'flex-end',
+                }}
+            >
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <SearchButton
                         disabled={!filtersUpdated}
                         onSearch={handleSearch}
@@ -86,9 +93,10 @@ export const ChronogramDetailsFilters: FunctionComponent<Props> = ({
                 <Grid
                     container
                     sx={{
-                        justifyContent: "flex-end",
-                        mt: 4
-                    }}>
+                        justifyContent: 'flex-end',
+                        mt: 4,
+                    }}
+                >
                     <CreateChronogramTaskModal
                         iconProps={{
                             message: MESSAGES.modalAddTitle,

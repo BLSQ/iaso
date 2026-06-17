@@ -52,9 +52,10 @@ export const OrgUnitChildren: FunctionComponent<Props> = ({
                 style={{ width: '100%' }}
                 sx={{
                     mt: 2,
-                    display: "inline-flex",
-                    justifyContent: "flex-end"
-                }}>
+                    display: 'inline-flex',
+                    justifyContent: 'flex-end',
+                }}
+            >
                 {Boolean(data?.orgunits?.length) && (
                     <DownloadButtonsComponent
                         csvUrl={csvUrl}

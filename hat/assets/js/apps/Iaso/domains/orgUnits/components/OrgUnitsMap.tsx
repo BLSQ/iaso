@@ -236,9 +236,11 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                     />
                 }
             >
-                <Box sx={{
-                    position: "relative"
-                }}>
+                <Box
+                    sx={{
+                        position: 'relative',
+                    }}
+                >
                     <MapToggleCluster
                         isClusterActive={isClusterActive}
                         setIsClusterActive={handleClusterActiveChange}

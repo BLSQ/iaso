@@ -66,13 +66,20 @@ export const LinksTableWithDownloads: FunctionComponent<Props> = ({
 
     return (
         <>
-            <Box sx={{
-                mb: 2
-            }}>{children}</Box>
+            <Box
+                sx={{
+                    mb: 2,
+                }}
+            >
+                {children}
+            </Box>
             {displayDownloadButtons && (
-                <Grid container sx={{
-                    justifyContent: "flex-end"
-                }}>
+                <Grid
+                    container
+                    sx={{
+                        justifyContent: 'flex-end',
+                    }}
+                >
                     <DownloadButtonsComponent
                         xlsxUrl={xlsxUrl}
                         csvUrl={csvUrl}

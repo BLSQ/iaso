@@ -26,16 +26,17 @@ export const customLabel = ({ x, y, width, height, value }) => {
                 <Box
                     style={{ color, textShadow: '1px 1px 2px black' }}
                     sx={{
-                        alignContent: "start",
-                        alignItems: "center",
+                        alignContent: 'start',
+                        alignItems: 'center',
                         justifyContent: alignment,
                         height: BAR_HEIGHT,
                         width: width,
-                        display: "flex",
+                        display: 'flex',
                         ml: 1,
                         mr: 1,
-                        pr: 2
-                    }}>
+                        pr: 2,
+                    }}
+                >
                     <Typography>{`${value}%`}</Typography>
                 </Box>
             </foreignObject>
@@ -58,13 +59,14 @@ export const customLabelHorizontal = ({ x, y, value, width }) => {
                 <Box
                     style={{ color, textShadow: '1px 1px 2px black' }}
                     sx={{
-                        alignContent: "start",
-                        alignItems: "center",
-                        justifyContent: "center",
+                        alignContent: 'start',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                         height: height,
                         width: theWidth,
-                        display: "flex"
-                    }}>
+                        display: 'flex',
+                    }}
+                >
                     <Typography>{`${Math.round(value)}%`}</Typography>
                 </Box>
             </foreignObject>

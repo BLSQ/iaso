@@ -124,16 +124,19 @@ const BuilderDialog: FunctionComponent<Props> = ({
             id="entities-query-builder"
             onClose={() => null}
         >
-            <Box sx={{
-                position: "relative"
-            }}>
+            <Box
+                sx={{
+                    position: 'relative',
+                }}
+            >
                 {InfoPopper && (
                     <Box
                         sx={{
-                            position: "absolute",
+                            position: 'absolute',
                             top: theme.spacing(-7),
-                            right: theme.spacing(-3)
-                        }}>
+                            right: theme.spacing(-3),
+                        }}
+                    >
                         {InfoPopper}
                     </Box>
                 )}
@@ -216,9 +219,10 @@ const BuilderDialog: FunctionComponent<Props> = ({
                     ))}
                     <Box
                         sx={{
-                            display: "flex",
-                            justifyContent: "flex-end"
-                        }}>
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                        }}
+                    >
                         <Button
                             onClick={handleAddForm}
                             disabled={

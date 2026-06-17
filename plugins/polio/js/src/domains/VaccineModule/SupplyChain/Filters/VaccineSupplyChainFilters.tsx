@@ -28,8 +28,9 @@ export const VaccineSupplyChainFilters: FunctionComponent<Props> = ({
                 size={{
                     xs: 6,
                     md: 3,
-                    lg: 3
-                }}>
+                    lg: 3,
+                }}
+            >
                 <InputComponent
                     type="search"
                     clearable
@@ -40,9 +41,11 @@ export const VaccineSupplyChainFilters: FunctionComponent<Props> = ({
                     labelString={formatMessage(MESSAGES.search)}
                     onEnterPressed={handleSearch}
                 />
-                <Box sx={{
-                    mt: 2
-                }}>
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <DatePicker
                         label={formatMessage(MESSAGES.RoundStartFrom)}
                         onChange={date =>
@@ -61,8 +64,9 @@ export const VaccineSupplyChainFilters: FunctionComponent<Props> = ({
                 size={{
                     xs: 6,
                     md: 3,
-                    lg: 3
-                }}>
+                    lg: 3,
+                }}
+            >
                 <InputComponent
                     type="select"
                     clearable
@@ -73,9 +77,11 @@ export const VaccineSupplyChainFilters: FunctionComponent<Props> = ({
                     options={countries}
                     labelString={formatMessage(MESSAGES.country)}
                 />
-                <Box sx={{
-                    mt: 2
-                }}>
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <DatePicker
                         label={formatMessage(MESSAGES.RoundStartTo)}
                         onChange={date =>
@@ -94,8 +100,9 @@ export const VaccineSupplyChainFilters: FunctionComponent<Props> = ({
                 size={{
                     xs: 6,
                     md: 3,
-                    lg: 3
-                }}>
+                    lg: 3,
+                }}
+            >
                 <InputComponent
                     type="select"
                     clearable
@@ -122,19 +129,23 @@ export const VaccineSupplyChainFilters: FunctionComponent<Props> = ({
                 size={{
                     xs: 12,
                     md: 3,
-                    lg: 3
-                }}>
+                    lg: 3,
+                }}
+            >
                 <Box
                     sx={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        alignItems: "end",
-                        flexDirection: "column",
-                        width: "100%"
-                    }}>
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        alignItems: 'end',
+                        flexDirection: 'column',
+                        width: '100%',
+                    }}
+                >
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <SearchButton
                             disabled={!filtersUpdated}
                             onSearch={handleSearch}

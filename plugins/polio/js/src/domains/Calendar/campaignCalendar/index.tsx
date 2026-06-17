@@ -44,10 +44,11 @@ const CampaignsCalendar: FunctionComponent<Props> = ({
         <Box
             sx={{
                 mb: 2,
-                display: "flex",
-                alignItems: "flex-start",
-                position: "relative"
-            }}>
+                display: 'flex',
+                alignItems: 'flex-start',
+                position: 'relative',
+            }}
+        >
             {!isPdf && (
                 <Nav
                     currentMonday={currentMonday}

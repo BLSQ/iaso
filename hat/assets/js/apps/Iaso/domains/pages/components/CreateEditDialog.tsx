@@ -155,9 +155,11 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                     <Form>
                         <Grid container spacing={0}>
                             <Grid size={12}>
-                                <Box sx={{
-                                    mb: 2
-                                }}>
+                                <Box
+                                    sx={{
+                                        mb: 2,
+                                    }}
+                                >
                                     <Typography>
                                         {formatMessage(
                                             MESSAGES.pageDialiogHelper,
@@ -171,13 +173,15 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                                     spacing={2}
                                     size={{
                                         xs: 12,
-                                        md: 12
-                                    }}>
+                                        md: 12,
+                                    }}
+                                >
                                     <Grid
                                         size={{
                                             xs: 6,
-                                            md: 6
-                                        }}>
+                                            md: 6,
+                                        }}
+                                    >
                                         <Field
                                             label={formatMessage(MESSAGES.name)}
                                             name="name"
@@ -188,8 +192,9 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                                     <Grid
                                         size={{
                                             xs: 6,
-                                            md: 6
-                                        }}>
+                                            md: 6,
+                                        }}
+                                    >
                                         <Field
                                             label={formatMessage(MESSAGES.slug)}
                                             name="slug"
@@ -200,8 +205,9 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                                     <Grid
                                         size={{
                                             xs: 6,
-                                            md: 6
-                                        }}>
+                                            md: 6,
+                                        }}
+                                    >
                                         <Field
                                             label={formatMessage(
                                                 MESSAGES.users,
@@ -215,8 +221,9 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                                     <Grid
                                         size={{
                                             xs: 6,
-                                            md: 6
-                                        }}>
+                                            md: 6,
+                                        }}
+                                    >
                                         <Field
                                             label={formatMessage(
                                                 MESSAGES.userRoles,
@@ -229,8 +236,9 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                                     <Grid
                                         size={{
                                             xs: 6,
-                                            md: 6
-                                        }}>
+                                            md: 6,
+                                        }}
+                                    >
                                         <Field
                                             label={formatMessage(
                                                 MESSAGES.needsAuthentication,
@@ -263,8 +271,9 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                                     <Grid
                                         size={{
                                             xs: 12,
-                                            md: 12
-                                        }}>
+                                            md: 12,
+                                        }}
+                                    >
                                         <Field
                                             label={formatMessage(MESSAGES.type)}
                                             name="type"
@@ -295,8 +304,9 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                                     <Grid
                                         size={{
                                             xs: 12,
-                                            md: 12
-                                        }}>
+                                            md: 12,
+                                        }}
+                                    >
                                         {type === SUPERSET && (
                                             <Field
                                                 label={formatMessage(
@@ -324,14 +334,17 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                 </FormikProvider>
             </DialogContent>
             <DialogActions className={classes.action}>
-                <Box sx={{
-                    m: 2
-                }}>
+                <Box
+                    sx={{
+                        m: 2,
+                    }}
+                >
                     <Box
                         sx={{
                             mr: 1,
-                            display: "inline"
-                        }}>
+                            display: 'inline',
+                        }}
+                    >
                         <Button
                             onClick={onClose}
                             color="primary"

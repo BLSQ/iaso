@@ -92,8 +92,9 @@ const Filters: FunctionComponent<Props> = ({
                         key={`column-${column}`}
                         size={{
                             xs: 12,
-                            md: 3
-                        }}>
+                            md: 3,
+                        }}
+                    >
                         <FiltersComponent
                             params={params}
                             baseUrl={baseUrl}
@@ -107,17 +108,19 @@ const Filters: FunctionComponent<Props> = ({
                 container
                 size={{
                     xs: 12,
-                    md: filtersColumnsCount === 3 ? 3 : 12
+                    md: filtersColumnsCount === 3 ? 3 : 12,
                 }}
                 sx={{
-                    justifyContent: "flex-end"
-                }}>
+                    justifyContent: 'flex-end',
+                }}
+            >
                 <Box
                     sx={{
                         mb: 2,
                         mt: filtersColumnsCount === 3 ? 2 : 0,
-                        p: 0
-                    }}>
+                        p: 0,
+                    }}
+                >
                     {extraComponent}
                     <Button
                         data-test="search-button"

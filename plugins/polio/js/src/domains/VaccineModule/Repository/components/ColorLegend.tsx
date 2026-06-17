@@ -13,35 +13,39 @@ const ColorLegend: FunctionComponent<Props> = ({ legendItems }) => {
             container
             size={{
                 xs: 12,
-                md: 12
+                md: 12,
             }}
             sx={{
-                justifyContent: "flex-end"
-            }}>
+                justifyContent: 'flex-end',
+            }}
+        >
             <Box
                 sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    marginTop: 2
-                }}>
+                    display: 'flex',
+                    alignItems: 'center',
+                    marginTop: 2,
+                }}
+            >
                 {legendItems.map(item => (
                     <Box
                         key={item.color}
                         sx={{
-                            display: "flex",
-                            alignItems: "center",
+                            display: 'flex',
+                            alignItems: 'center',
 
                             '&:not(:last-child)': {
                                 marginRight: 2,
-                            }
-                        }}>
+                            },
+                        }}
+                    >
                         <Box
                             sx={{
                                 width: 16,
                                 height: 16,
                                 bgcolor: item.color,
-                                marginRight: 1
-                            }} />
+                                marginRight: 1,
+                            }}
+                        />
                         <Typography variant="body2">{item.label}</Typography>
                     </Box>
                 ))}

@@ -52,9 +52,13 @@ export const OrgUnitTitle: FunctionComponent<Props> = ({ orgUnit, params }) => {
             <Grid
                 container
                 size={3}
-                sx={[{
-                    justifyContent: "flex-end"
-                }, styles.paperTitleButtonContainer]}>
+                sx={[
+                    {
+                        justifyContent: 'flex-end',
+                    },
+                    styles.paperTitleButtonContainer,
+                ]}
+            >
                 <Box sx={styles.paperTitleButton}>
                     <DisplayIfUserHasPerm
                         permissions={[Permissions.REGISTRY_WRITE]}

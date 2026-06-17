@@ -75,9 +75,11 @@ const ProjectInfos: FunctionComponent<Props> = ({
                 type="textarea"
                 label={MESSAGES.description}
             />
-            <Box sx={{
-                mt: 2
-            }}>
+            <Box
+                sx={{
+                    mt: 2,
+                }}
+            >
                 <ColorPicker
                     currentColor={
                         currentProject.color.value ?? defaultProjectColor

@@ -32,8 +32,9 @@ export const OrgUnitChangeRequestConfigsFilter: FunctionComponent<Props> = ({
                 size={{
                     xs: 12,
                     md: 4,
-                    lg: 3
-                }}>
+                    lg: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="project_id"
                     onChange={handleChange}
@@ -50,8 +51,9 @@ export const OrgUnitChangeRequestConfigsFilter: FunctionComponent<Props> = ({
                 size={{
                     xs: 12,
                     md: 4,
-                    lg: 3
-                }}>
+                    lg: 3,
+                }}
+            >
                 <InputComponent
                     type="select"
                     clearable
@@ -66,8 +68,9 @@ export const OrgUnitChangeRequestConfigsFilter: FunctionComponent<Props> = ({
                 size={{
                     xs: 12,
                     md: 4,
-                    lg: 3
-                }}>
+                    lg: 3,
+                }}
+            >
                 <InputComponent
                     type="select"
                     clearable
@@ -84,15 +87,18 @@ export const OrgUnitChangeRequestConfigsFilter: FunctionComponent<Props> = ({
                 size={{
                     xs: 12,
                     md: 4,
-                    lg: 3
+                    lg: 3,
                 }}
                 sx={{
-                    justifyContent: "flex-end",
-                    alignItems: "center"
-                }}>
-                <Box sx={{
-                    mb: { xs: 2, sm: 0 }
-                }}>
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                }}
+            >
+                <Box
+                    sx={{
+                        mb: { xs: 2, sm: 0 },
+                    }}
+                >
                     <SearchButton
                         disabled={!filtersUpdated}
                         onSearch={handleSearch}

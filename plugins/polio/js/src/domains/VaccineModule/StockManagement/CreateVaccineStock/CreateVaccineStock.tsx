@@ -58,8 +58,9 @@ const CreateVaccineStock: FunctionComponent<Props> = ({
                 <Box
                     sx={{
                         mb: 2,
-                        mt: 2
-                    }}>
+                        mt: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.country)}
                         name="country"

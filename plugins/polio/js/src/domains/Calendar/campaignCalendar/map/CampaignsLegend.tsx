@@ -73,9 +73,11 @@ export const CampaignsLegend: FunctionComponent<Props> = ({ campaigns }) => {
                 </Typography>
             </AccordionSummary>
             <AccordionDetails sx={styles.details}>
-                <Box sx={{
-                    display: "block"
-                }}>
+                <Box
+                    sx={{
+                        display: 'block',
+                    }}
+                >
                     {campaigns.length === 0 &&
                         formatMessage(MESSAGES.noCampaign)}
                     {campaigns.map(c => (
@@ -83,11 +85,15 @@ export const CampaignsLegend: FunctionComponent<Props> = ({ campaigns }) => {
                             <Grid
                                 container
                                 size={{
-                                    sm: 3
+                                    sm: 3,
                                 }}
-                                sx={[{
-                                    justifyContent: "flex-start"
-                                }, styles.mapLegendLabel]}>
+                                sx={[
+                                    {
+                                        justifyContent: 'flex-start',
+                                    },
+                                    styles.mapLegendLabel,
+                                ]}
+                            >
                                 <Box
                                     sx={{
                                         ...styles.roundColor,
@@ -97,8 +103,9 @@ export const CampaignsLegend: FunctionComponent<Props> = ({ campaigns }) => {
                             </Grid>
                             <Grid
                                 size={{
-                                    sm: 9
-                                }}>
+                                    sm: 9,
+                                }}
+                            >
                                 <Box sx={styles.label}>{c.name}</Box>
                             </Grid>
                         </Grid>

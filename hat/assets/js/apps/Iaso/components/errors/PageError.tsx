@@ -41,9 +41,11 @@ const PageError: FunctionComponent<Props> = ({
                     displayMenuButton={displayMenuButton}
                 />
             )}
-            <Box sx={{
-                mt: 5
-            }}>
+            <Box
+                sx={{
+                    mt: 5,
+                }}
+            >
                 <Container maxWidth="md">
                     {/* p prop is unknonw. Check it doesn't break the page before removing */}
                     {/* @ts-ignore */}
@@ -52,14 +54,17 @@ const PageError: FunctionComponent<Props> = ({
                             sx={{
                                 py: 6,
                                 px: 2,
-                                justifyContent: "center",
-                                alignItems: "center",
-                                display: "flex",
-                                flexDirection: "column"
-                            }}>
-                            <Box sx={{
-                                pt: 3
-                            }}>
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                display: 'flex',
+                                flexDirection: 'column',
+                            }}
+                        >
+                            <Box
+                                sx={{
+                                    pt: 3,
+                                }}
+                            >
                                 <Typography variant="h2" id="error-code">
                                     {errorCode}
                                 </Typography>
@@ -68,8 +73,9 @@ const PageError: FunctionComponent<Props> = ({
                                 <Box
                                     sx={{
                                         pt: 2,
-                                        pb: 2
-                                    }}>
+                                        pb: 2,
+                                    }}
+                                >
                                     <Typography variant="h5">
                                         {customMessage}
                                     </Typography>
@@ -82,8 +88,9 @@ const PageError: FunctionComponent<Props> = ({
                                             <Box
                                                 sx={{
                                                     pt: 2,
-                                                    pb: 2
-                                                }}>
+                                                    pb: 2,
+                                                }}
+                                            >
                                                 <Typography variant="h5">
                                                     <FormattedMessage
                                                         {...MESSAGES.notAuthenticated}
@@ -100,8 +107,9 @@ const PageError: FunctionComponent<Props> = ({
                                             <Box
                                                 sx={{
                                                     pt: 2,
-                                                    pb: 2
-                                                }}>
+                                                    pb: 2,
+                                                }}
+                                            >
                                                 <Typography variant="h5">
                                                     <FormattedMessage
                                                         {...MESSAGES.unauthorized}
@@ -118,8 +126,9 @@ const PageError: FunctionComponent<Props> = ({
                                             <Box
                                                 sx={{
                                                     pt: 2,
-                                                    pb: 2
-                                                }}>
+                                                    pb: 2,
+                                                }}
+                                            >
                                                 <Typography variant="h5">
                                                     <FormattedMessage
                                                         {...MESSAGES.notFound}
@@ -136,8 +145,9 @@ const PageError: FunctionComponent<Props> = ({
                                             <Box
                                                 sx={{
                                                     pt: 2,
-                                                    pb: 2
-                                                }}>
+                                                    pb: 2,
+                                                }}
+                                            >
                                                 <Typography variant="h5">
                                                     <FormattedMessage
                                                         {...MESSAGES.labelError}

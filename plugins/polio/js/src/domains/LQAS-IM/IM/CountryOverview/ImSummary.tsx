@@ -58,14 +58,16 @@ export const ImSummary: FunctionComponent<Props> = ({
         <Box
             sx={{
                 pt: 2,
-                pb: 2
-            }}>
+                pb: 2,
+            }}
+        >
             <Grid container direction="row" className={classes.containerGrid}>
                 <Grid
                     size={{
                         xs: 3,
-                        sm: 2
-                    }}>
+                        sm: 2,
+                    }}
+                >
                     <Typography variant="body1" className={classes.centerText}>
                         {formatMessage(MESSAGES[childrenChecked?.id])}
                     </Typography>
@@ -81,15 +83,17 @@ export const ImSummary: FunctionComponent<Props> = ({
                 <Box
                     sx={{
                         mt: -2,
-                        mb: -2
-                    }}>
+                        mb: -2,
+                    }}
+                >
                     <Divider orientation="vertical" />
                 </Box>
                 <Grid
                     size={{
                         xs: 3,
-                        sm: 2
-                    }}>
+                        sm: 2,
+                    }}
+                >
                     <Typography variant="body1" className={classes.centerText}>
                         {sitesVisited
                             ? formatMessage(MESSAGES[sitesVisited.id])
@@ -105,15 +109,17 @@ export const ImSummary: FunctionComponent<Props> = ({
                 <Box
                     sx={{
                         mt: -2,
-                        mb: -2
-                    }}>
+                        mb: -2,
+                    }}
+                >
                     <Divider orientation="vertical" />
                 </Box>
                 <Grid
                     size={{
                         xs: 3,
-                        sm: 2
-                    }}>
+                        sm: 2,
+                    }}
+                >
                     <Typography variant="body1" className={classes.centerText}>
                         {reportingDistricts
                             ? formatMessage(MESSAGES[reportingDistricts.id])
@@ -137,15 +143,17 @@ export const ImSummary: FunctionComponent<Props> = ({
                 <Box
                     sx={{
                         mt: -2,
-                        mb: -2
-                    }}>
+                        mb: -2,
+                    }}
+                >
                     <Divider orientation="vertical" />
                 </Box>
                 <Grid
                     size={{
                         xs: 3,
-                        sm: 2
-                    }}>
+                        sm: 2,
+                    }}
+                >
                     <Typography variant="body1" className={classes.centerText}>
                         {vaccinated
                             ? formatMessage(MESSAGES[vaccinated.id])

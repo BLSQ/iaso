@@ -37,9 +37,10 @@ export const UserRoles: FunctionComponent = () => {
                 <UserRolesFilters params={params} />
                 <Box
                     sx={{
-                        display: "flex",
-                        justifyContent: "flex-end"
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                    }}
+                >
                     <CreateUserRoleDialog dialogType="create" iconProps={{}} />
                 </Box>
                 <TableWithDeepLink

@@ -107,8 +107,9 @@ export const LqasFilterByCountry: FunctionComponent<Props> = ({
         <Box
             sx={{
                 my: 2,
-                width: "100%"
-            }}>
+                width: '100%',
+            }}
+        >
             <Grid container spacing={2}>
                 <Grid size={4}>
                     <Select
@@ -139,8 +140,9 @@ export const LqasFilterByCountry: FunctionComponent<Props> = ({
                 {campaignLink && (
                     <Grid
                         size={{
-                            md: 1
-                        }}>
+                            md: 1,
+                        }}
+                    >
                         <IconButton
                             target="_blank"
                             url={campaignLink}
@@ -155,8 +157,9 @@ export const LqasFilterByCountry: FunctionComponent<Props> = ({
                 <DisplayIfUserHasPerm permissions={[POLIO_ADMIN]}>
                     <Grid
                         size={{
-                            md: campaignLink ? 3 : 4
-                        }}>
+                            md: campaignLink ? 3 : 4,
+                        }}
+                    >
                         <RefreshLqasIMData countryId={country} />
                     </Grid>
                 </DisplayIfUserHasPerm>

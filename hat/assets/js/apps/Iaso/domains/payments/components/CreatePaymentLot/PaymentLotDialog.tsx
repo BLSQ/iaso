@@ -212,11 +212,12 @@ const AddButton: FunctionComponent<AddButtonProps> = ({
         >
             <Box
                 sx={{
-                    display: "inline-block",
+                    display: 'inline-block',
                     mr: 1,
-                    position: "relative",
-                    top: "4px"
-                }}>
+                    position: 'relative',
+                    top: '4px',
+                }}
+            >
                 <Add fontSize="small" />
             </Box>
             {formatMessage(MESSAGES.createLot)}

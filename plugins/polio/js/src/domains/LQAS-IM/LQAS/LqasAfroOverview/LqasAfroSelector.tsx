@@ -44,9 +44,10 @@ export const LqasAfroSelector: FunctionComponent<Props> = ({
                 <Box
                     sx={{
                         mt: 3,
-                        display: "flex",
-                        justifyContent: "center"
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'center',
+                    }}
+                >
                     <RadioGroup
                         row
                         name="displayedShapes"

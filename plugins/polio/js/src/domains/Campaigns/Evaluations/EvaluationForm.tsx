@@ -22,8 +22,9 @@ export const EvaluationForm: FunctionComponent<Props> = ({ roundNumber }) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 6
-                    }}>
+                        md: 6,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.im_started_at)}
                         name={`rounds[${roundIndex}].im_started_at`}
@@ -68,8 +69,9 @@ export const EvaluationForm: FunctionComponent<Props> = ({ roundNumber }) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 6
-                    }}>
+                        md: 6,
+                    }}
+                >
                     <LqasDistrictsPassed
                         lqasDistrictsFailing={
                             rounds?.[roundIndex]?.lqas_district_failing

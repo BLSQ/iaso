@@ -224,20 +224,25 @@ export const PaginatedInstancesFilesList: FunctionComponent<
                 <Box
                     sx={{
                         p: 2,
-                        display: "flex",
-                        justifyContent: "center",
-                        alignContent: "center",
-                        height: "30vh"
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignContent: 'center',
+                        height: '30vh',
+                    }}
+                >
                     <LoadingSpinner absolute={false} fixed={false} />
                 </Box>
             )}
             {!loadingFiles && (
                 <>
                     {displayedFiles.length === 0 && (
-                        <Box sx={{
-                            p: 2
-                        }}>{formatMessage(MESSAGES.missingFile)}</Box>
+                        <Box
+                            sx={{
+                                p: 2,
+                            }}
+                        >
+                            {formatMessage(MESSAGES.missingFile)}
+                        </Box>
                     )}
                     {displayedFiles.length > 0 && (
                         <>
@@ -255,9 +260,13 @@ export const PaginatedInstancesFilesList: FunctionComponent<
                             </Box>
                             {tab === 'videos' && (
                                 <Box
-                                    sx={[{
-                                        mt: 2
-                                    }, styles.tabContainer]}>
+                                    sx={[
+                                        {
+                                            mt: 2,
+                                        },
+                                        styles.tabContainer,
+                                    ]}
+                                >
                                     <VideosList videoList={displayedFiles} />
                                 </Box>
                             )}

@@ -135,9 +135,11 @@ export const Details: FunctionComponent = () => {
                         </WidgetPaper>
                     </Grid>
                 </Grid>
-                <Box sx={{
-                    mt: 2
-                }}>
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <WidgetPaper
                         className={classes.fullWidth}
                         title={formatMessage(MESSAGES.dataSourceVersionTitle)}

@@ -63,8 +63,9 @@ export const Infos: FunctionComponent<Props> = ({ storage }) => {
                                 <Box
                                     sx={{
                                         ml: 2,
-                                        display: "inline-block"
-                                    }}>
+                                        display: 'inline-block',
+                                    }}
+                                >
                                     <StatusModal storage={storage} />
                                 </Box>
                             </>

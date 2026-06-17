@@ -143,12 +143,16 @@ const PeriodPicker: FunctionComponent<Props> = ({
     return (
         <Box
             id={keyName}
-            sx={[{
-                mt: 2,
-                p: periodType === PERIOD_TYPE_DAY ? 0 : 1,
-                mb: 2,
-                border: periodType === PERIOD_TYPE_DAY ? 0 : 1
-            }, displayError ? styles.borderError : styles.inputBorder]}>
+            sx={[
+                {
+                    mt: 2,
+                    p: periodType === PERIOD_TYPE_DAY ? 0 : 1,
+                    mb: 2,
+                    border: periodType === PERIOD_TYPE_DAY ? 0 : 1,
+                },
+                displayError ? styles.borderError : styles.inputBorder,
+            ]}
+        >
             {periodType === PERIOD_TYPE_DAY && (
                 <DatePicker
                     label={title}
@@ -172,11 +176,13 @@ const PeriodPicker: FunctionComponent<Props> = ({
                         ) && (
                             <Grid
                                 size={{
-                                    sm: periodType === PERIOD_TYPE_YEAR ||
-                                    periodType === PERIOD_TYPE_FINANCIAL_NOV
-                                        ? 12
-                                        : 5
-                                }}>
+                                    sm:
+                                        periodType === PERIOD_TYPE_YEAR ||
+                                        periodType === PERIOD_TYPE_FINANCIAL_NOV
+                                            ? 12
+                                            : 5,
+                                }}
+                            >
                                 <InputComponent
                                     keyValue="year"
                                     onChange={handleChange}
@@ -205,8 +211,9 @@ const PeriodPicker: FunctionComponent<Props> = ({
                             periodType === PERIOD_TYPE_WEEK) && (
                             <Grid
                                 size={{
-                                    sm: 7
-                                }}>
+                                    sm: 7,
+                                }}
+                            >
                                 {periodType === PERIOD_TYPE_MONTH && (
                                     <InputComponent
                                         keyValue="month"

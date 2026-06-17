@@ -88,9 +88,11 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
                     cancelMessage={MESSAGES.modalWriteCancel}
                     maxWidth="md"
                 >
-                    <Box sx={{
-                        mb: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mb: 2,
+                        }}
+                    >
                         <Divider />
                     </Box>
 
@@ -98,8 +100,9 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
                         <Grid
                             size={{
                                 xs: 12,
-                                sm: 6
-                            }}>
+                                sm: 6,
+                            }}
+                        >
                             <Field
                                 label={formatMessage(MESSAGES.labelRound)}
                                 name="rounds"

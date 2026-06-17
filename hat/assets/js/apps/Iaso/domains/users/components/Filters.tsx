@@ -143,8 +143,9 @@ const Filters = ({
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputWithInfos infos={formatMessage(MESSAGES.searchParams)}>
                     <InputComponent
                         keyValue="search"
@@ -184,8 +185,9 @@ const Filters = ({
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="userRoles"
                     onChange={handleChange}
@@ -214,8 +216,9 @@ const Filters = ({
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="orgUnitTypes"
                     onChange={handleChange}
@@ -243,11 +246,15 @@ const Filters = ({
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
-                <Box id="ou-tree-input" sx={{
-                    mb: isLargeLayout ? 0 : -2
-                }}>
+                    md: 3,
+                }}
+            >
+                <Box
+                    id="ou-tree-input"
+                    sx={{
+                        mb: isLargeLayout ? 0 : -2,
+                    }}
+                >
                     <OrgUnitTreeviewModal
                         toggleOnLabelClick={false}
                         titleMessage={MESSAGES.location}
@@ -277,14 +284,17 @@ const Filters = ({
                 container
                 size={{
                     xs: 12,
-                    md: 12
+                    md: 12,
                 }}
                 sx={{
-                    justifyContent: "flex-end"
-                }}>
-                <Box sx={{
-                    mt: 2
-                }}>
+                    justifyContent: 'flex-end',
+                }}
+            >
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <Button
                         data-test="search-button"
                         disabled={textSearchError || !filtersUpdated}

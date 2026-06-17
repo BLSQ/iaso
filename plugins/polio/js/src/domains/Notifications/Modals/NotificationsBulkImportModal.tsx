@@ -116,9 +116,11 @@ const BulkImportNotificationModal: FunctionComponent<Props> = ({
             buttons={Buttons}
         >
             <p>{formatMessage(MESSAGES.modalBulkImportXlsxFileFormat)}</p>
-            <Box sx={{
-                mt: 2
-            }}>
+            <Box
+                sx={{
+                    mt: 2,
+                }}
+            >
                 <FilesUpload
                     accept={accept}
                     files={values.file ?? []}

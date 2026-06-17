@@ -57,17 +57,19 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
             />
             <Box
                 sx={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    m: 2
-                }}>
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    m: 2,
+                }}
+            >
                 {isNew && (
                     <>
                         <Box
                             sx={{
                                 pl: 1,
-                                display: "inline-block"
-                            }}>
+                                display: 'inline-block',
+                            }}
+                        >
                             <Button
                                 data-test="reject-button"
                                 onClick={() => {
@@ -84,8 +86,9 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
                         <Box
                             sx={{
                                 pl: 1,
-                                display: "inline-block"
-                            }}>
+                                display: 'inline-block',
+                            }}
+                        >
                             <Button
                                 data-test="confirm-button"
                                 onClick={() => {

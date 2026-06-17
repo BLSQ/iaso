@@ -90,17 +90,20 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
                     cancelMessage={MESSAGES.cancel}
                     maxWidth="md"
                 >
-                    <Box sx={{
-                        mb: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mb: 2,
+                        }}
+                    >
                         <Divider />
                     </Box>
                     <Grid container direction="row" spacing={2}>
                         <Grid
                             size={{
                                 xs: 12,
-                                sm: 6
-                            }}>
+                                sm: 6,
+                            }}
+                        >
                             <Field
                                 label={formatMessage(MESSAGES.labelCountry)}
                                 name="country"
@@ -111,8 +114,9 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
                         <Grid
                             size={{
                                 xs: 12,
-                                sm: 6
-                            }}>
+                                sm: 6,
+                            }}
+                        >
                             <Field
                                 label={formatMessage(MESSAGES.labelCampaign)}
                                 name="campaign"
@@ -123,8 +127,9 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
                         <Grid
                             size={{
                                 xs: 12,
-                                sm: 6
-                            }}>
+                                sm: 6,
+                            }}
+                        >
                             <Field
                                 label={formatMessage(MESSAGES.labelRound)}
                                 name="rounds"

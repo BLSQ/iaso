@@ -192,9 +192,11 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
                     onClose={handleClose}
                 >
                     <DialogContent sx={styles.dialogContent}>
-                        <Box sx={{
-                            mt: 4
-                        }}>
+                        <Box
+                            sx={{
+                                mt: 4,
+                            }}
+                        >
                             <FileScanHeader
                                 scanResult={scanResult}
                                 scanTimestamp={scanTimestamp}

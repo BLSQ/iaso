@@ -44,9 +44,11 @@ export const LqasCountryCharts: FunctionComponent<Props> = ({
     return (
         <>
             <HorizontalDivider mt={6} mb={4} displayTrigger />
-            <Box sx={{
-                mb: 2
-            }}>
+            <Box
+                sx={{
+                    mb: 2,
+                }}
+            >
                 <GraphTitle
                     text={formatMessage(MESSAGES.lqasPerRegion)}
                     displayTrigger
@@ -64,18 +66,22 @@ export const LqasCountryCharts: FunctionComponent<Props> = ({
                 />
             </Paper>
             <HorizontalDivider mt={6} mb={4} displayTrigger />
-            <Box sx={{
-                mb: 2
-            }}>
+            <Box
+                sx={{
+                    mb: 2,
+                }}
+            >
                 <GraphTitle
                     text={formatMessage(MESSAGES.reasonsNoFingerMarked)}
                     displayTrigger={hasScope}
                 />
             </Box>
             <Paper elevation={paperElevation}>
-                <Box sx={{
-                    p: 2
-                }}>
+                <Box
+                    sx={{
+                        p: 2,
+                    }}
+                >
                     <LqasImVerticalChart
                         data={chartData.nfm.data}
                         chartKey={chartData.nfm.chartKey}
@@ -86,18 +92,22 @@ export const LqasCountryCharts: FunctionComponent<Props> = ({
                 </Box>
             </Paper>
             <HorizontalDivider mt={6} mb={4} ml={0} mr={0} displayTrigger />
-            <Box sx={{
-                mb: 2
-            }}>
+            <Box
+                sx={{
+                    mb: 2,
+                }}
+            >
                 <GraphTitle
                     text={formatMessage(MESSAGES.reasonsForAbsence)}
                     displayTrigger={hasScope}
                 />
             </Box>
             <Paper elevation={paperElevation}>
-                <Box sx={{
-                    p: 2
-                }}>
+                <Box
+                    sx={{
+                        p: 2,
+                    }}
+                >
                     <LqasImVerticalChart
                         data={chartData.rfa.data}
                         chartKey={chartData.rfa.chartKey}
@@ -108,9 +118,11 @@ export const LqasCountryCharts: FunctionComponent<Props> = ({
                 </Box>
             </Paper>
             <HorizontalDivider mt={6} mb={4} displayTrigger />
-            <Box sx={{
-                mb: 2
-            }}>
+            <Box
+                sx={{
+                    mb: 2,
+                }}
+            >
                 <GraphTitle
                     text={formatMessage(MESSAGES.caregivers_informed)}
                     displayTrigger

@@ -64,11 +64,16 @@ export const PublicVaccineStock: FunctionComponent = () => {
             <Box
                 sx={{
                     mt: 2,
-                    mr: 2
-                }}>
-                <Grid container spacing={1} sx={{
-                    justifyContent: "flex-end"
-                }}>
+                    mr: 2,
+                }}
+            >
+                <Grid
+                    container
+                    spacing={1}
+                    sx={{
+                        justifyContent: 'flex-end',
+                    }}
+                >
                     <Grid>
                         <LanguageButton lang="en" />
                     </Grid>
@@ -81,8 +86,9 @@ export const PublicVaccineStock: FunctionComponent = () => {
                 sx={{
                     mx: 1,
                     mt: 1,
-                    border: '1px solid black'
-                }}>
+                    border: '1px solid black',
+                }}
+            >
                 <Grid container>
                     <Grid size={6}>
                         <Box
@@ -95,8 +101,9 @@ export const PublicVaccineStock: FunctionComponent = () => {
                                 fontSize: 32,
 
                                 fontWeight: 'bold',
-                                fontFamily: 'arial'
-                            }}>
+                                fontFamily: 'arial',
+                            }}
+                        >
                             <h1>
                                 {formatMessage(
                                     MESSAGES.countryStockCards,
@@ -104,13 +111,20 @@ export const PublicVaccineStock: FunctionComponent = () => {
                             </h1>
                         </Box>
                     </Grid>
-                    <Grid container spacing={1} size={6} sx={{
-                        justifyContent: "flex-end"
-                    }}>
+                    <Grid
+                        container
+                        spacing={1}
+                        size={6}
+                        sx={{
+                            justifyContent: 'flex-end',
+                        }}
+                    >
                         <Grid>
-                            <Box sx={{
-                                mt: 1
-                            }}>
+                            <Box
+                                sx={{
+                                    mt: 1,
+                                }}
+                            >
                                 <Button
                                     data-test="xlsx-export-button"
                                     variant="contained"
@@ -135,9 +149,11 @@ export const PublicVaccineStock: FunctionComponent = () => {
                             </Box>
                         </Grid>
                         <Grid>
-                            <Box sx={{
-                                mt: 1
-                            }}>
+                            <Box
+                                sx={{
+                                    mt: 1,
+                                }}
+                            >
                                 <TabSwitchButton
                                     tab="usable"
                                     activeTab={tab}
@@ -149,8 +165,9 @@ export const PublicVaccineStock: FunctionComponent = () => {
                             <Box
                                 sx={{
                                     mr: 1,
-                                    mt: 1
-                                }}>
+                                    mt: 1,
+                                }}
+                            >
                                 <TabSwitchButton
                                     tab="unusable"
                                     activeTab={tab}

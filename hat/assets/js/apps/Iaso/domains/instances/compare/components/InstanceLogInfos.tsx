@@ -119,9 +119,11 @@ export const InstanceLogInfos: FunctionComponent<Props> = ({
         ],
     );
     return (
-        <Box sx={{
-            mt: 2
-        }}>
+        <Box
+            sx={{
+                mt: 2,
+            }}
+        >
             <Card>
                 {loading && (
                     <LoadingSpinner
@@ -132,21 +134,31 @@ export const InstanceLogInfos: FunctionComponent<Props> = ({
                     />
                 )}
                 {!loading && (
-                    <Grid container spacing={2} sx={{
-                        padding: 2
-                    }}>
+                    <Grid
+                        container
+                        spacing={2}
+                        sx={{
+                            padding: 2,
+                        }}
+                    >
                         <Grid size={12}>
-                            <Typography variant="h5" sx={{
-                                fontWeight: "bold"
-                            }}>
+                            <Typography
+                                variant="h5"
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
                                 {logTitle}
                             </Typography>
                         </Grid>
 
                         <Grid size={12}>
-                            <Typography variant="body2" sx={{
-                                fontWeight: "bold"
-                            }}>
+                            <Typography
+                                variant="body2"
+                                sx={{
+                                    fontWeight: 'bold',
+                                }}
+                            >
                                 {formatMessage(MESSAGES.selectVersionToCompare)}
                             </Typography>
                             <InputComponent
@@ -166,8 +178,9 @@ export const InstanceLogInfos: FunctionComponent<Props> = ({
                                 <Grid
                                     size={{
                                         xs: 12,
-                                        md: 6
-                                    }}>
+                                        md: 6,
+                                    }}
+                                >
                                     {firstLogInfos.map(logInfo => (
                                         <InstanceLogInfosRow
                                             key={logInfo.index}
@@ -180,8 +193,9 @@ export const InstanceLogInfos: FunctionComponent<Props> = ({
                                 <Grid
                                     size={{
                                         xs: 12,
-                                        md: 6
-                                    }}>
+                                        md: 6,
+                                    }}
+                                >
                                     {secondLogInfos.map(logInfo => (
                                         <InstanceLogInfosRow
                                             key={logInfo.index}

@@ -98,12 +98,16 @@ export const FormsFilterComponent: FunctionComponent<Props> = ({
     }, [canFitToBounds, computedBounds, map]);
 
     return (
-        <Box sx={{
-            m: 4
-        }}>
-            <Box sx={{
-                mb: 2
-            }}>
+        <Box
+            sx={{
+                m: 4,
+            }}
+        >
+            <Box
+                sx={{
+                    mb: 2,
+                }}
+            >
                 <Typography variant="body2">
                     {formatMessage(MESSAGES.hasInstances)}:
                 </Typography>
@@ -138,10 +142,11 @@ export const FormsFilterComponent: FunctionComponent<Props> = ({
                 <Grid
                     size={2}
                     sx={{
-                        display: "flex",
-                        justifyContent: "flex-start",
-                        alignItems: "center"
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'flex-start',
+                        alignItems: 'center',
+                    }}
+                >
                     <IconButton
                         onClick={triggerFitBounds}
                         icon="remove-red-eye"

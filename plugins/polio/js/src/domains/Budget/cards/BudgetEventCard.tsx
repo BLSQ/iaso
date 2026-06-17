@@ -154,9 +154,10 @@ export const BudgetEventCard: FunctionComponent<Props> = ({ step }) => {
                     onClick={toggleStepStatus}
                     size={2}
                     sx={{
-                        justifyContent: "center",
-                        alignItems: "flex-start"
-                    }}>
+                        justifyContent: 'center',
+                        alignItems: 'flex-start',
+                    }}
+                >
                     <Divider orientation="vertical" />
                     {!isStepDeleted && <RemoveCircleIcon color="action" />}
                     {isStepDeleted && <PlaylistAdd className={textColor} />}

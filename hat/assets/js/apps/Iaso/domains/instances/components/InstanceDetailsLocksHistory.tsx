@@ -49,7 +49,7 @@ const InstanceDetailsLocksHistory: FunctionComponent<{
                         variant="body2"
                         title={formatMessage(MESSAGES.lockAuthorLabel)}
                         sx={{
-                            color: "inherit"
+                            color: 'inherit',
                         }}
                     >
                         {formatMessage(MESSAGES.NoLocksHistory)}

@@ -48,10 +48,11 @@ export const Teams: FunctionComponent = () => {
                 <TeamFilters params={apiParams} />
                 <Box
                     sx={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        mb: 2
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        mb: 2,
+                    }}
+                >
                     <ColumnsSelectDrawer
                         options={options}
                         setOptions={setOptions}
@@ -62,9 +63,10 @@ export const Teams: FunctionComponent = () => {
                 </Box>
                 <Box
                     sx={{
-                        display: "flex",
-                        justifyContent: "flex-end"
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                    }}
+                >
                     <AddTeamModal dialogType="create" iconProps={{}} />
                 </Box>
                 <TableWithDeepLink

@@ -576,7 +576,7 @@ const OrgUnitDetail: FunctionComponent = () => {
                                         container
                                         className={classes.commentsWrapper}
                                         sx={{
-                                            justifyContent: "center"
+                                            justifyContent: 'center',
                                         }}
                                     >
                                         <Grid size={6}>

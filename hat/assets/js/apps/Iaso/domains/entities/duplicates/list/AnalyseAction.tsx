@@ -40,27 +40,32 @@ export const AnalyseAction: FunctionComponent<Props> = ({
         <Box
             sx={{
                 minHeight: 36,
-                display: "flex",
-                width: "100%"
-            }}>
+                display: 'flex',
+                width: '100%',
+            }}
+        >
             {!latestAnalysis &&
                 !isFetchingLatestAnalysis &&
                 formatMessage(MESSAGES.noAnalysis)}
             <>
                 {latestAnalysis && (
-                    <Box sx={{
-                        mr: "auto"
-                    }}>
+                    <Box
+                        sx={{
+                            mr: 'auto',
+                        }}
+                    >
                         <Box
                             sx={{
-                                display: "flex",
-                                alignItems: "center"
-                            }}>
+                                display: 'flex',
+                                alignItems: 'center',
+                            }}
+                        >
                             <Box
                                 sx={{
-                                    display: "inline-block",
-                                    mr: 1
-                                }}>
+                                    display: 'inline-block',
+                                    mr: 1,
+                                }}
+                            >
                                 {latestAnalysis.finished_at &&
                                     formatMessage(MESSAGES.latestAnalysis, {
                                         finishedAt: moment(
@@ -85,16 +90,21 @@ export const AnalyseAction: FunctionComponent<Props> = ({
                         </Box>
                     </Box>
                 )}
-                <Grid container spacing={1} sx={{
-                    justifyContent: "flex-end"
-                }}>
+                <Grid
+                    container
+                    spacing={1}
+                    sx={{
+                        justifyContent: 'flex-end',
+                    }}
+                >
                     {latestAnalysis && (
                         <Grid>
                             <Box
                                 sx={{
                                     mb: 2,
-                                    mt: 2
-                                }}>
+                                    mt: 2,
+                                }}
+                            >
                                 <Button
                                     disabled={
                                         !latestAnalysis.finished_at || isSaving
@@ -106,10 +116,11 @@ export const AnalyseAction: FunctionComponent<Props> = ({
                                 >
                                     <Box
                                         sx={{
-                                            display: "inline-block",
+                                            display: 'inline-block',
                                             mr: 1,
-                                            pt: "6px"
-                                        }}>
+                                            pt: '6px',
+                                        }}
+                                    >
                                         <Autorenew fontSize="small" />
                                     </Box>
                                     {formatMessage(MESSAGES.relaunchAnalysis)}
@@ -121,8 +132,9 @@ export const AnalyseAction: FunctionComponent<Props> = ({
                         <Box
                             sx={{
                                 mb: 2,
-                                mt: 2
-                            }}>
+                                mt: 2,
+                            }}
+                        >
                             <AnalysisModal iconProps={{}} />
                         </Box>
                     </Grid>

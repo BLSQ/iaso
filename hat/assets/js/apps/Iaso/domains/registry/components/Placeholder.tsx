@@ -8,14 +8,16 @@ export const Placeholder: FunctionComponent = () => {
         <Box
             sx={{
                 mt: 2,
-                width: "100%"
-            }}>
+                width: '100%',
+            }}
+        >
             <Grid container spacing={2}>
                 <Grid
                     size={{
                         xs: 12,
-                        md: 6
-                    }}>
+                        md: 6,
+                    }}
+                >
                     <Skeleton
                         variant="rectangular"
                         width="100%"
@@ -25,8 +27,9 @@ export const Placeholder: FunctionComponent = () => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 6
-                    }}>
+                        md: 6,
+                    }}
+                >
                     <Skeleton
                         variant="rectangular"
                         width="100%"

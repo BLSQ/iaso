@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
-import Alert from '@mui/material/Alert';
 import { Box, Grid, Typography } from '@mui/material';
+import Alert from '@mui/material/Alert';
 import { makeStyles } from '@mui/styles';
 
 import {
@@ -137,8 +137,9 @@ const InstanceDetails: FunctionComponent = () => {
                         <Grid
                             size={{
                                 xs: 12,
-                                md: 4
-                            }}>
+                                md: 4,
+                            }}
+                        >
                             {currentInstance.deleted && (
                                 <Alert
                                     severity="warning"
@@ -188,7 +189,7 @@ const InstanceDetails: FunctionComponent = () => {
                                                     noWrap
                                                     title="Historique"
                                                     sx={{
-                                                        color: "inherit"
+                                                        color: 'inherit',
                                                     }}
                                                 >
                                                     {formatMessage(
@@ -202,13 +203,14 @@ const InstanceDetails: FunctionComponent = () => {
                                             container
                                             size={7}
                                             sx={{
-                                                justifyContent: "flex-start",
-                                                alignItems: "center"
-                                            }}>
+                                                justifyContent: 'flex-start',
+                                                alignItems: 'center',
+                                            }}
+                                        >
                                             <Typography
                                                 variant="body1"
                                                 sx={{
-                                                    color: "inherit"
+                                                    color: 'inherit',
                                                 }}
                                             >
                                                 <LinkWithLocation
@@ -281,8 +283,9 @@ const InstanceDetails: FunctionComponent = () => {
                         <Grid
                             size={{
                                 xs: 12,
-                                md: 8
-                            }}>
+                                md: 8,
+                            }}
+                        >
                             <WidgetPaper
                                 id="form-contents"
                                 title={formatMessage(MESSAGES.submission)}

@@ -147,9 +147,11 @@ export const FormBuilder: FunctionComponent<Props> = ({
                 </Box>
             )}
             {form_id && !isLoading && (
-                <Box sx={{
-                    mt: 2
-                }}>
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <QueryBuilder
                         logic={logic}
                         fields={fields}

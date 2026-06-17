@@ -220,9 +220,11 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                 onClose={() => null}
             >
                 <>
-                    <Box sx={{
-                        mt: 1
-                    }}>
+                    <Box
+                        sx={{
+                            mt: 1,
+                        }}
+                    >
                         <InputComponent
                             type="textarea"
                             keyValue="comment"
@@ -244,9 +246,11 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                         required={requiredFields.includes('amount')}
                     />
 
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <FilesUpload
                             files={values.files ?? []}
                             onFilesSelect={files => {
@@ -257,14 +261,18 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                             errors={getErrors('files')}
                         />
                     </Box>
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <Divider />
                     </Box>
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <AddMultipleLinks
                             required={requiredFields.includes('links')}
                         />
@@ -272,8 +280,9 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                     <Box
                         sx={{
                             mt: 2,
-                            mb: 2
-                        }}>
+                            mb: 2,
+                        }}
+                    >
                         <Divider />
                     </Box>
                     {(recipientTeams ?? []).length > 0 && (
@@ -281,8 +290,9 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                             <Box
                                 sx={{
                                     mt: 1,
-                                    mb: 1
-                                }}>
+                                    mb: 1,
+                                }}
+                            >
                                 <Typography>
                                     {formatMessage(MESSAGES.emailWillBeSentTo)}
                                 </Typography>
@@ -294,8 +304,9 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                                                 mt: 1,
                                                 mr: 1,
                                                 mb: 1,
-                                                display: "inline-block"
-                                            }}>
+                                                display: 'inline-block',
+                                            }}
+                                        >
                                             <Chip
                                                 label={team}
                                                 variant="outlined"
@@ -308,8 +319,9 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                             <Box
                                 sx={{
                                     mt: 2,
-                                    mb: 2
-                                }}>
+                                    mb: 2,
+                                }}
+                            >
                                 <Divider />
                             </Box>
                         </>

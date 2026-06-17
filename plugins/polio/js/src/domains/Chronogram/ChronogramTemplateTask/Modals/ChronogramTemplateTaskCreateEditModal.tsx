@@ -75,14 +75,18 @@ const CreateEditChronogramTemplateTaskModal: FunctionComponent<Props> = ({
                 allowConfirm={allowConfirm}
                 cancelMessage={MESSAGES.modalWriteCancel}
             >
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Divider />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.labelPeriod)}
                         name="period"
@@ -91,9 +95,11 @@ const CreateEditChronogramTemplateTaskModal: FunctionComponent<Props> = ({
                         required
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.labelDescriptionEn)}
                         name="description_en"
@@ -101,18 +107,22 @@ const CreateEditChronogramTemplateTaskModal: FunctionComponent<Props> = ({
                         required
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Field
                         label={formatMessage(MESSAGES.labelDescriptionFr)}
                         name="description_fr"
                         component={TextInput}
                     />
                 </Box>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <InputWithInfos
                         infos={formatMessage(
                             MESSAGES.labelStartOffsetInDaysTooltip,

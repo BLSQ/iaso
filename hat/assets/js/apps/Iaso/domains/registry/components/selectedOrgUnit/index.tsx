@@ -61,10 +61,11 @@ export const SelectedOrgUnit: FunctionComponent<Props> = ({
     return (
         <Box
             sx={{
-                position: "relative",
-                width: "100%",
-                minHeight: HEIGHT
-            }}>
+                position: 'relative',
+                width: '100%',
+                minHeight: HEIGHT,
+            }}
+        >
             {(isFetchingCurrentInstance || isFetchingOrgUnit) &&
                 params.fullScreen !== 'true' && <LoadingSpinner absolute />}
             <Paper className={classes.paper}>

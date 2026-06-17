@@ -104,8 +104,9 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <InputComponent
                         type="search"
                         keyValue="search"
@@ -118,8 +119,9 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 6
-                    }}>
+                        md: 6,
+                    }}
+                >
                     <DatesRange
                         keyDateFrom="start_date"
                         keyDateTo="end_date"
@@ -133,8 +135,9 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <InputComponent
                         type="select"
                         multi
@@ -153,8 +156,9 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <InputComponent
                         type="select"
                         keyValue="submitter_team"
@@ -169,11 +173,14 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 3
-                    }}>
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                        md: 3,
+                    }}
+                >
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <UserAsyncSelect
                             keyValue="submitter"
                             handleChange={handleChange}
@@ -186,8 +193,9 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <InputComponent
                         type="select"
                         keyValue="algorithm"
@@ -202,8 +210,9 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <InputComponent
                         type="select"
                         keyValue="similarity"
@@ -230,8 +239,9 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <InputComponent
                         type="select"
                         keyValue="form"
@@ -245,8 +255,9 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <InputComponent
                         type="select"
                         multi
@@ -261,8 +272,9 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <Box id="ou-tree-input">
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}
@@ -277,14 +289,16 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <Grid container spacing={2}>
                         <Grid
                             size={{
                                 xs: 4,
-                                md: 6
-                            }}>
+                                md: 6,
+                            }}
+                        >
                             <InputComponent
                                 type="checkbox"
                                 value={showIgnored}
@@ -297,8 +311,9 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                         <Grid
                             size={{
                                 xs: 4,
-                                md: 6
-                            }}>
+                                md: 6,
+                            }}
+                        >
                             <InputComponent
                                 type="checkbox"
                                 value={showMerged}
@@ -312,14 +327,20 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                 </Grid>
             </Grid>
             {/* line 4 */}
-            <Grid container spacing={2} size={12} sx={{
-                justifyContent: "flex-end"
-            }}>
+            <Grid
+                container
+                spacing={2}
+                size={12}
+                sx={{
+                    justifyContent: 'flex-end',
+                }}
+            >
                 <Box
                     sx={{
                         mb: 2,
-                        mt: 2
-                    }}>
+                        mt: 2,
+                    }}
+                >
                     <SearchButton
                         disabled={!filtersUpdated}
                         onSearch={handleSearch}

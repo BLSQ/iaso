@@ -259,9 +259,10 @@ export const LQASForm: FunctionComponent<Props> = ({
             {canAddLevel && (
                 <Box
                     sx={{
-                        display: "flex",
-                        justifyContent: "flex-end"
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                    }}
+                >
                     <Button
                         onClick={handleAddLevel}
                         variant="contained"

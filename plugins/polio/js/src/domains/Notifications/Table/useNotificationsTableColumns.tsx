@@ -90,9 +90,11 @@ export const useNotificationsTableColumns = (
                 sortable: false,
                 Cell: settings => {
                     return (
-                        <Box sx={{
-                            display: "inline-flex"
-                        }}>
+                        <Box
+                            sx={{
+                                display: 'inline-flex',
+                            }}
+                        >
                             {/* @ts-ignore */}
                             <EditNotificationModal
                                 notificationsMetaData={notificationsMetaData}

@@ -22,9 +22,13 @@ const UsersDialogTabDisabled: FunctionComponent<Props> = ({
     return (
         <Grid
             container
-            sx={[{
-                alignItems: "center"
-            }, styles.tab]}>
+            sx={[
+                {
+                    alignItems: 'center',
+                },
+                styles.tab,
+            ]}
+        >
             <Grid>
                 <Tab label={tabProps.label} disabled={tabProps.disabled} />
             </Grid>

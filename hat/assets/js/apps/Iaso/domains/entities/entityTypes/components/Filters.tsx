@@ -65,8 +65,9 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 12,
                     sm: 6,
-                    md: 4
-                }}>
+                    md: 4,
+                }}
+            >
                 <InputComponent
                     keyValue="search"
                     onChange={handleChange}
@@ -83,12 +84,13 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 12,
                     sm: 6,
-                    md: 8
+                    md: 8,
                 }}
                 sx={{
-                    justifyContent: "flex-end",
-                    alignItems: "center"
-                }}>
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                }}
+            >
                 <Button
                     data-test="search-button"
                     disabled={textSearchError || !filtersUpdated}

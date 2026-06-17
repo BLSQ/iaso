@@ -161,16 +161,19 @@ export const Instances: FunctionComponent<Props> = ({
                             />
                         ))}
                     </Tabs>
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <Grid container spacing={1}>
                             <Grid container spacing={2}>
                                 <Grid
                                     size={{
                                         xs: 4,
-                                        md: 4
-                                    }}>
+                                        md: 4,
+                                    }}
+                                >
                                     <InputComponent
                                         keyValue="formIds"
                                         clearable={false}
@@ -186,8 +189,9 @@ export const Instances: FunctionComponent<Props> = ({
                                 <Grid
                                     size={{
                                         xs: 2,
-                                        md: 2
-                                    }}>
+                                        md: 2,
+                                    }}
+                                >
                                     <InputComponent
                                         keyValue="periodType"
                                         clearable
@@ -201,8 +205,9 @@ export const Instances: FunctionComponent<Props> = ({
                                 <Grid
                                     size={{
                                         xs: 4,
-                                        md: 3
-                                    }}>
+                                        md: 3,
+                                    }}
+                                >
                                     <PeriodPicker
                                         hasError={periodError}
                                         activePeriodString={startPeriod}
@@ -222,8 +227,9 @@ export const Instances: FunctionComponent<Props> = ({
                                 <Grid
                                     size={{
                                         xs: 4,
-                                        md: 3
-                                    }}>
+                                        md: 3,
+                                    }}
+                                >
                                     <PeriodPicker
                                         hasError={periodError}
                                         activePeriodString={endPeriod}
@@ -240,14 +246,16 @@ export const Instances: FunctionComponent<Props> = ({
                                         }
                                     />
                                     {periodError && (
-                                        <Box sx={{
-                                            mt: -1
-                                        }}>
+                                        <Box
+                                            sx={{
+                                                mt: -1,
+                                            }}
+                                        >
                                             <Typography
                                                 variant="body1"
                                                 color="error"
                                                 sx={{
-                                                    fontSize: "small"
+                                                    fontSize: 'small',
                                                 }}
                                             >
                                                 {formatMessage(
@@ -263,13 +271,14 @@ export const Instances: FunctionComponent<Props> = ({
                                     container
                                     size={{
                                         xs: 12,
-                                        md: 12
+                                        md: 12,
                                     }}
                                     sx={{
-                                        justifyContent: "flex-end",
-                                        alignItems: "baseline",
-                                        alignContent: "right"
-                                    }}>
+                                        justifyContent: 'flex-end',
+                                        alignItems: 'baseline',
+                                        alignContent: 'right',
+                                    }}
+                                >
                                     {formIds && currentForm && (
                                         <ColumnSelect
                                             params={params}
@@ -301,11 +310,12 @@ export const Instances: FunctionComponent<Props> = ({
                                     >
                                         <Box
                                             sx={{
-                                                display: "flex",
-                                                justifyContent: "flex-end",
-                                                width: "100%",
-                                                mt: 2
-                                            }}>
+                                                display: 'flex',
+                                                justifyContent: 'flex-end',
+                                                width: '100%',
+                                                mt: 2,
+                                            }}
+                                        >
                                             <DownloadButtonsComponent
                                                 csvUrl={`${apiUrl}&csv=true`}
                                                 xlsxUrl={`${apiUrl}&xlsx=true`}
@@ -320,11 +330,12 @@ export const Instances: FunctionComponent<Props> = ({
 
                                     <Box
                                         sx={{
-                                            display: "flex",
-                                            justifyContent: "flex-end",
-                                            width: "100%",
-                                            mt: 2
-                                        }}>
+                                            display: 'flex',
+                                            justifyContent: 'flex-end',
+                                            width: '100%',
+                                            mt: 2,
+                                        }}
+                                    >
                                         {orgUnitsWithoutCurrentForm &&
                                             orgUnitsWithoutCurrentForm.count >
                                                 0 && (

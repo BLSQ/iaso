@@ -33,11 +33,14 @@ export const DuplicateAnalysesFilters: FC<Props> = ({ params }) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 3
-                    }}>
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                        md: 3,
+                    }}
+                >
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <UserAsyncSelect
                             filterUsers={filters.users}
                             handleChange={handleChange}
@@ -56,8 +59,9 @@ export const DuplicateAnalysesFilters: FC<Props> = ({ params }) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <InputComponent
                         type="select"
                         keyValue="status"
@@ -71,8 +75,9 @@ export const DuplicateAnalysesFilters: FC<Props> = ({ params }) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <DatesRange
                         xs={12}
                         sm={12}
@@ -88,14 +93,20 @@ export const DuplicateAnalysesFilters: FC<Props> = ({ params }) => {
                     />
                 </Grid>
             </Grid>
-            <Grid container spacing={2} size={12} sx={{
-                justifyContent: "flex-end"
-            }}>
+            <Grid
+                container
+                spacing={2}
+                size={12}
+                sx={{
+                    justifyContent: 'flex-end',
+                }}
+            >
                 <Box
                     sx={{
                         mb: 2,
-                        mt: 2
-                    }}>
+                        mt: 2,
+                    }}
+                >
                     <SearchButton
                         disabled={!filtersUpdated}
                         onSearch={handleSearch}

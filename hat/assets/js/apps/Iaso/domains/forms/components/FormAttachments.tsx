@@ -29,10 +29,11 @@ export const FormAttachments: FunctionComponent<Props> = ({ params }) => {
             <Box
                 sx={{
                     mb: 2,
-                    justifyContent: "flex-end",
-                    alignItems: "center",
-                    display: "flex"
-                }}>
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                    display: 'flex',
+                }}
+            >
                 <AttachmentModal
                     iconProps={{}}
                     upload={upload}

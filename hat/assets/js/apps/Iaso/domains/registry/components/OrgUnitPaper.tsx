@@ -111,9 +111,11 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
                 <Tab value="map" label={formatMessage(MESSAGES.map)} />
                 <Tab value="list" label={formatMessage(MESSAGES.list)} />
             </Tabs>
-            <Box sx={{
-                position: "relative"
-            }}>
+            <Box
+                sx={{
+                    position: 'relative',
+                }}
+            >
                 <Box
                     className={classnames(
                         tab !== 'map' && classes.hiddenOpacity,

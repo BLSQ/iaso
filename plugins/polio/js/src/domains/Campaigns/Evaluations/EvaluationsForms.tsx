@@ -49,9 +49,10 @@ export const EvaluationsForms: FunctionComponent = () => {
     return (
         <Box
             sx={{
-                width: "100%",
-                mt: -4
-            }}>
+                width: '100%',
+                mt: -4,
+            }}
+        >
             <TabContext value={currentTab}>
                 <TabList onChange={handleChangeTab}>
                     {rounds.map(round => (
@@ -75,8 +76,9 @@ export const EvaluationsForms: FunctionComponent = () => {
                 <Box
                     sx={{
                         mt: 2,
-                        width: "100%"
-                    }}>
+                        width: '100%',
+                    }}
+                >
                     <EvaluationForm roundNumber={parseInt(currentTab, 10)} />
                 </Box>
             </TabContext>

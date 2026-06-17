@@ -60,9 +60,10 @@ const Tasks = () => {
                 <TaskFilters params={params} />
                 <Box
                     sx={{
-                        display: "flex",
-                        justifyContent: "flex-end"
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                    }}
+                >
                     <Button
                         id="refresh-button"
                         variant="contained"

@@ -87,8 +87,9 @@ export const RoundPopper: FunctionComponent<Props> = ({
                         pt: 6,
                         pb: 2,
                         pr: 2,
-                        pl: 2
-                    }}>
+                        pl: 2,
+                    }}
+                >
                     <IconButton
                         onClick={() => handleClose()}
                         sx={styles.popperClose}
@@ -100,63 +101,69 @@ export const RoundPopper: FunctionComponent<Props> = ({
                         <Grid
                             container
                             size={{
-                                sm: 6
+                                sm: 6,
                             }}
                             sx={{
-                                justifyContent: "flex-end"
-                            }}>
+                                justifyContent: 'flex-end',
+                            }}
+                        >
                             {formatMessage(MESSAGES.startDate)}:
                         </Grid>
                         <Grid
                             container
                             size={{
-                                sm: 6
+                                sm: 6,
                             }}
                             sx={{
-                                justifyContent: "flex-start"
-                            }}>
+                                justifyContent: 'flex-start',
+                            }}
+                        >
                             {round.start && round.start.format('L')}
                         </Grid>
 
                         <Grid
                             container
                             size={{
-                                sm: 6
+                                sm: 6,
                             }}
                             sx={{
-                                justifyContent: "flex-end"
-                            }}>
+                                justifyContent: 'flex-end',
+                            }}
+                        >
                             {formatMessage(MESSAGES.endDate)}:
                         </Grid>
                         <Grid
                             container
                             size={{
-                                sm: 6
+                                sm: 6,
                             }}
                             sx={{
-                                justifyContent: "flex-start"
-                            }}>
+                                justifyContent: 'flex-start',
+                            }}
+                        >
                             {round.end && round.end.format('L')}
                         </Grid>
 
                         <Grid
                             container
                             size={{
-                                sm: 6
+                                sm: 6,
                             }}
                             sx={{
-                                justifyContent: "flex-end"
-                            }}>
+                                justifyContent: 'flex-end',
+                            }}
+                        >
                             {formatMessage(MESSAGES.targetPopulation)}:
                         </Grid>
                         <Grid
                             container
                             size={{
-                                sm: 6
+                                sm: 6,
                             }}
                             sx={{
-                                justifyContent: "flex-start"
-                            }}>
+                                justifyContent: 'flex-start',
+                            }}
+                        >
                             {round.target_population
                                 ? formatNumber(round.target_population)
                                 : textPlaceholder}
@@ -165,21 +172,23 @@ export const RoundPopper: FunctionComponent<Props> = ({
                         <Grid
                             container
                             size={{
-                                sm: 6
+                                sm: 6,
                             }}
                             sx={{
-                                justifyContent: "flex-end"
-                            }}>
+                                justifyContent: 'flex-end',
+                            }}
+                        >
                             {formatMessage(MESSAGES.preventiveShort)}:
                         </Grid>
                         <Grid
                             container
                             size={{
-                                sm: 6
+                                sm: 6,
                             }}
                             sx={{
-                                justifyContent: "flex-start"
-                            }}>
+                                justifyContent: 'flex-start',
+                            }}
+                        >
                             {campaign.isPreventive
                                 ? formatMessage(MESSAGES.yes)
                                 : formatMessage(MESSAGES.no)}
@@ -187,28 +196,31 @@ export const RoundPopper: FunctionComponent<Props> = ({
                         <Grid
                             container
                             size={{
-                                sm: 6
+                                sm: 6,
                             }}
                             sx={{
-                                justifyContent: "flex-end"
-                            }}>
+                                justifyContent: 'flex-end',
+                            }}
+                        >
                             {formatMessage(MESSAGES.description)}:
                         </Grid>
                         <Grid
                             container
                             size={{
-                                sm: 6
+                                sm: 6,
                             }}
                             sx={{
-                                justifyContent: "flex-start"
-                            }}>
+                                justifyContent: 'flex-start',
+                            }}
+                        >
                             {campaign.original.description || '--'}
                         </Grid>
                         <Grid
                             container
                             size={{
-                                sm: 12
-                            }}>
+                                sm: 12,
+                            }}
+                        >
                             {groupIds && (
                                 <CsvButton csvUrl={url} variant="text" />
                             )}

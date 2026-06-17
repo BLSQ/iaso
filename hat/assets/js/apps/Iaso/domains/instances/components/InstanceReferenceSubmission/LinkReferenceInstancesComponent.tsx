@@ -148,9 +148,13 @@ const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
             {isLoadingCheckResult ? (
                 <LoadingSpinner absolute />
             ) : (
-                <Grid container spacing={2} sx={{
-                    alignItems: "center"
-                }}>
+                <Grid
+                    container
+                    spacing={2}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
                     <Grid size={12}>
                         <Typography variant="subtitle1">
                             {(warningMessage || isError) && (

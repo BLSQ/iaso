@@ -115,9 +115,11 @@ export const CampaignHistory: FunctionComponent = () => {
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Grid container spacing={4}>
                     <Grid size={4}>
-                        <Box sx={{
-                            mt: 2
-                        }}>
+                        <Box
+                            sx={{
+                                mt: 2,
+                            }}
+                        >
                             <InputComponent
                                 type="select"
                                 keyValue="logId"
@@ -130,9 +132,11 @@ export const CampaignHistory: FunctionComponent = () => {
                         </Box>
 
                         {isCampaignLogLoading && (
-                            <Box sx={{
-                                height: "70vh"
-                            }}>
+                            <Box
+                                sx={{
+                                    height: '70vh',
+                                }}
+                            >
                                 <LoadingSpinner
                                     fixed={false}
                                     transparent
@@ -141,24 +145,32 @@ export const CampaignHistory: FunctionComponent = () => {
                                 />
                             </Box>
                         )}
-                        <Box sx={{
-                            mt: 2
-                        }}>
+                        <Box
+                            sx={{
+                                mt: 2,
+                            }}
+                        >
                             <WidgetPaper
                                 expandable
                                 isExpanded
                                 title={formatMessage(MESSAGES.infos)}
                                 padded
                             >
-                                <Typography variant="body1" sx={{
-                                    color: "inherit"
-                                }}>
+                                <Typography
+                                    variant="body1"
+                                    sx={{
+                                        color: 'inherit',
+                                    }}
+                                >
                                     {formatMessage(MESSAGES.last_modified_by)} :{' '}
                                     {campaignUser?.user_name}
                                 </Typography>
-                                <Typography variant="body1" sx={{
-                                    color: "inherit"
-                                }}>
+                                <Typography
+                                    variant="body1"
+                                    sx={{
+                                        color: 'inherit',
+                                    }}
+                                >
                                     {formatMessage(MESSAGES.obr_name)} :{' '}
                                     {campaignLogDetail?.obr_name}
                                 </Typography>
@@ -166,9 +178,11 @@ export const CampaignHistory: FunctionComponent = () => {
                         </Box>
                     </Grid>
                     <Grid size={12}>
-                        <Box sx={{
-                            mt: 2
-                        }}>
+                        <Box
+                            sx={{
+                                mt: 2,
+                            }}
+                        >
                             <WidgetPaper
                                 expandable
                                 isExpanded

@@ -55,20 +55,26 @@ export const Details: FunctionComponent = () => {
                         </WidgetPaper>
                     </Grid>
                 </Grid>
-                <Box sx={{
-                    mt: 2
-                }}>
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <WidgetPaper
                         className={classes.fullWith}
                         title={formatMessage(MESSAGES.logs)}
                     >
-                        <Box sx={{
-                            position: "relative"
-                        }}>
+                        <Box
+                            sx={{
+                                position: 'relative',
+                            }}
+                        >
                             <LogsFilters params={params} />
-                            <Box sx={{
-                                mb: -4
-                            }}>
+                            <Box
+                                sx={{
+                                    mb: -4,
+                                }}
+                            >
                                 <TableWithDeepLink
                                     marginTop={false}
                                     countOnTop={false}
@@ -91,8 +97,9 @@ export const Details: FunctionComponent = () => {
                                     <Box
                                         sx={{
                                             mb: 2,
-                                            mt: 2
-                                        }}>
+                                            mt: 2,
+                                        }}
+                                    >
                                         <DownloadButtonsComponent
                                             csvUrl={`${apiUrl}&csv=true`}
                                             xlsxUrl={`${apiUrl}&xlsx=true`}

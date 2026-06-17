@@ -75,8 +75,9 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 12,
                     sm: 6,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="search"
                     onChange={handleChange}
@@ -91,8 +92,9 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="projectsIds"
                     onChange={handleChange}
@@ -109,8 +111,9 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     type="select"
                     onChange={handleChange}
@@ -127,12 +130,13 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 12,
                     sm: 6,
-                    md: 3
+                    md: 3,
                 }}
                 sx={{
-                    justifyContent: "flex-end",
-                    alignItems: "center"
-                }}>
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                }}
+            >
                 <Button
                     data-test="search-button"
                     disabled={textSearchError || !filtersUpdated}

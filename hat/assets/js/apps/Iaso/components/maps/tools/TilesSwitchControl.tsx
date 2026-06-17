@@ -112,9 +112,11 @@ export const TilesSwitchControl: FunctionComponent<Props> = ({
                 )}
             >
                 {tilePopup && (
-                    <Box sx={{
-                        width: 235
-                    }}>
+                    <Box
+                        sx={{
+                            width: 235,
+                        }}
+                    >
                         <Typography
                             variant="subtitle1"
                             className={classes.title}

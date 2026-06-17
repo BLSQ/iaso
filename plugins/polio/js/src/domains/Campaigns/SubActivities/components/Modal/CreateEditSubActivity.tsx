@@ -124,17 +124,20 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
                     <Box
                         sx={{
                             mb: 4,
-                            mt: 2
-                        }}>
+                            mt: 2,
+                        }}
+                    >
                         <Divider />
                     </Box>
                     {formik.isSubmitting && <LoadingSpinner />}
                     <Box>
                         <Grid container>
                             <Grid size={6}>
-                                <Box sx={{
-                                    mr: 2
-                                }}>
+                                <Box
+                                    sx={{
+                                        mr: 2,
+                                    }}
+                                >
                                     <Field
                                         component={TextInput}
                                         name="name"
@@ -154,9 +157,11 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
                             </Grid>
                             <Grid container size={6}>
                                 <Grid size={6}>
-                                    <Box sx={{
-                                        mr: 2
-                                    }}>
+                                    <Box
+                                        sx={{
+                                            mr: 2,
+                                        }}
+                                    >
                                         <Field
                                             component={SingleSelect}
                                             name="age_unit"
@@ -168,9 +173,11 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
                                     </Box>
                                 </Grid>
                                 <Grid size={3}>
-                                    <Box sx={{
-                                        mr: 2
-                                    }}>
+                                    <Box
+                                        sx={{
+                                            mr: 2,
+                                        }}
+                                    >
                                         <Field
                                             component={NumberInput}
                                             name="age_min"
@@ -181,9 +188,11 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
                                     </Box>
                                 </Grid>
                                 <Grid size={3}>
-                                    <Box sx={{
-                                        mr: 2
-                                    }}>
+                                    <Box
+                                        sx={{
+                                            mr: 2,
+                                        }}
+                                    >
                                         <Field
                                             component={NumberInput}
                                             name="age_max"
@@ -204,9 +213,11 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
                             </Grid>
 
                             <Grid size={3}>
-                                <Box sx={{
-                                    mr: 2
-                                }}>
+                                <Box
+                                    sx={{
+                                        mr: 2,
+                                    }}
+                                >
                                     <Field
                                         component={DateInput}
                                         name="lqas_started_at"
@@ -217,9 +228,11 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
                                 </Box>
                             </Grid>
                             <Grid size={3}>
-                                <Box sx={{
-                                    mr: 2
-                                }}>
+                                <Box
+                                    sx={{
+                                        mr: 2,
+                                    }}
+                                >
                                     <Field
                                         component={DateInput}
                                         name="lqas_ended_at"
@@ -230,9 +243,11 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
                                 </Box>
                             </Grid>
                             <Grid size={3}>
-                                <Box sx={{
-                                    mr: 2
-                                }}>
+                                <Box
+                                    sx={{
+                                        mr: 2,
+                                    }}
+                                >
                                     <Field
                                         component={DateInput}
                                         name="im_started_at"

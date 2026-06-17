@@ -32,9 +32,13 @@ const CompletenessFiltersComponent: FunctionComponent<Props> = ({
                 />
             </Grid>
             <Grid size={3} />
-            <Grid container size={6} sx={{
-                justifyContent: "flex-end"
-            }}>
+            <Grid
+                container
+                size={6}
+                sx={{
+                    justifyContent: 'flex-end',
+                }}
+            >
                 <ChipListComponent
                     options={instanceStatusOptions}
                     value={activeInstanceStatuses}

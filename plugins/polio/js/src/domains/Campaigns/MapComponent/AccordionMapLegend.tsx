@@ -45,9 +45,11 @@ export const AccordionMapLegend: FunctionComponent<Props> = ({
                 </Typography>
             </AccordionSummary>
             <AccordionDetails>
-                <Box sx={{
-                    display: "block"
-                }}>
+                <Box
+                    sx={{
+                        display: 'block',
+                    }}
+                >
                     {data.length === 0 && (
                         <div style={{ justifyContent: 'center' }}>
                             <FormattedMessage {...noDataMsg} />
@@ -60,11 +62,12 @@ export const AccordionMapLegend: FunctionComponent<Props> = ({
                                     container
                                     className={classes.mapLegendLabel}
                                     size={{
-                                        sm: 3
+                                        sm: 3,
                                     }}
                                     sx={{
-                                        justifyContent: "flex-start"
-                                    }}>
+                                        justifyContent: 'flex-start',
+                                    }}
+                                >
                                     <span
                                         className={classes.roundColor}
                                         style={{
@@ -77,11 +80,12 @@ export const AccordionMapLegend: FunctionComponent<Props> = ({
                                 <Grid
                                     container
                                     size={{
-                                        sm: 9
+                                        sm: 9,
                                     }}
                                     sx={{
-                                        justifyContent: "flex-start"
-                                    }}>
+                                        justifyContent: 'flex-start',
+                                    }}
+                                >
                                     <Typography variant="body2">
                                         <FormattedMessage
                                             {...MESSAGES[item.id]}
@@ -92,12 +96,13 @@ export const AccordionMapLegend: FunctionComponent<Props> = ({
                             <Grid
                                 container
                                 size={{
-                                    sm: item.color ? 9 : 3
+                                    sm: item.color ? 9 : 3,
                                 }}
                                 sx={{
-                                    justifyContent: "flex-end",
-                                    alignItems: "center"
-                                }}>
+                                    justifyContent: 'flex-end',
+                                    alignItems: 'center',
+                                }}
+                            >
                                 <Typography
                                     variant="body2"
                                     className={classes.mapLegendText}

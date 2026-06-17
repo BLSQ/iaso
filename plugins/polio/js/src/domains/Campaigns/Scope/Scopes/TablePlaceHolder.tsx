@@ -20,9 +20,10 @@ export const TablePlaceHolder: FunctionComponent<Props> = ({
             <TableCell colSpan={5}>
                 <Box
                     sx={{
-                        textAlign: "center",
-                        width: "100%"
-                    }}>
+                        textAlign: 'center',
+                        width: '100%',
+                    }}
+                >
                     {isFetching && formatMessage(MESSAGES.loading)}
                     {!isFetching &&
                         filteredDistricts?.length === 0 &&

@@ -102,7 +102,7 @@ export const useEditLocationWithGpsAction = (
             id: 'editLocationWithInstanceGps',
             icon: (
                 // @ts-ignore
-                (<ConfirmCancelDialogComponent
+                <ConfirmCancelDialogComponent
                     titleMessage={MESSAGES.editGpsFromInstanceTitle}
                     onConfirm={() => saveOrgUnit(payload)}
                     renderTrigger={({ openDialog }) => (
@@ -112,7 +112,7 @@ export const useEditLocationWithGpsAction = (
                     <DialogContentText id="alert-dialog-description">
                         {formatMessage(MESSAGES.editGpsFromInstanceWarning)}
                     </DialogContentText>
-                </ConfirmCancelDialogComponent>)
+                </ConfirmCancelDialogComponent>
             ),
             disabled: currentInstance?.deleted || !currentInstance.org_unit,
         }),
@@ -153,7 +153,7 @@ export const useLockAction = (currentInstance: Instance): SpeedDialAction => {
             disabled: currentInstance?.deleted,
             icon: (
                 // @ts-ignore
-                (<ConfirmCancelDialogComponent
+                <ConfirmCancelDialogComponent
                     titleMessage={MESSAGES.lockAction}
                     onConfirm={closeDialog => {
                         switchInstanceLock(currentInstance).then(() => {
@@ -174,7 +174,7 @@ export const useLockAction = (currentInstance: Instance): SpeedDialAction => {
                                 MESSAGES.lockActionExistingLockDescription,
                             )}
                     </DialogContentText>
-                </ConfirmCancelDialogComponent>)
+                </ConfirmCancelDialogComponent>
             ),
         };
     }, [currentInstance, formatMessage, switchInstanceLock]);
@@ -234,7 +234,7 @@ export const useLinkToOrgUnitAction = ({
                 : 'linkOrgUnitReferenceSubmission',
             icon: (
                 // @ts-ignore
-                (<ConfirmCancelDialogComponent
+                <ConfirmCancelDialogComponent
                     titleMessage={titleMessage}
                     onConfirm={() => linkToSubmission(currentInstance)}
                     renderTrigger={renderTrigger(isReferenceInstance)}
@@ -244,7 +244,7 @@ export const useLinkToOrgUnitAction = ({
                             MESSAGES.linkOrgUnitToInstanceReferenceWarning,
                         )}
                     </DialogContentText>
-                </ConfirmCancelDialogComponent>)
+                </ConfirmCancelDialogComponent>
             ),
             disabled: currentInstance?.deleted,
         };

@@ -41,16 +41,19 @@ export const BudgetFilters: FunctionComponent<Props> = ({
         useGetGroupDropdown({ blockOfCountries: 'true' });
     const countriesList = (data && data.orgUnits) || [];
     return (
-        <Box sx={{
-            mb: isXSLayout ? 4 : 2
-        }}>
+        <Box
+            sx={{
+                mb: isXSLayout ? 4 : 2,
+            }}
+        >
             <Grid container spacing={isXSLayout ? 0 : 2}>
                 <Grid
                     size={{
                         xs: 12,
                         sm: 6,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <InputComponent
                         keyValue="search"
                         onChange={handleChange}
@@ -75,8 +78,9 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                     size={{
                         xs: 12,
                         sm: 6,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <InputComponent
                         loading={isFetchingGroupedOrgUnits}
                         keyValue="org_unit_groups"
@@ -93,8 +97,9 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                     size={{
                         xs: 12,
                         sm: 6,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <InputComponent
                         loading={isFetchingCountries}
                         keyValue="countries"
@@ -114,14 +119,17 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                     container
                     size={{
                         xs: 12,
-                        md: 3
+                        md: 3,
                     }}
                     sx={{
-                        justifyContent: "flex-end"
-                    }}>
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                        justifyContent: 'flex-end',
+                    }}
+                >
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <SearchButton
                             disabled={textSearchError || !filtersUpdated}
                             onSearch={handleSearch}

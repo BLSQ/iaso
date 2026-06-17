@@ -361,8 +361,9 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                 size={{
                     xs: 12,
                     md: 4,
-                    lg: 3
-                }}>
+                    lg: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="projectIds"
                     onChange={handleChange}
@@ -406,9 +407,11 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     loading={isLoadingGroups}
                     labelString={formatMessage(MESSAGES.group)}
                 />
-                <Box sx={{
-                    mt: 2
-                }}>
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <InputComponent
                         type="select"
                         disabled={isFetchingDataSources}
@@ -443,9 +446,11 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                                 loading={isFetchingDataSources}
                             />
 
-                            <Box sx={{
-                                ml: 1
-                            }}>
+                            <Box
+                                sx={{
+                                    ml: 1,
+                                }}
+                            >
                                 <Typography
                                     data-test="advanced-settings"
                                     variant="overline"
@@ -466,8 +471,9 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                 size={{
                     xs: 12,
                     md: 4,
-                    lg: 3
-                }}>
+                    lg: 3,
+                }}
+            >
                 <InputWithInfos
                     infos={formatMessage(MESSAGES.searchOrgUnitInfos)}
                 >
@@ -537,11 +543,14 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                 size={{
                     xs: 12,
                     md: 4,
-                    lg: 3
-                }}>
-                <Box sx={{
-                    mt: 2
-                }}>
+                    lg: 3,
+                }}
+            >
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <UserAsyncSelect
                         keyValue="userIds"
                         handleChange={handleChange}
@@ -584,9 +593,11 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     ]}
                     strict
                 >
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <AsyncSelect
                             keyValue="data_source_synchronization_id"
                             clearable
@@ -619,8 +630,9 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                 size={{
                     xs: 12,
                     md: 4,
-                    lg: 3
-                }}>
+                    lg: 3,
+                }}
+            >
                 <InputWithInfos infos={formatMessage(MESSAGES.searchByIdsInfo)}>
                     <InputComponent
                         keyValue="ids"
@@ -655,9 +667,10 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     sx={{
                         mt: 2,
                         mb: 2,
-                        display: "flex",
-                        justifyContent: "flex-end"
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                    }}
+                >
                     <SearchButton
                         disabled={!filtersUpdated}
                         onSearch={handleSearch}

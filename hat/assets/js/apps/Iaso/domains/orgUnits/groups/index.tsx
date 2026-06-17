@@ -52,10 +52,11 @@ const Groups = () => {
                     mp={2}
                     sx={{
                         mt: 1,
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        alignItems: "end"
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        alignItems: 'end',
+                    }}
+                >
                     <GroupsDialog
                         saveGroup={saveGroup}
                         titleMessage={MESSAGES.create}
@@ -73,10 +74,11 @@ const Groups = () => {
                         sx={{
                             mt: 1,
                             mb: 2,
-                            display: "flex",
-                            justifyContent: "flex-end",
-                            alignItems: "end"
-                        }}>
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            alignItems: 'end',
+                        }}
+                    >
                         <DownloadButtonsComponent
                             csvUrl={csvUrl}
                             xlsxUrl={xlsxUrl}

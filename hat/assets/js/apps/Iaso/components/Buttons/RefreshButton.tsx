@@ -38,9 +38,10 @@ export const RefreshButton: FunctionComponent<Props> = ({
     return (
         <Box
             sx={{
-                display: "flex",
-                justifyContent: "flex-end"
-            }}>
+                display: 'flex',
+                justifyContent: 'flex-end',
+            }}
+        >
             <Button
                 id="refresh-button"
                 variant="contained"

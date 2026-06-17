@@ -47,12 +47,15 @@ export const ValidationWorkflowsConfiguration = () => {
                     container
                     spacing={2}
                     sx={{
-                        justifyContent: "flex-end",
-                        alignItems: "center"
-                    }}>
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                        justifyContent: 'flex-end',
+                        alignItems: 'center',
+                    }}
+                >
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <LinkButton
                             buttonClassName={classes.marginLeft}
                             variant="contained"

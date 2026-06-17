@@ -108,17 +108,20 @@ export const PreparednessConfig: FunctionComponent<Props> = ({
         : formatMessage(MESSAGES.preparednessIntro);
 
     return (
-        <Box sx={{
-            mt: 4
-        }}>
+        <Box
+            sx={{
+                mt: 4,
+            }}
+        >
             <Grid container spacing={2}>
                 <Grid>{message}</Grid>
                 <Grid container direction="row" spacing={2}>
                     <Grid
                         size={{
                             xs: 12,
-                            md: 8
-                        }}>
+                            md: 8,
+                        }}
+                    >
                         <Field
                             placeholder={formatMessage(
                                 MESSAGES.enterOrCreateGoogleSheet,
@@ -141,8 +144,9 @@ export const PreparednessConfig: FunctionComponent<Props> = ({
                         <>
                             <Grid
                                 size={{
-                                    md: 1
-                                }}>
+                                    md: 1,
+                                }}
+                            >
                                 <IconButton
                                     target="_blank"
                                     href={preparedness_spreadsheet_url ?? ''}
@@ -153,8 +157,9 @@ export const PreparednessConfig: FunctionComponent<Props> = ({
                             </Grid>
                             <Grid
                                 size={{
-                                    md: 3
-                                }}>
+                                    md: 3,
+                                }}
+                            >
                                 <Button
                                     variant="contained"
                                     color="primary"
@@ -177,11 +182,12 @@ export const PreparednessConfig: FunctionComponent<Props> = ({
                             container
                             size={{
                                 xs: 12,
-                                md: 4
+                                md: 4,
                             }}
                             sx={{
-                                alignContent: "space-between"
-                            }}>
+                                alignContent: 'space-between',
+                            }}
+                        >
                             <Tooltip
                                 title={
                                     dirty || !values.id

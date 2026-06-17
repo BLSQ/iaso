@@ -81,9 +81,11 @@ export const LqasImHorizontalChart: FunctionComponent<Props> = ({
         <>
             {campaign && !hasData && <NoData />}
             {hasData && (
-                <Box sx={{
-                    p: 2
-                }}>
+                <Box
+                    sx={{
+                        p: 2,
+                    }}
+                >
                     <PercentageChartWithTitle
                         data={chartData}
                         tooltipFormatter={tooltipFormatter}

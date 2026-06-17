@@ -47,7 +47,7 @@ const InstanceDetailsField: FunctionComponent<Props> = ({
                         noWrap
                         title={label}
                         sx={{
-                            color: "inherit"
+                            color: 'inherit',
                         }}
                     >
                         {label}
@@ -59,15 +59,16 @@ const InstanceDetailsField: FunctionComponent<Props> = ({
                 container
                 size={7}
                 sx={{
-                    justifyContent: "flex-start",
-                    alignItems: "center"
-                }}>
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                }}
+            >
                 <Typography
                     variant="body1"
                     title={valueTitle !== '' ? valueTitle : value}
                     className={classes.value}
                     sx={{
-                        color: "inherit"
+                        color: 'inherit',
                     }}
                 >
                     {renderValue && renderValue(value)}

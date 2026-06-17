@@ -57,22 +57,26 @@ export const PaymentLotInfos: FunctionComponent<Props> = ({
                     xs: 12,
                     md: 6,
                     lg: 5,
-                    xl: 4
-                }}>
+                    xl: 4,
+                }}
+            >
                 <Paper style={{ width: '100%' }} elevation={2}>
                     <Box
                         sx={{
                             ml: 2,
-                            my: 2
-                        }}>
+                            my: 2,
+                        }}
+                    >
                         <Typography color="primary" variant="h5">
                             {formatMessage(MESSAGES.paymentLotInfos)}
                         </Typography>
                     </Box>
                     <Grid size={12}>
-                        <Box sx={{
-                            mx: 2
-                        }}>
+                        <Box
+                            sx={{
+                                mx: 2,
+                            }}
+                        >
                             <InputComponent
                                 type="text"
                                 required
@@ -84,9 +88,11 @@ export const PaymentLotInfos: FunctionComponent<Props> = ({
                         </Box>
                     </Grid>
                     <Grid size={12}>
-                        <Box sx={{
-                            mx: 2
-                        }}>
+                        <Box
+                            sx={{
+                                mx: 2,
+                            }}
+                        >
                             <InputComponent
                                 type="text"
                                 multiline
@@ -99,32 +105,45 @@ export const PaymentLotInfos: FunctionComponent<Props> = ({
                     </Grid>
                     <Grid size={12}>
                         <Box
-                            sx={[{
-                                ml: 2,
-                                mt: 2
-                            }, componentStyle.infos]}>
+                            sx={[
+                                {
+                                    ml: 2,
+                                    mt: 2,
+                                },
+                                componentStyle.infos,
+                            ]}
+                        >
                             <span>{formatMessage(MESSAGES.date)}:</span>
                             {moment().format('L')}
                         </Box>
                     </Grid>
                     <Grid size={12}>
                         <Box
-                            sx={[{
-                                ml: 2,
-                                mt: 2
-                            }, componentStyle.infos]}>
+                            sx={[
+                                {
+                                    ml: 2,
+                                    mt: 2,
+                                },
+                                componentStyle.infos,
+                            ]}
+                        >
                             <span>{formatMessage(MESSAGES.created_by)}:</span>
                             {getDisplayName(paymentLot.created_by)}
                         </Box>
                     </Grid>
-                    <Grid container size={12} sx={{
-                        justifyContent: "flex-end"
-                    }}>
+                    <Grid
+                        container
+                        size={12}
+                        sx={{
+                            justifyContent: 'flex-end',
+                        }}
+                    >
                         <Box
                             sx={{
                                 mr: 2,
-                                mb: 2
-                            }}>
+                                mb: 2,
+                            }}
+                        >
                             <Button
                                 color="primary"
                                 variant="contained"

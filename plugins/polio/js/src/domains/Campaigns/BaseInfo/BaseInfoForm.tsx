@@ -127,16 +127,19 @@ export const BaseInfoForm: FunctionComponent = () => {
     );
 
     return (
-        <Box sx={{
-            width: '100%'
-        }}>
+        <Box
+            sx={{
+                width: '100%',
+            }}
+        >
             <Grid container spacing={2}>
                 <Grid container spacing={2}>
                     <Grid
                         size={{
                             xs: 12,
-                            md: isPolio ? 4 : 12
-                        }}>
+                            md: isPolio ? 4 : 12,
+                        }}
+                    >
                         <Field
                             label={formatMessage(MESSAGES.campaignType)}
                             name="campaign_types"
@@ -167,9 +170,11 @@ export const BaseInfoForm: FunctionComponent = () => {
                         />
 
                         {!isPolio && (
-                            <Box sx={{
-                                mb: 2
-                            }}>
+                            <Box
+                                sx={{
+                                    mb: 2,
+                                }}
+                            >
                                 <IntegratedCampaignField
                                     label={MESSAGES.integratedToCampaign}
                                     value={values?.integrated_to}
@@ -256,8 +261,9 @@ export const BaseInfoForm: FunctionComponent = () => {
                         <Grid
                             size={{
                                 xs: 12,
-                                md: 4
-                            }}>
+                                md: 4,
+                            }}
+                        >
                             <Field
                                 label={formatMessage(MESSAGES.virus)}
                                 name="virus"
@@ -267,9 +273,11 @@ export const BaseInfoForm: FunctionComponent = () => {
                                 clearable={false}
                                 component={Select}
                             />
-                            <Box sx={{
-                                mt: 2
-                            }}>
+                            <Box
+                                sx={{
+                                    mt: 2,
+                                }}
+                            >
                                 <Field
                                     label={formatMessage(MESSAGES.vaccines)}
                                     name="vaccines"
@@ -281,9 +289,11 @@ export const BaseInfoForm: FunctionComponent = () => {
                                     )}
                                 />
                             </Box>
-                            <Box sx={{
-                                mt: 2
-                            }}>
+                            <Box
+                                sx={{
+                                    mt: 2,
+                                }}
+                            >
                                 <Field
                                     label={formatMessage(
                                         MESSAGES.groupedCampaigns,
@@ -294,9 +304,11 @@ export const BaseInfoForm: FunctionComponent = () => {
                                     component={MultiSelect}
                                 />
                             </Box>
-                            <Box sx={{
-                                mt: 2
-                            }}>
+                            <Box
+                                sx={{
+                                    mt: 2,
+                                }}
+                            >
                                 <Field
                                     label={formatMessage(
                                         MESSAGES.virusNotificationDate,
@@ -314,9 +326,11 @@ export const BaseInfoForm: FunctionComponent = () => {
                                 name="outbreak_declaration_date"
                                 component={DateInput}
                             />
-                            <Box sx={{
-                                mt: 2
-                            }}>
+                            <Box
+                                sx={{
+                                    mt: 2,
+                                }}
+                            >
                                 <Field
                                     label={formatMessage(MESSAGES.dateOfOnset)}
                                     fullWidth
@@ -331,14 +345,16 @@ export const BaseInfoForm: FunctionComponent = () => {
                             <Grid
                                 size={{
                                     xs: 12,
-                                    md: 4
-                                }}>
+                                    md: 4,
+                                }}
+                            >
                                 <IntegratedCampaigns />
                                 <Box
                                     sx={{
-                                        display: "flex",
-                                        justifyContent: "flex-end"
-                                    }}>
+                                        display: 'flex',
+                                        justifyContent: 'flex-end',
+                                    }}
+                                >
                                     <AddIntegratedCampaignsModal
                                         iconProps={{}}
                                     />

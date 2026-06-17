@@ -46,14 +46,15 @@ export const BudgetDetailsFilters: FunctionComponent<Props> = ({
                 container
                 spacing={isXSLayout ? 0 : 2}
                 sx={{
-                    justifyContent: "flex-end"
+                    justifyContent: 'flex-end',
                 }}
             >
                 <Grid
                     size={{
                         xs: 12,
-                        md: 4
-                    }}>
+                        md: 4,
+                    }}
+                >
                     <InputComponent
                         keyValue="transition_key"
                         onChange={handleChange}
@@ -79,16 +80,18 @@ export const BudgetDetailsFilters: FunctionComponent<Props> = ({
                     container
                     size={{
                         xs: 12,
-                        md: 8
+                        md: 8,
                     }}
                     sx={{
-                        justifyContent: "flex-end"
-                    }}>
+                        justifyContent: 'flex-end',
+                    }}
+                >
                     <Box
                         sx={{
                             mt: 2,
-                            mb: isXSLayout ? 2 : 0
-                        }}>
+                            mb: isXSLayout ? 2 : 0,
+                        }}
+                    >
                         <SearchButton
                             disabled={!filtersUpdated}
                             onSearch={handleSearch}

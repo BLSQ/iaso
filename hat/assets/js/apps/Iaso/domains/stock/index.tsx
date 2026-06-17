@@ -48,12 +48,15 @@ export const StockKeepingUnits: FunctionComponent = () => {
                     spacing={0}
                     className={classes.marginTop}
                     sx={{
-                        justifyContent: "flex-end",
-                        alignItems: "center"
-                    }}>
-                    <Grid sx={{
-                        mr: 3
-                    }}>
+                        justifyContent: 'flex-end',
+                        alignItems: 'center',
+                    }}
+                >
+                    <Grid
+                        sx={{
+                            mr: 3,
+                        }}
+                    >
                         <Button
                             color="primary"
                             onClick={() =>

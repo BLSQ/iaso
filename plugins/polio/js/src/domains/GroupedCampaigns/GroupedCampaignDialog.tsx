@@ -104,9 +104,11 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
             onAdditionalButtonClick={undefined}
         >
             <>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Divider />
                 </Box>
                 <Grid
@@ -114,7 +116,7 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
                     spacing={2}
                     direction="row"
                     sx={{
-                        justifyContent: "space-around"
+                        justifyContent: 'space-around',
                     }}
                 >
                     <Grid container size={12}>

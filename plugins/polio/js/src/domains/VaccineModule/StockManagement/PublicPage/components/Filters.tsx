@@ -91,18 +91,20 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
         <Box
             sx={{
                 mb: 4,
-                width: 'calc(100vw - 50px)'
-            }}>
+                width: 'calc(100vw - 50px)',
+            }}
+        >
             <Grid
                 container
                 spacing={2}
                 sx={{
-                    justifyContent: "flex-start",
+                    justifyContent: 'flex-start',
                     pt: 2,
                     pb: 5,
                     ml: 1,
-                    backgroundColor: '#e6e6e6'
-                }}>
+                    backgroundColor: '#e6e6e6',
+                }}
+            >
                 <Grid size={2}>
                     <Typography
                         variant="subtitle1"

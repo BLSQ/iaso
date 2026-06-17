@@ -55,10 +55,11 @@ export const Runs: FunctionComponent = () => {
                 <Box
                     style={{ width: '100%' }}
                     sx={{
-                        display: "inline-flex",
-                        justifyContent: "flex-end",
-                        mt: 2
-                    }}>
+                        display: 'inline-flex',
+                        justifyContent: 'flex-end',
+                        mt: 2,
+                    }}
+                >
                     <AddAlgorithmRun
                         launchRun={launchRun}
                         isSaving={isSaving}

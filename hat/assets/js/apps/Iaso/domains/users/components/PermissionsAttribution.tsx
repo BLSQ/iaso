@@ -165,8 +165,9 @@ const PermissionsAttribution: React.FunctionComponent<Props> = ({
                     <Box
                         sx={{
                             mb: 2,
-                            width: "50%"
-                        }}>
+                            width: '50%',
+                        }}
+                    >
                         <InputComponent
                             keyValue="user_roles"
                             onChange={handleChangeUserRoles}

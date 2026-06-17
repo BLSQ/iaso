@@ -63,9 +63,13 @@ export const LinksDetails: FunctionComponent<Props> = ({
                                 />
                             </Grid>
                         </Grid>
-                        <Grid container spacing={2} sx={{
-                            justifyContent: "center"
-                        }}>
+                        <Grid
+                            container
+                            spacing={2}
+                            sx={{
+                                justifyContent: 'center',
+                            }}
+                        >
                             <Button
                                 className={classes.marginTop}
                                 variant="contained"

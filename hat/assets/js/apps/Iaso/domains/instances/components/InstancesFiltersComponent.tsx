@@ -278,8 +278,9 @@ const InstancesFiltersComponent = ({
                     size={{
                         xs: 12,
                         sm: 6,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <InputWithInfos
                         infos={formatMessage(MESSAGES.searchParams)}
                     >
@@ -341,8 +342,9 @@ const InstancesFiltersComponent = ({
                     <Box
                         sx={{
                             mt: 2,
-                            height: 40
-                        }}>
+                            height: 40,
+                        }}
+                    >
                         <InputComponent
                             keyValue="showDeleted"
                             onChange={handleFormChange}
@@ -356,8 +358,9 @@ const InstancesFiltersComponent = ({
                     size={{
                         xs: 12,
                         sm: 6,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <InputComponent
                         keyValue="status"
                         clearable
@@ -393,9 +396,11 @@ const InstancesFiltersComponent = ({
                         ]}
                         label={MESSAGES.location}
                     />
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <LocationLimit
                             onChange={handleFormChange}
                             value={formState.mapResults.value}
@@ -407,8 +412,9 @@ const InstancesFiltersComponent = ({
                     size={{
                         xs: 12,
                         sm: 6,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <Box id="ou-tree-input">
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}
@@ -433,9 +439,11 @@ const InstancesFiltersComponent = ({
                         label={MESSAGES.org_unit_type_id}
                         loading={isFetchingOuTypes}
                     />
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <UserAsyncSelect
                             keyValue="userIds"
                             label={MESSAGES.user}
@@ -448,8 +456,9 @@ const InstancesFiltersComponent = ({
                     size={{
                         xs: 12,
                         sm: 6,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <DatesRange
                         xs={12}
                         sm={12}
@@ -493,14 +502,16 @@ const InstancesFiltersComponent = ({
                         }
                     />
                     {periodError && (
-                        <Box sx={{
-                            mt: -1
-                        }}>
+                        <Box
+                            sx={{
+                                mt: -1,
+                            }}
+                        >
                             <Typography
                                 variant="body1"
                                 color="error"
                                 sx={{
-                                    fontSize: "small"
+                                    fontSize: 'small',
                                 }}
                             >
                                 {formatMessage(MESSAGES.periodError)}
@@ -515,13 +526,17 @@ const InstancesFiltersComponent = ({
                     />
                 </Grid>
             </Grid>
-            <Box sx={{
-                mt: -2
-            }}>
+            <Box
+                sx={{
+                    mt: -2,
+                }}
+            >
                 {!showAdvancedSettings && (
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <Typography
                             data-test="advanced-settings"
                             className={classes.advancedSettings}
@@ -537,8 +552,9 @@ const InstancesFiltersComponent = ({
                         <Grid
                             size={{
                                 xs: 12,
-                                md: 6
-                            }}>
+                                md: 6,
+                            }}
+                        >
                             <Box data-test="modificationDate">
                                 <DatesRange
                                     xs={12}
@@ -560,8 +576,9 @@ const InstancesFiltersComponent = ({
                         <Grid
                             size={{
                                 xs: 12,
-                                md: 6
-                            }}>
+                                md: 6,
+                            }}
+                        >
                             <Box data-test="sentDate">
                                 <DatesRange
                                     xs={12}
@@ -578,9 +595,11 @@ const InstancesFiltersComponent = ({
                                 />
                             </Box>
                         </Grid>
-                        <Box sx={{
-                            ml: 1
-                        }}>
+                        <Box
+                            sx={{
+                                ml: 1,
+                            }}
+                        >
                             <Typography
                                 data-test="advanced-settings"
                                 className={classes.advancedSettings}
@@ -598,18 +617,22 @@ const InstancesFiltersComponent = ({
                     container
                     size={12}
                     sx={{
-                        justifyContent: "flex-end",
-                        alignItems: "center"
-                    }}>
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                        justifyContent: 'flex-end',
+                        alignItems: 'center',
+                    }}
+                >
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         {tab === 'list' && (
                             <Box
                                 sx={{
                                     mr: 2,
-                                    display: "inline-block"
-                                }}>
+                                    display: 'inline-block',
+                                }}
+                            >
                                 <ColumnSelect
                                     params={params}
                                     disabled={

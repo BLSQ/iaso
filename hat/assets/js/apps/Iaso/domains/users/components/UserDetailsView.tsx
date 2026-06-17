@@ -74,13 +74,14 @@ export const UserDetailsView = ({ userId }: Props) => {
                     <Box
                         sx={{
                             pt: 4,
-                            px: 2
-                        }}>
+                            px: 2,
+                        }}
+                    >
                         <Stack
                             direction="row"
                             spacing={2}
                             sx={{
-                                justifyContent: "flex-end"
+                                justifyContent: 'flex-end',
                             }}
                         >
                             <TopActions

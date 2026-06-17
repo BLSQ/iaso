@@ -197,9 +197,11 @@ const CreateEditTeam: FunctionComponent<Props> = ({
                     label={MESSAGES.name}
                     required
                 />
-                <Box sx={{
-                    mt: 2
-                }}>
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <UserAsyncSelect
                         keyValue="manager"
                         handleChange={onChange}
@@ -247,9 +249,11 @@ const CreateEditTeam: FunctionComponent<Props> = ({
                         },
                     ]}
                 />
-                <Box sx={{
-                    mt: 2
-                }}>
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     {colors && (
                         <ColorPicker
                             currentColor={values.color ?? colors[0]}
@@ -260,9 +264,11 @@ const CreateEditTeam: FunctionComponent<Props> = ({
                     )}
                 </Box>
                 {values.type === TEAM_OF_USERS && (
-                    <Box sx={{
-                        mt: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mt: 2,
+                        }}
+                    >
                         <UserAsyncSelect
                             keyValue="users"
                             handleChange={onChange}

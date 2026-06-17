@@ -128,9 +128,10 @@ export const PopupComponent: FunctionComponent<Props> = ({
                             container
                             spacing={0}
                             sx={{
-                                justifyContent: "flex-end",
-                                alignItems: "center"
-                            }}>
+                                justifyContent: 'flex-end',
+                                alignItems: 'center',
+                            }}
+                        >
                             {location.has_children && (
                                 <Button
                                     variant="outlined"

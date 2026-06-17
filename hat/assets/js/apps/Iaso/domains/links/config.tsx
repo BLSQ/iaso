@@ -19,9 +19,10 @@ export const useLinksTableColumns = validateLink => {
                 Cell: settings => (
                     <Box
                         sx={{
-                            display: "flex",
-                            justifyContent: "center"
-                        }}>
+                            display: 'flex',
+                            justifyContent: 'center',
+                        }}
+                    >
                         <StarsComponent
                             maxScore={100}
                             displayCount

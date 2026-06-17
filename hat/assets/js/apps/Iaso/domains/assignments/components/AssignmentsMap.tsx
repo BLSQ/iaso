@@ -125,9 +125,11 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
         isLoadingRootOrgUnit ||
         isSaving;
     return (
-        <Box sx={{
-            position: "relative"
-        }}>
+        <Box
+            sx={{
+                position: 'relative',
+            }}
+        >
             {isLoading && <LoadingSpinner />}
             <MapContainer
                 key={planning?.id}

@@ -27,8 +27,9 @@ export const NoData: FunctionComponent = () => {
                 <Box
                     sx={{
                         mt: 4,
-                        mb: 4
-                    }}>
+                        mb: 4,
+                    }}
+                >
                     <Typography variant="h6" className={classes.boldText}>
                         {formatMessage(MESSAGES.noDataFound)}
                     </Typography>

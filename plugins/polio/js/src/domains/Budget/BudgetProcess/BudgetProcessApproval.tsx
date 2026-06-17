@@ -100,9 +100,11 @@ export const BudgetProcessApproval: FunctionComponent<Props> = ({
         <>
             {currentState && (
                 <Grid size={12}>
-                    <Box sx={{
-                        mb: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mb: 2,
+                        }}
+                    >
                         <Typography variant="button">
                             {`${formatMessage(
                                 MESSAGES.status,
@@ -117,17 +119,21 @@ export const BudgetProcessApproval: FunctionComponent<Props> = ({
             <Grid
                 size={{
                     xs: 12,
-                    lg: 6
-                }}>
+                    lg: 6,
+                }}
+            >
                 <ExpandableItem
                     label={formatMessage(MESSAGES.budgetRequest)}
                     preventCollapse={hasRequestFieldsError}
                 >
                     {BUDGET_REQUEST.map((node, index) => {
                         return (
-                            <Box key={node} sx={{
-                                mt: index === 0 ? 2 : 0
-                            }}>
+                            <Box
+                                key={node}
+                                sx={{
+                                    mt: index === 0 ? 2 : 0,
+                                }}
+                            >
                                 <Field
                                     label={formatMessage(MESSAGES[node])}
                                     name={`${node}${WORKFLOW_SUFFIX}`}
@@ -147,9 +153,12 @@ export const BudgetProcessApproval: FunctionComponent<Props> = ({
                 >
                     {RRT_REVIEW.map((node, index) => {
                         return (
-                            <Box key={node} sx={{
-                                mt: index === 0 ? 2 : 0
-                            }}>
+                            <Box
+                                key={node}
+                                sx={{
+                                    mt: index === 0 ? 2 : 0,
+                                }}
+                            >
                                 <Field
                                     label={formatMessage(MESSAGES[node])}
                                     name={`${node}${WORKFLOW_SUFFIX}`}
@@ -162,26 +171,32 @@ export const BudgetProcessApproval: FunctionComponent<Props> = ({
                         );
                     })}
                 </ExpandableItem>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Divider />
                 </Box>
             </Grid>
             <Grid
                 size={{
                     xs: 12,
-                    lg: 6
-                }}>
+                    lg: 6,
+                }}
+            >
                 <ExpandableItem
                     label={formatMessage(MESSAGES.ORPGReview)}
                     preventCollapse={hasORPGReviewError}
                 >
                     {ORPG_REVIEW.map((node, index) => {
                         return (
-                            <Box key={node} sx={{
-                                mt: index === 0 ? 2 : 0
-                            }}>
+                            <Box
+                                key={node}
+                                sx={{
+                                    mt: index === 0 ? 2 : 0,
+                                }}
+                            >
                                 <Field
                                     label={formatMessage(MESSAGES[node])}
                                     name={`${node}${WORKFLOW_SUFFIX}`}
@@ -203,9 +218,12 @@ export const BudgetProcessApproval: FunctionComponent<Props> = ({
                 >
                     {REVIEW_FOR_APPROVAL.map((node, index) => {
                         return (
-                            <Box key={node} sx={{
-                                mt: index === 0 ? 2 : 0
-                            }}>
+                            <Box
+                                key={node}
+                                sx={{
+                                    mt: index === 0 ? 2 : 0,
+                                }}
+                            >
                                 <Field
                                     label={formatMessage(MESSAGES[node])}
                                     name={`${node}${WORKFLOW_SUFFIX}`}
@@ -218,9 +236,11 @@ export const BudgetProcessApproval: FunctionComponent<Props> = ({
                         );
                     })}
                 </ExpandableItem>
-                <Box sx={{
-                    mb: 2
-                }}>
+                <Box
+                    sx={{
+                        mb: 2,
+                    }}
+                >
                     <Divider style={{ height: '1px', width: '100%' }} />
                 </Box>
             </Grid>

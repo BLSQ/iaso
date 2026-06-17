@@ -255,12 +255,12 @@ export const useEntitiesDetailsColumns = (
                 id: 'actions',
                 Cell: (settings): ReactElement => (
                     // TODO: limit to user permissions
-                    (<section>
+                    <section>
                         <LinkToInstance
                             instanceId={settings.row.original.id}
                             useIcon
                         />
-                    </section>)
+                    </section>
                 ),
             },
         ],

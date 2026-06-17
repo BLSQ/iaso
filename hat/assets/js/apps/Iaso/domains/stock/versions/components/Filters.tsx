@@ -72,8 +72,9 @@ const VersionFilters: FunctionComponent<VersionProps> = ({ params }) => {
                 size={{
                     xs: 12,
                     sm: 6,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="search"
                     onChange={handleChange}
@@ -88,8 +89,9 @@ const VersionFilters: FunctionComponent<VersionProps> = ({ params }) => {
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     type="select"
                     onChange={handleChange}
@@ -104,12 +106,13 @@ const VersionFilters: FunctionComponent<VersionProps> = ({ params }) => {
                 size={{
                     xs: 6,
                     sm: 6,
-                    md: 6
+                    md: 6,
                 }}
                 sx={{
-                    justifyContent: "flex-end",
-                    alignItems: "center"
-                }}>
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                }}
+            >
                 <Button
                     data-test="search-button"
                     disabled={textSearchError || !filtersUpdated}
@@ -181,8 +184,9 @@ const RulesFilters: FunctionComponent<RulesProps> = ({ params }) => {
                 size={{
                     xs: 12,
                     sm: 6,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     type="select"
                     keyValue="skuId"
@@ -196,8 +200,9 @@ const RulesFilters: FunctionComponent<RulesProps> = ({ params }) => {
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     type="select"
                     keyValue="formId"
@@ -213,12 +218,13 @@ const RulesFilters: FunctionComponent<RulesProps> = ({ params }) => {
                 size={{
                     xs: 6,
                     sm: 6,
-                    md: 6
+                    md: 6,
                 }}
                 sx={{
-                    justifyContent: "flex-end",
-                    alignItems: "center"
-                }}>
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                }}
+            >
                 <Button
                     data-test="search-button"
                     disabled={

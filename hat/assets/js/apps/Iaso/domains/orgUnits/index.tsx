@@ -173,9 +173,10 @@ export const OrgUnits: FunctionComponent = () => {
                                 mb: 2,
                                 mt: 2,
                                 mr: 4,
-                                display: "flex",
-                                justifyContent: "flex-end"
-                            }}>
+                                display: 'flex',
+                                justifyContent: 'flex-end',
+                            }}
+                        >
                             <DownloadButtonsComponent
                                 csvUrl={getUrl(true, 'csv')}
                                 xlsxUrl={getUrl(true, 'xlsx')}
@@ -184,9 +185,11 @@ export const OrgUnits: FunctionComponent = () => {
                         </Box>
                     )}
 
-                <Box sx={{
-                    px: 4
-                }}>
+                <Box
+                    sx={{
+                        px: 4,
+                    }}
+                >
                     <Tabs
                         value={tab}
                         classes={{

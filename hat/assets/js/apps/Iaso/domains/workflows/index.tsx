@@ -41,9 +41,10 @@ export const Workflows: FunctionComponent = () => {
                 <Box
                     sx={{
                         mt: 2,
-                        display: "flex",
-                        justifyContent: "flex-end"
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                    }}
+                >
                     <AddVersionModal
                         entityTypeId={entityTypeId}
                         iconProps={{

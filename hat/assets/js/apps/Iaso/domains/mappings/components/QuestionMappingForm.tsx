@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import Alert from '@mui/material/Alert';
 import { Button } from '@mui/material';
+import Alert from '@mui/material/Alert';
 import { LoadingSpinner, Select, useSafeIntl } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import Descriptor from '../descriptor';
@@ -385,7 +385,7 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
                     {questionMapping.map &&
                         questionMapping.map((q, index) => (
                             // eslint-disable-next-line react/no-array-index-key
-                            (<ObjectDumper key={index} object={q} />)
+                            <ObjectDumper key={index} object={q} />
                         ))}
                 </div>
             )}

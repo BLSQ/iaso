@@ -212,15 +212,17 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                             container
                             spacing={1}
                             sx={{
-                                display: "flex",
-                                justifyContent: "flex-end"
-                            }}>
+                                display: 'flex',
+                                justifyContent: 'flex-end',
+                            }}
+                        >
                             <Grid
                                 size={1}
                                 sx={{
-                                    display: "flex",
-                                    alignItems: "center"
-                                }}>
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                }}
+                            >
                                 <IconButton
                                     size="small"
                                     onClick={() => setIsOpen(false)}
@@ -231,9 +233,10 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                             <Grid
                                 size={9}
                                 sx={{
-                                    display: "flex",
-                                    alignItems: "center"
-                                }}>
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                }}
+                            >
                                 <Typography variant="h6" color="primary">
                                     {formatMessage(
                                         MESSAGES.openHexaIntegration,
@@ -243,9 +246,10 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                             <Grid
                                 size={2}
                                 sx={{
-                                    display: "flex",
-                                    alignItems: "center"
-                                }}>
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                }}
+                            >
                                 {currentStep === 1 && (
                                     <Button
                                         size="small"
@@ -279,9 +283,13 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                         </Grid>
                     </Paper>
                     <Box
-                        sx={[{
-                            position: "relative"
-                        }, styles.container]}>
+                        sx={[
+                            {
+                                position: 'relative',
+                            },
+                            styles.container,
+                        ]}
+                    >
                         {isFetchingPipeline && (
                             <LoadingSpinner absolute fixed={false} />
                         )}

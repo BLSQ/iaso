@@ -39,8 +39,9 @@ export const Filters: FunctionComponent<Props> = ({ baseUrl, params }) => {
                 size={{
                     xs: 12,
                     sm: 3,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="projectIds"
                     onChange={handleChange}
@@ -58,8 +59,9 @@ export const Filters: FunctionComponent<Props> = ({ baseUrl, params }) => {
                 size={{
                     xs: 12,
                     sm: 3,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="name"
                     onChange={handleChange}
@@ -76,12 +78,13 @@ export const Filters: FunctionComponent<Props> = ({ baseUrl, params }) => {
                 size={{
                     xs: 12,
                     sm: 6,
-                    md: 6
+                    md: 6,
                 }}
                 sx={{
-                    justifyContent: "flex-end",
-                    alignItems: "center"
-                }}>
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                }}
+            >
                 <Button
                     data-test="search-button"
                     disabled={!filtersUpdated}

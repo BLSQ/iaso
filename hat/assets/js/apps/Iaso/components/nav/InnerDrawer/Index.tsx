@@ -88,17 +88,19 @@ export const InnerDrawer: FunctionComponent<Props> = ({
             component="div"
             sx={{
                 borderTop: withTopBorder ? 1 : 0,
-                borderColor: "grey.300",
-                p: 0
-            }}>
+                borderColor: 'grey.300',
+                p: 0,
+            }}
+        >
             <Grid container spacing={0}>
                 <Grid
                     className={classes.mapContainer}
                     size={{
                         xs: 7,
                         md: 8,
-                        lg: 9
-                    }}>
+                        lg: 9,
+                    }}
+                >
                     {children}
                 </Grid>
                 <Grid
@@ -106,11 +108,14 @@ export const InnerDrawer: FunctionComponent<Props> = ({
                     size={{
                         xs: 5,
                         md: 4,
-                        lg: 3
-                    }}>
-                    <Box sx={{
-                        width: "100%"
-                    }}>
+                        lg: 3,
+                    }}
+                >
+                    <Box
+                        sx={{
+                            width: '100%',
+                        }}
+                    >
                         {(filtersOptionComponent ||
                             editOptionComponent ||
                             commentsOptionComponent) && (
@@ -168,10 +173,11 @@ export const InnerDrawer: FunctionComponent<Props> = ({
                         <Box
                             className={classes.innerDrawerContentContainer}
                             sx={{
-                                display: "flex",
-                                flexWrap: "wrap",
-                                flexDirection: "row"
-                            }}>
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                flexDirection: 'row',
+                            }}
+                        >
                             {filtersOptionComponent && (
                                 <Box
                                     className={
@@ -180,7 +186,7 @@ export const InnerDrawer: FunctionComponent<Props> = ({
                                             : ''
                                     }
                                     sx={{
-                                        width: "100%"
+                                        width: '100%',
                                     }}
                                 >
                                     {filtersOptionComponent}
@@ -188,23 +194,31 @@ export const InnerDrawer: FunctionComponent<Props> = ({
                             )}
 
                             {activeOption === 'edit' && (
-                                <Box sx={{
-                                    width: "100%"
-                                }}>{editOptionComponent}</Box>
+                                <Box
+                                    sx={{
+                                        width: '100%',
+                                    }}
+                                >
+                                    {editOptionComponent}
+                                </Box>
                             )}
 
                             {activeOption === 'comments' && (
-                                <Box sx={{
-                                    width: "100%"
-                                }}>
+                                <Box
+                                    sx={{
+                                        width: '100%',
+                                    }}
+                                >
                                     {commentsOptionComponent}
                                 </Box>
                             )}
                             {activeOption === 'settings' &&
                                 settingsOptionComponent && (
-                                    <Box sx={{
-                                        width: "100%"
-                                    }}>
+                                    <Box
+                                        sx={{
+                                            width: '100%',
+                                        }}
+                                    >
                                         {settingsOptionComponent}
                                     </Box>
                                 )}

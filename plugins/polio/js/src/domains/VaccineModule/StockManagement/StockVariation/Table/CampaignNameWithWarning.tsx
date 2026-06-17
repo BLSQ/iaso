@@ -25,11 +25,12 @@ export const CampaignNameWithWarning: FunctionComponent<Props> = ({
     return (
         <Box
             sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 2
-            }}>
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 2,
+            }}
+        >
             <Tooltip
                 sx={{
                     color: theme => theme.palette.warning.main,

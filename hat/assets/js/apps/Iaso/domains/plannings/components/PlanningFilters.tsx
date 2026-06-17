@@ -43,8 +43,9 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 4
-                    }}>
+                        md: 4,
+                    }}
+                >
                     <InputComponent
                         keyValue="search"
                         onChange={handleChange}
@@ -59,8 +60,9 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 4
-                    }}>
+                        md: 4,
+                    }}
+                >
                     <DatesRange
                         onChangeDate={handleChange}
                         dateFrom={filters.dateFrom}
@@ -72,8 +74,9 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 2
-                    }}>
+                        md: 2,
+                    }}
+                >
                     <InputComponent
                         type="select"
                         multi={false}
@@ -87,11 +90,12 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                 <Grid
                     size={{
                         xs: 12,
-                        md: 2
+                        md: 2,
                     }}
                     sx={{
-                        justifyContent: "flex-end"
-                    }}>
+                        justifyContent: 'flex-end',
+                    }}
+                >
                     <Box
                         sx={{
                             display: 'flex',

@@ -141,14 +141,16 @@ export const CompareInstanceLogs: FunctionComponent = () => {
                     container
                     spacing={3}
                     sx={{
-                        display: "flex",
-                        justifyContent: "flex-end"
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                    }}
+                >
                     <Grid
                         size={{
                             xs: 12,
-                            md: 4.5
-                        }}>
+                            md: 4.5,
+                        }}
+                    >
                         <InstanceLogInfos
                             log="logA"
                             logTitle="Version A"
@@ -170,8 +172,9 @@ export const CompareInstanceLogs: FunctionComponent = () => {
                     <Grid
                         size={{
                             xs: 12,
-                            md: 4.5
-                        }}>
+                            md: 4.5,
+                        }}
+                    >
                         <InstanceLogInfos
                             log="logB"
                             logTitle="Version B"
@@ -194,8 +197,9 @@ export const CompareInstanceLogs: FunctionComponent = () => {
                     <Grid
                         size={{
                             xs: 12,
-                            md: 12
-                        }}>
+                            md: 12,
+                        }}
+                    >
                         <InstanceLogDetail
                             instanceLogContent={instanceLogContent}
                             isLogDetailLoading={isLogDetailLoading}

@@ -181,7 +181,7 @@ export const FiltersComponent: FunctionComponent<Props> = ({
                                 />
                             )}
                             {filter.type === 'checkbox' && ( // TODO: check with team
-                                (<InputComponent
+                                <InputComponent
                                     withMarginTop={filter.withMarginTop}
                                     disabled={filter.isDisabled || false}
                                     keyValue={filter.urlKey}
@@ -199,7 +199,7 @@ export const FiltersComponent: FunctionComponent<Props> = ({
                                     }
                                     type="checkbox"
                                     label={filter.label}
-                                />)
+                                />
                             )}
                         </Fragment>
                     );

@@ -39,10 +39,11 @@ export const Storages: FunctionComponent = () => {
                 <Filters params={apiParams} />
                 <Box
                     sx={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        mt: 2
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        mt: 2,
+                    }}
+                >
                     <DownloadButtonsComponent
                         csvUrl={`${apiUrl}&csv=true`}
                         xlsxUrl={`${apiUrl}&xlsx=true`}

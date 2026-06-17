@@ -30,8 +30,9 @@ export const ValidationWorkflowInstanceSearchFilter = ({ params }) => {
                     size={{
                         xs: 12,
                         sm: 6,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <ValidationWorkflowDropdown
                         keyValue={'validation_workflows'}
                         label={MESSAGES.validationWorkflows}
@@ -45,8 +46,9 @@ export const ValidationWorkflowInstanceSearchFilter = ({ params }) => {
                     size={{
                         xs: 12,
                         sm: 6,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <InputComponent
                         type={'select'}
                         keyValue={'status'}
@@ -60,8 +62,9 @@ export const ValidationWorkflowInstanceSearchFilter = ({ params }) => {
                     size={{
                         xs: 12,
                         sm: 6,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <InputComponent
                         keyValue="forms"
                         onChange={handleChange}
@@ -79,8 +82,9 @@ export const ValidationWorkflowInstanceSearchFilter = ({ params }) => {
                     size={{
                         xs: 12,
                         sm: 6,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <InputComponent
                         type={'select'}
                         options={requiresUserActionOptions}
@@ -95,8 +99,9 @@ export const ValidationWorkflowInstanceSearchFilter = ({ params }) => {
                     size={{
                         xs: 12,
                         sm: 6,
-                        md: 3
-                    }}>
+                        md: 3,
+                    }}
+                >
                     <InputComponent
                         keyValue="projects"
                         onChange={handleChange}
@@ -115,8 +120,9 @@ export const ValidationWorkflowInstanceSearchFilter = ({ params }) => {
                     size={12}
                     sx={{
                         justifyContent: 'flex-end',
-                        display: 'flex'
-                    }}>
+                        display: 'flex',
+                    }}
+                >
                     <SearchButton
                         disabled={!filtersUpdated}
                         onSearch={handleSearch}

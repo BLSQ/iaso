@@ -46,15 +46,17 @@ export const Modules: FunctionComponent = () => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <Grid container spacing={1} sx={{
-                    alignContent: "stretch"
-                }}>
+                <Grid
+                    container
+                    spacing={1}
+                    sx={{
+                        alignContent: 'stretch',
+                    }}
+                >
                     <Grid>
                         <HelpOutlineOutlinedIcon />
                     </Grid>
-                    <Grid>
-                        {formatMessage(MESSAGES.modulesInformation)}
-                    </Grid>
+                    <Grid>{formatMessage(MESSAGES.modulesInformation)}</Grid>
                 </Grid>
                 <ModulesFilters params={searchParams} />
                 <TableWithDeepLink

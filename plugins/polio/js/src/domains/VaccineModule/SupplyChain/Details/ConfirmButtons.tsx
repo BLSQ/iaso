@@ -32,8 +32,9 @@ export const VaccineSupplyChainConfirmButtons: FunctionComponent<Props> = ({
             <Box
                 sx={{
                     ml: 2,
-                    mt: 4
-                }}>
+                    mt: 4,
+                }}
+            >
                 <Button
                     variant="contained"
                     className={className}
@@ -47,8 +48,9 @@ export const VaccineSupplyChainConfirmButtons: FunctionComponent<Props> = ({
             <Box
                 sx={{
                     ml: 2,
-                    mt: 4
-                }}>
+                    mt: 4,
+                }}
+            >
                 <Button
                     variant="contained"
                     className={className}
@@ -65,8 +67,9 @@ export const VaccineSupplyChainConfirmButtons: FunctionComponent<Props> = ({
                 <Box
                     sx={{
                         ml: 2,
-                        mt: 4
-                    }}>
+                        mt: 4,
+                    }}
+                >
                     <Button
                         variant="contained"
                         className={className}

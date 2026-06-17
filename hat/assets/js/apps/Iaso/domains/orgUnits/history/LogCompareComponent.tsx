@@ -118,9 +118,10 @@ const LogCompareComponent: FunctionComponent<Props> = ({
                         container
                         size={6}
                         sx={{
-                            justifyContent: "flex-start",
-                            alignItems: "center"
-                        }}>
+                            justifyContent: 'flex-start',
+                            alignItems: 'center',
+                        }}
+                    >
                         <Typography variant="h6" component="h6" color="primary">
                             {title}
                         </Typography>
@@ -129,9 +130,10 @@ const LogCompareComponent: FunctionComponent<Props> = ({
                         container
                         size={6}
                         sx={{
-                            justifyContent: "flex-end",
-                            alignItems: "center"
-                        }}>
+                            justifyContent: 'flex-end',
+                            alignItems: 'center',
+                        }}
+                    >
                         <Tooltip
                             title={formatMessage(
                                 showAllFields
@@ -184,9 +186,10 @@ const LogCompareComponent: FunctionComponent<Props> = ({
                     container
                     spacing={2}
                     sx={{
-                        alignItems: "center",
-                        justifyContent: "center"
-                    }}>
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}
+                >
                     {showButtons && (
                         <Grid size={6}>
                             <ConfirmDialog

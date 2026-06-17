@@ -58,9 +58,10 @@ export const PotentialPayments: FunctionComponent = () => {
                 />
                 <Box
                     sx={{
-                        display: "flex",
-                        justifyContent: "flex-end"
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                    }}
+                >
                     <AddPaymentLotDialog
                         iconProps={{
                             disabled:

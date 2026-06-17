@@ -160,14 +160,15 @@ export const Entities: FunctionComponent = () => {
                 />
                 <Box
                     sx={{
-                        position: "relative",
-                        width: "100%",
-                        mt: 2
-                    }}>
+                        position: 'relative',
+                        width: '100%',
+                        mt: 2,
+                    }}
+                >
                     <Box
                         className={tab === 'map' ? '' : classes.hiddenOpacity}
                         sx={{
-                            width: "100%"
+                            width: '100%',
                         }}
                     >
                         {!isFetching && (

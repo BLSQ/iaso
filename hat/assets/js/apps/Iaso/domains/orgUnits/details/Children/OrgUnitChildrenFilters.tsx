@@ -49,8 +49,9 @@ export const OrgUnitChildrenFilters: FunctionComponent<Props> = ({
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     type="search"
                     keyValue={`${OU_CHILDREN_PREFIX}Search`}
@@ -80,8 +81,9 @@ export const OrgUnitChildrenFilters: FunctionComponent<Props> = ({
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     type="select"
                     keyValue={`${OU_CHILDREN_PREFIX}WithLocation`}
@@ -102,8 +104,9 @@ export const OrgUnitChildrenFilters: FunctionComponent<Props> = ({
             <Grid
                 size={{
                     xs: 12,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     type="select"
                     keyValue={`${OU_CHILDREN_PREFIX}Group`}
@@ -137,14 +140,17 @@ export const OrgUnitChildrenFilters: FunctionComponent<Props> = ({
                 container
                 size={{
                     xs: 12,
-                    md: 3
+                    md: 3,
                 }}
                 sx={{
-                    justifyContent: "flex-end"
-                }}>
-                <Box sx={{
-                    mt: 2
-                }}>
+                    justifyContent: 'flex-end',
+                }}
+            >
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <SearchButton
                         onSearch={handleSearch}
                         disabled={!filtersUpdated}

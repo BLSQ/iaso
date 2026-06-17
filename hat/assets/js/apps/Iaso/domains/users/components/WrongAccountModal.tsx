@@ -65,10 +65,11 @@ const WrongAccountModal: FunctionComponent<Props> = ({ isOpen }) => {
                 <WarningIcon color="error" />
                 <Box
                     sx={{
-                        display: "inline-block",
+                        display: 'inline-block',
                         mr: 1,
-                        ml: 1
-                    }}>
+                        ml: 1,
+                    }}
+                >
                     {formatMessage(MESSAGES.wrongAccountTitle)}
                 </Box>
                 <WarningIcon color="error" />

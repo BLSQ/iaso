@@ -20,8 +20,9 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 12,
                     sm: 3,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="name"
                     onChange={handleChange}
@@ -36,8 +37,9 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 12,
                     sm: 3,
-                    md: 3
-                }}>
+                    md: 3,
+                }}
+            >
                 <InputComponent
                     keyValue="forms"
                     onChange={handleChange}
@@ -56,12 +58,13 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 12,
                     sm: 6,
-                    md: 6
+                    md: 6,
                 }}
                 sx={{
-                    justifyContent: "flex-end",
-                    alignItems: "center"
-                }}>
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                }}
+            >
                 <SearchButton
                     disabled={!filtersUpdated}
                     onSearch={handleSearch}

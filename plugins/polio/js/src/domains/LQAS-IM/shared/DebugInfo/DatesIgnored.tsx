@@ -31,8 +31,9 @@ export const DatesIgnored: FunctionComponent<Props> = ({ data, campaign }) => {
                     sx={{
                         mr: 1,
                         mb: 1,
-                        display: "inline-block"
-                    }}>
+                        display: 'inline-block',
+                    }}
+                >
                     <Chip label={d} variant="outlined" color="secondary" />
                 </Box>
             ))}

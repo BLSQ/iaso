@@ -118,10 +118,11 @@ export const BudgetProcessList: FunctionComponent = () => {
                 {isMobileLayout && (
                     <Box
                         sx={{
-                            position: "absolute",
+                            position: 'absolute',
                             top: theme.spacing(2),
-                            right: theme.spacing(2)
-                        }}>
+                            right: theme.spacing(2),
+                        }}
+                    >
                         <SearchIcon
                             onClick={() => {
                                 setExpand(value => !value);
@@ -139,9 +140,11 @@ export const BudgetProcessList: FunctionComponent = () => {
                             buttonSize="small"
                             statesList={possibleStates}
                         />
-                        <Box sx={{
-                            mb: 2
-                        }}>
+                        <Box
+                            sx={{
+                                mb: 2,
+                            }}
+                        >
                             <BudgetButtons
                                 csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
                                 isUserPolioBudgetAdmin={isUserPolioBudgetAdmin}
@@ -181,9 +184,12 @@ export const BudgetProcessList: FunctionComponent = () => {
                         {isFetching && <LoadingSpinner />}
                         {budgets?.results &&
                             budgets.results.map((budget: Budget) => (
-                                <Box key={budget.id} sx={{
-                                    mb: 1
-                                }}>
+                                <Box
+                                    key={budget.id}
+                                    sx={{
+                                        mb: 1,
+                                    }}
+                                >
                                     <BudgetCard budget={budget} />
                                 </Box>
                             ))}

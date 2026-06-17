@@ -111,9 +111,11 @@ export const RoundDates: FunctionComponent<Props> = ({
             )}
             {hasInitialData && !isPlanned && (
                 <FormikProvider value={formik}>
-                    <Box sx={{
-                        mb: 2
-                    }}>
+                    <Box
+                        sx={{
+                            mb: 2,
+                        }}
+                    >
                         <Divider />
                         <Grid container>
                             <Grid size={8}>
@@ -121,8 +123,9 @@ export const RoundDates: FunctionComponent<Props> = ({
                                     sx={{
                                         ml: 2,
                                         mb: 2,
-                                        mt: 2
-                                    }}>
+                                        mt: 2,
+                                    }}
+                                >
                                     <Grid container>
                                         <Grid size={4}>
                                             <Typography variant="button">
@@ -148,8 +151,9 @@ export const RoundDates: FunctionComponent<Props> = ({
                                 <Box
                                     sx={{
                                         ml: 2,
-                                        mb: 2
-                                    }}>
+                                        mb: 2,
+                                    }}
+                                >
                                     <Grid container>
                                         <Grid size={4}>
                                             <Typography variant="button">
@@ -176,9 +180,10 @@ export const RoundDates: FunctionComponent<Props> = ({
                                 container
                                 size={4}
                                 sx={{
-                                    alignContent: "center",
-                                    justifyContent: "flex-end"
-                                }}>
+                                    alignContent: 'center',
+                                    justifyContent: 'flex-end',
+                                }}
+                            >
                                 <Box style={{ display: 'flex' }}>
                                     <RoundDatesHistoryModal
                                         roundId={rounds[roundIndex]?.id}

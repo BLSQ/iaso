@@ -206,9 +206,12 @@ export const Details: FunctionComponent = () => {
                         </WidgetPaper>
                     </Grid>
                 </Grid>
-                <Box data-test="follow-ups" sx={{
-                    mt: 2
-                }}>
+                <Box
+                    data-test="follow-ups"
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <WidgetPaper
                         className={classes.infoPaper}
                         title={formatMessage(MESSAGES.followUps)}
@@ -247,13 +250,15 @@ export const Details: FunctionComponent = () => {
                             <Box
                                 sx={{
                                     m: 2,
-                                    textAlign: "right"
-                                }}>
+                                    textAlign: 'right',
+                                }}
+                            >
                                 <Box
                                     sx={{
-                                        display: "inline-block",
-                                        mr: 2
-                                    }}>
+                                        display: 'inline-block',
+                                        mr: 2,
+                                    }}
+                                >
                                     <Button
                                         color="primary"
                                         disabled={!isFollowUpOrderChange}
@@ -267,9 +272,10 @@ export const Details: FunctionComponent = () => {
 
                                 <Box
                                     sx={{
-                                        display: "inline-block",
-                                        mr: 2
-                                    }}>
+                                        display: 'inline-block',
+                                        mr: 2,
+                                    }}
+                                >
                                     <Button
                                         color="primary"
                                         disabled={!isFollowUpOrderChange}
@@ -295,9 +301,12 @@ export const Details: FunctionComponent = () => {
                         )}
                     </WidgetPaper>
                 </Box>
-                <Box data-test="changes" sx={{
-                    mt: 2
-                }}>
+                <Box
+                    data-test="changes"
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <WidgetPaper
                         className={classes.infoPaper}
                         title={formatMessage(MESSAGES.changes)}
@@ -328,8 +337,9 @@ export const Details: FunctionComponent = () => {
                             <Box
                                 sx={{
                                     m: 2,
-                                    textAlign: "right"
-                                }}>
+                                    textAlign: 'right',
+                                }}
+                            >
                                 <AddChangeModal
                                     versionId={versionId}
                                     changes={changes || []}

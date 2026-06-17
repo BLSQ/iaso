@@ -15,15 +15,22 @@ export const LinkReferenceInstancesCheckBox: FunctionComponent<Props> = ({
     onCheck,
 }) => {
     return (
-        <Grid container spacing={2} direction="row" size={12} sx={{
-            alignItems: "center"
-        }}>
+        <Grid
+            container
+            spacing={2}
+            direction="row"
+            size={12}
+            sx={{
+                alignItems: 'center',
+            }}
+        >
             <Grid
                 size={2}
                 sx={{
-                    display: "flex",
-                    justifyContent: "flex-end"
-                }}>
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                }}
+            >
                 <InputComponent
                     keyValue="read_only"
                     onChange={() => onCheck(action)}

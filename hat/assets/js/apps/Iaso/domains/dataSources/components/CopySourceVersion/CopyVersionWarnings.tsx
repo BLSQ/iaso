@@ -38,8 +38,9 @@ export const WarningMessage: FunctionComponent<Props> = ({
             spacing={1}
             data-test={`copyversion-warning-${destinationSourceName}`}
             sx={{
-                justifyContent: "center"
-            }}>
+                justifyContent: 'center',
+            }}
+        >
             <Grid>
                 <Typography className={classes.source} variant="h6">
                     <FormattedMessage

@@ -32,8 +32,9 @@ export const TaskFilters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 12,
                     md: 4,
-                    lg: 3
-                }}>
+                    lg: 3,
+                }}
+            >
                 <InputComponent
                     type="select"
                     keyValue="taskType"
@@ -58,8 +59,9 @@ export const TaskFilters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 12,
                     md: 4,
-                    lg: 3
-                }}>
+                    lg: 3,
+                }}
+            >
                 <DatesRange
                     xs={12}
                     sm={12}
@@ -78,11 +80,14 @@ export const TaskFilters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 12,
                     md: 4,
-                    lg: 3
-                }}>
-                <Box sx={{
-                    mt: 2
-                }}>
+                    lg: 3,
+                }}
+            >
+                <Box
+                    sx={{
+                        mt: 2,
+                    }}
+                >
                     <UserAsyncSelect
                         handleChange={handleChange}
                         filterUsers={filters.users}
@@ -93,14 +98,16 @@ export const TaskFilters: FunctionComponent<Props> = ({ params }) => {
                 size={{
                     xs: 12,
                     md: 4,
-                    lg: 3
-                }}>
+                    lg: 3,
+                }}
+            >
                 <Box
                     sx={{
                         mt: 2,
-                        display: "flex",
-                        justifyContent: "flex-end"
-                    }}>
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                    }}
+                >
                     <SearchButton
                         disabled={!filtersUpdated}
                         onSearch={handleSearch}

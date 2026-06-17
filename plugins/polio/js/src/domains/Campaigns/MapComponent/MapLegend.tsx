@@ -21,9 +21,11 @@ export const MapLegend: FunctionComponent<Props> = ({
     const classes = useStyles();
     return (
         <Paper elevation={1} style={{ width: convertWidth(width) }}>
-            <Box sx={{
-                p: 2
-            }}>
+            <Box
+                sx={{
+                    p: 2,
+                }}
+            >
                 <Typography
                     variant="subtitle1"
                     className={classes.mapLegendTitle}
@@ -35,18 +37,22 @@ export const MapLegend: FunctionComponent<Props> = ({
                         <Box
                             key={`${title}${i}${legendItem.label}${legendItem.value}-${name}`}
                             sx={{
-                                py: 1
+                                py: 1,
                             }}
                         >
                             <Grid container spacing={1}>
                                 <Grid
                                     container
                                     size={{
-                                        sm: width === 'xs' || width === 'sm' ? 6 : 3
+                                        sm:
+                                            width === 'xs' || width === 'sm'
+                                                ? 6
+                                                : 3,
                                     }}
                                     sx={{
-                                        justifyContent: "flex-start"
-                                    }}>
+                                        justifyContent: 'flex-start',
+                                    }}
+                                >
                                     <span
                                         className={classes.roundColor}
                                         style={{
@@ -59,12 +65,16 @@ export const MapLegend: FunctionComponent<Props> = ({
                                 <Grid
                                     container
                                     size={{
-                                        sm: width === 'xs' || width === 'sm' ? 6 : 9
+                                        sm:
+                                            width === 'xs' || width === 'sm'
+                                                ? 6
+                                                : 9,
                                     }}
                                     sx={{
-                                        justifyContent: "flex-end",
-                                        alignItems: "center"
-                                    }}>
+                                        justifyContent: 'flex-end',
+                                        alignItems: 'center',
+                                    }}
+                                >
                                     <div style={{ fontSize: '14px' }}>
                                         {legendItem.label}
                                     </div>

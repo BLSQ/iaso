@@ -182,15 +182,17 @@ export const OrgUnitForm: FunctionComponent<Props> = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [orgUnit?.id]);
     return (
-        <Box sx={{
-            pt: isNewOrgunit ? 2 : 0
-        }}>
+        <Box
+            sx={{
+                pt: isNewOrgunit ? 2 : 0,
+            }}
+        >
             <Grid
                 container
                 spacing={0}
                 className={classnames(!isNewOrgunit && classes.marginTopBig)}
                 sx={{
-                    alignItems: "center"
+                    alignItems: 'center',
                 }}
             >
                 {orgUnit && (

@@ -25,9 +25,10 @@ export const ErrorsPopper: React.FC<Props> = ({
     return (
         <Box
             sx={{
-                display: "flex",
-                alignItems: "center"
-            }}>
+                display: 'flex',
+                alignItems: 'center',
+            }}
+        >
             <Box
                 sx={{
                     color: theme => theme.palette.error.main,

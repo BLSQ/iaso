@@ -7,6 +7,7 @@ from iaso.api.common import (
     DateTimestampField,
     ModelSerializer,
     TimestampField,
+    parse_comma_separated_numeric_values,
 )
 from iaso.api.teams.serializers import NestedTeamSerializer
 from iaso.models import Form, Group, OrgUnit, OrgUnitType, Project, Task
@@ -24,24 +25,35 @@ def validate_planning_has_org_unit_scope(planning: Planning):
     raise serializers.ValidationError({"planning": _("Planning is missing sampling group or target org unit scope")})
 
 
-def validate_planning_org_unit_type_id(planning: Planning, org_unit_type_id: int):
+def validate_planning_org_unit_type_ids(planning: Planning, org_unit_type_ids: list[int]):
     target_type_ids = [t.id for t in planning.target_org_unit_types.all()]
-    if target_type_ids and org_unit_type_id not in target_type_ids:
+    if not target_type_ids or not org_unit_type_ids:
+        return
+    invalid_type_ids = [type_id for type_id in org_unit_type_ids if type_id not in target_type_ids]
+    if invalid_type_ids:
         raise serializers.ValidationError(
-            {"org_unit_type_id": _("Org unit type is not a target type for this planning")}
+            {"org_unit_type_ids": _("One or more org unit types are not target types for this planning")}
         )
 
 
 class PlanningOrgUnitChildrenFilterSerializer(serializers.Serializer):
     orgUnitParentId = serializers.IntegerField(required=False, allow_null=True, source="org_unit_parent_id")
-    orgUnitTypeId = serializers.IntegerField(required=False, allow_null=True, source="org_unit_type_id")
+    orgUnitTypeIds = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        default="",
+        help_text="Comma-separated org unit type IDs to filter among the planning target types.",
+    )
 
     def validate(self, attrs):
         planning = self.context["planning"]
         validate_planning_has_org_unit_scope(planning)
-        org_unit_type_id = attrs.get("org_unit_type_id")
-        if org_unit_type_id is not None:
-            validate_planning_org_unit_type_id(planning, org_unit_type_id)
+        raw_type_ids = attrs.pop("orgUnitTypeIds", "")
+        org_unit_type_ids = []
+        if raw_type_ids and raw_type_ids.strip():
+            org_unit_type_ids = parse_comma_separated_numeric_values(raw_type_ids, "orgUnitTypeIds")
+            validate_planning_org_unit_type_ids(planning, org_unit_type_ids)
+        attrs["org_unit_type_ids"] = org_unit_type_ids
         return attrs
 
 
@@ -416,10 +428,11 @@ class BulkAssignmentSerializer(serializers.Serializer):
         allow_null=True,
         help_text="Restrict to descendants of this org unit (same as children-paginated `orgUnitParentId`).",
     )
-    org_unit_type_id = serializers.IntegerField(
+    org_unit_type_ids = serializers.ListField(
+        child=serializers.IntegerField(min_value=1),
         required=False,
-        allow_null=True,
-        help_text="Restrict to this org unit type among the planning target types.",
+        default=list,
+        help_text="Restrict to these org unit types among the planning target types.",
     )
     search = serializers.CharField(
         required=False,
@@ -468,9 +481,9 @@ class BulkAssignmentSerializer(serializers.Serializer):
         planning = attrs.get("planning")
         if planning is not None:
             validate_planning_has_org_unit_scope(planning)
-            org_unit_type_id = attrs.get("org_unit_type_id")
-            if org_unit_type_id is not None:
-                validate_planning_org_unit_type_id(planning, org_unit_type_id)
+            org_unit_type_ids = attrs.get("org_unit_type_ids", [])
+            if org_unit_type_ids:
+                validate_planning_org_unit_type_ids(planning, org_unit_type_ids)
 
         return validated_data
 

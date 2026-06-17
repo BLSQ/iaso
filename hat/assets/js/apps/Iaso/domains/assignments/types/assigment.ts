@@ -8,7 +8,7 @@ export type AssignmentParams = {
     order?: string;
     search?: string;
     orgUnitParentId?: string;
-    orgUnitTypeId?: string;
+    orgUnitTypeIds?: string;
 };
 
 type OrgUnitDetails = {
@@ -44,7 +44,7 @@ export type BulkSaveAssignmentQuery = {
     selected_ids: number[];
     unselected_ids: number[];
     org_unit_parent_id?: number;
-    org_unit_type_id?: number;
+    org_unit_type_ids?: number[];
     search?: string;
     team?: number | null;
     user?: number | null;

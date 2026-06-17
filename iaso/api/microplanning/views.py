@@ -49,7 +49,7 @@ from .serializers import (
 )
 
 
-def _planning_children_org_units_queryset(planning, user, org_unit_parent_id=None, org_unit_type_id=None):
+def _planning_children_org_units_queryset(planning, user, org_unit_parent_id=None, org_unit_type_ids=None):
     base_queryset = OrgUnit.objects.filter_for_user(user).filter(validation_status=OrgUnit.VALIDATION_VALID)
     sampling = planning.selected_sampling_result
     root_org_unit = planning.org_unit
@@ -68,8 +68,8 @@ def _planning_children_org_units_queryset(planning, user, org_unit_parent_id=Non
         parent = get_object_or_404(base_queryset, pk=org_unit_parent_id)
         queryset = queryset.hierarchy(parent).exclude(pk=org_unit_parent_id)
 
-    if org_unit_type_id is not None:
-        queryset = queryset.filter(org_unit_type_id=org_unit_type_id)
+    if org_unit_type_ids:
+        queryset = queryset.filter(org_unit_type_id__in=org_unit_type_ids)
 
     return queryset.order_by("id")
 
@@ -146,7 +146,7 @@ class PlanningOrgunitsViewSet(GenericViewSet):
             planning,
             user,
             org_unit_parent_id=children_filters.get("org_unit_parent_id"),
-            org_unit_type_id=children_filters.get("org_unit_type_id"),
+            org_unit_type_ids=children_filters.get("org_unit_type_ids"),
         )
 
         if action == "children":
@@ -328,7 +328,7 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
         filters=False,
         description=(
             "Bulk create or update assignments for org units selected from the planning children scope. "
-            "Optional `org_unit_parent_id`, `org_unit_type_id`, and `search` narrow the scope "
+            "Optional `org_unit_parent_id`, `org_unit_type_ids`, and `search` narrow the scope "
             "(same rules as children-paginated). Selection is applied with `select_all`, "
             "`selected_ids`, and `unselected_ids`. Exactly one of `team` or `user` must be set. "
             "Existing assignments for the same planning and org unit are updated in place."
@@ -356,7 +356,7 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
             planning,
             requester,
             serializer.validated_data.get("org_unit_parent_id"),
-            serializer.validated_data.get("org_unit_type_id"),
+            serializer.validated_data.get("org_unit_type_ids", []),
         )
         search = serializer.validated_data.get("search")
         if search:

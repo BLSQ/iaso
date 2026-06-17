@@ -1,4 +1,10 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
 import CheckBox from '@mui/icons-material/CheckBox';
 import IndeterminateCheckBoxIcon from '@mui/icons-material/IndeterminateCheckBox';
 import {
@@ -79,8 +85,22 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
         ...defaultParams,
         planningId: `${planning.id}`,
         orgUnitParentId: `${selectedParentOrgUnit.id}`,
-        orgUnitTypeId: selectedOrgUnitTypes.join(','),
+        orgUnitTypeIds: selectedOrgUnitTypes.join(','),
     });
+    const orgUniTypesOptions = useMemo(() => {
+        return orgUniTypeList?.filter(t =>
+            planning.target_org_unit_type_details?.some(
+                ot => ot.id === t.value,
+            ),
+        );
+    }, [orgUniTypeList, planning.target_org_unit_type_details]);
+    useEffect(() => {
+        setParams(prev => ({
+            ...prev,
+            orgUnitTypeIds: selectedOrgUnitTypes.join(','),
+            page: '1',
+        }));
+    }, [selectedOrgUnitTypes]);
 
     const { data, isLoading } = useGetPlanningOrgUnitsChildrenPaginated(
         `${planning.id}`,
@@ -113,6 +133,7 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
             team: selectedTeam?.id,
             user: selectedUser?.id,
             org_unit_parent_id: selectedParentOrgUnit.id,
+            org_unit_type_ids: selectedOrgUnitTypes,
             select_all: selection.selectAll,
             selected_ids: selection.selectedItems.map((item: any) => item.id),
             unselected_ids: selection.unSelectedItems.map(
@@ -121,6 +142,13 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
         });
         onClose();
     };
+    const handleChangeOrgUnitTypes = useCallback(
+        (_key: string, value: string) => {
+            handleUnselectAll();
+            setSelectedOrgUnitTypes(commaSeparatedIdsToArray(value));
+        },
+        [setSelectedOrgUnitTypes, handleUnselectAll],
+    );
     const hasMultipleTargets =
         planning.target_org_unit_type_details?.length &&
         planning.target_org_unit_type_details?.length > 1;
@@ -141,28 +169,25 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
                     parentOrgUnitName: selectedParentOrgUnit.name,
                 })}
             </DialogTitle>
-            <Box position="relative">
-                {hasMultipleTargets && (
-                    <Grid container spacing={2}>
-                        <Grid item xs={6}>
-                            <InputComponent
-                                type="select"
-                                multi
-                                disabled={!orgUniTypeList}
-                                keyValue="orgUnitTypeIds"
-                                onChange={(_key, value: string) =>
-                                    setSelectedOrgUnitTypes(
-                                        commaSeparatedIdsToArray(value),
-                                    )
-                                }
-                                value={selectedOrgUnitTypes}
-                                label={MESSAGES.targetOrgUnitType}
-                                options={orgUniTypeList}
-                                loading={!orgUniTypeList}
-                            />
-                        </Grid>
+            {hasMultipleTargets && (
+                <Grid container spacing={2} mx={2} mb={2}>
+                    <Grid item xs={6}>
+                        <InputComponent
+                            type="select"
+                            multi
+                            disabled={!orgUniTypeList}
+                            keyValue="orgUnitTypeIds"
+                            onChange={handleChangeOrgUnitTypes}
+                            value={selectedOrgUnitTypes}
+                            label={MESSAGES.targetOrgUnitType}
+                            options={orgUniTypesOptions}
+                            loading={!orgUniTypeList}
+                            clearable={false}
+                        />
                     </Grid>
-                )}
+                </Grid>
+            )}
+            <Box position="relative">
                 <Box sx={styles.multiSelectIcons}>
                     <Tooltip title={formatMessage(MESSAGES.selectAll)}>
                         <IconButton

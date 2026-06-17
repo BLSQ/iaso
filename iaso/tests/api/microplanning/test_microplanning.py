@@ -1025,7 +1025,7 @@ class PlanningTestCase(APITestCase):
             [child_a1.id, child_a2.id],
         )
 
-    def test_planning_orgunits_children_filter_by_org_unit_type_id(self):
+    def test_planning_orgunits_children_filter_by_org_unit_type_ids(self):
         self.client.force_authenticate(self.user)
         parent_type = OrgUnitType.objects.create(name="Region type multi")
         parent_type.projects.add(self.project1)
@@ -1076,30 +1076,36 @@ class PlanningTestCase(APITestCase):
         self.assertCountEqual([ou["id"] for ou in unfiltered], [aire.id, centre.id])
 
         aires_only = self.assertJSONResponse(
-            self.client.get(f"{base}?orgUnitTypeId={aire_type.id}", format="json"),
+            self.client.get(f"{base}?orgUnitTypeIds={aire_type.id}", format="json"),
             200,
         )
         self.assertEqual([ou["id"] for ou in aires_only], [aire.id])
 
         centres_only = self.assertJSONResponse(
-            self.client.get(f"{base}?orgUnitTypeId={centre_type.id}", format="json"),
+            self.client.get(f"{base}?orgUnitTypeIds={centre_type.id}", format="json"),
             200,
         )
         self.assertEqual([ou["id"] for ou in centres_only], [centre.id])
+
+        both_types = self.assertJSONResponse(
+            self.client.get(f"{base}?orgUnitTypeIds={aire_type.id},{centre_type.id}", format="json"),
+            200,
+        )
+        self.assertCountEqual([ou["id"] for ou in both_types], [aire.id, centre.id])
 
         paginated_base = f"/api/microplanning/plannings/{planning.id}/orgunits/children-paginated/?limit=50&page=1"
         paginated_all = self.assertJSONResponse(self.client.get(paginated_base, format="json"), 200)
         self.assertEqual(paginated_all["count"], 2)
 
         paginated_aires = self.assertJSONResponse(
-            self.client.get(f"{paginated_base}&orgUnitTypeId={aire_type.id}", format="json"),
+            self.client.get(f"{paginated_base}&orgUnitTypeIds={aire_type.id}", format="json"),
             200,
         )
         self.assertEqual(paginated_aires["count"], 1)
         self.assertEqual(paginated_aires["results"][0]["id"], aire.id)
 
         paginated_centres = self.assertJSONResponse(
-            self.client.get(f"{paginated_base}&orgUnitTypeId={centre_type.id}", format="json"),
+            self.client.get(f"{paginated_base}&orgUnitTypeIds={centre_type.id}", format="json"),
             200,
         )
         self.assertEqual(paginated_centres["count"], 1)
@@ -1107,7 +1113,7 @@ class PlanningTestCase(APITestCase):
 
         paginated_centres_under_aire = self.assertJSONResponse(
             self.client.get(
-                f"{paginated_base}&orgUnitParentId={aire.id}&orgUnitTypeId={centre_type.id}",
+                f"{paginated_base}&orgUnitParentId={aire.id}&orgUnitTypeIds={centre_type.id}",
                 format="json",
             ),
             200,

@@ -20,7 +20,7 @@ export const useGetPlanningOrgUnitsChildren = (
 ): UseQueryResult<PlanningOrgUnits[], Error> => {
     const apiParams = {
         search: params?.search,
-        orgUnitTypeId: params?.orgUnitTypeId,
+        orgUnitTypeIds: params?.orgUnitTypeIds,
     };
     const url = makeUrlWithParams(
         `${PLANNINGS_API_URL}${planningId}/orgunits/children/`,
@@ -63,7 +63,7 @@ export const useGetPlanningOrgUnitsChildrenPaginated = (
         order: tableDefaults.order,
         search: params?.search,
         orgUnitParentId: params?.orgUnitParentId,
-        orgUnitTypeId: params?.orgUnitTypeId,
+        orgUnitTypeIds: params?.orgUnitTypeIds,
     };
     const url = Boolean(planningId)
         ? makeUrlWithParams(

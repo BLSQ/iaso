@@ -178,7 +178,7 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
 
     const onConfirm = () => {
         const currentProject: Project = {
-            id: initialData?.app_id,
+            id: initialData?.id,
             feature_flags: project.feature_flags.value ?? [],
             app_id: project.app_id.value || '',
             name: project.name.value || '',

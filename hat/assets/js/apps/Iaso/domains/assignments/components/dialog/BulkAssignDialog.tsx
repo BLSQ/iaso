@@ -9,13 +9,17 @@ import {
     Box,
     IconButton,
     Tooltip,
+    Grid,
 } from '@mui/material';
 import { LoadingSpinner, Table, useSafeIntl } from 'bluesquare-components';
+import InputComponent from 'Iaso/components/forms/InputComponent';
+import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { Planning, PlanningOrgUnits } from 'Iaso/domains/plannings/types';
 import { useGetPlanningOrgUnitsChildrenPaginated } from 'Iaso/domains/teams/hooks/requests/useGetPlanningOrgUnits';
 import { SubTeam, User } from 'Iaso/domains/teams/types/team';
-import { stickyTableContainerStyles } from 'Iaso/styles/utils';
+import { getStickyTableHeadStyles } from 'Iaso/styles/utils';
 import { SxStyles } from 'Iaso/types/general';
+import { commaSeparatedIdsToArray } from 'Iaso/utils/forms';
 import { useTableSelection } from 'Iaso/utils/table';
 import { useBulkSaveAssignments } from '../../hooks/requests/useSaveAssignment';
 import MESSAGES from '../../messages';
@@ -29,6 +33,7 @@ type Props = {
     planning: Planning;
     selectedUser?: User;
     selectedTeam?: SubTeam;
+    orgUniTypeList?: OrgUnitTypeHierarchyDropdownValues;
 };
 
 const defaultParams: Partial<AssignmentParams> = {
@@ -42,7 +47,12 @@ const styles: SxStyles = {
             display: 'none',
         },
     },
-    tableContainer: stickyTableContainerStyles,
+    tableContainer: {
+        borderTop: theme =>
+            // @ts-ignore
+            `1px solid ${theme.palette.ligthGray.border}`,
+        ...getStickyTableHeadStyles('60vh'),
+    },
     multiSelectIcons: {
         position: 'absolute',
         top: 2,
@@ -60,11 +70,16 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
     planning,
     selectedUser,
     selectedTeam,
+    orgUniTypeList,
 }) => {
+    const [selectedOrgUnitTypes, setSelectedOrgUnitTypes] = useState<number[]>(
+        planning.target_org_unit_type_details?.map(t => t.id) ?? [],
+    );
     const [params, setParams] = useState<AssignmentParams>({
         ...defaultParams,
         planningId: `${planning.id}`,
         orgUnitParentId: `${selectedParentOrgUnit.id}`,
+        orgUnitTypeId: selectedOrgUnitTypes.join(','),
     });
 
     const { data, isLoading } = useGetPlanningOrgUnitsChildrenPaginated(
@@ -106,9 +121,9 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
         });
         onClose();
     };
-    // const hasMultipleTargets =
-    //     planning.target_org_unit_type_details?.length &&
-    //     planning.target_org_unit_type_details?.length > 1;
+    const hasMultipleTargets =
+        planning.target_org_unit_type_details?.length &&
+        planning.target_org_unit_type_details?.length > 1;
     const assignButtonDisabled =
         selection.selectedItems.length === 0 && !selection.selectAll;
     return (
@@ -116,7 +131,7 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
             open={open}
             onClose={onClose}
             fullWidth
-            maxWidth="xl"
+            maxWidth="lg"
             sx={styles.root}
         >
             {isSaving && <LoadingSpinner />}
@@ -127,6 +142,27 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
                 })}
             </DialogTitle>
             <Box position="relative">
+                {hasMultipleTargets && (
+                    <Grid container spacing={2}>
+                        <Grid item xs={6}>
+                            <InputComponent
+                                type="select"
+                                multi
+                                disabled={!orgUniTypeList}
+                                keyValue="orgUnitTypeIds"
+                                onChange={(_key, value: string) =>
+                                    setSelectedOrgUnitTypes(
+                                        commaSeparatedIdsToArray(value),
+                                    )
+                                }
+                                value={selectedOrgUnitTypes}
+                                label={MESSAGES.targetOrgUnitType}
+                                options={orgUniTypeList}
+                                loading={!orgUniTypeList}
+                            />
+                        </Grid>
+                    </Grid>
+                )}
                 <Box sx={styles.multiSelectIcons}>
                     <Tooltip title={formatMessage(MESSAGES.selectAll)}>
                         <IconButton

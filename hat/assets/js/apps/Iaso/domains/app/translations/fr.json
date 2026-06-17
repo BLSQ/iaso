@@ -81,6 +81,7 @@
     "iaso.assignment.parentOrgUnitsType": "Sélectionner par type de parent",
     "iaso.assignment.pipeline": "Pipeline",
     "iaso.assignment.searchOrgUnit": "Chercher une unité d'org.",
+    "iaso.assignment.targetOrgUnitType": "Type d'unité d'org. cible",
     "iaso.assignment.title": "Affectation pour le planning",
     "iaso.attachments.attachmentModalContent": "Si un fichier portant le même nom existe déjà, il sera écrasé. Une fois qu'un fichier est remplacé, il ne peut pas être récupéré.",
     "iaso.attachments.attachmentModalTitle": "Téléverser un fichier",

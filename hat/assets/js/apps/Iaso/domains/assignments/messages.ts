@@ -142,6 +142,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.assignment.assign',
         defaultMessage: 'Assign',
     },
+    targetOrgUnitType: {
+        id: 'iaso.assignment.targetOrgUnitType',
+        defaultMessage: 'Target org unit type',
+    },
 });
 
 export default MESSAGES;

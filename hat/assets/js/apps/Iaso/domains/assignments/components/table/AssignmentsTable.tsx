@@ -6,6 +6,7 @@ import {
     useGetPlanningOrgUnitsChildrenPaginated,
     tableDefaults,
 } from 'Iaso/domains/teams/hooks/requests/useGetPlanningOrgUnits';
+import { getStickyTableHeadStyles } from 'Iaso/styles/utils';
 import { SxStyles } from 'Iaso/types/general';
 import { PaginatedPlanningOrgUnit } from '../../../plannings/types';
 import { SubTeam, User } from '../../../teams/types/team';
@@ -24,18 +25,7 @@ const styles: SxStyles = {
         borderTop: theme =>
             // @ts-ignore
             `1px solid ${theme.palette.ligthGray.border}`,
-        '& .MuiSpeedDial-root': {
-            display: 'none',
-        },
-        '& .MuiTableContainer-root': {
-            maxHeight: tableScrollMaxHeight,
-            overflowY: 'auto',
-            overflowX: 'auto',
-            '& .MuiTableHead-root th': {
-                top: 0,
-                position: 'sticky !important',
-            },
-        },
+        ...getStickyTableHeadStyles(tableScrollMaxHeight),
     },
 };
 

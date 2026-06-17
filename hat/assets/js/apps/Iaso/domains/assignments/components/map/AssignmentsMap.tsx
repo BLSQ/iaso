@@ -195,6 +195,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                     planning={planning}
                     selectedUser={selectedUser}
                     selectedTeam={selectedTeam}
+                    orgUniTypeList={orgUniTypeList}
                 />
             )}
             {isLoading && <LoadingSpinner />}

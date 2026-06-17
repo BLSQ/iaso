@@ -98,7 +98,11 @@ class VaccineRepositoryReportsAPITestCase(APITestCase, PolioTestCaseMixin):
     def test_reports_list_response_structure(self):
         """Test the structure of the reports list response"""
         self.client.force_authenticate(user=self.user)
-        response = self.client.get(REPORTS_URL)
+        # `limit` forces the paginated `{"results": [...]}` response. Without it the endpoint returns
+        # a bare list, and the test would only pass when another `Paginator`-based test has run first
+        # in the same process (it mutates the shared `Paginator.page_size`). That order dependency
+        # breaks under `manage.py test --parallel`. See IA-5186.
+        response = self.client.get(f"{REPORTS_URL}?limit=10")
         data = response.json()["results"]
 
         # Check result fields
@@ -114,24 +118,24 @@ class VaccineRepositoryReportsAPITestCase(APITestCase, PolioTestCaseMixin):
         self.client.force_authenticate(user=self.user)
 
         # Test filtering by country
-        response = self.client.get(f"{REPORTS_URL}?countries={self.testland.id}")
+        response = self.client.get(f"{REPORTS_URL}?countries={self.testland.id}&limit=10")
         data = response.json()["results"]
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]["country_name"], "Testland")
 
         # Test filtering by vaccine name
-        response = self.client.get(f"{REPORTS_URL}?vaccine_name={pm.VACCINES[0][0]}")
+        response = self.client.get(f"{REPORTS_URL}?vaccine_name={pm.VACCINES[0][0]}&limit=10")
         data = response.json()["results"]
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]["vaccine"], pm.VACCINES[0][0])
 
         # Test filtering by file type
-        response = self.client.get(f"{REPORTS_URL}?file_type=INCIDENT")
+        response = self.client.get(f"{REPORTS_URL}?file_type=INCIDENT&limit=10")
         data = response.json()["results"]
         self.assertEqual(len(data), 1)
         self.assertTrue(len(data[0]["incident_report_data"]) > 0)
 
-        response = self.client.get(f"{REPORTS_URL}?file_type=DESTRUCTION")
+        response = self.client.get(f"{REPORTS_URL}?file_type=DESTRUCTION&limit=10")
         data = response.json()["results"]
         self.assertEqual(len(data), 1)
         self.assertTrue(len(data[0]["destruction_report_data"]) > 0)
@@ -139,7 +143,7 @@ class VaccineRepositoryReportsAPITestCase(APITestCase, PolioTestCaseMixin):
         # Test filtering by country block
         country_group = self.testland.groups.first()
         if country_group:
-            response = self.client.get(f"{REPORTS_URL}?country_block={country_group.id}")
+            response = self.client.get(f"{REPORTS_URL}?country_block={country_group.id}&limit=10")
             data = response.json()["results"]
             self.assertEqual(len(data), 1)
             self.assertEqual(data[0]["country_name"], "Testland")
@@ -165,19 +169,19 @@ class VaccineRepositoryReportsAPITestCase(APITestCase, PolioTestCaseMixin):
         self.client.force_authenticate(user=self.user)
 
         # Test ordering by country name
-        response = self.client.get(f"{REPORTS_URL}?order=country__name")
+        response = self.client.get(f"{REPORTS_URL}?order=country__name&limit=10")
         data = response.json()["results"]
         self.assertEqual(data[0]["country_name"], "Testland")
         self.assertEqual(data[1]["country_name"], "Zambia")
 
         # Test reverse ordering by country name
-        response = self.client.get(f"{REPORTS_URL}?order=-country__name")
+        response = self.client.get(f"{REPORTS_URL}?order=-country__name&limit=10")
         data = response.json()["results"]
         self.assertEqual(data[0]["country_name"], "Zambia")
         self.assertEqual(data[1]["country_name"], "Testland")
 
         # Test ordering by vaccine
-        response = self.client.get(f"{REPORTS_URL}?order=vaccine")
+        response = self.client.get(f"{REPORTS_URL}?order=vaccine&limit=10")
         data = response.json()["results"]
         self.assertEqual(data[0]["vaccine"], pm.VACCINES[0][0])
         self.assertEqual(data[1]["vaccine"], pm.VACCINES[1][0])

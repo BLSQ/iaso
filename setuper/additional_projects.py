@@ -10,7 +10,7 @@ def projects_mapper(account_name):
             "app_id": f"{account_name}.planning",
             "feature_flags": [
                 "REQUIRE_AUTHENTICATION",
-                "FORMS_AUTO_UPLOAD",
+                "MOBILE_SYNCHRONIZE_WITH_ZIP",
                 "TAKE_GPS_ON_FORM",
                 "GPS_TRACKING",
                 "SHOW_DETAIL_MAP_ON_MOBILE",

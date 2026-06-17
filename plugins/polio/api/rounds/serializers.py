@@ -1,5 +1,4 @@
 from django.db.transaction import atomic
-from drf_spectacular.utils import extend_schema_serializer
 from rest_framework import serializers
 
 from plugins.polio.api.rounds.round_date_history.serializers import RoundDateHistoryEntryForRoundSerializer
@@ -7,20 +6,12 @@ from plugins.polio.api.shared_serializers import (
     GroupSerializer,
 )
 from plugins.polio.models import (
-    ROUND_DEPRECATED_VACCINE_MANAGEMENT_FIELD_NAMES,
-    ROUND_DEPRECATED_VACCINE_MANAGEMENT_HELP,
     ReasonForDelay,
     Round,
     RoundDateHistoryEntry,
     RoundScope,
 )
 from plugins.polio.preparedness.summary import set_preparedness_cache_for_round
-
-
-_ROUND_OPENAPI_SCHEMA_OVERRIDES = {
-    "deprecate_fields": ROUND_DEPRECATED_VACCINE_MANAGEMENT_FIELD_NAMES,
-    "description": ROUND_DEPRECATED_VACCINE_MANAGEMENT_HELP,
-}
 
 
 class RoundScopeSerializer(serializers.ModelSerializer):
@@ -31,13 +22,8 @@ class RoundScopeSerializer(serializers.ModelSerializer):
     group = GroupSerializer()
 
 
-@extend_schema_serializer(**_ROUND_OPENAPI_SCHEMA_OVERRIDES)
 class RoundSerializer(serializers.ModelSerializer):
-    """Round API serializer.
-
-    Deprecated fields (still returned for backwards compatibility):
-    {deprecated_fields}
-    """.format(deprecated_fields=", ".join(ROUND_DEPRECATED_VACCINE_MANAGEMENT_FIELD_NAMES))
+    """Round API serializer."""
 
     class Meta:
         model = Round
@@ -163,7 +149,6 @@ class RoundSerializer(serializers.ModelSerializer):
 
 
 # Don't display the url for Anonymous users
-@extend_schema_serializer(**_ROUND_OPENAPI_SCHEMA_OVERRIDES)
 class RoundAnonymousSerializer(RoundSerializer):
     class Meta:
         model = Round

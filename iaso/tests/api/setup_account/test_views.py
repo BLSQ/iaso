@@ -399,7 +399,6 @@ class SetupAccountApiTestCase(APITestCase):
             "modules": self.MODULES,
             "feature_flags": [
                 "ALLOW_CATCHMENT_EDITION",
-                "SHOW_PAGES",
                 "SHOW_LINK_INSTANCE_REFERENCE",
                 "SHOW_BENEFICIARY_TYPES_IN_LIST_MENU",
                 "SHOW_HOME_ONLINE",
@@ -1117,7 +1116,7 @@ class SetupAccountApiTestCase(APITestCase):
         self.assertEqual(created_account.modules, data["modules"])
 
     def test_setup_account_creates_project_feature_flags(self):
-        """Test that setup account creates project feature flags for REQUIRE_AUTHENTICATION and FORMS_AUTO_UPLOAD and TAKE_GPS_ON_FORM"""
+        """Test that setup account creates project feature flags for REQUIRE_AUTHENTICATION and MOBILE_SYNCHRONIZE_WITH_ZIP and TAKE_GPS_ON_FORM"""
         self.client.force_authenticate(self.admin)
         data = {
             "account_name": "unittest_account",
@@ -1135,7 +1134,7 @@ class SetupAccountApiTestCase(APITestCase):
 
         # Check that the project has the required feature flags
         self.assertTrue(project.has_feature(m.FeatureFlag.REQUIRE_AUTHENTICATION))
-        self.assertTrue(project.has_feature(m.FeatureFlag.FORMS_AUTO_UPLOAD))
+        self.assertTrue(project.has_feature(m.FeatureFlag.MOBILE_SYNCHRONIZE_WITH_ZIP))
         self.assertTrue(project.has_feature(m.FeatureFlag.TAKE_GPS_ON_FORM))
 
         # Verify ProjectFeatureFlags entries exist
@@ -1145,13 +1144,13 @@ class SetupAccountApiTestCase(APITestCase):
         self.assertIsNotNone(require_auth_pff)
 
         forms_auto_upload_pff = m.ProjectFeatureFlags.objects.filter(
-            project=project, featureflag__code=m.FeatureFlag.FORMS_AUTO_UPLOAD
+            project=project, featureflag__code=m.FeatureFlag.MOBILE_SYNCHRONIZE_WITH_ZIP
         ).first()
         self.assertIsNotNone(forms_auto_upload_pff)
 
         # Verify the feature flags are properly linked
         self.assertEqual(require_auth_pff.featureflag.code, m.FeatureFlag.REQUIRE_AUTHENTICATION)
-        self.assertEqual(forms_auto_upload_pff.featureflag.code, m.FeatureFlag.FORMS_AUTO_UPLOAD)
+        self.assertEqual(forms_auto_upload_pff.featureflag.code, m.FeatureFlag.MOBILE_SYNCHRONIZE_WITH_ZIP)
 
     def test_setup_account_project_feature_flags_audit_logging(self):
         """Test that project feature flags are included in audit logs"""
@@ -1181,7 +1180,8 @@ class SetupAccountApiTestCase(APITestCase):
         # Check that project feature flags are included in audit data
         self.assertIn("project_feature_flags", audit_data)
         self.assertEqual(
-            audit_data["project_feature_flags"], [m.FeatureFlag.REQUIRE_AUTHENTICATION, m.FeatureFlag.FORMS_AUTO_UPLOAD]
+            audit_data["project_feature_flags"],
+            [m.FeatureFlag.REQUIRE_AUTHENTICATION, m.FeatureFlag.MOBILE_SYNCHRONIZE_WITH_ZIP],
         )
 
     def test_setup_account_feature_flags_exist_in_database(self):
@@ -1191,9 +1191,9 @@ class SetupAccountApiTestCase(APITestCase):
         self.assertIsNotNone(require_auth_flag)
         self.assertEqual(require_auth_flag.code, m.FeatureFlag.REQUIRE_AUTHENTICATION)
 
-        forms_auto_upload_flag = m.FeatureFlag.objects.filter(code=m.FeatureFlag.FORMS_AUTO_UPLOAD).first()
+        forms_auto_upload_flag = m.FeatureFlag.objects.filter(code=m.FeatureFlag.MOBILE_SYNCHRONIZE_WITH_ZIP).first()
         self.assertIsNotNone(forms_auto_upload_flag)
-        self.assertEqual(forms_auto_upload_flag.code, m.FeatureFlag.FORMS_AUTO_UPLOAD)
+        self.assertEqual(forms_auto_upload_flag.code, m.FeatureFlag.MOBILE_SYNCHRONIZE_WITH_ZIP)
 
     def test_setup_account_project_feature_flags_configuration(self):
         """Test that project feature flags are created with proper configuration"""
@@ -1222,7 +1222,11 @@ class SetupAccountApiTestCase(APITestCase):
             # Feature flag should be one of the expected ones
             self.assertIn(
                 pff.featureflag.code,
-                [m.FeatureFlag.REQUIRE_AUTHENTICATION, m.FeatureFlag.FORMS_AUTO_UPLOAD, m.FeatureFlag.TAKE_GPS_ON_FORM],
+                [
+                    m.FeatureFlag.REQUIRE_AUTHENTICATION,
+                    m.FeatureFlag.MOBILE_SYNCHRONIZE_WITH_ZIP,
+                    m.FeatureFlag.TAKE_GPS_ON_FORM,
+                ],
             )
 
     def test_setup_account_project_feature_flags_multiple_accounts(self):
@@ -1261,7 +1265,7 @@ class SetupAccountApiTestCase(APITestCase):
         # Both projects should have the same feature flags
         for project in [project1, project2]:
             self.assertTrue(project.has_feature(m.FeatureFlag.REQUIRE_AUTHENTICATION))
-            self.assertTrue(project.has_feature(m.FeatureFlag.FORMS_AUTO_UPLOAD))
+            self.assertTrue(project.has_feature(m.FeatureFlag.MOBILE_SYNCHRONIZE_WITH_ZIP))
 
             # Check ProjectFeatureFlags entries
             pff_count = m.ProjectFeatureFlags.objects.filter(project=project).count()
@@ -1286,7 +1290,7 @@ class SetupAccountApiTestCase(APITestCase):
 
         # Project should have feature flags
         self.assertTrue(project.has_feature(m.FeatureFlag.REQUIRE_AUTHENTICATION))
-        self.assertTrue(project.has_feature(m.FeatureFlag.FORMS_AUTO_UPLOAD))
+        self.assertTrue(project.has_feature(m.FeatureFlag.MOBILE_SYNCHRONIZE_WITH_ZIP))
 
         # Project should be linked to account
         self.assertEqual(project.account, account)

@@ -67,7 +67,7 @@ import { Details as UserDetails } from '../domains/users/details';
 import { UsersHistory } from '../domains/users/history/UsersHistory';
 import { Workflows } from '../domains/workflows';
 import { Details as WorkflowDetails } from '../domains/workflows/details';
-import { SHOW_PAGES } from '../utils/featureFlags';
+
 import * as Permission from '../utils/permissions';
 import { baseUrls } from './urls';
 
@@ -121,7 +121,6 @@ export const pagesPath = {
     baseUrl: baseUrls.pages,
     routerUrl: `${baseUrls.pages}/*`,
     permissions: [Permission.PAGES, Permission.PAGE_WRITE],
-    featureFlag: SHOW_PAGES,
     element: <Pages />,
 };
 

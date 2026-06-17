@@ -8,6 +8,8 @@ from plugins.polio.preparedness.summary import preparedness_summary
 class PreparednessScoreSerializer(serializers.Serializer):
     campaign_details = serializers.SerializerMethodField()
     scores = serializers.SerializerMethodField()
+    created_at = serializers.DateTimeField()
+    id = serializers.IntegerField()
 
     def get_campaign_details(self, obj: SpreadSheetImport):
         if getattr(obj, "round_id", None) is None:
@@ -19,9 +21,9 @@ class PreparednessScoreSerializer(serializers.Serializer):
         preparedness_data = get_preparedness(cached_spreadsheet)
         summary = preparedness_summary(preparedness_data)
         score = summary["overall_status_score"]
-        return {"score": score, **preparedness_data["totals"]}
+        return {"score": score, **preparedness_data}
 
 
 class ParamsSerializer(serializers.Serializer):
-    url = serializers.CharField(required=True)
+    spread_id = serializers.CharField(required=True)
     date = serializers.DateField(required=True)

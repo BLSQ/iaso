@@ -1,4 +1,4 @@
-from django.db.models import BooleanField, CharField, Count, F, TextField, Value
+from django.db.models import BooleanField, CharField, Count, Exists, F, OuterRef, TextField, Value
 from django.db.models.expressions import Case, When
 from django.db.models.functions import Concat
 from django_filters.rest_framework import DjangoFilterBackend
@@ -60,12 +60,16 @@ class FormVersionsViewSet(ModelViewSet):
                 if self.request.user.is_anonymous:
                     raise exceptions.NotAuthenticated
                 raise exceptions.NotFound(f"Project not found for {app_id}")
-            queryset = FormVersion.objects.filter(form__projects__app_id=app_id)
+            queryset = FormVersion.objects.filter(
+                Exists(Project.objects.filter(app_id=app_id, forms=OuterRef("form_id")))
+            )
         elif self.request.user.is_anonymous:
             raise exceptions.NotAuthenticated
         else:
             profile = self.request.user.iaso_profile
-            queryset = FormVersion.objects.filter(form__projects__account=profile.account)
+            queryset = FormVersion.objects.filter(
+                Exists(Project.objects.filter(account=profile.account, forms=OuterRef("form_id")))
+            )
 
         # We don't send versions for deleted forms
         queryset = queryset.filter(form__deleted_at=None)

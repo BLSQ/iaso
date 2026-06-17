@@ -570,56 +570,6 @@ export const useGetConfig = (): Record<string, any> => {
                         },
                     ],
                 },
-                // deprecated – round-level Form A summary; use OutgoingStockMovement
-                {
-                    key: 'forma_reception',
-                    getLogValue: log => convertDate(log.forma_reception),
-                },
-                {
-                    key: 'forma_date',
-                    getLogValue: log => convertDate(log.forma_date),
-                },
-                {
-                    key: 'forma_unusable_vials',
-                },
-                {
-                    key: 'forma_usable_vials',
-                },
-                {
-                    key: 'forma_missing_vials',
-                },
-                {
-                    key: 'forma_comment',
-                },
-                // Destructions
-                {
-                    key: 'destructions',
-                    type: 'array',
-                    childrenLabel: MESSAGES.destruction,
-                    children: [
-                        {
-                            key: 'id',
-                        },
-                        {
-                            key: 'round',
-                        },
-                        {
-                            key: 'destructionReceptionDate',
-                            getLogValue: log =>
-                                convertDate(log.date_report_received),
-                        },
-                        {
-                            key: 'destructionReportDate',
-                            getLogValue: log => convertDate(log.date_report),
-                        },
-                        {
-                            key: 'vials_destroyed',
-                        },
-                        {
-                            key: 'comment',
-                        },
-                    ],
-                },
                 {
                     key: 'preparedness_spreadsheet_url',
                 },

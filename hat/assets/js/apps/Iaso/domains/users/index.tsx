@@ -169,9 +169,10 @@ export const Users = () => {
                                 canBypassProjectRestrictions
                             }
                         />
-                        <Box ml={2}>
-                            {/* @ts-ignore */}
-                            <Button
+                        {/*<Box ml={2}>*/}
+                        {/* @ts-ignore */}
+                        {/* Disable for Trypelim */}
+                        {/*<Button
                                 color="primary"
                                 variant="contained"
                                 className={classes.button}
@@ -179,8 +180,8 @@ export const Users = () => {
                             >
                                 <Add className={classes.buttonIcon} />
                                 {formatMessage(MESSAGES.createFromFile)}
-                            </Button>
-                        </Box>
+                            </Button>*/}
+                        {/*</Box>*/}
                         <DownloadButtonsComponent
                             csvUrl={exportCsvURL}
                             xlsxUrl={exportXlsxURL}

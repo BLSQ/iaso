@@ -50,6 +50,7 @@ class InstanceSerializer(serializers.ModelSerializer):
     org_unit = serializers.PrimaryKeyRelatedField(queryset=OrgUnit.objects.all())
     period = serializers.CharField(max_length=9, allow_blank=True)
     created_by = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False, allow_null=True)
+    source_created_at = TimestampField(required=False, allow_null=True)
 
     class Meta:
         model = Instance

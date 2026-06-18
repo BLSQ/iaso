@@ -31,6 +31,25 @@ class EnketoLibTests(TestCase):
         self.assertEqual(str(xml), str(expectedInjected))
         self.assertEqual(uuid, "demo")
 
+    def test_inject_xml_fallback_missing_meta_and_instance_id(self):
+        instance = m.Instance(uuid="mock-instance-uuid-1234")
+        original_xml = b'<data id="quality_pca_2.31.8" version="1"></data>'
+        uuid, xml = inject_xml_find_uuid(original_xml, 123, 2012010601, 546, instance=instance)
+        self.assertEqual(uuid, "mock-instance-uuid-1234")
+        self.assertIn(b"<meta><instanceID>uuid:mock-instance-uuid-1234</instanceID>", xml)
+
+    def test_inject_xml_fallback_missing_instance_id_but_has_meta(self):
+        instance = m.Instance(uuid="mock-instance-uuid-5678")
+        original_xml = b'<data id="quality_pca_2.31.8" version="1"><meta></meta></data>'
+        uuid, xml = inject_xml_find_uuid(original_xml, 123, 2012010601, 546, instance=instance)
+        self.assertEqual(uuid, "mock-instance-uuid-5678")
+        self.assertIn(b"<instanceID>uuid:mock-instance-uuid-5678</instanceID>", xml)
+
+    def test_inject_xml_fallback_missing_uuid_raises_value_error(self):
+        original_xml = b'<data id="quality_pca_2.31.8" version="1"></data>'
+        with self.assertRaises(ValueError):
+            inject_xml_find_uuid(original_xml, 123, 2012010601, 546, instance=None)
+
     def test_to_xforms_xml(self):
         form = m.Form.objects.create(name="name < with entity", form_id="odk_form_id")
         m.FormVersion.objects.create(form=form, version_id="2012010601")

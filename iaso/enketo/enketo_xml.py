@@ -209,16 +209,29 @@ def inject_xml_find_uuid(instance_xml, instance_id, version_id, user_id, instanc
     #  Get the instanceID (uuid) from the //meta/instanceID
     #  We have an uuid on instance. but it seems not always filled?
     root = etree.fromstring(fix_emoji(xml_str), parser=lxml_parser)
-    instance_id_tag = root.find(".//meta/instanceID")
 
-    instance_uuid = instance_id_tag.text.replace("uuid:", "")  # type: ignore
+    meta_tag = root.find(".//meta")
+    if meta_tag is None:
+        meta_tag = etree.SubElement(root, "meta")
+
+    instance_id_tag = root.find(".//meta/instanceID")
+    if instance_id_tag is not None and instance_id_tag.text:
+        instance_uuid = instance_id_tag.text.replace("uuid:", "")
+    else:
+        if instance is None or not instance.uuid:
+            raise ValueError("XML or Instance UUID missing.")
+        # fallback to Instance uuid
+        instance_uuid = str(instance.uuid)
+        if instance_id_tag is None:
+            instance_id_tag = etree.SubElement(meta_tag, "instanceID")
+        instance_id_tag.text = f"uuid:{instance_uuid}"
 
     root.attrib["version"] = str(version_id)
     root.attrib["iasoInstance"] = str(instance_id)
     # inject the editUserID in the meta of the xml to allow attributing Modification to the user
     edit_user_id_tag = root.find(".//meta/editUserID")
     if edit_user_id_tag is None:
-        edit_user_id_tag = etree.SubElement(root.find(".//meta"), "editUserID")  # type: ignore
+        edit_user_id_tag = etree.SubElement(meta_tag, "editUserID")
     edit_user_id_tag.text = str(user_id)
 
     substitutions = build_substitutions(instance)

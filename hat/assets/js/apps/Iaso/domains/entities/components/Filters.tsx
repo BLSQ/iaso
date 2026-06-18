@@ -107,7 +107,9 @@ const Filters: FunctionComponent<Props> = ({
     const { data: types, isFetching: isFetchingTypes } =
         useGetEntityTypesDropdown();
     const { data: teamOptions } = useGetTeamsDropdown({});
-    const TeamsFilterOverride = useFindCustomComponent('entity.teams_filter');
+    const TeamsFilterOverride = useFindCustomComponent(
+        'iaso.entities.label.submitterTeam',
+    );
     const { data: selectedTeam } = useGetTeam(
         !TeamsFilterOverride && filters?.submitterTeamId
             ? parseInt(filters.submitterTeamId, 10)

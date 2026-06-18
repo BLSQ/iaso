@@ -1,7 +1,8 @@
 import os
+import re
 import subprocess
 import sys
-import re
+
 import boto3  # type: ignore
 
 
@@ -29,7 +30,9 @@ if __name__ == "__main__":
             exit(f"Platform could not be retrieved for {sys.argv[1]}")
         platform = m.group().lower()
         if platform != sys.argv[2].lower():
-            exit(f"Platform mismatch on {sys.argv[1]}: the platform is running {platform}, you passed {sys.argv[2].lower()}")
+            exit(
+                f"Platform mismatch on {sys.argv[1]}: the platform is running {platform}, you passed {sys.argv[2].lower()}"
+            )
         exit(eb_deploy(sys.argv[1], version_name=version))
 
     # otherwise consider it's a tag and update all the environment with the same `env` tag
@@ -41,7 +44,7 @@ if __name__ == "__main__":
             continue
         raw_tags = client.list_tags_for_resource(ResourceArn=env_details["EnvironmentArn"])
 
-        m = re.search(r"Python|Docker", env_details["PlatformArn"]) 
+        m = re.search(r"Python|Docker", env_details["PlatformArn"])
         if not m:
             exit(f"Platform could not be retrieved for {env_name}")
         platform = m.group().lower()
@@ -50,7 +53,9 @@ if __name__ == "__main__":
         tag_envs[env_name] = tags
         if "env" in tags and tags["env"].lower() == sys.argv[1].lower():
             if platform != sys.argv[2].lower():
-                print(f"Platform mismatch on {env_name}: the platform is running {platform}, you passed {sys.argv[2].lower()}")
+                print(
+                    f"Platform mismatch on {env_name}: the platform is running {platform}, you passed {sys.argv[2].lower()}"
+                )
                 continue
             print(f"{env_name} is a {platform} based environment")
             target_envs.append(env_name)

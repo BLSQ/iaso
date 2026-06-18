@@ -15,7 +15,7 @@ data_store_content3 = json.dumps({"this": "should not appear"})
 api_url = "/api/datastore/"
 
 
-class JsonDataStoreAPITestCase(APITestCase):
+class JsonDataStoreAPITestCase(SwaggerTestCaseMixin, APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.account1 = Account.objects.create(name="Account 1")
@@ -238,8 +238,6 @@ class JsonDataStoreAPITestCase(APITestCase):
         response_body = self.assertJSONResponse(response, 200)
         self.assertEqual(response_body["key"], slugified)
 
-
-class JsonDataStoreOpenAPITestCase(SwaggerTestCaseMixin, JsonDataStoreAPITestCase):
     def test_list_response_is_openapi_compliant(self):
         self.client.force_authenticate(self.authorized_user_read)
         response = self.client.get(api_url)

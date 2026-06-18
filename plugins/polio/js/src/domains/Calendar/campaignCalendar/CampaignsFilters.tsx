@@ -17,9 +17,9 @@ import {
     dateApiToDateRangePicker,
     dateRangePickerToDateApi,
 } from '../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
-import { appId } from '../../../constants/app';
 import MESSAGES from '../../../constants/messages';
 import { baseUrls } from '../../../constants/urls';
+import { useAppId } from '../../../hooks/useAppId';
 import { useGetCountries } from '../../../hooks/useGetCountries';
 import { useGetCampaignTypes } from '../../Campaigns/hooks/api/useGetCampaignTypes';
 import { useCampaignCategoryOptions } from '../../Campaigns/hooks/useCampaignCategoryOptions';
@@ -59,6 +59,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
     setCampaignType,
     campaignType,
 }) => {
+    const appId = useAppId();
     const redirectUrl = getRedirectUrl(isCalendar, isEmbedded);
     const redirectToReplace = useRedirectToReplace();
 

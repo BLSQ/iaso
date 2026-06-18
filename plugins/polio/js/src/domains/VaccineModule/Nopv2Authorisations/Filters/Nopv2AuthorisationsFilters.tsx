@@ -7,10 +7,10 @@ import { useGetGroupDropdown } from '../../../../../../../../hat/assets/js/apps/
 import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import { appId } from '../../../../constants/app';
 import MESSAGES from '../../../../constants/messages';
 import { VACCINE_AUTH_ADMIN } from '../../../../constants/permissions';
 import { baseUrls } from '../../../../constants/urls';
+import { useAppId } from '../../../../hooks/useAppId';
 import { CreateAuthorisationModal } from '../Details/Modals/CreateEdit/CreateEditAuthorisationModal';
 import { useStatusOptions } from '../hooks/statuses';
 import { VaccineAuthParams } from '../types';
@@ -21,6 +21,7 @@ type Props = { params: VaccineAuthParams };
 export const Nopv2AuthorisationsFilters: FunctionComponent<Props> = ({
     params,
 }) => {
+    const appId = useAppId();
     const { formatMessage } = useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });

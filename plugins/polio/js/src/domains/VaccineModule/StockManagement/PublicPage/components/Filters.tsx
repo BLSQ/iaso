@@ -4,6 +4,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import { useGetGroupDropdown } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
 import { useFilterState } from '../../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import { baseUrls } from '../../../../../constants/urls';
+import { useAppId } from '../../../../../hooks/useAppId';
 import { singleVaccinesList } from '../../../SupplyChain/constants';
 import { useGetCountriesOptions } from '../../../SupplyChain/hooks/api/vrf';
 import MESSAGES from '../messages';
@@ -69,6 +70,7 @@ type Props = {
 };
 
 export const Filters: FunctionComponent<Props> = ({ params }) => {
+    const appId = useAppId();
     const { formatMessage } = useSafeIntl();
     const { filters, changeAndSearch } = useFilterState({
         baseUrl: baseUrls.embeddedVaccineStock,
@@ -80,8 +82,8 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
     const { data: countryBlocks, isFetching: isLoadingCountryBlocks } =
         useGetGroupDropdown({
             blockOfCountries: true,
-            // hard-coding polio appId here because there's no way to otherwise filter by accountÒ
-            appId: 'com.poliooutbreaks.app',
+            // passing appId here because there's no way to otherwise filter by account
+            appId: appId,
         });
 
     const unusableActionTypeOptions = useUnusableActionTypeOptions();

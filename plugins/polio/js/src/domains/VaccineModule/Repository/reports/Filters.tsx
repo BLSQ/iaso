@@ -10,8 +10,8 @@ import { useRedirectToReplace } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useGetGroupDropdown } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
-import { appId } from '../../../../constants/app';
 import MESSAGES from '../../../../constants/messages';
+import { useAppId } from '../../../../hooks/useAppId';
 
 import { useGetCountries } from '../../../../hooks/useGetCountries';
 
@@ -27,6 +27,7 @@ type Props = {
 };
 
 export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
+    const appId = useAppId();
     const redirectToReplace = useRedirectToReplace();
 
     const [filtersUpdated, setFiltersUpdated] = useState(false);
@@ -104,10 +105,12 @@ export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
                     }}
                     value={countries}
                     type="select"
-                    options={countriesList.map(c => ({
-                        label: c.name,
-                        value: c.id,
-                    }))}
+                    options={countriesList.map(
+                        (c: { name: string; id: number }) => ({
+                            label: c.name,
+                            value: c.id,
+                        }),
+                    )}
                     label={MESSAGES.country}
                 />
             </Grid>

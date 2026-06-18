@@ -2,7 +2,7 @@ import { UseQueryResult } from 'react-query';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 
-import { appId } from '../../../../../constants/app';
+import { useAppId } from '../../../../../hooks/useAppId';
 import {
     IM_COUNTRY_URL,
     IM_GLOBAL_SLUG,
@@ -14,6 +14,7 @@ import { LqasImData, LqasIMType } from '../../../types';
 
 export const getLqasIm = (
     type: LqasIMType,
+    appId: string,
     countryId?: string,
     isEmbedded = false,
 ): Promise<any> => {
@@ -45,9 +46,10 @@ export const useLqasIm = (
     countryId?: string,
     isEmbedded = false,
 ): UseQueryResult<LqasImData> => {
+    const appId = useAppId();
     return useSnackQuery({
-        queryKey: [type, countryId, getLqasIm],
-        queryFn: async () => getLqasIm(type, countryId, isEmbedded),
+        queryKey: [type, countryId, getLqasIm, appId],
+        queryFn: async () => getLqasIm(type, appId, countryId, isEmbedded),
         dispatchOnError: false,
         options: {
             select: data => {

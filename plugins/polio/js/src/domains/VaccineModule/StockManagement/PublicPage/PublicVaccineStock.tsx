@@ -7,6 +7,7 @@ import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/u
 import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
 import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { baseUrls } from '../../../../constants/urls';
+import { useAppId } from '../../../../hooks/useAppId';
 import { Filters } from './components/Filters';
 import { LanguageButton } from './components/LanguageButton';
 import { Table } from './components/Table';
@@ -17,18 +18,16 @@ import { useGetPublicVaccineStock } from './useGetPublicVaccineStock';
 
 const baseUrl = baseUrls.embeddedVaccineStock;
 const useXlsxUrl = allParams => {
+    const appId = useAppId();
     const xlsxApiUrl = '/api/polio/dashboards/public/vaccine_stock/export_xlsx';
     const defaults = {
         order: '-date',
         pageSize: 20,
         page: 1,
     };
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
-    const { tab, ...params } = allParams;
-    const safeParams = useUrlParams(
-        { ...params, app_id: 'com.poliooutbreaks.app' },
-        defaults,
-    );
+
+    const { tab: _tab, ...params } = allParams;
+    const safeParams = useUrlParams({ ...params, app_id: appId }, defaults);
     const apiParams = useApiParams(safeParams);
     const queryString = new URLSearchParams(apiParams).toString();
     return `${xlsxApiUrl}/?${queryString}`;

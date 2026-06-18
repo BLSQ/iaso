@@ -1,12 +1,13 @@
 import { UseQueryResult } from 'react-query';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
-import { appId } from '../../../../../constants/app';
+import { useAppId } from '../../../../../hooks/useAppId';
 
 export const useGetRegions = (
     country?: number,
     isEmbedded = false,
 ): UseQueryResult<{ name: string; id: number }[]> => {
+    const appId = useAppId();
     const params: Record<string, string> = {
         validation_status: 'all',
         limit: '3000',

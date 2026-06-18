@@ -4,6 +4,7 @@ import moment, { Moment } from 'moment';
 import { Query as RQQuery, useQueries } from 'react-query';
 import MESSAGES from '../../../../constants/messages';
 import { MergedShapes } from '../../../../constants/types';
+import { useAppId } from '../../../../hooks/useAppId';
 import { useGetMergedCampaignShapes } from '../../hooks/useGetMergedCampaignShapes';
 import {
     CalendarParams,
@@ -60,11 +61,12 @@ export const useRoundsQueries = (
     campaigns: MappedCampaign[],
     loadingCampaigns: boolean,
 ): Query[] => {
+    const appId = useAppId();
     const [queries, setQueries] = useState<Query[]>([]);
 
     useEffect(() => {
-        setQueries(makeQueriesForCampaigns(campaigns, loadingCampaigns));
-    }, [campaigns, loadingCampaigns]);
+        setQueries(makeQueriesForCampaigns(campaigns, loadingCampaigns, appId));
+    }, [campaigns, loadingCampaigns, appId]);
 
     return queries;
 };

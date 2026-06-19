@@ -38,6 +38,7 @@ export type ValidationWorkflowRetrieveResponseItem = {
     created_at: string;
     updated_at: string;
     node_templates?: NestedNodeTemplate[];
+    has_processes: boolean;
 };
 
 export type ValidationWorkflowRetrieveResponseItemWithOrderedNodes = Omit<

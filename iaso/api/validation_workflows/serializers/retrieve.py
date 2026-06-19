@@ -29,6 +29,9 @@ class ValidationWorkflowRetrieveSerializer(ModelSerializer):
 
     forms = NestedFormSerializer(many=True, read_only=True, source="form_set", allow_null=True)
     node_templates = serializers.SerializerMethodField(read_only=True, allow_null=True)
+    has_processes = serializers.BooleanField(
+        read_only=True, help_text="True if the workflow has past or ongoing validation processes"
+    )
 
     class Meta:
         model = ValidationWorkflow
@@ -42,6 +45,7 @@ class ValidationWorkflowRetrieveSerializer(ModelSerializer):
             "created_at",
             "updated_at",
             "node_templates",
+            "has_processes",
         ]
 
     @extend_schema_field(NestedValidationNodeTemplateSerializer(many=True, allow_null=True))

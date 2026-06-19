@@ -61,8 +61,7 @@ export const CreateEditNode: FunctionComponent<Props> = ({
     });
     const handleChangeUserRoles = useCallback(
         (_: string, newValue: string) => {
-            const value =
-                newValue && newValue.length > 0 ? newValue : undefined;
+            const value = newValue && newValue.length > 0 ? newValue : [];
             formik.setFieldTouched('roles_required', true);
             formik.setFieldValue('roles_required', value);
         },

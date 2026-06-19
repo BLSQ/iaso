@@ -1,4 +1,4 @@
-from django.db.models import Count, Q
+from django.db.models import Count, Exists, OuterRef, Prefetch, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import permissions
@@ -17,7 +17,7 @@ from iaso.api.validation_workflows.serializers.dropdown import ValidationWorkflo
 from iaso.api.validation_workflows.serializers.list import ValidationWorkflowListSerializer
 from iaso.api.validation_workflows.serializers.retrieve import ValidationWorkflowRetrieveSerializer
 from iaso.api.validation_workflows.serializers.update import ValidationWorkflowUpdateSerializer
-from iaso.models import ValidationWorkflow
+from iaso.models import ValidationNode, ValidationNodeTemplate, ValidationWorkflow
 from iaso.modules import MODULE_VALIDATION_WORKFLOW
 
 
@@ -65,14 +65,23 @@ class ValidationWorkflowViewSet(ModelViewSet):
                 )
             )
         if self.action == "retrieve":
-            qs = qs.prefetch_related(
-                "node_templates",
-                "node_templates__next_node_templates",
-                "node_templates__previous_node_templates",
-                "form_set",
-                "node_templates__roles_required",
-                "node_templates__roles_required__group",
-            ).select_related("created_by", "updated_by")
+            qs = (
+                qs.prefetch_related(
+                    Prefetch(
+                        "node_templates",
+                        ValidationNodeTemplate.objects.prefetch_related(
+                            "next_node_templates", "previous_node_templates", "roles_required", "roles_required__group"
+                        ),
+                    ),
+                    "form_set",
+                )
+                .select_related("created_by", "updated_by")
+                .annotate(
+                    has_processes=Exists(
+                        ValidationNode.objects.filter(instance__form__validation_workflow=OuterRef("pk"))
+                    ),
+                )
+            )
         return qs
 
     @action(detail=False, methods=["get"])

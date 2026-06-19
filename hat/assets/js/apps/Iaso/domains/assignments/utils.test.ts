@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+    assignmentsCountForUser,
+    countTeams,
     filterOrgUnits,
     getValidLocations,
     getValidShapes,
@@ -121,6 +123,46 @@ describe('assignments utils', () => {
             const selected = [{ value: 2, label: 'Area', original: {} }];
 
             expect(isOrgunitVisible(ou, selected as any)).toBe(false);
+        });
+    });
+
+    describe('assignmentsCountForUser', () => {
+        it('counts assignments for a given user', () => {
+            const user = {
+                id: 5,
+                username: 'john',
+                first_name: 'John',
+                last_name: 'Doe',
+                color: '#000',
+                iaso_profile_id: 1,
+            };
+            const assignments = {
+                assignments: [],
+                allAssignments: [
+                    createAssignment({ user: 5 }),
+                    createAssignment({ user: 5, org_unit: 2 }),
+                    createAssignment({ user: 9, org_unit: 3 }),
+                ],
+            };
+
+            expect(
+                assignmentsCountForUser(user as any, assignments as any),
+            ).toBe(2);
+        });
+    });
+
+    describe('countTeams', () => {
+        it('counts assignments for a given sub-team', () => {
+            const subTeam = { id: 7, name: 'Sub', color: '#fff' };
+            const assignments = {
+                assignments: [],
+                allAssignments: [
+                    createAssignment({ team: 7, user: 0 }),
+                    createAssignment({ team: 8, user: 0, org_unit: 2 }),
+                ],
+            };
+
+            expect(countTeams(subTeam, assignments as any)).toBe(1);
         });
     });
 

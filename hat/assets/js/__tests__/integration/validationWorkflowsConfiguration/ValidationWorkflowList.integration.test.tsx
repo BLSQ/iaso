@@ -155,16 +155,27 @@ describe('Validation workflow list UI integration test', () => {
         validationWorkFlows.results.forEach(
             (validationWorkflow: ValidationWorkflowListResponseItem) => {
                 expect(
-                    screen.getByText(validationWorkflow.name),
+                    screen.getByRole('cell', { name: validationWorkflow.name }),
                 ).toBeInTheDocument();
                 expect(
-                    screen.getByText(validationWorkflow.updated_by as string),
+                    screen.getByRole('cell', {
+                        name: validationWorkflow.updated_by as string,
+                    }),
                 ).toBeInTheDocument();
                 expect(
-                    screen.getByText(validationWorkflow.created_by as string),
+                    screen.getByRole('cell', {
+                        name: validationWorkflow.created_by as string,
+                    }),
                 ).toBeInTheDocument();
+
+                const row = screen
+                    .getByRole('cell', { name: validationWorkflow.name })
+                    .closest('tr');
+                expect(row).not.toBeNull();
                 expect(
-                    screen.getByText(validationWorkflow.form_count),
+                    within(row as HTMLElement).getByText(
+                        String(validationWorkflow.form_count),
+                    ),
                 ).toBeInTheDocument();
             },
         );

@@ -1,4 +1,5 @@
 from .account import Account, AccountFeatureFlag
+from .account_usage import AccountUsage
 from .base import *
 from .bulk_create_user_csv_file import BulkCreateUserFile
 from .comment import CommentIaso
@@ -46,6 +47,7 @@ __all__ = [
     "TEXT",
     "Account",
     "AccountFeatureFlag",
+    "AccountUsage",
     "BulkCreateUserFile",
     "CommentIaso",
     "DataSource",

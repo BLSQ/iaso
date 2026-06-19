@@ -11,7 +11,9 @@ from hat.audit.models import PROFILE_API_BULK
 from iaso.api.bulk_create_users.permissions import HasUserPermission
 from iaso.api.bulk_create_users.serializers import BulkCreateUserSerializer
 from iaso.api.profiles.audit import ProfileAuditLogger
-from iaso.models import BulkCreateUserFile
+from iaso.models import BulkCreateUserFile, Profile
+from iaso.models.account_usage.misc import UserAccountUsage
+from iaso.services.account_usage import AccountUsageService
 
 
 @extend_schema(tags=["Profiles", "Users"])
@@ -61,6 +63,12 @@ class BulkCreateUserFromCsvViewSet(CreateModelMixin, GenericViewSet):
         instance, created_users, created_profiles = serializer.save()
         audit_logger = ProfileAuditLogger()
         self._audit(created_profiles, audit_logger, self.request.user)
+
+        # quota
+        account = self.request.user.iaso_profile.account
+        AccountUsageService.increment(
+            UserAccountUsage, account, len(created_profiles), initial_queryset=Profile.objects.filter(account=account)
+        )
 
     def _audit(self, created_profiles, audit_logger, importer_user):
         """Log created users"""

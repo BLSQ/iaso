@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.db.models import Prefetch, QuerySet
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -9,13 +10,12 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import SAFE_METHODS
 
-from iaso.api.common import (
-    ModelViewSet,
-)
 from iaso.api.query_params import parse_strict_boolean_param
 from iaso.models import Project, ProjectFeatureFlags
 
+from ...models.account_usage.misc import ProjectAccountUsage
 from ...permissions.core_permissions import CORE_PROJECTS_PERMISSION, CORE_USERS_ADMIN_PERMISSION
+from ...services.account_usage import AccountUsageService
 from ..common import HasPermission, ModelViewSet
 from .filters import ProjectsFilter
 from .serializers import ProjectSerializer
@@ -76,4 +76,12 @@ class ProjectsViewSet(ModelViewSet):
                 data='{"url": "' + request.build_absolute_uri("/") + '", "app_id": "' + project.app_id + '"}',
                 qr_code_options=QRCodeOptions(size="S", image_format="png", error_correction="L"),
             ),
+        )
+
+    @transaction.atomic
+    def perform_create(self, serializer):
+        super().perform_create(serializer)
+        account = self.request.user.iaso_profile.account
+        AccountUsageService.increment(
+            ProjectAccountUsage, account, initial_queryset=Project.objects.filter(account=account)
         )

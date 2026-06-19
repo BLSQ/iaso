@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
-import { useGetParentOrgUnits } from './useGetParentOrgUnits';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { useGetParentOrgUnits } from 'Iaso/domains/assignments/hooks/requests/useGetParentOrgUnits';
 
 const mockUseSnackQueries = vi.fn();
 

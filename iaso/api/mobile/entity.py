@@ -148,12 +148,10 @@ class MobileEntityViewSet(ModelViewSet):
     """
 
     results_key = "results"
-    remove_results_key_if_paginated = True
+    include_results_key_if_not_paginated = False
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
     permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_ENTITIES_PERMISSION)]
-
-    def pagination_class(self):
-        return MobileEntitiesSetPagination(self.results_key)
+    pagination_class = MobileEntitiesSetPagination
 
     lookup_field = "uuid"
 
@@ -218,15 +216,13 @@ class MobileEntityDeletedViewSet(ModelViewSet):
     """
 
     results_key = "results"
-    remove_results_key_if_paginated = True
+    include_results_key_if_not_paginated = False
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
     permission_classes = [
         permissions.IsAuthenticated,
         HasPermission(CORE_ENTITIES_PERMISSION),
     ]
-
-    def pagination_class(self):
-        return MobileEntitiesSetPagination(self.results_key)
+    pagination_class = MobileEntitiesSetPagination
 
     def get_serializer_class(self):
         return DeletedMobileEntitySerializer

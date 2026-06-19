@@ -72,6 +72,7 @@ class GroupSetsViewSet(ModelViewSet):
     ordering = ["name"]
 
     serializer_class = GroupSetSerializer
+    pagination_class = GroupSetPagination
     results_key = "group_sets"
     http_method_names = ["get", "post", "put", "patch", "delete", "head", "options", "trace"]
 
@@ -84,9 +85,6 @@ class GroupSetsViewSet(ModelViewSet):
                 DynamicFieldsFilterBackendBackwardCompatible,
             ]
         return [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
-
-    def pagination_class(self):
-        return GroupSetPagination(self.results_key)
 
     def get_queryset(self):
         query_set = (

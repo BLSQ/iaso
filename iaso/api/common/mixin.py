@@ -42,11 +42,8 @@ class CSVExportMixin:
 
 class CustomPaginationListModelMixin(ListModelMixin):
     results_key = "results"
-    # FIXME Contrary to name it remove result key if NOT paginated
-    remove_results_key_if_paginated = False
-
-    def pagination_class(self):
-        return Paginator(self.get_results_key())
+    include_results_key_if_not_paginated = True
+    pagination_class = Paginator
 
     def get_results_key(self):
         """
@@ -60,10 +57,11 @@ class CustomPaginationListModelMixin(ListModelMixin):
             ]
         }
         """
-        assert self.results_key is not None, (
-            "'%s' should either include a `results_key` attribute, "
-            "or override the `get_result_key()` method." % self.__class__.__name__
-        )
+        if self.results_key is None:
+            raise ValueError(
+                "'%s' should either include a `results_key` attribute, "
+                "or override the `get_result_key()` method." % self.__class__.__name__
+            )
 
         return self.results_key
 
@@ -78,7 +76,7 @@ class CustomPaginationListModelMixin(ListModelMixin):
             return self.get_paginated_response(serializer.data)
 
         serializer = self.get_serializer(queryset, many=True)
-        if not self.remove_results_key_if_paginated:
+        if self.include_results_key_if_not_paginated:
             return Response({self.get_results_key(): serializer.data})
         return Response(serializer.data)
 

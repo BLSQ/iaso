@@ -1,3 +1,8 @@
+from typing import Optional
+
+from rest_framework import serializers
+
+
 APP_ID = "app_id"
 APP_VERSION = "app_version"
 DATE_FROM = "dateFrom"
@@ -42,3 +47,17 @@ USER_IDS = "userIds"
 WITH_LOCATION = "withLocation"
 ONLY_REFERENCE = "onlyReference"
 REFERENCE_INSTANCES = "referenceInstances"
+
+
+def parse_strict_boolean_param(value: Optional[str], field_name: str = "query_param") -> bool:
+    """Parse a boolean-like query parameter, accepting the same values as DRF's BooleanField."""
+    if value is None:
+        return False
+    lowered = value.lower()
+    if lowered in ("t", "true", "1", "on", "yes"):
+        return True
+    if lowered in ("f", "false", "0", "off", "no"):
+        return False
+    raise serializers.ValidationError(
+        {field_name: f"Invalid boolean value '{value}'. Expected 'true', 'false', '1' or '0'."}
+    )

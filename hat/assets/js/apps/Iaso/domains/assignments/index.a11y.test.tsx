@@ -115,7 +115,9 @@ describe('Assignments page accessibility', () => {
         );
 
         await waitFor(() => {
-            expect(screen.queryByRole('progressbar')).toBeNull();
+            expect(
+                screen.getByText('Assignments for planning: Test planning'),
+            ).toBeVisible();
         });
 
         expect(

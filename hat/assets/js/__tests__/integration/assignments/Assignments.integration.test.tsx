@@ -133,7 +133,9 @@ describe('Assignments integration tests', () => {
         renderAssignments();
 
         await waitFor(() => {
-            expect(screen.queryByRole('progressbar')).toBeNull();
+            expect(
+                screen.getByText('Assignments for planning: Test planning'),
+            ).toBeVisible();
         });
 
         expect(screen.getByText(/Root OU/)).toBeVisible();
@@ -141,9 +143,6 @@ describe('Assignments integration tests', () => {
         expect(
             screen.getByRole('button', { name: 'Delete all assignments' }),
         ).toBeEnabled();
-        expect(
-            screen.getByText('Assignments for planning: Test planning'),
-        ).toBeVisible();
     });
 
     it('disables delete all assignments when the count is zero', async () => {
@@ -159,12 +158,10 @@ describe('Assignments integration tests', () => {
         renderAssignments();
 
         await waitFor(() => {
-            expect(screen.queryByRole('progressbar')).toBeNull();
+            expect(
+                screen.getByRole('button', { name: 'Delete all assignments' }),
+            ).toBeDisabled();
         });
-
-        expect(
-            screen.getByRole('button', { name: 'Delete all assignments' }),
-        ).toBeDisabled();
     });
 
     it('renders map and list tabs', async () => {

@@ -333,4 +333,5 @@ dev = [
 ]
 prod = [
     "gunicorn==23.0.0", # https://github.com/benoitc/gunicorn/tags
+    "py-spy==0.4.2", # https://github.com/benfred/py-spy/releases
 ]

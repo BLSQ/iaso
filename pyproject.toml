@@ -7,7 +7,7 @@ dependencies = [
     "anthropic==0.52.0", # https://github.com/anthropics/anthropic-sdk-python/tags
     "azure-storage-blob==12.19.0",
     "beautifulsoup4==4.12.2", # https://pypi.org/project/beautifulsoup4/
-    "boto3==1.34.7", # https://github.com/boto/boto3/tags
+    "boto3==1.42.44", # https://github.com/boto/boto3/tags
     "celery==5.3.6", # https://github.com/celery/celery/tags
     "clamav-client==0.6.3", # https://github.com/artefactual-labs/clamav-client/tags
     "cryptography==45.0.7", # https://github.com/pyca/cryptography
@@ -297,6 +297,11 @@ django-webpack-loader = { url = "https://github.com/BLSQ/django-webpack-loader/a
 django-xlsform-validator = { url = "https://github.com/BLSQ/spreadsheet-xlsform-validator/archive/main.zip" }
 
 [dependency-groups]
+deploy = [
+    "awsebcli==3.26",
+    "boto3==1.42.44",
+    "botocore==1.42.44",
+]
 dev = [
     "boto3-stubs==1.34.7", # https://pypi.org/project/boto3-stubs/
     "coverage==7.10.6", # https://coverage.readthedocs.io

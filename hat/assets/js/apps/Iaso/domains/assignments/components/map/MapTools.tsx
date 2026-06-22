@@ -20,7 +20,6 @@ type Props = {
         SetStateAction<OrgUnitTypeHierarchyDropdownValue[]>
     >;
     bounds?: Bounds;
-    isLoading: boolean;
     currentTile: Tile;
     setCurrentTile: (tile: Tile) => void;
     boundsOptions: L.FitBoundsOptions;
@@ -32,7 +31,6 @@ export const MapTools: FunctionComponent<Props> = ({
     selectedOrgUnitTypes,
     setSelectedOrgUnitTypes,
     bounds,
-    isLoading,
     currentTile,
     setCurrentTile,
     boundsOptions,
@@ -48,7 +46,7 @@ export const MapTools: FunctionComponent<Props> = ({
             )}
             <CloseTooltipOnMoveStart />
             <CustomZoomControl
-                bounds={!isLoading ? bounds : undefined}
+                bounds={bounds}
                 boundsOptions={boundsOptions}
                 fitOnLoad
             />

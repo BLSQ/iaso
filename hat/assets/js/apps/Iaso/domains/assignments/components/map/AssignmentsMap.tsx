@@ -171,12 +171,12 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
         setShowBulkAssignDialog(false);
     }, []);
 
-    const isLoading =
+    const isMapDataLoading =
         isLoadingChildrenOrgUnits ||
         isLoadingRootTeam ||
         isLoadingAssignments ||
-        isLoadingRootOrgUnit ||
-        isSaving;
+        isLoadingRootOrgUnit;
+    const isLoading = isMapDataLoading || isSaving;
     return (
         <Box
             position="relative"
@@ -200,7 +200,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
             )}
             {isLoading && <LoadingSpinner />}
             <MapContainer
-                key={planning?.id}
+                key={planningId}
                 bounds={bounds}
                 maxZoom={currentTile.maxZoom}
                 style={{ height: defaultHeight }}
@@ -209,6 +209,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                 scrollWheelZoom={false}
                 zoomControl={false}
                 boundsOptions={boundsOptions}
+                trackResize
             >
                 <MapTools
                     orgUniTypeList={orgUniTypeList}
@@ -216,12 +217,11 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                     selectedOrgUnitTypes={selectedOrgUnitTypes}
                     setSelectedOrgUnitTypes={setSelectedOrgUnitTypes}
                     bounds={bounds}
-                    isLoading={isLoading}
                     currentTile={currentTile}
                     setCurrentTile={setCurrentTile}
                     boundsOptions={boundsOptions}
                 />
-                {rootOrgUnit?.geo_json && (
+                {!isMapDataLoading && rootOrgUnit?.geo_json && (
                     <Pane
                         name="root-org-unit-shape"
                         style={{ zIndex: MAP_PANE_Z_INDEX.rootShape }}
@@ -242,23 +242,27 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                         </GeoJSON>
                     </Pane>
                 )}
-                <ParentOrgUnits
-                    orgUniTypeList={orgUniTypeList}
-                    planning={planning}
-                    selectedOrgUnitTypes={selectedOrgUnitTypes}
-                    rootOrgUnit={rootOrgUnit}
-                    canAssign={canAssign}
-                    handleClick={handleClickParentOrgUnit}
-                />
-                <TargetOrgUnits
-                    orgUnits={childrenOrgUnits}
-                    canAssign={canAssign}
-                    handleSaveAssignment={handleSaveAssignment}
-                    planning={planning}
-                    assignments={assignments}
-                    selectedOrgUnitTypes={selectedOrgUnitTypes}
-                    rootTeam={rootTeam}
-                />
+                {!isMapDataLoading && (
+                    <>
+                        <ParentOrgUnits
+                            orgUniTypeList={orgUniTypeList}
+                            planning={planning}
+                            selectedOrgUnitTypes={selectedOrgUnitTypes}
+                            rootOrgUnit={rootOrgUnit}
+                            canAssign={canAssign}
+                            handleClick={handleClickParentOrgUnit}
+                        />
+                        <TargetOrgUnits
+                            orgUnits={childrenOrgUnits}
+                            canAssign={canAssign}
+                            handleSaveAssignment={handleSaveAssignment}
+                            planning={planning}
+                            assignments={assignments}
+                            selectedOrgUnitTypes={selectedOrgUnitTypes}
+                            rootTeam={rootTeam}
+                        />
+                    </>
+                )}
             </MapContainer>
         </Box>
     );

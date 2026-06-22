@@ -5,7 +5,6 @@ import React, {
     useMemo,
     useRef,
 } from 'react';
-import { LoadingSpinner } from 'bluesquare-components';
 import L from 'leaflet';
 import { Pane, GeoJSON } from 'react-leaflet';
 import CircleMarkerComponent from 'Iaso/components/maps/markers/CircleMarkerComponent';
@@ -108,7 +107,6 @@ export const ParentOrgUnits: FunctionComponent<Props> = ({
         const queryResult = parentOrgUnitsQueries?.[index];
         return (
             <Fragment key={`parent-org-units-${out.value}`}>
-                {queryResult?.isLoading && <LoadingSpinner />}
                 {parentOrgUnitsShapes.length > 0 && (
                     <Pane
                         name={`parent-org-units-shapes-${out.value}`}

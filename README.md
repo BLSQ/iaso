@@ -816,6 +816,9 @@ DB_READONLY_USERNAME=
 # Used for encryption and authorisation
 ENCRYPTED_TEXT_FIELD_KEY=
 SECRET_KEY=
+# Old secret key(s) kept valid for signature verification while rotating SECRET_KEY
+# (comma separated). See "Rotating SECRET_KEY" below.
+SECRET_KEY_FALLBACKS=
 
 # To interact with Enketo/ODK
 ENKETO_API_TOKEN=
@@ -838,6 +841,21 @@ docker compose -f docker-compose.prod.yml up
 ```
 
 This will pull the necessary containers (iaso & nginx) and spin up the service at port 80.
+
+### Rotating SECRET_KEY
+
+`SECRET_KEY` signs sessions, password reset tokens and other signed data. Changing it
+naively logs every user out and invalidates outstanding tokens. To rotate it gracefully,
+use `SECRET_KEY_FALLBACKS`, which lists old keys Django still uses to *verify* (but not
+*sign*) signatures:
+
+1. Move the current `SECRET_KEY` value into `SECRET_KEY_FALLBACKS` (comma separated if
+   several old keys are kept).
+2. Set `SECRET_KEY` to the new value.
+3. Deploy. Existing sessions and tokens keep working because they are validated against
+   the fallback key, while new data is signed with the new key.
+4. Once the oldest signed data has expired (e.g. past `SESSION_COOKIE_AGE` /
+   `PASSWORD_RESET_TIMEOUT`), remove the old key from `SECRET_KEY_FALLBACKS`.
 
 
 ## System requirements

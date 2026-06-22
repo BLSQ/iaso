@@ -1,4 +1,4 @@
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions
@@ -24,6 +24,19 @@ from .filters import (
     TeamTypesFilterBackend,
 )
 from .serializers import AuditTeamSerializer, TeamDropdownSerializer, TeamSerializer
+
+
+def _build_team_hierarchy_prefetch(depth=10):
+    if depth <= 0:
+        return ["users", "users__iaso_profile"]
+    return [
+        "users",
+        "users__iaso_profile",
+        Prefetch(
+            "sub_teams",
+            queryset=Team.objects.prefetch_related(*_build_team_hierarchy_prefetch(depth - 1)),
+        ),
+    ]
 
 
 @extend_schema(tags=["Teams"])
@@ -63,10 +76,15 @@ class TeamViewSet(AuditMixin, ModelViewSet):
         user = self.request.user
         if not user.is_authenticated:
             return self.queryset.none()
+        prefetch = (
+            _build_team_hierarchy_prefetch()
+            if self.action == "retrieve"
+            else ["users", "users__iaso_profile", "sub_teams"]
+        )
         queryset = (
             self.queryset.filter_for_user(user)
             .select_related("project")
-            .prefetch_related("users", "users__iaso_profile", "sub_teams")
+            .prefetch_related(*prefetch)
         )
 
         if self.action != "dropdown":

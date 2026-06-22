@@ -17,12 +17,6 @@ class NestedProjectSerializer(ModelSerializer):
         ref_name = "TeamsNestedProject"
 
 
-class NestedTeamSerializer(ModelSerializer):
-    class Meta:
-        model = Team
-        fields = ["id", "name", "deleted_at", "color"]
-
-
 class NestedUserSerializer(ModelSerializer):
     color = ColorFieldSerializer(source="iaso_profile.color", read_only=True, default=None)
     iaso_profile_id = serializers.SerializerMethodField()
@@ -34,6 +28,30 @@ class NestedUserSerializer(ModelSerializer):
     def get_iaso_profile_id(self, obj):
         profile = getattr(obj, "iaso_profile", None)
         return getattr(profile, "id", None) if profile else None
+
+
+class NestedTeamSerializer(ModelSerializer):
+    users_details = NestedUserSerializer(many=True, read_only=True, source="users")
+    sub_teams_details = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Team
+        fields = [
+            "id",
+            "name",
+            "deleted_at",
+            "color",
+            "users",
+            "users_details",
+            "sub_teams",
+            "sub_teams_details",
+        ]
+        read_only_fields = fields
+        ref_name = "TeamsNestedTeam"
+
+    def get_sub_teams_details(self, team):
+        sub_teams = team.sub_teams.all()
+        return NestedTeamSerializer(sub_teams, many=True, context=self.context).data
 
 
 class AuditTeamSerializer(ModelSerializer):

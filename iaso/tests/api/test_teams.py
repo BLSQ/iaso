@@ -307,6 +307,35 @@ class TeamTestCase(APITestCase, IasoTestCaseMixin):
 
         self.assertEqual(serializer_empty.get_members_count(empty_team), 0)
 
+    def test_nested_team_serializer_hierarchy(self):
+        account = Account.objects.get(name="test")
+        user = User.objects.get(username="test")
+        request = mock.Mock(user=user)
+        project = account.project_set.create(name="project1")
+        user1 = self.create_user_with_profile(username="nested_user1", account=account)
+        root = Team.objects.create(project=project, name="root", manager=user, type=TeamType.TEAM_OF_TEAMS)
+        sub_team = Team.objects.create(project=project, name="child", manager=user, type=TeamType.TEAM_OF_TEAMS)
+        leaf_team = Team.objects.create(
+            project=project, name="leaf", manager=user, type=TeamType.TEAM_OF_USERS
+        )
+        leaf_team.users.set([user1])
+        root.sub_teams.add(sub_team)
+        sub_team.sub_teams.add(leaf_team)
+
+        serializer = TeamSerializer(context={"request": request}, instance=root)
+        data = serializer.data
+
+        self.assertEqual(len(data["sub_teams_details"]), 1)
+        sub_team_data = data["sub_teams_details"][0]
+        self.assertEqual(sub_team_data["name"], "child")
+        self.assertEqual(sub_team_data["sub_teams"], [leaf_team.id])
+        self.assertEqual(len(sub_team_data["sub_teams_details"]), 1)
+        leaf_team_data = sub_team_data["sub_teams_details"][0]
+        self.assertEqual(leaf_team_data["name"], "leaf")
+        self.assertEqual(leaf_team_data["users"], [user1.id])
+        self.assertEqual(len(leaf_team_data["users_details"]), 1)
+        self.assertEqual(leaf_team_data["users_details"][0]["username"], "nested_user1")
+
 
 class TeamAPITestCase(APITestCase):
     fixtures = ["user.yaml"]

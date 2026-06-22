@@ -86,6 +86,7 @@ services:
         - RDS_PASSWORD
         - RDS_USERNAME
         - SECRET_KEY
+        - SECRET_KEY_FALLBACKS
         - SENTRY_ENVIRONMENT
         - SENTRY_FRONT_ENABLED
         - SENTRY_TRACES_SAMPLE_RATE

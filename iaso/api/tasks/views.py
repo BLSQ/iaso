@@ -73,6 +73,8 @@ class TaskSourceViewSet(ModelViewSet):
     http_method_names = ["get", "patch", "head", "options", "trace"]
 
     def get_queryset(self):
+        if self.action == "deployment_status":
+            return Task.objects.select_related("launcher").filter(status__in=[QUEUED, RUNNING])
         profile = self.request.user.iaso_profile
         return Task.objects.select_related("created_by", "launcher").filter(account=profile.account)
 
@@ -164,7 +166,7 @@ class TaskSourceViewSet(ModelViewSet):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         blocking_statuses = [QUEUED, RUNNING]
-        blocking_tasks = Task.objects.filter(status__in=blocking_statuses).select_related("launcher")
+        blocking_tasks = self.filter_queryset(self.get_queryset())
 
         statuses = {status: 0 for status in blocking_statuses}
         for status_count in blocking_tasks.values("status").annotate(count=Count("id")):

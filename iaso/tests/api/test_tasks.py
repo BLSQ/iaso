@@ -425,6 +425,54 @@ class IasoTasksTestCase(APITestCase):
         self.assertEqual(blocking_tasks_by_id[running_task.id]["launcher"], "daniel")
         self.assertEqual(blocking_tasks_by_id[running_task.id]["started_at"], running_task.started_at.timestamp())
 
+    def test_deployment_status_filters_blocking_tasks(self):
+        self.client.force_authenticate(self.superuser)
+
+        m.Task.objects.create(
+            account=self.account,
+            created_by=self.johnny,
+            launcher=self.johnny,
+            status=QUEUED,
+            name="queued_task",
+            started_at=datetime.datetime(2024, 1, 20, 15, 0, 0, 0, tzinfo=timezone.utc),
+        )
+        matching_task = m.Task.objects.create(
+            account=self.account,
+            created_by=self.miguel,
+            launcher=self.miguel,
+            status=RUNNING,
+            name="running_task",
+            started_at=datetime.datetime(2024, 1, 20, 15, 0, 0, 0, tzinfo=timezone.utc),
+        )
+        m.Task.objects.create(
+            account=self.account,
+            created_by=self.miguel,
+            launcher=self.miguel,
+            status=RUNNING,
+            name="other_running_task",
+            started_at=datetime.datetime(2024, 2, 20, 15, 0, 0, 0, tzinfo=timezone.utc),
+        )
+        m.Task.objects.create(
+            account=self.account,
+            created_by=self.miguel,
+            launcher=self.miguel,
+            status=SUCCESS,
+            name="running_task",
+            started_at=datetime.datetime(2024, 1, 20, 15, 0, 0, 0, tzinfo=timezone.utc),
+        )
+
+        response = self.client.get(
+            f"/api/tasks/deployment-status/?status=RUNNING&task_type=running_task&users={self.miguel.id}"
+            "&start_date=19-01-2024&end_date=21-01-2024"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["can_deploy"], False)
+        self.assertEqual(data["blocking_tasks_count"], 1)
+        self.assertEqual(data["statuses"], {QUEUED: 0, RUNNING: 1})
+        self.assertEqual([task["id"] for task in data["blocking_tasks"]], [matching_task.id])
+
     def test_deployment_status_requires_superuser(self):
         response = self.client.get("/api/tasks/deployment-status/")
         self.assertEqual(response.status_code, 401)

@@ -107,7 +107,10 @@ export const useWorkflowsTableColumns = (): Column[] => {
     }, [formatMessage, user, deleteWorkflow]);
 };
 
-export const useWorkflowNodesColumns = (workFlowSlug?: string) => {
+export const useWorkflowNodesColumns = (
+    workFlowSlug?: string,
+    hasProcesses?: boolean,
+) => {
     const { formatMessage } = useSafeIntl();
     const user = useCurrentUser();
     const { mutate: deleteNode } = useDeleteNode();
@@ -154,23 +157,25 @@ export const useWorkflowNodesColumns = (workFlowSlug?: string) => {
                                 nodeSlug={value}
                                 iconProps={{}}
                             />
-                            <DeleteModal
-                                key={`${workFlowSlug}${value}`}
-                                type="icon"
-                                titleMessage={MESSAGES.deleteNodeQuestion}
-                                onConfirm={() =>
-                                    deleteNode({
-                                        workflowSlug: workFlowSlug,
-                                        nodeSlug: value,
-                                    })
-                                }
-                                backdropClick
-                            />
+                            {!hasProcesses && (
+                                <DeleteModal
+                                    key={`${workFlowSlug}${value}`}
+                                    type="icon"
+                                    titleMessage={MESSAGES.deleteNodeQuestion}
+                                    onConfirm={() =>
+                                        deleteNode({
+                                            workflowSlug: workFlowSlug,
+                                            nodeSlug: value,
+                                        })
+                                    }
+                                    backdropClick
+                                />
+                            )}
                         </>
                     );
                 },
             });
         }
         return cols;
-    }, [deleteNode, formatMessage, user, workFlowSlug]);
+    }, [deleteNode, formatMessage, user, workFlowSlug, hasProcesses]);
 };

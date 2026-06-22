@@ -31,7 +31,9 @@ const EditAIApiKeyModal: FunctionComponent<Props> = ({
     const { mutateAsync: saveAIApiKey } = useApiAccountsAiApiKeyUpdate({
         mutation: {
             onSuccess: () => closeDialog(),
-            ignoreErrorCodes: [400],
+            meta: {
+                ignoreErrorCodes: [400],
+            },
         },
     });
     const formik = useFormik({

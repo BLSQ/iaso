@@ -139,6 +139,12 @@ class IasoTasksTestCase(APITestCase):
             username="johnny", account=cls.account, permissions=[CORE_DATA_TASKS_PERMISSION]
         )
         cls.miguel = cls.create_user_with_profile(username="miguel", account=cls.account, permissions=[])
+        cls.superuser = cls.create_user_with_profile(
+            username="superuser",
+            account=cls.account,
+            permissions=[CORE_DATA_TASKS_PERMISSION],
+            is_superuser=True,
+        )
 
     def test_tasks_user_without_permissions_access(self):
         self.client.force_authenticate(self.miguel)
@@ -334,6 +340,112 @@ class IasoTasksTestCase(APITestCase):
         )
         task_ids = [t["id"] for t in response.json()["tasks"]]
         self.assertEqual(task_ids, [task_5.id])
+
+    def test_deployment_status_without_blocking_tasks(self):
+        self.client.force_authenticate(self.superuser)
+
+        for task_status in [SUCCESS, ERRORED, EXPORTED]:
+            m.Task.objects.create(
+                account=self.account,
+                created_by=self.johnny,
+                launcher=self.johnny,
+                status=task_status,
+                name=f"task_{task_status.lower()}",
+                params={"password": "secret"},
+            )
+
+        response = self.client.get("/api/tasks/deployment-status/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json(),
+            {
+                "can_deploy": True,
+                "blocking_tasks_count": 0,
+                "statuses": {QUEUED: 0, RUNNING: 0},
+                "blocking_tasks": [],
+            },
+        )
+
+    def test_deployment_status_with_blocking_tasks_is_global_and_hides_params(self):
+        self.client.force_authenticate(self.superuser)
+
+        other_account = m.Account.objects.create(name="Other account", default_version=self.new_version)
+        other_user = self.create_user_with_profile(username="daniel", account=other_account)
+
+        queued_task = m.Task.objects.create(
+            account=self.account,
+            created_by=self.johnny,
+            launcher=self.johnny,
+            status=QUEUED,
+            name="queued_task",
+            params={"password": "secret"},
+        )
+        running_task = m.Task.objects.create(
+            account=other_account,
+            created_by=other_user,
+            launcher=other_user,
+            status=RUNNING,
+            name="running_task_from_another_account",
+            started_at=datetime.datetime(2024, 1, 20, 15, 0, 0, 0, tzinfo=timezone.utc),
+            params={"password": "other-secret"},
+        )
+        m.Task.objects.create(
+            account=self.account,
+            created_by=self.johnny,
+            launcher=self.johnny,
+            status=SUCCESS,
+            name="non_blocking_task",
+            params={"password": "secret"},
+        )
+
+        response = self.client.get("/api/tasks/deployment-status/")
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["can_deploy"], False)
+        self.assertEqual(data["blocking_tasks_count"], 2)
+        self.assertEqual(data["statuses"], {QUEUED: 1, RUNNING: 1})
+        self.assertNotIn("params", data)
+
+        blocking_tasks_by_id = {task["id"]: task for task in data["blocking_tasks"]}
+        self.assertEqual(set(blocking_tasks_by_id.keys()), {queued_task.id, running_task.id})
+
+        self.assertEqual(
+            set(blocking_tasks_by_id[queued_task.id].keys()),
+            {"id", "name", "status", "created_at", "started_at", "launcher"},
+        )
+        self.assertEqual(blocking_tasks_by_id[queued_task.id]["name"], "queued_task")
+        self.assertEqual(blocking_tasks_by_id[queued_task.id]["status"], QUEUED)
+        self.assertEqual(blocking_tasks_by_id[queued_task.id]["launcher"], "johnny")
+        self.assertIsNone(blocking_tasks_by_id[queued_task.id]["started_at"])
+
+        self.assertEqual(blocking_tasks_by_id[running_task.id]["name"], "running_task_from_another_account")
+        self.assertEqual(blocking_tasks_by_id[running_task.id]["status"], RUNNING)
+        self.assertEqual(blocking_tasks_by_id[running_task.id]["launcher"], "daniel")
+        self.assertEqual(blocking_tasks_by_id[running_task.id]["started_at"], running_task.started_at.timestamp())
+
+    def test_deployment_status_requires_superuser(self):
+        response = self.client.get("/api/tasks/deployment-status/")
+        self.assertEqual(response.status_code, 401)
+
+        self.client.force_authenticate(self.johnny)
+        response = self.client.get("/api/tasks/deployment-status/")
+        self.assertEqual(response.status_code, 403)
+
+        staff_user = self.create_user_with_profile(
+            username="staff",
+            account=self.account,
+            permissions=[CORE_DATA_TASKS_PERMISSION],
+            is_staff=True,
+        )
+        self.client.force_authenticate(staff_user)
+        response = self.client.get("/api/tasks/deployment-status/")
+        self.assertEqual(response.status_code, 403)
+
+        self.client.force_authenticate(self.superuser)
+        response = self.client.get("/api/tasks/deployment-status/")
+        self.assertEqual(response.status_code, 200)
 
     def test_logs_not_found(self):
         self.client.force_authenticate(self.johnny)

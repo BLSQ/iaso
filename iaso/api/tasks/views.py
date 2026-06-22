@@ -2,6 +2,7 @@ import logging
 
 import django_filters
 
+from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema
 from gql import Client, gql
@@ -25,8 +26,8 @@ from iaso.permissions.core_permissions import CORE_DATA_TASKS_PERMISSION, CORE_P
 from iaso.utils.s3_client import generate_presigned_url_from_s3
 
 from ...models import TaskLog
-from .serializers import ExternalTaskPostSerializer, ExternalTaskSerializer, TaskLogSerializer, TaskSerializer
-
+from .serializers import ExternalTaskPostSerializer, ExternalTaskSerializer, TaskLogSerializer, TaskSerializer, \
+    DeploymentStatusSerializer
 
 task_service = LazyService("BACKGROUND_TASK_SERVICE")
 logger = logging.getLogger(__name__)
@@ -151,6 +152,35 @@ class TaskSourceViewSet(ModelViewSet):
         available_types = Task.objects.order_by("name").values_list("name", flat=True).distinct("name")
 
         return Response(available_types)
+
+    @extend_schema(responses=DeploymentStatusSerializer)
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="deployment-status",
+    )
+    def deployment_status(self, request):
+        if not request.user.is_superuser:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        blocking_statuses = [QUEUED, RUNNING]
+        blocking_tasks = Task.objects.filter(status__in=blocking_statuses).select_related("launcher")
+
+        statuses = {status: 0 for status in blocking_statuses}
+        for status_count in blocking_tasks.values("status").annotate(count=Count("id")):
+            statuses[status_count["status"]] = status_count["count"]
+
+        blocking_tasks_count = blocking_tasks.count()
+
+        serializer = DeploymentStatusSerializer(
+            {
+                "can_deploy": blocking_tasks_count == 0,
+                "blocking_tasks_count": blocking_tasks_count,
+                "statuses": statuses,
+                "blocking_tasks": blocking_tasks,
+            }
+        )
+        return Response(serializer.data)
 
 
 class ExternalTaskModelViewSet(ModelViewSet):

@@ -15,11 +15,7 @@ from rest_framework.response import Response
 from rest_framework.settings import api_settings
 
 from hat.audit.models import ENTITY_API
-from iaso.api.common import (
-    DeletionFilterBackend,
-    HasPermission,
-    ModelViewSet,
-)
+from iaso.api.common import DeletionFilterBackend, HasPermission, ModelViewSet
 from iaso.api.entities.filters import EntityDateFilterBackend, EntityFilterSet, EntityOrderingFilter
 from iaso.api.entities.pagination import EntityCursorPagination, EntityListPaginator, EntityLocationPaginator
 from iaso.api.entities.renderers import CSVStreamingRenderer, LegacyExportContentNegotation, XlsxStreamingRenderer

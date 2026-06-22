@@ -35,8 +35,7 @@ class AppsViewSet(ModelViewSet):
     serializer_class = AppSerializer
     lookup_field = "app_id"
     lookup_value_regex = r"[\w.]+"  # allow dots in the pk url param
-    http_method_names = ["get", "post", "put", "head", "options", "trace"]
-    # queryset = Project.objects.all()
+    http_method_names = ["get"]
     results_key = "apps"
 
     def get_permissions(self):

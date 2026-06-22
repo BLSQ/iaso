@@ -15,7 +15,10 @@ import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCan
 import { ErrorsPopper } from '../../../components/forms/ErrorsPopper';
 import FileInputComponent from '../../../components/forms/FileInputComponent';
 import { openSnackBar } from '../../../components/snackBars/EventDispatcher';
-import { succesfullSnackBar } from '../../../constants/snackBars';
+import {
+    errorSnackBar,
+    succesfullSnackBar,
+} from '../../../constants/snackBars';
 import { useFormState } from '../../../hooks/form';
 import { Nullable, Optional } from '../../../types/utils';
 import PeriodPicker from '../../periods/components/PeriodPicker';
@@ -188,6 +191,14 @@ const FormVersionsDialogComponent: FunctionComponent<Props> = ({
                                 setFieldErrors(entryKey, entryValue);
                             }
                         });
+                    } else {
+                        openSnackBar(
+                            errorSnackBar(
+                                'previewFormVersionError',
+                                null,
+                                error,
+                            ),
+                        );
                     }
                     return;
                 }

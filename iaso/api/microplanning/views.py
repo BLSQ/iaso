@@ -152,7 +152,7 @@ class PlanningOrgunitsViewSet(GenericViewSet):
 
 @extend_schema(tags=["Micro plannings", "Plannings"])
 class PlanningViewSet(AuditMixin, ModelViewSet):
-    remove_results_key_if_paginated = True
+    include_results_key_if_not_paginated = False
     permission_classes = [AuthenticationEnforcedPermission, HasPermission(CORE_PLANNING_WRITE_PERMISSION)]  # type: ignore
     queryset = Planning.objects.all()
     filter_backends = [
@@ -206,7 +206,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
 class PlanningSamplingResultViewSet(AuditMixin, ModelViewSet):
     """List/create sampling results scoped by planning."""
 
-    remove_results_key_if_paginated = True
+    include_results_key_if_not_paginated = False
     http_method_names = ["get", "post", "head", "options"]
     permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]
     serializer_class = PlanningSamplingResultReadSerializer
@@ -263,7 +263,7 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
     """Use the same permission as planning. Multi tenancy is done via the planning. An assignment don't make much
     sense outside of it's planning."""
 
-    remove_results_key_if_paginated = True
+    include_results_key_if_not_paginated = False
     permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]
     serializer_class = AssignmentSerializer
     queryset = Assignment.objects.all()

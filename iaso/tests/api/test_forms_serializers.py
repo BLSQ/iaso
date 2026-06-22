@@ -46,6 +46,8 @@ class FormsSerializerTestCase(TestCase):
                 }
             ],
             "org_unit_type_ids": [self.org_unit_type.id],
+            "org_unit_groups": [],
+            "org_unit_group_ids": [],
             "projects": [],
             "project_ids": [],
             "period_type": None,
@@ -74,7 +76,7 @@ class FormsSerializerTestCase(TestCase):
             "validation_workflow": None,
         }
 
-        with self.assertNumQueries(8):
+        with self.assertNumQueries(10):
             self.assertEqual(serializer.data, expected_data)
 
     def test_get_possible_fields_with_latest_version_filters_by_supported_types(self):

@@ -10,7 +10,7 @@ def projects_mapper(account_name):
             "app_id": f"{account_name}.planning",
             "feature_flags": [
                 "REQUIRE_AUTHENTICATION",
-                "FORMS_AUTO_UPLOAD",
+                "MOBILE_SYNCHRONIZE_WITH_ZIP",
                 "TAKE_GPS_ON_FORM",
                 "GPS_TRACKING",
                 "SHOW_DETAIL_MAP_ON_MOBILE",
@@ -64,11 +64,18 @@ def projects_mapper(account_name):
 
 
 def get_project_ids(created_or_updated_projects, iaso_client):
+    print("------Created projects----------")
+    print(created_or_updated_projects)
+    print("----------------")
     existing_projects = iaso_client.get("/api/projects/")["projects"]
+    print("------Existing projects----------")
+    print(existing_projects)
+    print("----------------")
     project_ids = []
     for current_project in created_or_updated_projects:
-        project_id = [project for project in existing_projects if project["app_id"] == current_project["id"]]
+        project_id = [project for project in existing_projects if project["app_id"] == current_project["app_id"]]
         project_ids.append(project_id[0]["id"])
+    print(f"Project IDS: {project_ids}")
     return project_ids
 
 
@@ -107,7 +114,10 @@ def create_projects(account_name, iaso_client):
         project["color"] = project_color
         project["linked_forms"] = None
         project["feature_flags"] = [flag for flag in flags["featureflags"] if flag["code"] in project["feature_flags"]]
-        new_project = iaso_client.post("/api/apps/", json=project)
+        new_project = iaso_client.post("/api/projects/", json=project)
+        print("-----Created project--------")
+        print(project, project["app_id"])
+        print("---------------------")
         created_projects.append(new_project)
 
     project_ids = get_project_ids(created_projects, iaso_client)
@@ -145,7 +155,7 @@ def forms_mapper(projects, iaso_client, account_name):
 
 
 def link_new_projects_to_main_data_source(account_name, iaso_client):
-    projects = iaso_client.get(f"/api/projects/?app_id={account_name}")["projects"]
+    projects = iaso_client.get("/api/projects/")["projects"]
     projects_mapped = projects_mapper(account_name)
     all_projects = []
 

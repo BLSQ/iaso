@@ -53,7 +53,9 @@ class WorkflowsMobileAPITestCase(BaseWorkflowsAPITestCase):
                             "name": {"type": "string"},
                             "changes": {"type": "array"},
                             "follow_ups": {"type": "array"},
+                            "auto_first_step": {"type": "boolean"},
                         },
+                        "required": ["auto_first_step"],
                     },
                 }
             },
@@ -70,3 +72,21 @@ class WorkflowsMobileAPITestCase(BaseWorkflowsAPITestCase):
             self.fail(msg=str(ex))
 
         self.assertEqual(len(response.data["workflows"]), 2)
+
+    def test_mobile_api_serves_auto_first_step(self):
+        # auto_first_step defaults to False and is exposed per version on the mobile API.
+        self.workflow_version_full_published.auto_first_step = True
+        self.workflow_version_full_published.save()
+
+        self.client.force_authenticate(self.blue_adult_1)
+
+        response = self.client.get(f"{BASE_API}?app_id=blue.adults.project")
+
+        self.assertJSONResponse(response, 200)
+
+        by_version_id = {wf["version_id"]: wf for wf in response.data["workflows"]}
+        self.assertTrue(by_version_id[self.workflow_version_full_published.pk]["auto_first_step"])
+        # Every other served version keeps the default (False).
+        for version_id, wf in by_version_id.items():
+            if version_id != self.workflow_version_full_published.pk:
+                self.assertFalse(wf["auto_first_step"])

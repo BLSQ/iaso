@@ -18,6 +18,7 @@ import {
 } from '../../../utils/forms';
 import { SUBMISSIONS, SUBMISSIONS_UPDATE } from '../../../utils/permissions';
 import { formatLabel } from '../../instances/utils';
+import { useGetGroupDropdown } from '../../orgUnits/hooks/requests/useGetGroups';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import {
     NO_PERIOD,
@@ -100,6 +101,10 @@ const FormForm: FunctionComponent<FormFormProps> = ({
     if (currentForm.org_unit_type_ids.value.length > 0) {
         orgUnitTypes = currentForm.org_unit_type_ids.value.join(',');
     }
+    let orgUnitGroups;
+    if (currentForm.org_unit_group_ids.value.length > 0) {
+        orgUnitGroups = currentForm.org_unit_group_ids.value.join(',');
+    }
     let projects: number[] = [];
     if (currentForm.project_ids.value.length > 0) {
         projects = currentForm.project_ids.value;
@@ -115,6 +120,12 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                 currentForm.project_ids.value &&
                 currentForm.project_ids.value.length > 0,
         });
+    const { data: allOrgUnitGroups, isFetching: isOuGroupLoading } =
+        useGetGroupDropdown(
+            { projectIds: currentForm.project_ids.value.join(',') },
+            // we only want to fetch the groups if the project ids are set, project ids is a required field
+            Boolean(currentForm.project_ids?.value?.length)
+        );
     useEffect(() => {
         if (
             currentForm.period_type.value === NO_PERIOD ||
@@ -298,6 +309,30 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                             disabled={
                                 !currentForm.project_ids.value ||
                                 currentForm.project_ids.value.length === 0
+                            }
+                        />
+                    </InputWithInfos>
+                    <InputWithInfos
+                        infos={formatMessage(MESSAGES.orgUnitGroupsInfo)}
+                    >
+                        <InputComponent
+                            multi
+                            clearable
+                            keyValue="org_unit_group_ids"
+                            onChange={(key, value) =>
+                                setFieldValue(
+                                    key,
+                                    commaSeparatedIdsToArray(value),
+                                )
+                            }
+                            value={orgUnitGroups}
+                            errors={currentForm.org_unit_group_ids.errors}
+                            type="select"
+                            options={allOrgUnitGroups || []}
+                            label={MESSAGES.orgUnitsGroups}
+                            loading={isOuGroupLoading}
+                            disabled={
+                                !currentForm.project_ids?.value?.length
                             }
                         />
                     </InputWithInfos>

@@ -217,10 +217,13 @@ class MobileOrgUnitViewSet(ModelViewSet):
 
     permission_classes = [AuthenticationEnforcedPermission, HasOrgUnitPermission]
     serializer_class = MobileOrgUnitSerializer
-    results_key = "orgUnits"
+    pagination_class = MobileOrgUnitsSetPagination
 
-    def pagination_class(self):
-        return MobileOrgUnitsSetPagination(self.results_key)
+    @property
+    def results_key(self):
+        if self.action == "reference_instances":
+            return "instances"
+        return "orgUnits"
 
     def get_queryset(self):
         user = self.request.user
@@ -362,7 +365,6 @@ class MobileOrgUnitViewSet(ModelViewSet):
 
         filtered_reference_instances = ReferenceInstancesFilter(request.query_params, reference_instances).qs
 
-        self.paginator.results_key = "instances"
         self.paginator.page_size = self.paginator.get_page_size(request) or 10
         paginated_reference_instances = self.paginate_queryset(filtered_reference_instances)
         serializer = ReferenceInstancesSerializer(

@@ -139,20 +139,6 @@ uv sync
 
 `uv sync` reads `pyproject.toml` (and `uv.lock` if it exists), resolves dependencies and installs them into the active venv. Run it again whenever `pyproject.toml` changes.
 
-### Migrating a requirements.txt into pyproject.toml
-
-If you have dependencies listed in a `requirements.txt` (or any `-r` file) that are not yet in `pyproject.toml`, you can migrate them in one command:
-
-```bash
-uv add -r requirements.txt
-```
-
-This parses the requirements file, adds each package to the `[project.dependencies]` table in `pyproject.toml`, and resolves/installs them. For dev-only dependencies:
-
-```bash
-uv add --dev -r requirements-dev.txt
-```
-
 ### Running the Django server locally
 
 Once dependencies are synced, you can run Django commands directly:

@@ -65,11 +65,13 @@ class DeploymentStatusTaskSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "status", "created_at", "started_at", "launcher"]
         read_only_fields = fields
 
+
 class DeploymentStatusSerializer(serializers.Serializer):
     can_deploy = serializers.BooleanField(read_only=True)
     blocking_tasks_count = serializers.IntegerField(read_only=True)
     statuses = serializers.DictField(child=serializers.IntegerField(), read_only=True)
     blocking_tasks = DeploymentStatusTaskSerializer(many=True, read_only=True)
+
 
 class ExternalTaskSerializer(TaskSerializer):
     def update(self, task, validated_data):

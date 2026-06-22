@@ -9,33 +9,31 @@ const isApiError = (error: unknown): error is ApiError => {
     return typeof error === 'object' && error !== null && 'status' in error;
 };
 
-type UseQueryOptions<TOptions, TError> = TOptions & {
+type QueryMeta = {
     dispatchOnError?: boolean;
     ignoreErrorCodes?: number[];
     snackErrorMsg?: IntlMessage;
-    onError?: (error: TError) => void;
 };
 
 export const getCustomQueryOptions = <TOptions, TError>(
-    options: UseQueryOptions<TOptions, TError>,
-): Omit<
-    UseQueryOptions<TOptions, TError>,
-    'dispatchOnError' | 'ignoreErrorCodes' | 'snackErrorMsg'
-> => {
+    options: TOptions,
+): TOptions => {
     // workaround for orval not injecting overrides when using a custom query
-    // see orval.config overrides commented out line
     const defaults =
         // @ts-ignore
         (OperationConfig?.operations?.[options?.queryKey?.[0]]?.query
-            ?.options as UseQueryOptions<TOptions, TError>) ?? {};
+            ?.options as TOptions) ?? {};
+
+    const meta = ((options as any)?.meta ?? {}) as QueryMeta;
 
     const {
         dispatchOnError = true,
         ignoreErrorCodes,
         snackErrorMsg = MESSAGES.defaultQueryApiSuccess,
-        onError: optionsOnError,
-        ...newOptions
-    } = options;
+    } = meta;
+
+    const optionsOnError = (options as any).onError;
+
     return {
         onError: (error: TError) => {
             if (
@@ -45,11 +43,10 @@ export const getCustomQueryOptions = <TOptions, TError>(
             ) {
                 openSnackBar(errorSnackBar(undefined, snackErrorMsg, error));
             }
-            if (optionsOnError) {
-                optionsOnError(error);
-            }
+
+            optionsOnError?.(error);
         },
         ...defaults,
-        ...(newOptions as TOptions),
-    } as const;
+        ...(options as object),
+    } as TOptions;
 };

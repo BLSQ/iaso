@@ -58,7 +58,9 @@ export const AccountsEdit: FunctionComponent = () => {
             onSuccess: () => {
                 redirectTo(redirectBackUrl);
             },
-            ignoreErrorCodes: [400],
+            meta: {
+                ignoreErrorCodes: [400],
+            },
         },
     });
 

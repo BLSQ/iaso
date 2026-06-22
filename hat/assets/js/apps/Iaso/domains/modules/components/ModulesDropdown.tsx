@@ -33,8 +33,10 @@ export const ModulesDropdown = ({
     // todo: queryKey def could maybe be more generic at orval config level?
     const { data, isLoading } = useApiModulesDropdownList(params, {
         query: {
+            meta: {
+                snackErrorMsg: MESSAGES.modulesDropDownError,
+            },
             enabled: hasPermissions,
-            snackErrorMsg: MESSAGES.modulesDropDownError,
             queryKey: [
                 ...getApiModulesDropdownListQueryKey(params),
                 moment().locale(),

@@ -7,10 +7,12 @@ import {
 } from 'bluesquare-components';
 import { LinkButton } from 'bluesquare-components';
 import { FormikProvider, useFormik } from 'formik';
+import { useQueryClient } from 'react-query';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import { useApiAccountFeatureFlagsDropdownList } from 'Iaso/api/accountFeatureFlags';
 import {
     ApiAccountsUpdateBody,
+    getApiAccountsAiApiKeyRetrieveQueryKey,
     useApiAccountsRetrieve,
     useApiAccountsUpdate,
 } from 'Iaso/api/accounts';
@@ -24,12 +26,13 @@ import { GeneralInfoEditPanel } from 'Iaso/domains/accounts/components/edit/Gene
 import { ModulesEditPanel } from 'Iaso/domains/accounts/components/edit/ModulesEditPanel';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { withFormikSubmitAsync } from 'Iaso/utils/forms';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import MESSAGES from './messages';
 
 export const AccountsEdit: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const params = useParamsObject(baseUrls.accountsEdit);
-
+    const currentUser = useCurrentUser();
     const accountId = parseInt(params.id);
 
     const { data: data, isLoading } = useApiAccountsRetrieve(accountId);
@@ -55,7 +58,19 @@ export const AccountsEdit: FunctionComponent = () => {
 
     const { mutateAsync: save } = useApiAccountsUpdate({
         mutation: {
-            onSuccess: () => {
+            onSuccess: (_data, variables) => {
+                if (accountId === currentUser?.account?.id) {
+                    queryClient.invalidateQueries('currentUser');
+                }
+                if (
+                    accountId === currentUser?.account?.id &&
+                    variables.data.modules?.includes('FORM_AI') &&
+                    !data?.modules?.includes('FORM_AI')
+                ) {
+                    queryClient.invalidateQueries(
+                        getApiAccountsAiApiKeyRetrieveQueryKey(accountId),
+                    );
+                }
                 redirectTo(redirectBackUrl);
             },
             meta: {
@@ -63,6 +78,7 @@ export const AccountsEdit: FunctionComponent = () => {
             },
         },
     });
+    const queryClient = useQueryClient();
 
     const formik = useFormik<ApiAccountsUpdateBody>({
         validationSchema: toFormikValidationSchema(ApiAccountsUpdateBody),

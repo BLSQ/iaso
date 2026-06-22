@@ -12,6 +12,7 @@ import {
     getAccountFeatureFlagsMock,
     getApiAccountFeatureFlagsDropdownListMockHandler,
 } from 'Iaso/api/accountFeatureFlags/endpoints/account-feature-flags/account-feature-flags.msw';
+import { getApiAccountsAiApiKeyRetrieveQueryKey } from 'Iaso/api/accounts';
 import {
     getApiAccountsRetrieveMockHandler,
     getApiAccountsRetrieveResponseMock,
@@ -28,6 +29,19 @@ import {
 
 const mockUpdate = vi.fn();
 
+// mocking currentUser
+const { mockCurrentUser } = vi.hoisted(() => {
+    return { mockCurrentUser: vi.fn() };
+});
+
+vi.mock('Iaso/utils/usersUtils', async () => {
+    const actual = await vi.importActual('Iaso/utils/usersUtils');
+    return {
+        ...actual,
+        useCurrentUser: mockCurrentUser,
+    };
+});
+
 const server = setupServer(
     ...[getApiAccountsRetrieveMockHandler()],
     ...getAccountFeatureFlagsMock(),
@@ -40,6 +54,8 @@ const server = setupServer(
         }),
     ],
 );
+
+const invalidateSpy = vi.spyOn(TestingQueryClient, 'invalidateQueries');
 
 const renderAccountEdit = (id: number = 1234) => {
     return renderWithThemeAndIntlProvider(
@@ -98,6 +114,12 @@ describe('Accounts edit tests', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         vi.unstubAllEnvs();
+        mockCurrentUser.mockReturnValue({
+            account: {
+                id: 1234,
+                modules: [],
+            },
+        });
     });
 
     it('displays a 404 page if account is not found', async () => {
@@ -191,10 +213,10 @@ describe('Accounts edit tests', () => {
         expect(screen.getByLabelText(/name */i)).toHaveValue(
             mockAccount.name + 'a',
         );
-        expect(screen.getByLabelText(/forum path/i)).toHaveValue(
+        expect(screen.getByLabelText(/forum address/i)).toHaveValue(
             mockAccount.forum_path,
         );
-        expect(screen.getByLabelText(/user manual path/i)).toHaveValue(
+        expect(screen.getByLabelText(/user manual address/i)).toHaveValue(
             mockAccount.user_manual_path,
         );
     });
@@ -311,7 +333,7 @@ describe('Accounts edit tests', () => {
 
         expect(mockUpdate).not.toHaveBeenCalled();
     });
-    it('redirects to detail page when submit is valid', async () => {
+    it('redirects to detail page when submit is valid and refreshes the client query key', async () => {
         const mockAccount = getApiAccountsRetrieveResponseMock({
             feature_flags: [],
             modules: [],
@@ -348,6 +370,7 @@ describe('Accounts edit tests', () => {
             expect(mockRedirectTo).toHaveBeenCalledWith(
                 expect.stringContaining(baseUrls.accountsDetail),
             );
+            expect(invalidateSpy).toHaveBeenCalledWith('currentUser');
         });
     });
     it('redirects to detail page without submitting when cancel button is clicked', async () => {
@@ -415,6 +438,56 @@ describe('Accounts edit tests', () => {
                     name: /save/i,
                 }),
             ).toBeDisabled();
+        });
+    });
+    it('refreshes the api key call if form_ai has been enabled', async () => {
+        const mockAccount = getApiAccountsRetrieveResponseMock({
+            feature_flags: [],
+            modules: [],
+        });
+
+        const modules = [{ value: 'FORM_AI', label: 'Form AI' }];
+        server.use(
+            getApiAccountsRetrieveMockHandler(mockAccount),
+            getApiModulesDropdownListMockHandler(modules as ModuleDropdown[]),
+        );
+
+        renderAccountEdit();
+
+        await waitFor(() => {
+            expect(screen.queryByRole('progressbar')).toBeNull();
+        });
+
+        await act(async () => {
+            await userEvent.click(
+                screen.getByRole('checkbox', { name: /form ai */i }),
+            );
+        });
+
+        await waitFor(() => {
+            expect(
+                screen.getByRole('button', {
+                    name: /save/i,
+                }),
+            ).not.toBeDisabled();
+        });
+
+        await act(async () => {
+            await userEvent.click(
+                screen.getByRole('button', {
+                    name: /save/i,
+                }),
+            );
+        });
+
+        await waitFor(() => {
+            expect(mockRedirectTo).toHaveBeenCalledWith(
+                expect.stringContaining(baseUrls.accountsDetail),
+            );
+            expect(invalidateSpy).toHaveBeenCalledWith('currentUser');
+            expect(invalidateSpy).toHaveBeenCalledWith(
+                getApiAccountsAiApiKeyRetrieveQueryKey(1234),
+            );
         });
     });
 });

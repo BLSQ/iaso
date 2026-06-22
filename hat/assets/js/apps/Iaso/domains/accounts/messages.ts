@@ -59,11 +59,11 @@ const MESSAGES = defineMessages({
     },
     userManualPath: {
         id: 'iaso.accounts.label.userManualPath',
-        defaultMessage: 'User manual path',
+        defaultMessage: 'User manual address',
     },
     forumPath: {
         id: 'iaso.accounts.label.forumPath',
-        defaultMessage: 'Forum path',
+        defaultMessage: 'Forum address',
     },
     forceStrongPassword: {
         id: 'iaso.accounts.label.forceStrongPassword',

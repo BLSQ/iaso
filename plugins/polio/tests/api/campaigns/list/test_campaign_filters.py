@@ -1,4 +1,3 @@
-from django.db.models import Exists, OuterRef
 from rest_framework.status import HTTP_200_OK
 
 from iaso.models.base import Group
@@ -6,7 +5,7 @@ from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from plugins.polio.models import (
     Campaign,
 )
-from plugins.polio.models.base import CampaignGroup, CampaignType, Round
+from plugins.polio.models.base import CampaignGroup, CampaignType
 from plugins.polio.preparedness.spreadsheet_manager import *
 from plugins.polio.tests.api.campaigns.setupData import CampaignFiltersTestBase
 
@@ -17,22 +16,15 @@ URL = "/api/polio/campaigns/"
 class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
     def test_no_filter_params(self):
         """Campaign category can be one of 'preventive', 'on_hold', 'is_planned', or 'regular'.
-        There is also an 'implicit' category of test campaigns. They will be excluded when selecting 'regular' but otherwise returned.
-        There is a separate `is_test` query param, to explicitly include/exclude test campaigns, but campaign_category takes precedence.
+        There is also a category of test campaigns, which is handled via a separate query parameter `show_test`.
+        There is a separate `is_test` query param, to explicitly include/exclude test campaigns, it composes with campaign category.
         If no option is selected, no filtering is performed. This is the option 'All' in the UI.
-        There is a separate 'on_hold' filter (query param: on_hold) which historically takes precedence, e.g on 'regular' filter
-        """
 
-        expected_obr_names = [
-            self.regular_campaign.obr_name,
-            self.preventive_campaign.obr_name,
-            self.planned_campaign.obr_name,
-            self.planned_preventive_campaign.obr_name,
-        ]  # using to obr_names to avoid having to cast UUID to string
+        """
+        expected_obr_names = list(Campaign.objects.all().values_list("obr_name", flat=True))
 
         self.client.force_authenticate(self.user)
 
-        # not passing the query params returns campaigns from all categories except test and on hold
         response = self.client.get(f"{URL}")
         result = self.assertJSONResponse(response, HTTP_200_OK)
         obr_names = [cmp["obr_name"] for cmp in result]
@@ -101,28 +93,11 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
 
     def test_filter_test_campaigns(self):
         self.client.force_authenticate(self.user)
-        # Count existing campaigns from setUpTestData
-        # the show_test/is_test filter filters out test campaigns when false
-        # but returns ALL campaigns when true, i.E it doesn't exclude on test campaigns
-        # We filter out on hold in the test setup because these are excluded by default
-        rounds_on_hold = Round.objects.filter(
-            campaign_id=OuterRef("pk"),
-            on_hold=True,
-        )
-        initial_count = (
-            Campaign.objects.filter(on_hold=False)
-            .annotate(has_round_on_hold=Exists(rounds_on_hold))
-            .filter(has_round_on_hold=False)
-            .count()
-        )
+
+        initial_count = Campaign.objects.count()
         # Count existing visible non-test campaigns from setUpTestData (default filters: show_test=false, on_hold=false)
 
-        initial_visible_count = (
-            Campaign.objects.filter(is_test=False, on_hold=False)
-            .annotate(has_round_on_hold=Exists(rounds_on_hold))
-            .filter(has_round_on_hold=False)
-            .count()
-        )
+        initial_visible_count = Campaign.objects.filter(is_test=False).count()
 
         payload1 = {
             "account": self.account.pk,
@@ -148,15 +123,6 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
         obr_names = [r["obr_name"] for r in result]
         self.assertIn(payload1["obr_name"], obr_names)
 
-        # return non test campaigns by default
-        response = self.client.get("/api/polio/campaigns/")
-        result = self.assertJSONResponse(response, HTTP_200_OK)
-
-        self.assertEqual(len(result), initial_visible_count + 1)
-        obr_names = [r["obr_name"] for r in result]
-        self.assertNotIn(payload1["obr_name"], obr_names)
-        self.assertFalse(result[0]["is_test"])
-
         # return non test campaigns  (explicit exclusion)
         response = self.client.get("/api/polio/campaigns/?show_test=false")
         result = self.assertJSONResponse(response, HTTP_200_OK)
@@ -167,17 +133,8 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
 
     def test_filter_by_deletion_status(self):
         self.client.force_authenticate(self.user)
-        # Count existing campaigns from setUpTestData, excluding test and on_hold, to account for API default filtering
-        rounds_on_hold = Round.objects.filter(
-            campaign_id=OuterRef("pk"),
-            on_hold=True,
-        )
-        initial_total_count = (
-            Campaign.objects.filter(on_hold=False, is_test=False)
-            .annotate(has_round_on_hold=Exists(rounds_on_hold))
-            .filter(has_round_on_hold=False)
-            .count()
-        )
+
+        initial_total_count = Campaign.objects.count()
 
         new_ids = self._create_multiple_campaigns(10)
 
@@ -199,14 +156,8 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
         result = self.assertJSONResponse(response, HTTP_200_OK)
         self.assertEqual(len(result), total_campaigns)
 
-        # per defaut it return undeleted, i.e "active" (with default filters: show_test=false, on_hold=false)
         # Calculate remaining visible campaigns after deletion
-        remaining_visible = (
-            Campaign.objects.filter(deleted_at__isnull=True, is_test=False, on_hold=False)
-            .annotate(has_round_on_hold=Exists(rounds_on_hold))
-            .filter(has_round_on_hold=False)
-            .count()
-        )
+        remaining_visible = Campaign.objects.filter(deleted_at__isnull=True).count()
 
         response = self.client.get(f"{URL}", format="json")
 
@@ -220,153 +171,47 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
         self.assertEqual(len(response.json()), remaining_visible)
 
     def test_filter_category_regular(self):
-        # regular category: excludes campaigns on hold and campaigns with at least 1 round on hold
+        # regular category: excludes campaigns on hold and campaigns with current or next round on hold
         response = self.client.get(f"{URL}?campaign_category=regular")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(result), 1)
+        self.assertEqual(len(result), 2)
 
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(
             obr_names,
-            [self.regular_campaign.obr_name],
-        )
-
-        # regular campaign overrides is_test
-        response = self.client.get(f"{URL}?campaign_category=regular&show_test=true")
-        result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(result), 1)
-        obr_names = [cmp["obr_name"] for cmp in result]
-        self.assertCountEqual(
-            obr_names,
-            [self.regular_campaign.obr_name],
-        )
-        # regular with show test explicitly false (for the sake of coverage)
-        response = self.client.get(f"{URL}?campaign_category=regular&show_test=false")
-        result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(result), 1)
-        obr_names = [cmp["obr_name"] for cmp in result]
-        self.assertCountEqual(
-            obr_names,
-            [self.regular_campaign.obr_name],
-        )
-
-        # on_hold query param taken into account when selecting regular campaigns:
-        # regular campaign, with on_hold==True (includes on_hold campaigns and those with rounds on hold)
-        response = self.client.get(f"{URL}?campaign_category=regular&on_hold=true")
-        result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(result), 3)
-        obr_names = [cmp["obr_name"] for cmp in result]
-        self.assertCountEqual(
-            obr_names,
-            [self.regular_campaign.obr_name, self.campaign_with_on_hold_round.obr_name, self.on_hold_campaign.obr_name],
-        )
-        # regular campaign, with on_hold==True (excludes on_hold campaigns and those with rounds on hold)
-        response = self.client.get(f"{URL}?campaign_category=regular&on_hold=false")
-        result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(result), 1)
-        obr_names = [cmp["obr_name"] for cmp in result]
-        self.assertCountEqual(
-            obr_names,
-            [self.regular_campaign.obr_name],
+            [self.regular_campaign.obr_name, self.test_campaign.obr_name],
         )
 
     def test_filter_category_preventive(self):
-        # preventive category: excludes campaigns on hold and campaigns with at least 1 round on hold
-        response = self.client.get(f"{URL}?campaign_category=preventive")
+        # preventive campaigns cannot be on_hold
+        response = self.client.get(f"{URL}?campaign_category=is_preventive")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(result), 1)
         obr_names = [cmp["obr_name"] for cmp in result]
+        self.assertEqual(len(result), 2)
         self.assertCountEqual(
             obr_names,
             [
                 self.preventive_campaign.obr_name,  # planned campaigns are excluded
+                self.preventive_test_campaign.obr_name,
             ],
         )
 
-        # preventive with on_hold=true
-        response = self.client.get(f"{URL}?campaign_category=preventive&on_hold=true")
+        # preventive with show_test==false
+        response = self.client.get(f"{URL}?campaign_category=is_preventive&show_test=false")
         result = self.assertJSONResponse(response, HTTP_200_OK)
         obr_names = [cmp["obr_name"] for cmp in result]
-        self.assertCountEqual(
-            obr_names,
-            [
-                self.preventive_campaign.obr_name,  # planned campaigns are excluded
-                self.preventive_on_hold_campaign.obr_name,
-            ],
-        )
-        # preventive on hold == false (explicit)
-        response = self.client.get(f"{URL}?campaign_category=preventive&on_hold=false")
-        result = self.assertJSONResponse(response, HTTP_200_OK)
-        obr_names = [cmp["obr_name"] for cmp in result]
-        self.assertCountEqual(
-            obr_names,
-            [
-                self.preventive_campaign.obr_name,  # planned campaigns are excluded
-            ],
-        )
-        # preventive test
-        response = self.client.get(f"{URL}?campaign_category=preventive&show_test=true")
-        result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(result), 2)
-        obr_names = [cmp["obr_name"] for cmp in result]
-        self.assertCountEqual(
-            obr_names,
-            [
-                self.preventive_campaign.obr_name,  # planned campaigns are excluded
-                self.preventive_test_campaign.obr_name,
-            ],
-        )
-        # preventive test==false (explicit)
-        response = self.client.get(f"{URL}?campaign_category=preventive&show_test=false")
-        result = self.assertJSONResponse(response, HTTP_200_OK)
         self.assertEqual(len(result), 1)
-        obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(
             obr_names,
             [
                 self.preventive_campaign.obr_name,  # planned campaigns are excluded
-            ],
-        )
-        # preventive test with on_hold=true
-        response = self.client.get(f"{URL}?campaign_category=preventive&show_test=true&on_hold=true")
-        result = self.assertJSONResponse(response, HTTP_200_OK)
-        obr_names = [cmp["obr_name"] for cmp in result]
-        self.assertCountEqual(
-            obr_names,
-            [
-                self.preventive_campaign.obr_name,  # planned campaigns are excluded
-                self.preventive_test_campaign.obr_name,
-                self.preventive_on_hold_campaign.obr_name,
-                self.preventive_test_on_hold_campaign.obr_name,
             ],
         )
 
     def test_filter_category_on_hold(self):
-        # on_hold category: returns campaigns on hold OR with at least 1 round on hold
+        # on_hold category: returns campaigns on hold OR with active or next round on hold
+
         response = self.client.get(f"{URL}?campaign_category=on_hold")
-        result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(result), 0)  # on_hold query param takes precedence and defaults to false
-
-        # on_hold query param takes precedence
-        response = self.client.get(f"{URL}?campaign_category=on_hold&on_hold=false")
-        result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(result), 0)
-
-        response = self.client.get(f"{URL}?campaign_category=on_hold&on_hold=true")
-        result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(result), 3)
-        obr_names = [cmp["obr_name"] for cmp in result]
-        self.assertCountEqual(
-            obr_names,
-            [
-                self.on_hold_campaign.obr_name,
-                self.campaign_with_on_hold_round.obr_name,  # has round on hold
-                self.preventive_on_hold_campaign.obr_name,
-            ],
-        )
-
-        # on hold + show_test
-        response = self.client.get(f"{URL}?campaign_category=on_hold&on_hold=true&show_test=true")
         result = self.assertJSONResponse(response, HTTP_200_OK)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertEqual(len(result), 5)
@@ -380,8 +225,9 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
                 self.preventive_test_on_hold_campaign.obr_name,
             ],
         )
-        # on hold + show_test=false (explicit)
-        response = self.client.get(f"{URL}?campaign_category=on_hold&on_hold=true&show_test=false")
+
+        # on hold + show_test
+        response = self.client.get(f"{URL}?campaign_category=on_hold&show_test=false")
         result = self.assertJSONResponse(response, HTTP_200_OK)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertEqual(len(result), 3)
@@ -398,27 +244,8 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
         # planned
         response = self.client.get(f"{URL}?campaign_category=is_planned")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(result), 2)
         obr_names = [cmp["obr_name"] for cmp in result]
-        self.assertCountEqual(
-            obr_names,
-            [self.planned_campaign.obr_name, self.planned_preventive_campaign.obr_name],
-        )
-        # planned with show test explicitly false
-        response = self.client.get(f"{URL}?campaign_category=is_planned&show_test=false")
-        result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(result), 2)
-        obr_names = [cmp["obr_name"] for cmp in result]
-        self.assertCountEqual(
-            obr_names,
-            [self.planned_campaign.obr_name, self.planned_preventive_campaign.obr_name],
-        )
-
-        # planned test
-        response = self.client.get(f"{URL}?campaign_category=is_planned&show_test=true")
-        result = self.assertJSONResponse(response, HTTP_200_OK)
         self.assertEqual(len(result), 4)
-        obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(
             obr_names,
             [
@@ -428,51 +255,14 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
                 self.planned_preventive_test_campaign.obr_name,
             ],
         )
-
-    def test_filter_on_hold_campaigns(self):
-        # not passing the param is same as passing False
-        default_obr_names = [
-            self.regular_campaign.obr_name,
-            self.preventive_campaign.obr_name,
-            self.planned_campaign.obr_name,
-            self.planned_preventive_campaign.obr_name,
-        ]  # using to obr_names to avoid having to cast UUID to string
-
-        # explicitly pass false
-        response = self.client.get(f"{URL}?on_hold=false")
+        # planned with show test false
+        response = self.client.get(f"{URL}?campaign_category=is_planned&show_test=false")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        obr_names = [cmp["obr_name"] for cmp in result]
-        self.assertCountEqual(default_obr_names, obr_names)
-
-        # pass true
-        response = self.client.get(f"{URL}?on_hold=true")
-        result = self.assertJSONResponse(response, HTTP_200_OK)
-        obr_names = [cmp["obr_name"] for cmp in result]
-        expected_on_hold_obr_names = [
-            *default_obr_names,
-            self.preventive_on_hold_campaign.obr_name,
-            self.on_hold_campaign.obr_name,
-            self.campaign_with_on_hold_round.obr_name,
-        ]
-        self.assertCountEqual(expected_on_hold_obr_names, obr_names)
-
-        # test param precedence over campaign category
-        # This is a dupe of the same test in test_filter_category_on_hold, but I'd rather ensure we don't inadvertently remove coverage
-        response = self.client.get(f"{URL}?campaign_category=on_hold&on_hold=false")
-        result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(result), 0)
-
-        response = self.client.get(f"{URL}?campaign_category=on_hold&on_hold=true")
-        result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(result), 3)
+        self.assertEqual(len(result), 2)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(
             obr_names,
-            [
-                self.on_hold_campaign.obr_name,
-                self.campaign_with_on_hold_round.obr_name,  # has round on hold
-                self.preventive_on_hold_campaign.obr_name,
-            ],
+            [self.planned_campaign.obr_name, self.planned_preventive_campaign.obr_name],
         )
 
     def test_search_filter(self):
@@ -498,6 +288,8 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
             self.planned_campaign.obr_name,
             self.planned_preventive_campaign.obr_name,
             campaign_with_epid.obr_name,
+            self.planned_preventive_test_campaign.obr_name,
+            self.planned_test_campaign.obr_name,
         ]  # using to obr_names to avoid having to cast UUID to string
 
         self.client.force_authenticate(self.user)
@@ -512,11 +304,6 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
         result = self.assertJSONResponse(response, HTTP_200_OK)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(expected_obr_names, obr_names)
-
-        # default filters apply (on hold, test)
-        response = self.client.get(f"{URL}?search=test")
-        result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(result), 0)
 
         self.client.force_authenticate(geo_limited_user)
         # test search geo limited

@@ -5,7 +5,7 @@ from logging import getLogger
 from django.db.models import Q
 from rest_framework import filters
 
-from plugins.polio.api.campaigns.filters.filters import CampaignFilterV2
+from plugins.polio.api.campaigns.filters.filters import CampaignFilter
 
 
 logger = getLogger(__name__)
@@ -58,7 +58,7 @@ class CalendarPeriodFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
-class CalendarFilter(CampaignFilterV2):
+class CalendarFilter(CampaignFilter):
     pass
 
 

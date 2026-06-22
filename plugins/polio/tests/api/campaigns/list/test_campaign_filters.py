@@ -15,12 +15,6 @@ URL = "/api/polio/campaigns/"
 
 class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
     def test_no_filter_params(self):
-        """Campaign category can be one of 'preventive', 'on_hold', 'is_planned', or 'regular'.
-        There is also a category of test campaigns, which is handled via a separate query parameter `show_test`.
-        There is a separate `is_test` query param, to explicitly include/exclude test campaigns, it composes with campaign category.
-        If no option is selected, no filtering is performed. This is the option 'All' in the UI.
-
-        """
         expected_obr_names = list(Campaign.objects.all().values_list("obr_name", flat=True))
 
         self.client.force_authenticate(self.user)
@@ -29,6 +23,40 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
         result = self.assertJSONResponse(response, HTTP_200_OK)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(expected_obr_names, obr_names)
+
+    def test_show_test_default_behaviour(self):
+        """When `show_test` is omitted, no test filtering is applied: test campaigns are included,
+        identical to `show_test=true`. `show_test=false` is the only value that excludes them.
+        """
+        self.client.force_authenticate(self.user)
+
+        all_obr_names = list(Campaign.objects.values_list("obr_name", flat=True))
+        test_obr_names = list(Campaign.objects.filter(is_test=True).values_list("obr_name", flat=True))
+        non_test_obr_names = list(Campaign.objects.filter(is_test=False).values_list("obr_name", flat=True))
+
+        # the fixture must contain both test and non-test campaigns for this test to be meaningful
+        self.assertTrue(len(test_obr_names) > 0)
+        self.assertTrue(len(non_test_obr_names) > 0)
+
+        # param omitted: test campaigns are included
+        response = self.client.get(f"{URL}")
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        default_obr_names = [cmp["obr_name"] for cmp in result]
+        self.assertCountEqual(default_obr_names, all_obr_names)
+
+        # show_test=true behaves exactly like the omitted default
+        response = self.client.get(f"{URL}?show_test=true")
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        show_test_true_obr_names = [cmp["obr_name"] for cmp in result]
+        self.assertCountEqual(show_test_true_obr_names, default_obr_names)
+
+        # show_test=false is the only value that excludes test campaigns
+        response = self.client.get(f"{URL}?show_test=false")
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        show_test_false_obr_names = [cmp["obr_name"] for cmp in result]
+        self.assertCountEqual(show_test_false_obr_names, non_test_obr_names)
+        for name in test_obr_names:
+            self.assertNotIn(name, show_test_false_obr_names)
 
     def test_filter_by_campaign_types(self):
         self.client.force_authenticate(self.user)
@@ -91,12 +119,28 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual(len(response_data), 0)
 
+        # A test campaign sharing a type is included by default but excluded with show_test==false
+        test_campaign_typed = Campaign.objects.create(
+            obr_name="Test typed campaign", account=self.account, is_test=True
+        )
+        test_campaign_typed.campaign_types.add(campaign_type1)
+
+        response = self.client.get(f"{URL}?campaign_types={campaign_type1.id}", format="json")
+        response_data = self.assertJSONResponse(response, HTTP_200_OK)
+        campaign_ids = [c["id"] for c in response_data]
+        self.assertCountEqual(campaign_ids, [str(campaign1.id), str(test_campaign_typed.id)])
+
+        response = self.client.get(f"{URL}?campaign_types={campaign_type1.id}&show_test=false", format="json")
+        response_data = self.assertJSONResponse(response, HTTP_200_OK)
+        campaign_ids = [c["id"] for c in response_data]
+        self.assertEqual(campaign_ids, [str(campaign1.id)])
+
     def test_filter_test_campaigns(self):
         self.client.force_authenticate(self.user)
 
         initial_count = Campaign.objects.count()
-        # Count existing visible non-test campaigns from setUpTestData (default filters: show_test=false, on_hold=false)
 
+        # Count existing visible non-test campaigns from setUpTestData
         initial_visible_count = Campaign.objects.filter(is_test=False).count()
 
         payload1 = {
@@ -180,6 +224,16 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
         self.assertCountEqual(
             obr_names,
             [self.regular_campaign.obr_name, self.test_campaign.obr_name],
+        )
+
+        # regular with show_test==false excludes the test campaign
+        response = self.client.get(f"{URL}?campaign_category=regular&show_test=false")
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        obr_names = [cmp["obr_name"] for cmp in result]
+        self.assertEqual(len(result), 1)
+        self.assertCountEqual(
+            obr_names,
+            [self.regular_campaign.obr_name],
         )
 
     def test_filter_category_preventive(self):
@@ -304,6 +358,19 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
         result = self.assertJSONResponse(response, HTTP_200_OK)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(expected_obr_names, obr_names)
+
+        # search combined with show_test==false excludes test campaigns from the results
+        response = self.client.get(f"{URL}?search=plann&show_test=false")
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        obr_names = [cmp["obr_name"] for cmp in result]
+        self.assertCountEqual(
+            obr_names,
+            [
+                self.planned_campaign.obr_name,
+                self.planned_preventive_campaign.obr_name,
+                campaign_with_epid.obr_name,
+            ],
+        )
 
         self.client.force_authenticate(geo_limited_user)
         # test search geo limited
@@ -433,3 +500,65 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
         result = self.assertJSONResponse(response, HTTP_200_OK)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(obr_names, [regular_campaign2.obr_name, regular_campaign3.obr_name])
+
+    def test_filter_composition_category_and_search(self):
+        """Filters compose (AND): campaign_category intersects with search, and show_test narrows further."""
+        self.client.force_authenticate(self.user)
+
+        # campaign_category=is_planned alone returns the 4 planned campaigns; intersecting with
+        # search=preventive keeps only the planned campaigns whose obr_name contains "preventive"
+        response = self.client.get(f"{URL}?campaign_category=is_planned&search=preventive")
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        obr_names = [cmp["obr_name"] for cmp in result]
+        self.assertCountEqual(
+            obr_names,
+            [
+                self.planned_preventive_campaign.obr_name,
+                self.planned_preventive_test_campaign.obr_name,
+            ],
+        )
+
+        # adding show_test=false drops the test campaign from the intersection
+        response = self.client.get(f"{URL}?campaign_category=is_planned&search=preventive&show_test=false")
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        obr_names = [cmp["obr_name"] for cmp in result]
+        self.assertCountEqual(obr_names, [self.planned_preventive_campaign.obr_name])
+
+    def test_filter_composition_category_and_deletion_status(self):
+        """campaign_category composes with the deletion status backend."""
+        self.client.force_authenticate(self.user)
+
+        on_hold_default = [
+            self.campaign_with_on_hold_round.obr_name,
+            self.test_on_hold_campaign.obr_name,
+            self.preventive_on_hold_campaign.obr_name,
+            self.preventive_test_on_hold_campaign.obr_name,
+            self.on_hold_campaign.obr_name,
+        ]
+
+        # soft-delete one of the on_hold campaigns
+        self.client.delete(f"{URL}{self.on_hold_campaign.id}/")
+
+        # default (active only) excludes the deleted campaign while keeping the category filter
+        response = self.client.get(f"{URL}?campaign_category=on_hold")
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        obr_names = [cmp["obr_name"] for cmp in result]
+        self.assertCountEqual(
+            obr_names,
+            [name for name in on_hold_default if name != self.on_hold_campaign.obr_name],
+        )
+
+        # deletion_status=deleted intersected with the category returns only the deleted on_hold campaign
+        response = self.client.get(f"{URL}?campaign_category=on_hold&deletion_status=deleted")
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        obr_names = [cmp["obr_name"] for cmp in result]
+        self.assertCountEqual(obr_names, [self.on_hold_campaign.obr_name])
+
+        # deletion_status=all brings the deleted campaign back into the category results
+        response = self.client.get(f"{URL}?campaign_category=on_hold&deletion_status=all")
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        obr_names = [cmp["obr_name"] for cmp in result]
+        self.assertCountEqual(obr_names, on_hold_default)
+
+        self.client.patch(f"{URL}restore_deleted_campaigns/", {"id": str(self.on_hold_campaign.id)})
+        self.assertJSONResponse(response, HTTP_200_OK)

@@ -10,7 +10,7 @@ const DEFAULT_PAGE = 1;
 const DEFAULT_ORDER = '-cvdpv2_notified_at';
 export const CAMPAIGNS_ENDPOINT = '/api/polio/campaigns/';
 
-export type CampaignCategory = 'all' | 'preventive' | 'on_hold' | 'regular';
+export type CampaignCategory = 'all' | 'is_preventive' | 'on_hold' | 'regular';
 
 export type Options = {
     pageSize?: number;

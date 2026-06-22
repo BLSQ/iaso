@@ -3,7 +3,7 @@ name: Iaso develop branch
 on:
   push:
     branches:
-      - develop-test
+      - develop
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -15,39 +15,32 @@ permissions:
 
 jobs:
   config:
-    uses: BLSQ/iaso-ci/.github/workflows/wc_config.yml@main
+    uses: BLSQ/iaso-ci/.github/workflows/config.yml@IA-5227-decouple-ci-actions-into-dedicated-repo
     permissions:
       pull-requests: write
       contents: read
     with:
-#      branch: develop
-      branch: develop-test
+      branch: develop
       pr_title: ${{ github.event.pull_request.title }}
 
   build_and_push_image:
     needs: config
-    uses: BLSQ/iaso-ci/.github/workflows/wc_docker_build.yml@main
+    uses: BLSQ/iaso-ci/.github/workflows/docker_build.yml@IA-5227-decouple-ci-actions-into-dedicated-repo
     with:
-#      branch: develop
-      branch: develop-test
+      iaso_branch: develop
       image_tags: ${{ needs.config.outputs.image_tags }}
     secrets: inherit
 
   tests:
-    uses: BLSQ/iaso-ci/.github/workflows/wc_tests.yml@main
+    uses: BLSQ/iaso-ci/.github/workflows/tests.yml@IA-5227-decouple-ci-actions-into-dedicated-repo
     with:
-      branch: ${{ github.head_ref || github.ref_name }}
+      iaso_branch: develop
 
   deploy_on_staging:
-#    needs: [ build_and_push_image, tests ]
-    needs: [ build_and_push_image ]
-    uses: BLSQ/iaso-ci/.github/workflows/wc_docker_deploy.yml@main
+    needs: [ build_and_push_image, tests ]
+    uses: BLSQ/iaso-ci/.github/workflows/docker_deploy.yml@IA-5227-decouple-ci-actions-into-dedicated-repo
     with:
-#      branch: develop
-      branch: develop-test
-#      environment: staging
-      environment: upgrade
-      image_tag: develop-test
-#      image_tag: develop
-#      slack_channel: iasops
+      iaso_branch: develop
+      environment: staging
+      image_tag: develop
     secrets: inherit

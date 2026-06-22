@@ -1,3 +1,4 @@
+#TODO: delete me once the new prod image is tested and working
 # Do a Docker multistage build where we build the NPM package in an image
 # Then transfert it in the filan django image
 ############ NPM Builder ######################################################################

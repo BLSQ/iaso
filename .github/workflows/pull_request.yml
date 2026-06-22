@@ -2,7 +2,7 @@ name: Iaso pull requests
 
 on:
   pull_request:
-    types: [ opened, synchronize, ready_for_review, edited ]
+    types: [ opened, synchronize, ready_for_review ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   config:
-    uses: BLSQ/iaso-ci/.github/workflows/wc_config.yml@main
+    uses: BLSQ/iaso-ci/.github/workflows/config.yml@IA-5227-decouple-ci-actions-into-dedicated-repo
     permissions:
       pull-requests: write
       contents: read
@@ -24,13 +24,13 @@ jobs:
 
   build_and_push_image:
     needs: config
-    uses: BLSQ/iaso-ci/.github/workflows/wc_docker_build.yml@main
+    uses: BLSQ/iaso-ci/.github/workflows/docker_build.yml@IA-5227-decouple-ci-actions-into-dedicated-repo
     with:
-      branch: ${{ github.head_ref || github.ref_name }}
+      iaso_branch: ${{ github.head_ref || github.ref_name }}
       image_tags: ${{ needs.config.outputs.image_tags }}
     secrets: inherit
 
   tests:
-    uses: BLSQ/iaso-ci/.github/workflows/wc_tests.yml@main
+    uses: BLSQ/iaso-ci/.github/workflows/tests.yml@IA-5227-decouple-ci-actions-into-dedicated-repo
     with:
-      branch: ${{ github.head_ref || github.ref_name }}
+      iaso_branch: ${{ github.head_ref || github.ref_name }}

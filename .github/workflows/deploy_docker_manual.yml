@@ -1,9 +1,6 @@
 name: deploy_docker_manual
 
 on:
-  push:
-    branches:
-      - IA-4812-clean-and-optimize-c-is-to-build-images-for-deployment-rebase
   workflow_dispatch:
     inputs:
       image_tag:
@@ -21,7 +18,7 @@ on:
       slack_channel:
         description: Slack Channel for notification (iasops by default)
         required: false
-        default: cloud-alerts
+        default: iasops
 
 permissions:
   contents: read
@@ -29,10 +26,10 @@ permissions:
 
 jobs:
   deploy:
-    uses: BLSQ/iaso-ci/.github/workflows/wc_docker_deploy.yml@main
+    uses: BLSQ/iaso-ci/.github/workflows/docker_deploy.yml@IA-5227-decouple-ci-actions-into-dedicated-repo
     with:
       image_tag: ${{ github.event.inputs.image_tag }}
-      branch: ${{ github.event.inputs.branch }}
+      iaso_branch: ${{ github.event.inputs.branch }}
       environment: ${{ github.event.inputs.environment }}
       slack_channel: ${{ github.event.inputs.slack_channel }}
     secrets: inherit

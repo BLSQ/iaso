@@ -41,6 +41,7 @@ jobs:
     uses: BLSQ/iaso-ci/.github/workflows/docker_deploy.yml@IA-5227-decouple-ci-actions-into-dedicated-repo
     with:
       iaso_branch: develop
-      environment: staging
+#      environment: staging
+      environment: upgrade
       image_tag: develop
     secrets: inherit

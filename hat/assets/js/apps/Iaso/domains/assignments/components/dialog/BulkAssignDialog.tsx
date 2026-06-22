@@ -177,22 +177,20 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
                 })}
             </DialogTitle>
             {hasMultipleTargets && (
-                <Grid container spacing={2} mx={2} mb={2}>
-                    <Grid item xs={6}>
-                        <InputComponent
-                            type="select"
-                            multi
-                            disabled={!orgUniTypeList}
-                            keyValue="orgUnitTypeIds"
-                            onChange={handleChangeOrgUnitTypes}
-                            value={selectedOrgUnitTypes}
-                            label={MESSAGES.targetOrgUnitType}
-                            options={orgUniTypesOptions}
-                            loading={!orgUniTypeList}
-                            clearable={false}
-                        />
-                    </Grid>
-                </Grid>
+                <Box width="50%" ml={2} mb={2}>
+                    <InputComponent
+                        type="select"
+                        multi
+                        disabled={!orgUniTypeList}
+                        keyValue="orgUnitTypeIds"
+                        onChange={handleChangeOrgUnitTypes}
+                        value={selectedOrgUnitTypes}
+                        label={MESSAGES.targetOrgUnitType}
+                        options={orgUniTypesOptions}
+                        loading={!orgUniTypeList}
+                        clearable={false}
+                    />
+                </Box>
             )}
             <Box position="relative">
                 <Box sx={styles.multiSelectIcons}>

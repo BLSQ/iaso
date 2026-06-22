@@ -26,8 +26,14 @@ from iaso.permissions.core_permissions import CORE_DATA_TASKS_PERMISSION, CORE_P
 from iaso.utils.s3_client import generate_presigned_url_from_s3
 
 from ...models import TaskLog
-from .serializers import ExternalTaskPostSerializer, ExternalTaskSerializer, TaskLogSerializer, TaskSerializer, \
-    DeploymentStatusSerializer
+from .serializers import (
+    DeploymentStatusSerializer,
+    ExternalTaskPostSerializer,
+    ExternalTaskSerializer,
+    TaskLogSerializer,
+    TaskSerializer,
+)
+
 
 task_service = LazyService("BACKGROUND_TASK_SERVICE")
 logger = logging.getLogger(__name__)

@@ -1,3 +1,7 @@
+from datetime import date, datetime, timedelta, timezone
+
+import time_machine
+
 from rest_framework.status import HTTP_200_OK
 
 from iaso.models.base import Group
@@ -11,6 +15,7 @@ from plugins.polio.tests.api.campaigns.setupData import CampaignFiltersTestBase
 
 
 URL = "/api/polio/campaigns/"
+FIXED_NOW = datetime(2026, 6, 22, 12, 0, 0, tzinfo=timezone.utc)
 
 
 class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
@@ -215,25 +220,33 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
         self.assertEqual(len(response.json()), remaining_visible)
 
     def test_filter_category_regular(self):
-        # regular category: excludes campaigns on hold and campaigns with current or next round on hold
+        # regular category: excludes campaigns on hold and campaigns with current or next round on hold.
+        # Finished campaigns whose last round was on hold are not excluded (known overlap with on_hold).
         response = self.client.get(f"{URL}?campaign_category=regular")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(result), 2)
+        self.assertEqual(len(result), 3)
 
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(
             obr_names,
-            [self.regular_campaign.obr_name, self.test_campaign.obr_name],
+            [
+                self.regular_campaign.obr_name,
+                self.test_campaign.obr_name,
+                self.finished_last_round_on_hold_campaign.obr_name,
+            ],
         )
 
         # regular with show_test==false excludes the test campaign
         response = self.client.get(f"{URL}?campaign_category=regular&show_test=false")
         result = self.assertJSONResponse(response, HTTP_200_OK)
         obr_names = [cmp["obr_name"] for cmp in result]
-        self.assertEqual(len(result), 1)
+        self.assertEqual(len(result), 2)
         self.assertCountEqual(
             obr_names,
-            [self.regular_campaign.obr_name],
+            [
+                self.regular_campaign.obr_name,
+                self.finished_last_round_on_hold_campaign.obr_name,
+            ],
         )
 
     def test_filter_category_preventive(self):
@@ -263,17 +276,18 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
         )
 
     def test_filter_category_on_hold(self):
-        # on_hold category: returns campaigns on hold OR with active or next round on hold
+        # on_hold category: campaign on hold, active/next round on hold, or finished with last round on hold
 
         response = self.client.get(f"{URL}?campaign_category=on_hold")
         result = self.assertJSONResponse(response, HTTP_200_OK)
         obr_names = [cmp["obr_name"] for cmp in result]
-        self.assertEqual(len(result), 5)
+        self.assertEqual(len(result), 6)
         self.assertCountEqual(
             obr_names,
             [
                 self.on_hold_campaign.obr_name,
                 self.campaign_with_on_hold_round.obr_name,  # has round on hold
+                self.finished_last_round_on_hold_campaign.obr_name,  # finished, last round on hold
                 self.test_on_hold_campaign.obr_name,
                 self.preventive_on_hold_campaign.obr_name,
                 self.preventive_test_on_hold_campaign.obr_name,
@@ -284,12 +298,13 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
         response = self.client.get(f"{URL}?campaign_category=on_hold&show_test=false")
         result = self.assertJSONResponse(response, HTTP_200_OK)
         obr_names = [cmp["obr_name"] for cmp in result]
-        self.assertEqual(len(result), 3)
+        self.assertEqual(len(result), 4)
         self.assertCountEqual(
             obr_names,
             [
                 self.on_hold_campaign.obr_name,
                 self.campaign_with_on_hold_round.obr_name,  # has round on hold
+                self.finished_last_round_on_hold_campaign.obr_name,
                 self.preventive_on_hold_campaign.obr_name,
             ],
         )
@@ -530,6 +545,7 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
 
         on_hold_default = [
             self.campaign_with_on_hold_round.obr_name,
+            self.finished_last_round_on_hold_campaign.obr_name,
             self.test_on_hold_campaign.obr_name,
             self.preventive_on_hold_campaign.obr_name,
             self.preventive_test_on_hold_campaign.obr_name,
@@ -562,3 +578,117 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
 
         self.client.patch(f"{URL}restore_deleted_campaigns/", {"id": str(self.on_hold_campaign.id)})
         self.assertJSONResponse(response, HTTP_200_OK)
+
+
+class CampaignOnHoldCategoryEdgeCasesTestCase(CampaignFiltersTestBase):
+    """Edge cases for on_hold category filtering rules 2 and 3."""
+
+    def setUp(self):
+        super().setUp()
+        self.client.force_authenticate(self.user)
+
+    def _on_hold_obr_names(self):
+        response = self.client.get(f"{URL}?campaign_category=on_hold")
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        return [campaign["obr_name"] for campaign in result]
+
+    def test_on_hold_excludes_finished_non_last_round_on_hold(self):
+        campaign, rnd1, _, _, _, _ = self.create_campaign(
+            obr_name="finished non-last round on hold",
+            account=self.account,
+            source_version=self.source_version_1,
+            country_ou_type=self.country_type,
+            district_ou_type=self.district_type,
+        )
+        rnd1.on_hold = True
+        rnd1.save()
+
+        self.assertNotIn(campaign.obr_name, self._on_hold_obr_names())
+
+    @time_machine.travel(FIXED_NOW, tick=False)
+    def test_on_hold_active_round_ending_today_is_included(self):
+        today = FIXED_NOW.date()
+        campaign, rnd1, rnd2, rnd3, _, _ = self.create_campaign(
+            obr_name="active round ending today on hold",
+            account=self.account,
+            source_version=self.source_version_1,
+            country_ou_type=self.country_type,
+            district_ou_type=self.district_type,
+        )
+        rnd1.started_at = today - timedelta(days=10)
+        rnd1.ended_at = today
+        rnd1.on_hold = True
+        rnd1.save()
+        rnd2.started_at = today + timedelta(days=30)
+        rnd2.ended_at = today + timedelta(days=40)
+        rnd2.on_hold = False
+        rnd2.save()
+        rnd3.started_at = today + timedelta(days=50)
+        rnd3.ended_at = today + timedelta(days=60)
+        rnd3.on_hold = False
+        rnd3.save()
+
+        self.assertIn(campaign.obr_name, self._on_hold_obr_names())
+
+    @time_machine.travel(FIXED_NOW, tick=False)
+    def test_on_hold_finished_last_round_ended_yesterday_is_included(self):
+        today = FIXED_NOW.date()
+        campaign, _, _, rnd3, _, _ = self.create_campaign(
+            obr_name="finished last round ended yesterday on hold",
+            account=self.account,
+            source_version=self.source_version_1,
+            country_ou_type=self.country_type,
+            district_ou_type=self.district_type,
+        )
+        rnd3.on_hold = True
+        rnd3.ended_at = today - timedelta(days=1)
+        rnd3.save()
+
+        self.assertIn(campaign.obr_name, self._on_hold_obr_names())
+
+    def test_on_hold_excludes_last_round_on_hold_with_null_ended_at(self):
+        campaign, _, _, rnd3, _, _ = self.create_campaign(
+            obr_name="last round on hold null ended_at",
+            account=self.account,
+            source_version=self.source_version_1,
+            country_ou_type=self.country_type,
+            district_ou_type=self.district_type,
+        )
+        rnd3.on_hold = True
+        rnd3.ended_at = None
+        rnd3.save()
+
+        self.assertNotIn(campaign.obr_name, self._on_hold_obr_names())
+
+    def test_on_hold_last_round_by_number_not_by_date(self):
+        campaign, _, rnd2, rnd3, _, _ = self.create_campaign(
+            obr_name="last round by number on hold",
+            account=self.account,
+            source_version=self.source_version_1,
+            country_ou_type=self.country_type,
+            district_ou_type=self.district_type,
+        )
+        rnd3.on_hold = True
+        rnd3.ended_at = date(2021, 3, 10)
+        rnd3.save()
+        rnd2.on_hold = False
+        rnd2.ended_at = date(2022, 6, 1)
+        rnd2.save()
+
+        self.assertIn(campaign.obr_name, self._on_hold_obr_names())
+
+        campaign2, _, rnd2b, rnd3b, _, _ = self.create_campaign(
+            obr_name="non-last round by number on hold only",
+            account=self.account,
+            source_version=self.source_version_1,
+            country_ou_type=self.country_type,
+            district_ou_type=self.district_type,
+        )
+        rnd2b.on_hold = True
+        rnd2b.ended_at = date(2022, 6, 1)
+        rnd2b.save()
+        rnd3b.on_hold = False
+        rnd3b.ended_at = date(2021, 3, 10)
+        rnd3b.save()
+
+        self.assertNotIn(campaign2.obr_name, self._on_hold_obr_names())

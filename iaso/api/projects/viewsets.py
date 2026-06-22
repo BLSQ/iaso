@@ -1,4 +1,3 @@
-from django.db import transaction
 from django.db.models import Prefetch, QuerySet
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -75,11 +74,3 @@ class ProjectsViewSet(ModelViewSet):
                 qr_code_options=QRCodeOptions(size="S", image_format="png", error_correction="L"),
             ),
         )
-
-    @transaction.atomic
-    def perform_create(self, serializer):
-        super().perform_create(serializer)
-        # account = self.request.user.iaso_profile.account
-        # AccountUsageService.increment(
-        #     ProjectAccountUsage, account, initial_queryset=Project.objects.filter(account=account)
-        # )

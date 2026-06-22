@@ -64,13 +64,9 @@ from iaso.models import (
     OrgUnitReferenceInstance,
     Project,
 )
-
-# from iaso.models.account_usage.misc import SubmissionAccountUsage
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.forms import CR_MODE_IF_REFERENCE_FORM
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_STORAGE_PERMISSION
-
-# from iaso.services.account_usage import AccountUsageService
 from iaso.utils.date_and_time import timestamp_to_datetime
 from iaso.utils.models.common import check_instance_bulk_gps_push, check_instance_reference_bulk_link, get_creator_name
 
@@ -1093,12 +1089,6 @@ def import_data(instances, user, app_id):
             except Exception as e:
                 # so we avoid the whole instance creation crashing
                 logger.error(e)
-
-    # quota
-    account = user.iaso_profile.account
-    AccountUsageService.increment(
-        SubmissionAccountUsage, account, len(rtn_instances), initial_queryset=Instance.objects.filter(user)
-    )
 
 
 def _entity_correctness_score(entity):

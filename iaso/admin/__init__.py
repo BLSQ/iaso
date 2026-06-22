@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.models import User
 
-from .account_usage import AccountUsageAdmin  # noqa: F401
 from .base import IasoJSONEditorWidget  # noqa: F401
 from .metric_admin import *
 from .openhexa_admin import *

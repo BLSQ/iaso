@@ -13,9 +13,7 @@ from rest_framework.permissions import SAFE_METHODS
 from iaso.api.query_params import parse_strict_boolean_param
 from iaso.models import Project, ProjectFeatureFlags
 
-from ...models.account_usage.misc import ProjectAccountUsage
 from ...permissions.core_permissions import CORE_PROJECTS_PERMISSION, CORE_USERS_ADMIN_PERMISSION
-from ...services.account_usage import AccountUsageService
 from ..common import HasPermission, ModelViewSet
 from .filters import ProjectsFilter
 from .serializers import ProjectSerializer
@@ -81,7 +79,7 @@ class ProjectsViewSet(ModelViewSet):
     @transaction.atomic
     def perform_create(self, serializer):
         super().perform_create(serializer)
-        account = self.request.user.iaso_profile.account
-        AccountUsageService.increment(
-            ProjectAccountUsage, account, initial_queryset=Project.objects.filter(account=account)
-        )
+        # account = self.request.user.iaso_profile.account
+        # AccountUsageService.increment(
+        #     ProjectAccountUsage, account, initial_queryset=Project.objects.filter(account=account)
+        # )

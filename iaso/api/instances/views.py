@@ -64,11 +64,13 @@ from iaso.models import (
     OrgUnitReferenceInstance,
     Project,
 )
-from iaso.models.account_usage.misc import SubmissionAccountUsage
+
+# from iaso.models.account_usage.misc import SubmissionAccountUsage
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.forms import CR_MODE_IF_REFERENCE_FORM
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_STORAGE_PERMISSION
-from iaso.services.account_usage import AccountUsageService
+
+# from iaso.services.account_usage import AccountUsageService
 from iaso.utils.date_and_time import timestamp_to_datetime
 from iaso.utils.models.common import check_instance_bulk_gps_push, check_instance_reference_bulk_link, get_creator_name
 

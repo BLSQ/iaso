@@ -54,9 +54,7 @@ from iaso.api.profiles.serializers.dropdown import ProfileDropdownSerializer
 from iaso.api.profiles.serializers.update import BaseProfileUpdateSerializer, ProfileUpdatePasswordSerializer
 from iaso.mail.branding import core_email_branding_context
 from iaso.models import OrgUnit, Profile, TenantUser, UserRole
-from iaso.models.account_usage.misc import UserAccountUsage
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
-from iaso.services.account_usage import AccountUsageService
 from iaso.utils import is_mobile_request
 
 
@@ -271,10 +269,10 @@ class ProfilesViewSet(ModelViewSet):
             transaction.on_commit(lambda: self.send_email_invitation(profile, language))
 
         # log for quota
-        account = self.request.user.iaso_profile.account
-        AccountUsageService.increment(
-            UserAccountUsage, account, initial_queryset=Profile.objects.filter(account=account)
-        )
+        # account = self.request.user.iaso_profile.account
+        # AccountUsageService.increment(
+        #     UserAccountUsage, account, initial_queryset=Profile.objects.filter(account=account)
+        # )
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -464,12 +462,6 @@ class ProfilesViewSet(ModelViewSet):
         # Atomic delete of related objects
         user.delete()
         instance.delete()
-
-        # update quota
-        account = self.request.user.iaso_profile.account
-        AccountUsageService.increment(
-            UserAccountUsage, account, amount=-1, initial_queryset=Profile.objects.filter(account=account)
-        )
 
     @transaction.atomic
     def destroy(self, request, *args, **kwargs):

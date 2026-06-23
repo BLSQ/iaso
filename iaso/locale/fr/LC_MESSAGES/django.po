@@ -202,7 +202,7 @@ msgstr ""
 
 #: iaso/api/microplanning/filters.py
 msgid "Org unit parent ID"
-msgstr ""
+msgstr "ID du parent de l'unité organisationnelle"
 
 #: iaso/api/microplanning/filters.py iaso/api/stocks/filters.py
 msgid "Org unit type IDs (comma-separated)"

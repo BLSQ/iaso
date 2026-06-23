@@ -1,6 +1,5 @@
 from django.db.models import Prefetch
 from django.http import QueryDict
-from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError
 
 from iaso.models.microplanning import Assignment, Planning
@@ -25,7 +24,9 @@ class PlanningOrgUnitChildrenQuerysetMixin:
         else:
             queryset = base_queryset.none()
 
-        return queryset.filter(validation_status=OrgUnit.VALIDATION_VALID).select_related("org_unit_type").order_by("id")
+        return (
+            queryset.filter(validation_status=OrgUnit.VALIDATION_VALID).select_related("org_unit_type").order_by("id")
+        )
 
     def prefetch_planning_assignments(self, queryset, planning: Planning):
         return queryset.prefetch_related(

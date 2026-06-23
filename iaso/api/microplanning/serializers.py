@@ -3,58 +3,16 @@ from django.utils.translation import gettext_lazy as _
 from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
 from rest_framework import serializers
 
-from iaso.api.common import (
-    DateTimestampField,
-    ModelSerializer,
-    TimestampField,
-    parse_comma_separated_numeric_values,
+from iaso.api.common import DateTimestampField, ModelSerializer, TimestampField
+from iaso.api.microplanning.filters import (
+    validate_planning_has_org_unit_scope,
+    validate_planning_org_unit_type_ids,
 )
 from iaso.api.teams.serializers import NestedTeamSerializer
 from iaso.models import Form, Group, OrgUnit, OrgUnitType, Project, Task
 from iaso.models.microplanning import Assignment, Planning, PlanningSamplingResult
 from iaso.models.org_unit import OrgUnitQuerySet
 from iaso.models.team import Team
-
-
-def validate_planning_has_org_unit_scope(planning: Planning):
-    sampling = planning.selected_sampling_result
-    if sampling and sampling.group_id:
-        return
-    if planning.org_unit_id and planning.target_org_unit_types.exists():
-        return
-    raise serializers.ValidationError({"planning": _("Planning is missing sampling group or target org unit scope")})
-
-
-def validate_planning_org_unit_type_ids(planning: Planning, org_unit_type_ids: list[int]):
-    target_type_ids = [t.id for t in planning.target_org_unit_types.all()]
-    if not target_type_ids or not org_unit_type_ids:
-        return
-    invalid_type_ids = [type_id for type_id in org_unit_type_ids if type_id not in target_type_ids]
-    if invalid_type_ids:
-        raise serializers.ValidationError(
-            {"org_unit_type_ids": _("One or more org unit types are not target types for this planning")}
-        )
-
-
-class PlanningOrgUnitChildrenFilterSerializer(serializers.Serializer):
-    orgUnitParentId = serializers.IntegerField(required=False, allow_null=True, source="org_unit_parent_id")
-    orgUnitTypeIds = serializers.CharField(
-        required=False,
-        allow_blank=True,
-        default="",
-        help_text="Comma-separated org unit type IDs to filter among the planning target types.",
-    )
-
-    def validate(self, attrs):
-        planning = self.context["planning"]
-        validate_planning_has_org_unit_scope(planning)
-        raw_type_ids = attrs.pop("orgUnitTypeIds", "")
-        org_unit_type_ids = []
-        if raw_type_ids and raw_type_ids.strip():
-            org_unit_type_ids = parse_comma_separated_numeric_values(raw_type_ids, "orgUnitTypeIds")
-            validate_planning_org_unit_type_ids(planning, org_unit_type_ids)
-        attrs["org_unit_type_ids"] = org_unit_type_ids
-        return attrs
 
 
 class NestedProjectSerializer(ModelSerializer):
@@ -517,10 +475,10 @@ class BulkDeleteAssignmentSerializer(serializers.Serializer):
 
 
 class BulkDeleteAssignmentResponseSerializer(serializers.Serializer):
-    message = serializers.CharField()
-    deleted_count = serializers.IntegerField()
-    planning_id = serializers.IntegerField()
-    user = serializers.IntegerField(allow_null=True, required=False)
+    message = serializers.CharField(read_only=True)
+    deleted_count = serializers.IntegerField(read_only=True)
+    planning_id = serializers.IntegerField(read_only=True)
+    user = serializers.IntegerField(allow_null=True, read_only=True)
 
 
 # noinspection PyMethodMayBeStatic

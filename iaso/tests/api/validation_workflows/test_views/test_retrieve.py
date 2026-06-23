@@ -2,6 +2,7 @@ from django.contrib.auth.models import Group
 from django.urls import reverse
 from rest_framework import status
 
+from iaso.engine.validation_workflow import ValidationWorkflowEngine
 from iaso.models import Account, Form, Instance, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
 from iaso.tests.api.validation_workflows.test_views.common import BaseValidationWorkflowAPITestCase
 
@@ -20,8 +21,8 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
         self.form.projects.add(self.project)
         self.form.save()
 
-        Instance.objects.create(name="instance", form=self.form)
-        Instance.objects.create(name="instance2", form=self.form)
+        self.instance = Instance.objects.create(name="instance", form=self.form)
+        self.instance_2 = Instance.objects.create(name="instance2", form=self.form)
 
         self.form_2 = Form.objects.create(name="form_2")
         self.form_2.projects.add(self.project)
@@ -109,6 +110,11 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
         self.assertJSONResponse(res, status.HTTP_200_OK)
 
     def test_retrieve(self):
+        ValidationWorkflowEngine.start(self.validation_workflow, self.superuser, self.instance)
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_nodes().first(), self.superuser, self.instance, True
+        )
+
         for user in [self.john_wick, self.superuser]:
             with self.subTest(f"with user {user}"):
                 self.client.force_authenticate(user)
@@ -129,6 +135,7 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
                         "updated_by",
                         "updated_at",
                         "node_templates",
+                        "has_processes",
                     ]:
                         self.assertIn(k, res_data)
 
@@ -142,6 +149,7 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
 
                     self.assertIsNotNone(res_data["forms"])
                     self.assertIsNotNone(res_data["node_templates"])
+                    self.assertTrue(res_data["has_processes"])
 
                 with self.subTest("checking forms"):
                     for form_value in res_data["forms"]:
@@ -181,6 +189,11 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
                     )
 
     def test_num_queries(self):
+        ValidationWorkflowEngine.start(self.validation_workflow, self.superuser, self.instance)
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_nodes(self.validation_workflow).first(), self.superuser, self.instance, True
+        )
+
         self.client.force_authenticate(self.john_wick)
         with self.assertNumQueries(10):
             res = self.client.get(

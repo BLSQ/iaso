@@ -2,7 +2,6 @@ import { ApiParams, UrlParams } from 'bluesquare-components';
 import { UseMutationResult, useQueryClient, UseQueryResult } from 'react-query';
 import { getRequest, postRequest, putRequest } from '../../../libs/Api';
 import { useSnackMutation, useSnackQuery } from '../../../libs/apiHooks';
-
 import { DropdownOptions } from '../../../types/utils';
 import { FeatureFlag } from '../types/featureFlag';
 import { PaginatedProjects } from '../types/paginatedProjects';
@@ -64,9 +63,8 @@ export const useGetProjectsPaginated = (
         newParams.search = params.search;
     }
 
-    // @ts-ignore
     const searchParams = new URLSearchParams(newParams);
-    // @ts-ignore
+
     return useSnackQuery(['projects-paginated', newParams], () =>
         getRequest(`/api/projects/?${searchParams.toString()}`),
     );
@@ -76,7 +74,6 @@ export const useGetFeatureFlags = (): UseQueryResult<
     Array<FeatureFlag>,
     Error
 > => {
-    // @ts-ignore
     return useSnackQuery(
         ['featureflags'],
         () => getRequest('/api/featureflags/except_no_activated_modules/'),
@@ -90,12 +87,12 @@ export const useGetFeatureFlags = (): UseQueryResult<
 };
 
 export const useSave = (): UseMutationResult =>
-    useSnackMutation(
-        body =>
-            body.id
-                ? putRequest(`/api/apps/${body.old_app_id}/`, body)
-                : postRequest('/api/apps/', body),
-        undefined,
-        undefined,
-        ['projects-paginated', 'projects-dropdown'],
-    );
+    useSnackMutation({
+        mutationFn: body => {
+            return body.id
+                ? putRequest(`/api/projects/${body.id}/`, body)
+                : postRequest('/api/projects/', body);
+        },
+
+        invalidateQueryKey: ['projects-paginated', 'projects-dropdown'],
+    });

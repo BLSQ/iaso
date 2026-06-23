@@ -73,6 +73,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env.str("SECRET_KEY", default=None)
 
+# Old secret keys kept for signature verification only (not used to sign new values).
+# Set this to the previous SECRET_KEY(s) when rotating SECRET_KEY so that existing
+# sessions, password reset tokens and other signed data stay valid during the rollover.
+# Comma separated list of keys, e.g. SECRET_KEY_FALLBACKS=old_key_1,old_key_2
+SECRET_KEY_FALLBACKS = env.list("SECRET_KEY_FALLBACKS", default=[], delimiter=",")
+
 # SECURITY WARNING: keep the encryption key used in production secret!
 ENCRYPTED_TEXT_FIELD_KEY = env.str("ENCRYPTED_TEXT_FIELD_KEY", default=None)
 

@@ -108,6 +108,10 @@ class WorkflowVersion(SoftDeletableModel):
         choices=WorkflowVersionsStatus.choices,
         default=WorkflowVersionsStatus.DRAFT,
     )
+    # When True, the mobile app jumps directly into the workflow's first step right
+    # after the entity's reference (attributes) form is submitted. Defaults to False
+    # so older backends/clients keep the manual follow-up behaviour.
+    auto_first_step = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

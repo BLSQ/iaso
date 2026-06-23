@@ -66,11 +66,18 @@ class DeploymentStatusTaskSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class DeploymentStatusTaskGroupSerializer(serializers.Serializer):
+    name = serializers.CharField(read_only=True)
+    QUEUED = serializers.IntegerField(read_only=True)
+    RUNNING = serializers.IntegerField(read_only=True)
+    tasks = DeploymentStatusTaskSerializer(many=True, read_only=True)
+
+
 class DeploymentStatusSerializer(serializers.Serializer):
     can_deploy = serializers.BooleanField(read_only=True)
     blocking_tasks_count = serializers.IntegerField(read_only=True)
     statuses = serializers.DictField(child=serializers.IntegerField(), read_only=True)
-    blocking_tasks = DeploymentStatusTaskSerializer(many=True, read_only=True)
+    blocking_tasks = DeploymentStatusTaskGroupSerializer(many=True, read_only=True)
 
 
 class ExternalTaskSerializer(TaskSerializer):

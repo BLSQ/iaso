@@ -144,7 +144,20 @@ class IasoTasksTestCase(APITestCase):
             account=cls.account,
             permissions=[CORE_DATA_TASKS_PERMISSION],
             is_superuser=True,
+            is_staff=True,
         )
+
+    @staticmethod
+    def get_deployment_task_group(data, task_name):
+        return next(task_group for task_group in data["blocking_tasks"] if task_group["name"] == task_name)
+
+    @staticmethod
+    def get_deployment_task(data, task_id):
+        for task_group in data["blocking_tasks"]:
+            for task in task_group["tasks"]:
+                if task["id"] == task_id:
+                    return task
+        raise AssertionError(f"Task {task_id} not found in deployment status response")
 
     def test_tasks_user_without_permissions_access(self):
         self.client.force_authenticate(self.miguel)
@@ -406,24 +419,21 @@ class IasoTasksTestCase(APITestCase):
         self.assertEqual(data["can_deploy"], False)
         self.assertEqual(data["blocking_tasks_count"], 2)
         self.assertEqual(data["statuses"], {QUEUED: 1, RUNNING: 1})
-        self.assertNotIn("params", data)
 
-        blocking_tasks_by_id = {task["id"]: task for task in data["blocking_tasks"]}
-        self.assertEqual(set(blocking_tasks_by_id.keys()), {queued_task.id, running_task.id})
+        queued_task_group = self.get_deployment_task_group(data, "queued_task")
+        running_task_group = self.get_deployment_task_group(data, "running_task_from_another_account")
 
-        self.assertEqual(
-            set(blocking_tasks_by_id[queued_task.id].keys()),
-            {"id", "name", "status", "created_at", "started_at", "launcher"},
-        )
-        self.assertEqual(blocking_tasks_by_id[queued_task.id]["name"], "queued_task")
-        self.assertEqual(blocking_tasks_by_id[queued_task.id]["status"], QUEUED)
-        self.assertEqual(blocking_tasks_by_id[queued_task.id]["launcher"], "johnny")
-        self.assertIsNone(blocking_tasks_by_id[queued_task.id]["started_at"])
+        self.assertEqual(queued_task_group[QUEUED], 1)
+        self.assertEqual(running_task_group[RUNNING], 1)
 
-        self.assertEqual(blocking_tasks_by_id[running_task.id]["name"], "running_task_from_another_account")
-        self.assertEqual(blocking_tasks_by_id[running_task.id]["status"], RUNNING)
-        self.assertEqual(blocking_tasks_by_id[running_task.id]["launcher"], "daniel")
-        self.assertEqual(blocking_tasks_by_id[running_task.id]["started_at"], running_task.started_at.timestamp())
+        queued_task_data = self.get_deployment_task(data, queued_task.id)
+        running_task_data = self.get_deployment_task(data, running_task.id)
+
+        self.assertNotIn("params", queued_task_data)
+        self.assertNotIn("params", running_task_data)
+
+        self.assertEqual(queued_task_data["launcher"], "johnny")
+        self.assertEqual(running_task_data["launcher"], "daniel")
 
     def test_deployment_status_filters_blocking_tasks(self):
         self.client.force_authenticate(self.superuser)
@@ -471,7 +481,26 @@ class IasoTasksTestCase(APITestCase):
         self.assertEqual(data["can_deploy"], False)
         self.assertEqual(data["blocking_tasks_count"], 1)
         self.assertEqual(data["statuses"], {QUEUED: 0, RUNNING: 1})
-        self.assertEqual([task["id"] for task in data["blocking_tasks"]], [matching_task.id])
+        self.assertEqual(
+            data["blocking_tasks"],
+            [
+                {
+                    "name": "running_task",
+                    QUEUED: 0,
+                    RUNNING: 1,
+                    "tasks": [
+                        {
+                            "id": matching_task.id,
+                            "name": "running_task",
+                            "status": RUNNING,
+                            "created_at": matching_task.created_at.timestamp(),
+                            "started_at": matching_task.started_at.timestamp(),
+                            "launcher": "miguel",
+                        }
+                    ],
+                }
+            ],
+        )
 
     def test_deployment_status_requires_superuser(self):
         response = self.client.get("/api/tasks/deployment-status/")
@@ -488,6 +517,16 @@ class IasoTasksTestCase(APITestCase):
             is_staff=True,
         )
         self.client.force_authenticate(staff_user)
+        response = self.client.get("/api/tasks/deployment-status/")
+        self.assertEqual(response.status_code, 403)
+
+        superuser_without_staff = self.create_user_with_profile(
+            username="superuser_without_staff",
+            account=self.account,
+            permissions=[CORE_DATA_TASKS_PERMISSION],
+            is_superuser=True,
+        )
+        self.client.force_authenticate(superuser_without_staff)
         response = self.client.get("/api/tasks/deployment-status/")
         self.assertEqual(response.status_code, 403)
 

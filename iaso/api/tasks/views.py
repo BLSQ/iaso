@@ -2,7 +2,6 @@ import logging
 
 import django_filters
 
-from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema
 from gql import Client, gql
@@ -37,6 +36,7 @@ from .serializers import (
 
 task_service = LazyService("BACKGROUND_TASK_SERVICE")
 logger = logging.getLogger(__name__)
+DEPLOYMENT_BLOCKING_STATUSES = [QUEUED, RUNNING]
 
 
 @extend_schema(tags=["Tasks"])
@@ -80,7 +80,7 @@ class TaskSourceViewSet(ModelViewSet):
 
     def get_queryset(self):
         if self.action == "deployment_status":
-            return Task.objects.select_related("launcher").filter(status__in=[QUEUED, RUNNING])
+            return Task.objects.select_related("launcher").filter(status__in=DEPLOYMENT_BLOCKING_STATUSES)
         profile = self.request.user.iaso_profile
         return Task.objects.select_related("created_by", "launcher").filter(account=profile.account)
 
@@ -168,24 +168,35 @@ class TaskSourceViewSet(ModelViewSet):
         url_path="deployment-status",
     )
     def deployment_status(self, request):
-        if not request.user.is_superuser:
+        if not request.user.is_superuser or not request.user.is_staff:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        blocking_statuses = [QUEUED, RUNNING]
         blocking_tasks = self.filter_queryset(self.get_queryset())
 
-        statuses = {status: 0 for status in blocking_statuses}
-        for status_count in blocking_tasks.values("status").annotate(count=Count("id")):
-            statuses[status_count["status"]] = status_count["count"]
+        statuses = dict.fromkeys(DEPLOYMENT_BLOCKING_STATUSES, 0)
 
-        blocking_tasks_count = blocking_tasks.count()
+        blocking_tasks_by_name = {}
+        for task in blocking_tasks:
+            statuses[task.status] += 1
+            if task.name not in blocking_tasks_by_name:
+                blocking_tasks_by_name[task.name] = {
+                    "name": task.name,
+                    QUEUED: 0,
+                    RUNNING: 0,
+                    "tasks": [],
+                }
+            group = blocking_tasks_by_name[task.name]
+            group[task.status] += 1
+            group["tasks"].append(task)
+
+        blocking_tasks_count = sum(statuses.values())
 
         serializer = DeploymentStatusSerializer(
             {
                 "can_deploy": blocking_tasks_count == 0,
                 "blocking_tasks_count": blocking_tasks_count,
                 "statuses": statuses,
-                "blocking_tasks": blocking_tasks,
+                "blocking_tasks": list(blocking_tasks_by_name.values()),
             }
         )
         return Response(serializer.data)

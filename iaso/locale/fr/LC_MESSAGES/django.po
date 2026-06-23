@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-17 13:17+0000\n"
+"POT-Creation-Date: 2026-06-23 07:27+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -188,15 +188,25 @@ msgstr "Ces IDs d'org unit n'existent pas:"
 msgid "Year must be between 1900 and 2100."
 msgstr "L'année doit être entre 1900 et 2100,"
 
-#: iaso/api/microplanning/serializers.py
+#: iaso/api/microplanning/filters.py
 msgid "Planning is missing sampling group or target org unit scope"
 msgstr ""
 "La planification manque d'un groupe d'échantillonnage ou d'une unité "
 "organisationnelle cible"
 
-#: iaso/api/microplanning/serializers.py
+#: iaso/api/microplanning/filters.py
 msgid "One or more org unit types are not target types for this planning"
-msgstr "Un ou plusieurs types d'unités organisationnelles ne sont pas des types cibles pour cette planification"
+msgstr ""
+"Un ou plusieurs types d'unités organisationnelles ne sont pas des types "
+"cibles pour cette planification"
+
+#: iaso/api/microplanning/filters.py
+msgid "Org unit parent ID"
+msgstr ""
+
+#: iaso/api/microplanning/filters.py iaso/api/stocks/filters.py
+msgid "Org unit type IDs (comma-separated)"
+msgstr "IDs des types d'unité organisationnelle (séparé par des virgules)"
 
 #: iaso/api/microplanning/views.py
 msgid "No assignments to delete"
@@ -534,10 +544,6 @@ msgstr "L'email est requis lorsque l'invitation par email est activée"
 msgid "Password is required when email_invitation is False"
 msgstr ""
 "Le mot de passe est requis lorsque l'invitation par email est désactivée"
-
-#: iaso/api/stocks/filters.py
-msgid "Org unit type IDs (comma-separated)"
-msgstr "IDs des types d'unité organisationnelle (séparé par des virgules)"
 
 #: iaso/api/stocks/filters.py
 msgid "SKUs - SKU IDs (comma-separated)"

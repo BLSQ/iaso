@@ -42,6 +42,6 @@ jobs:
     with:
       iaso_branch: develop
 #      environment: staging
-      environment: upgrade
+      environment: migration
       image_tag: develop
     secrets: inherit

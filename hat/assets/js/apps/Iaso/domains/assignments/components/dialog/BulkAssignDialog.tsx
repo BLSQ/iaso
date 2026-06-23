@@ -15,7 +15,6 @@ import {
     Box,
     IconButton,
     Tooltip,
-    Grid,
     Divider,
 } from '@mui/material';
 import { LoadingSpinner, Table, useSafeIntl } from 'bluesquare-components';

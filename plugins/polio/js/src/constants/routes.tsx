@@ -20,8 +20,6 @@ import { Lqas } from '../domains/LQAS-IM/LQAS';
 import { LqasAfroOverview } from '../domains/LQAS-IM/LQAS/LqasAfroOverview/LqasAfroOverview';
 import { Notifications } from '../domains/Notifications';
 import { NationalLogisticsPlan } from '../domains/VaccineModule/NationalLogisticsPlan/NationalLogisticsPlan';
-import { Nopv2AuthorisationsDetails } from '../domains/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails';
-import { Nopv2Authorisations } from '../domains/VaccineModule/Nopv2Authorisations/Nopv2Authorisations';
 import { PerformanceDashboard } from '../domains/VaccineModule/PerformanceDashboard/PerformanceDashboard';
 import { PerformanceThresholds } from '../domains/VaccineModule/PerformanceThresholds/PerformanceThresholds';
 import { VaccineRepository } from '../domains/VaccineModule/Repository/VaccineRepository';

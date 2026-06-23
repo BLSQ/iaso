@@ -116,10 +116,6 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                 page: undefined,
                 campaignType,
                 campaignCategory: campaignCategory ?? 'all',
-                on_hold:
-                    campaignCategory === 'all' || campaignCategory === 'on_hold'
-                        ? 'true'
-                        : 'false',
                 showOnlyDeleted: showOnlyDeleted ? 'true' : undefined,
                 show_test: hideTest ? 'false' : 'true',
                 campaignGroups,

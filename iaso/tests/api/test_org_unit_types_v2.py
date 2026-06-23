@@ -7,6 +7,7 @@ from rest_framework.exceptions import ValidationError
 from iaso import models as m
 from iaso.api.org_unit_types.serializers import validate_reference_forms
 from iaso.api.query_params import PROJECT, SOURCE_VERSION_ID
+from iaso.models import FeatureFlag
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_ORG_UNITS_TYPES_PERMISSION
 from iaso.test import APITestCase
 
@@ -89,6 +90,13 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
         wrong_project.forms.add(reference_form_wrong_project)
         wrong_project.save()
+
+        cls.feature_flag = FeatureFlag.objects.create(
+            code="send_location", name="Send GPS location", description="Send GPS location every time etc"
+        )
+        cls.feature_flag_2 = FeatureFlag.objects.create(code="first_test", name="first", order=1, category="DCO")
+
+        cls.ead.feature_flags.set([cls.feature_flag, cls.feature_flag_2])
 
     def test_org_unit_types_list_without_auth_or_app_id(self):
         """GET /orgunittypes/ without auth or app id should result in a 200 empty response"""
@@ -752,3 +760,19 @@ class OrgUnitTypesAPITestCase(APITestCase):
         child_data = response_data["sub_unit_types"][0]
         for field in expected_fields:
             self.assertIn(field, child_data)
+
+    def test_num_queries_list(self):
+        self.client.force_authenticate(self.jane)
+
+        with self.assertNumQueries(8):
+            response = self.client.get(f"{self.BASE_URL}")
+
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+    def test_num_queries_retrieve(self):
+        self.client.force_authenticate(self.jane)
+
+        with self.assertNumQueries(13):
+            response = self.client.get(f"{self.BASE_URL}{self.org_unit_type_1.id}/")
+
+        self.assertJSONResponse(response, status.HTTP_200_OK)

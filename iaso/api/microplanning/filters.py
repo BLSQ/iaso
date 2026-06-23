@@ -28,9 +28,7 @@ def validate_planning_has_org_unit_scope(planning: Planning):
         return
     if planning.org_unit_id and planning.target_org_unit_types.exists():
         return
-    raise serializers.ValidationError(
-        {"planning": [_("Planning is missing sampling group or target org unit scope")]}
-    )
+    raise serializers.ValidationError({"planning": [_("Planning is missing sampling group or target org unit scope")]})
 
 
 def validate_planning_org_unit_type_ids(planning: Planning, org_unit_type_ids: list[int]):

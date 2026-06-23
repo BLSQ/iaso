@@ -29,11 +29,11 @@ dependencies = [
     "django-json-widget==1.1.1", # https://github.com/jmrivas86/django-json-widget/tags
     "django-lazy-services==0.0.3", # https://pypi.org/project/django-lazy-services/
     "django-ltree==0.5.3", # https://github.com/mariocesar/django-ltree/tags
-    "django-pg-utils==0.1.5",
+    "django-pg-utils==0.1.5", # trypelim - https://pypi.org/project/django-pg-utils/
     "django-phonenumber-field[phonenumberslite]==7.3.0", # https://django-phonenumber-field.readthedocs.io/en/latest/
     "django-qr-code==4.0.1", # https://django-qr-code.readthedocs.io/en/latest/
     "django-redis==4.12.1", # https://github.com/jazzband/django-redis/tags
-    "django-ses==2.6.1",
+    "django-ses==2.6.1", # trypelim - https://github.com/django-ses/django-ses/releases/
     "django-simple-captcha==0.6.3", # https://github.com/mbi/django-simple-captcha/tags
     "django-sql-dashboard==1.2", # https://github.com/simonw/django-sql-dashboard/tags
     "django-storages==1.14.2", # https://github.com/jschneier/django-storages/tags
@@ -52,7 +52,7 @@ dependencies = [
     "fiona==1.10.1", # https://github.com/Toblerity/Fiona/tags
     "geopandas==1.0.1", # https://github.com/geopandas/geopandas/tags
     "geopy==2.4.1", # https://github.com/geopy/geopy/tags
-    "gpxpy==1.4.0",
+    "gpxpy==1.4.0", # trypelim - https://github.com/tkrajina/gpxpy/tags
     "gql[requests]==3.4.1", # https://github.com/graphql-python/gql/tags
     "gspread==5.12.3", # https://github.com/burnash/gspread/tags
     "gspread-formatting==1.1.2", # https://github.com/robin900/gspread-formatting/tags
@@ -83,10 +83,10 @@ dependencies = [
     "requests-toolbelt==0.9.1",
     "sentry-sdk[django]==1.38.0", # https://github.com/getsentry/sentry-python/tags
     "shapely==2.0.2", # https://github.com/shapely/shapely/tags
-    "snaql==0.4.2",
-    "snt-malaria-budgeting==0.10.1",
+    "snaql==0.4.2", # trypelim - https://github.com/zaiev/snaql/tags
+    "snt-malaria-budgeting==0.10.1", # SNT malaria
     "sqlalchemy==2.0.23", # https://github.com/sqlalchemy/sqlalchemy/tags
-    "tsp-solver2==0.4.1",
+    "tsp-solver2==0.4.1", # trypelim - https://github.com/dmishin/tsp-solver/tags
     "unidecode==1.3.7", # https://github.com/avian2/unidecode/tags
     "urllib3<2",
     "xlsxwriter==3.1.9", # https://github.com/jmcnamara/XlsxWriter/tags

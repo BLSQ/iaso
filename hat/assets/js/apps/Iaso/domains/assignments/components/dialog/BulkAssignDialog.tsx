@@ -22,11 +22,11 @@ import InputComponent from 'Iaso/components/forms/InputComponent';
 import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { Planning, PlanningOrgUnits } from 'Iaso/domains/plannings/types';
 import { useGetPlanningOrgUnitsChildrenPaginated } from 'Iaso/domains/teams/hooks/requests/useGetPlanningOrgUnits';
-import { SubTeam, User } from 'Iaso/domains/teams/types/team';
 import { getStickyTableHeadStyles } from 'Iaso/styles/utils';
 import { SxStyles } from 'Iaso/types/general';
 import { commaSeparatedIdsToArray } from 'Iaso/utils/forms';
 import { useTableSelection } from 'Iaso/utils/table';
+import { useAssignmentsContext } from '../../contexts/AssignmentsContext';
 import { useBulkSaveAssignments } from '../../hooks/requests/useSaveAssignment';
 import MESSAGES from '../../messages';
 import { AssignmentParams } from '../../types/assigment';
@@ -37,8 +37,6 @@ type Props = {
     onClose: () => void;
     selectedParentOrgUnit: PlanningOrgUnits;
     planning: Planning;
-    selectedUser?: User;
-    selectedTeam?: SubTeam;
     orgUniTypeList?: OrgUnitTypeHierarchyDropdownValues;
 };
 
@@ -78,10 +76,10 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
     onClose,
     selectedParentOrgUnit,
     planning,
-    selectedUser,
-    selectedTeam,
     orgUniTypeList,
 }) => {
+    const { selectedUser, selectedTeam } = useAssignmentsContext();
+
     const hasMultipleTargets: boolean = Boolean(
         planning.target_org_unit_type_details?.length &&
         planning.target_org_unit_type_details?.length > 1,

@@ -1,8 +1,7 @@
-import React, { Dispatch, FunctionComponent } from 'react';
+import React, { FunctionComponent } from 'react';
 import {
     Table,
     Paper,
-    TableBody,
     TableCell,
     TableHead,
     TableRow,
@@ -11,15 +10,9 @@ import {
 } from '@mui/material';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import MESSAGES from 'Iaso/domains/assignments/messages';
-import { useSaveTeam } from 'Iaso/domains/teams/hooks/requests/useSaveTeam';
-import { SubTeam, Team } from 'Iaso/domains/teams/types/team';
-import { User } from 'Iaso/domains/teams/types/team';
-import { useSaveProfile } from 'Iaso/domains/users/hooks/useSaveProfile';
+import { Team } from 'Iaso/domains/teams/types/team';
 import { SxStyles } from 'Iaso/types/general';
-import getDisplayName from 'Iaso/utils/usersUtils';
-import { AssignmentsResult } from '../../types/assigment';
-import { assignmentsCountForUser, countTeams } from '../../utils';
-import { AssigneeRow } from './AssigneeRow';
+import { TeamTableBody } from './TeamTableBody';
 
 const defaultHeight = '80vh';
 
@@ -40,34 +33,15 @@ const styles: SxStyles = {
 
 type Props = {
     rootTeam?: Team;
-    planningId: string;
     isLoadingRootTeam: boolean;
-    selectedUser?: User;
-    setSelectedUser: Dispatch<React.SetStateAction<User | undefined>>;
-    selectedTeam?: SubTeam;
-    setSelectedTeam: Dispatch<React.SetStateAction<SubTeam | undefined>>;
-    assignments?: AssignmentsResult;
 };
 
 export const TeamTable: FunctionComponent<Props> = ({
     rootTeam,
-    planningId,
     isLoadingRootTeam,
-    selectedUser,
-    setSelectedUser,
-    selectedTeam,
-    setSelectedTeam,
-    assignments,
 }) => {
     const { formatMessage } = useSafeIntl();
 
-    const { mutate: updateTeam } = useSaveTeam('edit', false);
-    const { mutate: updateUser } = useSaveProfile({
-        showSuccessSnackBar: false,
-        extraInvalidateQueryKeys: ['planningChildrenOrgUnitsPaginated'],
-    });
-
-    const assigneeRadioGroupName = `assignee-${planningId}`;
     return (
         <>
             <Paper sx={styles.paper}>
@@ -80,7 +54,7 @@ export const TeamTable: FunctionComponent<Props> = ({
                             {rootTeam?.name}
                         </Typography>
                         <Box sx={styles.tableContainer}>
-                            <Table size="small">
+                            <Table size="small" stickyHeader>
                                 <TableHead>
                                     <TableRow>
                                         <TableCell
@@ -108,77 +82,7 @@ export const TeamTable: FunctionComponent<Props> = ({
                                         <TableCell />
                                     </TableRow>
                                 </TableHead>
-                                <TableBody>
-                                    {rootTeam?.sub_teams_details.map(
-                                        subTeam => (
-                                            <AssigneeRow
-                                                key={subTeam.id}
-                                                radioGroupName={
-                                                    assigneeRadioGroupName
-                                                }
-                                                isActive={
-                                                    selectedTeam?.id ===
-                                                    subTeam.id
-                                                }
-                                                setSelectedRow={() => {
-                                                    setSelectedTeam(subTeam);
-                                                    setSelectedUser(undefined);
-                                                }}
-                                                currentColor={subTeam?.color}
-                                                displayName={subTeam?.name}
-                                                count={countTeams(
-                                                    subTeam,
-                                                    assignments,
-                                                )}
-                                                onColorChange={color => {
-                                                    updateTeam({
-                                                        id: subTeam.id,
-                                                        color,
-                                                    });
-                                                }}
-                                                team={subTeam}
-                                                planningId={planningId}
-                                            />
-                                        ),
-                                    )}
-                                    {rootTeam?.users_details
-                                        .sort((a, b) =>
-                                            a.username.localeCompare(
-                                                b.username,
-                                            ),
-                                        )
-                                        .map(user => (
-                                            <AssigneeRow
-                                                key={user.id}
-                                                radioGroupName={
-                                                    assigneeRadioGroupName
-                                                }
-                                                isActive={
-                                                    selectedUser?.id === user.id
-                                                }
-                                                setSelectedRow={() => {
-                                                    setSelectedUser(user);
-                                                    setSelectedTeam(undefined);
-                                                }}
-                                                currentColor={user?.color}
-                                                count={assignmentsCountForUser(
-                                                    user,
-                                                    assignments,
-                                                )}
-                                                onColorChange={color => {
-                                                    updateUser({
-                                                        id: user.iaso_profile_id,
-                                                        color,
-                                                    });
-                                                }}
-                                                user={user}
-                                                displayName={getDisplayName(
-                                                    user,
-                                                )}
-                                                planningId={planningId}
-                                            />
-                                        ))}
-                                </TableBody>
+                                <TeamTableBody rootTeam={rootTeam} />
                             </Table>
                         </Box>
                     </>

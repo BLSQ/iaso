@@ -2,6 +2,7 @@ import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderWithThemeAndIntlProvider } from '../../../../tests/helpers';
+import { useAssignmentsContext } from './contexts/AssignmentsContext';
 import { Assignments } from './index';
 
 const {
@@ -70,6 +71,14 @@ vi.mock('Iaso/domains/assignments/hooks/requests/useSaveAssignment', () => ({
     useSaveAssignment: mockUseSaveAssignment,
 }));
 
+vi.mock('Iaso/domains/teams/hooks/requests/useSaveTeam', () => ({
+    useSaveTeam: () => ({ mutate: vi.fn() }),
+}));
+
+vi.mock('Iaso/domains/users/hooks/useSaveProfile', () => ({
+    useSaveProfile: () => ({ mutate: vi.fn() }),
+}));
+
 vi.mock(
     'Iaso/domains/assignments/hooks/requests/useBulkDeleteAssignments',
     () => ({
@@ -105,30 +114,22 @@ vi.mock('../../components/nav/TopBarComponent', () => ({
 
 vi.mock('./components/map/AssignmentsMap', () => ({
     AssignmentsMap: (props: Record<string, unknown>) => {
-        captureMapProps(props);
+        const { canAssign } = useAssignmentsContext();
+        captureMapProps({ ...props, canAssign });
         return <div data-testid="assignments-map" />;
     },
 }));
 
 vi.mock('./components/table/AssignmentsTable', () => ({
     AssignmentsTable: (props: Record<string, unknown>) => {
-        captureTableProps(props);
+        const { canAssign } = useAssignmentsContext();
+        captureTableProps({ ...props, canAssign });
         return <div data-testid="assignments-table" />;
     },
 }));
 
-function MockTeamTable({
-    setSelectedUser,
-}: {
-    setSelectedUser: (u: {
-        id: number;
-        username: string;
-        first_name: string;
-        last_name: string;
-        color: string;
-        iaso_profile_id: number;
-    }) => void;
-}) {
+function MockTeamTable() {
+    const { setSelectedUser } = useAssignmentsContext();
     captureTeamTableProps({ setSelectedUser });
     React.useEffect(() => {
         if (teamTableAutoSelectUser.enabled) {
@@ -248,7 +249,6 @@ describe('Assignments page', () => {
         expect(screen.getByTestId('assignments-map')).toBeInTheDocument();
         expect(screen.queryByTestId('assignments-table')).toBeNull();
         expect(captureMapProps.mock.calls[0][0]).toMatchObject({
-            planningId: '42',
             canAssign: false,
         });
     });

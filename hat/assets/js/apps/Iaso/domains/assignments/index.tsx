@@ -32,13 +32,12 @@ import { flattenOrgUnitTypeHierarchy } from '../orgUnits/orgUnitTypes/utils';
 import { useGetPlanningDetails } from '../plannings/hooks/requests/useGetPlanningDetails';
 import { Planning } from '../plannings/types';
 import { useGetTeam } from '../teams/hooks/requests/useGetTeams';
-import { SubTeam, User } from '../teams/types/team';
 import { AssignmentsMap } from './components/map/AssignmentsMap';
 import { AssignmentsTable } from './components/table/AssignmentsTable';
 import { TeamTable } from './components/teams/TeamTable';
+import { AssignmentsProvider } from './contexts/AssignmentsContext';
 import { useBulkDeleteAssignments } from './hooks/requests/useBulkDeleteAssignments';
 import { useGetAssignments } from './hooks/requests/useGetAssignments';
-import { useSaveAssignment } from './hooks/requests/useSaveAssignment';
 import MESSAGES from './messages';
 import { AssignmentsResult } from './types/assigment';
 import { AssignmentParams } from './types/assigment';
@@ -49,16 +48,10 @@ export const Assignments: FunctionComponent = () => {
     const params: AssignmentParams = useParamsObject(
         baseUrls.assignments,
     ) as unknown as AssignmentParams;
-    const [selectedUser, setSelectedUser] = useState<User | undefined>(
-        undefined,
-    );
     const [search, setSearch] = useState<string | undefined>(params.search);
     const [selectedOrgUnitTypes, setSelectedOrgUnitTypes] = useState<
         OrgUnitTypeHierarchyDropdownValue[]
     >([]);
-    const [selectedTeam, setSelectedTeam] = useState<SubTeam | undefined>(
-        undefined,
-    );
     const { tab, handleChangeTab } = useTabs<'list' | 'map'>({
         params: params as Record<string, Optional<string>>,
         defaultTab: (params?.tab ?? 'map') as 'list' | 'map',
@@ -113,12 +106,6 @@ export const Assignments: FunctionComponent = () => {
         isLoading: boolean;
     } = useGetAssignments({ planning: planningId });
 
-    const { handleSaveAssignment, isLoading: isSaving } = useSaveAssignment({
-        planningId,
-        assignments,
-        selectedUser,
-        selectedTeam,
-    });
     const { mutateAsync: deleteAssignments } = useBulkDeleteAssignments();
     const { data: orgUnitTypesHierarchy } = useGetOrgUnitTypesHierarchy(
         planning?.org_unit_details?.org_unit_type,
@@ -134,7 +121,6 @@ export const Assignments: FunctionComponent = () => {
         );
     }, [orgUnitTypesHierarchy, formsDropdown, planning?.forms]);
 
-    const canAssign = Boolean(selectedUser || selectedTeam);
     return (
         <>
             <TopBar
@@ -193,88 +179,76 @@ export const Assignments: FunctionComponent = () => {
                     </Box>
                 )}
 
-                <Grid container spacing={2}>
-                    <Grid item xs={12} md={8}>
-                        <Grid container spacing={0}>
-                            <Grid item xs={12} md={8}>
-                                <Tabs value={tab} onChange={handleChangeTab}>
-                                    <Tab
-                                        value="map"
-                                        label={formatMessage(MESSAGES.map)}
-                                    />
-                                    <Tab
-                                        value="list"
-                                        label={formatMessage(MESSAGES.list)}
-                                    />
-                                </Tabs>
+                <AssignmentsProvider
+                    planningId={planningId}
+                    assignments={assignments}
+                >
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} md={8}>
+                            <Grid container spacing={0}>
+                                <Grid item xs={12} md={8}>
+                                    <Tabs
+                                        value={tab}
+                                        onChange={handleChangeTab}
+                                    >
+                                        <Tab
+                                            value="map"
+                                            label={formatMessage(MESSAGES.map)}
+                                        />
+                                        <Tab
+                                            value="list"
+                                            label={formatMessage(MESSAGES.list)}
+                                        />
+                                    </Tabs>
+                                </Grid>
+                                <Grid item xs={12} md={4}>
+                                    <Box
+                                        sx={{
+                                            marginTop: '-15px',
+                                            ...smallInputOverrides,
+                                        }}
+                                    >
+                                        <InputComponent
+                                            keyValue="search"
+                                            onChange={(
+                                                _key: string | null,
+                                                value: string,
+                                            ) => setSearch(value)}
+                                            value={search}
+                                            type="search"
+                                            label={MESSAGES.searchOrgUnit}
+                                            onEnterPressed={handleSearch}
+                                            blockForbiddenChars
+                                        />
+                                    </Box>
+                                </Grid>
                             </Grid>
-                            <Grid item xs={12} md={4}>
-                                <Box
-                                    sx={{
-                                        marginTop: '-15px',
-                                        ...smallInputOverrides,
-                                    }}
-                                >
-                                    <InputComponent
-                                        keyValue="search"
-                                        onChange={(
-                                            _key: string | null,
-                                            value: string,
-                                        ) => setSearch(value)}
-                                        value={search}
-                                        type="search"
-                                        label={MESSAGES.searchOrgUnit}
-                                        onEnterPressed={handleSearch}
-                                        blockForbiddenChars
-                                    />
-                                </Box>
-                            </Grid>
+                            {tab === 'map' && (
+                                <AssignmentsMap
+                                    rootTeam={rootTeam}
+                                    isLoadingRootTeam={isLoadingRootTeam}
+                                    isLoadingAssignments={isLoadingAssignments}
+                                    planning={planning}
+                                    params={params}
+                                    orgUniTypeList={orgUniTypeList}
+                                    selectedOrgUnitTypes={selectedOrgUnitTypes}
+                                    setSelectedOrgUnitTypes={
+                                        setSelectedOrgUnitTypes
+                                    }
+                                />
+                            )}
+                            {tab === 'list' && (
+                                <AssignmentsTable params={params} />
+                            )}
                         </Grid>
-                        {tab === 'map' && (
-                            <AssignmentsMap
-                                planningId={planningId}
+                        <Grid item xs={12} md={4}>
+                            <TeamTable
                                 rootTeam={rootTeam}
                                 isLoadingRootTeam={isLoadingRootTeam}
-                                assignments={assignments}
-                                isLoadingAssignments={isLoadingAssignments}
-                                handleSaveAssignment={handleSaveAssignment}
-                                isSaving={isSaving}
-                                planning={planning}
-                                canAssign={canAssign}
-                                params={params}
-                                orgUniTypeList={orgUniTypeList}
-                                selectedOrgUnitTypes={selectedOrgUnitTypes}
-                                setSelectedOrgUnitTypes={
-                                    setSelectedOrgUnitTypes
-                                }
-                                selectedUser={selectedUser}
-                                selectedTeam={selectedTeam}
                             />
-                        )}
-                        {tab === 'list' && (
-                            <AssignmentsTable
-                                params={params}
-                                canAssign={canAssign}
-                                handleSaveAssignment={handleSaveAssignment}
-                                isSaving={isSaving}
-                                selectedUser={selectedUser}
-                                selectedTeam={selectedTeam}
-                            />
-                        )}
+                        </Grid>
                     </Grid>
-                    <Grid item xs={12} md={4}>
-                        <TeamTable
-                            planningId={planningId}
-                            rootTeam={rootTeam}
-                            isLoadingRootTeam={isLoadingRootTeam}
-                            selectedUser={selectedUser}
-                            setSelectedUser={setSelectedUser}
-                            selectedTeam={selectedTeam}
-                            setSelectedTeam={setSelectedTeam}
-                            assignments={assignments}
-                        />
-                    </Grid>
-                </Grid>
+                </AssignmentsProvider>
             </MainWrapper>
         </>
     );

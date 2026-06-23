@@ -4,9 +4,15 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { baseUrls } from 'Iaso/constants/urls';
 import { PaginatedPlanningOrgUnit } from 'Iaso/domains/plannings/types';
 import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers';
+import { AssignmentsProvider } from '../../contexts/AssignmentsContext';
 import { AssignmentsTable } from './AssignmentsTable';
 
 const captureTableProps = vi.fn();
+
+const saveAssignmentState = {
+    handleSaveAssignment: vi.fn(),
+    isLoading: false,
+};
 
 vi.mock('Iaso/components/tables/TableWithDeepLink', () => ({
     TableWithDeepLink: (props: Record<string, unknown>) => {
@@ -25,6 +31,18 @@ vi.mock('Iaso/domains/teams/hooks/requests/useGetPlanningOrgUnits', () => ({
     ) => mockUseGetPlanningOrgUnitsChildrenPaginated(planningId, params),
 }));
 
+vi.mock('Iaso/domains/teams/hooks/requests/useSaveTeam', () => ({
+    useSaveTeam: () => ({ mutate: vi.fn() }),
+}));
+
+vi.mock('Iaso/domains/users/hooks/useSaveProfile', () => ({
+    useSaveProfile: () => ({ mutate: vi.fn() }),
+}));
+
+vi.mock('../../hooks/requests/useSaveAssignment', () => ({
+    useSaveAssignment: () => saveAssignmentState,
+}));
+
 const defaultParams = {
     planningId: '7',
     tab: 'list' as const,
@@ -32,9 +50,33 @@ const defaultParams = {
     page: '1',
 };
 
+const selectedUser = {
+    id: 1,
+    username: 'a',
+    first_name: 'A',
+    last_name: 'B',
+    color: '#000',
+    iaso_profile_id: 1,
+};
+
+const selectedTeam = { id: 2, name: 'T', color: '#fff' };
+
+const renderAssignmentsTable = (
+    providerProps: React.ComponentProps<typeof AssignmentsProvider> = {
+        planningId: '7',
+    },
+) =>
+    renderWithThemeAndIntlProvider(
+        <AssignmentsProvider {...providerProps}>
+            <AssignmentsTable params={defaultParams} />
+        </AssignmentsProvider>,
+    );
+
 describe('AssignmentsTable', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        saveAssignmentState.isLoading = false;
+        saveAssignmentState.handleSaveAssignment = vi.fn();
         mockUseGetPlanningOrgUnitsChildrenPaginated.mockReturnValue({
             data: {
                 results: [
@@ -49,14 +91,7 @@ describe('AssignmentsTable', () => {
     });
 
     it('passes org unit rows and pagination from the query into the table', () => {
-        renderWithThemeAndIntlProvider(
-            <AssignmentsTable
-                params={defaultParams}
-                canAssign
-                handleSaveAssignment={vi.fn()}
-                isSaving={false}
-            />,
-        );
+        renderAssignmentsTable();
 
         expect(
             mockUseGetPlanningOrgUnitsChildrenPaginated,
@@ -87,14 +122,7 @@ describe('AssignmentsTable', () => {
             isLoading: true,
         });
 
-        const { rerender } = renderWithThemeAndIntlProvider(
-            <AssignmentsTable
-                params={defaultParams}
-                canAssign
-                handleSaveAssignment={vi.fn()}
-                isSaving={false}
-            />,
-        );
+        const { rerender } = renderAssignmentsTable();
 
         expect(
             (
@@ -113,14 +141,12 @@ describe('AssignmentsTable', () => {
             },
             isLoading: false,
         });
+        saveAssignmentState.isLoading = true;
 
         rerender(
-            <AssignmentsTable
-                params={defaultParams}
-                canAssign
-                handleSaveAssignment={vi.fn()}
-                isSaving
-            />,
+            <AssignmentsProvider planningId="7">
+                <AssignmentsTable params={defaultParams} />
+            </AssignmentsProvider>,
         );
 
         expect(
@@ -134,15 +160,12 @@ describe('AssignmentsTable', () => {
 
     it('passes onRowClick when the user can assign, and omits it otherwise', () => {
         const handleSave = vi.fn();
+        saveAssignmentState.handleSaveAssignment = handleSave;
 
-        const { rerender } = renderWithThemeAndIntlProvider(
-            <AssignmentsTable
-                params={defaultParams}
-                canAssign
-                handleSaveAssignment={handleSave}
-                isSaving={false}
-            />,
-        );
+        const { rerender } = renderAssignmentsTable({
+            planningId: '7',
+            initialSelectedUser: selectedUser,
+        });
 
         const propsWithClick = captureTableProps.mock.calls.at(-1)?.[0] as {
             onRowClick?: (row: PaginatedPlanningOrgUnit) => void;
@@ -152,12 +175,9 @@ describe('AssignmentsTable', () => {
         expect(handleSave).toHaveBeenCalledWith(99);
 
         rerender(
-            <AssignmentsTable
-                params={defaultParams}
-                canAssign={false}
-                handleSaveAssignment={handleSave}
-                isSaving={false}
-            />,
+            <AssignmentsProvider key="no-selection" planningId="7">
+                <AssignmentsTable params={defaultParams} />
+            </AssignmentsProvider>,
         );
 
         const propsNoClick = captureTableProps.mock.calls.at(-1)?.[0] as {
@@ -167,26 +187,11 @@ describe('AssignmentsTable', () => {
     });
 
     it('forwards selection props through extraProps', () => {
-        const selectedUser = {
-            id: 1,
-            username: 'a',
-            first_name: 'A',
-            last_name: 'B',
-            color: '#000',
-            iaso_profile_id: 1,
-        };
-        const selectedTeam = { id: 2, name: 'T', color: '#fff' };
-
-        renderWithThemeAndIntlProvider(
-            <AssignmentsTable
-                params={defaultParams}
-                canAssign={false}
-                handleSaveAssignment={vi.fn()}
-                isSaving={false}
-                selectedUser={selectedUser}
-                selectedTeam={selectedTeam}
-            />,
-        );
+        renderAssignmentsTable({
+            planningId: '7',
+            initialSelectedUser: selectedUser,
+            initialSelectedTeam: selectedTeam,
+        });
 
         const extra = (
             captureTableProps.mock.calls.at(-1)?.[0] as {
@@ -198,7 +203,7 @@ describe('AssignmentsTable', () => {
             }
         ).extraProps;
 
-        expect(extra.canAssign).toBe(false);
+        expect(extra.canAssign).toBe(true);
         expect(extra.selectedUser).toEqual(selectedUser);
         expect(extra.selectedTeam).toEqual(selectedTeam);
     });

@@ -4,6 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers';
 import { TeamTable } from './TeamTable';
 
+const mockSetSelectedUser = vi.fn();
+const mockSetSelectedTeam = vi.fn();
 const mockUpdateTeam = vi.fn();
 const mockUpdateUser = vi.fn();
 const captureAssigneeRowProps = vi.fn();
@@ -20,15 +22,19 @@ vi.mock('bluesquare-components', async importOriginal => {
     };
 });
 
-vi.mock('Iaso/domains/teams/hooks/requests/useSaveTeam', () => ({
-    useSaveTeam: () => ({
-        mutate: mockUpdateTeam,
-    }),
-}));
-
-vi.mock('Iaso/domains/users/hooks/useSaveProfile', () => ({
-    useSaveProfile: () => ({
-        mutate: mockUpdateUser,
+vi.mock('../../contexts/AssignmentsContext', () => ({
+    useAssignmentsContext: () => ({
+        planningId: '7',
+        assignments,
+        selectedUser: undefined,
+        setSelectedUser: mockSetSelectedUser,
+        selectedTeam: undefined,
+        setSelectedTeam: mockSetSelectedTeam,
+        canAssign: false,
+        handleSaveAssignment: vi.fn(),
+        isSaving: false,
+        updateTeam: mockUpdateTeam,
+        updateUser: mockUpdateUser,
     }),
 }));
 
@@ -116,14 +122,8 @@ const assignments = {
 };
 
 const defaultProps = {
-    planningId: '7',
     rootTeam: rootTeam as any,
     isLoadingRootTeam: false,
-    selectedUser: undefined,
-    setSelectedUser: vi.fn(),
-    selectedTeam: undefined,
-    setSelectedTeam: vi.fn(),
-    assignments: assignments as any,
 };
 
 describe('TeamTable', () => {
@@ -161,10 +161,10 @@ describe('TeamTable', () => {
         const subTeamRow = captureAssigneeRowProps.mock.calls[0][0] as any;
 
         subTeamRow.setSelectedRow();
-        expect(defaultProps.setSelectedTeam).toHaveBeenCalledWith(
+        expect(mockSetSelectedTeam).toHaveBeenCalledWith(
             rootTeam.sub_teams_details[0],
         );
-        expect(defaultProps.setSelectedUser).toHaveBeenCalledWith(undefined);
+        expect(mockSetSelectedUser).toHaveBeenCalledWith(undefined);
 
         subTeamRow.onColorChange('#ff00ff');
         expect(mockUpdateTeam).toHaveBeenCalledWith({
@@ -181,10 +181,8 @@ describe('TeamTable', () => {
         const firstUserRow = userRows[0];
 
         firstUserRow.setSelectedRow();
-        expect(defaultProps.setSelectedUser).toHaveBeenCalledWith(
-            firstUserRow.user,
-        );
-        expect(defaultProps.setSelectedTeam).toHaveBeenCalledWith(undefined);
+        expect(mockSetSelectedUser).toHaveBeenCalledWith(firstUserRow.user);
+        expect(mockSetSelectedTeam).toHaveBeenCalledWith(undefined);
 
         firstUserRow.onColorChange('#00aaff');
         expect(mockUpdateUser).toHaveBeenCalledWith({

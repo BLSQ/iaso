@@ -9,8 +9,8 @@ import {
 import { getStickyTableHeadStyles } from 'Iaso/styles/utils';
 import { SxStyles } from 'Iaso/types/general';
 import { PaginatedPlanningOrgUnit } from '../../../plannings/types';
-import { SubTeam, User } from '../../../teams/types/team';
 import { defaultHeight } from '../../constants/ui';
+import { useAssignmentsContext } from '../../contexts/AssignmentsContext';
 import { useGetColumns } from '../../hooks/useGetColumns';
 import { AssignmentParams } from '../../types/assigment';
 
@@ -31,21 +31,17 @@ const styles: SxStyles = {
 
 type Props = {
     params: AssignmentParams;
-    canAssign: boolean;
-    handleSaveAssignment: (orgUnitId: number) => void;
-    isSaving: boolean;
-    selectedUser?: User;
-    selectedTeam?: SubTeam;
 };
 
-export const AssignmentsTable: FunctionComponent<Props> = ({
-    params,
-    canAssign,
-    handleSaveAssignment,
-    isSaving,
-    selectedUser,
-    selectedTeam,
-}) => {
+export const AssignmentsTable: FunctionComponent<Props> = ({ params }) => {
+    const {
+        canAssign,
+        handleSaveAssignment,
+        isSaving,
+        selectedUser,
+        selectedTeam,
+    } = useAssignmentsContext();
+
     const { data, isLoading } = useGetPlanningOrgUnitsChildrenPaginated(
         params.planningId,
         params,

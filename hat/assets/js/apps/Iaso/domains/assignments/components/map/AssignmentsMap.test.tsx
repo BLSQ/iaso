@@ -2,6 +2,7 @@ import React from 'react';
 import { screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers';
+import { AssignmentsProvider } from '../../contexts/AssignmentsContext';
 import { AssignmentsMap } from './AssignmentsMap';
 
 const {
@@ -25,6 +26,21 @@ vi.mock('../../../teams/hooks/requests/useGetPlanningOrgUnits', () => ({
         mockUseGetPlanningOrgUnitsChildren(...args),
     useGetPlanningOrgUnitsRoot: (...args: unknown[]) =>
         mockUseGetPlanningOrgUnitsRoot(...args),
+}));
+
+vi.mock('Iaso/domains/teams/hooks/requests/useSaveTeam', () => ({
+    useSaveTeam: () => ({ mutate: vi.fn() }),
+}));
+
+vi.mock('Iaso/domains/users/hooks/useSaveProfile', () => ({
+    useSaveProfile: () => ({ mutate: vi.fn() }),
+}));
+
+vi.mock('../../hooks/requests/useSaveAssignment', () => ({
+    useSaveAssignment: () => ({
+        handleSaveAssignment: vi.fn(),
+        isLoading: false,
+    }),
 }));
 
 vi.mock('react-leaflet', () => ({
@@ -77,6 +93,33 @@ const planning = {
     org_unit_details: { id: 1, name: 'Root' },
 } as any;
 
+const selectedUser = {
+    id: 1,
+    username: 'john',
+    first_name: 'John',
+    last_name: 'Doe',
+    color: '#000',
+    iaso_profile_id: 1,
+};
+
+const renderAssignmentsMap = (
+    providerProps: React.ComponentProps<typeof AssignmentsProvider> = {
+        planningId: '42',
+    },
+) =>
+    renderWithThemeAndIntlProvider(
+        <AssignmentsProvider {...providerProps}>
+            <AssignmentsMap
+                isLoadingRootTeam={false}
+                isLoadingAssignments={false}
+                planning={planning}
+                params={defaultParams}
+                selectedOrgUnitTypes={[]}
+                setSelectedOrgUnitTypes={vi.fn()}
+            />
+        </AssignmentsProvider>,
+    );
+
 describe('AssignmentsMap', () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -95,20 +138,10 @@ describe('AssignmentsMap', () => {
     });
 
     it('renders map layers and passes core props to child components', () => {
-        renderWithThemeAndIntlProvider(
-            <AssignmentsMap
-                planningId="42"
-                isLoadingRootTeam={false}
-                isLoadingAssignments={false}
-                handleSaveAssignment={vi.fn()}
-                isSaving={false}
-                canAssign
-                planning={planning}
-                params={defaultParams}
-                selectedOrgUnitTypes={[]}
-                setSelectedOrgUnitTypes={vi.fn()}
-            />,
-        );
+        renderAssignmentsMap({
+            planningId: '42',
+            initialSelectedUser: selectedUser,
+        });
 
         expect(screen.getByTestId('map-container')).toBeInTheDocument();
         expect(screen.getByTestId('map-tools')).toBeInTheDocument();
@@ -128,39 +161,16 @@ describe('AssignmentsMap', () => {
             isFetching: true,
         });
 
-        renderWithThemeAndIntlProvider(
-            <AssignmentsMap
-                planningId="42"
-                isLoadingRootTeam={false}
-                isLoadingAssignments={false}
-                handleSaveAssignment={vi.fn()}
-                isSaving={false}
-                canAssign={false}
-                planning={planning}
-                params={defaultParams}
-                selectedOrgUnitTypes={[]}
-                setSelectedOrgUnitTypes={vi.fn()}
-            />,
-        );
+        renderAssignmentsMap();
 
         expect(screen.getByRole('progressbar')).toBeVisible();
     });
 
     it('adds the can-assign CSS class when assignment is allowed', () => {
-        const { container } = renderWithThemeAndIntlProvider(
-            <AssignmentsMap
-                planningId="42"
-                isLoadingRootTeam={false}
-                isLoadingAssignments={false}
-                handleSaveAssignment={vi.fn()}
-                isSaving={false}
-                canAssign
-                planning={planning}
-                params={defaultParams}
-                selectedOrgUnitTypes={[]}
-                setSelectedOrgUnitTypes={vi.fn()}
-            />,
-        );
+        const { container } = renderAssignmentsMap({
+            planningId: '42',
+            initialSelectedUser: selectedUser,
+        });
 
         expect(
             container.querySelector('.assignments-map--can-assign'),

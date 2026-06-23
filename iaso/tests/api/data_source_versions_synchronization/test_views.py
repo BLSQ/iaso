@@ -201,13 +201,13 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
             "source_version_to_compare_with_org_unit_group": self.group_2.id,
             "ignore_groups": True,
             "show_deleted_org_units": False,
-            "field_names": ["name", "code"],
+            "field_names": ["name", "not_a_valid_field"],
         }
         response = self.client.patch(
             f"/api/datasources/sync/{self.data_source_sync_1.id}/create_json_diff/", data=json_diff_params
         )
         json_response = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('"code" is not a valid choice', json_response["field_names"][0])
+        self.assertIn('"not_a_valid_field" is not a valid choice', json_response["field_names"][0])
 
         self.data_source_sync_1.refresh_from_db()
         self.assertIsNone(self.data_source_sync_1.json_diff)

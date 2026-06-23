@@ -80,6 +80,12 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         "Localisation before change",
         "Localisation after change",
         "Localisation conclusion",
+        "Geometry before change",
+        "Geometry after change",
+        "Geometry conclusion",
+        "Code before change",
+        "Code after change",
+        "Code conclusion",
         "Reference submission before",
         "Reference submission after",
     ]
@@ -345,6 +351,8 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                 "closing_date": "new_closed_date",
                 "groups": "new_groups",
                 "localisation": "new_location",
+                "geom": "new_geom",
+                "code": "new_code",
                 "reference_submission": "new_reference_instances",
             }
             requested_field = field_mapping.get(field_name)
@@ -468,11 +476,31 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
             location_before = get_location_str(change_request.old_location)
             location_after = (
                 get_location_str(change_request.new_location)
-                if change_request.new_location
+                if "new_location" in change_request.requested_fields
                 else get_location_str(change_request.org_unit.location)
             )
             location_conclusion = get_conclusion(change_request, "localisation", location_before, location_after)
             row.extend([location_before, location_after, location_conclusion])
+
+            # Geometry (polygon) changes
+            geom_before = change_request.old_geom.wkt[:80] if change_request.old_geom else ""
+            geom_after = (
+                (change_request.new_geom.wkt[:80] if change_request.new_geom else "")
+                if "new_geom" in change_request.requested_fields
+                else (change_request.org_unit.geom.wkt[:80] if change_request.org_unit.geom else "")
+            )
+            geom_conclusion = get_conclusion(change_request, "geom", geom_before, geom_after)
+            row.extend([geom_before, geom_after, geom_conclusion])
+
+            # Code changes
+            code_before = change_request.old_code
+            code_after = (
+                change_request.new_code
+                if "new_code" in change_request.requested_fields
+                else change_request.org_unit.code
+            )
+            code_conclusion = get_conclusion(change_request, "code", code_before, code_after)
+            row.extend([code_before, code_after, code_conclusion])
 
             # Reference instances changes
             reference_before = get_reference_instance_ids(change_request.old_reference_instances)

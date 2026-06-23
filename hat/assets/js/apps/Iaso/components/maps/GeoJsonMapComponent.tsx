@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
 
-import { useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import { commonStyles } from 'bluesquare-components';
@@ -32,11 +31,10 @@ type Props = {
 export const GeoJsonMap: FunctionComponent<Props> = ({ geoJson }) => {
     //@ts-ignore
     const classes: Record<string, string> = useStyles();
-    const theme = useTheme();
-    const bounds: Bounds | undefined = useMemo(() => {
-        const shape = L.geoJSON(geoJson);
-        return shape?.getBounds();
-    }, [geoJson]);
+    const bounds: Bounds | undefined = useMemo(
+        () => L.geoJSON(geoJson)?.getBounds(),
+        [geoJson],
+    );
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
     const boundsOptions: Record<string, any> = {
         padding: [10, 10],
@@ -66,13 +64,7 @@ export const GeoJsonMap: FunctionComponent<Props> = ({ geoJson }) => {
                     currentTile={currentTile}
                     setCurrentTile={setCurrentTile}
                 />
-
-                <GeoJSON
-                    style={{
-                        color: theme.palette.secondary.main,
-                    }}
-                    data={geoJson}
-                />
+                <GeoJSON data={geoJson} />
             </MapContainer>
         </div>
     );

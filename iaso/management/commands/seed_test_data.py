@@ -10,7 +10,7 @@ import requests
 from dhis2 import Api
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.contrib.sites.models import Site
 from django.core import management
 from django.core.files.uploadedfile import InMemoryUploadedFile, UploadedFile
@@ -25,6 +25,7 @@ from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from iaso.models import (
     Account,
     DataSource,
+    DataSourceVersionsSynchronization,
     ExternalCredentials,
     FeatureFlag,
     Form,
@@ -32,6 +33,7 @@ from iaso.models import (
     Instance,
     Mapping,
     MappingVersion,
+    OrgUnit,
     OrgUnitType,
     Profile,
     Project,
@@ -142,6 +144,12 @@ class Command(BaseCommand):
         )
         for proj in (project, project2):
             proj.feature_flags.add(flag_auth, flag_auto_upload)
+
+        site = Site.objects.get_current()
+        if site.domain == "example.com":
+            site.domain = "localhost:8081"
+            site.name = "Iaso (local)"
+            site.save()
 
         datasource, _ds_created = DataSource.objects.get_or_create(
             name="reference_play_test" + dhis2_version, credentials=credentials
@@ -369,6 +377,8 @@ class Command(BaseCommand):
                 validate=True,
             )
 
+            self.seed_geom_code_demo_version(datasource, source_version)
+
             self.seed_entities(source_version, entity_form, entity_form_version, account, project, entity_type, user)
 
             print("********* generating instances")
@@ -488,6 +498,344 @@ class Command(BaseCommand):
                         )
                     except Exception as e:
                         print("Failed to fix ", category_option["name"], e)
+
+    @transaction.atomic
+    def seed_geom_code_demo_version(self, datasource, source_version):
+        """
+        Create a *separate* datasource ("…_geom_demo") whose version 1 is an identical
+        copy of source_version, then apply a varied set of mutations across ~40 org units
+        so the resulting diff exercises every synchronisable field combination:
+
+          Slice  Count  Geometry                      Code                   Other fields                   Expected fields
+          ─────  ─────  ────────────────────────────  ─────────────────────  ──────────────────────────────  ─────────────────────────────
+          A        5    shift polygon                 updated                –                               geometry, code
+          B        5    shift polygon                 –                      name suffix                     geometry, name
+          C        5    shift polygon                 updated                opening_date pushed 1 year      geometry, code, opening_date
+          C2       5    shift polygon                 –                      –  (geometry only)              geometry
+          D        5    point → polygon (loc cleared) updated                –                               geometry, code
+          E        5    point → polygon (loc cleared) –                      closing_date pushed 1 year      geometry, closing_date
+          F        5    –                             updated                name suffix + opening_date       code, name, opening_date
+          G        5    –                             –                      name suffix only                name
+          H        5    –                             updated                –  (code-only change)           code
+          I        1    null → new polygon            –                      –                               geometry
+          J        2    –                             swapped with each other  –  (non-unique code conflict)   code
+
+        This simulates merging from multiple authoritative sources (DHIS2, EF, INS)
+        across datasource boundaries.  Configure the sync with:
+          source_version_to_update       = source_version   (the original DHIS2 import)
+          source_version_to_compare_with = demo_version     (this source)
+          field_names = [name, geometry, code, opening_date, closing_date]
+        """
+        import json
+
+        print("********* seeding geom/code demo version")
+
+        demo_datasource, _ = DataSource.objects.get_or_create(name=datasource.name + "_geom_demo")
+        for project in datasource.projects.all():
+            demo_datasource.projects.add(project)
+
+        demo_version, _ = SourceVersion.objects.get_or_create(number=1, data_source=demo_datasource)
+
+        # Wipe existing content for idempotency.
+        deleted_count, _ = OrgUnit.objects.filter(version=demo_version).delete()
+        if deleted_count:
+            print(f"  Cleared {deleted_count} existing org units from demo version")
+
+        # Copy every org unit from source_version to demo_version ordered by path so
+        # parents are saved before children (save() uses the parent path to build the child's).
+        source_orgunits = list(source_version.orgunit_set.select_related("parent", "org_unit_type").order_by("path"))
+
+        v1_pk_to_v2 = {}
+        for ou in source_orgunits:
+            parent_v2 = v1_pk_to_v2.get(ou.parent_id) if ou.parent_id else None
+            new_ou = OrgUnit(
+                name=ou.name,
+                source_ref=ou.source_ref,
+                version=demo_version,
+                org_unit_type=ou.org_unit_type,
+                validation_status=ou.validation_status,
+                parent=parent_v2,
+                location=ou.location,
+                geom=ou.geom,
+                simplified_geom=ou.simplified_geom,
+                code=ou.code,
+                opening_date=ou.opening_date,
+                closed_date=ou.closed_date,
+            )
+            new_ou.save()
+            v1_pk_to_v2[ou.pk] = new_ou
+
+        print(f"  Copied {len(v1_pk_to_v2)} org units to demo version")
+
+        # ── helpers ──────────────────────────────────────────────────────────────
+
+        def _shift_geojson_coords(coords, dx, dy):
+            if isinstance(coords[0], list):
+                return [_shift_geojson_coords(c, dx, dy) for c in coords]
+            return [coords[0] + dx, coords[1] + dy] + coords[2:]
+
+        def _apply_shifted_polygon(ou):
+            """Shift the polygon by 0.1° (~11 km) and simplify it.
+
+            The modest shift keeps old and new shapes overlapping (boundary-correction
+            scenario) while aggressive simplification (0.05° tolerance) reduces the new
+            shape to a handful of vertices, making the difference obvious on the map.
+            """
+            from django.contrib.gis.geos import GEOSGeometry
+
+            geojson = json.loads(ou.geom.geojson)
+            geojson["coordinates"] = _shift_geojson_coords(geojson["coordinates"], dx=0.1, dy=0.1)
+            shifted = GEOSGeometry(json.dumps(geojson), srid=4326)
+            coarse = shifted.simplify(tolerance=0.05, preserve_topology=True)
+            ou.geom = MultiPolygon(coarse, srid=4326) if coarse.geom_type == "Polygon" else coarse
+            fine = ou.geom.simplify(tolerance=0.001, preserve_topology=True)
+            ou.simplified_geom = MultiPolygon(fine, srid=4326) if fine.geom_type == "Polygon" else fine
+
+        def _make_square_polygon(cx, cy):
+            size = 0.1  # ~10 km side — large enough to be unmistakably distinct from the original
+            poly = Polygon(
+                [
+                    (cx - size, cy - size),
+                    (cx + size, cy - size),
+                    (cx + size, cy + size),
+                    (cx - size, cy + size),
+                    (cx - size, cy - size),
+                ],
+                srid=4326,
+            )
+            geom = MultiPolygon(poly, srid=4326)
+            simplified = geom.simplify(tolerance=0.001, preserve_topology=True)
+            simplified_geom = MultiPolygon(simplified, srid=4326) if simplified.geom_type == "Polygon" else simplified
+            return geom, simplified_geom
+
+        def _apply_new_polygon_from_point(ou):
+            """Replace the point location with a 1 km² polygon (point → polygon scenario).
+
+            location is cleared so GeometryFieldType.access() returns the new polygon rather
+            than the unchanged point — making the geometry change visible to the differ.
+            """
+            cx, cy = ou.location.x, ou.location.y
+            ou.geom, ou.simplified_geom = _make_square_polygon(cx, cy)
+            ou.location = None  # clear point so differ compares polygon vs None (not point vs point)
+
+        def _apply_new_geom_from_null(ou):
+            """Add a polygon to an org unit that had no geometry at all (null → polygon scenario)."""
+            # Use parent's centroid when available, otherwise fall back to a fixed coordinate
+            # in the test data area.
+            cx, cy = -11.0, 10.0
+            if ou.parent:
+                if ou.parent.geom:
+                    centroid = ou.parent.geom.centroid
+                    cx, cy = centroid.x, centroid.y
+                elif ou.parent.location:
+                    cx, cy = ou.parent.location.x, ou.parent.location.y
+            ou.geom, ou.simplified_geom = _make_square_polygon(cx, cy)
+
+        def _bump_date(d, years):
+            """Return d shifted by the given number of years, or None if d is None."""
+            if d is None:
+                return None
+            try:
+                return d.replace(year=d.year + years)
+            except ValueError:
+                return d.replace(year=d.year + years, day=28)  # handle Feb-29
+
+        SLICE = 5  # org units per mutation scenario
+
+        # Pools: org units that have a polygon vs those with only a point vs those with nothing.
+        pool_geom = list(OrgUnit.objects.filter(version=demo_version, geom__isnull=False).order_by("name"))
+        pool_point = list(
+            OrgUnit.objects.filter(version=demo_version, location__isnull=False, geom__isnull=True).order_by("name")
+        )
+        pool_neither = list(
+            OrgUnit.objects.filter(version=demo_version, geom__isnull=True, location__isnull=True).order_by("name")
+        )
+
+        def _take(pool, n):
+            taken, pool[:] = pool[:n], pool[n:]
+            return taken
+
+        # stats: label → (count, [sample names])
+        stats = {}
+
+        def _record(label, ous):
+            stats[label] = (len(ous), [ou.name for ou in ous[:2]])
+
+        # A — polygon shift + code update
+        batch = _take(pool_geom, SLICE)
+        for ou in batch:
+            _apply_shifted_polygon(ou)
+            ou.code = (ou.source_ref or ou.name[:8]) + "-v2"
+            ou.save()
+        _record("A: polygon shift + code", batch)
+
+        # B — polygon shift + name suffix
+        batch = _take(pool_geom, SLICE)
+        for ou in batch:
+            _apply_shifted_polygon(ou)
+            ou.name = ou.name + " (updated)"
+            ou.save()
+        _record("B: polygon shift + name", batch)
+
+        # C — polygon shift + code + opening_date pushed 1 year
+        batch = _take(pool_geom, SLICE)
+        for ou in batch:
+            _apply_shifted_polygon(ou)
+            ou.code = (ou.source_ref or ou.name[:8]) + "-v2"
+            ou.opening_date = _bump_date(ou.opening_date, 1)
+            ou.save()
+        _record("C: polygon shift + code + opening_date", batch)
+
+        # C2 — polygon shift only (geometry-only change, no code or date mutation)
+        batch = _take(pool_geom, SLICE)
+        for ou in batch:
+            _apply_shifted_polygon(ou)
+            ou.save()
+        _record("C2: polygon shift only", batch)
+
+        # D — new polygon from point + code update
+        batch = _take(pool_point, SLICE)
+        for ou in batch:
+            _apply_new_polygon_from_point(ou)
+            ou.code = (ou.source_ref or ou.name[:8]) + "-v2"
+            ou.save()
+        _record("D: new polygon + code", batch)
+
+        # E — new polygon from point + closing_date pushed 1 year
+        batch = _take(pool_point, SLICE)
+        for ou in batch:
+            _apply_new_polygon_from_point(ou)
+            ou.closed_date = _bump_date(ou.closed_date, 1)
+            ou.save()
+        _record("E: new polygon + closing_date", batch)
+
+        # Slices F–H don't require a specific geometry type; use whatever pool still has items.
+        def _remaining():
+            return pool_point if pool_point else pool_geom
+
+        # F — code + name + opening_date (no geometry change)
+        batch = _take(_remaining(), SLICE)
+        for ou in batch:
+            ou.code = (ou.source_ref or ou.name[:8]) + "-v2"
+            ou.name = ou.name + " (updated)"
+            ou.opening_date = _bump_date(ou.opening_date, 1)
+            ou.save()
+        _record("F: code + name + opening_date", batch)
+
+        # G — name only
+        batch = _take(_remaining(), SLICE)
+        for ou in batch:
+            ou.name = ou.name + " (updated)"
+            ou.save()
+        _record("G: name only", batch)
+
+        # H — code only
+        batch = _take(_remaining(), SLICE)
+        for ou in batch:
+            ou.code = (ou.source_ref or ou.name[:8]) + "-v2"
+            ou.save()
+        _record("H: code only", batch)
+
+        # I — null → new polygon (org unit had no geometry of any kind)
+        batch = _take(pool_neither, 1)
+        for ou in batch:
+            _apply_new_geom_from_null(ou)
+            ou.save()
+        _record("I: null → new polygon", batch)
+
+        # J — swap codes between two demo org units so each CR tries to claim a code already
+        # held by the other's counterpart in source_version.  Demo version stays internally
+        # consistent (no duplicate codes introduced), but approving either CR immediately
+        # collides with the existing holder in the target.
+        swap_pair = list(OrgUnit.objects.filter(version=demo_version).exclude(code="").order_by("name")[:2])
+        batch_j = []
+        if len(swap_pair) == 2:
+            ou_a, ou_b = swap_pair
+            code_a, code_b = ou_a.code, ou_b.code
+            # Blank ou_a first to avoid a transient duplicate before ou_b is updated.
+            ou_a.code = ""
+            ou_a.save()
+            ou_b.code = code_a
+            ou_b.save()
+            ou_a.code = code_b
+            ou_a.save()
+            batch_j = swap_pair
+        _record("J: swapped codes (conflict)", batch_j)
+
+        total = sum(count for count, _ in stats.values())
+        print(f"  Applied mutations to {total} org units:")
+        for label, (count, samples) in stats.items():
+            sample_str = ", ".join(f'"{n}"' for n in samples)
+            print(f"    {label}: {count}  (e.g. {sample_str})")
+        print(f"  Demo datasource: '{demo_datasource.name}' (version {demo_version.number})")
+
+        # ── create & run the synchronization ─────────────────────────────────
+        print("********* creating geom/code demo synchronization")
+
+        account = datasource.projects.first().account
+
+        # Wipe any previous sync between these two versions so the seed is idempotent.
+        DataSourceVersionsSynchronization.objects.filter(
+            source_version_to_update=source_version,
+            source_version_to_compare_with=demo_version,
+            account=account,
+        ).delete()
+
+        sync = DataSourceVersionsSynchronization.objects.create(
+            name="geom_code_demo_sync",
+            source_version_to_update=source_version,
+            source_version_to_compare_with=demo_version,
+            account=account,
+            created_by=self.user,
+        )
+
+        field_names = ["name", "geometry", "code", "opening_date", "closed_date"]
+        from iaso.management.commands.command_logger import CommandLogger
+
+        sync.create_json_diff(field_names=field_names, logger_to_use=CommandLogger(self.stdout))
+        print(f"  Diff computed: {sync.count_update} updates, {sync.count_create} creations")
+
+        sync.synchronize_source_versions()
+        cr_count = sync.change_requests.count()
+        geom_cr_count = sync.change_requests.exclude(new_geom=None).count()
+        print(f"  Change requests created: {cr_count} total, {geom_cr_count} with geometry change")
+
+        from django.contrib.sites.models import Site
+
+        domain = Site.objects.get_current().domain
+        scheme = "http" if domain.startswith("localhost") else "https"
+        url = (
+            f"{scheme}://{domain}/dashboard/validation/changeRequest"
+            f"/accountId/{account.id}"
+            f"/data_source_synchronization_id/{sync.id}"
+            f"/source_version_id/{source_version.id}"
+            f"/page/1"
+        )
+        print(f"  Review change requests: {url}")
+
+        # Log a sample CR with geometry change so the user can jump straight to the detail view.
+        sample_geom_cr = sync.change_requests.exclude(new_geom=None).first()
+        if sample_geom_cr:
+            detail_url = (
+                f"{scheme}://{domain}/dashboard/validation/changeRequest/detail"
+                f"/accountId/{account.id}"
+                f"/changeRequestId/{sample_geom_cr.id}"
+            )
+            print(f"  Sample geometry change request: {detail_url}  ({sample_geom_cr.org_unit.name})")
+
+        # Log the swapped-code CRs: approving either would collide with the other's existing code.
+        if batch_j:
+            swap_refs = [ou.source_ref for ou in batch_j if ou.source_ref]
+            conflict_crs = list(sync.change_requests.filter(org_unit__source_ref__in=swap_refs))
+            if conflict_crs:
+                print("  Swapped-code conflict — approving either CR collides with the other's existing code:")
+                for cr in conflict_crs:
+                    cr_detail_url = (
+                        f"{scheme}://{domain}/dashboard/validation/changeRequest/detail"
+                        f"/accountId/{account.id}"
+                        f"/changeRequestId/{cr.id}"
+                    )
+                    print(f"    {cr_detail_url}  ({cr.org_unit.name}  new_code={cr.new_code})")
 
     def seed_form(
         self,

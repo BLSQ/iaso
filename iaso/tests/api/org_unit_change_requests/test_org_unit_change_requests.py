@@ -6,6 +6,8 @@ from decimal import Decimal
 
 import time_machine
 
+from django.contrib.gis.geos import MultiPolygon, Polygon
+
 from hat.audit import models as audit_models
 from iaso import models as m
 from iaso.api.org_unit_change_requests.views import OrgUnitChangeRequestViewSet
@@ -429,6 +431,32 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         response = self.client.patch(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
         self.assertEqual(response.status_code, 400)
         self.assertIn("Status must be `new` but current status is `approved`.", response.content.decode())
+
+    @time_machine.travel(DT, tick=False)
+    def test_partial_update_approve_new_geom(self):
+        self.client.force_authenticate(self.user_with_review_perm)
+
+        new_geom = MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)], srid=4326), srid=4326)
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            created_by=self.user,
+            new_geom=new_geom,
+            requested_fields=["new_geom"],
+        )
+
+        data = {
+            "status": change_request.Statuses.APPROVED,
+            "approved_fields": ["new_geom"],
+        }
+        response = self.client.patch(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        change_request.refresh_from_db()
+        self.assertEqual(change_request.status, change_request.Statuses.APPROVED)
+        self.org_unit.refresh_from_db()
+        self.assertEqual(self.org_unit.geom, new_geom)
+        self.assertIsNotNone(self.org_unit.simplified_geom)
+        self.assertEqual(self.org_unit.validation_status, m.OrgUnit.VALIDATION_VALID)
 
     def test_update_should_be_forbidden(self):
         self.client.force_authenticate(self.user_with_review_perm)

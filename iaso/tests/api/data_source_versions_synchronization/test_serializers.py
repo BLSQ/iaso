@@ -101,7 +101,7 @@ class DataSourceVersionsSynchronizationSerializerTestCase(TestCase):
         self.assertEqual(data_source_versions_sync.account, self.account)
         self.assertEqual(data_source_versions_sync.created_by, self.user)
 
-    def test_validate_that_data_source_is_the_same_for_both_versions(self):
+    def test_validate_that_cross_datasource_versions_are_allowed(self):
         other_data_source = m.DataSource.objects.create(name="Other data source")
         other_source_version = m.SourceVersion.objects.create(
             data_source=other_data_source, number=3, description="Source X"
@@ -112,11 +112,8 @@ class DataSourceVersionsSynchronizationSerializerTestCase(TestCase):
             "source_version_to_compare_with": other_source_version.pk,
         }
         serializer = DataSourceVersionsSynchronizationSerializer(data=data)
-        self.assertFalse(serializer.is_valid())
-        self.assertIn(
-            "The two versions to compare must be linked to the same data source.",
-            serializer.errors["non_field_errors"][0],
-        )
+        # Cross-datasource comparison is now allowed.
+        self.assertTrue(serializer.is_valid(), serializer.errors)
 
     def test_validate_that_versions_to_compare_are_different(self):
         data = {
@@ -277,7 +274,8 @@ class CreateJsonDiffParametersSerializerTestCase(TestCase):
                 "parent",
                 "opening_date",
                 "closed_date",
-                "code",  # code is not allowed in pyramid syncs
+                "code",
+                "not_a_valid_field",  # this one is invalid
             ],
         }
         serializer = CreateJsonDiffParametersSerializer(
@@ -285,7 +283,7 @@ class CreateJsonDiffParametersSerializerTestCase(TestCase):
         )
 
         self.assertFalse(serializer.is_valid())
-        self.assertIn("code", serializer.errors["field_names"][0])
+        self.assertIn("not_a_valid_field", serializer.errors["field_names"][0])
 
     def test_validate_source_version_to_update_top_org_unit(self):
         json_diff_params = {

@@ -1,4 +1,5 @@
 import decimal
+import json
 import uuid
 
 from django.contrib.auth.models import User
@@ -178,6 +179,7 @@ class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
     new_org_unit_type = OrgUnitTypeNestedSerializer()
     new_groups = serializers.SerializerMethodField(method_name="get_new_groups")
     new_location = ThreeDimPointField()
+    new_geom = serializers.SerializerMethodField(method_name="get_new_geom")
     new_reference_instances = InstanceForChangeRequestSerializer(many=True)
     created_at = TimestampField()
     updated_at = TimestampField()
@@ -185,6 +187,7 @@ class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
     old_org_unit_type = OrgUnitTypeNestedSerializer()
     old_groups = serializers.SerializerMethodField(method_name="get_old_groups")
     old_location = ThreeDimPointField()
+    old_geom = serializers.SerializerMethodField(method_name="get_old_geom")
     old_reference_instances = InstanceForChangeRequestSerializer(many=True)
 
     class Meta:
@@ -208,6 +211,8 @@ class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
             "new_groups",
             "new_location",
             "new_location_accuracy",
+            "new_geom",
+            "new_code",
             "new_opening_date",
             "new_closed_date",
             "new_reference_instances",
@@ -216,6 +221,8 @@ class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
             "old_org_unit_type",
             "old_groups",
             "old_location",
+            "old_geom",
+            "old_code",
             "old_opening_date",
             "old_closed_date",
             "old_reference_instances",
@@ -226,6 +233,12 @@ class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
 
     def get_old_groups(self, obj: OrgUnitChangeRequest) -> list[dict]:
         return [{"id": group.id, "name": group.name} for group in obj.old_groups.all()]
+
+    def get_new_geom(self, obj: OrgUnitChangeRequest):
+        return json.loads(obj.new_geom.geojson) if obj.new_geom else None
+
+    def get_old_geom(self, obj: OrgUnitChangeRequest):
+        return json.loads(obj.old_geom.geojson) if obj.old_geom else None
 
 
 class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):

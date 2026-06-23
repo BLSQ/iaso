@@ -772,7 +772,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
     def test_num_queries_retrieve(self):
         self.client.force_authenticate(self.jane)
 
-        with self.assertNumQueries(13):
+        with self.assertNumQueries(12):
             response = self.client.get(f"{self.BASE_URL}{self.org_unit_type_1.id}/")
 
         self.assertJSONResponse(response, status.HTTP_200_OK)

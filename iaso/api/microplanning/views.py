@@ -25,10 +25,13 @@ from iaso.models.org_unit import OrgUnit
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
 
 from .filters import (
+    PlanningOrgUnitChildrenFilter,
+    PlanningOrgUnitChildrenFilterBackend,
     PlanningSearchFilterBackend,
     PublishingStatusFilterBackend,
-    apply_selection_filter,
+    validate_planning_has_org_unit_scope,
 )
+from .mixins import PlanningOrgUnitChildrenQuerysetMixin
 from .pagination import PlanningOrgUnitChildrenPagination
 from .serializers import (
     AssignmentSerializer,
@@ -37,7 +40,6 @@ from .serializers import (
     BulkAssignmentSerializer,
     BulkDeleteAssignmentResponseSerializer,
     BulkDeleteAssignmentSerializer,
-    PlanningOrgUnitChildrenFilterSerializer,
     PlanningOrgUnitSerializer,
     PlanningOrgUnitTableSerializer,
     PlanningReadSerializer,
@@ -49,47 +51,8 @@ from .serializers import (
 )
 
 
-def _planning_children_org_units_queryset(planning, user, org_unit_parent_id=None, org_unit_type_ids=None):
-    base_queryset = OrgUnit.objects.filter_for_user(user).filter(validation_status=OrgUnit.VALIDATION_VALID)
-    sampling = planning.selected_sampling_result
-    root_org_unit = planning.org_unit
-    target_type_ids = [t.id for t in planning.target_org_unit_types.all()]
-
-    if sampling and sampling.group_id:
-        queryset = base_queryset.filter(pk__in=sampling.group.org_units.values_list("pk", flat=True))
-    elif root_org_unit and target_type_ids:
-        queryset = base_queryset.descendants(root_org_unit).filter(org_unit_type_id__in=target_type_ids)
-    else:
-        queryset = base_queryset.none()
-
-    queryset = queryset.filter(validation_status=OrgUnit.VALIDATION_VALID)
-
-    if org_unit_parent_id:
-        parent = get_object_or_404(base_queryset, pk=org_unit_parent_id)
-        queryset = queryset.hierarchy(parent).exclude(pk=org_unit_parent_id)
-
-    if org_unit_type_ids:
-        queryset = queryset.filter(org_unit_type_id__in=org_unit_type_ids)
-
-    return queryset.select_related("org_unit_type").order_by("id")
-
-
-def _prefetch_planning_assignments(org_units, planning):
-    if not org_units:
-        return org_units
-    org_unit_ids = [org_unit.id for org_unit in org_units]
-    assignments = Assignment.objects.filter(
-        planning=planning, org_unit_id__in=org_unit_ids, deleted_at__isnull=True
-    ).select_related("user__iaso_profile", "team")
-    assignments_by_org_unit_id = {assignment.org_unit_id: assignment for assignment in assignments}
-    for org_unit in org_units:
-        assignment = assignments_by_org_unit_id.get(org_unit.id)
-        org_unit._planning_assignments_prefetched = [assignment] if assignment else []
-    return org_units
-
-
 @extend_schema(tags=["Micro plannings", "Org units", "Plannings"])
-class PlanningOrgunitsViewSet(GenericViewSet):
+class PlanningOrgunitsViewSet(PlanningOrgUnitChildrenQuerysetMixin, GenericViewSet):
     """Org units scoped to a planning (nested under ``/microplanning/plannings/{pk}/orgunits/``)."""
 
     queryset = OrgUnit.objects.none()
@@ -100,7 +63,8 @@ class PlanningOrgunitsViewSet(GenericViewSet):
     ordering_fields = ["id", "name", "org_unit_type__name"]
     ordering = ["id"]
     pagination_class = PlanningOrgUnitChildrenPagination
-    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
+    filter_backends = [PlanningOrgUnitChildrenFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    filterset_class = PlanningOrgUnitChildrenFilter
 
     def get_serializer_class(self):
         if self.action == "children":
@@ -111,7 +75,7 @@ class PlanningOrgunitsViewSet(GenericViewSet):
             return PlanningOrgUnitSerializer
         return self.serializer_class
 
-    def get_planning(self) -> Planning:
+    def get_planning_or_404(self) -> Planning:
         cached = getattr(self, "_planning_for_orgunits", None)
         if cached is not None:
             return cached
@@ -125,39 +89,28 @@ class PlanningOrgunitsViewSet(GenericViewSet):
         )
         return self._planning_for_orgunits
 
-    def _get_validated_children_filters(self, planning):
-        serializer = PlanningOrgUnitChildrenFilterSerializer(
-            data=self.request.query_params,
-            context={"planning": planning},
-        )
-        serializer.is_valid(raise_exception=True)
-        return serializer.validated_data
-
     def get_queryset(self):
-        planning = self.get_planning()
+        planning = self.get_planning_or_404()
         action = self.action
         user = self.request.user
 
         if action == "root":
             return OrgUnit.objects.with_geo_json().filter(pk=planning.org_unit_id)
 
-        children_filters = self._get_validated_children_filters(planning)
-        queryset = _planning_children_org_units_queryset(
-            planning,
-            user,
-            org_unit_parent_id=children_filters.get("org_unit_parent_id"),
-            org_unit_type_ids=children_filters.get("org_unit_type_ids"),
-        )
+        validate_planning_has_org_unit_scope(planning)
+        queryset = self.get_planning_children_base_queryset(planning, user)
 
         if action == "children":
             queryset = queryset.with_geo_json()
+        elif action == "children_paginated":
+            queryset = self.prefetch_planning_assignments(queryset, planning)
 
         return queryset
 
     def get_serializer_context(self):
         ctx = super().get_serializer_context()
         if getattr(self, "action", None) == "children_paginated":
-            ctx["planning"] = self.get_planning()
+            ctx["planning"] = self.get_planning_or_404()
         return ctx
 
     @action(detail=False, methods=["get"])
@@ -168,16 +121,12 @@ class PlanningOrgunitsViewSet(GenericViewSet):
 
     @action(detail=False, methods=["get"], url_path="children-paginated")
     def children_paginated(self, request, *args, **kwargs):
-        planning = self.get_planning()
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page is not None:
-            _prefetch_planning_assignments(page, planning)
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
-        org_units = list(queryset)
-        _prefetch_planning_assignments(org_units, planning)
-        serializer = self.get_serializer(org_units, many=True)
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=["get"])
@@ -296,7 +245,7 @@ class PlanningSamplingResultViewSet(AuditMixin, ModelViewSet):
 
 
 @extend_schema(tags=["Micro plannings", "Assignments"])
-class AssignmentViewSet(AuditMixin, ModelViewSet):
+class AssignmentViewSet(PlanningOrgUnitChildrenQuerysetMixin, AuditMixin, ModelViewSet):
     """Use the same permission as planning. Multi tenancy is done via the planning. An assignment don't make much
     sense outside of it's planning."""
 
@@ -352,22 +301,7 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
             .prefetch_related("target_org_unit_types")
             .get(pk=planning.pk)
         )
-        queryset = _planning_children_org_units_queryset(
-            planning,
-            requester,
-            serializer.validated_data.get("org_unit_parent_id"),
-            serializer.validated_data.get("org_unit_type_ids", []),
-        )
-        search = serializer.validated_data.get("search")
-        if search:
-            queryset = queryset.filter(name__icontains=search)
-        queryset = apply_selection_filter(
-            queryset,
-            serializer.validated_data.get("select_all", False),
-            serializer.validated_data.get("selected_ids", []),
-            serializer.validated_data.get("unselected_ids", []),
-        )
-        org_units = list(queryset)
+        org_units = list(self.get_bulk_assign_org_units_queryset(planning, requester, serializer.validated_data))
 
         assignments_to_update = Assignment.objects.select_related("user", "team", "org_unit").filter(
             planning=planning, org_unit__in=org_units, deleted_at__isnull=True

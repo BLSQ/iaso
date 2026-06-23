@@ -19,7 +19,7 @@ from iaso.models import Account, DataSource, Form, Group, OrgUnit, OrgUnitType, 
 from iaso.models.microplanning import Assignment, Planning, PlanningSamplingResult
 from iaso.models.team import Team
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
-from iaso.test import APITestCase
+from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
 class PlanningTestCase(APITestCase):
@@ -2303,3 +2303,82 @@ class AssignmentAPITestCase(APITestCase):
 
         response = self.client.post("/api/mobile/plannings/", data={}, format="json")
         self.assertEqual(response.status_code, 403)
+
+
+class MicroplanningSwaggerTestCase(SwaggerTestCaseMixin, APITestCase):
+    fixtures = ["user.yaml"]
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.account = Account.objects.get(name="test")
+        cls.user = User.objects.get(username="test")
+        cls.project1 = cls.account.project_set.create(name="swagger-project")
+        cls.team1 = Team.objects.create(project=cls.project1, name="swagger-team", manager=cls.user)
+        source = DataSource.objects.create(name="Swagger source")
+        source.projects.add(cls.project1)
+        version = SourceVersion.objects.create(data_source=source, number=1)
+        parent_type = OrgUnitType.objects.create(name="Swagger parent type")
+        parent_type.projects.add(cls.project1)
+        child_type = OrgUnitType.objects.create(name="Swagger child type")
+        child_type.projects.add(cls.project1)
+        polygon = Polygon(((0, 0), (0, 1), (1, 1), (0, 0)), srid=4326)
+        multipolygon = MultiPolygon(polygon, srid=4326)
+        cls.root = OrgUnit.objects.create(
+            version=version,
+            name="swagger-root",
+            org_unit_type=parent_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        cls.child = OrgUnit.objects.create(
+            version=version,
+            name="swagger-child",
+            parent=cls.root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        cls.planning = Planning.objects.create(
+            project=cls.project1,
+            name="swagger-planning",
+            team=cls.team1,
+            org_unit=cls.root,
+            started_at="2025-01-01",
+            ended_at="2025-01-02",
+        )
+        cls.planning.target_org_unit_types.set([child_type])
+        Assignment.objects.create(planning=cls.planning, org_unit=cls.child, user=cls.user, created_by=cls.user)
+
+    def test_bulk_create_assignments_response_is_compliant(self):
+        user_with_perms = self.create_user_with_profile(
+            username="swagger_bulk_user",
+            account=self.account,
+            permissions=[CORE_PLANNING_WRITE_PERMISSION],
+        )
+        self.client.force_authenticate(user_with_perms)
+        response = self.client.post(
+            "/api/microplanning/assignments/bulk_create_assignments/",
+            data={
+                "planning": self.planning.id,
+                "selected_ids": [self.child.id],
+                "team": self.team1.id,
+            },
+            format="json",
+        )
+        data = self.assertJSONResponse(response, 200)
+        self.assertResponseCompliantToSwagger(data, "Assignment", as_array=True)
+
+    def test_bulk_delete_assignments_response_is_compliant(self):
+        user_with_perms = self.create_user_with_profile(
+            username="swagger_delete_user",
+            account=self.account,
+            permissions=[CORE_PLANNING_WRITE_PERMISSION],
+        )
+        self.client.force_authenticate(user_with_perms)
+        response = self.client.post(
+            "/api/microplanning/assignments/bulk_delete_assignments/",
+            data={"planning": self.planning.id, "user": self.user.id},
+            format="json",
+        )
+        data = self.assertJSONResponse(response, 200)
+        self.assertResponseCompliantToSwagger(data, "BulkDeleteAssignmentResponse")

@@ -764,7 +764,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
     def test_num_queries_list(self):
         self.client.force_authenticate(self.jane)
 
-        with self.assertNumQueries(8):
+        with self.assertNumQueries(10):
             response = self.client.get(f"{self.BASE_URL}")
 
         self.assertJSONResponse(response, status.HTTP_200_OK)

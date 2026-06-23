@@ -12,7 +12,7 @@ from iaso.api.permission_checks import (
     IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired,
 )
 from iaso.api.query_params import APP_ID, ORDER, PROJECT, PROJECT_IDS, SEARCH
-from iaso.models import OrgUnitType, Project
+from iaso.models import Form, OrgUnitType, Project
 
 from ..common import ModelViewSet
 from .filters import OrgUnitTypeDropdownFilter
@@ -143,7 +143,14 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
                     .all(),
                 ),
                 "allow_creating_sub_unit_types",
-                "reference_forms",
+                Prefetch(
+                    "reference_forms",
+                    queryset=Form.objects.prefetch_related(
+                        "projects",
+                        "projects__projectfeatureflags_set",
+                        "projects__projectfeatureflags_set__featureflag",
+                    ).all(),
+                ),
                 "sub_unit_types",
             )
 

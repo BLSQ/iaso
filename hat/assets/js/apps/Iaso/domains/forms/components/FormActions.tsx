@@ -88,7 +88,7 @@ export const FormActions: FunctionComponent<Props> = ({
                         ]}
                     >
                         <IconButton
-                            url={`${urlToInstances}`}
+                            url={`${urlToInstances}/isSearchActive/true`}
                             tooltipMessage={MESSAGES.viewInstances}
                             overrideIcon={FormatListBulleted}
                         />

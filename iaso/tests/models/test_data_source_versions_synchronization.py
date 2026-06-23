@@ -436,7 +436,7 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         self.assertEqual(change_requests.count(), 0)
         self.assertEqual(m.OrgUnit.objects.filter(version=self.source_version_to_update).count(), 2)
 
-        with self.assertNumQueries(12):
+        with self.assertNumQueries(13):
             data_source_sync.synchronize_source_versions()
 
         self.assertEqual(change_requests.count(), 4)

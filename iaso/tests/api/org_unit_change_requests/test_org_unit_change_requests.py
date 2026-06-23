@@ -921,6 +921,24 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
 
         expected_row_data.extend([location_before, location_after, location_conclusion])
 
+        # Geometry changes
+        geom_before = change_request.old_geom.wkt[:80] if change_request.old_geom else ""
+        geom_after = (
+            (change_request.new_geom.wkt[:80] if change_request.new_geom else "")
+            if "new_geom" in change_request.requested_fields
+            else (change_request.org_unit.geom.wkt[:80] if change_request.org_unit.geom else "")
+        )
+        geom_conclusion = get_conclusion("geom", geom_before, geom_after)
+        expected_row_data.extend([geom_before, geom_after, geom_conclusion])
+
+        # Code changes
+        code_before = change_request.old_code
+        code_after = (
+            change_request.new_code if "new_code" in change_request.requested_fields else change_request.org_unit.code
+        )
+        code_conclusion = get_conclusion("code", code_before, code_after)
+        expected_row_data.extend([code_before, code_after, code_conclusion])
+
         # Reference instances changes
         reference_before = get_reference_instance_ids(change_request.old_reference_instances)
         reference_after = (

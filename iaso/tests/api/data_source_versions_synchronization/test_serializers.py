@@ -1,5 +1,7 @@
 import datetime
 
+from unittest.mock import MagicMock
+
 import time_machine
 
 from iaso import models as m
@@ -113,6 +115,39 @@ class DataSourceVersionsSynchronizationSerializerTestCase(TestCase):
         }
         serializer = DataSourceVersionsSynchronizationSerializer(data=data)
         # Cross-datasource comparison is now allowed.
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_validate_rejects_cross_account_datasource_with_request_context(self):
+        other_account = m.Account.objects.create(name="Other account")
+        other_project = m.Project.objects.create(name="Other project", account=other_account, app_id="other.app")
+        foreign_datasource = m.DataSource.objects.create(name="Foreign data source")
+        foreign_datasource.projects.add(other_project)
+        foreign_version = m.SourceVersion.objects.create(data_source=foreign_datasource, number=1)
+
+        data = {
+            "name": "Bad sync",
+            "source_version_to_update": self.source_version_to_update.pk,
+            "source_version_to_compare_with": foreign_version.pk,
+        }
+        mock_request = MagicMock()
+        mock_request.user.iaso_profile.account = self.account
+        serializer = DataSourceVersionsSynchronizationSerializer(data=data, context={"request": mock_request})
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("Foreign data source", str(serializer.errors))
+
+    def test_validate_allows_cross_datasource_with_shared_datasource(self):
+        # A datasource with no projects is a shared/admin resource — must be allowed.
+        shared_datasource = m.DataSource.objects.create(name="Shared data source")
+        shared_version = m.SourceVersion.objects.create(data_source=shared_datasource, number=1)
+
+        data = {
+            "name": "Ok sync",
+            "source_version_to_update": self.source_version_to_update.pk,
+            "source_version_to_compare_with": shared_version.pk,
+        }
+        mock_request = MagicMock()
+        mock_request.user.iaso_profile.account = self.account
+        serializer = DataSourceVersionsSynchronizationSerializer(data=data, context={"request": mock_request})
         self.assertTrue(serializer.is_valid(), serializer.errors)
 
     def test_validate_that_versions_to_compare_are_different(self):

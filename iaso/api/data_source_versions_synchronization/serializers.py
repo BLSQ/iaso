@@ -99,6 +99,16 @@ class DataSourceVersionsSynchronizationSerializer(DynamicFieldsModelSerializerBa
         if source_version_to_update.pk == source_version_to_compare_with.pk:
             raise serializers.ValidationError("The two versions to compare must be different.")
 
+        request = self.context.get("request")
+        if request:
+            account = request.user.iaso_profile.account
+            for version in (source_version_to_update, source_version_to_compare_with):
+                ds = version.data_source
+                if ds.projects.exists() and not ds.projects.filter(account_id=account.id).exists():
+                    raise serializers.ValidationError(
+                        f"Data source '{ds.name}' is not linked to the account of this synchronization."
+                    )
+
         return validated_data
 
 

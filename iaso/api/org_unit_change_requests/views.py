@@ -483,21 +483,21 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
             row.extend([location_before, location_after, location_conclusion])
 
             # Geometry (polygon) changes
-            geom_before = change_request.old_geom.wkt[:80] if change_request.old_geom else ""
-            geom_after = (
-                (change_request.new_geom.wkt[:80] if change_request.new_geom else "")
+            geom_before_full = change_request.old_geom.wkt if change_request.old_geom else ""
+            geom_after_full = (
+                (change_request.new_geom.wkt if change_request.new_geom else "")
                 if "new_geom" in change_request.requested_fields
-                else (change_request.org_unit.geom.wkt[:80] if change_request.org_unit.geom else "")
+                else (change_request.org_unit.geom.wkt if change_request.org_unit.geom else "")
             )
-            geom_conclusion = get_conclusion(change_request, "geom", geom_before, geom_after)
-            row.extend([geom_before, geom_after, geom_conclusion])
+            geom_conclusion = get_conclusion(change_request, "geom", geom_before_full, geom_after_full)
+            row.extend([geom_before_full[:80], geom_after_full[:80], geom_conclusion])
 
             # Code changes
             code_before = change_request.old_code
             code_after = (
                 change_request.new_code
                 if "new_code" in change_request.requested_fields
-                else change_request.org_unit.code
+                else (change_request.org_unit.code or "")
             )
             code_conclusion = get_conclusion(change_request, "code", code_before, code_after)
             row.extend([code_before, code_after, code_conclusion])

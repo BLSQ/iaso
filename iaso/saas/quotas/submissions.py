@@ -1,9 +1,10 @@
 from django.db.models import F
 
 from iaso.models import Instance
-from iaso.saas.constants import SUBMISSION_QUOTA, SUBMISSION_QUOTA_LABEL
 from plugins.saas.models.account_usage import PeriodTypeChoices
 from plugins.saas.registry import account_usage_registry
+
+from ..constants import SUBMISSION_QUOTA, SUBMISSION_QUOTA_LABEL
 
 
 def compute_quota_value(account, period_start_at, period_ends_at, create, delete, update=False):

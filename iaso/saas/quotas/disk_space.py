@@ -9,9 +9,10 @@ from iaso.models import (
     Profile,
     ReportVersion,
 )
-from iaso.saas.constants import DISK_SPACE_QUOTA, DISK_SPACE_QUOTA_LABEL
 from plugins.saas.models.account_usage import PeriodTypeChoices, UsageTypeChoices
 from plugins.saas.registry import account_usage_registry
+
+from ..constants import DISK_SPACE_QUOTA, DISK_SPACE_QUOTA_LABEL
 
 
 class DiskSpaceAccountUsage:

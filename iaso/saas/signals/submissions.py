@@ -5,7 +5,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from iaso.models import Instance
-from iaso.saas.constants import SUBMISSION_QUOTA
+
+from ..constants import SUBMISSION_QUOTA
 
 
 log = logging.getLogger(__name__)

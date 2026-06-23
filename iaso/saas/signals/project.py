@@ -5,7 +5,8 @@ from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from iaso.models import Project
-from iaso.saas.constants import PROJECT_QUOTA
+
+from ..constants import PROJECT_QUOTA
 
 
 log = logging.getLogger(__name__)

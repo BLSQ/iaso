@@ -1,7 +1,8 @@
 from iaso.models import Profile
-from iaso.saas.constants import USER_QUOTA, USER_QUOTA_LABEL
 from plugins.saas.models.account_usage import PeriodTypeChoices
 from plugins.saas.registry import account_usage_registry
+
+from ..constants import USER_QUOTA, USER_QUOTA_LABEL
 
 
 def compute_quota_value(account):

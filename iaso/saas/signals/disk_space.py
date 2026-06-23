@@ -9,8 +9,9 @@ from iaso.models import (
     InstanceFile,
     ReportVersion,
 )
-from iaso.saas.constants import DISK_SPACE_QUOTA
 from iaso.utils.signals import receiver_with_multiple_senders
+
+from ..constants import DISK_SPACE_QUOTA
 
 
 log = logging.getLogger(__name__)
@@ -31,10 +32,13 @@ sender_list = [
 
 def get_account(sender, instance):
     if any([sender is c for c in [Instance, ReportVersion]]):
-        return getattr(instance.project, "account", None)
+        project = getattr(instance, "project", None)
+        return getattr(project, "account", None)
     if sender is InstanceFile:
-        return instance.instance.project.account
-    return instance.account
+        instance_i = getattr(instance, "instance", None)
+        project = getattr(instance_i, "project", None)
+        return getattr(project, "account", None)
+    return getattr(instance, "account", None)
 
 
 @receiver_with_multiple_senders(post_save, senders=sender_list)

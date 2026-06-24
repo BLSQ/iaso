@@ -1,0 +1,22 @@
+diff --git a/node_modules/@orval/query/dist/index.mjs b/node_modules/@orval/query/dist/index.mjs
+index 6614c0a..345c24e 100644
+--- a/node_modules/@orval/query/dist/index.mjs
++++ b/node_modules/@orval/query/dist/index.mjs
+@@ -1133,7 +1133,7 @@ const createReactAdapter = ({ hasQueryV5, hasQueryV5WithDataTagError, hasQueryV5
+ 		return hasQueryV5;
+ 	},
+ 	generateMutationImplementation({ mutationOptionsFnName, hasInvalidation, isRequestOptions }) {
+-		return `${mutationOptionsFnName}(${hasInvalidation ? `queryClient ?? backupQueryClient, ` : ""}${isRequestOptions ? "options" : "mutationOptions"})`;
++		return `${mutationOptionsFnName}(${hasInvalidation ? `backupQueryClient, ` : ""}${isRequestOptions ? "options" : "mutationOptions"})`;
+ 	},
+ 	supportsMutationInvalidation() {
+ 		return true;
+@@ -1804,7 +1804,7 @@ ${hasInvalidation ? adapter.generateMutationOnSuccess({
+ 		uniqueInvalidates
+ 	}) : ""}
+ 
+-        ${mutationOptionsMutator ? `const customOptions = ${mutationOptionsMutator.name}({...mutationOptions, mutationFn}${mutationOptionsMutator.hasSecondArg ? `, { url: \`${getMutationOptionsUrl(route, getMutationOptionsPathParamNames(props), pathRoute)}\` }` : ""}${mutationOptionsMutator.hasThirdArg ? `, { operationId: '${operationId}', operationName: '${operationName}' }` : ""});` : ""}
++        ${mutationOptionsMutator ? `const customOptions = ${mutationOptionsMutator.name}({...mutationOptions, mutationFn${hasInvalidation ? ', onSuccess' : ''}}${mutationOptionsMutator.hasSecondArg ? `, { url: \`${getMutationOptionsUrl(route, getMutationOptionsPathParamNames(props), pathRoute)}\` }` : ""}${mutationOptionsMutator.hasThirdArg ? `, { operationId: '${operationId}', operationName: '${operationName}' }` : ""});` : ""}
+ 
+ 
+   return  ${mutationOptionsMutator ? "customOptions" : hasInvalidation ? "{ ...mutationOptions, mutationFn, onSuccess }" : "{ mutationFn, ...mutationOptions }"}}`;

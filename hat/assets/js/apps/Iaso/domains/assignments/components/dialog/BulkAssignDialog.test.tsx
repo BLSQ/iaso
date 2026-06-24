@@ -40,6 +40,7 @@ vi.mock('bluesquare-components', async importOriginal => {
                 }
                 return text;
             },
+            formatNumber: (value: number) => value.toString(),
         }),
         Table: ({
             data,
@@ -71,6 +72,20 @@ const planning = {
     name: 'Planning',
     target_org_unit_type_details: [{ id: 2, name: 'Area' }],
 } as any;
+
+const planningWithMultipleTargets = {
+    id: 42,
+    name: 'Planning',
+    target_org_unit_type_details: [
+        { id: 2, name: 'Area' },
+        { id: 3, name: 'Health Centre' },
+    ],
+} as any;
+
+const orgUniTypeList = [
+    { value: 2, label: 'Area' },
+    { value: 3, label: 'Health Centre' },
+];
 
 const selectedParentOrgUnit = {
     id: 100,
@@ -136,7 +151,8 @@ describe('BulkAssignDialog', () => {
                 open
                 onClose={onClose}
                 selectedParentOrgUnit={selectedParentOrgUnit}
-                planning={planning}
+                planning={planningWithMultipleTargets}
+                orgUniTypeList={orgUniTypeList}
             />,
         );
 
@@ -156,7 +172,6 @@ describe('BulkAssignDialog', () => {
             />,
         );
 
-        fireEvent.click(screen.getByRole('button', { name: 'Select all' }));
         fireEvent.click(screen.getByRole('button', { name: 'Assign' }));
 
         await waitFor(() => {

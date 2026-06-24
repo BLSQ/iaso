@@ -231,6 +231,7 @@ INSTALLED_APPS += [
     "rest_framework",
     "webpack_loader",
     "django_ltree",
+    "hat",
     "hat.sync",
     "hat.api_import",
     "hat.audit",
@@ -864,19 +865,19 @@ if WFP_AUTH_CLIENT_ID:
 # Generic SSO providers (e.g. WHO via Microsoft Entra ID)
 SSO_PROVIDERS = {}
 
-SSO_WHO_CLIENT_ID = os.environ.get("SSO_WHO_CLIENT_ID", "")
+SSO_WHO_CLIENT_ID = env.str("SSO_WHO_CLIENT_ID", default="")
 if SSO_WHO_CLIENT_ID:
-    SSO_WHO_TENANT_ID = os.environ.get("SSO_WHO_TENANT_ID", "")
+    SSO_WHO_TENANT_ID = env.str("SSO_WHO_TENANT_ID", default="")
     if not SSO_WHO_TENANT_ID:
         raise ImproperlyConfigured("need SSO_WHO_TENANT_ID when SSO_WHO_CLIENT_ID is set")
-    sso_who_account = os.environ.get("SSO_WHO_ACCOUNT", "")
+    sso_who_account = env.int("SSO_WHO_ACCOUNT")
     if not sso_who_account:
         raise ImproperlyConfigured("need SSO_WHO_ACCOUNT to associate a tenant to the WHO auth server")
 
     SSO_PROVIDERS["who"] = {
         "name": "WHO",
         "client_id": SSO_WHO_CLIENT_ID,
-        "client_secret": os.environ.get("SSO_WHO_CLIENT_SECRET", ""),
+        "client_secret": env.str("SSO_WHO_CLIENT_SECRET", default=""),
         "pkce_enabled": True,
         "scope": ["openid", "profile", "email"],
         "authorize_url": f"https://login.microsoftonline.com/{SSO_WHO_TENANT_ID}/oauth2/v2.0/authorize",
@@ -886,7 +887,7 @@ if SSO_WHO_CLIENT_ID:
         "callback_path": "polio/login/callback",
         "token_path": "polio/token/",
         "account_id": sso_who_account,
-        "email_recipients_new_account": os.environ.get("SSO_WHO_EMAIL_RECIPIENTS_NEW_ACCOUNT", "").split(","),
+        "email_recipients_new_account": env.list("SSO_WHO_EMAIL_RECIPIENTS_NEW_ACCOUNT", default=[], delimiter=","),
     }
 
 # Derive allauth SOCIALACCOUNT_PROVIDERS from SSO_PROVIDERS so there is a single config dict per provider.
@@ -898,11 +899,6 @@ for _provider_id, _config in SSO_PROVIDERS.items():
     }
 
 ACTIVATE_SOCIAL_ACCOUNT = bool(WFP_AUTH_CLIENT_ID) or bool(SSO_PROVIDERS)
-
-if ACTIVATE_SOCIAL_ACCOUNT:
-    if "plugins.sso" not in INSTALLED_APPS:
-        index = INSTALLED_APPS.index("allauth.socialaccount")
-        INSTALLED_APPS.insert(index + 1, "plugins.sso")
 
 CACHES = {
     "default": {

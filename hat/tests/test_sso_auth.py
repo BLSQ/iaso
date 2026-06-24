@@ -3,9 +3,9 @@ from unittest.mock import patch
 from allauth.socialaccount.models import SocialAccount
 from django.test import override_settings
 
+from hat.views import ExtraData
 from iaso import models as m
 from iaso.test import APITestCase
-from plugins.sso.views import ExtraData
 
 
 # Self-contained SSO config for the tests. It is injected via ``override_settings``
@@ -28,7 +28,7 @@ SSO_TEST_CONFIG = {
 }
 
 
-@override_settings(SSO_PROVIDERS=SSO_TEST_CONFIG, ROOT_URLCONF="plugins.sso.tests.urls")
+@override_settings(SSO_PROVIDERS=SSO_TEST_CONFIG, ROOT_URLCONF="hat.tests.urls")
 class SSOAuthTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):

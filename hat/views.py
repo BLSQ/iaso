@@ -100,8 +100,8 @@ class SSOBaseAdapter(OAuth2Adapter):
             if not email:
                 continue
             send_mail(
-                subject_template_name="sso/new_account_subject.txt",
-                email_template_name="sso/new_account_email.html",
+                subject_template_name="sso/emails/new_account_subject.txt",
+                email_template_name="sso/emails/new_account_email.html",
                 from_email=None,
                 to_email=email,
                 context=context,

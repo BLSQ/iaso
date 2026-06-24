@@ -13,6 +13,7 @@ from django.urls import include, path
 from django.views.generic import RedirectView, TemplateView
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
+from hat.views import SSOCallbackView, SSOLoginView, get_adapter_class, make_token_view
 from iaso.auth.views import IasoLogoutView, IasoPasswordResetView
 from iaso.views import ModelDataView, health, health_clamav, page, robots_txt
 
@@ -30,12 +31,30 @@ def _sso_providers():
     return result
 
 
-class SSOLoginView(auth.views.LoginView):
+def get_sso_urlpatterns():
+    """Generate URL patterns for all configured SSO providers."""
+    patterns = []
+    for provider_id, config in getattr(settings, "SSO_PROVIDERS", {}).items():
+        adapter_cls = get_adapter_class(provider_id)
+
+        login_path = config.get("login_path", f"{provider_id}/login/")
+        callback_path = config.get("callback_path", f"{provider_id}/login/callback/")
+        token_path = config.get("token_path", f"{provider_id}/token/")
+
+        patterns += [
+            path(login_path, SSOLoginView.adapter_view(adapter_cls), name=f"{provider_id}_login"),
+            path(callback_path, SSOCallbackView.adapter_view(adapter_cls), name=f"{provider_id}_callback"),
+            path(token_path, make_token_view(provider_id), name=f"{provider_id}_token"),
+        ]
+    return patterns
+
+
+class LoginView(auth.views.LoginView):
     def get_context_data(self, **kwargs):
         return {**super().get_context_data(**kwargs), "sso_providers_for_login": _sso_providers()}
 
 
-class SSOTemplateLoginView(TemplateView):
+class TemplateLoginView(TemplateView):
     def get_context_data(self, **kwargs):
         return {**super().get_context_data(**kwargs), "sso_providers_for_login": _sso_providers()}
 
@@ -61,8 +80,8 @@ else:
     if settings.DISABLE_PASSWORD_LOGINS:
         login_template = "iaso/disabled_password_login.html"
         urlpatterns = [
-            path("admin/login/", SSOTemplateLoginView.as_view(template_name=login_template), name="admin-login"),
-            path("login/", SSOTemplateLoginView.as_view(template_name=login_template), name="login"),
+            path("admin/login/", TemplateLoginView.as_view(template_name=login_template), name="admin-login"),
+            path("login/", TemplateLoginView.as_view(template_name=login_template), name="login"),
         ]
     else:
         from iaso.auth.forms import AxesAuthenticationForm
@@ -71,12 +90,12 @@ else:
         urlpatterns = [
             path(
                 "admin/login/",
-                SSOLoginView.as_view(template_name=login_template, authentication_form=AxesAuthenticationForm),
+                LoginView.as_view(template_name=login_template, authentication_form=AxesAuthenticationForm),
                 name="admin-login",
             ),
             path(
                 "login/",
-                SSOLoginView.as_view(template_name=login_template, authentication_form=AxesAuthenticationForm),
+                LoginView.as_view(template_name=login_template, authentication_form=AxesAuthenticationForm),
                 name="login",
             ),
         ]
@@ -103,8 +122,6 @@ else:
         urlpatterns += [path("accounts/", include(provider_urlpatterns))]
 
     if getattr(settings, "SSO_PROVIDERS", {}):
-        from plugins.sso.urls import get_sso_urlpatterns
-
         urlpatterns += get_sso_urlpatterns()
 
     urlpatterns += [
@@ -190,3 +207,6 @@ else:
 
     if settings.DEBUG and "debug_toolbar" in settings.INSTALLED_APPS:
         urlpatterns = [path("__debug__/", include("debug_toolbar.urls"))] + urlpatterns
+
+
+urlpatterns += get_sso_urlpatterns()

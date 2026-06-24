@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-09 21:04+0000\n"
+"POT-Creation-Date: 2026-06-24 07:39+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -17,7 +17,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.5\n"
-
 
 #: iaso/api/api_import/filters.py iaso/api/pages.py iaso/api/payments/views.py
 msgid "User ID"
@@ -56,10 +55,6 @@ msgstr "Données invalides pour le schéma : %(error)s"
 #: iaso/api/common/validators.py
 msgid "Unsupported file type."
 msgstr "Type de fichier non pris en charge."
-
-#: iaso/api/custom_translations.py
-msgid "Account id is required."
-msgstr "L'identifiant du compte est requis."
 
 #: iaso/api/data_source_versions_synchronization/filters.py
 msgid "Created at greater than or equal to"
@@ -1364,6 +1359,9 @@ msgstr "Virus détecté"
 #: iaso/utils/virus_scan/model.py
 msgid "Error"
 msgstr "Erreur lors de l'analyse"
+
+#~ msgid "Account id is required."
+#~ msgstr "L'identifiant du compte est requis."
 
 #, fuzzy
 #~| msgid "Exported"

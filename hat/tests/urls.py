@@ -7,7 +7,7 @@ so the provider URLs are always built from the overridden ``SSO_PROVIDERS``,
 making the tests self-contained regardless of the environment configuration.
 """
 
-from plugins.sso.urls import get_sso_urlpatterns
+from hat.urls import get_sso_urlpatterns
 
 
 urlpatterns = get_sso_urlpatterns()

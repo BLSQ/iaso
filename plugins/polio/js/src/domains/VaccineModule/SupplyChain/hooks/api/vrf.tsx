@@ -153,7 +153,6 @@ export const useCampaignDropDowns = ({
         countries: Number.isSafeInteger(countryId) ? `${countryId}` : undefined,
         campaignCategory: 'regular' as CampaignCategory,
         campaignType: 'polio',
-        on_hold: true,
         show_test: false,
     };
 

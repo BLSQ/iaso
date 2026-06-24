@@ -8,6 +8,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { CsvButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/CsvButton';
+import { useAppId } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useAppId';
 import { SxStyles } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { useIsLoggedIn } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../../../constants/messages';
@@ -60,6 +61,7 @@ export const RoundPopper: FunctionComponent<Props> = ({
     anchorEl,
     round,
 }) => {
+    const appId = useAppId();
     const { formatMessage, formatNumber } = useSafeIntl();
     // We don't want to show the edit button if there is no connected user
     const isLogged = useIsLoggedIn();
@@ -68,7 +70,7 @@ export const RoundPopper: FunctionComponent<Props> = ({
     const groupIds = groupsForCampaignRound(campaign, round).join(',');
     const urlParams = {
         round: round.id,
-        app_id: 'com.poliooutbreaks.app',
+        app_id: appId,
     };
     const url = getTableUrl(
         'polio/campaigns/csv_campaign_scopes_export',

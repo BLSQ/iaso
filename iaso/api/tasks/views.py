@@ -25,11 +25,18 @@ from iaso.permissions.core_permissions import CORE_DATA_TASKS_PERMISSION, CORE_P
 from iaso.utils.s3_client import generate_presigned_url_from_s3
 
 from ...models import TaskLog
-from .serializers import ExternalTaskPostSerializer, ExternalTaskSerializer, TaskLogSerializer, TaskSerializer
+from .serializers import (
+    DeploymentStatusSerializer,
+    ExternalTaskPostSerializer,
+    ExternalTaskSerializer,
+    TaskLogSerializer,
+    TaskSerializer,
+)
 
 
 task_service = LazyService("BACKGROUND_TASK_SERVICE")
 logger = logging.getLogger(__name__)
+DEPLOYMENT_BLOCKING_STATUSES = [QUEUED, RUNNING]
 
 
 @extend_schema(tags=["Tasks"])
@@ -72,6 +79,8 @@ class TaskSourceViewSet(ModelViewSet):
     http_method_names = ["get", "patch", "head", "options", "trace"]
 
     def get_queryset(self):
+        if self.action == "deployment_status":
+            return Task.objects.select_related("launcher").filter(status__in=DEPLOYMENT_BLOCKING_STATUSES)
         profile = self.request.user.iaso_profile
         return Task.objects.select_related("created_by", "launcher").filter(account=profile.account)
 
@@ -151,6 +160,46 @@ class TaskSourceViewSet(ModelViewSet):
         available_types = Task.objects.order_by("name").values_list("name", flat=True).distinct("name")
 
         return Response(available_types)
+
+    @extend_schema(responses=DeploymentStatusSerializer)
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="deployment-status",
+    )
+    def deployment_status(self, request):
+        if not request.user.is_superuser or not request.user.is_staff:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        blocking_tasks = self.filter_queryset(self.get_queryset())
+
+        statuses = dict.fromkeys(DEPLOYMENT_BLOCKING_STATUSES, 0)
+
+        blocking_tasks_by_name = {}
+        for task in blocking_tasks:
+            statuses[task.status] += 1
+            if task.name not in blocking_tasks_by_name:
+                blocking_tasks_by_name[task.name] = {
+                    "name": task.name,
+                    QUEUED: 0,
+                    RUNNING: 0,
+                    "tasks": [],
+                }
+            group = blocking_tasks_by_name[task.name]
+            group[task.status] += 1
+            group["tasks"].append(task)
+
+        blocking_tasks_count = sum(statuses.values())
+
+        serializer = DeploymentStatusSerializer(
+            {
+                "can_deploy": blocking_tasks_count == 0,
+                "blocking_tasks_count": blocking_tasks_count,
+                "statuses": statuses,
+                "blocking_tasks": list(blocking_tasks_by_name.values()),
+            }
+        )
+        return Response(serializer.data)
 
 
 class ExternalTaskModelViewSet(ModelViewSet):

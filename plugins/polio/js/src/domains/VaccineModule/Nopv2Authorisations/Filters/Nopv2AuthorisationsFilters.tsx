@@ -17,7 +17,7 @@ import { VaccineAuthParams } from '../types';
 
 const baseUrl = baseUrls.nopv2Auth;
 type Props = { params: VaccineAuthParams };
-
+/** @deprecated at clients request. Code kept because the business need may arise again*/
 export const Nopv2AuthorisationsFilters: FunctionComponent<Props> = ({
     params,
 }) => {

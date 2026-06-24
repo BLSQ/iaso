@@ -1,10 +1,4 @@
-import React, {
-    Fragment,
-    FunctionComponent,
-    useCallback,
-    useMemo,
-    useRef,
-} from 'react';
+import React, { Fragment, FunctionComponent, useMemo, useRef } from 'react';
 import { LoadingSpinner } from 'bluesquare-components';
 import L from 'leaflet';
 import { Pane, GeoJSON } from 'react-leaflet';
@@ -25,7 +19,7 @@ import { ASSIGNMENTS_PARENT_CLASS } from '../../constants/ui';
 import { MAP_PANE_Z_INDEX } from './AssignmentsMap';
 
 type Props = {
-    orgUniTypeList?: OrgUnitTypeHierarchyDropdownValues;
+    orgUniTypes?: OrgUnitTypeHierarchyDropdownValues;
     planning?: Planning;
     selectedOrgUnitTypes: OrgUnitTypeHierarchyDropdownValue[];
     rootOrgUnit?: PlanningOrgUnits;
@@ -34,7 +28,7 @@ type Props = {
 };
 
 export const ParentOrgUnits: FunctionComponent<Props> = ({
-    orgUniTypeList,
+    orgUniTypes,
     planning,
     selectedOrgUnitTypes,
     rootOrgUnit,
@@ -46,21 +40,19 @@ export const ParentOrgUnits: FunctionComponent<Props> = ({
     const handleClickRef = useRef(handleClick);
     handleClickRef.current = handleClick;
 
-    const getOnEachFeature = useCallback(
+    const getOnEachFeature =
         (ou: PlanningOrgUnits) => (_feature: unknown, layer: L.Layer) => {
             layer.on('click', () => {
                 if (canAssignRef.current) {
                     handleClickRef.current(ou);
                 }
             });
-        },
-        [],
-    );
+        };
 
     // Remove target org unit types and un checked org unit types
-    // keep original index to always compute same corlo per type
+    // keep original index to always compute same color per type
     const parentOrgUnitTypes = useMemo(() => {
-        return orgUniTypeList
+        return orgUniTypes
             ?.map((ou, index) => ({
                 ...ou,
                 originalIndex: index,
@@ -75,7 +67,7 @@ export const ParentOrgUnits: FunctionComponent<Props> = ({
                     ),
             );
     }, [
-        orgUniTypeList,
+        orgUniTypes,
         planning?.target_org_unit_type_details,
         selectedOrgUnitTypes,
     ]);

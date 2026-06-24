@@ -1,197 +1,80 @@
-import React from 'react';
-import { act, renderHook } from '@testing-library/react';
-import { IntlProvider } from 'react-intl';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ASSIGNMENTS_API_URL } from '../../constants/api';
-import { saveAssignment, useSaveAssignment } from './useSaveAssignment';
 
-const { mockPostRequest, mockPatchRequest } = vi.hoisted(() => ({
-    mockPostRequest: vi.fn(),
-    mockPatchRequest: vi.fn(),
+const { mockUseSnackMutation, mockInvalidateQueries } = vi.hoisted(() => ({
+    mockUseSnackMutation: vi.fn(),
+    mockInvalidateQueries: vi.fn(),
 }));
 
-vi.mock('Iaso/libs/Api', () => ({
-    postRequest: (...args: unknown[]) => mockPostRequest(...args),
-    patchRequest: (...args: unknown[]) => mockPatchRequest(...args),
+vi.mock('../../../../libs/apiHooks', () => ({
+    useSnackMutation: mockUseSnackMutation,
 }));
 
-const createWrapper = () => {
-    const queryClient = new QueryClient({
-        defaultOptions: {
-            queries: { retry: false },
-            mutations: { retry: false },
-        },
-    });
-    const Wrapper = ({ children }: { children: React.ReactNode }) => (
-        <IntlProvider locale="en" messages={{}}>
-            <QueryClientProvider client={queryClient}>
-                {children}
-            </QueryClientProvider>
-        </IntlProvider>
-    );
-    Wrapper.displayName = 'TestQueryClientWrapper';
-    return Wrapper;
-};
-
-describe('saveAssignment', () => {
-    beforeEach(() => {
-        mockPostRequest.mockReset();
-        mockPatchRequest.mockReset();
-    });
-
-    it('creates a new assignment with POST when no id is provided', async () => {
-        mockPostRequest.mockResolvedValue({ id: 99 });
-        const payload = {
-            planning: 42,
-            org_unit: 10,
-            user: 5,
-        };
-
-        await saveAssignment(payload);
-
-        expect(mockPostRequest).toHaveBeenCalledWith(
-            ASSIGNMENTS_API_URL,
-            payload,
-        );
-        expect(mockPatchRequest).not.toHaveBeenCalled();
-    });
-
-    it('updates an existing assignment with PATCH when an id is provided', async () => {
-        mockPatchRequest.mockResolvedValue({});
-        const payload = {
-            id: 12,
-            planning: 42,
-            org_unit: 10,
-            user: null,
-        };
-
-        await saveAssignment(payload);
-
-        expect(mockPatchRequest).toHaveBeenCalledWith(
-            `${ASSIGNMENTS_API_URL}12/`,
-            payload,
-        );
-        expect(mockPostRequest).not.toHaveBeenCalled();
-    });
+vi.mock('react-query', async importOriginal => {
+    const actual = await importOriginal<typeof import('react-query')>();
+    return {
+        ...actual,
+        useQueryClient: vi.fn(() => ({
+            invalidateQueries: mockInvalidateQueries,
+        })),
+    };
 });
+
+const EXPECTED_INVALIDATE_QUERY_KEYS = [
+    'orgUnits',
+    'assignmentsList',
+    'planningDetails',
+    'orgUnitsList',
+    'planningChildrenOrgUnitsPaginated',
+] as const;
 
 describe('useSaveAssignment', () => {
     beforeEach(() => {
-        mockPostRequest.mockReset();
-        mockPatchRequest.mockReset();
-        mockPostRequest.mockResolvedValue({ id: 1 });
-        mockPatchRequest.mockResolvedValue({});
+        vi.clearAllMocks();
+        mockUseSnackMutation.mockReturnValue({ mutateAsync: vi.fn() });
     });
 
-    it('assigns a user to an org unit', async () => {
-        const selectedUser = {
-            id: 5,
-            username: 'john',
-            first_name: 'John',
-            last_name: 'Doe',
-            color: '#000',
-            iaso_profile_id: 1,
-        };
+    it('invalidates related query keys on success', async () => {
+        const { useSaveAssignment } = await import('./useSaveAssignment');
 
-        const { result } = renderHook(
-            () =>
-                useSaveAssignment({
-                    planningId: '42',
-                    assignments: { assignments: [], allAssignments: [] },
-                    selectedUser,
-                }),
-            { wrapper: createWrapper() },
+        renderHook(() =>
+            useSaveAssignment({
+                planningId: '42',
+                assignments: { assignments: [], allAssignments: [] },
+            }),
         );
 
-        await act(async () => {
-            result.current.handleSaveAssignment(10);
-        });
+        const { options } = mockUseSnackMutation.mock.calls[0][0];
+        options.onSuccess();
 
-        expect(mockPostRequest).toHaveBeenCalledWith(ASSIGNMENTS_API_URL, {
-            planning: 42,
-            org_unit: 10,
-            id: undefined,
-            user: 5,
+        expect(mockInvalidateQueries).toHaveBeenCalledTimes(
+            EXPECTED_INVALIDATE_QUERY_KEYS.length,
+        );
+        EXPECTED_INVALIDATE_QUERY_KEYS.forEach(key => {
+            expect(mockInvalidateQueries).toHaveBeenCalledWith(key);
         });
     });
+});
 
-    it('unassigns a user when clicking the same assignee again', async () => {
-        const selectedUser = {
-            id: 5,
-            username: 'john',
-            first_name: 'John',
-            last_name: 'Doe',
-            color: '#000',
-            iaso_profile_id: 1,
-        };
-        const assignments = {
-            assignments: [],
-            allAssignments: [
-                {
-                    id: 12,
-                    planning: 42,
-                    org_unit: 10,
-                    user: 5,
-                    team: 0,
-                    org_unit_details: {
-                        id: 10,
-                        name: 'OU',
-                        geo_json: null,
-                        latitude: null,
-                        longitude: null,
-                    },
-                },
-            ],
-        };
-
-        const { result } = renderHook(
-            () =>
-                useSaveAssignment({
-                    planningId: '42',
-                    assignments,
-                    selectedUser,
-                }),
-            { wrapper: createWrapper() },
-        );
-
-        await act(async () => {
-            result.current.handleSaveAssignment(10);
-        });
-
-        expect(mockPatchRequest).toHaveBeenCalledWith(
-            `${ASSIGNMENTS_API_URL}12/`,
-            {
-                planning: 42,
-                org_unit: 10,
-                id: 12,
-                user: null,
-            },
-        );
+describe('useBulkSaveAssignments', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockUseSnackMutation.mockReturnValue({ mutateAsync: vi.fn() });
     });
 
-    it('assigns a team to an org unit', async () => {
-        const selectedTeam = { id: 9, name: 'Team', color: '#fff' };
+    it('invalidates related query keys on success', async () => {
+        const { useBulkSaveAssignments } = await import('./useSaveAssignment');
 
-        const { result } = renderHook(
-            () =>
-                useSaveAssignment({
-                    planningId: '42',
-                    assignments: { assignments: [], allAssignments: [] },
-                    selectedTeam,
-                }),
-            { wrapper: createWrapper() },
+        renderHook(() => useBulkSaveAssignments());
+
+        const { options } = mockUseSnackMutation.mock.calls[0][0];
+        options.onSuccess();
+
+        expect(mockInvalidateQueries).toHaveBeenCalledTimes(
+            EXPECTED_INVALIDATE_QUERY_KEYS.length,
         );
-
-        await act(async () => {
-            result.current.handleSaveAssignment(10);
-        });
-
-        expect(mockPostRequest).toHaveBeenCalledWith(ASSIGNMENTS_API_URL, {
-            planning: 42,
-            org_unit: 10,
-            id: undefined,
-            team: 9,
+        EXPECTED_INVALIDATE_QUERY_KEYS.forEach(key => {
+            expect(mockInvalidateQueries).toHaveBeenCalledWith(key);
         });
     });
 });

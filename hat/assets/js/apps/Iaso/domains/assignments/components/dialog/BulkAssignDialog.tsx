@@ -1,7 +1,6 @@
 import React, {
     FunctionComponent,
     useCallback,
-    useEffect,
     useMemo,
     useState,
 } from 'react';
@@ -18,6 +17,7 @@ import {
     Divider,
 } from '@mui/material';
 import { LoadingSpinner, Table, useSafeIntl } from 'bluesquare-components';
+import { UrlParams } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { Planning, PlanningOrgUnits } from 'Iaso/domains/plannings/types';
@@ -42,7 +42,7 @@ type Props = {
     orgUniTypeList?: OrgUnitTypeHierarchyDropdownValues;
 };
 
-const defaultParams: Partial<AssignmentParams> = {
+const defaultParams: UrlParams = {
     pageSize: '10',
     page: '1',
     order: 'name',
@@ -97,13 +97,6 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
         orgUnitParentId: `${selectedParentOrgUnit.id}`,
         orgUnitTypeIds: selectedOrgUnitTypes.join(','),
     });
-    useEffect(() => {
-        setParams(prev => ({
-            ...prev,
-            orgUnitTypeIds: selectedOrgUnitTypes.join(','),
-            page: '1',
-        }));
-    }, [selectedOrgUnitTypes]);
 
     const orgUniTypesOptions = useMemo(() => {
         return orgUniTypeList?.filter(t =>
@@ -131,13 +124,13 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
             selectCount: 0,
         },
     });
-    const targetOrgUnitType = planning.target_org_unit_type_details
-        ?.map(t => t.name)
-        .join(', ');
+    const targetOrgUnitType =
+        planning.target_org_unit_type_details?.map(t => t.name).join(', ') ??
+        '';
     const { mutateAsync: saveBulkAssignments, isLoading: isSaving } =
         useBulkSaveAssignments();
     const handleSaveBulkAssignments = async () => {
-        await saveBulkAssignments({
+        saveBulkAssignments({
             planning: planning.id,
             team: selectedTeam?.id,
             user: selectedUser?.id,
@@ -148,15 +141,20 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
             unselected_ids: selection.unSelectedItems.map(
                 (item: any) => item.id,
             ),
-        });
-        onClose();
+        }).then(() => onClose());
     };
     const handleChangeOrgUnitTypes = useCallback(
         (_key: string, value: string) => {
             handleUnselectAll();
             setSelectedOrgUnitTypes(commaSeparatedIdsToArray(value));
+
+            setParams(prev => ({
+                ...prev,
+                orgUnitTypeIds: selectedOrgUnitTypes.join(','),
+                page: '1',
+            }));
         },
-        [setSelectedOrgUnitTypes, handleUnselectAll],
+        [handleUnselectAll, selectedOrgUnitTypes],
     );
     const assignButtonDisabled =
         selection.selectedItems.length === 0 && !selection.selectAll;
@@ -171,7 +169,7 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
             {isSaving && <LoadingSpinner />}
             <DialogTitle>
                 {formatMessage(MESSAGES.bulkAssign, {
-                    targetOrgUnitType: targetOrgUnitType ?? '',
+                    targetOrgUnitType,
                     parentOrgUnitName: selectedParentOrgUnit.name,
                 })}
             </DialogTitle>

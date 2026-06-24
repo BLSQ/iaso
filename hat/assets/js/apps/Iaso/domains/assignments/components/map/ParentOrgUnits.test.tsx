@@ -125,7 +125,7 @@ describe('ParentOrgUnits', () => {
     it('queries parent org units for non-target selected types', () => {
         renderWithThemeAndIntlProvider(
             <ParentOrgUnits
-                orgUniTypeList={orgUniTypeList}
+                orgUniTypes={orgUniTypeList}
                 planning={planning}
                 selectedOrgUnitTypes={orgUniTypeList}
                 rootOrgUnit={rootOrgUnit}
@@ -144,7 +144,7 @@ describe('ParentOrgUnits', () => {
     it('calls handleClick when a parent shape is clicked and assignment is allowed', () => {
         renderWithThemeAndIntlProvider(
             <ParentOrgUnits
-                orgUniTypeList={orgUniTypeList}
+                orgUniTypes={orgUniTypeList}
                 planning={planning}
                 selectedOrgUnitTypes={[orgUniTypeList[0]]}
                 rootOrgUnit={rootOrgUnit}
@@ -178,7 +178,7 @@ describe('ParentOrgUnits', () => {
 
         renderWithThemeAndIntlProvider(
             <ParentOrgUnits
-                orgUniTypeList={orgUniTypeList}
+                orgUniTypes={orgUniTypeList}
                 planning={planning}
                 selectedOrgUnitTypes={[orgUniTypeList[0]]}
                 rootOrgUnit={rootOrgUnit}

@@ -2,7 +2,6 @@ import React, {
     Dispatch,
     FunctionComponent,
     SetStateAction,
-    useCallback,
     useMemo,
     useState,
 } from 'react';
@@ -158,18 +157,15 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
         [childrenOrgUnits, rootOrgUnit],
     );
 
-    const handleClickParentOrgUnit = useCallback(
-        (orgUnit: PlanningOrgUnits) => {
-            setSelectedParentOrgUnit(orgUnit);
-            setShowBulkAssignDialog(true);
-        },
-        [],
-    );
+    const handleClickParentOrgUnit = (orgUnit: PlanningOrgUnits) => {
+        setSelectedParentOrgUnit(orgUnit);
+        setShowBulkAssignDialog(true);
+    };
 
-    const handleCloseBulkAssignDialog = useCallback(() => {
+    const handleCloseBulkAssignDialog = () => {
         setSelectedParentOrgUnit(undefined);
         setShowBulkAssignDialog(false);
-    }, []);
+    };
 
     const isLoading =
         isLoadingChildrenOrgUnits ||
@@ -243,7 +239,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                     </Pane>
                 )}
                 <ParentOrgUnits
-                    orgUniTypeList={orgUniTypeList}
+                    orgUniTypes={orgUniTypeList}
                     planning={planning}
                     selectedOrgUnitTypes={selectedOrgUnitTypes}
                     rootOrgUnit={rootOrgUnit}

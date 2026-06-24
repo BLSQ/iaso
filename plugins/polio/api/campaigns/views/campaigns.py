@@ -5,7 +5,7 @@ from typing import Any, List, Union
 
 from django.conf import settings
 from django.core.mail import send_mail
-from django.db.models import Exists, Max, Min, OuterRef, Prefetch, Q
+from django.db.models import Max, Min, Prefetch, Q
 from django.db.models.query import QuerySet
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
@@ -29,6 +29,7 @@ from plugins.polio.api.campaigns.campaigns_log import (
     log_campaign_modification,
     serialize_campaign,
 )
+from plugins.polio.api.campaigns.filters.filters import CampaignFilter
 from plugins.polio.api.campaigns.filters.search import SearchFilterBackend
 from plugins.polio.api.campaigns.serializers.anonymous import AnonymousCampaignSerializer
 from plugins.polio.api.campaigns.serializers.calendar import CalendarCampaignSerializer
@@ -71,6 +72,7 @@ class CampaignViewSet(ModelViewSet):
         SearchFilterBackend,
         DeletionFilterBackend,
     ]
+    filterset_class = CampaignFilter
 
     ordering_fields = [
         "obr_name",
@@ -111,61 +113,22 @@ class CampaignViewSet(ModelViewSet):
             return CampaignSerializer
         return AnonymousCampaignSerializer
 
-    def filter_queryset(self, queryset):
-        queryset = super().filter_queryset(queryset)
-        if self.action in ("update", "partial_update", "retrieve", "destroy", "preparedness"):
-            return queryset
-        campaign_category = self.request.query_params.get("campaign_category")
-        campaign_groups = self.request.query_params.get("campaign_groups")
-        show_test = self.request.query_params.get("show_test", "false")
-        # FIXME we exclude on hold by default but it means that selecting campaign_category=on_hold without passing on_hold=true will exclude campaigns on_hold
-        on_hold = self.request.query_params.get("on_hold", "false")
-        org_unit_groups = self.request.query_params.get("org_unit_groups")
-        campaign_types = self.request.query_params.get("campaign_types")
-        campaigns = queryset
-        rounds_on_hold = Round.objects.filter(
-            campaign_id=OuterRef("pk"),
-            on_hold=True,
-        )
-        campaigns = campaigns.annotate(has_round_on_hold=Exists(rounds_on_hold))
+    def get_queryset(self):
+        user = self.request.user
+        campaigns = Campaign.objects.all()
 
-        if show_test == "false":
-            campaigns = campaigns.filter(is_test=False)
+        # used for Ordering
+        campaigns = campaigns.annotate(last_round_started_at=Max("rounds__started_at"))
+        campaigns = campaigns.annotate(first_round_started_at=Min("rounds__started_at"))
 
-        if on_hold == "false":
-            campaigns = campaigns.filter(Q(on_hold=False) & Q(has_round_on_hold=False))
-
-        if campaign_category == "on_hold" and on_hold == "false":
-            campaigns = campaigns.none()
-        if campaign_category == "on_hold" and on_hold == "true":
-            campaigns = campaigns.filter(Q(on_hold=True) | Q(has_round_on_hold=True)).filter(is_planned=False)
-
-        if campaign_category == "is_planned":
-            campaigns = campaigns.filter(is_planned=True)
-
-        if campaign_category == "preventive":
-            campaigns = campaigns.filter(is_preventive=True).filter(is_planned=False)
-
-        if campaign_category == "regular" and on_hold == "true":
-            campaigns = campaigns.filter(is_preventive=False).filter(is_test=False).filter(is_planned=False)
-
-        if campaign_category == "regular" and on_hold == "false":
-            campaigns = (
-                campaigns.filter(is_preventive=False)
-                .filter(is_test=False)
-                .filter(is_planned=False)
-                .filter(Q(on_hold=False) & Q(has_round_on_hold=False))
-            )
-        if campaign_groups:
-            campaigns = campaigns.filter(grouped_campaigns__in=campaign_groups.split(","))
-        if org_unit_groups:
-            campaigns = campaigns.filter(country__groups__in=org_unit_groups.split(","))
-        if campaign_types:
-            campaign_types_list = campaign_types.split(",")
-            if all(item.isdigit() for item in campaign_types_list):
-                campaigns = campaigns.filter(campaign_types__id__in=campaign_types_list)
-            else:
-                campaigns = campaigns.filter(campaign_types__slug__in=campaign_types_list)
+        campaigns = campaigns.filter_for_user(user)
+        if not self.request.user.is_authenticated:
+            # For this endpoint since it's available anonymously we allow all user to list the campaigns
+            # and to additionally filter on the account_id
+            # In the future we may want to make the account_id parameter mandatory.
+            account_id = self.request.query_params.get("account_id", None)
+            if account_id is not None:
+                campaigns = campaigns.filter(account_id=account_id)
 
         org_units_id_only_qs = OrgUnit.objects.only("id", "name")
         country_prefetch = Prefetch("country", queryset=org_units_id_only_qs)
@@ -187,25 +150,6 @@ class CampaignViewSet(ModelViewSet):
             .prefetch_related(rounds_scopes_group_org_units_prefetch)
         )
         return campaigns.distinct()
-
-    def get_queryset(self):
-        user = self.request.user
-        campaigns = Campaign.objects.all()
-
-        # used for Ordering
-        campaigns = campaigns.annotate(last_round_started_at=Max("rounds__started_at"))
-        campaigns = campaigns.annotate(first_round_started_at=Min("rounds__started_at"))
-
-        campaigns = campaigns.filter_for_user(user)
-        if not self.request.user.is_authenticated:
-            # For this endpoint since it's available anonymously we allow all user to list the campaigns
-            # and to additionally filter on the account_id
-            # In the future we may want to make the account_id parameter mandatory.
-            account_id = self.request.query_params.get("account_id", None)
-            if account_id is not None:
-                campaigns = campaigns.filter(account_id=account_id)
-
-        return campaigns
 
     @action(detail=False, methods=["GET"], serializer_class=CampaignTypeSerializer)
     def available_campaign_types(self, request):

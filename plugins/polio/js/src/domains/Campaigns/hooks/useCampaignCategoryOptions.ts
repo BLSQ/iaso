@@ -10,7 +10,7 @@ export const useCampaignCategoryOptions = (): DropdownOptions<string>[] => {
             { label: formatMessage(MESSAGES.all), value: 'all' },
             {
                 label: formatMessage(MESSAGES.preventiveShort),
-                value: 'preventive',
+                value: 'is_preventive',
             },
             { label: formatMessage(MESSAGES.regular), value: 'regular' },
             { label: formatMessage(MESSAGES.campaignOnHold), value: 'on_hold' },

@@ -21,6 +21,7 @@ class CampaignDashboardsFiltersTestCase(CampaignFiltersTestBase):
             self.planned_campaign.obr_name,
             self.planned_preventive_campaign.obr_name,
             self.campaign_with_on_hold_round.obr_name,
+            self.finished_last_round_on_hold_campaign.obr_name,
             self.test_campaign.obr_name,
             self.on_hold_campaign.obr_name,
             self.planned_test_campaign.obr_name,

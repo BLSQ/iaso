@@ -23,9 +23,7 @@ type Props = {
     keyValue?: string;
     clearable?: boolean;
     initialValue?: string; // obr name
-    onHold?: boolean;
     showTest?: boolean;
-    showPlanned?: boolean;
     campaignCategory?: CampaignCategory;
     campaignType?: 'polio' | 'non-polio' | string;
 };
@@ -45,8 +43,6 @@ export const CampaignAsyncSelect: FunctionComponent<Props> = ({
     clearable,
     initialValue,
     campaignCategory = 'regular' as CampaignCategory,
-    onHold = true,
-    showPlanned = true,
     showTest = false,
     campaignType = 'polio',
     label = MESSAGES.campaign,
@@ -61,11 +57,9 @@ export const CampaignAsyncSelect: FunctionComponent<Props> = ({
         return {
             fieldset: 'dropdown',
             campaignCategory,
-            on_hold: onHold,
-            is_planned: showPlanned,
             show_test: showTest,
         };
-    }, [campaignCategory, onHold, showPlanned, showTest]);
+    }, [campaignCategory, showTest]);
     const options: Options = useMemo(() => {
         return {
             enabled: isStateSet,

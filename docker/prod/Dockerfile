@@ -40,6 +40,7 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
 
 # Install python dependencies + gunicorn
 COPY ../../pyproject.toml ./
+COPY ../../uv.lock ./
 RUN pip install uv
 # Use python from the system, not from uv
 # https://docs.astral.sh/uv/reference/environment/#uv_python_preference

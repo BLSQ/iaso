@@ -131,6 +131,10 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         url: 'forms/submission',
         params: ['accountId', 'instanceId', 'referenceFormId'],
     },
+    instanceValidation: {
+        url: 'forms/submission/validate',
+        params: ['accountId', 'instanceId'],
+    },
     compareInstanceLogs: {
         url: 'forms/compareInstanceLogs',
         params: ['accountId', 'instanceIds', 'logA', 'logB'],
@@ -733,6 +737,7 @@ type IasoBaseUrls = {
     formsStats: string;
     instances: string;
     instanceDetail: string;
+    instanceValidation: string;
     compareInstanceLogs: string;
     compareInstances: string;
     mappings: string;

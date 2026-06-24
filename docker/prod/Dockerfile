@@ -45,7 +45,7 @@ RUN pip install uv
 # https://docs.astral.sh/uv/reference/environment/#uv_python_preference
 ENV UV_PYTHON_PREFERENCE=only-system
 ENV UV_NO_DEV=1
-RUN uv sync --python "$(which python3)" --group prod --lock
+RUN uv sync --python "$(which python3)" --group prod --locked
 
 # Strip the venv: remove caches and debug symbols
 RUN find ./.venv -type d -name "__pycache__" -exec rm -rf {} + && \

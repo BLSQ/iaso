@@ -53,6 +53,7 @@ vi.mock('bluesquare-components', async importOriginal => {
                 }
                 return text;
             },
+            formatNumber: (value: number) => value.toString(),
         }),
         Table: ({
             data,
@@ -84,6 +85,20 @@ const planning = {
     name: 'Planning',
     target_org_unit_type_details: [{ id: 2, name: 'Area' }],
 } as any;
+
+const planningWithMultipleTargets = {
+    id: 42,
+    name: 'Planning',
+    target_org_unit_type_details: [
+        { id: 2, name: 'Area' },
+        { id: 3, name: 'Health Centre' },
+    ],
+} as any;
+
+const orgUniTypeList = [
+    { value: 2, label: 'Area' },
+    { value: 3, label: 'Health Centre' },
+];
 
 const selectedParentOrgUnit = {
     id: 100,
@@ -136,7 +151,10 @@ describe('BulkAssignDialog', () => {
     });
 
     it('renders the dialog title and org unit rows', () => {
-        renderBulkAssignDialog({}, { planningId: '42', initialSelectedUser: selectedUser });
+        renderBulkAssignDialog(
+            {},
+            { planningId: '42', initialSelectedUser: selectedUser },
+        );
 
         expect(
             screen.getByText('Assign all Area in Zone A'),
@@ -151,7 +169,15 @@ describe('BulkAssignDialog', () => {
     });
 
     it('disables assign after unselecting all rows', () => {
-        renderBulkAssignDialog();
+        renderWithThemeAndIntlProvider(
+            <BulkAssignDialog
+                open
+                onClose={onClose}
+                selectedParentOrgUnit={selectedParentOrgUnit}
+                planning={planningWithMultipleTargets}
+                orgUniTypeList={orgUniTypeList}
+            />,
+        );
 
         fireEvent.click(screen.getByRole('button', { name: 'Unselect all' }));
 
@@ -159,9 +185,11 @@ describe('BulkAssignDialog', () => {
     });
 
     it('submits bulk assignment and closes the dialog', async () => {
-        renderBulkAssignDialog({}, { planningId: '42', initialSelectedTeam: selectedTeam });
+        renderBulkAssignDialog(
+            {},
+            { planningId: '42', initialSelectedTeam: selectedTeam },
+        );
 
-        fireEvent.click(screen.getByRole('button', { name: 'Select all' }));
         fireEvent.click(screen.getByRole('button', { name: 'Assign' }));
 
         await waitFor(() => {

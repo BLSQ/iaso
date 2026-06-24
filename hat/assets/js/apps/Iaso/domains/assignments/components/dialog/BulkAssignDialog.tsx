@@ -1,7 +1,6 @@
 import React, {
     FunctionComponent,
     useCallback,
-    useEffect,
     useMemo,
     useState,
 } from 'react';
@@ -13,11 +12,11 @@ import {
     DialogTitle,
     Dialog,
     Box,
-    IconButton,
-    Tooltip,
     Divider,
+    Grid,
 } from '@mui/material';
 import { LoadingSpinner, Table, useSafeIntl } from 'bluesquare-components';
+import { UrlParams } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { Planning, PlanningOrgUnits } from 'Iaso/domains/plannings/types';
@@ -40,7 +39,7 @@ type Props = {
     orgUniTypeList?: OrgUnitTypeHierarchyDropdownValues;
 };
 
-const defaultParams: Partial<AssignmentParams> = {
+const defaultParams: UrlParams = {
     pageSize: '10',
     page: '1',
     order: 'name',
@@ -57,17 +56,11 @@ const styles: SxStyles = {
             `1px solid ${theme.palette.ligthGray.border}`,
         ...getStickyTableHeadStyles('60vh'),
     },
-    multiSelectIcons: {
-        border: theme =>
-            // @ts-ignore
-            `1px solid ${theme.palette.ligthGray.border}`,
-        borderBottom: 'none',
-        position: 'absolute',
-        top: '-35px',
-        right: theme => theme.spacing(1),
+    multiSelectButtons: {
         display: 'flex',
         justifyContent: 'flex-end',
-        zIndex: 10,
+        alignItems: 'center',
+        alignSelf: 'center',
     },
 };
 
@@ -95,13 +88,6 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
         orgUnitParentId: `${selectedParentOrgUnit.id}`,
         orgUnitTypeIds: selectedOrgUnitTypes.join(','),
     });
-    useEffect(() => {
-        setParams(prev => ({
-            ...prev,
-            orgUnitTypeIds: selectedOrgUnitTypes.join(','),
-            page: '1',
-        }));
-    }, [selectedOrgUnitTypes]);
 
     const orgUniTypesOptions = useMemo(() => {
         return orgUniTypeList?.filter(t =>
@@ -129,13 +115,13 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
             selectCount: 0,
         },
     });
-    const targetOrgUnitType = planning.target_org_unit_type_details
-        ?.map(t => t.name)
-        .join(', ');
+    const targetOrgUnitType =
+        planning.target_org_unit_type_details?.map(t => t.name).join(', ') ??
+        '';
     const { mutateAsync: saveBulkAssignments, isLoading: isSaving } =
         useBulkSaveAssignments();
     const handleSaveBulkAssignments = async () => {
-        await saveBulkAssignments({
+        saveBulkAssignments({
             planning: planning.id,
             team: selectedTeam?.id,
             user: selectedUser?.id,
@@ -146,15 +132,20 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
             unselected_ids: selection.unSelectedItems.map(
                 (item: any) => item.id,
             ),
-        });
-        onClose();
+        }).then(() => onClose());
     };
     const handleChangeOrgUnitTypes = useCallback(
         (_key: string, value: string) => {
             handleUnselectAll();
             setSelectedOrgUnitTypes(commaSeparatedIdsToArray(value));
+
+            setParams(prev => ({
+                ...prev,
+                orgUnitTypeIds: selectedOrgUnitTypes.join(','),
+                page: '1',
+            }));
         },
-        [setSelectedOrgUnitTypes, handleUnselectAll],
+        [handleUnselectAll, selectedOrgUnitTypes],
     );
     const assignButtonDisabled =
         selection.selectedItems.length === 0 && !selection.selectAll;
@@ -169,83 +160,83 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
             {isSaving && <LoadingSpinner />}
             <DialogTitle>
                 {formatMessage(MESSAGES.bulkAssign, {
-                    targetOrgUnitType: targetOrgUnitType ?? '',
+                    targetOrgUnitType,
                     parentOrgUnitName: selectedParentOrgUnit.name,
                 })}
             </DialogTitle>
             {hasMultipleTargets && (
-                <Box width="50%" ml={2} mb={2}>
-                    <InputComponent
-                        type="select"
-                        multi
-                        disabled={!orgUniTypeList}
-                        keyValue="orgUnitTypeIds"
-                        onChange={handleChangeOrgUnitTypes}
-                        value={selectedOrgUnitTypes}
-                        label={MESSAGES.targetOrgUnitType}
-                        options={orgUniTypesOptions}
-                        loading={!orgUniTypeList}
-                        clearable={false}
-                    />
-                </Box>
-            )}
-            <Box position="relative">
-                <Box sx={styles.multiSelectIcons}>
-                    <Tooltip title={formatMessage(MESSAGES.selectAll)}>
-                        <IconButton
-                            size="small"
-                            color={selection.selectAll ? 'primary' : 'default'}
-                            aria-label={formatMessage(MESSAGES.selectAll)}
+                <Grid container sx={{ px: 2, mb: 2 }} alignItems="center">
+                    <Grid item xs={12} md={6}>
+                        <InputComponent
+                            type="select"
+                            multi
+                            disabled={!orgUniTypeList}
+                            keyValue="orgUnitTypeIds"
+                            onChange={handleChangeOrgUnitTypes}
+                            value={selectedOrgUnitTypes}
+                            label={MESSAGES.targetOrgUnitType}
+                            options={orgUniTypesOptions}
+                            loading={!orgUniTypeList}
+                            clearable={false}
+                        />
+                    </Grid>
+                    <Grid item xs={12} md={6} sx={styles.multiSelectButtons}>
+                        <Button
                             onClick={() =>
                                 handleSelectAll([], [], data?.count ?? 0)
                             }
+                            variant="outlined"
+                            color={
+                                selection.selectAll ? 'primary' : 'secondary'
+                            }
+                            sx={{
+                                mr: 1,
+                            }}
                         >
-                            <CheckBox />
-                        </IconButton>
-                    </Tooltip>
-                    <Tooltip title={formatMessage(MESSAGES.unSelectAll)}>
-                        <IconButton
-                            size="small"
-                            aria-label={formatMessage(MESSAGES.unSelectAll)}
+                            <CheckBox sx={{ marginRight: 1 }} />
+                            {formatMessage(MESSAGES.selectAll)}
+                        </Button>
+                        <Button
                             onClick={handleUnselectAll}
+                            variant="outlined"
+                            color="secondary"
                         >
-                            <IndeterminateCheckBoxIcon />
-                        </IconButton>
-                    </Tooltip>
-                </Box>
-                <Box sx={styles.tableContainer}>
-                    <Table
-                        data={data?.results ?? []}
-                        count={data?.count ?? 0}
-                        pages={data?.pages ?? 0}
-                        marginBottom={false}
-                        marginTop={false}
-                        columns={columns}
-                        extraProps={{
-                            loading: isLoading,
-                        }}
-                        multiSelect
-                        selection={selection}
-                        setTableSelection={(selectionType, items) =>
-                            handleTableSelection(
-                                selectionType,
-                                items,
-                                data?.count,
-                            )
-                        }
-                        params={params}
-                        countOnTop={false}
-                        defaultSorted={[{ id: 'name', desc: false }]}
-                        onTableParamsChange={newParams =>
-                            setParams({
-                                ...params,
-                                ...newParams,
-                            })
-                        }
-                        elevation={0}
-                    />
-                    <Divider />
-                </Box>
+                            <IndeterminateCheckBoxIcon
+                                sx={{ marginRight: 1 }}
+                            />
+                            {formatMessage(MESSAGES.unSelectAll)}
+                        </Button>
+                    </Grid>
+                </Grid>
+            )}
+            <Box sx={styles.tableContainer}>
+                <Table
+                    data={data?.results ?? []}
+                    count={data?.count ?? 0}
+                    pages={data?.pages ?? 0}
+                    marginBottom={false}
+                    marginTop={false}
+                    columns={columns}
+                    extraProps={{
+                        loading: isLoading,
+                    }}
+                    multiSelect
+                    selection={selection}
+                    setTableSelection={(selectionType, items) =>
+                        handleTableSelection(selectionType, items, data?.count)
+                    }
+                    params={params}
+                    countOnTop={false}
+                    defaultSorted={[{ id: 'name', desc: false }]}
+                    onTableParamsChange={newParams =>
+                        setParams({
+                            ...params,
+                            ...newParams,
+                        })
+                    }
+                    elevation={0}
+                />
+                <Divider />
             </Box>
             <DialogActions>
                 <Button onClick={onClose}>

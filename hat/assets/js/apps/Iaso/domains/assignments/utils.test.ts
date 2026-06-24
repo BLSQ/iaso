@@ -6,7 +6,7 @@ import {
     getValidLocations,
     getValidShapes,
     isOrgunitVisible,
-    isOuAssigned,
+    isOrgUnitAssigned,
 } from './utils';
 
 const createOrgUnit = (overrides = {}) =>
@@ -86,7 +86,7 @@ describe('assignments utils', () => {
         });
     });
 
-    describe('isOuAssigned', () => {
+    describe('isOrgUnitAssigned', () => {
         it('is true when assignment has a user or a team', () => {
             const ou = createOrgUnit({ id: 7 });
             const assignments = {
@@ -94,7 +94,7 @@ describe('assignments utils', () => {
                 allAssignments: [createAssignment({ org_unit: 7, user: 12 })],
             };
 
-            expect(isOuAssigned(ou, assignments as any)).toBe(true);
+            expect(isOrgUnitAssigned(ou, assignments as any)).toBe(true);
         });
 
         it('is false when assignment exists but user and team are empty', () => {
@@ -106,7 +106,7 @@ describe('assignments utils', () => {
                 ],
             };
 
-            expect(isOuAssigned(ou, assignments as any)).toBe(false);
+            expect(isOrgUnitAssigned(ou, assignments as any)).toBe(false);
         });
     });
 

@@ -35,7 +35,7 @@ export const getValidLocations = (orgUnits?: PlanningOrgUnits[]) => {
     );
 };
 
-export const isOuAssigned = (
+export const isOrgUnitAssigned = (
     ou: PlanningOrgUnits,
     assignments?: AssignmentsResult,
 ): boolean => {
@@ -66,10 +66,10 @@ export const filterOrgUnits = (
 ): FilterOrgUnitsResult => {
     return {
         unassigned: orgUnits
-            ?.filter(ou => !isOuAssigned(ou, assignments))
+            ?.filter(ou => !isOrgUnitAssigned(ou, assignments))
             .filter(ou => isOrgunitVisible(ou, selectedOrgUnitType)),
         assigned: orgUnits
-            ?.filter(ou => isOuAssigned(ou, assignments))
+            ?.filter(ou => isOrgUnitAssigned(ou, assignments))
             .filter(ou => isOrgunitVisible(ou, selectedOrgUnitType)),
     };
 };

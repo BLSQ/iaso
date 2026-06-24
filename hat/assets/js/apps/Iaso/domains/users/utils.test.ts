@@ -31,9 +31,9 @@ const createUser = (overrides: Partial<User> = {}): User => ({
 
 describe('userHasPermission', () => {
     it('returns false when user is missing', () => {
-        expect(userHasPermission('iaso.users', undefined as unknown as User)).toBe(
-            false,
-        );
+        expect(
+            userHasPermission('iaso.users', undefined as unknown as User),
+        ).toBe(false);
     });
 
     it('returns false when user has no permissions array', () => {
@@ -66,7 +66,10 @@ describe('userHasPermission', () => {
 describe('userHasOneOfPermissions', () => {
     it('returns false when user is missing', () => {
         expect(
-            userHasOneOfPermissions(['iaso.users'], undefined as unknown as User),
+            userHasOneOfPermissions(
+                ['iaso.users'],
+                undefined as unknown as User,
+            ),
         ).toBe(false);
     });
 
@@ -111,23 +114,25 @@ describe('userHasAllPermissions', () => {
             permissions: ['iaso.users', 'iaso.forms'],
         });
 
-        expect(
-            userHasAllPermissions(['iaso.users', 'iaso.forms'], user),
-        ).toBe(true);
+        expect(userHasAllPermissions(['iaso.users', 'iaso.forms'], user)).toBe(
+            true,
+        );
     });
 
     it('returns false when user is missing one permission', () => {
         const user = createUser({ permissions: ['iaso.users'] });
 
-        expect(
-            userHasAllPermissions(['iaso.users', 'iaso.forms'], user),
-        ).toBe(false);
+        expect(userHasAllPermissions(['iaso.users', 'iaso.forms'], user)).toBe(
+            false,
+        );
     });
 });
 
 describe('listMenuPermission', () => {
     it('returns an empty array for a missing menu item', () => {
-        expect(listMenuPermission(undefined as unknown as MenuItem)).toEqual([]);
+        expect(listMenuPermission(undefined as unknown as MenuItem)).toEqual(
+            [],
+        );
     });
 
     it('collects permissions from a menu item', () => {
@@ -299,8 +304,11 @@ describe('getProfilesDropdownQueryKey', () => {
     });
 
     it('omits the empty-query flag when disabled', () => {
-        expect(
-            getProfilesDropdownQueryKey({ search: 'jane' }, false),
-        ).toEqual(['profiles', 'dropdown', 'search=jane', undefined]);
+        expect(getProfilesDropdownQueryKey({ search: 'jane' }, false)).toEqual([
+            'profiles',
+            'dropdown',
+            'search=jane',
+            undefined,
+        ]);
     });
 });

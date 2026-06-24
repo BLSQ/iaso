@@ -5,7 +5,7 @@ from django.utils.text import slugify
 from iaso.models.base import Account
 from iaso.models.data_store import JsonDataStore
 from iaso.permissions.core_permissions import CORE_DATASTORE_READ_PERMISSION, CORE_DATASTORE_WRITE_PERMISSION
-from iaso.test import APITestCase
+from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
 data_store_content1 = json.dumps({"hello": "world"})
@@ -15,7 +15,7 @@ data_store_content3 = json.dumps({"this": "should not appear"})
 api_url = "/api/datastore/"
 
 
-class JsonDataStoreAPITestCase(APITestCase):
+class JsonDataStoreAPITestCase(SwaggerTestCaseMixin, APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.account1 = Account.objects.create(name="Account 1")
@@ -237,3 +237,21 @@ class JsonDataStoreAPITestCase(APITestCase):
         )
         response_body = self.assertJSONResponse(response, 200)
         self.assertEqual(response_body["key"], slugified)
+
+    def test_list_response_is_openapi_compliant(self):
+        self.client.force_authenticate(self.authorized_user_read)
+        response = self.client.get(api_url)
+        response_body = self.assertJSONResponse(response, 200)
+        self.assertResponseCompliantToSwagger(response_body, "PaginatedDataStoreList")
+
+    def test_retrieve_response_is_openapi_compliant(self):
+        self.client.force_authenticate(self.authorized_user_read)
+        response = self.client.get(f"{api_url}{self.data_store1.slug}/")
+        response_body = self.assertJSONResponse(response, 200)
+        self.assertResponseCompliantToSwagger(response_body, "DataStore")
+
+    def test_create_response_is_openapi_compliant(self):
+        self.client.force_authenticate(self.authorized_user_write)
+        response = self.client.post(api_url, {"data": {"post": "new datastore"}, "key": "openapi_store"}, format="json")
+        response_body = self.assertJSONResponse(response, 201)
+        self.assertResponseCompliantToSwagger(response_body, "DataStore")

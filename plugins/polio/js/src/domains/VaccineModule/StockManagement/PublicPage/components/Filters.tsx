@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { Grid, Box, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import { useAppId } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useAppId';
 import { useGetGroupDropdown } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
 import { useFilterState } from '../../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import { baseUrls } from '../../../../../constants/urls';
@@ -69,6 +70,7 @@ type Props = {
 };
 
 export const Filters: FunctionComponent<Props> = ({ params }) => {
+    const appId = useAppId();
     const { formatMessage } = useSafeIntl();
     const { filters, changeAndSearch } = useFilterState({
         baseUrl: baseUrls.embeddedVaccineStock,
@@ -80,8 +82,8 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
     const { data: countryBlocks, isFetching: isLoadingCountryBlocks } =
         useGetGroupDropdown({
             blockOfCountries: true,
-            // hard-coding polio appId here because there's no way to otherwise filter by accountÒ
-            appId: 'com.poliooutbreaks.app',
+            // passing appId here because there's no way to otherwise filter by account
+            appId,
         });
 
     const unusableActionTypeOptions = useUnusableActionTypeOptions();

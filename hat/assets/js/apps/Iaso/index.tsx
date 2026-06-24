@@ -12,6 +12,7 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 import './libs/polyfills';
 
 import LocalizedAppComponent from './domains/app/components/LocalizedAppComponent';
+import { BackendEnvContextProvider } from './domains/app/contexts/BackendEnvContext';
 import { LocaleProvider } from './domains/app/contexts/LocaleContext';
 import { SentryConfig } from './domains/app/contexts/SentryProvider';
 import { SidebarProvider } from './domains/app/contexts/SideBarContext';
@@ -45,6 +46,8 @@ declare global {
             enabledPluginsName: string[],
             themeConfig: ThemeConfig,
             userHomePage: string,
+            defaultAppId: string,
+            domainName: string,
         ) => void;
         __TANSTACK_QUERY_CLIENT__: QueryClient;
     }
@@ -55,51 +58,73 @@ const IasoApp: React.FC<{
     enabledPluginsName: string[];
     themeConfig: ThemeConfig;
     userHomePage: string;
-}> = ({ element, enabledPluginsName, themeConfig, userHomePage }) => {
+    defaultAppId: string;
+    domainName: string;
+}> = ({
+    element,
+    enabledPluginsName,
+    themeConfig,
+    userHomePage,
+    defaultAppId,
+    domainName,
+}) => {
     const { plugins, pluginHomePage, pluginTheme } =
         usePlugins(enabledPluginsName);
     const usedTheme = pluginTheme || getOverriddenTheme(theme, themeConfig);
     window.__TANSTACK_QUERY_CLIENT__ = queryClient;
     return ReactDOM.createPortal(
         <QueryClientProvider client={queryClient}>
-            <PluginsContext.Provider value={{ plugins }}>
-                <ThemeConfigContext.Provider value={themeConfig}>
-                    <ThemeProvider theme={usedTheme}>
-                        <CssBaseline />
-                        <GlobalStyles styles={getGlobalOverrides(theme)} />
-                        <SidebarProvider>
-                            <LocaleProvider>
-                                <LocalizedAppComponent
-                                    userHomePage={
-                                        pluginHomePage || userHomePage
-                                    }
-                                >
-                                    <SnackbarProvider
-                                        maxSnack={3}
-                                        autoHideDuration={4000}
-                                        anchorOrigin={{
-                                            vertical: 'bottom',
-                                            horizontal: 'center',
-                                        }}
+            <BackendEnvContextProvider
+                defaultAppId={defaultAppId}
+                domainName={domainName}
+            >
+                <PluginsContext.Provider value={{ plugins }}>
+                    <ThemeConfigContext.Provider value={themeConfig}>
+                        <ThemeProvider theme={usedTheme}>
+                            <CssBaseline />
+                            <GlobalStyles styles={getGlobalOverrides(theme)} />
+                            <SidebarProvider>
+                                <LocaleProvider>
+                                    <LocalizedAppComponent
+                                        userHomePage={
+                                            pluginHomePage || userHomePage
+                                        }
                                     >
-                                        <App
-                                            userHomePage={
-                                                pluginHomePage || userHomePage
-                                            }
-                                        />
-                                    </SnackbarProvider>
-                                </LocalizedAppComponent>
-                            </LocaleProvider>
-                        </SidebarProvider>
-                    </ThemeProvider>
-                </ThemeConfigContext.Provider>
-            </PluginsContext.Provider>
+                                        <SnackbarProvider
+                                            maxSnack={3}
+                                            autoHideDuration={4000}
+                                            anchorOrigin={{
+                                                vertical: 'bottom',
+                                                horizontal: 'center',
+                                            }}
+                                        >
+                                            <App
+                                                userHomePage={
+                                                    pluginHomePage ||
+                                                    userHomePage
+                                                }
+                                            />
+                                        </SnackbarProvider>
+                                    </LocalizedAppComponent>
+                                </LocaleProvider>
+                            </SidebarProvider>
+                        </ThemeProvider>
+                    </ThemeConfigContext.Provider>
+                </PluginsContext.Provider>
+            </BackendEnvContextProvider>
         </QueryClientProvider>,
         element,
     );
 };
 
-window.iasoApp = (element, enabledPluginsName, themeConfig, userHomePage) => {
+window.iasoApp = (
+    element,
+    enabledPluginsName,
+    themeConfig,
+    userHomePage,
+    defaultAppId,
+    domainName,
+) => {
     const root = createRoot(element!); // createRoot(container!) if you use TypeScript
     root.render(
         <IasoApp
@@ -107,6 +132,8 @@ window.iasoApp = (element, enabledPluginsName, themeConfig, userHomePage) => {
             enabledPluginsName={enabledPluginsName}
             themeConfig={themeConfig}
             userHomePage={userHomePage}
+            defaultAppId={defaultAppId}
+            domainName={domainName}
         />,
     );
 };

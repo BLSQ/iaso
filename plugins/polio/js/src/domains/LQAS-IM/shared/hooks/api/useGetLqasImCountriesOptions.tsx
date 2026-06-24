@@ -1,12 +1,12 @@
 import { UseQueryResult } from 'react-query';
+import { useAppId } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useAppId';
 import { getRequest } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackQuery } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { DropdownOptions } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { appId } from '../../../../../constants/app';
 
 const API_URL = `/api/polio/lqasim/countries/?order=name`;
 
-const getLqasImCountriesOptions = isEmbedded => {
+const getLqasImCountriesOptions = (isEmbedded: boolean, appId: string) => {
     if (isEmbedded) {
         return getRequest(`${API_URL}&app_id=${appId}`);
     }
@@ -16,9 +16,10 @@ const getLqasImCountriesOptions = isEmbedded => {
 export const useGetLqasImCountriesOptions = (
     isEmbedded = false,
 ): UseQueryResult<DropdownOptions<string>[]> => {
+    const appId = useAppId();
     return useSnackQuery({
-        queryKey: ['lqasimcountries', isEmbedded],
-        queryFn: () => getLqasImCountriesOptions(isEmbedded),
+        queryKey: ['lqasimcountries', isEmbedded, appId],
+        queryFn: () => getLqasImCountriesOptions(isEmbedded, appId),
         options: {
             select: data =>
                 (data?.results ?? []).map(result => ({

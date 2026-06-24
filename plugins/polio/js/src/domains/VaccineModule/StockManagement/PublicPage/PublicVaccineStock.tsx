@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { Box, Button, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { ExcellSvg, useSafeIntl } from 'bluesquare-components';
+import { useAppId } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useAppId';
 import { useApiParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
 import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
 import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
@@ -17,18 +18,16 @@ import { useGetPublicVaccineStock } from './useGetPublicVaccineStock';
 
 const baseUrl = baseUrls.embeddedVaccineStock;
 const useXlsxUrl = allParams => {
+    const appId = useAppId();
     const xlsxApiUrl = '/api/polio/dashboards/public/vaccine_stock/export_xlsx';
     const defaults = {
         order: '-date',
         pageSize: 20,
         page: 1,
     };
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
-    const { tab, ...params } = allParams;
-    const safeParams = useUrlParams(
-        { ...params, app_id: 'com.poliooutbreaks.app' },
-        defaults,
-    );
+
+    const { tab: _tab, ...params } = allParams;
+    const safeParams = useUrlParams({ ...params, app_id: appId }, defaults);
     const apiParams = useApiParams(safeParams);
     const queryString = new URLSearchParams(apiParams).toString();
     return `${xlsxApiUrl}/?${queryString}`;

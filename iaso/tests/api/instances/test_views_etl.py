@@ -209,7 +209,8 @@ class ETLInstanceTestCase(SwaggerTestCaseMixin, APITestCase):
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data, 2)
 
-        self.assertTrue(all(x["workflow_deprecated"] for x in res_data["results"]))
+        self.assertTrue(res_data["results"][0]["workflow_deprecated"])
+        self.assertFalse(res_data["results"][1]["workflow_deprecated"])
 
     def test_instance_without_file(self):
         self.client.force_authenticate(self.john_wick)

@@ -57,27 +57,14 @@ export const TeamTable: FunctionComponent<Props> = ({
                             <Table size="small" stickyHeader>
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell
-                                            sx={{
-                                                width: 50,
-                                            }}
-                                        >
+                                        <TableCell>
                                             {formatMessage(MESSAGES.selection)}
                                         </TableCell>
-                                        <TableCell
-                                            sx={{
-                                                width: 50,
-                                            }}
-                                        >
+                                        <TableCell>
                                             {formatMessage(MESSAGES.color)}
                                         </TableCell>
                                         <TableCell>
                                             {formatMessage(MESSAGES.name)}
-                                        </TableCell>
-                                        <TableCell>
-                                            {formatMessage(
-                                                MESSAGES.assignationsCount,
-                                            )}
                                         </TableCell>
                                         <TableCell />
                                     </TableRow>

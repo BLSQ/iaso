@@ -10,7 +10,7 @@ WORKDIR /opt/app
 
 # Copy package files
 COPY ../../package.json package-lock.json ./
-RUN npm install -g npm@10.9.3 && \
+RUN npm install -g npm@11.13.0 && \
     rm -rf node_modules && \
     npm cache clean --force && \
     npm ci
@@ -45,7 +45,7 @@ RUN pip install uv
 # https://docs.astral.sh/uv/reference/environment/#uv_python_preference
 ENV UV_PYTHON_PREFERENCE=only-system
 ENV UV_NO_DEV=1
-RUN uv sync --python "$(which python3)" --group prod
+RUN uv sync --python "$(which python3)" --group prod --lock
 
 # Strip the venv: remove caches and debug symbols
 RUN find ./.venv -type d -name "__pycache__" -exec rm -rf {} + && \

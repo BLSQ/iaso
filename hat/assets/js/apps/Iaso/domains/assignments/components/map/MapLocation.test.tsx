@@ -37,37 +37,37 @@ describe('MapLocation', () => {
         vi.clearAllMocks();
     });
 
-    it('calls handleSaveAssignment when clicked and assignment is allowed', () => {
-        const handleSaveAssignment = vi.fn();
+    it('calls handleClick when clicked and assignment is allowed', () => {
+        const handleClick = vi.fn();
 
         renderWithThemeAndIntlProvider(
             <MapLocation
                 ou={orgUnit}
                 canAssign
-                handleSaveAssignment={handleSaveAssignment}
+                handleClick={handleClick}
                 getAssignmentColor={() => '#ff0000'}
             />,
         );
 
         fireEvent.click(screen.getByTestId('map-marker'));
 
-        expect(handleSaveAssignment).toHaveBeenCalledWith(5);
+        expect(handleClick).toHaveBeenCalledWith(5);
     });
 
-    it('does not call handleSaveAssignment when assignment is not allowed', () => {
-        const handleSaveAssignment = vi.fn();
+    it('does not call handleClick when assignment is not allowed', () => {
+        const handleClick = vi.fn();
 
         renderWithThemeAndIntlProvider(
             <MapLocation
                 ou={orgUnit}
                 canAssign={false}
-                handleSaveAssignment={handleSaveAssignment}
+                handleClick={handleClick}
                 getAssignmentColor={() => '#ff0000'}
             />,
         );
 
         fireEvent.click(screen.getByTestId('map-marker'));
 
-        expect(handleSaveAssignment).not.toHaveBeenCalled();
+        expect(handleClick).not.toHaveBeenCalled();
     });
 });

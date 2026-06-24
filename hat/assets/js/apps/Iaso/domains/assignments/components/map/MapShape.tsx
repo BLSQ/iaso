@@ -8,27 +8,27 @@ import { ASSIGNMENTS_TARGET_CLASS } from '../../constants/ui';
 type Props = {
     ou: PlanningOrgUnits;
     canAssign: boolean;
-    handleSaveAssignment: (id: number) => void;
+    handleClick: (id: number) => void;
     getAssignmentColor: (id: number) => string;
     opacity?: number;
 };
 export const MapShape: FunctionComponent<Props> = ({
     ou,
     canAssign,
-    handleSaveAssignment,
+    handleClick,
     getAssignmentColor,
     opacity = 0.8,
 }) => {
     const canAssignRef = useRef(canAssign);
     canAssignRef.current = canAssign;
-    const handleSaveAssignmentRef = useRef(handleSaveAssignment);
-    handleSaveAssignmentRef.current = handleSaveAssignment;
+    const handleClickRef = useRef(handleClick);
+    handleClickRef.current = handleClick;
 
     const onEachFeature = useCallback(
         (_feature: unknown, layer: L.Layer) => {
             layer.on('click', () => {
                 if (canAssignRef.current) {
-                    handleSaveAssignmentRef.current(ou.id);
+                    handleClickRef.current(ou.id);
                 }
             });
         },

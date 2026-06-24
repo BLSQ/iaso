@@ -103,19 +103,20 @@ class DataSourceVersionsSynchronizer:
         self._bulk_create_change_request_groups()
         self._report_progress("Bulk created change request groups")
 
-        domain = Site.objects.get_current().domain
-        scheme = "http" if domain.startswith("localhost") else "https"
-        account_id = self.data_source_sync.account_id
-        sync_id = self.data_source_sync.pk
-        version_id = self.data_source_sync.source_version_to_update_id
-        url = (
-            f"{scheme}://{domain}/dashboard/validation/changeRequest"
-            f"/accountId/{account_id}"
-            f"/data_source_synchronization_id/{sync_id}"
-            f"/source_version_id/{version_id}"
-            f"/page/1"
-        )
-        self._report_progress(f"Review change requests: {url}")
+        if self.task:
+            domain = Site.objects.get_current().domain
+            scheme = "http" if domain.startswith("localhost") else "https"
+            account_id = self.data_source_sync.account_id
+            sync_id = self.data_source_sync.pk
+            version_id = self.data_source_sync.source_version_to_update_id
+            url = (
+                f"{scheme}://{domain}/dashboard/validation/changeRequest"
+                f"/accountId/{account_id}"
+                f"/data_source_synchronization_id/{sync_id}"
+                f"/source_version_id/{version_id}"
+                f"/page/1"
+            )
+            self._report_progress(f"Review change requests: {url}")
 
     @staticmethod
     def sort_by_path(diffs: list[dict]) -> list:

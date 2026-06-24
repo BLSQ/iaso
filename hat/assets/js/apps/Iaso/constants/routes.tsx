@@ -156,6 +156,12 @@ export const instanceDetailPath = {
     element: <InstanceDetail />,
 };
 
+export const validateInstancePath = {
+    baseUrl: baseUrls.compareInstanceLogs,
+    routerUrl: `${baseUrls.compareInstanceLogs}/*`,
+    permissions: [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE], // TODO use correct perm
+    element: <CompareInstanceLogs />,
+};
 export const compareInstanceLogsPath = {
     baseUrl: baseUrls.compareInstanceLogs,
     routerUrl: `${baseUrls.compareInstanceLogs}/*`,
@@ -590,6 +596,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     mappingDetailPath,
     instancesPath,
     instanceDetailPath,
+    validateInstancePath,
     compareInstanceLogsPath,
     compareInstancesPath,
     orgUnitsPath,

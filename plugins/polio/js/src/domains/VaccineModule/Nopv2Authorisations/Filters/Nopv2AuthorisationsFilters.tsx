@@ -3,11 +3,11 @@ import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { SearchButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/SearchButton';
+import { useAppId } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useAppId';
 import { useGetGroupDropdown } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
 import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import { appId } from '../../../../constants/app';
 import MESSAGES from '../../../../constants/messages';
 import { VACCINE_AUTH_ADMIN } from '../../../../constants/permissions';
 import { baseUrls } from '../../../../constants/urls';
@@ -21,6 +21,7 @@ type Props = { params: VaccineAuthParams };
 export const Nopv2AuthorisationsFilters: FunctionComponent<Props> = ({
     params,
 }) => {
+    const appId = useAppId();
     const { formatMessage } = useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });

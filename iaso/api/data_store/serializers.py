@@ -1,19 +1,20 @@
 from django.utils.text import slugify
-from drf_spectacular.utils import extend_schema
-from rest_framework import permissions, serializers
+from rest_framework import serializers
 
-from iaso.api.common import ModelViewSet
+from iaso.api.common import TimestampField
 from iaso.models.data_store import JsonDataStore
-from iaso.permissions.core_permissions import CORE_DATASTORE_READ_PERMISSION, CORE_DATASTORE_WRITE_PERMISSION
 
 
 class DataStoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = JsonDataStore
         fields = ["created_at", "updated_at", "key", "data"]
+        read_only_fields = ["created_at", "updated_at"]
 
     data = serializers.JSONField(source="content")
     key = serializers.CharField(source="slug")
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
 
     def validate_data(self, request_data):
         if not request_data:
@@ -49,32 +50,3 @@ class DataStoreSerializer(serializers.ModelSerializer):
         # Using objects.create will give values to created_at and updated_at, whereas instanciating the class will onlyfill out the values of the fields passed in args
         data_store = JsonDataStore.objects.create(**validated_data, account=account)
         return data_store
-
-
-class DataStorePermission(permissions.BasePermission):
-    def has_permission(self, request, view):
-        read_perm = CORE_DATASTORE_READ_PERMISSION
-        write_perm = CORE_DATASTORE_WRITE_PERMISSION
-
-        if request.method == "GET":
-            can_get = (
-                request.user and request.user.is_authenticated and request.user.has_perm(read_perm.full_name())
-            ) or request.user.is_superuser
-            return can_get
-        if request.method == "POST" or request.method == "PUT" or request.method == "DELETE":
-            can_post = (
-                request.user and request.user.is_authenticated and request.user.has_perm(write_perm.full_name())
-            ) or request.user.is_superuser
-            return can_post
-        return False
-
-
-@extend_schema(tags=["Data store"])
-class DataStoreViewSet(ModelViewSet):
-    http_method_names = ["get", "post", "put", "delete"]
-    permission_classes = [DataStorePermission]
-    serializer_class = DataStoreSerializer
-    lookup_field = "slug"
-
-    def get_queryset(self):
-        return JsonDataStore.objects.filter(account=self.request.user.iaso_profile.account)

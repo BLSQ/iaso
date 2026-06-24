@@ -83,7 +83,7 @@ export const Calendar: FunctionComponent = () => {
         useGetFormattedCalendarData({
             params,
             isTypeSet,
-            order: params.order,
+            order: (params.order ?? '-obr_name') as CalendarOrdering,
             calendarData,
             isEmbedded,
             currentDate,

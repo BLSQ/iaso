@@ -37,7 +37,7 @@ export type CalendarRound = {
     hasSubActivities: boolean;
     subActivities: SubActivity[];
     is_planned: boolean;
-    on_holmd: boolean;
+    on_hold: boolean;
 };
 
 export type SubActivity = {

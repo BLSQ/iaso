@@ -1,9 +1,9 @@
 import { UseQueryResult } from 'react-query';
+import { useAppId } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useAppId';
 import { getRequest } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackQuery } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { makeUrlWithParams } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/utils';
 import { Side } from '../../../../../constants/types';
-import { useAppId } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useAppId';
 import { AfroMapParams, MapCategory, RoundSelection } from '../types';
 
 type GetAfroMapDataArgs = {

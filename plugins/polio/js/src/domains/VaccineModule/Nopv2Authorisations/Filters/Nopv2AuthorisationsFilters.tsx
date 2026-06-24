@@ -3,6 +3,7 @@ import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { SearchButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/SearchButton';
+import { useAppId } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useAppId';
 import { useGetGroupDropdown } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
 import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
@@ -10,7 +11,6 @@ import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/
 import MESSAGES from '../../../../constants/messages';
 import { VACCINE_AUTH_ADMIN } from '../../../../constants/permissions';
 import { baseUrls } from '../../../../constants/urls';
-import { useAppId } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useAppId';
 import { CreateAuthorisationModal } from '../Details/Modals/CreateEdit/CreateEditAuthorisationModal';
 import { useStatusOptions } from '../hooks/statuses';
 import { VaccineAuthParams } from '../types';

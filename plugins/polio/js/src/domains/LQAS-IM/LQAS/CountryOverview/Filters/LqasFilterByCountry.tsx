@@ -64,7 +64,6 @@ export const LqasFilterByCountry: FunctionComponent<Props> = ({
             countries: country,
             enabled: Boolean(country),
             show_test: false,
-            on_hold: true,
             is_embedded: isEmbedded,
         }) as UseQueryResult<Campaign[], Error>;
 
@@ -78,9 +77,9 @@ export const LqasFilterByCountry: FunctionComponent<Props> = ({
         return makeCampaignsDropDown(displayedCampaigns);
     }, [country, campaigns]);
 
-    //FIXME use new params
+    // FIXME: use new params
     const onChange = useCallback(
-        (key, value) => {
+        (key: string, value: string) => {
             const newFilters = {
                 ...filters,
                 leftRound: side === 'left' ? undefined : filters.leftRound,

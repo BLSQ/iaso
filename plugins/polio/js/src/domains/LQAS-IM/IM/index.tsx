@@ -40,7 +40,6 @@ export const ImStats: FunctionComponent = () => {
             countries: country,
             enabled: Boolean(country),
             show_test: false,
-            on_hold: true,
         }) as UseQueryResult<Campaign[], Error>;
 
     const {

@@ -18,6 +18,8 @@ from plugins.polio.settings import NOPV2_VACCINE_TEAM_NAME
 
 
 def send_missing_vaccine_authorization_for_campaign_email(obr_name, org_unit, account):
+    domain = settings.DNS_DOMAIN
+    domain_name = domain[:-4] if domain.endswith(".com") else domain
     try:
         users = [user for user in Team.objects.get(name=NOPV2_VACCINE_TEAM_NAME).users.all()]
         recipient_list = [user.email for user in users]
@@ -25,15 +27,15 @@ def send_missing_vaccine_authorization_for_campaign_email(obr_name, org_unit, ac
         message = f"""
         Dear team,
 
-        The campaign {obr_name} for {org_unit} has been created in the poliooutbreaks platform.
+        The campaign {obr_name} for {org_unit} has been created in the {domain_name} platform.
 
         Please note that no nOPV2 authorization has been recorded in the platform for {org_unit} yet. 
 
         Be aware that {org_unit} does not have any nOPV2 authorization recorded into the platform yet.
 
-        To add one, please follow this link: https://www.poliooutbreaks.com/dashboard/polio/vaccinemodule/nopv2authorisation/accountId/{account.pk}/
+        To add one, please follow this link: https://www.{domain}/dashboard/polio/vaccinemodule/nopv2authorisation/accountId/{account.pk}/
 
-        This is an automated message from the poliooutbreaks platform.
+        This is an automated message from the {domain_name} platform.
             """
 
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, recipient_list)

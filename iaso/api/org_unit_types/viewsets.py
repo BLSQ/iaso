@@ -12,7 +12,7 @@ from iaso.api.permission_checks import (
     IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired,
 )
 from iaso.api.query_params import APP_ID, ORDER, PROJECT, PROJECT_IDS, SEARCH
-from iaso.models import OrgUnitType, Project
+from iaso.models import Form, OrgUnitType, Project
 
 from ..common import ModelViewSet
 from .filters import OrgUnitTypeDropdownFilter
@@ -131,6 +131,28 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
         queryset = OrgUnitType.objects.filter_for_user_and_app_id(
             self.request.user, self.request.query_params.get(APP_ID)
         )
+
+        if self.action in ["list", "retrieve"]:
+            # deleting previous prefetch_related from filter_for_user_and_app_id cause I don't want to break everything
+            # => more clean way would be to remove the prefetch_related from filter_for_user_and_app_id as it don't belong here
+            queryset = queryset.prefetch_related(None).prefetch_related(
+                Prefetch(
+                    "projects",
+                    queryset=Project.objects.select_related("account")
+                    .prefetch_related("projectfeatureflags_set", "projectfeatureflags_set__featureflag")
+                    .all(),
+                ),
+                "allow_creating_sub_unit_types",
+                Prefetch(
+                    "reference_forms",
+                    queryset=Form.objects.prefetch_related(
+                        "projects",
+                        "projects__projectfeatureflags_set",
+                        "projects__projectfeatureflags_set__featureflag",
+                    ).all(),
+                ),
+                "sub_unit_types",
+            )
 
         project = self.request.query_params.get(PROJECT, None)
         if project:

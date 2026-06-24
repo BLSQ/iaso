@@ -139,15 +139,15 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
     const handleChangeOrgUnitTypes = useCallback(
         (_key: string, value: string) => {
             handleUnselectAll();
-            setSelectedOrgUnitTypes(commaSeparatedIdsToArray(value));
-
+            const newSelectedOrgUnitTypes = commaSeparatedIdsToArray(value);
+            setSelectedOrgUnitTypes(newSelectedOrgUnitTypes);
             setParams(prev => ({
                 ...prev,
-                orgUnitTypeIds: selectedOrgUnitTypes.join(','),
+                orgUnitTypeIds: newSelectedOrgUnitTypes.join(','),
                 page: '1',
             }));
         },
-        [handleUnselectAll, selectedOrgUnitTypes],
+        [handleUnselectAll],
     );
     const assignButtonDisabled =
         selection.selectedItems.length === 0 && !selection.selectAll;

@@ -33,19 +33,42 @@ vi.mock('bluesquare-components', async importOriginal => {
         IconButton: ({
             onClick,
             disabled,
+            icon,
+            tooltipMessage,
         }: {
-            onClick: () => void;
+            onClick?: () => void;
             disabled?: boolean;
-        }) => (
-            <button
-                type="button"
-                data-testid="delete-assignment-button"
-                onClick={onClick}
-                disabled={disabled}
-            >
-                Delete
-            </button>
-        ),
+            icon?: string;
+            tooltipMessage?: { id?: string };
+        }) => {
+            if (icon === 'delete') {
+                return (
+                    <button
+                        type="button"
+                        data-testid="delete-assignment-button"
+                        onClick={onClick}
+                        disabled={disabled}
+                    >
+                        Delete
+                    </button>
+                );
+            }
+            const label =
+                tooltipMessage?.id === 'iaso.label.expand'
+                    ? 'expand row'
+                    : tooltipMessage?.id === 'iaso.label.collapse'
+                      ? 'collapse row'
+                      : 'icon-button';
+            return (
+                <button
+                    type="button"
+                    aria-label={label}
+                    onClick={onClick}
+                >
+                    {label}
+                </button>
+            );
+        },
     };
 });
 

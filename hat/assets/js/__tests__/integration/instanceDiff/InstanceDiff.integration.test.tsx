@@ -1,5 +1,5 @@
-import { act, renderHook, waitFor } from '@testing-library/react';
 import { faker } from '@faker-js/faker';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { setupServer } from 'msw/node';
 import { vi } from 'vitest';
 import { ApiDiffInstancesListParams } from 'Iaso/api/instanceDiff';

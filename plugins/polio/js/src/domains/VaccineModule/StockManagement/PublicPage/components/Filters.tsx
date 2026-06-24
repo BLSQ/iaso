@@ -83,7 +83,7 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
         useGetGroupDropdown({
             blockOfCountries: true,
             // passing appId here because there's no way to otherwise filter by account
-            appId: appId,
+            appId,
         });
 
     const unusableActionTypeOptions = useUnusableActionTypeOptions();

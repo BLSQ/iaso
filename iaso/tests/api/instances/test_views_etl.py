@@ -149,6 +149,7 @@ class ETLInstanceTestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertIsNotNone(first_instance["file_url"])
         self.assertIsNotNone(first_instance["file_content"])
         self.assertEqual(first_instance["form_id"], self.form_1.pk)
+        self.assertFalse(first_instance["workflow_deprecated"])
 
         history = first_instance["history"]
 
@@ -192,11 +193,23 @@ class ETLInstanceTestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertIsNotNone(second_instance["file_url"])
         self.assertIsNotNone(second_instance["file_content"])
         self.assertEqual(second_instance["form_id"], self.form_2.pk)
+        self.assertFalse(second_instance["workflow_deprecated"])
 
         history = second_instance["history"]
 
         self.assertEqual(history, [])
         self.assertEqual(len(history), 0)
+
+        self.vf.delete()
+        self.vf.refresh_from_db()
+
+        self.assertIsNotNone(self.vf.deleted_at)
+
+        res = self.client.get(reverse("api-etl:instances-list"))
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidData(res_data, 2)
+
+        self.assertTrue(all(x["workflow_deprecated"] for x in res_data["results"]))
 
     def test_instance_without_file(self):
         self.client.force_authenticate(self.john_wick)

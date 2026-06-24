@@ -7,7 +7,7 @@ import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/u
 import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
 import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { baseUrls } from '../../../../constants/urls';
-import { useAppId } from '../../../../hooks/useAppId';
+import { useAppId } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useAppId';
 import { Filters } from './components/Filters';
 import { LanguageButton } from './components/LanguageButton';
 import { Table } from './components/Table';

@@ -11,7 +11,7 @@ import {
     Side,
     UuidAsString,
 } from '../../../../constants/types';
-import { useAppId } from '../../../../hooks/useAppId';
+import { useAppId } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useAppId';
 
 const getLqasCountriesOptions = (
     appId: string,

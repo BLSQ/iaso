@@ -4,7 +4,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import { useGetGroupDropdown } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
 import { useFilterState } from '../../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import { baseUrls } from '../../../../../constants/urls';
-import { useAppId } from '../../../../../hooks/useAppId';
+import { useAppId } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useAppId';
 import { singleVaccinesList } from '../../../SupplyChain/constants';
 import { useGetCountriesOptions } from '../../../SupplyChain/hooks/api/vrf';
 import MESSAGES from '../messages';

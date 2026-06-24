@@ -2,7 +2,7 @@ import React, { FunctionComponent, useEffect } from 'react';
 import { Box, Container, Typography, Paper } from '@mui/material';
 import { ExternalLink, useSafeIntl } from 'bluesquare-components';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import { useDomainName } from '../../../hooks/useDomainName';
+import { useDomainName } from '../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useDomainName';
 import { useStyles } from '../../../styles/theme';
 import MESSAGES from './messages';
 

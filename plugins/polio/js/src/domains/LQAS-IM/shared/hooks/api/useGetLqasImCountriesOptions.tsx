@@ -2,7 +2,7 @@ import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackQuery } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { DropdownOptions } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { useAppId } from '../../../../../hooks/useAppId';
+import { useAppId } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useAppId';
 
 const API_URL = `/api/polio/lqasim/countries/?order=name`;
 

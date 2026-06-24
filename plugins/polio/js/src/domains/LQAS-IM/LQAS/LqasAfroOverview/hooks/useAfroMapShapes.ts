@@ -3,7 +3,7 @@ import { getRequest } from '../../../../../../../../../hat/assets/js/apps/Iaso/l
 import { useSnackQuery } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { makeUrlWithParams } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/utils';
 import { Side } from '../../../../../constants/types';
-import { useAppId } from '../../../../../hooks/useAppId';
+import { useAppId } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useAppId';
 import { AfroMapParams, MapCategory, RoundSelection } from '../types';
 
 type GetAfroMapDataArgs = {

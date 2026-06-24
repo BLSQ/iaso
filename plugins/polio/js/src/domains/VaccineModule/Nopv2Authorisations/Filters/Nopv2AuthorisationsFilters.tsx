@@ -10,7 +10,7 @@ import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/
 import MESSAGES from '../../../../constants/messages';
 import { VACCINE_AUTH_ADMIN } from '../../../../constants/permissions';
 import { baseUrls } from '../../../../constants/urls';
-import { useAppId } from '../../../../hooks/useAppId';
+import { useAppId } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useAppId';
 import { CreateAuthorisationModal } from '../Details/Modals/CreateEdit/CreateEditAuthorisationModal';
 import { useStatusOptions } from '../hooks/statuses';
 import { VaccineAuthParams } from '../types';

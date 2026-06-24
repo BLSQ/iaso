@@ -2,7 +2,7 @@ import { UseQueryResult } from 'react-query';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 
-import { useAppId } from '../../../../../hooks/useAppId';
+import { useAppId } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useAppId';
 import {
     IM_COUNTRY_URL,
     IM_GLOBAL_SLUG,

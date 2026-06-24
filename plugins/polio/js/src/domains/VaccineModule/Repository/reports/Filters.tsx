@@ -2,6 +2,7 @@ import React, {
     FunctionComponent,
     useCallback,
     useEffect,
+    useMemo,
     useState,
 } from 'react';
 import FiltersIcon from '@mui/icons-material/FilterList';
@@ -9,9 +10,9 @@ import { Box, Button, Grid } from '@mui/material';
 import { useRedirectToReplace } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { useAppId } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useAppId';
 import { useGetGroupDropdown } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
 import MESSAGES from '../../../../constants/messages';
-import { useAppId } from '../../../../hooks/useAppId';
 
 import { useGetCountries } from '../../../../hooks/useGetCountries';
 
@@ -68,7 +69,14 @@ export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
     const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =
         useGetGroupDropdown({ blockOfCountries: 'true', appId });
 
-    const countriesList = (data && data.orgUnits) || [];
+    const countriesOptions = useMemo(() => {
+        return (data?.orgUnits || []).map(
+            (c: { name: string; id: number }) => ({
+                label: c.name,
+                value: c.id,
+            }),
+        );
+    }, [data?.orgUnits]);
 
     const fileTypes = useGetReportFileTypes();
     useEffect(() => {
@@ -105,12 +113,7 @@ export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
                     }}
                     value={countries}
                     type="select"
-                    options={countriesList.map(
-                        (c: { name: string; id: number }) => ({
-                            label: c.name,
-                            value: c.id,
-                        }),
-                    )}
+                    options={countriesOptions}
                     label={MESSAGES.country}
                 />
             </Grid>

@@ -4,7 +4,7 @@ import moment, { Moment } from 'moment';
 import { Query as RQQuery, useQueries } from 'react-query';
 import MESSAGES from '../../../../constants/messages';
 import { MergedShapes } from '../../../../constants/types';
-import { useAppId } from '../../../../hooks/useAppId';
+import { useAppId } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useAppId';
 import { useGetMergedCampaignShapes } from '../../hooks/useGetMergedCampaignShapes';
 import {
     CalendarParams,

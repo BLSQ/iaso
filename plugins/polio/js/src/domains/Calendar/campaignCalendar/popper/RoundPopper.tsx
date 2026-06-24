@@ -12,7 +12,7 @@ import { SxStyles } from '../../../../../../../../hat/assets/js/apps/Iaso/types/
 import { useIsLoggedIn } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../../../constants/messages';
 import { baseUrls } from '../../../../constants/urls';
-import { useAppId } from '../../../../hooks/useAppId';
+import { useAppId } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useAppId';
 import { CalendarRound, MappedCampaign } from '../types';
 
 const groupsForCampaignRound = (campaign, round) => {

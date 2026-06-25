@@ -14,7 +14,7 @@ class DeletionFilterBackend(filters.BaseFilterBackend):
                 location="query",
                 # schema=compat.coreschema.Enum(enum=ChoiceEnum),
                 schema=compat.coreschema.String(
-                    description="Filter on deleted item: all|active|deleted. Default:active"
+                    description="Filter on deleted items: `all`, `active` (default), or `deleted`."
                 ),
             )
         ]
@@ -26,7 +26,7 @@ class DeletionFilterBackend(filters.BaseFilterBackend):
                 "name": "deletion_status",
                 "required": False,
                 "in": "query",
-                "description": "Filter on deleted item: all|active|deleted. Default:active",
+                "description": "Filter on deleted items: `all`, `active` (default), or `deleted`.",
                 "schema": {"type": "string", "enum": [c.name for c in ChoiceEnum]},
             }
         ]

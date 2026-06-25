@@ -1,5 +1,5 @@
 import { useTheme } from '@mui/material';
-import { AssignmentsResult } from 'Iaso/domains/assignments/hooks/requests/useGetAssignments';
+import { AssignmentsResult } from 'Iaso/domains/assignments/types/assigment';
 import { Team } from 'Iaso/domains/teams/types/team';
 
 export const useGetAssignmentColor = (

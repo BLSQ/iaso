@@ -31,10 +31,8 @@ import CircleMarkerComponent from '../../../components/maps/markers/CircleMarker
 
 import tiles from '../../../constants/mapTiles';
 
-import {
-    AssignmentsResult,
-    useGetAssignments,
-} from '../../assignments/hooks/requests/useGetAssignments';
+import { useGetAssignments } from '../../assignments/hooks/requests/useGetAssignments';
+import { AssignmentsResult } from '../../assignments/types/assigment';
 import MESSAGES from '../messages';
 import {
     CompletenessMapStats,

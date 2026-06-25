@@ -2,7 +2,7 @@ import React from 'react';
 import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { PaginatedAssignment } from 'Iaso/domains/plannings/types';
-import { renderWithThemeAndIntlProvider } from '../../../../../tests/helpers';
+import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers';
 import { AssignmentCell } from './AssignmentCell';
 
 describe('AssignmentCell', () => {

@@ -1,4 +1,4 @@
-import React, { Dispatch, FunctionComponent, useCallback } from 'react';
+import React, { Dispatch, FunctionComponent } from 'react';
 import {
     Table,
     Paper,
@@ -17,7 +17,8 @@ import { User } from 'Iaso/domains/teams/types/team';
 import { useSaveProfile } from 'Iaso/domains/users/hooks/useSaveProfile';
 import { SxStyles } from 'Iaso/types/general';
 import getDisplayName from 'Iaso/utils/usersUtils';
-import { AssignmentsResult } from '../../hooks/requests/useGetAssignments';
+import { AssignmentsResult } from '../../types/assigment';
+import { assignmentsCountForUser, countTeams } from '../../utils';
 import { AssigneeRow } from './AssigneeRow';
 
 const defaultHeight = '80vh';
@@ -66,26 +67,6 @@ export const TeamTable: FunctionComponent<Props> = ({
         extraInvalidateQueryKeys: ['planningChildrenOrgUnitsPaginated'],
     });
 
-    const countTeams = useCallback(
-        (subTeam: SubTeam) => {
-            return (
-                assignments?.allAssignments?.filter(
-                    assignment => assignment.team === subTeam.id,
-                ).length || 0
-            );
-        },
-        [assignments],
-    );
-    const assignmentsCountForUser = useCallback(
-        (user: User) => {
-            return (
-                assignments?.allAssignments?.filter(
-                    assignment => assignment.user === user.id,
-                ).length || 0
-            );
-        },
-        [assignments],
-    );
     const assigneeRadioGroupName = `assignee-${planningId}`;
     return (
         <>
@@ -145,7 +126,10 @@ export const TeamTable: FunctionComponent<Props> = ({
                                                 }}
                                                 currentColor={subTeam?.color}
                                                 displayName={subTeam?.name}
-                                                count={countTeams(subTeam)}
+                                                count={countTeams(
+                                                    subTeam,
+                                                    assignments,
+                                                )}
                                                 onColorChange={color => {
                                                     updateTeam({
                                                         id: subTeam.id,
@@ -179,6 +163,7 @@ export const TeamTable: FunctionComponent<Props> = ({
                                                 currentColor={user?.color}
                                                 count={assignmentsCountForUser(
                                                     user,
+                                                    assignments,
                                                 )}
                                                 onColorChange={color => {
                                                     updateUser({

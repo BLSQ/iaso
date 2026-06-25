@@ -2,11 +2,13 @@ import { Shape } from '../../orgUnits/types/shapes';
 
 export type AssignmentParams = {
     planningId: string;
-    tab: 'list' | 'map';
+    tab?: 'list' | 'map';
     pageSize?: string;
     page?: string;
     order?: string;
     search?: string;
+    orgUnitParentId?: string;
+    orgUnitTypeIds?: string;
 };
 
 type OrgUnitDetails = {
@@ -27,20 +29,27 @@ export type AssignmentApi = {
     org_unit_details: OrgUnitDetails;
 };
 
-export type SaveAssignmentQuery =
-    | {
-          id?: number;
-          planning: number;
-          org_unit: number;
-          team?: number | null;
-          user?: number | null;
-      }
-    | {
-          id?: number;
-          planning: number;
-          org_units: number[];
-          team?: number | null;
-          user?: number | null;
-      };
+export type SaveAssignmentQuery = {
+    id?: number;
+    planning: number;
+    org_unit: number;
+    team?: number | null;
+    user?: number | null;
+};
 
-export type AssignmentsApi = AssignmentApi[];
+export type BulkSaveAssignmentQuery = {
+    id?: number;
+    planning: number;
+    select_all: boolean;
+    selected_ids: number[];
+    unselected_ids: number[];
+    org_unit_parent_id?: number;
+    org_unit_type_ids?: number[];
+    search?: string;
+    team?: number | null;
+    user?: number | null;
+};
+export type AssignmentsResult = {
+    assignments: AssignmentApi[];
+    allAssignments: AssignmentApi[];
+};

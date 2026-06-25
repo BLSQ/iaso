@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-05 08:57+0000\n"
+"POT-Creation-Date: 2026-06-23 09:32+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -55,10 +55,6 @@ msgstr "Données invalides pour le schéma : %(error)s"
 #: iaso/api/common/validators.py
 msgid "Unsupported file type."
 msgstr "Type de fichier non pris en charge."
-
-#: iaso/api/custom_translations.py
-msgid "Account id is required."
-msgstr "L'identifiant du compte est requis."
 
 #: iaso/api/data_source_versions_synchronization/filters.py
 msgid "Created at greater than or equal to"
@@ -1220,6 +1216,22 @@ msgstr "Gestion du compte"
 msgid "Pipeline management"
 msgstr "Gestion des pipelines"
 
+#: iaso/saas/constants.py
+msgid "User"
+msgstr "Utilisateur"
+
+#: iaso/saas/constants.py
+msgid "Project"
+msgstr "Projet"
+
+#: iaso/saas/constants.py
+msgid "Disk space"
+msgstr "Espace disque"
+
+#: iaso/saas/constants.py
+msgid "Submissions"
+msgstr "Soumissions"
+
 #: iaso/tasks/copy_version.py iaso/tasks/export_mobile_app_setup_for_user.py
 #: iaso/tasks/process_mobile_bulk_upload.py
 msgid "Starting"
@@ -1363,6 +1375,9 @@ msgstr "Virus détecté"
 #: iaso/utils/virus_scan/model.py
 msgid "Error"
 msgstr "Erreur lors de l'analyse"
+
+#~ msgid "Account id is required."
+#~ msgstr "L'identifiant du compte est requis."
 
 #~ msgid "Planning id is required in the URL path."
 #~ msgstr "L'ID du planning est requis dans le chemin de l'URL."

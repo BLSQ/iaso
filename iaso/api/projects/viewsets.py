@@ -9,9 +9,6 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import SAFE_METHODS
 
-from iaso.api.common import (
-    ModelViewSet,
-)
 from iaso.api.query_params import parse_strict_boolean_param
 from iaso.models import Project, ProjectFeatureFlags
 

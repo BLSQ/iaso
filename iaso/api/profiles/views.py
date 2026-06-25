@@ -268,6 +268,12 @@ class ProfilesViewSet(ModelViewSet):
         if send_invite and email:
             transaction.on_commit(lambda: self.send_email_invitation(profile, language))
 
+        # log for quota
+        # account = self.request.user.iaso_profile.account
+        # AccountUsageService.increment(
+        #     UserAccountUsage, account, initial_queryset=Profile.objects.filter(account=account)
+        # )
+
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

@@ -66,8 +66,7 @@ export const useGetLegendOptions = (
             };
             setLegendOptions(adjustedOptions);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedChildrenId, theme.palette.primary.main]);
+    }, [legendOptions, selectedChildrenId, theme.palette.primary.main]);
 
     return { legendOptions, setLegendOptions };
 };

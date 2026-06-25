@@ -115,8 +115,7 @@ export const Instances: FunctionComponent<Props> = ({
             redirectToReplace(baseUrl, newParams);
         }
         // Only preselect a form if forms list contain an element and params is empty
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [formsList, isFetchingForms, orgunitTypeDetail, redirectToReplace]);
+    }, [formIds, formsList, isFetchingForms, isLoading, orgunitTypeDetail, params, redirectToReplace]);
     return (
         <Box>
             {currentType && !isLoading && (

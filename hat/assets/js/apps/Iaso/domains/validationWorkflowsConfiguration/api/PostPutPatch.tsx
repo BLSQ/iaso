@@ -4,50 +4,9 @@ import {
     ValidationNodeTemplateCreateBody,
     ValidationNodeTemplateUpdateBody,
 } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodeTemplates';
-import {
-    ValidationWorkflowCreateBody,
-    ValidationWorkflowPatchBody,
-} from 'Iaso/domains/validationWorkflowsConfiguration/types/validationWorkflows';
-import { patchRequest, postRequest, putRequest } from 'Iaso/libs/Api';
+import { postRequest, putRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
 import { API_URL, WF_BASE_QUERYKEY } from '../constants';
-
-const postWorkflow = async (body: ValidationWorkflowCreateBody) => {
-    return postRequest(`${API_URL}`, body);
-};
-
-const patchWorkflow = async ({
-    slug,
-    body,
-}: {
-    slug: string;
-    body: ValidationWorkflowPatchBody;
-}) => {
-    return patchRequest(`${API_URL}${slug}/`, body);
-};
-
-const createEditWorkflow = async ({
-    slug,
-    body,
-}: {
-    slug?: string;
-    body: ValidationWorkflowPatchBody | ValidationWorkflowCreateBody;
-}) => {
-    if (!!slug) {
-        return patchWorkflow({
-            slug: slug,
-            body: body as ValidationWorkflowPatchBody,
-        });
-    }
-    return postWorkflow(body as ValidationWorkflowCreateBody);
-};
-
-export const useSaveWorkflow = (): UseMutationResult<any, any> => {
-    return useSnackMutation({
-        mutationFn: createEditWorkflow,
-        invalidateQueryKey: [WF_BASE_QUERYKEY],
-    });
-};
 
 const saveNode = async ({
     workflowSlug,
@@ -70,10 +29,12 @@ const saveNode = async ({
     );
 };
 
-export const useSaveNode = (): UseMutationResult<any, any> => {
+export const useSaveNode = (
+    invalidateQueryKey?: string[],
+): UseMutationResult<any, any> => {
     return useSnackMutation({
         mutationFn: saveNode,
-        invalidateQueryKey: [WF_BASE_QUERYKEY],
+        invalidateQueryKey: invalidateQueryKey ?? [WF_BASE_QUERYKEY],
     });
 };
 
@@ -82,9 +43,12 @@ const saveNodeOrder =
         return putRequest(`${API_URL}${slug}/node-templates/bulk/`, body);
     };
 
-export const useSaveNodeOrder = (slug: string) => {
+export const useSaveNodeOrder = (
+    slug: string,
+    invalidateQueryKey?: string[],
+) => {
     return useSnackMutation({
         mutationFn: saveNodeOrder(slug),
-        invalidateQueryKey: WF_BASE_QUERYKEY,
+        invalidateQueryKey: invalidateQueryKey ?? [WF_BASE_QUERYKEY],
     });
 };

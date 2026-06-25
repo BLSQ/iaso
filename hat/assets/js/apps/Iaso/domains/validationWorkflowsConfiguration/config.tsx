@@ -7,17 +7,19 @@ import {
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
-// import { useApiValidationWorkflowsDestroy } from 'Iaso/api/validationWorkflows';
+import {
+    getApiValidationWorkflowsListQueryKey,
+    getApiValidationWorkflowsRetrieveQueryKey,
+    PaginatedValidationWorkflowListList,
+    useApiValidationWorkflowsDestroy,
+} from 'Iaso/api/validationWorkflows';
 import { BreakWordCell } from 'Iaso/components/Cells/BreakWordCell';
 import { DateCell } from 'Iaso/components/Cells/DateTimeCell';
 import { NumberCell } from 'Iaso/components/Cells/NumberCell';
 import { DeleteModal } from 'Iaso/components/DeleteRestoreModals/DeleteModal';
 import { baseUrls } from 'Iaso/constants/urls';
 import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
-import {
-    useDeleteNode,
-    useDeleteWorkflow,
-} from 'Iaso/domains/validationWorkflowsConfiguration/api/Delete';
+import { useDeleteNode } from 'Iaso/domains/validationWorkflowsConfiguration/api/Delete';
 import { EditNode } from 'Iaso/domains/validationWorkflowsConfiguration/components/CreateEditNode/CreateEditNode';
 import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
@@ -26,8 +28,7 @@ import MESSAGES from './messages';
 export const useWorkflowsTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
     const user = useCurrentUser();
-    // const { mutateAsync: deleteWorkflow } = useApiValidationWorkflowsDestroy();
-    const { mutateAsync: deleteWorkflow } = useDeleteWorkflow();
+    const { mutateAsync: deleteWorkflow } = useApiValidationWorkflowsDestroy();
 
     return useMemo(() => {
         const cols = [
@@ -78,7 +79,13 @@ export const useWorkflowsTableColumns = (): Column[] => {
                 id: 'actions',
                 accessor: 'actions',
                 sortable: false,
-                Cell: (settings: Setting<any>) => {
+                Cell: (
+                    settings: Setting<
+                        NonNullable<
+                            PaginatedValidationWorkflowListList['results']
+                        >[number]
+                    >,
+                ) => {
                     return (
                         <>
                             <IconButton
@@ -91,10 +98,9 @@ export const useWorkflowsTableColumns = (): Column[] => {
                                 type="icon"
                                 titleMessage={MESSAGES.deleteWorkflow}
                                 onConfirm={() =>
-                                    // deleteWorkflow({
-                                    //     slug: settings.row.original.slug,
-                                    // })
-                                    deleteWorkflow(settings.row.original.slug)
+                                    deleteWorkflow({
+                                        slug: settings.row.original.slug,
+                                    })
                                 }
                                 backdropClick
                             />
@@ -113,7 +119,17 @@ export const useWorkflowNodesColumns = (
 ) => {
     const { formatMessage } = useSafeIntl();
     const user = useCurrentUser();
-    const { mutate: deleteNode } = useDeleteNode();
+
+    const queryKey = React.useMemo(() => {
+        return [
+            ...getApiValidationWorkflowsListQueryKey(),
+            ...(workFlowSlug
+                ? getApiValidationWorkflowsRetrieveQueryKey(workFlowSlug)
+                : []),
+        ] as string[];
+    }, [workFlowSlug]);
+
+    const { mutate: deleteNode } = useDeleteNode(queryKey);
     return useMemo(() => {
         const cols = [
             { Header: 'Order', id: 'order', accessor: 'order' },

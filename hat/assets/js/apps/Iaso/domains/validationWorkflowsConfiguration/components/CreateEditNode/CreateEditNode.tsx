@@ -7,6 +7,10 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
+import {
+    getApiValidationWorkflowsListQueryKey,
+    getApiValidationWorkflowsRetrieveQueryKey,
+} from 'Iaso/api/validationWorkflows';
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import { BooleanInput } from 'Iaso/components/forms/BooleanInput';
 import { MultiSelect } from 'Iaso/domains/pages/components/MultiSelect';
@@ -44,7 +48,17 @@ export const CreateEditNode: FunctionComponent<Props> = ({
     const { data: node } = useGetNode({ nodeSlug, workflowSlug });
     const { data: userRoles, isFetching: isLoadingRoles } =
         useGetUserRolesDropDown();
-    const { mutateAsync: save } = useSaveNode();
+
+    const queryKey = React.useMemo(() => {
+        return [
+            ...getApiValidationWorkflowsListQueryKey(),
+            ...(node?.slug
+                ? getApiValidationWorkflowsRetrieveQueryKey(node?.slug)
+                : []),
+        ] as string[];
+    }, [node?.slug]);
+
+    const { mutateAsync: save } = useSaveNode(queryKey);
     const validationSchema = useNodeValidation();
     const formik = useFormik<NodeFormValues>({
         initialValues: {

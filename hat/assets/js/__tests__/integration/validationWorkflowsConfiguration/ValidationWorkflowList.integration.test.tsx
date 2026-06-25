@@ -1,17 +1,29 @@
 import React from 'react';
+import { faker } from '@faker-js/faker';
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { axe } from 'jest-axe';
+import { HttpResponse } from 'msw';
+import { setupServer } from 'msw/node';
 import { IntlProvider } from 'react-intl';
+import { Route, Routes } from 'react-router';
 import { MemoryRouter } from 'react-router-dom';
-import { expect, describe } from 'vitest';
+import { expect, describe, vi } from 'vitest';
+import { ApiValidationWorkflowsListParams } from 'Iaso/api/validationWorkflows';
+import {
+    getApiValidationWorkflowsDestroyMockHandler,
+    getApiValidationWorkflowsListMockHandler,
+    getApiValidationWorkflowsListResponseMock,
+} from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows.msw';
+import { baseUrls } from 'Iaso/constants/urls';
 import { ValidationWorkflowsConfiguration } from 'Iaso/domains/validationWorkflowsConfiguration';
-import { ValidationWorkflowListResponseItem } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationWorkflows';
-import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
-import { renderWithTheme } from '../../../tests/helpers';
-import { currentUserFactory } from '../../factories/users';
-import { validationWorkflowListFactory } from '../../factories/validationWorkflows/validationWorkflow';
+import {
+    renderWithTheme,
+    renderWithThemeAndIntlProvider,
+    selectFromComboBoxWithAsync,
+    TestingQueryClient,
+} from '../../../tests/helpers';
 
 // mock components
 vi.mock('bluesquare-components', async () => {
@@ -23,53 +35,68 @@ vi.mock('bluesquare-components', async () => {
 });
 
 // mock hooks
-const { mockUseGetSubmissionValidationWorkflows } = vi.hoisted(() => {
-    return { mockUseGetSubmissionValidationWorkflows: vi.fn() };
-});
 
 const { mockUseGetFormsDropdownOptions } = vi.hoisted(() => {
     return { mockUseGetFormsDropdownOptions: vi.fn() };
 });
 
-const { mockUseDeleteWorkflow } = vi.hoisted(() => {
-    return { mockUseDeleteWorkflow: vi.fn() };
-});
-
-vi.mock('Iaso/domains/validationWorkflowsConfiguration/api/Get', () => ({
-    useGetSubmissionValidationWorkflows:
-        mockUseGetSubmissionValidationWorkflows,
-}));
-
-vi.mock('Iaso/domains/validationWorkflowsConfiguration/api/Delete', () => ({
-    useDeleteWorkflow: () => ({
-        mutationFn: mockUseDeleteWorkflow,
-        mutateAsync: mockUseDeleteWorkflow,
-    }),
-}));
-
 vi.mock('Iaso/domains/forms/hooks/useGetFormsDropdownOptions', () => ({
     useGetFormsDropdownOptions: mockUseGetFormsDropdownOptions,
 }));
 
-const { mockCurrentUser } = vi.hoisted(() => {
-    return { mockCurrentUser: vi.fn() };
+const { mockUserHasOneOfPermissions } = vi.hoisted(() => {
+    return { mockUserHasOneOfPermissions: vi.fn() };
 });
 
-vi.mock('Iaso/utils/usersUtils', async () => {
-    const actual = await vi.importActual('Iaso/utils/usersUtils');
+vi.mock('Iaso/domains/users/utils', async () => {
+    const actual = await vi.importActual('Iaso/domains/users/utils');
     return {
         ...actual,
-        useCurrentUser: mockCurrentUser,
+        userHasOneOfPermissions: mockUserHasOneOfPermissions,
     };
 });
 
+const mockDelete = vi.fn();
+
+const handlers = [
+    getApiValidationWorkflowsListMockHandler(),
+    getApiValidationWorkflowsDestroyMockHandler(async info => {
+        mockDelete(info.params);
+        throw new HttpResponse(null, { status: 204 });
+    }),
+];
+
+const server = setupServer(...handlers);
+
+const previousDefaults = TestingQueryClient.getDefaultOptions();
+
 describe('Validation workflow list UI integration test', () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
-        mockUseGetSubmissionValidationWorkflows.mockReturnValue({
-            data: null,
-            isFetching: false,
+    beforeAll(() => {
+        TestingQueryClient.setDefaultOptions({
+            queries: {
+                retry: false,
+            },
         });
+        server.listen({
+            onUnhandledRequest: 'error',
+        });
+    });
+
+    afterEach(() => {
+        server.resetHandlers();
+        TestingQueryClient.clear();
+    });
+
+    afterAll(() => {
+        server.close();
+        faker.seed(Date.now());
+        TestingQueryClient.setDefaultOptions(previousDefaults);
+    });
+
+    beforeEach(() => {
+        faker.seed(6);
+        vi.clearAllMocks();
+        vi.unstubAllEnvs();
         mockUseGetFormsDropdownOptions.mockReturnValue({
             data: [],
             isFetching: false,
@@ -77,46 +104,10 @@ describe('Validation workflow list UI integration test', () => {
     });
 
     it('displays a spinner while loading', async () => {
-        mockUseGetSubmissionValidationWorkflows.mockReturnValue({
-            data: null,
-            isFetching: true,
-        });
-
-        renderWithTheme(
+        vi.stubEnv('MSW_DELAY', '1000000');
+        renderWithThemeAndIntlProvider(
             <MemoryRouter>
-                <IntlProvider locale={'en'}>
-                    <ValidationWorkflowsConfiguration />
-                </IntlProvider>
-            </MemoryRouter>,
-        );
-
-        waitFor(
-            () => {
-                expect(
-                    screen.getByRole('heading', {
-                        name: 'Configure validation workflows',
-                    }),
-                ).toBeInTheDocument();
-                expect(screen.queryByText('No result')).toBeNull();
-                expect(
-                    screen.getByTestId('loading-spinner'),
-                ).toBeInTheDocument();
-            },
-            { timeout: 5000 },
-        );
-    });
-
-    it("displays no results when there isn't any", () => {
-        mockUseGetSubmissionValidationWorkflows.mockReturnValue({
-            data: null,
-            isFetching: false,
-        });
-
-        renderWithTheme(
-            <MemoryRouter>
-                <IntlProvider locale={'en'}>
-                    <ValidationWorkflowsConfiguration />
-                </IntlProvider>
+                <ValidationWorkflowsConfiguration />
             </MemoryRouter>,
         );
 
@@ -125,21 +116,58 @@ describe('Validation workflow list UI integration test', () => {
                 name: 'Configure validation workflows',
             }),
         ).toBeInTheDocument();
+
+        await waitFor(() => {
+            expect(screen.getByRole('progressbar')).toBeInTheDocument();
+        });
+        expect(screen.queryByText('No result')).toBeNull();
+    });
+
+    it("displays no results when there isn't any", async () => {
+        const data = getApiValidationWorkflowsListResponseMock({
+            count: 0,
+            has_next: false,
+            has_previous: false,
+            limit: 10,
+            pages: 1,
+            page: 1,
+            results: [],
+        });
+        server.use(getApiValidationWorkflowsListMockHandler(data));
+
+        renderWithThemeAndIntlProvider(
+            <MemoryRouter>
+                <ValidationWorkflowsConfiguration />
+            </MemoryRouter>,
+        );
+
+        expect(
+            screen.getByRole('heading', {
+                name: 'Configure validation workflows',
+            }),
+        ).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.queryByRole('progressbar')).toBeNull();
+        });
         expect(screen.getByText('No result')).toBeInTheDocument();
-        expect(screen.queryByTestId('loading-spinner')).toBeNull();
     });
 
     it('displays results correctly', async () => {
-        const validationWorkFlows = validationWorkflowListFactory.build();
-        mockUseGetSubmissionValidationWorkflows.mockReturnValue({
-            data: validationWorkFlows,
-            isFetching: false,
+        const data = getApiValidationWorkflowsListResponseMock({
+            count: 6,
+            has_next: false,
+            has_previous: false,
+            limit: 10,
+            pages: 1,
+            page: 1,
         });
-        renderWithTheme(
+
+        expect(data?.results?.length ?? 0).toBeGreaterThan(0);
+        server.use(getApiValidationWorkflowsListMockHandler(data));
+
+        renderWithThemeAndIntlProvider(
             <MemoryRouter>
-                <IntlProvider locale={'en'}>
-                    <ValidationWorkflowsConfiguration />
-                </IntlProvider>
+                <ValidationWorkflowsConfiguration />
             </MemoryRouter>,
         );
         expect(
@@ -148,45 +176,60 @@ describe('Validation workflow list UI integration test', () => {
             }),
         ).toBeInTheDocument();
 
-        expect(screen.queryByText('No result')).toBeNull();
+        await waitFor(() => {
+            expect(screen.queryByRole('progressbar')).toBeNull();
+            expect(screen.queryByText('No result')).toBeNull();
+        });
 
-        expect(screen.getByText('2 result(s)')).toBeInTheDocument();
+        expect(screen.getByText(`${data.count} result(s)`)).toBeInTheDocument();
 
-        validationWorkFlows.results.forEach(
-            (validationWorkflow: ValidationWorkflowListResponseItem) => {
-                expect(
-                    screen.getByText(validationWorkflow.name),
-                ).toBeInTheDocument();
-                expect(
-                    screen.getByText(validationWorkflow.updated_by as string),
-                ).toBeInTheDocument();
-                expect(
-                    screen.getByText(validationWorkflow.created_by as string),
-                ).toBeInTheDocument();
-                expect(
-                    screen.getByText(validationWorkflow.form_count),
-                ).toBeInTheDocument();
-            },
-        );
+        screen.logTestingPlaygroundURL();
+        data?.results?.forEach(validationWorkflow => {
+            expect(
+                screen.getByText(validationWorkflow.name),
+            ).toBeInTheDocument();
+
+            const expectedValues = [
+                validationWorkflow.created_by,
+                validationWorkflow.updated_by,
+            ].filter(Boolean);
+
+            expectedValues.forEach(value => {
+                expect(screen.getByText(String(value))).toBeInTheDocument();
+            });
+            expect(
+                screen.getByText(
+                    validationWorkflow.form_count.toLocaleString(),
+                ),
+            ).toBeInTheDocument();
+        });
     });
 
     it('displays edit and delete button if superuser or has permission', async () => {
-        const validationWorkFlows = validationWorkflowListFactory.build(
-            {},
-            { transient: { resultsLength: 1 } },
-        );
-        mockUseGetSubmissionValidationWorkflows.mockReturnValue({
-            data: validationWorkFlows,
-            isFetching: false,
+        const returnData = getApiValidationWorkflowsListResponseMock({
+            count: 6,
+            has_next: false,
+            has_previous: false,
+            limit: 10,
+            pages: 1,
+            page: 1,
         });
-        let currentUser = currentUserFactory.build({ is_superuser: true });
-        mockCurrentUser.mockReturnValueOnce(currentUser);
 
-        const { rerender } = renderWithTheme(
+        const data = {
+            ...returnData,
+            count: 1,
+            results: returnData?.results?.slice(0, 1),
+        };
+
+        server.use(getApiValidationWorkflowsListMockHandler(data));
+
+        expect(data?.results?.length).toBe(1);
+
+        mockUserHasOneOfPermissions.mockReturnValue(true);
+
+        const { rerender } = renderWithThemeAndIntlProvider(
             <MemoryRouter>
-                <IntlProvider locale={'en'}>
-                    <ValidationWorkflowsConfiguration />
-                </IntlProvider>
+                <ValidationWorkflowsConfiguration />
             </MemoryRouter>,
         );
 
@@ -196,9 +239,14 @@ describe('Validation workflow list UI integration test', () => {
             }),
         ).toBeInTheDocument();
 
+        await waitFor(() => {
+            expect(screen.queryByRole('progressbar')).toBeNull();
+        });
         expect(screen.queryByText('No result')).toBeNull();
 
-        expect(screen.getByText('1 result(s)')).toBeInTheDocument();
+        expect(
+            screen.getByText(`${data?.count} result(s)`),
+        ).toBeInTheDocument();
 
         expect(screen.getByTestId('DeleteIcon')).toBeInTheDocument();
         expect(screen.getByTestId('SettingsIcon')).toBeInTheDocument();
@@ -206,27 +254,21 @@ describe('Validation workflow list UI integration test', () => {
         expect(screen.getByRole('link', { name: '' })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: '' })).toHaveAttribute(
             'href',
-            `/validation-workflows/configuration/detail/slug/${validationWorkFlows?.results?.[0]?.slug}`,
+            `/validation-workflows/configuration/detail/slug/${data?.results?.[0]?.slug}`,
         );
 
         expect(
             screen.getByTestId('SettingsIcon').parentElement,
         ).toHaveAttribute(
             'href',
-            `/validation-workflows/configuration/detail/slug/${validationWorkFlows?.results?.[0]?.slug}`,
+            `/validation-workflows/configuration/detail/slug/${data?.results?.[0]?.slug}`,
         );
 
-        currentUser = currentUserFactory.build({
-            is_superuser: false,
-            permissions: [VALIDATION_WORKFLOWS],
-        });
-        mockCurrentUser.mockReturnValueOnce(currentUser);
+        mockUserHasOneOfPermissions.mockReturnValue(false);
 
         rerender(
             <MemoryRouter>
-                <IntlProvider locale={'en'}>
-                    <ValidationWorkflowsConfiguration />
-                </IntlProvider>
+                <ValidationWorkflowsConfiguration />
             </MemoryRouter>,
         );
 
@@ -236,33 +278,44 @@ describe('Validation workflow list UI integration test', () => {
             }),
         ).toBeInTheDocument();
 
+        await waitFor(() => {
+            expect(screen.queryByRole('progressbar')).toBeNull();
+        });
+
         expect(screen.queryByText('No result')).toBeNull();
 
         expect(screen.getByText('1 result(s)')).toBeInTheDocument();
 
-        expect(screen.getByTestId('DeleteIcon')).toBeInTheDocument();
-        expect(screen.getByTestId('SettingsIcon')).toBeInTheDocument();
+        expect(screen.queryByTestId('DeleteIcon')).toBeNull();
+        expect(screen.queryByTestId('SettingsIcon')).toBeNull();
     });
 
     it('calls delete upon confirming', async () => {
-        mockUseDeleteWorkflow.mockResolvedValue(true);
-
-        const validationWorkFlows = validationWorkflowListFactory.build(
-            {},
-            { transient: { resultsLength: 1 } },
-        );
-        mockUseGetSubmissionValidationWorkflows.mockReturnValue({
-            data: validationWorkFlows,
-            isFetching: false,
+        const returnData = getApiValidationWorkflowsListResponseMock({
+            count: 6,
+            has_next: false,
+            has_previous: false,
+            limit: 10,
+            pages: 1,
+            page: 1,
         });
+
+        const data = {
+            ...returnData,
+            count: 1,
+            results: returnData?.results?.slice(0, 1),
+        };
+
+        server.use(getApiValidationWorkflowsListMockHandler(data));
+
+        expect(data?.results?.length).toBe(1);
+
         const userEventStp = userEvent.setup();
-        const currentUser = currentUserFactory.build({ is_superuser: true });
-        mockCurrentUser.mockReturnValue(currentUser);
-        renderWithTheme(
+        mockUserHasOneOfPermissions.mockReturnValue(true);
+
+        renderWithThemeAndIntlProvider(
             <MemoryRouter>
-                <IntlProvider locale={'en'}>
-                    <ValidationWorkflowsConfiguration />
-                </IntlProvider>
+                <ValidationWorkflowsConfiguration />
             </MemoryRouter>,
         );
 
@@ -272,15 +325,19 @@ describe('Validation workflow list UI integration test', () => {
             }),
         ).toBeInTheDocument();
 
+        await waitFor(() => {
+            expect(screen.queryByRole('progressbar')).toBeNull();
+        });
+
         expect(screen.queryByText('No result')).toBeNull();
 
-        expect(screen.getByText('1 result(s)')).toBeInTheDocument();
+        expect(screen.getByText(`${data.count} result(s)`)).toBeInTheDocument();
 
         expect(screen.getByTestId('DeleteIcon')).toBeInTheDocument();
         expect(screen.getByTestId('SettingsIcon')).toBeInTheDocument();
 
-        act(() => {
-            userEventStp.click(screen.getByTestId('DeleteIcon'));
+        await act(async () => {
+            await userEventStp.click(screen.getByTestId('DeleteIcon'));
         });
 
         const modal = await screen.findByRole('dialog');
@@ -289,21 +346,122 @@ describe('Validation workflow list UI integration test', () => {
         expect(screen.getByText(/delete workflow/i)).toBeInTheDocument();
 
         const saveButton = within(modal).getByRole('button', { name: /yes/i });
-        act(() => {
-            userEventStp.click(saveButton);
+        await act(async () => {
+            await userEventStp.click(saveButton);
         });
 
         await waitFor(() => {
-            expect(mockUseDeleteWorkflow).toHaveBeenCalledWith(
-                validationWorkFlows?.results?.[0]?.slug,
+            expect(mockDelete).toHaveBeenCalledWith(
+                expect.objectContaining({ slug: data?.results?.[0]?.slug }),
             );
         });
 
         expect(screen.queryByRole('dialog')).toBeNull();
     });
 
-    // with zod and orval ;)
-    it.todo('search with the right parameters');
+    it('uses the correct parameters for searching', async () => {
+        mockUseGetFormsDropdownOptions.mockReturnValue({
+            data: [
+                { value: 1, label: 'form 1' },
+                { value: 2, label: 'form 2' },
+                { value: 3, label: 'form 3' },
+            ],
+            isLoading: false,
+            isFetching: false,
+        });
+        const mockList = vi.fn();
+        const data = getApiValidationWorkflowsListResponseMock({
+            count: 6,
+            has_next: false,
+            has_previous: false,
+            limit: 10,
+            pages: 1,
+            page: 1,
+        });
+
+        server.use(
+            getApiValidationWorkflowsListMockHandler(async _info => {
+                mockList(_info);
+                return getApiValidationWorkflowsListResponseMock(data);
+            }),
+        );
+
+        renderWithThemeAndIntlProvider(
+            <MemoryRouter
+                initialEntries={[
+                    `/${baseUrls.validationWorkflowsConfiguration}/accountId/1/`,
+                ]}
+            >
+                <Routes>
+                    <Route
+                        path={`/${baseUrls.validationWorkflowsConfiguration}/*`}
+                        element={<ValidationWorkflowsConfiguration />}
+                    ></Route>
+                </Routes>
+            </MemoryRouter>,
+        );
+
+        await waitFor(() => {
+            expect(screen.queryByRole('progressbar')).toBeNull();
+            expect(mockList).toHaveBeenCalledTimes(1);
+        });
+
+        await act(async () => {
+            await userEvent.type(
+                screen.getByRole('textbox', { name: /search/i }),
+                'something',
+            );
+        });
+        await act(async () => {
+            await selectFromComboBoxWithAsync({
+                nameComboBox: /forms/i,
+                nameOption: 'form 1',
+            });
+        });
+
+        await act(async () => {
+            await selectFromComboBoxWithAsync({
+                nameComboBox: /forms/i,
+                nameOption: 'form 2',
+            });
+        });
+        const searchButton = screen.getByTestId('search-button');
+        await waitFor(() => {
+            expect(searchButton).not.toBeDisabled();
+        });
+
+        await act(async () => {
+            await userEvent.click(searchButton);
+        });
+
+        await waitFor(() => {
+            expect(screen.queryByRole('progressbar')).toBeNull();
+        });
+
+        await waitFor(() => {
+            expect(mockList).toHaveBeenCalledTimes(2);
+        });
+
+        const lastCall = mockList.mock.lastCall?.[0];
+
+        const url = new URL(lastCall.request.url);
+
+        expect(url.searchParams.get('name')).toBe('something');
+        expect(url.searchParams.get('forms')).toBe('1,2');
+
+        const raw = Object.fromEntries(url.searchParams.entries());
+
+        const params = {
+            ...raw,
+            forms: raw.forms?.split(',').map(Number),
+            limit: raw.limit ? Number(raw.limit) : undefined,
+            page: raw.page ? Number(raw.page) : undefined,
+        };
+
+        expect(() =>
+            ApiValidationWorkflowsListParams.parse(params),
+        ).not.toThrow();
+    });
 
     it('has a create button', () => {
         renderWithTheme(
@@ -321,32 +479,59 @@ describe('Validation workflow list UI integration test', () => {
             'href',
             '/validation-workflows/configuration/detail/',
         );
-
-        // it shouldn't be disabled as the router handles the perm there
     });
 });
 
 // todo : fix bluequare-components SearchInput IA-4930 + links + ...
 describe.todo('Validation workflow list accessibility', () => {
     beforeAll(() => {
+        TestingQueryClient.setDefaultOptions({
+            queries: {
+                retry: false,
+            },
+        });
+        server.listen({
+            onUnhandledRequest: 'error',
+        });
+    });
+
+    afterEach(() => {
+        server.resetHandlers();
+        TestingQueryClient.clear();
+    });
+
+    afterAll(() => {
+        server.close();
+        faker.seed(Date.now());
+        TestingQueryClient.setDefaultOptions(previousDefaults);
+    });
+
+    beforeEach(() => {
+        faker.seed(6);
         vi.clearAllMocks();
-        const currentUser = currentUserFactory.build({ is_superuser: true });
-        mockCurrentUser.mockReturnValue(currentUser);
+        vi.unstubAllEnvs();
+        mockUseGetFormsDropdownOptions.mockReturnValue({
+            data: [],
+            isFetching: false,
+        });
     });
 
     it('has no accessibility violations', async () => {
-        const validationWorkFlows = validationWorkflowListFactory.build();
-        mockUseGetSubmissionValidationWorkflows.mockReturnValue({
-            data: validationWorkFlows,
-            isFetching: false,
-            error: null,
+        const data = getApiValidationWorkflowsListResponseMock({
+            count: 6,
+            has_next: false,
+            has_previous: false,
+            limit: 10,
+            pages: 1,
+            page: 1,
         });
 
-        const { container } = renderWithTheme(
+        expect(data?.results?.length ?? 0).toBeGreaterThan(0);
+        server.use(getApiValidationWorkflowsListMockHandler(data));
+
+        const { container } = renderWithThemeAndIntlProvider(
             <MemoryRouter>
-                <IntlProvider locale={'en'}>
-                    <ValidationWorkflowsConfiguration />
-                </IntlProvider>
+                <ValidationWorkflowsConfiguration />
             </MemoryRouter>,
         );
 
@@ -362,17 +547,11 @@ describe.todo('Validation workflow list accessibility', () => {
     });
 
     it('has no accessibility violations when fetching', async () => {
-        mockUseGetSubmissionValidationWorkflows.mockReturnValue({
-            data: null,
-            isFetching: true,
-            error: null,
-        });
+        vi.stubEnv('MSW_DELAY', '1000000');
 
-        const { container } = renderWithTheme(
+        const { container } = renderWithThemeAndIntlProvider(
             <MemoryRouter>
-                <IntlProvider locale={'en'}>
-                    <ValidationWorkflowsConfiguration />
-                </IntlProvider>
+                <ValidationWorkflowsConfiguration />
             </MemoryRouter>,
         );
 
@@ -387,13 +566,18 @@ describe.todo('Validation workflow list accessibility', () => {
     });
 
     it('has no accessibility violations when no results', async () => {
-        mockUseGetSubmissionValidationWorkflows.mockReturnValue({
-            data: null,
-            isFetching: false,
-            error: null,
+        const data = getApiValidationWorkflowsListResponseMock({
+            count: 0,
+            has_next: false,
+            has_previous: false,
+            limit: 10,
+            pages: 1,
+            page: 1,
+            results: [],
         });
+        server.use(getApiValidationWorkflowsListMockHandler(data));
 
-        const { container } = renderWithTheme(
+        const { container } = renderWithThemeAndIntlProvider(
             <MemoryRouter>
                 <IntlProvider locale={'en'}>
                     <ValidationWorkflowsConfiguration />

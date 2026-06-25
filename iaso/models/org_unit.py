@@ -345,6 +345,7 @@ class OrgUnit(TreeModel):
             models.Index(fields=["updated_at"]),
             models.Index(fields=["source_created_at"]),
             models.Index(fields=["org_unit_type", "version"]),
+            models.Index(fields=["version"], name="iaso_orgunit_version_id_idx"),
         ]
         constraints = [
             models.UniqueConstraint(

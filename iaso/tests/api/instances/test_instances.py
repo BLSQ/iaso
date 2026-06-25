@@ -1842,6 +1842,69 @@ class InstancesAPITestCase(TaskAPITestCase):
         self._check_via_api(instance, bob, can_user_modify=True, is_locked=True)
         self._check_via_api(instance, chris, can_user_modify=True, is_locked=True)
 
+    def test_lock_scenario_unrestricted_user(self):
+        """Verify that a user with no org_unit restriction (account-wide access) is correctly
+        handled by the non-hierarchy path in with_lock_info (Count with filter, not FilteredRelation).
+
+        A lock placed by a restricted user should NOT block an unrestricted admin, because the
+        lock's top_org_unit belongs to the same account (version_id check passes).
+        """
+        instance = self.create_form_instance(
+            org_unit=self.ou_top_3, project=self.project, form=self.form_1, period="202001"
+        )
+        admin = self.create_user_with_profile(
+            username="admin_unrestricted",
+            account=self.star_wars,
+            permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_SUBMISSIONS_UPDATE_PERMISSION],
+        )
+        # admin has no org_units set → takes the non-restriction code path in with_lock_info
+        alice = self.create_user_with_profile(
+            username="alice_unres",
+            account=self.star_wars,
+            permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_SUBMISSIONS_UPDATE_PERMISSION],
+        )
+        alice.iaso_profile.org_units.set([self.ou_top_1])
+        chris = self.create_user_with_profile(
+            username="chris_unres",
+            account=self.star_wars,
+            permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_SUBMISSIONS_UPDATE_PERMISSION],
+        )
+        chris.iaso_profile.org_units.set([self.ou_top_3])
+
+        # No lock — everyone can modify
+        for user in [admin, alice, chris]:
+            self._check_via_api(instance, user, can_user_modify=True, is_locked=False)
+
+        # Alice (restricted to ou_top_1 subtree) places a lock → top_org_unit = ou_top_1
+        self.client.force_authenticate(alice)
+        j = self.assertJSONResponse(self.client.post(f"/api/instances/{instance.pk}/add_lock/"), 200)
+        alice_lock = InstanceLock.objects.get(pk=j["lock_id"])
+        self.assertEqual(alice_lock.top_org_unit, self.ou_top_1)
+
+        # Unrestricted admin: top_org_unit (ou_top_1) is in the account → lock does NOT apply
+        self._check_via_api(instance, admin, can_user_modify=True, is_locked=True)
+        # Alice: ou_top_1 is in her hierarchy → lock does NOT apply
+        self._check_via_api(instance, alice, can_user_modify=True, is_locked=True)
+        # Chris: ou_top_1 is NOT in her hierarchy (only ou_top_3) → lock applies
+        self._check_via_api(instance, chris, can_user_modify=False, is_locked=True)
+
+        # Unlock Alice's lock; admin places a lock → top_org_unit = ou_top_1 (root of ou_top_3's path)
+        self.client.force_authenticate(alice)
+        self.assertJSONResponse(
+            self.client.post("/api/instances/unlock_lock/", {"lock": alice_lock.id}, json=True), 200
+        )
+        self.client.force_authenticate(admin)
+        j = self.assertJSONResponse(self.client.post(f"/api/instances/{instance.pk}/add_lock/"), 200)
+        admin_lock = InstanceLock.objects.get(pk=j["lock_id"])
+        self.assertEqual(admin_lock.top_org_unit, self.ou_top_1)
+
+        # Unrestricted admin: version_id in account → lock does NOT apply
+        self._check_via_api(instance, admin, can_user_modify=True, is_locked=True)
+        # Alice: ou_top_1 in her hierarchy → lock does NOT apply
+        self._check_via_api(instance, alice, can_user_modify=True, is_locked=True)
+        # Chris: ou_top_1 not in her hierarchy → lock applies
+        self._check_via_api(instance, chris, can_user_modify=False, is_locked=True)
+
     def _check_via_api(self, instance, user, can_user_modify, is_locked):
         self.client.force_authenticate(user)
         response = self.client.get(f"/api/instances/{instance.pk}/")

@@ -34,6 +34,7 @@ from iaso.utils.models.upload_to import get_account_name_based_on_user
 
 from ..utils.dhis2 import generate_id_for_dhis_2
 from .common import ValidationWorkflowArtefact
+from .data_source import SourceVersion
 from .device import Device, DeviceOwnership
 from .forms import Form, FormVersion
 from .org_unit import OrgUnit, OrgUnitReferenceInstance
@@ -83,19 +84,31 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
 
         Implementation: we decided to make the lock calculation via annotations, so it's a lot faster with large querysets.
         """
-
-        return (
-            self.annotate(
-                lock_applying_to_user=FilteredRelation(
-                    "instancelock",
-                    condition=Q(
-                        ~Q(instancelock__top_org_unit__in=OrgUnit.objects.filter_for_user(user)),
-                        Q(instancelock__unlocked_by__isnull=True),
-                    ),
-                )
+        if user.iaso_profile.org_units.exists():
+            # User is restricted to a subset of org units via their profile — need the hierarchy check.
+            # FilteredRelation is used here to efficiently compute the lock count via a JOIN condition.
+            lock_condition = Q(
+                ~Q(instancelock__top_org_unit__in=OrgUnit.objects.filter_for_user(user)),
+                Q(instancelock__unlocked_by__isnull=True),
             )
-            .annotate(count_lock_applying_to_user=Count("lock_applying_to_user"))
-            .annotate(count_active_lock=Count("instancelock", Q(instancelock__unlocked_by__isnull=True)))
+            return (
+                self.annotate(lock_applying_to_user=FilteredRelation("instancelock", condition=lock_condition))
+                .annotate(count_lock_applying_to_user=Count("lock_applying_to_user"))
+                .annotate(count_active_lock=Count("instancelock", Q(instancelock__unlocked_by__isnull=True)))
+            )
+        # User has account-wide access (no org_unit restriction on their profile).
+        # FilteredRelation cannot be used here because it only allows paths up to depth 3
+        # (relation_name + 2 parts), and checking version→data_source→projects→account exceeds that.
+        # Count with filter has no such restriction and avoids the 4M+ row iaso_orgunit scan by
+        # joining to iaso_orgunit by PK (one row per lock) and checking version_id against the
+        # small set of account source versions.
+        account = user.iaso_profile.account
+        version_ids = SourceVersion.objects.filter(data_source__projects__account=account).values("id")
+        lock_applies_filter = Q(instancelock__unlocked_by__isnull=True) & (
+            Q(instancelock__top_org_unit__isnull=True) | ~Q(instancelock__top_org_unit__version_id__in=version_ids)
+        )
+        return self.annotate(count_lock_applying_to_user=Count("instancelock", filter=lock_applies_filter)).annotate(
+            count_active_lock=Count("instancelock", filter=Q(instancelock__unlocked_by__isnull=True))
         )
 
     def with_status(self):

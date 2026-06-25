@@ -18,4 +18,7 @@ cron:
     - name: "export_records_to_entities"
       url: "/tasks/launch_task/plugins.active_list.tasks.export_records_to_entities.export_records_to_entities/demo/"
       schedule: "*/4 * * * *"
+    - name: "sync disk space usage by account"
+      url: "/tasks/launch_task/iaso.tasks.sync_disk_space_usage.sync_disk_space_usage/cron_task_sync_disk_space_usage/"
+      schedule: "0 0 * * 0"
 

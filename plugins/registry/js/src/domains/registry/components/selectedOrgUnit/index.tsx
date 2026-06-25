@@ -1,16 +1,16 @@
+import React, { FunctionComponent, useMemo } from 'react';
 import { Box, Divider, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { LoadingSpinner, commonStyles } from 'bluesquare-components';
-import React, { FunctionComponent, useMemo } from 'react';
 
 import InstanceFileContent from '../../../../../../../../hat/assets/js/apps/Iaso/domains/instances/components/InstanceFileContent';
 
+import { OrgUnit } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 import {
-    useGetInstance,
+    useGetInstanceForRegistry,
     useGetOrgUnitInstances,
 } from '../../../../hooks/useGetInstances';
 
-import { OrgUnit } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 import { RegistryParams } from '../../../../types';
 import { HEIGHT } from '../../config';
 import { EmptyInstances } from './EmptyInstances';
@@ -58,7 +58,7 @@ export const SelectedOrgUnit: FunctionComponent<Props> = ({
     }, [params.submissionId, orgUnit, instances]);
 
     const { data: currentInstance, isFetching: isFetchingCurrentInstance } =
-        useGetInstance(currentInstanceId, registrySlug, false);
+        useGetInstanceForRegistry(currentInstanceId, registrySlug, false);
 
     if (!orgUnit) {
         return null;

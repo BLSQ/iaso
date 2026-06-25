@@ -1,6 +1,7 @@
 import React, { ReactElement } from 'react';
 
 import { ApiImports } from 'Iaso/domains/apiimports';
+import { ValidateInstance } from 'Iaso/domains/instances/validate';
 import { PipelineList } from 'Iaso/domains/openHexa';
 import { PipelineDetails } from 'Iaso/domains/openHexa/details';
 import { StockKeepingUnits } from 'Iaso/domains/stock';
@@ -157,10 +158,10 @@ export const instanceDetailPath = {
 };
 
 export const validateInstancePath = {
-    baseUrl: baseUrls.compareInstanceLogs,
-    routerUrl: `${baseUrls.compareInstanceLogs}/*`,
+    baseUrl: baseUrls.instanceValidation,
+    routerUrl: `${baseUrls.instanceValidation}/*`,
     permissions: [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE], // TODO use correct perm
-    element: <CompareInstanceLogs />,
+    element: <ValidateInstance />,
 };
 export const compareInstanceLogsPath = {
     baseUrl: baseUrls.compareInstanceLogs,

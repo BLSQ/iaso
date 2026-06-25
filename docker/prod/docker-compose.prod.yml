@@ -14,6 +14,8 @@ services:
       #   - .env
       environment:
         - APP_TITLE
+        - AUTH_RATE_LIMIT_COOLOFF_SECONDS
+        - AUTH_RATE_LIMIT_MAX_FAILURES
         - AUTHENTICATION_ENFORCED
         - AVAILABLE_LANGUAGES
         - AWS_ACCESS_KEY_ID
@@ -68,6 +70,7 @@ services:
         - ENKETO_SIGNING_SECRET
         - ENKETO_URL
         - FAVICON_PATH
+        - FORM_AI_MODEL
         - FORUM_PATH
         - HIDE_BASIC_NAV_ITEMS
         - LEARN_MORE_URL

@@ -130,7 +130,9 @@ module.exports = {
             __LOCALE: JSON.stringify(LOCALE),
         }),
         new webpack.DefinePlugin({
-           'process.env.ORVAL_API_BASE_URL': JSON.stringify(process.env?.ORVAL_API_BASE_URL ?? "")
+            'process.env.ORVAL_API_BASE_URL': JSON.stringify(
+                process.env?.ORVAL_API_BASE_URL ?? '',
+            ),
         }),
         // XLSX
         new webpack.IgnorePlugin({ resourceRegExp: /cptable/ }),
@@ -303,6 +305,10 @@ module.exports = {
             'bluesquare-components': path.resolve(
                 __dirname,
                 '../node_modules/bluesquare-components',
+            ),
+            'react-query': path.resolve(
+                __dirname,
+                '../node_modules/react-query',
             ),
             leaflet: path.resolve(__dirname, '../node_modules/leaflet'),
             'react-leaflet': path.resolve(

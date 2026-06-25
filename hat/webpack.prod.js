@@ -65,7 +65,9 @@ module.exports = {
                 // need to do JSON stringify on all vars here to take effect,
                 // see https://github.com/eHealthAfrica/guinea-connect-universal-app/blob/development/webpack/prod.config.js
                 NODE_ENV: JSON.stringify('production'),
-                ORVAL_API_BASE_URL: JSON.stringify(process.env?.ORVAL_API_BASE_URL ?? "")
+                ORVAL_API_BASE_URL: JSON.stringify(
+                    process.env?.ORVAL_API_BASE_URL ?? '',
+                ),
             },
             __LOCALE: JSON.stringify(LOCALE),
         }),
@@ -107,6 +109,11 @@ module.exports = {
                     requiredVersion: false,
                 },
                 'bluesquare-components': {
+                    singleton: true,
+                    eager: true,
+                    requiredVersion: false,
+                },
+                'react-query': {
                     singleton: true,
                     eager: true,
                     requiredVersion: false,

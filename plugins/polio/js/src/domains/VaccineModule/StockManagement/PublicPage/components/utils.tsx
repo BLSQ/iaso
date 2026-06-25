@@ -37,11 +37,7 @@ export const baseRenderTagsWithTooltip =
             .map((option, index) => {
                 const title = getTooltipTitle(option);
                 return (
-                    <Tooltip
-                        title={title}
-                        // eslint-disable-next-line react/no-array-index-key
-                        key={`${title}-${index}`}
-                    >
+                    <Tooltip title={title} key={`tooltip-${title}`}>
                         <Chip
                             color="secondary"
                             style={{

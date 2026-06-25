@@ -1,4 +1,3 @@
-/* eslint-disable react/no-array-index-key */
 import React, { FunctionComponent } from 'react';
 import { Grid, Box, Paper } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
@@ -137,12 +136,8 @@ export const ImStats: FunctionComponent = () => {
                                     displayTrigger={campaign}
                                 />
                             </Grid>
-                            {selectedRounds.map((rnd, index) => (
-                                <Grid
-                                    item
-                                    xs={6}
-                                    key={`IM-bar-chart ${rnd}_${index}`}
-                                >
+                            {selectedRounds.map(rnd => (
+                                <Grid item xs={6} key={`IM-bar-chart ${rnd}`}>
                                     <Paper elevation={paperElevation}>
                                         <LqasImHorizontalChart
                                             type={imType}

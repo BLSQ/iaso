@@ -8,10 +8,9 @@ export const FormADocumentsCells = (cellInfo: {
     const value = cellInfo?.value ?? [];
     return (
         <>
-            {value.map(({ date, file, is_late }, index) => (
+            {value.map(({ date, file, is_late }) => (
                 <FormADocumentCell
-                    // eslint-disable-next-line react/no-array-index-key
-                    key={`${file}${index}`}
+                    key={`${file}${date}`}
                     date={date}
                     file={file}
                     isLate={is_late}

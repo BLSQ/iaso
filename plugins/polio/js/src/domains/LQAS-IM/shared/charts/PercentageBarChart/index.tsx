@@ -1,4 +1,3 @@
-/* eslint-disable react/no-array-index-key */
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Box } from '@mui/material';
 import {
@@ -70,10 +69,10 @@ export const PercentageBarChart: FunctionComponent<Props> = ({
                         itemStyle={{ color: 'black' }}
                     />
                     <Bar dataKey="value" minPointSize={3}>
-                        {data.map((entry, index) => {
+                        {data.map(entry => {
                             return (
                                 <Cell
-                                    key={`cell-${index}`}
+                                    key={`cell-${entry.name}`}
                                     fill={determineColor(
                                         entry,
                                         colorPalette,

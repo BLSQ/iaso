@@ -3,12 +3,11 @@ import React, { FunctionComponent } from 'react';
 import { Box, TableCell, TableHead, TableRow, Typography } from '@mui/material';
 import classnames from 'classnames';
 
-import { CalendarOrdering } from '../hooks/useMergedCampaigns/useMergedCampaigns';
 import { useStaticFields } from '../hooks/useStaticFields';
 import { HeadStaticFieldsCells } from './cells/HeadStaticFields';
 import { colSpanTitle } from './constants';
 import { useStyles } from './Styles';
-import { CalendarData } from './types';
+import { CalendarData, CalendarOrdering } from './types';
 
 type Props = {
     headers: CalendarData['headers'];
@@ -149,14 +148,13 @@ export const Head: FunctionComponent<Props> = ({
                 {headers.weeks.map(week => {
                     return Array(7)
                         .fill(null)
-                        .map((_, i) => (
+                        .map(_ => (
                             <TableCell
                                 className={classnames([
                                     classes.tableCellHead,
                                     classes.tableCellHidden,
                                 ])}
-                                // eslint-disable-next-line react/no-array-index-key
-                                key={`day-${week.year}-${week.month}-${week.value}-${i}`}
+                                key={`day-${week.year}-${week.month}-${week.value}`}
                                 align="center"
                                 colSpan={1}
                             />

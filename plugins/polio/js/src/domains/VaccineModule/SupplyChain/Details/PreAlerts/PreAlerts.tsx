@@ -48,11 +48,11 @@ export const PreAlerts: FunctionComponent<Props> = ({
             buttonMessage={theMessage}
             onClick={onClick}
         >
-            {items.map((_, index) => {
+            {items.map((item, index) => {
                 return (
                     <PreAlert
                         index={index}
-                        key={index} // eslint-disable-line react/no-array-index-key
+                        key={`pre-alter-${item?.id ?? item?.po_number}`}
                         dosesForVaccineOptions={dosesPerVaccineOptions}
                     />
                 );

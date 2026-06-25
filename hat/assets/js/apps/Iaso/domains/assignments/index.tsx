@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useCallback, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Box, Button, Grid, Typography, Tabs, Tab } from '@mui/material';
@@ -16,21 +21,31 @@ import { smallInputOverrides } from 'Iaso/styles';
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { useGetFormsDropdownOptions } from '../forms/hooks/useGetFormsDropdownOptions';
+import { filterOrgUnitTypesByForms } from '../forms/utils';
+import {
+    OrgUnitTypeHierarchy,
+    OrgUnitTypeHierarchyDropdownValue,
+    useGetOrgUnitTypesHierarchy,
+} from '../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { flattenOrgUnitTypeHierarchy } from '../orgUnits/orgUnitTypes/utils';
 import { useGetPlanningDetails } from '../plannings/hooks/requests/useGetPlanningDetails';
 import { Planning } from '../plannings/types';
 import { useGetTeam } from '../teams/hooks/requests/useGetTeams';
 import { SubTeam, User } from '../teams/types/team';
-import { AssignmentsMap } from './components/AssignmentsMap';
-import { AssignmentsTable } from './components/AssignmentsTable';
+import { AssignmentsMap } from './components/map/AssignmentsMap';
+import { AssignmentsTable } from './components/table/AssignmentsTable';
 import { TeamTable } from './components/teams/TeamTable';
 import { useBulkDeleteAssignments } from './hooks/requests/useBulkDeleteAssignments';
 import { useGetAssignments } from './hooks/requests/useGetAssignments';
-import { AssignmentsResult } from './hooks/requests/useGetAssignments';
 import { useSaveAssignment } from './hooks/requests/useSaveAssignment';
 import MESSAGES from './messages';
+import { AssignmentsResult } from './types/assigment';
 import { AssignmentParams } from './types/assigment';
 
 export const Assignments: FunctionComponent = () => {
+    const goBack = useGoBack(baseUrls.planning);
+    const redirectToReplace = useRedirectToReplace();
     const params: AssignmentParams = useParamsObject(
         baseUrls.assignments,
     ) as unknown as AssignmentParams;
@@ -38,25 +53,58 @@ export const Assignments: FunctionComponent = () => {
         undefined,
     );
     const [search, setSearch] = useState<string | undefined>(params.search);
+    const [selectedOrgUnitTypes, setSelectedOrgUnitTypes] = useState<
+        OrgUnitTypeHierarchyDropdownValue[]
+    >([]);
     const [selectedTeam, setSelectedTeam] = useState<SubTeam | undefined>(
         undefined,
     );
+    const { tab, handleChangeTab } = useTabs<'list' | 'map'>({
+        params: params as Record<string, Optional<string>>,
+        defaultTab: (params?.tab ?? 'map') as 'list' | 'map',
+        baseUrl: baseUrls.assignments,
+    });
+
     const { formatMessage } = useSafeIntl();
 
     const { planningId } = params;
+
+    const onSuccessPlanning = useCallback(
+        (data: Planning) => {
+            if (selectedOrgUnitTypes.length === 0) {
+                const targetOrgUnitTypes =
+                    data.target_org_unit_type_details ?? [];
+                setSelectedOrgUnitTypes(
+                    targetOrgUnitTypes.map(target => ({
+                        value: target.id,
+                        label: target.name,
+                        original: target as unknown as OrgUnitTypeHierarchy,
+                    })),
+                );
+            }
+        },
+        [selectedOrgUnitTypes],
+    );
+    const handleSearch = useCallback(() => {
+        redirectToReplace(baseUrls.assignments, {
+            ...params,
+            search,
+        });
+    }, [params, search, redirectToReplace]);
+
     const {
         data: planning,
     }: {
         data?: Planning;
         isLoading: boolean;
-    } = useGetPlanningDetails(planningId);
-
-    const goBack = useGoBack(baseUrls.planning);
+    } = useGetPlanningDetails(planningId, onSuccessPlanning);
+    const { data: formsDropdown } = useGetFormsDropdownOptions({
+        extraFields: ['project_ids', 'org_unit_type_ids'],
+    });
 
     const { data: rootTeam, isLoading: isLoadingRootTeam } = useGetTeam(
         planning?.team_details?.id,
     );
-
     const {
         data: assignments,
         isLoading: isLoadingAssignments,
@@ -72,20 +120,21 @@ export const Assignments: FunctionComponent = () => {
         selectedTeam,
     });
     const { mutateAsync: deleteAssignments } = useBulkDeleteAssignments();
+    const { data: orgUnitTypesHierarchy } = useGetOrgUnitTypesHierarchy(
+        planning?.org_unit_details?.org_unit_type,
+    );
+    const orgUniTypeList = useMemo(() => {
+        const orgUnitTypes = flattenOrgUnitTypeHierarchy(
+            orgUnitTypesHierarchy?.sub_unit_types || [],
+        );
+        return filterOrgUnitTypesByForms(
+            orgUnitTypes,
+            formsDropdown,
+            planning?.forms,
+        );
+    }, [orgUnitTypesHierarchy, formsDropdown, planning?.forms]);
 
-    const { tab, handleChangeTab } = useTabs<'list' | 'map'>({
-        params: params as Record<string, Optional<string>>,
-        defaultTab: (params?.tab ?? 'map') as 'list' | 'map',
-        baseUrl: baseUrls.assignments,
-    });
     const canAssign = Boolean(selectedUser || selectedTeam);
-    const redirectToReplace = useRedirectToReplace();
-    const handleSearch = useCallback(() => {
-        redirectToReplace(baseUrls.assignments, {
-            ...params,
-            search,
-        });
-    }, [params, search, redirectToReplace]);
     return (
         <>
             <TopBar
@@ -193,6 +242,13 @@ export const Assignments: FunctionComponent = () => {
                                 planning={planning}
                                 canAssign={canAssign}
                                 params={params}
+                                orgUniTypeList={orgUniTypeList}
+                                selectedOrgUnitTypes={selectedOrgUnitTypes}
+                                setSelectedOrgUnitTypes={
+                                    setSelectedOrgUnitTypes
+                                }
+                                selectedUser={selectedUser}
+                                selectedTeam={selectedTeam}
                             />
                         )}
                         {tab === 'list' && (

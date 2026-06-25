@@ -19,7 +19,7 @@ import { ASSIGNMENTS_PARENT_CLASS } from '../../constants/ui';
 import { MAP_PANE_Z_INDEX } from './AssignmentsMap';
 
 type Props = {
-    orgUniTypes?: OrgUnitTypeHierarchyDropdownValues;
+    orgUnitTypes?: OrgUnitTypeHierarchyDropdownValues;
     planning?: Planning;
     selectedOrgUnitTypes: OrgUnitTypeHierarchyDropdownValue[];
     rootOrgUnit?: PlanningOrgUnits;
@@ -28,7 +28,7 @@ type Props = {
 };
 
 export const ParentOrgUnits: FunctionComponent<Props> = ({
-    orgUniTypes,
+    orgUnitTypes,
     planning,
     selectedOrgUnitTypes,
     rootOrgUnit,
@@ -52,7 +52,7 @@ export const ParentOrgUnits: FunctionComponent<Props> = ({
     // Remove target org unit types and un checked org unit types
     // keep original index to always compute same color per type
     const parentOrgUnitTypes = useMemo(() => {
-        return orgUniTypes
+        return orgUnitTypes
             ?.map((ou, index) => ({
                 ...ou,
                 originalIndex: index,
@@ -67,7 +67,7 @@ export const ParentOrgUnits: FunctionComponent<Props> = ({
                     ),
             );
     }, [
-        orgUniTypes,
+        orgUnitTypes,
         planning?.target_org_unit_type_details,
         selectedOrgUnitTypes,
     ]);

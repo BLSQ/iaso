@@ -239,7 +239,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                     </Pane>
                 )}
                 <ParentOrgUnits
-                    orgUniTypes={orgUniTypeList}
+                    orgUnitTypes={orgUniTypeList}
                     planning={planning}
                     selectedOrgUnitTypes={selectedOrgUnitTypes}
                     rootOrgUnit={rootOrgUnit}

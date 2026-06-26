@@ -134,4 +134,49 @@ describe('AssigneeRow', () => {
 
         expect(screen.getByTestId('delete-assignment-button')).toBeDisabled();
     });
+
+    it('does not render expand control when team has no nested members', () => {
+        renderAssigneeRow({
+            team: {
+                id: 1,
+                name: 'Leaf team',
+                color: '#0f0',
+                users: [],
+                users_details: [],
+                sub_teams: [],
+                sub_teams_details: [],
+            },
+        });
+
+        expect(
+            screen.queryByRole('button', { name: 'expand row' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('renders expand control when team has nested members', () => {
+        renderAssigneeRow({
+            team: {
+                id: 1,
+                name: 'Parent team',
+                color: '#0f0',
+                users: [2],
+                users_details: [
+                    {
+                        id: 2,
+                        username: 'jane',
+                        first_name: 'Jane',
+                        last_name: 'Doe',
+                        color: '#123456',
+                        iaso_profile_id: 99,
+                    },
+                ],
+                sub_teams: [],
+                sub_teams_details: [],
+            },
+        });
+
+        expect(
+            screen.getByRole('button', { name: 'expand row' }),
+        ).toBeInTheDocument();
+    });
 });

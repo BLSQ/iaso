@@ -56,7 +56,6 @@ describe('MapTools', () => {
                 selectedOrgUnitTypes={orgUniTypeList}
                 setSelectedOrgUnitTypes={vi.fn()}
                 bounds={undefined}
-                isLoading={false}
                 currentTile={tiles.osm}
                 setCurrentTile={vi.fn()}
                 boundsOptions={{}}
@@ -75,7 +74,6 @@ describe('MapTools', () => {
             <MapTools
                 selectedOrgUnitTypes={[]}
                 setSelectedOrgUnitTypes={vi.fn()}
-                isLoading={false}
                 currentTile={tiles.osm}
                 setCurrentTile={vi.fn()}
                 boundsOptions={{}}

@@ -6,6 +6,19 @@ import { AssigneeRow } from './AssigneeRow';
 
 const mockMutateAsync = vi.fn();
 
+vi.mock('../../contexts/AssignmentsContext', () => ({
+    useAssignmentsContext: () => ({
+        planningId: '42',
+        canAssign: false,
+        handleSaveAssignment: vi.fn(),
+        isSaving: false,
+        setSelectedUser: vi.fn(),
+        setSelectedTeam: vi.fn(),
+        updateTeam: vi.fn(),
+        updateUser: vi.fn(),
+    }),
+}));
+
 vi.mock('../../hooks/requests/useBulkDeleteAssignments', () => ({
     useBulkDeleteAssignments: () => ({
         mutateAsync: mockMutateAsync,
@@ -53,8 +66,6 @@ vi.mock('Iaso/components/forms/ColorPicker', () => ({
 }));
 
 const baseProps = {
-    planningId: '42',
-    radioGroupName: 'assignee-42',
     isActive: false,
     setSelectedRow: vi.fn(),
     currentColor: '#111111',

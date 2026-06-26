@@ -1,19 +1,27 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { TableCell, TableRow, Radio, useTheme, Collapse } from '@mui/material';
+import {
+    TableCell,
+    TableRow,
+    Radio,
+    useTheme,
+    Collapse,
+    Table,
+    Box,
+} from '@mui/material';
 import { IconButton as MuiIconButton } from '@mui/material';
 import { IconButton } from 'bluesquare-components';
 import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
 import { SubTeam, User } from 'Iaso/domains/teams/types/team';
+import { useAssignmentsContext } from '../../contexts/AssignmentsContext';
 import { useBulkDeleteAssignments } from '../../hooks/requests/useBulkDeleteAssignments';
 import MESSAGES from '../../messages';
+import { TeamTableBody } from './TeamTableBody';
 
 type Props = {
     user?: User;
     team?: SubTeam;
-    planningId: string;
-    radioGroupName: string;
     isActive: boolean;
     setSelectedRow: () => void;
     currentColor: string;
@@ -25,8 +33,6 @@ type Props = {
 export const AssigneeRow: FunctionComponent<Props> = ({
     user,
     team,
-    planningId,
-    radioGroupName,
     isActive,
     setSelectedRow,
     currentColor,
@@ -35,6 +41,7 @@ export const AssigneeRow: FunctionComponent<Props> = ({
     onColorChange,
 }) => {
     const theme = useTheme();
+    const { planningId } = useAssignmentsContext();
 
     const [open, setOpen] = useState<boolean>(false);
     const hasChildren = Boolean(
@@ -67,7 +74,6 @@ export const AssigneeRow: FunctionComponent<Props> = ({
                     }}
                 >
                     <Radio
-                        name={radioGroupName}
                         checked={isActive}
                         onChange={() => setSelectedRow()}
                     />
@@ -102,13 +108,7 @@ export const AssigneeRow: FunctionComponent<Props> = ({
                     {count}
                 </TableCell>
 
-                <TableCell
-                    sx={
-                        {
-                            // textAlign: 'center',
-                        }
-                    }
-                >
+                <TableCell>
                     <IconButton
                         tooltipMessage={MESSAGES.deleteAssignments}
                         onClick={() => deleteAssignments()}
@@ -130,11 +130,15 @@ export const AssigneeRow: FunctionComponent<Props> = ({
                     )}
                 </TableCell>
             </TableRow>
-            {hasChildren && (
+            {hasChildren && team && (
                 <TableRow>
                     <TableCell colSpan={5} sx={{ padding: 0 }}>
                         <Collapse in={open} timeout="auto" unmountOnExit>
-                            SUBTABLE
+                            <Box sx={{ pl: 4 }}>
+                                <Table size="small">
+                                    <TeamTableBody rootTeam={team} />
+                                </Table>
+                            </Box>
                         </Collapse>
                     </TableCell>
                 </TableRow>

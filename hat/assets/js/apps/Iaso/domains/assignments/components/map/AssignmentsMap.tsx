@@ -16,7 +16,7 @@ import {
 } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { PlanningOrgUnits } from 'Iaso/domains/plannings/types';
 import { MapToolTip } from 'Iaso/domains/registry/components/map/MapTooltip';
-import { SubTeam, Team, User } from 'Iaso/domains/teams/types/team';
+import { Team } from 'Iaso/domains/teams/types/team';
 import { Bounds, getOrgUnitsBounds } from 'Iaso/utils/map/mapUtils';
 import { Planning } from '../../../plannings/types';
 import {
@@ -28,7 +28,7 @@ import {
     ASSIGNMENTS_ROOT_CLASS,
     defaultHeight,
 } from '../../constants/ui';
-import { AssignmentsResult } from '../../types/assigment';
+import { useAssignmentsContext } from '../../contexts/AssignmentsContext';
 import { AssignmentParams } from '../../types/assigment';
 import { defaultViewport, boundsOptions } from '../../utils';
 import { BulkAssignDialog } from '../dialog/BulkAssignDialog';
@@ -101,14 +101,9 @@ export const MAP_PANE_Z_INDEX = {
 } as const;
 
 type Props = {
-    planningId: string;
     rootTeam?: Team;
     isLoadingRootTeam: boolean;
-    assignments?: AssignmentsResult;
     isLoadingAssignments: boolean;
-    handleSaveAssignment: (orgUnitId: number) => void;
-    isSaving: boolean;
-    canAssign: boolean;
     planning?: Planning;
     params: AssignmentParams;
     orgUniTypeList?: OrgUnitTypeHierarchyDropdownValues;
@@ -116,27 +111,26 @@ type Props = {
     setSelectedOrgUnitTypes: Dispatch<
         SetStateAction<OrgUnitTypeHierarchyDropdownValue[]>
     >;
-    selectedUser?: User;
-    selectedTeam?: SubTeam;
 };
 
 export const AssignmentsMap: FunctionComponent<Props> = ({
-    planningId,
     rootTeam,
     isLoadingRootTeam,
-    assignments,
     isLoadingAssignments,
-    handleSaveAssignment,
-    isSaving,
-    canAssign,
     planning,
     params,
     orgUniTypeList,
     selectedOrgUnitTypes,
     setSelectedOrgUnitTypes,
-    selectedUser,
-    selectedTeam,
 }) => {
+    const {
+        planningId,
+        assignments,
+        canAssign,
+        handleSaveAssignment,
+        isSaving,
+    } = useAssignmentsContext();
+
     const { data: childrenOrgUnits, isFetching: isLoadingChildrenOrgUnits } =
         useGetPlanningOrgUnitsChildren(planningId, params);
     const { data: rootOrgUnit, isFetching: isLoadingRootOrgUnit } =
@@ -189,8 +183,6 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                     onClose={handleCloseBulkAssignDialog}
                     selectedParentOrgUnit={selectedParentOrgUnit}
                     planning={planning}
-                    selectedUser={selectedUser}
-                    selectedTeam={selectedTeam}
                     orgUniTypeList={orgUniTypeList}
                 />
             )}

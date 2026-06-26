@@ -24,6 +24,7 @@ export const InstanceValidationWidgetPaper = ({
     const currentUser = useCurrentUser();
     const { data: validationWorkflow, isLoading: isLoadingValidationStatus } =
         useGetSubmissionValidationStatus(currentInstanceId);
+    console.log('VALIDATION', validationWorkflow);
 
     if (!userHasAccessToModule(VALIDATION_WORKFLOW_MODULE, currentUser)) {
         return (

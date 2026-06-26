@@ -5,7 +5,7 @@ from rest_framework.validators import UniqueTogetherValidator
 from iaso.api.common import HiddenSlugRelatedField, ModelSerializer
 from iaso.api.validation_workflows_node_templates.serializers.common import ValidationWorkflowContextDefault
 from iaso.models import UserRole, ValidationNodeTemplate, ValidationWorkflow
-from iaso.models.validation_workflow.templates import PositionChoices
+from iaso.models.validation_workflow.validation_workflow_version import PositionChoices
 
 
 class ValidationNodeTemplateCreateSerializer(ModelSerializer):

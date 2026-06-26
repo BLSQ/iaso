@@ -75,6 +75,7 @@ jsonref==1.1.0 # https://github.com/gazpachoking/jsonref
 django-simple-captcha==0.6.3  # https://github.com/mbi/django-simple-captcha/tags
 environs==14.4.0  # https://github.com/sloria/environs/tags
 jsonpatch==1.33 # https://github.com/stefankoegl/python-json-patch
+semantic-version==2.10.0 # https://github.com/rbarrois/python-semanticversion
 
 # Exporting tools.
 # ------------------------------------------------------------------------------

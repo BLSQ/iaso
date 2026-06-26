@@ -5,7 +5,7 @@ from django.db import transaction
 from django.db.models import Q
 
 from iaso.engine.exceptions import ValidationWorkflowEngineException
-from iaso.models import ValidationNode, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import ValidationNode, ValidationNodeTemplate, ValidationWorkflowVersion
 from iaso.models.common import ValidationWorkflowArtefact, ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 
@@ -14,7 +14,7 @@ class ValidationWorkflowEngine:
     @staticmethod
     @transaction.atomic
     def start(
-        workflow_template,
+        workflow_template: ValidationWorkflowVersion,
         user,
         artifact: ValidationWorkflowArtefact,
     ):
@@ -78,7 +78,7 @@ class ValidationWorkflowEngine:
         node: ValidationNodeTemplate,
         user,
         artifact: ValidationWorkflowArtefact,
-        workflow: ValidationWorkflow,
+        workflow: ValidationWorkflowVersion,
         approved: Optional[bool] = False,
         comment: Optional[str] = "",
     ):
@@ -200,7 +200,7 @@ class ValidationWorkflowEngine:
         if not user.iaso_profile:  # not sure it'll happen IRL
             raise PermissionDenied("User required")
 
-        if validation_node.node.workflow.account != user.iaso_profile.account:
+        if validation_node.node.workflow.main_workflow.account != user.iaso_profile.account:
             raise PermissionDenied
 
         if validation_node.status in [ValidationNodeStatus.NEW_VERSION, ValidationNodeStatus.SUBMISSION]:
@@ -232,7 +232,7 @@ class ValidationWorkflowEngine:
         if not user.iaso_profile:  # not sure it'll happen IRL
             raise PermissionDenied("User required")
 
-        if validation_node.node.workflow.account != user.iaso_profile.account:
+        if validation_node.node.workflow.main_workflow.account != user.iaso_profile.account:
             raise PermissionDenied
 
         if validation_node.status == ValidationNodeStatus.UNKNOWN:
@@ -264,7 +264,7 @@ class ValidationWorkflowEngine:
     @staticmethod
     @transaction.atomic
     def undo_node(
-        validation_node: ValidationNode, user, instance: ValidationWorkflowArtefact, workflow: ValidationWorkflow
+        validation_node: ValidationNode, user, instance: ValidationWorkflowArtefact, workflow: ValidationWorkflowVersion
     ):
         ValidationWorkflowEngine._can_undo_node(validation_node, user)
 

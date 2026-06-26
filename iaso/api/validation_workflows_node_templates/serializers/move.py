@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from iaso.models import ValidationNodeTemplate
-from iaso.models.validation_workflow.templates import PositionChoices
+from iaso.models.validation_workflow.validation_workflow_version import PositionChoices
 
 
 class ValidationNodeTemplateMoveSerializer(serializers.Serializer):

@@ -3,9 +3,10 @@ from django.core.exceptions import PermissionDenied
 
 from iaso.engine.exceptions import ValidationWorkflowEngineException
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
-from iaso.models import Account, Form, Instance, UserRole, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import Account, Form, Instance, UserRole, ValidationNodeTemplate
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
+from iaso.services.validation_workflows import ValidationWorkflowService
 from iaso.test import TestCase
 
 
@@ -26,7 +27,9 @@ class TestSimpleLinearValidationWorkflowEngine(TestCase):
         account = Account.objects.create(name="account")
         self.user = self.create_user_with_profile(username="noprofile", password="testpass", account=account)
         self.other_user = self.create_user_with_profile(username="john.doe", password="testpass", account=account)
-        self.workflow = ValidationWorkflow.objects.create(name="test workflow", account=account)
+        base_workflow = ValidationWorkflowService.create(name="test workflow", account=account, user=self.user)
+        self.workflow = base_workflow.versions.latest_by_version()
+
         self.check_file_node = ValidationNodeTemplate.objects.create(workflow=self.workflow, name="check_file_node")
 
         self.form = Form.objects.create()
@@ -152,7 +155,9 @@ class TestMultiLinearValidationWorkflowEngine(TestCase):
         account = Account.objects.create(name="test")
         self.user = self.create_user_with_profile(username="noprofile", password="testpass", account=account)
         self.other_user = self.create_user_with_profile(username="john.doe", password="testpass", account=account)
-        self.workflow = ValidationWorkflow.objects.get_or_create(name="test workflow", account=account)[0]
+        base_workflow = ValidationWorkflowService.create(name="test workflow", account=account, user=self.user)
+        self.workflow = base_workflow.versions.latest_by_version()
+
         self.check_file_type_node = ValidationNodeTemplate.objects.create(
             workflow=self.workflow, name="check_file_type"
         )
@@ -385,7 +390,8 @@ class TestPermissionCheck(TestCase):
             username="john.super", password="testpass", account=account, is_staff=True, is_superuser=True
         )
 
-        self.workflow = ValidationWorkflow.objects.get_or_create(name="test workflow", account=account)[0]
+        base_workflow = ValidationWorkflowService.create(name="test workflow", account=account, user=self.user)
+        self.workflow = base_workflow.versions.latest_by_version()
         self.check_file_node = ValidationNodeTemplate.objects.create(workflow=self.workflow, name="check_file_node")
 
         self.check_file_node.roles_required.set([user_role_1, user_role_2])
@@ -617,7 +623,8 @@ class TestUndoFeature(TestCase):
 
         self.user = self.create_user_with_profile(username="noprofile", password="testpass", account=account)
         self.other_user = self.create_user_with_profile(username="john.doe", password="testpass", account=account)
-        self.workflow = ValidationWorkflow.objects.get_or_create(name="test workflow", account=account)[0]
+        base_workflow = ValidationWorkflowService.create(name="test workflow", account=account, user=self.user)
+        self.workflow = base_workflow.versions.latest_by_version()
         self.check_file_type_node = ValidationNodeTemplate.objects.create(
             workflow=self.workflow, name="check_file_type"
         )
@@ -823,7 +830,8 @@ class TestResubmitFeature(TestCase):
     def setUp(self):
         account = Account.objects.create(name="account")
         self.user = self.create_user_with_profile(username="noprofile", password="testpass", account=account)
-        self.workflow = ValidationWorkflow.objects.get_or_create(name="test workflow", account=account)[0]
+        base_workflow = ValidationWorkflowService.create(name="test workflow", account=account, user=self.user)
+        self.workflow = base_workflow.versions.latest_by_version()
         self.check_file_type_node = ValidationNodeTemplate.objects.create(
             workflow=self.workflow, name="check_file_type"
         )
@@ -1035,7 +1043,8 @@ class TestByPassFeature(TestCase):
             username="john.super", password="testpass", account=account, is_staff=True, is_superuser=True
         )
 
-        self.workflow = ValidationWorkflow.objects.get_or_create(name="test workflow", account=account)[0]
+        base_workflow = ValidationWorkflowService.create(name="test workflow", account=account, user=self.jim)
+        self.workflow = base_workflow.versions.latest_by_version()
         self.check_file_type_node = ValidationNodeTemplate.objects.create(
             workflow=self.workflow, name="check_file_type"
         )
@@ -1389,7 +1398,8 @@ class TestUndoFeatureForSkipNodes(TestCase):
         self.michael = self.create_user_with_profile(username="michael.scott", password="testpass", account=account)
         self.david = self.create_user_with_profile(username="david.wallace", password="testpass", account=account)
 
-        self.workflow = ValidationWorkflow.objects.get_or_create(name="test workflow", account=account)[0]
+        base_workflow = ValidationWorkflowService.create(name="test workflow", account=account, user=self.jim)
+        self.workflow = base_workflow.versions.latest_by_version()
         self.check_file_type_node = ValidationNodeTemplate.objects.create(
             workflow=self.workflow, name="check_file_type"
         )
@@ -1684,7 +1694,8 @@ class TestAccessFromAnotherAccount(TestCase):
             username="stranger", password="testpass", account=Account.objects.create(name="other_test")
         )
 
-        self.workflow = ValidationWorkflow.objects.get_or_create(name="test workflow", account=account)[0]
+        base_workflow = ValidationWorkflowService.create(name="test workflow", account=account, user=self.jim)
+        self.workflow = base_workflow.versions.latest_by_version()
         self.check_file_type_node = ValidationNodeTemplate.objects.create(
             workflow=self.workflow, name="check_file_type"
         )

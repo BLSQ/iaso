@@ -34,7 +34,7 @@ from .storage import StorageDevice, StorageLogEntry, StoragePassword
 from .task import Task, TaskLog
 from .team import Team
 from .tenant_users import TenantUser
-from .validation_workflow import ValidationNode, ValidationNodeTemplate, ValidationWorkflow
+from .validation_workflow import ValidationNode, ValidationNodeTemplate, ValidationWorkflow, ValidationWorkflowVersion
 from .workflow import Workflow, WorkflowChange, WorkflowFollowup, WorkflowVersion
 
 
@@ -113,6 +113,7 @@ __all__ = [
     "Team",
     "TenantUser",
     "ValidationWorkflow",
+    "ValidationWorkflowVersion",
     "ValidationNodeTemplate",
     "ValidationNode",
     "Workflow",

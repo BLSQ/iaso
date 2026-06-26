@@ -1,8 +1,8 @@
 from django.db import IntegrityError
 from django.test import TransactionTestCase
 
-from iaso.models import Account, Form, Instance
-from iaso.models.validation_workflow.templates import ValidationWorkflow
+from iaso.models import Account
+from iaso.models.validation_workflow import ValidationWorkflow
 
 
 class TestValidationWorkflow(TransactionTestCase):
@@ -38,27 +38,6 @@ class TestValidationWorkflow(TransactionTestCase):
 
         self.assertEqual(d1.slug, "test")
         self.assertEqual(d3.slug, "test")
-
-    def test_is_artifact_allowed(self):
-        form = Form.objects.create()
-        workflow = ValidationWorkflow.objects.create(name="test", account=Account.objects.create(name="test"))
-        workflow.form_set.set([form])
-
-        another_workflow = ValidationWorkflow.objects.create(
-            name="another-test", account=Account.objects.create(name="test2")
-        )
-
-        another_form = Form.objects.create()
-
-        instance = Instance.objects.create(form=form)
-        another_instance = Instance.objects.create(form=another_form)
-
-        self.assertTrue(workflow.is_artifact_allowed(instance))
-
-        self.assertFalse(workflow.is_artifact_allowed(another_instance))
-
-        self.assertFalse(another_workflow.is_artifact_allowed(instance))
-        self.assertFalse(another_workflow.is_artifact_allowed(another_instance))
 
     def test_unique_constraints(self):
         account = Account.objects.create(name="test")

@@ -6,10 +6,6 @@ export type SubTeam = {
     name: string;
     deleted_at?: string;
     color: string;
-    users: Array<number>;
-    users_details: Array<User>;
-    sub_teams: Array<number>;
-    sub_teams_details: Array<SubTeam>;
 };
 
 export type User = {

@@ -146,14 +146,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.assignment.targetOrgUnitType',
         defaultMessage: 'Target org unit type',
     },
-    expand: {
-        defaultMessage: 'Expand',
-        id: 'iaso.label.expand',
-    },
-    collapse: {
-        defaultMessage: 'Collapse',
-        id: 'iaso.label.collapse',
-    },
     noAssignments: {
         defaultMessage: 'No assignments',
         id: 'iaso.assignment.noAssignments',

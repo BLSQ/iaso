@@ -40,7 +40,7 @@ describe('MapLegend', () => {
     it('renders org unit type checkboxes from the list', () => {
         renderWithThemeAndIntlProvider(
             <MapLegend
-                orgUniTypeList={[orgUnitTypeA, orgUnitTypeB]}
+                orgUnitTypeList={[orgUnitTypeA, orgUnitTypeB]}
                 selectedOrgUnitTypes={[orgUnitTypeA]}
                 setSelectedOrgUnitTypes={setSelectedOrgUnitTypes}
             />,
@@ -56,7 +56,7 @@ describe('MapLegend', () => {
     it('adds an org unit type when an unchecked box is toggled', () => {
         renderWithThemeAndIntlProvider(
             <MapLegend
-                orgUniTypeList={[orgUnitTypeA, orgUnitTypeB]}
+                orgUnitTypeList={[orgUnitTypeA, orgUnitTypeB]}
                 selectedOrgUnitTypes={[orgUnitTypeA]}
                 setSelectedOrgUnitTypes={setSelectedOrgUnitTypes}
             />,
@@ -72,7 +72,7 @@ describe('MapLegend', () => {
     it('removes an org unit type when a checked box is toggled', () => {
         renderWithThemeAndIntlProvider(
             <MapLegend
-                orgUniTypeList={[orgUnitTypeA, orgUnitTypeB]}
+                orgUnitTypeList={[orgUnitTypeA, orgUnitTypeB]}
                 selectedOrgUnitTypes={[orgUnitTypeA, orgUnitTypeB]}
                 setSelectedOrgUnitTypes={setSelectedOrgUnitTypes}
             />,

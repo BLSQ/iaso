@@ -122,7 +122,7 @@ const planningWithMultipleTargets = createPlanning({
     ],
 });
 
-const orgUniTypeList: OrgUnitTypeHierarchyDropdownValue[] = [
+const orgUnitTypeList: OrgUnitTypeHierarchyDropdownValue[] = [
     createOrgUnitTypeDropdownValue(2, 'Area'),
     createOrgUnitTypeDropdownValue(3, 'Health Centre'),
 ];
@@ -190,7 +190,10 @@ describe('BulkAssignDialog', () => {
     });
 
     it('renders the dialog title and org unit rows', () => {
-        renderBulkAssignDialog({}, { planningId: '42', initialSelectedUser: selectedUser });
+        renderBulkAssignDialog(
+            {},
+            { planningId: '42', initialSelectedUser: selectedUser },
+        );
 
         expect(
             screen.getByText('Assign all Area in Zone A'),
@@ -207,7 +210,7 @@ describe('BulkAssignDialog', () => {
     it('disables assign after unselecting all rows', () => {
         renderBulkAssignDialog({
             planning: planningWithMultipleTargets,
-            orgUniTypeList,
+            orgUnitTypeList,
         });
 
         fireEvent.click(screen.getByRole('button', { name: 'Unselect all' }));
@@ -216,7 +219,10 @@ describe('BulkAssignDialog', () => {
     });
 
     it('submits bulk assignment and closes the dialog', async () => {
-        renderBulkAssignDialog({}, { planningId: '42', initialSelectedTeam: selectedTeam });
+        renderBulkAssignDialog(
+            {},
+            { planningId: '42', initialSelectedTeam: selectedTeam },
+        );
 
         fireEvent.click(screen.getByRole('button', { name: 'Assign' }));
 

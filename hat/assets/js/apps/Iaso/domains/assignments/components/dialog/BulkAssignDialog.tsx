@@ -36,7 +36,7 @@ type Props = {
     onClose: () => void;
     selectedParentOrgUnit: PlanningOrgUnits;
     planning: Planning;
-    orgUniTypeList?: OrgUnitTypeHierarchyDropdownValues;
+    orgUnitTypeList?: OrgUnitTypeHierarchyDropdownValues;
 };
 
 const defaultParams: UrlParams = {
@@ -69,7 +69,7 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
     onClose,
     selectedParentOrgUnit,
     planning,
-    orgUniTypeList,
+    orgUnitTypeList,
 }) => {
     const { selectedUser, selectedTeam } = useAssignmentsContext();
 
@@ -90,12 +90,12 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
     });
 
     const orgUniTypesOptions = useMemo(() => {
-        return orgUniTypeList?.filter(t =>
+        return orgUnitTypeList?.filter(t =>
             planning.target_org_unit_type_details?.some(
                 ot => ot.id === t.value,
             ),
         );
-    }, [orgUniTypeList, planning.target_org_unit_type_details]);
+    }, [orgUnitTypeList, planning.target_org_unit_type_details]);
 
     const { data, isLoading } = useGetPlanningOrgUnitsChildrenPaginated(
         `${planning.id}`,
@@ -170,13 +170,13 @@ export const BulkAssignDialog: FunctionComponent<Props> = ({
                         <InputComponent
                             type="select"
                             multi
-                            disabled={!orgUniTypeList}
+                            disabled={!orgUnitTypeList}
                             keyValue="orgUnitTypeIds"
                             onChange={handleChangeOrgUnitTypes}
                             value={selectedOrgUnitTypes}
                             label={MESSAGES.targetOrgUnitType}
                             options={orgUniTypesOptions}
-                            loading={!orgUniTypeList}
+                            loading={!orgUnitTypeList}
                             clearable={false}
                         />
                     </Grid>

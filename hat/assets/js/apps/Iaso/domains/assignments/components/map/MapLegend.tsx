@@ -51,7 +51,7 @@ export type Legend = {
 };
 
 type Props = {
-    orgUniTypeList: OrgUnitTypeHierarchyDropdownValues;
+    orgUnitTypeList: OrgUnitTypeHierarchyDropdownValues;
     selectedOrgUnitTypes: OrgUnitTypeHierarchyDropdownValue[];
     setSelectedOrgUnitTypes: Dispatch<
         SetStateAction<OrgUnitTypeHierarchyDropdownValue[]>
@@ -59,7 +59,7 @@ type Props = {
 };
 
 export const MapLegend: FunctionComponent<Props> = ({
-    orgUniTypeList,
+    orgUnitTypeList,
     selectedOrgUnitTypes,
     setSelectedOrgUnitTypes,
 }) => {
@@ -94,7 +94,7 @@ export const MapLegend: FunctionComponent<Props> = ({
                     {formatMessage(MESSAGES.orgUnitType)}
                 </Typography>
                 <FormGroup>
-                    {orgUniTypeList.map(ou => (
+                    {orgUnitTypeList.map(ou => (
                         <FormControlLabel
                             key={ou.value}
                             control={

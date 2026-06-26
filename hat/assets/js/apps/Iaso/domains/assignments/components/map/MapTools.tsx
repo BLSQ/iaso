@@ -13,7 +13,7 @@ import { Bounds, CloseTooltipOnMoveStart } from 'Iaso/utils/map/mapUtils';
 import { MapLegend } from './MapLegend';
 
 type Props = {
-    orgUniTypeList?: OrgUnitTypeHierarchyDropdownValues;
+    orgUnitTypeList?: OrgUnitTypeHierarchyDropdownValues;
     planning?: Planning;
     selectedOrgUnitTypes: OrgUnitTypeHierarchyDropdownValue[];
     setSelectedOrgUnitTypes: Dispatch<
@@ -26,7 +26,7 @@ type Props = {
 };
 
 export const MapTools: FunctionComponent<Props> = ({
-    orgUniTypeList,
+    orgUnitTypeList,
     planning,
     selectedOrgUnitTypes,
     setSelectedOrgUnitTypes,
@@ -37,9 +37,9 @@ export const MapTools: FunctionComponent<Props> = ({
 }) => {
     return (
         <>
-            {orgUniTypeList && planning && (
+            {orgUnitTypeList && planning && (
                 <MapLegend
-                    orgUniTypeList={orgUniTypeList}
+                    orgUnitTypeList={orgUnitTypeList}
                     selectedOrgUnitTypes={selectedOrgUnitTypes}
                     setSelectedOrgUnitTypes={setSelectedOrgUnitTypes}
                 />

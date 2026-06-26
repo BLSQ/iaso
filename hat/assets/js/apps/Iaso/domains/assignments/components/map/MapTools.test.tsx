@@ -32,7 +32,7 @@ const planning = {
     target_org_unit_type_details: [{ id: 2, name: 'Area' }],
 } as any;
 
-const orgUniTypeList: OrgUnitTypeHierarchyDropdownValue[] = [
+const orgUnitTypeList: OrgUnitTypeHierarchyDropdownValue[] = [
     {
         value: 2,
         label: 'Area',
@@ -51,9 +51,9 @@ describe('MapTools', () => {
     it('renders map controls and the legend when planning data is available', () => {
         renderWithThemeAndIntlProvider(
             <MapTools
-                orgUniTypeList={orgUniTypeList}
+                orgUnitTypeList={orgUnitTypeList}
                 planning={planning}
-                selectedOrgUnitTypes={orgUniTypeList}
+                selectedOrgUnitTypes={orgUnitTypeList}
                 setSelectedOrgUnitTypes={vi.fn()}
                 bounds={undefined}
                 currentTile={tiles.osm}

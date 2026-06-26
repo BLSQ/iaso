@@ -73,7 +73,7 @@ const planning = {
     target_org_unit_type_details: [{ id: 3, name: 'Target' }],
 } as any;
 
-const orgUniTypeList: OrgUnitTypeHierarchyDropdownValue[] = [
+const orgUnitTypeList: OrgUnitTypeHierarchyDropdownValue[] = [
     {
         value: 1,
         label: 'Zone',
@@ -125,9 +125,9 @@ describe('ParentOrgUnits', () => {
     it('queries parent org units for non-target selected types', () => {
         renderWithThemeAndIntlProvider(
             <ParentOrgUnits
-                orgUnitTypes={orgUniTypeList}
+                orgUnitTypes={orgUnitTypeList}
                 planning={planning}
-                selectedOrgUnitTypes={orgUniTypeList}
+                selectedOrgUnitTypes={orgUnitTypeList}
                 rootOrgUnit={rootOrgUnit}
                 canAssign
                 handleClick={handleClick}
@@ -144,9 +144,9 @@ describe('ParentOrgUnits', () => {
     it('calls handleClick when a parent shape is clicked and assignment is allowed', () => {
         renderWithThemeAndIntlProvider(
             <ParentOrgUnits
-                orgUnitTypes={orgUniTypeList}
+                orgUnitTypes={orgUnitTypeList}
                 planning={planning}
-                selectedOrgUnitTypes={[orgUniTypeList[0]]}
+                selectedOrgUnitTypes={[orgUnitTypeList[0]]}
                 rootOrgUnit={rootOrgUnit}
                 canAssign
                 handleClick={handleClick}
@@ -178,9 +178,9 @@ describe('ParentOrgUnits', () => {
 
         renderWithThemeAndIntlProvider(
             <ParentOrgUnits
-                orgUnitTypes={orgUniTypeList}
+                orgUnitTypes={orgUnitTypeList}
                 planning={planning}
-                selectedOrgUnitTypes={[orgUniTypeList[0]]}
+                selectedOrgUnitTypes={[orgUnitTypeList[0]]}
                 rootOrgUnit={rootOrgUnit}
                 canAssign
                 handleClick={handleClick}

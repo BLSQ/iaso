@@ -110,7 +110,7 @@ export const Assignments: FunctionComponent = () => {
     const { data: orgUnitTypesHierarchy } = useGetOrgUnitTypesHierarchy(
         planning?.org_unit_details?.org_unit_type,
     );
-    const orgUniTypeList = useMemo(() => {
+    const orgUnitTypeList = useMemo(() => {
         const orgUnitTypes = flattenOrgUnitTypeHierarchy(
             orgUnitTypesHierarchy?.sub_unit_types || [],
         );
@@ -230,7 +230,7 @@ export const Assignments: FunctionComponent = () => {
                                     isLoadingAssignments={isLoadingAssignments}
                                     planning={planning}
                                     params={params}
-                                    orgUniTypeList={orgUniTypeList}
+                                    orgUnitTypeList={orgUnitTypeList}
                                     selectedOrgUnitTypes={selectedOrgUnitTypes}
                                     setSelectedOrgUnitTypes={
                                         setSelectedOrgUnitTypes

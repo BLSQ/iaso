@@ -71,13 +71,13 @@ import { TargetOrgUnits } from './TargetOrgUnits';
  * -------------------------------------------
  * Type ordering comes from the hierarchy tree (`sub_unit_types`), flattened in
  * `index.tsx` via `flattenOrgUnitTypeHierarchy` → `filterOrgUnitTypesByForms`,
- * producing `orgUniTypeList` in natural tree order (parent before descendants).
+ * producing `orgUnitTypeList` in natural tree order (parent before descendants).
  * Each entry's position is its **hierarchy index** for map drawing / parent z-index.
  *
  * Only **parent** layers use a zIndex range (20 slots: 210–229). All org units of the
  * same target category share a single pane zIndex regardless of type. Stack parent
  * panes with `parentShapesMin + hierarchyIndex` (index f    if target_type_ids and org_unit_type_id not in target_type_ids:
-            raise ValidationError({"org_unit_type_id": [_("Org unit type is not a target type for this planning")]})rom `orgUniTypeList`).
+            raise ValidationError({"org_unit_type_id": [_("Org unit type is not a target type for this planning")]})rom `orgUnitTypeList`).
  *
  *
  * Example hierarchy
@@ -91,7 +91,7 @@ import { TargetOrgUnits } from './TargetOrgUnits';
 /** @see block comment above – reserved zIndex values for future panes */
 export const MAP_PANE_Z_INDEX = {
     rootShape: 200,
-    /** 20-slot range for parent types ordered by `orgUniTypeList` hierarchy index */
+    /** 20-slot range for parent types ordered by `orgUnitTypeList` hierarchy index */
     parentShapesMin: 210,
     parentShapesMax: 229,
     targetShapesAssigned: 230,
@@ -106,7 +106,7 @@ type Props = {
     isLoadingAssignments: boolean;
     planning?: Planning;
     params: AssignmentParams;
-    orgUniTypeList?: OrgUnitTypeHierarchyDropdownValues;
+    orgUnitTypeList?: OrgUnitTypeHierarchyDropdownValues;
     selectedOrgUnitTypes: OrgUnitTypeHierarchyDropdownValue[];
     setSelectedOrgUnitTypes: Dispatch<
         SetStateAction<OrgUnitTypeHierarchyDropdownValue[]>
@@ -119,7 +119,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
     isLoadingAssignments,
     planning,
     params,
-    orgUniTypeList,
+    orgUnitTypeList,
     selectedOrgUnitTypes,
     setSelectedOrgUnitTypes,
 }) => {
@@ -183,7 +183,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                     onClose={handleCloseBulkAssignDialog}
                     selectedParentOrgUnit={selectedParentOrgUnit}
                     planning={planning}
-                    orgUniTypeList={orgUniTypeList}
+                    orgUnitTypeList={orgUnitTypeList}
                 />
             )}
             {isLoading && <LoadingSpinner />}
@@ -200,7 +200,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                 trackResize
             >
                 <MapTools
-                    orgUniTypeList={orgUniTypeList}
+                    orgUnitTypeList={orgUnitTypeList}
                     planning={planning}
                     selectedOrgUnitTypes={selectedOrgUnitTypes}
                     setSelectedOrgUnitTypes={setSelectedOrgUnitTypes}
@@ -233,7 +233,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                 {!isMapDataLoading && (
                     <>
                         <ParentOrgUnits
-                            orgUniTypeList={orgUniTypeList}
+                            orgUnitTypes={orgUnitTypeList}
                             planning={planning}
                             selectedOrgUnitTypes={selectedOrgUnitTypes}
                             rootOrgUnit={rootOrgUnit}

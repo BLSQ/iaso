@@ -236,6 +236,8 @@ const menuItems = (
                     icon: props => <FormatListBulleted {...props} />,
                     permissions: paths.instancesPath.permissions,
                     extraPath: `/tab/list/mapResults/${locationLimitMax}`,
+                    isActive: pathname =>
+                        pathname?.includes('forms/submissions'),
                 },
 
                 {
@@ -248,6 +250,8 @@ const menuItems = (
                             permissions: paths.formsStatsPath.permissions,
                             key: 'formStats',
                             icon: props => <AssessmentIcon {...props} />,
+                            isActive: pathname =>
+                                pathname?.includes('forms/stats'),
                         },
                         {
                             label: formatMessage(MESSAGES.completeness),

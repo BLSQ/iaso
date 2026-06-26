@@ -43,7 +43,7 @@ describe('MapShape', () => {
             <MapShape
                 ou={{ ...orgUnitWithShape, geo_json: undefined }}
                 canAssign
-                handleSaveAssignment={vi.fn()}
+                handleClick={vi.fn()}
                 getAssignmentColor={() => '#00ff00'}
             />,
         );
@@ -56,7 +56,7 @@ describe('MapShape', () => {
             <MapShape
                 ou={orgUnitWithShape}
                 canAssign
-                handleSaveAssignment={vi.fn()}
+                handleClick={vi.fn()}
                 getAssignmentColor={() => '#00ff00'}
             />,
         );
@@ -70,13 +70,13 @@ describe('MapShape', () => {
     });
 
     it('triggers save on layer click when assignment is allowed', () => {
-        const handleSaveAssignment = vi.fn();
+        const handleClick = vi.fn();
 
         renderWithThemeAndIntlProvider(
             <MapShape
                 ou={orgUnitWithShape}
                 canAssign
-                handleSaveAssignment={handleSaveAssignment}
+                handleClick={handleClick}
                 getAssignmentColor={() => '#00ff00'}
             />,
         );
@@ -87,17 +87,17 @@ describe('MapShape', () => {
         const clickHandler = layer.on.mock.calls[0][1];
         clickHandler();
 
-        expect(handleSaveAssignment).toHaveBeenCalledWith(8);
+        expect(handleClick).toHaveBeenCalledWith(8);
     });
 
     it('does not trigger save on layer click when assignment is not allowed', () => {
-        const handleSaveAssignment = vi.fn();
+        const handleClick = vi.fn();
 
         renderWithThemeAndIntlProvider(
             <MapShape
                 ou={orgUnitWithShape}
                 canAssign={false}
-                handleSaveAssignment={handleSaveAssignment}
+                handleClick={handleClick}
                 getAssignmentColor={() => '#00ff00'}
             />,
         );
@@ -108,6 +108,6 @@ describe('MapShape', () => {
         const clickHandler = layer.on.mock.calls[0][1];
         clickHandler();
 
-        expect(handleSaveAssignment).not.toHaveBeenCalled();
+        expect(handleClick).not.toHaveBeenCalled();
     });
 });

@@ -1,4 +1,4 @@
-import { FunctionComponent, useMemo } from 'react';
+import { Dispatch, FunctionComponent, SetStateAction, useMemo } from 'react';
 import React from 'react';
 import { Pane } from 'react-leaflet';
 import { useGetAssignmentColor } from 'Iaso/domains/app/hooks/useGetAssignmentColor';
@@ -21,6 +21,9 @@ type Props = {
     assignments?: AssignmentsResult;
     selectedOrgUnitTypes: OrgUnitTypeHierarchyDropdownValue[];
     rootTeam?: Team;
+    setSelectedOrgUnitTypes: Dispatch<
+        SetStateAction<OrgUnitTypeHierarchyDropdownValue[]>
+    >;
 };
 
 export const TargetOrgUnits: FunctionComponent<Props> = ({
@@ -31,6 +34,7 @@ export const TargetOrgUnits: FunctionComponent<Props> = ({
     assignments,
     selectedOrgUnitTypes,
     rootTeam,
+    setSelectedOrgUnitTypes,
 }) => {
     const getAssignmentColor = useGetAssignmentColor(assignments, rootTeam);
     const targetOrgUnitsShapes: FilterOrgUnitsResult = useMemo(
@@ -65,7 +69,7 @@ export const TargetOrgUnits: FunctionComponent<Props> = ({
                         key={ou.id}
                         ou={ou}
                         canAssign={canAssign}
-                        handleSaveAssignment={handleSaveAssignment}
+                        handleClick={handleSaveAssignment}
                         getAssignmentColor={getAssignmentColor}
                         opacity={0.3}
                     />
@@ -82,7 +86,7 @@ export const TargetOrgUnits: FunctionComponent<Props> = ({
                         key={ou.id}
                         ou={ou}
                         canAssign={canAssign}
-                        handleSaveAssignment={handleSaveAssignment}
+                        handleClick={handleSaveAssignment}
                         getAssignmentColor={getAssignmentColor}
                     />
                 ))}
@@ -98,7 +102,7 @@ export const TargetOrgUnits: FunctionComponent<Props> = ({
                         key={ou.id}
                         ou={ou}
                         canAssign={canAssign}
-                        handleSaveAssignment={handleSaveAssignment}
+                        handleClick={handleSaveAssignment}
                         getAssignmentColor={getAssignmentColor}
                     />
                 ))}
@@ -114,7 +118,7 @@ export const TargetOrgUnits: FunctionComponent<Props> = ({
                         key={ou.id}
                         ou={ou}
                         canAssign={canAssign}
-                        handleSaveAssignment={handleSaveAssignment}
+                        handleClick={handleSaveAssignment}
                         getAssignmentColor={getAssignmentColor}
                     />
                 ))}

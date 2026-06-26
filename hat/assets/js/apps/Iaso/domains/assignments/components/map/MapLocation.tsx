@@ -8,20 +8,20 @@ import { ASSIGNMENTS_TARGET_CLASS } from '../../constants/ui';
 type Props = {
     ou: PlanningOrgUnits;
     canAssign: boolean;
-    handleSaveAssignment: (id: number) => void;
+    handleClick: (id: number) => void;
     getAssignmentColor: (id: number) => string;
 };
 export const MapLocation: FunctionComponent<Props> = ({
     ou,
     canAssign,
-    handleSaveAssignment,
+    handleClick,
     getAssignmentColor,
 }) => {
     return (
         <CircleMarkerComponent
             key={ou.id}
             item={ou}
-            onClick={() => canAssign && handleSaveAssignment(ou.id)}
+            onClick={() => canAssign && handleClick(ou.id)}
             TooltipComponent={MapToolTip}
             tooltipProps={() => ({
                 pane: 'popupPane',

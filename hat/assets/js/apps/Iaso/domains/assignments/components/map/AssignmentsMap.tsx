@@ -248,6 +248,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                             assignments={assignments}
                             selectedOrgUnitTypes={selectedOrgUnitTypes}
                             rootTeam={rootTeam}
+                            setSelectedOrgUnitTypes={setSelectedOrgUnitTypes}
                         />
                     </>
                 )}

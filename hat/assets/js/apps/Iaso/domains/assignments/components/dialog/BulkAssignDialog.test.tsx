@@ -1,7 +1,9 @@
 import React from 'react';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { PlanningOrgUnits } from 'Iaso/domains/plannings/types';
+import { OrgUnitTypeHierarchyDropdownValue } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { Planning, PlanningOrgUnits } from 'Iaso/domains/plannings/types';
+import { SubTeam, User } from 'Iaso/domains/teams/types/team';
 import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers';
 import { AssignmentsProvider } from '../../contexts/AssignmentsContext';
 import { BulkAssignDialog } from './BulkAssignDialog';
@@ -80,32 +82,61 @@ vi.mock('bluesquare-components', async importOriginal => {
     };
 });
 
-const planning = {
-    id: 42,
-    name: 'Planning',
-    target_org_unit_type_details: [{ id: 2, name: 'Area' }],
-} as any;
+type AssignmentsProviderTestProps = Omit<
+    React.ComponentProps<typeof AssignmentsProvider>,
+    'children'
+>;
 
-const planningWithMultipleTargets = {
+const createPlanning = (overrides: Partial<Planning> = {}): Planning => ({
     id: 42,
     name: 'Planning',
+    forms: [],
+    pipeline_uuids: [],
+    assignments_count: 0,
+    target_org_unit_type_details: [{ id: 2, name: 'Area' }],
+    ...overrides,
+});
+
+const createOrgUnitTypeDropdownValue = (
+    id: number,
+    name: string,
+): OrgUnitTypeHierarchyDropdownValue => ({
+    value: id,
+    label: name,
+    original: {
+        id,
+        name,
+        short_name: name,
+        depth: 1,
+        category: 'admin',
+        sub_unit_types: [],
+    },
+});
+
+const planning = createPlanning();
+
+const planningWithMultipleTargets = createPlanning({
     target_org_unit_type_details: [
         { id: 2, name: 'Area' },
         { id: 3, name: 'Health Centre' },
     ],
-} as any;
+});
 
-const orgUniTypeList = [
-    { value: 2, label: 'Area' },
-    { value: 3, label: 'Health Centre' },
+const orgUniTypeList: OrgUnitTypeHierarchyDropdownValue[] = [
+    createOrgUnitTypeDropdownValue(2, 'Area'),
+    createOrgUnitTypeDropdownValue(3, 'Health Centre'),
 ];
 
-const selectedParentOrgUnit = {
+const selectedParentOrgUnit: PlanningOrgUnits = {
     id: 100,
     name: 'Zone A',
-} as PlanningOrgUnits;
+    has_geo_json: false,
+    latitude: 0,
+    longitude: 0,
+    org_unit_type_id: 1,
+};
 
-const selectedUser = {
+const selectedUser: User = {
     id: 5,
     username: 'john',
     first_name: 'John',
@@ -114,13 +145,21 @@ const selectedUser = {
     iaso_profile_id: 1,
 };
 
-const selectedTeam = { id: 9, name: 'Team', color: '#fff' };
+const selectedTeam: SubTeam = {
+    id: 9,
+    name: 'Team',
+    color: '#fff',
+    users: [],
+    users_details: [],
+    sub_teams: [],
+    sub_teams_details: [],
+};
 
 const onClose = vi.fn();
 
 const renderBulkAssignDialog = (
     dialogProps: Partial<React.ComponentProps<typeof BulkAssignDialog>> = {},
-    providerProps: React.ComponentProps<typeof AssignmentsProvider> = {
+    providerProps: AssignmentsProviderTestProps = {
         planningId: '42',
     },
 ) =>
@@ -166,7 +205,10 @@ describe('BulkAssignDialog', () => {
     });
 
     it('disables assign after unselecting all rows', () => {
-        renderBulkAssignDialog();
+        renderBulkAssignDialog({
+            planning: planningWithMultipleTargets,
+            orgUniTypeList,
+        });
 
         fireEvent.click(screen.getByRole('button', { name: 'Unselect all' }));
 

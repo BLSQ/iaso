@@ -34,7 +34,7 @@ import FormDetail from '../domains/forms/detail';
 import { FormsStats } from '../domains/forms/stats';
 import { Welcome } from '../domains/home/components/ExtraGrid/Welcome';
 import Instances from '../domains/instances';
-import CompareSubmissions from '../domains/instances/compare';
+import { CompareSubmissions } from '../domains/instances/compare';
 import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs';
 import InstanceDetail from '../domains/instances/details';
 import { Links } from '../domains/links';

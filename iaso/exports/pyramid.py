@@ -1,3 +1,6 @@
+import re
+import unicodedata
+
 from typing import Sequence
 
 from django.contrib.postgres.fields import JSONField
@@ -15,6 +18,8 @@ ALL_OPTIONAL_ORG_UNIT_FIELDS = [
     "location_geojson",
     "simplified_geom_geojson",
     "biggest_polygon_geojson",
+    "groups_exploded",
+    "groups_json",
 ]
 
 
@@ -24,11 +29,13 @@ def build_pyramid_queryset(qs: QuerySet[m.OrgUnit], extra_fields: Sequence[str])
     org_unit_annotations = build_org_unit_annotations(model_prefix)
     level_annotations = build_level_annotations(qs)
     geojson_annotations = build_geojson_annotations(model_prefix, extra_fields)
+    group_annotations = build_group_annotations(qs, extra_fields)
 
     all_keys = [
         *org_unit_annotations.keys(),
         *level_annotations.keys(),
         *geojson_annotations.keys(),
+        *group_annotations.keys(),
     ]
 
     return (
@@ -36,6 +43,7 @@ def build_pyramid_queryset(qs: QuerySet[m.OrgUnit], extra_fields: Sequence[str])
         .annotate(**org_unit_annotations)
         .annotate(**level_annotations)
         .annotate(**geojson_annotations)
+        .annotate(**group_annotations)
         .values(*all_keys)
     )
 
@@ -108,6 +116,66 @@ def build_level_annotations(qs: QuerySet[m.OrgUnit]):
             level_annotations[field_alias] = RawSQL(sql, [])
 
     return level_annotations
+
+
+def _strip_accents(name: str) -> str:
+    """
+    Convert name to ASCII:
+    - accented letters -> base letter (e.g. e-acute -> e, I-circumflex -> I)
+    - non-ASCII combining marks (diacritics left after NFD decomposition) -> dropped
+    - all other non-ASCII (dashes, smart quotes, symbols, NBSP, ellipsis...) -> "_"
+    """
+    return "".join(
+        c if ord(c) < 128 else ("" if unicodedata.category(c) == "Mn" else "_")
+        for c in unicodedata.normalize("NFD", name)
+    )
+
+
+def _safe_group_name(name: str) -> str:
+    """Accent-stripped, lowercase, non-alphanumeric replaced by underscores -- SQL-identifier-safe, no quoting needed."""
+    return re.sub(r"[^A-Za-z0-9]", "_", _strip_accents(name)).strip("_").lower()
+
+
+def _group_exists_sql(group_id: int):
+    return RawSQL(
+        """(SELECT CASE WHEN EXISTS (
+            SELECT 1 FROM iaso_group_org_units gou
+            WHERE gou.orgunit_id = iaso_orgunit.id AND gou.group_id = %s
+        ) THEN 1 ELSE 0 END)""",
+        [group_id],
+        output_field=IntegerField(),
+    )
+
+
+def build_group_annotations(qs: QuerySet[m.OrgUnit], extra_fields: Sequence[str]):
+    annotations = {}
+    include_all = ":all" in extra_fields
+
+    need_exploded = "groups_exploded" in extra_fields or include_all
+    need_exploded_code = "groups_exploded_code" in extra_fields
+
+    if need_exploded or need_exploded_code:
+        groups = m.Group.objects.filter(org_units__in=qs.all()).values("id", "name").order_by("id").distinct()
+        for group in groups:
+            if need_exploded:
+                annotations[f"group_{group['id']}_{_safe_group_name(group['name'])}"] = _group_exists_sql(group["id"])
+            if need_exploded_code:
+                annotations[f"group_{_safe_group_name(group['name'])}"] = _group_exists_sql(group["id"])
+
+    if "groups_json" in extra_fields or include_all:
+        annotations["org_unit_groups"] = RawSQL(
+            """(SELECT COALESCE(
+                json_agg(json_build_object('id', g.id, 'name', g.name) ORDER BY g.id),
+                '[]'::json
+            )
+            FROM iaso_group_org_units gou
+            JOIN iaso_group g ON g.id = gou.group_id
+            WHERE gou.orgunit_id = iaso_orgunit.id)""",
+            [],
+            output_field=JSONField(),
+        )
+
+    return annotations
 
 
 def build_geojson_annotations(model_prefix: str, extra_fields: Sequence[str]):

@@ -1,8 +1,8 @@
 import tempfile
 
 from iaso.exports import parquet
-from iaso.exports.pyramid import _safe_group_name
-from iaso.models import OrgUnit
+from iaso.exports.pyramid import _safe_group_name, build_group_annotations
+from iaso.models import DataSource, Group, OrgUnit, SourceVersion
 from iaso.test import TestCase
 
 from .parquet_helper import get_columns_from_parquet
@@ -40,6 +40,61 @@ class GroupNameNormalizationTest(TestCase):
     def test_safe_group_name_quotes_via_strip_accents(self):
         # smart quote goes through _strip_accents -> becomes "_"
         self.assertEqual(_safe_group_name("groupe d'Afrique"), "groupe_d_afrique")
+
+
+class GroupsExplodedCollisionTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        source = DataSource.objects.create(name="Test source")
+        version = SourceVersion.objects.create(data_source=source, number=1)
+        cls.org_unit = OrgUnit.objects.create(name="Test OU", version=version)
+        cls.group_sante = Group.objects.create(name="Santé", source_version=version)
+        cls.group_sante_plain = Group.objects.create(name="Sante", source_version=version)
+        cls.org_unit.groups.add(cls.group_sante, cls.group_sante_plain)
+
+    def test_groups_exploded_code_raises_on_collision(self):
+        qs = OrgUnit.objects.filter(pk=self.org_unit.pk)
+        with self.assertRaises(ValueError) as ctx:
+            build_group_annotations(qs, ["groups_exploded_code"])
+        self.assertIn("sante", str(ctx.exception))
+
+    def test_groups_exploded_no_collision_because_of_id(self):
+        qs = OrgUnit.objects.filter(pk=self.org_unit.pk)
+        # Should not raise — column names include the group id
+        annotations = build_group_annotations(qs, ["groups_exploded"])
+        expected_keys = {
+            f"group_{self.group_sante.id}_sante",
+            f"group_{self.group_sante_plain.id}_sante",
+        }
+        self.assertEqual(set(annotations.keys()), expected_keys)
+
+
+class GroupsJsonTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        source = DataSource.objects.create(name="Test source")
+        version = SourceVersion.objects.create(data_source=source, number=1)
+        cls.ou_no_groups = OrgUnit.objects.create(name="No groups", version=version)
+        cls.ou_with_groups = OrgUnit.objects.create(name="With groups", version=version)
+        cls.group_a = Group.objects.create(name="Alpha", source_version=version)
+        cls.group_b = Group.objects.create(name="Beta", source_version=version)
+        cls.ou_with_groups.groups.add(cls.group_a, cls.group_b)
+
+    def _annotated(self, ou):
+        annotations = build_group_annotations(OrgUnit.objects.filter(pk=ou.pk), ["groups_json"])
+        return OrgUnit.objects.filter(pk=ou.pk).annotate(**annotations).get()
+
+    def test_no_groups_returns_empty_list(self):
+        ou = self._annotated(self.ou_no_groups)
+        self.assertEqual(ou.org_unit_groups, [])
+
+    def test_with_groups_returns_sorted_list(self):
+        ou = self._annotated(self.ou_with_groups)
+        expected = sorted(
+            [{"id": self.group_a.id, "name": "Alpha"}, {"id": self.group_b.id, "name": "Beta"}],
+            key=lambda g: g["id"],
+        )
+        self.assertEqual(ou.org_unit_groups, expected)
 
 
 class PyramidExportTest(TestCase):

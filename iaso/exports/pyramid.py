@@ -3,10 +3,12 @@ import unicodedata
 
 from typing import Sequence
 
+from django.conf import settings
+from django.contrib.postgres.aggregates import JSONBAgg
 from django.contrib.postgres.fields import JSONField
-from django.db.models import F, FloatField, Func, IntegerField, Max, QuerySet
+from django.db.models import Exists, F, FloatField, Func, IntegerField, Max, OuterRef, QuerySet, Subquery, Value
 from django.db.models.expressions import RawSQL
-from django.db.models.functions import Cast
+from django.db.models.functions import Cast, Coalesce, JSONObject
 
 import iaso.models as m
 
@@ -137,25 +139,31 @@ def _safe_group_name(name: str) -> str:
 
 
 def _group_exists_sql(group_id: int):
-    return RawSQL(
-        """(SELECT CASE WHEN EXISTS (
-            SELECT 1 FROM iaso_group_org_units gou
-            WHERE gou.orgunit_id = iaso_orgunit.id AND gou.group_id = %s
-        ) THEN 1 ELSE 0 END)""",
-        [group_id],
+    return Cast(
+        Exists(m.Group.objects.filter(pk=group_id, org_units=OuterRef("pk"))),
         output_field=IntegerField(),
     )
 
 
 def build_group_annotations(qs: QuerySet[m.OrgUnit], extra_fields: Sequence[str]):
     annotations = {}
-    include_all = ":all" in extra_fields
+    include_all = settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE in extra_fields
 
     need_exploded = "groups_exploded" in extra_fields or include_all
     need_exploded_code = "groups_exploded_code" in extra_fields
 
     if need_exploded or need_exploded_code:
         groups = m.Group.objects.filter(org_units__in=qs.all()).values("id", "name").order_by("id").distinct()
+        if need_exploded_code:
+            seen_safe_names: dict[str, int] = {}
+            for group in groups:
+                safe = _safe_group_name(group["name"])
+                if safe in seen_safe_names:
+                    raise ValueError(
+                        f"Group names '{group['name']}' and (id={seen_safe_names[safe]}) both normalize to '{safe}'. "
+                        "Use groups_exploded instead to avoid column collisions."
+                    )
+                seen_safe_names[safe] = group["id"]
         for group in groups:
             if need_exploded:
                 annotations[f"group_{group['id']}_{_safe_group_name(group['name'])}"] = _group_exists_sql(group["id"])
@@ -163,16 +171,15 @@ def build_group_annotations(qs: QuerySet[m.OrgUnit], extra_fields: Sequence[str]
                 annotations[f"group_{_safe_group_name(group['name'])}"] = _group_exists_sql(group["id"])
 
     if "groups_json" in extra_fields or include_all:
-        annotations["org_unit_groups"] = RawSQL(
-            """(SELECT COALESCE(
-                json_agg(json_build_object('id', g.id, 'name', g.name) ORDER BY g.id),
-                '[]'::json
-            )
-            FROM iaso_group_org_units gou
-            JOIN iaso_group g ON g.id = gou.group_id
-            WHERE gou.orgunit_id = iaso_orgunit.id)""",
-            [],
-            output_field=JSONField(),
+        annotations["org_unit_groups"] = Coalesce(
+            Subquery(
+                m.Group.objects.filter(org_units=OuterRef("pk"))
+                .values("org_units")
+                .annotate(j=JSONBAgg(JSONObject(id="id", name="name"), ordering="id"))
+                .values("j"),
+                output_field=JSONField(),
+            ),
+            Value([], output_field=JSONField()),
         )
 
     return annotations

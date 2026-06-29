@@ -163,7 +163,12 @@ class Migration(migrations.Migration):
                 ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
-                ("version", semantic_version.django_fields.VersionField(coerce=True, max_length=200, partial=False)),
+                (
+                    "version",
+                    semantic_version.django_fields.VersionField(
+                        coerce=True, max_length=200, partial=False, unique=True
+                    ),
+                ),
                 ("version_major", models.PositiveSmallIntegerField()),
                 ("version_minor", models.PositiveSmallIntegerField()),
                 ("version_patch", models.PositiveSmallIntegerField()),

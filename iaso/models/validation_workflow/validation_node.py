@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 
 from iaso.models import Instance
 from iaso.models.common import CreatedAndUpdatedModel
-from iaso.models.validation_workflow import ValidationNodeTemplate
+from iaso.models.validation_workflow.validation_node_template import ValidationNodeTemplate
 
 
 class ValidationNodeStatus(models.TextChoices):

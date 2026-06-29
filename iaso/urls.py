@@ -285,10 +285,19 @@ router.register(
     r"validation-workflows/instance", ValidationWorkflowInstanceViewSet, basename="validation_workflow_instances"
 )
 
-router.register(r"validation-workflows", ValidationWorkflowViewSet, basename="validation_workflows").register(
+validation_workflow_routes = router.register(
+    r"validation-workflows", ValidationWorkflowViewSet, basename="validation_workflows"
+)
+validation_workflow_routes.register(
     r"node-templates",
     ValidationNodeTemplatesView,
     basename="validation_node_templates",
+    parents_query_lookups=["workflow__slug"],
+)
+validation_workflow_routes.register(
+    r"versions",
+    ValidationWorkflowViewSet,
+    basename="validation_workflow_versions",
     parents_query_lookups=["workflow__slug"],
 )
 router.register(

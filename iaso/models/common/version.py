@@ -10,7 +10,7 @@ class VersionModelQuerySet(models.QuerySet):
 
 
 class VersionModel(models.Model):
-    version = VersionField(coerce=True, blank=False)
+    version = VersionField(coerce=True, blank=False, unique=True)
 
     # todo : we should use django GenericRelatedField when switching to django 5 there
     version_major = models.PositiveSmallIntegerField()
@@ -22,6 +22,7 @@ class VersionModel(models.Model):
         indexes = [
             models.Index(fields=["-version_major", "-version_minor", "-version_patch"]),
         ]
+        unique_together = (("version_major", "version_minor", "version_patch"),)
 
     objects = models.Manager.from_queryset(VersionModelQuerySet)()
 

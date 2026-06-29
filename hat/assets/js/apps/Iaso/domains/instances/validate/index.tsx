@@ -54,10 +54,7 @@ export const ValidateInstance = () => {
         }
         return {};
     }, [diff]);
-    console.log('PARAMS', params);
-    console.log('DATA', diff);
-    console.log('INSTANCE', instance);
-    console.log('DIFF CONTENT', diffContent);
+
     return (
         <>
             <TopBar displayBackButton={false} />
@@ -74,7 +71,7 @@ export const ValidateInstance = () => {
                         </Grid>
                     )}
                     {displayDiff && (
-                        <Grid item xs={12} sm={8} spacing={2}>
+                        <Grid item xs={12} sm={8}>
                             <InstanceLogDetail
                                 instanceLogContent={diffContent}
                                 isLogDetailLoading={!displayDiff}

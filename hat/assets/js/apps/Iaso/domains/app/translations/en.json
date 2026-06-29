@@ -648,6 +648,7 @@
     "iaso.label.creation": "Creation",
     "iaso.label.creationDateFrom": "Creation from",
     "iaso.label.creationDateTo": "Creation until",
+    "iaso.label.current": "Current",
     "iaso.label.currentOu": "Current org Unit",
     "iaso.label.dashboard": "Dashboard",
     "iaso.label.dataSourceList": "Data Sources list",

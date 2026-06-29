@@ -255,7 +255,7 @@ def execute_graph_deletion(discovered, deletion_order, account, chunk_size, dry_
         models_processed += 1
         label = f"{model.__name__}[{filter_kwarg}]"
         if is_partial:
-            label += " ⚠partial"
+            label += " ⚠ partial"
 
         if dry_run:
             _log(f"  [DRY RUN] would delete {label}")

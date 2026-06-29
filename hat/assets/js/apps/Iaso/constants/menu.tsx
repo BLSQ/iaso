@@ -68,7 +68,12 @@ import {
 import { useCurrentUser, User } from '../utils/usersUtils';
 import MESSAGES from './messages';
 import * as paths from './routes';
-import { CHANGE_REQUEST, CHANGE_REQUEST_CONFIG } from './urls';
+import {
+    CHANGE_REQUEST,
+    CHANGE_REQUEST_CONFIG,
+    FORMS_SUBMISSIONS,
+    FORMS_STATS,
+} from './urls';
 
 // !! remove permission property if the menu has a subMenu !!
 const menuItems = (
@@ -236,8 +241,7 @@ const menuItems = (
                     icon: props => <FormatListBulleted {...props} />,
                     permissions: paths.instancesPath.permissions,
                     extraPath: `/tab/list/mapResults/${locationLimitMax}`,
-                    isActive: pathname =>
-                        pathname?.includes('forms/submissions'),
+                    isActive: pathname => pathname?.includes(FORMS_SUBMISSIONS),
                 },
 
                 {
@@ -251,7 +255,7 @@ const menuItems = (
                             key: 'formStats',
                             icon: props => <AssessmentIcon {...props} />,
                             isActive: pathname =>
-                                pathname?.includes('forms/stats'),
+                                pathname?.includes(FORMS_STATS),
                         },
                         {
                             label: formatMessage(MESSAGES.completeness),

@@ -4,6 +4,7 @@ import {
     useSafeIntl,
     LoadingSpinner,
     IntlFormatMessage,
+    IntlMessage,
 } from 'bluesquare-components';
 
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
@@ -15,12 +16,16 @@ type Props = {
     instanceLogContent: any;
     isLogDetailLoading: boolean;
     isLogDetailError: boolean;
+    headerA?: IntlMessage;
+    headerB?: IntlMessage;
 };
 
 export const InstanceLogDetail: FunctionComponent<Props> = ({
     instanceLogContent,
     isLogDetailLoading,
     isLogDetailError,
+    headerA,
+    headerB,
 }) => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
@@ -45,7 +50,11 @@ export const InstanceLogDetail: FunctionComponent<Props> = ({
                     </Box>
                 )}
                 {!hasError && !isLoading && instanceLogContent && (
-                    <InstanceLogContentBasic fileContent={instanceLogContent} />
+                    <InstanceLogContentBasic
+                        fileContent={instanceLogContent}
+                        headerA={headerA}
+                        headerB={headerB}
+                    />
                 )}
             </Paper>
         </>

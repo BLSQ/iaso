@@ -7,7 +7,11 @@ import {
     Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    IntlFormatMessage,
+    IntlMessage,
+} from 'bluesquare-components';
 
 import classNames from 'classnames';
 import { FileContent } from '../../types/instance';
@@ -16,6 +20,8 @@ import InstanceLogContentBodyTable from './InstanceLogContentBodyTable';
 
 type Props = {
     fileContent: FileContent;
+    headerA?: IntlMessage;
+    headerB?: IntlMessage;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -43,6 +49,8 @@ const useStyles = makeStyles(theme => ({
 
 export const InstanceLogContentBasic: FunctionComponent<Props> = ({
     fileContent,
+    headerA = MESSAGES.instanceLogsVersionA,
+    headerB = MESSAGES.instanceLogsVersionB,
 }) => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
@@ -73,7 +81,7 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
                                 fileContent?.logA?.deleted ? 'error' : 'inherit'
                             }
                         >
-                            {formatMessage(MESSAGES.instanceLogsVersionA)}
+                            {formatMessage(headerA)}
                         </Typography>
                     </TableCell>
                     <TableCell
@@ -88,7 +96,7 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
                                 fileContent?.logB?.deleted ? 'error' : undefined
                             }
                         >
-                            {formatMessage(MESSAGES.instanceLogsVersionB)}
+                            {formatMessage(headerB)}
                         </Typography>
                     </TableCell>
                 </TableRow>

@@ -29,6 +29,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Reject',
         id: 'iaso.label.reject',
     },
+    current: {
+        defaultMessage: 'Current',
+        id: 'iaso.label.current',
+    },
+    previous: {
+        defaultMessage: 'Previous',
+        id: 'iaso.label.previous',
+    },
 });
 
 export default MESSAGES;

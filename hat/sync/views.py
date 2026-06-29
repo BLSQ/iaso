@@ -86,9 +86,7 @@ def form_upload(request: HttpRequest) -> HttpResponse:
 
     if i.project and i.project.has_feature(FeatureFlag.INSTANT_EXPORT):
         i.export()
-    print("---------------------------")
-    print("SYNC FORM: logging creation")
-    print("---------------------------")
+
     log_modification(v1=None, v2=i, source="SYNC FORM UPLOAD", user=user)
 
     return JsonResponse({"result": "success"}, status=201)

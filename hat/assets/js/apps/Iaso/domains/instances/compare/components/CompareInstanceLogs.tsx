@@ -13,6 +13,7 @@ import TopBar from '../../../../components/nav/TopBarComponent';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
 import { baseUrls } from '../../../../constants/urls';
 import { useParamsObject } from '../../../../routing/hooks/useParamsObject';
+import { InstanceLogData } from '../../types/instance';
 import {
     useGetInstanceLogs,
     useGetInstanceLogDetail,
@@ -25,6 +26,31 @@ type Params = {
     instanceIds: string;
     logA: string;
     logB: string;
+};
+
+export type FormattedInstanceLog = {
+    logA: Record<string, any> | undefined;
+    logB: Record<string, any> | undefined;
+    logAFiles: string[] | undefined;
+    logBFiles: string[] | undefined;
+    formDescriptorA: Record<string, any>[] | undefined;
+    formDescriptorB: Record<string, any>[] | undefined;
+    fields: Record<string, any>[] | undefined;
+};
+
+export const formatLogContent = (
+    instanceLogA: InstanceLogData | undefined,
+    instanceLogB: InstanceLogData | undefined,
+): FormattedInstanceLog => {
+    return {
+        logA: instanceLogA?.new_value[0]?.fields,
+        logB: instanceLogB?.new_value[0]?.fields,
+        logAFiles: instanceLogA?.files,
+        logBFiles: instanceLogB?.files,
+        formDescriptorA: instanceLogA?.form_descriptor,
+        formDescriptorB: instanceLogB?.form_descriptor,
+        fields: instanceLogA?.possible_fields,
+    };
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -59,15 +85,7 @@ export const CompareInstanceLogs: FunctionComponent = () => {
     ] = useGetInstanceLogDetail(instanceId, [params.logA, params.logB]);
 
     const instanceLogContent = useMemo(
-        () => ({
-            logA: instanceLogA?.new_value[0]?.fields,
-            logB: instanceLogB?.new_value[0]?.fields,
-            logAFiles: instanceLogA?.files,
-            logBFiles: instanceLogB?.files,
-            formDescriptorA: instanceLogA?.form_descriptor,
-            formDescriptorB: instanceLogB?.form_descriptor,
-            fields: instanceLogA?.possible_fields,
-        }),
+        () => formatLogContent(instanceLogA, instanceLogB),
         [instanceLogA, instanceLogB],
     );
     const isLogDetailLoading = isInstanceLogAFetching || isInstanceLogBFetching;

@@ -255,7 +255,8 @@ const menuItems = (
                             key: 'formStats',
                             icon: props => <AssessmentIcon {...props} />,
                             isActive: pathname =>
-                                pathname?.includes(FORMS_STATS),
+                                pathname?.includes(FORMS_STATS) &&
+                                !pathname?.includes('completeness'),
                         },
                         {
                             label: formatMessage(MESSAGES.completeness),

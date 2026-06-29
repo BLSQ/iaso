@@ -8,8 +8,6 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import {
-    getApiValidationWorkflowsListQueryKey,
-    getApiValidationWorkflowsRetrieveQueryKey,
     PaginatedValidationWorkflowListList,
     useApiValidationWorkflowsDestroy,
 } from 'Iaso/api/validationWorkflows';
@@ -120,16 +118,7 @@ export const useWorkflowNodesColumns = (
     const { formatMessage } = useSafeIntl();
     const user = useCurrentUser();
 
-    const queryKey = React.useMemo(() => {
-        return [
-            ...getApiValidationWorkflowsListQueryKey(),
-            ...(workFlowSlug
-                ? getApiValidationWorkflowsRetrieveQueryKey(workFlowSlug)
-                : []),
-        ] as string[];
-    }, [workFlowSlug]);
-
-    const { mutate: deleteNode } = useDeleteNode(queryKey);
+    const { mutate: deleteNode } = useDeleteNode(workFlowSlug);
     return useMemo(() => {
         const cols = [
             { Header: 'Order', id: 'order', accessor: 'order' },

@@ -1,4 +1,9 @@
+import React from 'react';
 import { UseMutationResult } from 'react-query';
+import {
+    getApiValidationWorkflowsListQueryKey,
+    getApiValidationWorkflowsRetrieveQueryKey,
+} from 'Iaso/api/validationWorkflows';
 import {
     ValidationNodeTemplateBulkUpdateBody,
     ValidationNodeTemplateCreateBody,
@@ -29,12 +34,19 @@ const saveNode = async ({
     );
 };
 
-export const useSaveNode = (
-    invalidateQueryKey?: string[],
-): UseMutationResult<any, any> => {
+export const useSaveNode = (nodeSlug?: string): UseMutationResult<any, any> => {
+    const queryKey = React.useMemo(() => {
+        return [
+            ...getApiValidationWorkflowsListQueryKey(),
+            ...(nodeSlug
+                ? getApiValidationWorkflowsRetrieveQueryKey(nodeSlug)
+                : []),
+        ] as string[];
+    }, [nodeSlug]);
+
     return useSnackMutation({
         mutationFn: saveNode,
-        invalidateQueryKey: invalidateQueryKey ?? [WF_BASE_QUERYKEY],
+        invalidateQueryKey: [...queryKey, WF_BASE_QUERYKEY],
     });
 };
 
@@ -49,6 +61,6 @@ export const useSaveNodeOrder = (
 ) => {
     return useSnackMutation({
         mutationFn: saveNodeOrder(slug),
-        invalidateQueryKey: invalidateQueryKey ?? [WF_BASE_QUERYKEY],
+        invalidateQueryKey: [...(invalidateQueryKey ?? []), WF_BASE_QUERYKEY],
     });
 };

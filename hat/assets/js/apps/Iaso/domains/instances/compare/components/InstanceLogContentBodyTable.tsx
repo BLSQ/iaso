@@ -1,4 +1,4 @@
-import React, { memo, useCallback, ReactElement } from 'react';
+import React, { memo, ReactElement } from 'react';
 import { TableBody, TableRow, TableCell } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { ErrorBoundary } from 'bluesquare-components';
@@ -147,6 +147,7 @@ function QuestionRow({
 }
 
 const getImageUrl = (value, logFiles) => {
+    if (!value) return null;
     const slugifiedValue = slugifyValue(value);
     if (value && logFiles) {
         if (slugifiedValue.endsWith('jpg')) {

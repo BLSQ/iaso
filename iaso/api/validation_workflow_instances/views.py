@@ -65,7 +65,9 @@ class ValidationWorkflowInstanceViewSet(RetrieveModelMixin, CustomPaginationList
         return ValidationWorkflowInstanceRetrieveSerializer
 
     def get_queryset(self):
-        qs = Instance.objects.filter_for_user(user=self.request.user).filter(form__deleted_at__isnull=True)
+        qs = Instance.objects.filter_for_user(user=self.request.user).filter(
+            form__deleted_at__isnull=True, form__validation_workflow__deleted_at__isnull=True
+        )
 
         if self.action == "retrieve":
             return qs.select_related("form__validation_workflow").prefetch_related(

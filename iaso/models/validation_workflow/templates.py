@@ -12,7 +12,11 @@ from django.db.models import Q
 from iaso.models import Instance
 from iaso.models.base import UserRole
 from iaso.models.common import BulkAutoSlugField, CreatedAndUpdatedModel
-from iaso.utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel
+from iaso.utils.models.soft_deletable import (
+    DefaultSoftDeletableManager,
+    OnlyDeletedSoftDeletableManager,
+    SoftDeletableModel,
+)
 
 
 class PositionChoices(models.TextChoices):
@@ -41,6 +45,7 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
     )
 
     objects = DefaultSoftDeletableManager()
+    objects_only_deleted = OnlyDeletedSoftDeletableManager()
 
     def __str__(self):
         return self.name

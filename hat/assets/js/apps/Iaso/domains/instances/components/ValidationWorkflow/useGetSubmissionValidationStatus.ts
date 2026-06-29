@@ -29,6 +29,7 @@ export const useGetSubmissionValidationStatus = (id?: number) => {
     return useSnackQuery({
         queryKey: ['submission-validation-status', id],
         queryFn: () => getSubmissionValidationStatus(id!),
+        ignoreErrorCodes: [404],
         options: {
             staleTime: Infinity,
             cacheTime: Infinity,

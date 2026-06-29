@@ -183,10 +183,9 @@ describe('Validation workflow list UI integration test', () => {
 
         expect(screen.getByText(`${data.count} result(s)`)).toBeInTheDocument();
 
-        screen.logTestingPlaygroundURL();
         data?.results?.forEach(validationWorkflow => {
             expect(
-                screen.getByText(validationWorkflow.name),
+                screen.getByRole('cell', { name: validationWorkflow.name }),
             ).toBeInTheDocument();
 
             const expectedValues = [
@@ -195,12 +194,14 @@ describe('Validation workflow list UI integration test', () => {
             ].filter(Boolean);
 
             expectedValues.forEach(value => {
-                expect(screen.getByText(String(value))).toBeInTheDocument();
+                expect(
+                    screen.getByRole('cell', { name: String(value) }),
+                ).toBeInTheDocument();
             });
             expect(
-                screen.getByText(
-                    validationWorkflow.form_count.toLocaleString(),
-                ),
+                screen.getByRole('cell', {
+                    name: validationWorkflow.form_count.toLocaleString(),
+                }),
             ).toBeInTheDocument();
         });
     });

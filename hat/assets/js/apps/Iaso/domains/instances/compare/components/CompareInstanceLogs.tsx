@@ -13,7 +13,6 @@ import TopBar from '../../../../components/nav/TopBarComponent';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
 import { baseUrls } from '../../../../constants/urls';
 import { useParamsObject } from '../../../../routing/hooks/useParamsObject';
-import { InstanceLogData } from '../../types/instance';
 import {
     useGetInstanceLogs,
     useGetInstanceLogDetail,
@@ -28,19 +27,34 @@ type Params = {
     logB: string;
 };
 
+export type LogContentSource = {
+    new_value?: Array<{ fields: Record<string, any> }>;
+    files?: Record<string, string> | string[];
+    form_descriptor?: Record<string, any>[] | Record<string, any> | null;
+    possible_fields?: Record<string, any>[];
+};
+
 export type FormattedInstanceLog = {
     logA: Record<string, any> | undefined;
     logB: Record<string, any> | undefined;
-    logAFiles: string[] | undefined;
-    logBFiles: string[] | undefined;
-    formDescriptorA: Record<string, any>[] | undefined;
-    formDescriptorB: Record<string, any>[] | undefined;
+    logAFiles: Record<string, string> | string[] | undefined;
+    logBFiles: Record<string, string> | string[] | undefined;
+    formDescriptorA:
+        | Record<string, any>[]
+        | Record<string, any>
+        | null
+        | undefined;
+    formDescriptorB:
+        | Record<string, any>[]
+        | Record<string, any>
+        | null
+        | undefined;
     fields: Record<string, any>[] | undefined;
 };
 
 export const formatLogContent = (
-    instanceLogA: Partial<InstanceLogData> | undefined,
-    instanceLogB: Partial<InstanceLogData> | undefined,
+    instanceLogA: Partial<LogContentSource> | undefined,
+    instanceLogB: Partial<LogContentSource> | undefined,
 ): FormattedInstanceLog => {
     return {
         logA: instanceLogA?.new_value?.[0]?.fields,

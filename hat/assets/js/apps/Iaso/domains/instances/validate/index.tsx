@@ -7,7 +7,10 @@ import { useApiDiffInstancesList } from 'Iaso/api/instanceDiff';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
-import { formatLogContent } from '../compare/components/CompareInstanceLogs';
+import {
+    formatLogContent,
+    LogContentSource,
+} from '../compare/components/CompareInstanceLogs';
 import { InstanceDetailRaw } from '../compare/components/InstanceDetailRaw';
 import { InstanceLogDetail } from '../compare/components/InstanceLogDetail';
 import { useGetInstance } from '../hooks/requests/useGetInstance';
@@ -29,6 +32,10 @@ const diffParams = {
     order: '-created_at',
 };
 
+type DiffModification = LogContentSource & {
+    diff?: Array<{ path: string }>;
+};
+
 const removeObjectEntries = (
     list: string[],
     obj: Record<string, any>,
@@ -42,6 +49,10 @@ const removeObjectEntries = (
     });
     return result;
 };
+
+const asDiffModifications = (
+    results: unknown[] | undefined,
+): DiffModification[] | undefined => results as DiffModification[] | undefined;
 
 export const ValidateInstance = () => {
     const params: Params = useParamsObject(

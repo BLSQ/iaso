@@ -8,10 +8,7 @@ import InstanceFileContent from '../../../instances/components/InstanceFileConte
 
 import { OrgUnit } from '../../../orgUnits/types/orgUnit';
 import { HEIGHT } from '../../config';
-import {
-    useGetInstanceforRegistry,
-    useGetOrgUnitInstances,
-} from '../../hooks/useGetInstances';
+import { useGetOrgUnitInstances } from '../../hooks/useGetInstances';
 
 import { RegistryParams } from '../../types';
 import { EmptyInstances } from './EmptyInstances';

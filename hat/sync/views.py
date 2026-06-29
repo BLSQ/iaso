@@ -8,7 +8,7 @@ from django.http.request import HttpRequest
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 
-from hat.audit.models import INSTANCE_API, log_modification
+from hat.audit.models import log_modification
 from hat.settings import SECRET_KEY
 from iaso.models import FeatureFlag, Instance, InstanceFile
 
@@ -86,7 +86,9 @@ def form_upload(request: HttpRequest) -> HttpResponse:
 
     if i.project and i.project.has_feature(FeatureFlag.INSTANT_EXPORT):
         i.export()
-
-    log_modification(i, i, source=INSTANCE_API, user=user)
+    print("---------------------------")
+    print("SYNC FORM: logging creation")
+    print("---------------------------")
+    log_modification(v1=None, v2=i, source="SYNC FORM UPLOAD", user=user)
 
     return JsonResponse({"result": "success"}, status=201)

@@ -19,7 +19,9 @@ class ModificationSerializer(ModelSerializer):
 
     @extend_schema_field(JsonPatchOperationSerializer(many=True, allow_empty=True))
     def get_diff(self, obj):
-        return jsonpatch.JsonPatch.from_diff(obj.past_value[0]["fields"], obj.new_value[0]["fields"]).patch
+        past_value = obj.past_value[0].get("fields", None) if obj.past_value else None
+        new_value = obj.new_value[0].get("fields", None) if obj.new_value else None
+        return jsonpatch.JsonPatch.from_diff(past_value, new_value).patch
 
 
 class InstanceModificationSerializer(ModificationSerializer):

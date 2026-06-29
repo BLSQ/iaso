@@ -1059,7 +1059,6 @@ def import_data(instances, user, app_id):
         if latitude and longitude:
             altitude = instance_data.get("altitude", 0)
             instance.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
-
         instance.save()
 
         if instance.form.change_request_mode == CR_MODE_IF_REFERENCE_FORM:

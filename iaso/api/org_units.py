@@ -510,6 +510,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
             "location_geojson",
             "simplified_geom_geojson",
             "biggest_polygon_geojson",
+            "groups_exploded",
+            "groups_exploded_code",
+            "groups_json",
             ":all",
         ]
 

@@ -1,9 +1,14 @@
+import re
+import unicodedata
+
 from typing import Sequence
 
+from django.conf import settings
+from django.contrib.postgres.aggregates import JSONBAgg
 from django.contrib.postgres.fields import JSONField
-from django.db.models import F, FloatField, Func, IntegerField, Max, QuerySet
+from django.db.models import Exists, F, FloatField, Func, IntegerField, Max, OuterRef, QuerySet, Subquery, Value
 from django.db.models.expressions import RawSQL
-from django.db.models.functions import Cast
+from django.db.models.functions import Cast, Coalesce, JSONObject
 
 import iaso.models as m
 
@@ -15,6 +20,8 @@ ALL_OPTIONAL_ORG_UNIT_FIELDS = [
     "location_geojson",
     "simplified_geom_geojson",
     "biggest_polygon_geojson",
+    "groups_exploded",
+    "groups_json",
 ]
 
 
@@ -24,11 +31,13 @@ def build_pyramid_queryset(qs: QuerySet[m.OrgUnit], extra_fields: Sequence[str])
     org_unit_annotations = build_org_unit_annotations(model_prefix)
     level_annotations = build_level_annotations(qs)
     geojson_annotations = build_geojson_annotations(model_prefix, extra_fields)
+    group_annotations = build_group_annotations(qs, extra_fields)
 
     all_keys = [
         *org_unit_annotations.keys(),
         *level_annotations.keys(),
         *geojson_annotations.keys(),
+        *group_annotations.keys(),
     ]
 
     return (
@@ -36,6 +45,7 @@ def build_pyramid_queryset(qs: QuerySet[m.OrgUnit], extra_fields: Sequence[str])
         .annotate(**org_unit_annotations)
         .annotate(**level_annotations)
         .annotate(**geojson_annotations)
+        .annotate(**group_annotations)
         .values(*all_keys)
     )
 
@@ -108,6 +118,71 @@ def build_level_annotations(qs: QuerySet[m.OrgUnit]):
             level_annotations[field_alias] = RawSQL(sql, [])
 
     return level_annotations
+
+
+def _strip_accents(name: str) -> str:
+    """
+    Convert name to ASCII:
+    - accented letters -> base letter (e.g. e-acute -> e, I-circumflex -> I)
+    - non-ASCII combining marks (diacritics left after NFD decomposition) -> dropped
+    - all other non-ASCII (dashes, smart quotes, symbols, NBSP, ellipsis...) -> "_"
+    """
+    return "".join(
+        c if ord(c) < 128 else ("" if unicodedata.category(c) == "Mn" else "_")
+        for c in unicodedata.normalize("NFD", name)
+    )
+
+
+def _safe_group_name(name: str) -> str:
+    """Accent-stripped, lowercase, non-alphanumeric replaced by underscores -- SQL-identifier-safe, no quoting needed."""
+    return re.sub(r"[^A-Za-z0-9]", "_", _strip_accents(name)).strip("_").lower()
+
+
+def _group_exists_sql(group_id: int):
+    return Cast(
+        Exists(m.Group.objects.filter(pk=group_id, org_units=OuterRef("pk"))),
+        output_field=IntegerField(),
+    )
+
+
+def build_group_annotations(qs: QuerySet[m.OrgUnit], extra_fields: Sequence[str]):
+    annotations = {}
+    include_all = settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE in extra_fields
+
+    need_exploded = "groups_exploded" in extra_fields or include_all
+    need_exploded_code = "groups_exploded_code" in extra_fields
+
+    if need_exploded or need_exploded_code:
+        groups = m.Group.objects.filter(org_units__in=qs.all()).values("id", "name").order_by("id").distinct()
+        if need_exploded_code:
+            seen_safe_names: dict[str, int] = {}
+            for group in groups:
+                safe = _safe_group_name(group["name"])
+                if safe in seen_safe_names:
+                    raise ValueError(
+                        f"Group names '{group['name']}' and (id={seen_safe_names[safe]}) both normalize to '{safe}'. "
+                        "Use groups_exploded instead to avoid column collisions."
+                    )
+                seen_safe_names[safe] = group["id"]
+        for group in groups:
+            if need_exploded:
+                annotations[f"group_{group['id']}_{_safe_group_name(group['name'])}"] = _group_exists_sql(group["id"])
+            if need_exploded_code:
+                annotations[f"group_{_safe_group_name(group['name'])}"] = _group_exists_sql(group["id"])
+
+    if "groups_json" in extra_fields or include_all:
+        annotations["org_unit_groups"] = Coalesce(
+            Subquery(
+                m.Group.objects.filter(org_units=OuterRef("pk"))
+                .values("org_units")
+                .annotate(j=JSONBAgg(JSONObject(id="id", name="name"), ordering="id"))
+                .values("j"),
+                output_field=JSONField(),
+            ),
+            Value([], output_field=JSONField()),
+        )
+
+    return annotations
 
 
 def build_geojson_annotations(model_prefix: str, extra_fields: Sequence[str]):

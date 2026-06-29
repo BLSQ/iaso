@@ -84,6 +84,7 @@ class ValidationWorkflowViewSet(ModelViewSet):
             )
         return qs
 
+    @extend_schema(responses=ValidationWorkflowDropdownSerializer(many=True))
     @action(detail=False, methods=["get"])
     def dropdown(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())

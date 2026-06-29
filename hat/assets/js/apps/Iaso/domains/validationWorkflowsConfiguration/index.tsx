@@ -8,22 +8,29 @@ import {
     UrlParams,
     useSafeIntl,
 } from 'bluesquare-components';
+import { useApiValidationWorkflowsList } from 'Iaso/api/validationWorkflows';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { SimpleTableWithDeepLink } from 'Iaso/components/tables/SimpleTableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';
+import { useApiParams } from 'Iaso/hooks/useApiParams';
+import { useUrlParams } from 'Iaso/hooks/useUrlParams';
 import {
     ParamsWithAccountId,
     useParamsObject,
 } from 'Iaso/routing/hooks/useParamsObject';
-import { useGetSubmissionValidationWorkflows } from './api/Get';
 import { Filters } from './components/Filters';
 import { useWorkflowsTableColumns } from './config';
 import MESSAGES from './messages';
-// import { useCustomApiValidationWorkflowsList } from './api/Get';
 
 const useStyles = makeStyles((theme: any) => {
     return { ...commonStyles(theme) };
 });
+
+const defaults = {
+    order: 'name',
+    pageSize: 20,
+    page: 1,
+};
 
 export const ValidationWorkflowsConfiguration = () => {
     const params: ParamsWithAccountId & Partial<UrlParams> = useParamsObject(
@@ -31,10 +38,16 @@ export const ValidationWorkflowsConfiguration = () => {
     );
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    // const { data: workflows, isFetching: isLoadingWorkflows } =
-    //     useCustomApiValidationWorkflowsList(params);
-    const { data: workflows, isFetching: isLoadingWorkflows } =
-        useGetSubmissionValidationWorkflows(params);
+    const safeParams = useUrlParams(params, defaults);
+    const { limit, page, ...apiParams } = useApiParams(safeParams);
+
+    const { data: workflows, isLoading: isLoadingWorkflows } =
+        useApiValidationWorkflowsList({
+            limit: limit ? parseInt(limit) : undefined,
+            page: page ? parseInt(page) : undefined,
+            ...apiParams,
+        });
+
     const columns = useWorkflowsTableColumns();
     return (
         <>

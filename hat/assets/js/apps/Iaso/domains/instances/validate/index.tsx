@@ -11,6 +11,7 @@ import { InstanceDetailRaw } from '../compare/components/InstanceDetailRaw';
 import { InstanceLogDetail } from '../compare/components/InstanceLogDetail';
 import { useGetInstance } from '../hooks/requests/useGetInstance';
 import { ValidationPaper } from './components/ValidationPaper/ValidationPaper';
+import MESSAGES from './messages';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -49,7 +50,7 @@ export const ValidateInstance = () => {
         diff && instance && !isLoadingInstance && !isLoadingDiff;
     const diffContent = useMemo(() => {
         if (diff) {
-            return formatLogContent(diff.results[0], diff.results[1]);
+            return formatLogContent(diff?.results?.[1], diff?.results?.[0]);
         }
         return {};
     }, [diff]);
@@ -78,6 +79,8 @@ export const ValidateInstance = () => {
                                 instanceLogContent={diffContent}
                                 isLogDetailLoading={!displayDiff}
                                 isLogDetailError={isError}
+                                headerA={MESSAGES.previous}
+                                headerB={MESSAGES.current}
                             />
                         </Grid>
                     )}

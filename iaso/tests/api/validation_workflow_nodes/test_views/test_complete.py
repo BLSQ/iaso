@@ -241,3 +241,21 @@ class ValidationNodeAPICompleteTestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
 
         self.assertEqual(other_node.validationnode_set.count(), 2)
+
+    def test_exclude_if_validation_workflow_is_soft_deleted(self):
+        self.validation_workflow.delete()
+        self.validation_workflow.refresh_from_db()
+        self.assertIsNotNone(self.validation_workflow.deleted_at)
+
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.post(
+            reverse(
+                "validation_workflow_nodes-complete",
+                kwargs={
+                    "instance_id": self.instance.id,
+                    "pk": self.instance.get_next_pending_nodes(self.validation_workflow).first().pk,
+                },
+            ),
+            data={"comment": "Nope"},
+        )
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)

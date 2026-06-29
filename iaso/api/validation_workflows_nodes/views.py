@@ -32,7 +32,7 @@ class ValidationNodeViewSet(GenericViewSet):
             return (
                 Instance.objects.select_related("project__account", "form", "form__validation_workflow")
                 .filter_for_user(self.request.user)
-                .filter(form__deleted_at__isnull=True)
+                .filter(form__deleted_at__isnull=True, form__validation_workflow__deleted_at__isnull=True)
                 .annotate(
                     annotate_last_submission_created_at=Subquery(
                         ValidationNode.objects.filter(instance=OuterRef("pk"))
@@ -54,8 +54,9 @@ class ValidationNodeViewSet(GenericViewSet):
             .filter(
                 instance__in=Instance.objects.select_related("project__account", "form")
                 .filter_for_user(self.request.user)
-                .filter(form__deleted_at__isnull=True)
+                .filter(form__deleted_at__isnull=True, form__validation_workflow__deleted_at__isnull=True)
             )
+            .filter(node__workflow__deleted_at__isnull=True)
             .filter_for_user(self.request.user)
         )
 

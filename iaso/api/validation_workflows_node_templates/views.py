@@ -69,7 +69,7 @@ class ValidationNodeTemplatesView(NestedViewSetMixin, ModelViewSet):
     def get_queryset(self):
         account = self.request.user.iaso_profile.account
         qs = super().get_queryset()
-        qs = qs.filter(workflow__account=account)
+        qs = qs.filter(workflow__account=account, workflow__deleted_at__isnull=True)
         if self.action in ["delete"]:
             return qs.prefetch_related("roles_required", "next_node_templates", "previous_node_templates")
         if self.action in ["retrieve", "list"]:

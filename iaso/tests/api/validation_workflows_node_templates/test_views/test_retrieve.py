@@ -154,3 +154,32 @@ class ValidationNodeTemplateAPIRetrieveTestCase(BaseApiTestCase):
                 self.assertEqual(res_data["description"], "some description")
                 self.assertEqual(res_data["roles_required"], [{"id": self.user_role.pk, "name": "Group"}])
                 self.assertTrue(res_data["can_skip_previous_nodes"])
+
+    def test_exclude_if_validation_workflow_is_soft_deleted(self):
+        self.client.force_authenticate(self.john_wick)
+
+        res = self.client.get(
+            reverse(
+                "validation_node_templates-detail",
+                kwargs={
+                    "parent_lookup_workflow__slug": self.validation_workflow.slug,
+                    "slug": self.second_node.slug,
+                },
+            )
+        )
+        self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.validation_workflow.delete()
+        self.validation_workflow.refresh_from_db()
+        self.assertIsNotNone(self.validation_workflow.deleted_at)
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.get(
+            reverse(
+                "validation_node_templates-detail",
+                kwargs={
+                    "parent_lookup_workflow__slug": self.validation_workflow.slug,
+                    "slug": self.second_node.slug,
+                },
+            )
+        )
+        self.assertJSONResponse(res, status.HTTP_404_NOT_FOUND)

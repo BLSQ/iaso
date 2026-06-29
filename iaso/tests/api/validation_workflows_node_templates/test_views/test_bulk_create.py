@@ -290,3 +290,29 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
         self.assertHasError(
             res_data[0], api_settings.NON_FIELD_ERRORS_KEY, "The fields name, workflow must make a unique set."
         )
+
+    def test_forbidden_if_validation_workflow_is_soft_deleted(self):
+        self.validation_workflow.delete()
+        self.validation_workflow.refresh_from_db()
+        self.assertIsNotNone(self.validation_workflow.deleted_at)
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.post(
+            reverse(
+                "validation_node_templates-bulk",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
+            ),
+            data=[
+                {
+                    "name": "First node",
+                    "description": "Here we should check something",
+                },
+                {"name": "Second node"},
+                {
+                    "name": "Last node",
+                    "can_skip_previous_nodes": True,
+                    "roles_required": [self.user_role.pk],
+                },
+            ],
+        )
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)

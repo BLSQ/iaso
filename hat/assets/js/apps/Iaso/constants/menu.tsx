@@ -509,7 +509,8 @@ export const useMenuItems = (): MenuItems => {
                 {
                     label: formatMessage(MESSAGES.submissionsTitle),
                     key: 'submissions',
-                    permissions: paths.instancesPath.permissions,
+                    permissions:
+                        paths.validationWorkflowInstancesPath.permissions,
                     icon: props => <SearchIcon {...props} />,
                 },
             ],

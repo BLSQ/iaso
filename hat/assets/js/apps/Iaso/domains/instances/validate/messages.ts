@@ -37,6 +37,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Previous',
         id: 'iaso.label.previous',
     },
+    toggleShowAllFields: {
+        defaultMessage: 'Show all fields',
+        id: 'iaso.label.toggleShowAllFields',
+    },
 });
 
 export default MESSAGES;

@@ -39,17 +39,17 @@ export type FormattedInstanceLog = {
 };
 
 export const formatLogContent = (
-    instanceLogA: InstanceLogData | undefined,
-    instanceLogB: InstanceLogData | undefined,
+    instanceLogA: Partial<InstanceLogData> | undefined,
+    instanceLogB: Partial<InstanceLogData> | undefined,
 ): FormattedInstanceLog => {
     return {
-        logA: instanceLogA?.new_value[0]?.fields,
-        logB: instanceLogB?.new_value[0]?.fields,
+        logA: instanceLogA?.new_value?.[0]?.fields,
+        logB: instanceLogB?.new_value?.[0]?.fields,
         logAFiles: instanceLogA?.files,
         logBFiles: instanceLogB?.files,
         formDescriptorA: instanceLogA?.form_descriptor,
         formDescriptorB: instanceLogB?.form_descriptor,
-        fields: instanceLogA?.possible_fields,
+        fields: instanceLogB?.possible_fields,
     };
 };
 

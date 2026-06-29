@@ -172,6 +172,8 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
                         res_data["node_templates"],
                         [
                             {
+                                "id": self.node_template.pk,
+                                "order": 1,
                                 "slug": "first-node",
                                 "name": "First node",
                                 "description": "First node description",
@@ -179,6 +181,8 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
                                 "can_skip_previous_nodes": False,
                             },
                             {
+                                "id": self.second_node_template.pk,
+                                "order": 2,
                                 "slug": "second-node",
                                 "name": "Second node",
                                 "description": "Second node description",

@@ -5,8 +5,11 @@ import { useSnackMutation } from '../../../../libs/apiHooks';
 
 import { SubTeam, User } from '../../../teams/types/team';
 import { ASSIGNMENTS_API_URL } from '../../constants/api';
-import { SaveAssignmentQuery } from '../../types/assigment';
-import { AssignmentsResult } from './useGetAssignments';
+import {
+    BulkSaveAssignmentQuery,
+    SaveAssignmentQuery,
+} from '../../types/assigment';
+import { AssignmentsResult } from '../../types/assigment';
 
 export const saveAssignment = async (
     body: SaveAssignmentQuery,
@@ -101,7 +104,7 @@ export const useSaveAssignment = ({
     };
 };
 
-const saveBulkAssignments = (data: SaveAssignmentQuery) => {
+const saveBulkAssignments = (data: BulkSaveAssignmentQuery) => {
     const url = `${ASSIGNMENTS_API_URL}bulk_create_assignments/`;
     return postRequest(url, data);
 };
@@ -111,7 +114,9 @@ export const useBulkSaveAssignments = (): UseMutationResult => {
     const onSuccess = () => {
         queryClient.invalidateQueries('orgUnits');
         queryClient.invalidateQueries('assignmentsList');
+        queryClient.invalidateQueries('planningDetails');
         queryClient.invalidateQueries('orgUnitsList');
+        queryClient.invalidateQueries('planningChildrenOrgUnitsPaginated');
     };
     return useSnackMutation({
         mutationFn: saveBulkAssignments,

@@ -66,7 +66,7 @@ TESTING = env.bool("TESTING", default=False)
 IN_TESTS = len(sys.argv) > 1 and sys.argv[1] == "test"
 PLUGINS = env.list("PLUGINS", default=[], delimiter=",")
 ROOT_REDIRECT_PATTERN_NAME = env.str("ROOT_REDIRECT_PATTERN_NAME", default="dashboard:home_iaso")
-
+DEFAULT_APP_ID = env.str("DEFAULT_APP_ID", default="")
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -324,6 +324,8 @@ TEMPLATES = [
                 "hat.common.context_processors.product_fruits_config",
                 "hat.common.context_processors.learn_more_url",
                 "hat.common.context_processors.available_languages",
+                "hat.common.context_processors.default_app_id",
+                "hat.common.context_processors.dns_domain",
             ]
         },
     }

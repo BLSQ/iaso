@@ -195,6 +195,7 @@ const InstanceLogContentBodyTable = ({ fileContent }: TableBodyProps) => {
 
                         return isRelevantQuestion ? (
                             <QuestionRow
+                                key={`${fileContent.logA.json[question.name]} ${fileContent.logB.json[question.name]}`}
                                 valueA={fileContent.logA.json[question.name]}
                                 valueB={fileContent.logB.json[question.name]}
                                 question={question}

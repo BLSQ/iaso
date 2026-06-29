@@ -146,10 +146,12 @@ class InstanceDiffAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
         log_modification(updated, self.instance, source=self.sw_source.name, user=self.john_wick)
 
-        with self.assertNumQueries(4):
-            # 1-2: CHECK INSTANCE PERM
-            # 3: SELECT COUNT
-            # 4: SELECT data
+        with self.assertNumQueries(5):
+            # 1: CHECK INSTANCE PERM
+            # 2: SELECT instance (with form_version)
+            # 3: PREFETCH instancefile_set
+            # 4: SELECT COUNT
+            # 5: SELECT data
             res = self.client.get(reverse("instances_diff-list", kwargs={"instance_id": self.instance.id}))
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data, 2)

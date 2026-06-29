@@ -3,7 +3,11 @@ from django.db import models
 from django.db.models import Q
 
 from iaso.models.common import CreatedAndUpdatedModel
-from iaso.utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel
+from iaso.utils.models.soft_deletable import (
+    DefaultSoftDeletableManager,
+    IncludeDeletedSoftDeletableManager,
+    SoftDeletableModel,
+)
 
 
 class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
@@ -18,6 +22,7 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
     account = models.ForeignKey("Account", on_delete=models.CASCADE)
 
     objects = DefaultSoftDeletableManager()
+    all_objects = IncludeDeletedSoftDeletableManager()
 
     class Meta:
         constraints = [

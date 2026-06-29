@@ -4,8 +4,10 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueTogetherValidator
 
 from iaso.api.common import HiddenSlugRelatedField, ModelSerializer
-from iaso.api.validation_workflows_node_templates.serializers.common import ValidationWorkflowContextDefault
-from iaso.models import UserRole, ValidationNodeTemplate, ValidationWorkflow
+from iaso.api.nested_validation_workflows_node_templates.serializers.common import (
+    ValidationWorkflowVersionContextDefault,
+)
+from iaso.models import UserRole, ValidationNodeTemplate, ValidationWorkflowVersion
 
 
 class ValidationNodeTemplateBulkCreateListSerializer(serializers.ListSerializer):
@@ -78,9 +80,9 @@ class ValidationNodeTemplateBulkCreateSerializer(ModelSerializer):
     workflow = HiddenSlugRelatedField(
         slug_field="slug",
         write_only=True,
-        queryset=ValidationWorkflow.objects.none(),
+        queryset=ValidationWorkflowVersion.objects.none(),
         required=False,
-        default=ValidationWorkflowContextDefault(),
+        default=ValidationWorkflowVersionContextDefault(),
     )
 
     class Meta:
@@ -99,17 +101,17 @@ class ValidationNodeTemplateBulkCreateSerializer(ModelSerializer):
         request = self.context.get("request")
         user = getattr(request, "user", None)
         iaso_profile = getattr(user, "iaso_profile", None)
-        if getattr(iaso_profile, "account", None):
-            self.fields["roles_required"].child_relation.queryset = UserRole.objects.filter(
-                account=user.iaso_profile.account
+        account = getattr(iaso_profile, "account", None)
+
+        if account:
+            self.fields["roles_required"].child_relation.queryset = UserRole.objects.filter(account=account)
+            self.fields["workflow"].queryset = ValidationWorkflowVersion.objects.filter_for_account(account).filter(
+                main_workflow__deleted_at__isnull=True
             )
-            self.fields["workflow"].queryset = ValidationWorkflow.objects.filter(account=user.iaso_profile.account)
 
             self.validators = [
                 UniqueTogetherValidator(
-                    queryset=ValidationNodeTemplate.objects.select_related("workflow", "workflow__account").filter(
-                        workflow__account=user.iaso_profile.account
-                    ),
+                    queryset=ValidationNodeTemplate.objects.filter_for_account(account),
                     fields=["name", "workflow"],
                 )
             ]

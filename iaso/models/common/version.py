@@ -6,11 +6,14 @@ from semantic_version.django_fields import VersionField
 
 class VersionModelQuerySet(models.QuerySet):
     def latest_by_version(self):
-        return self.latest("-version_major", "-version_minor", "-version_patch")
+        return self.latest("version_major", "version_minor", "version_patch")
+
+    def order_by_version(self):
+        return self.order_by("-version_major", "-version_minor", "-version_patch")
 
 
 class VersionModel(models.Model):
-    version = VersionField(coerce=True, blank=False, unique=True)
+    version = VersionField(coerce=True, blank=False)
 
     # todo : we should use django GenericRelatedField when switching to django 5 there
     version_major = models.PositiveSmallIntegerField()
@@ -20,6 +23,7 @@ class VersionModel(models.Model):
     class Meta:
         abstract = True
         indexes = [
+            models.Index(fields=["version"]),
             models.Index(fields=["-version_major", "-version_minor", "-version_patch"]),
         ]
         unique_together = (("version_major", "version_minor", "version_patch"),)

@@ -16,11 +16,13 @@ class ValidationNodeTemplateMoveSerializer(serializers.Serializer):
         request = self.context.get("request")
         user = getattr(request, "user", None)
         iaso_profile = getattr(user, "iaso_profile", None)
-
-        if getattr(iaso_profile, "account", None):
-            self.fields["parent_node_templates"].child_relation.queryset = ValidationNodeTemplate.objects.filter(
-                workflow__account=user.iaso_profile.account
-            ).exclude(pk=self.instance.pk)
+        account = getattr(iaso_profile, "account", None)
+        if account:
+            self.fields[
+                "parent_node_templates"
+            ].child_relation.queryset = ValidationNodeTemplate.objects.filter_for_account(account).exclude(
+                pk=self.instance.pk
+            )
 
     def validate_parent_node_templates(self, data):
         ids = [item.id for item in data]

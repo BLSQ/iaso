@@ -2,17 +2,8 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer
-from iaso.api.common.serializer import UserRoleNameSerializer
 from iaso.api.validation_workflows.serializers.common import UserDisplayNameField
-from iaso.models import Form, ValidationNodeTemplate, ValidationWorkflow
-
-
-class NestedValidationNodeTemplateSerializer(ModelSerializer):
-    roles_required = UserRoleNameSerializer(read_only=True, many=True, allow_null=True)
-
-    class Meta:
-        model = ValidationNodeTemplate
-        fields = ["slug", "name", "description", "roles_required", "can_skip_previous_nodes"]
+from iaso.models import Form, ValidationWorkflow
 
 
 class NestedFormSerializer(ModelSerializer):
@@ -23,15 +14,22 @@ class NestedFormSerializer(ModelSerializer):
         fields = ["id", "label"]
 
 
+class VersionSlugRelatedField(serializers.SlugRelatedField):
+    def to_representation(self, value):
+        value = super().to_representation(value)
+        if value:
+            return str(value)
+        return value
+
+
 class ValidationWorkflowRetrieveSerializer(ModelSerializer):
-    updated_by = UserDisplayNameField()
-    created_by = UserDisplayNameField()
+    updated_by = serializers.SerializerMethodField()
+    created_by = serializers.SerializerMethodField()
+    latest_version_updated_at = serializers.SerializerMethodField(read_only=True)
+    latest_version_created_at = serializers.SerializerMethodField(read_only=True)
+    versions = VersionSlugRelatedField(slug_field="version", read_only=True, many=True)
 
     forms = NestedFormSerializer(many=True, read_only=True, source="form_set", allow_null=True)
-    node_templates = serializers.SerializerMethodField(read_only=True, allow_null=True)
-    has_processes = serializers.BooleanField(
-        read_only=True, help_text="True if the workflow has past or ongoing validation processes"
-    )
 
     class Meta:
         model = ValidationWorkflow
@@ -40,50 +38,35 @@ class ValidationWorkflowRetrieveSerializer(ModelSerializer):
             "name",
             "description",
             "forms",
-            "created_by",
             "updated_by",
+            "created_by",
             "created_at",
             "updated_at",
-            "node_templates",
-            "has_processes",
+            "latest_version_created_at",
+            "latest_version_updated_at",
+            "versions",
         ]
 
-    @extend_schema_field(NestedValidationNodeTemplateSerializer(many=True, allow_null=True))
-    def get_node_templates(self, obj):
-        nodes = list(getattr(obj, "_prefetched_objects_cache", {}).get("node_templates", obj.node_templates.all()))
+    @extend_schema_field(UserDisplayNameField(allow_null=True, allow_blank=True, required=False, read_only=True))
+    def get_created_by(self, obj):
+        return UserDisplayNameField(allow_null=True, allow_blank=True, required=False).to_representation(
+            obj.prefetched_versions[0].created_by if obj.prefetched_versions else None
+        )
 
-        next_map = {}
-        prev_map = {}
+    @extend_schema_field(UserDisplayNameField(allow_null=True, allow_blank=True, required=False, read_only=True))
+    def get_updated_by(self, obj):
+        return UserDisplayNameField(allow_null=True, allow_blank=True, required=False).to_representation(
+            obj.prefetched_versions[0].updated_by if obj.prefetched_versions else None
+        )
 
-        for node in nodes:
-            next_map[node.id] = list(
-                getattr(node, "_prefetched_objects_cache", {}).get(
-                    "next_node_templates", node.next_node_templates.all()
-                )
-            )
-            prev_map[node.id] = list(
-                getattr(node, "_prefetched_objects_cache", {}).get(
-                    "previous_node_templates", node.previous_node_templates.all()
-                )
-            )
+    @extend_schema_field(serializers.DateTimeField(allow_null=True, required=False, read_only=True))
+    def get_latest_version_updated_at(self, obj):
+        return serializers.DateTimeField(allow_null=True, required=False, read_only=True).to_representation(
+            obj.prefetched_versions[0].updated_at if obj.prefetched_versions else None
+        )
 
-        start = next((n for n in nodes if not prev_map[n.id]), None)
-
-        if not start:
-            return []
-
-        next_map = {node.id: list(node.next_node_templates.all()) for node in nodes}
-
-        ordered = []
-        current = start
-
-        while current:
-            ordered.append(current)
-            next_nodes = next_map[current.id]
-
-            if not next_nodes:
-                break
-
-            current = next_nodes[0]
-
-        return [NestedValidationNodeTemplateSerializer(instance=data).data for data in ordered]
+    @extend_schema_field(serializers.DateTimeField(allow_null=True, required=False, read_only=True))
+    def get_latest_version_created_at(self, obj):
+        return serializers.DateTimeField(allow_null=True, required=False, read_only=True).to_representation(
+            obj.prefetched_versions[0].created_at if obj.prefetched_versions else None
+        )

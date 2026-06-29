@@ -3,9 +3,11 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from iaso.api.common import HiddenSlugRelatedField, ModelSerializer
-from iaso.api.validation_workflows_node_templates.serializers.common import ValidationWorkflowContextDefault
+from iaso.api.nested_validation_workflows_node_templates.serializers.common import (
+    ValidationWorkflowVersionContextDefault,
+)
 from iaso.models import UserRole, ValidationNodeTemplate, ValidationWorkflow
-from iaso.models.validation_workflow.validation_workflow_version import PositionChoices
+from iaso.models.validation_workflow.validation_workflow_version import PositionChoices, ValidationWorkflowVersion
 
 
 class ValidationNodeTemplateCreateSerializer(ModelSerializer):
@@ -23,9 +25,9 @@ class ValidationNodeTemplateCreateSerializer(ModelSerializer):
     workflow = HiddenSlugRelatedField(
         slug_field="slug",
         write_only=True,
-        queryset=ValidationWorkflow.objects.none(),
+        queryset=ValidationWorkflowVersion.objects.none(),
         required=False,
-        default=ValidationWorkflowContextDefault(),
+        default=ValidationWorkflowVersionContextDefault(),
     )
 
     class Meta:
@@ -54,23 +56,18 @@ class ValidationNodeTemplateCreateSerializer(ModelSerializer):
         request = self.context.get("request")
         user = getattr(request, "user", None)
         iaso_profile = getattr(user, "iaso_profile", None)
+        account = getattr(iaso_profile, "account", None)
 
-        if getattr(iaso_profile, "account", None):
-            self.fields["roles_required"].child_relation.queryset = UserRole.objects.filter(
-                account=user.iaso_profile.account
+        if account:
+            self.fields["roles_required"].child_relation.queryset = UserRole.objects.filter(account=account)
+            self.fields["parent_node_templates"].child_relation.queryset = ValidationNodeTemplate.objects.filter(
+                workflow__main_workflow__account=account
             )
-            self.fields[
-                "parent_node_templates"
-            ].child_relation.queryset = ValidationNodeTemplate.objects.select_related(
-                "workflow", "workflow__account"
-            ).filter(workflow__account=user.iaso_profile.account)
 
             self.fields["workflow"].queryset = ValidationWorkflow.objects.filter(account=user.iaso_profile.account)
             self.validators = [
                 UniqueTogetherValidator(
-                    queryset=ValidationNodeTemplate.objects.select_related("workflow", "workflow__account").filter(
-                        workflow__account=user.iaso_profile.account
-                    ),
+                    queryset=ValidationNodeTemplate.objects.filter(workflow__main_workflow__account=account),
                     fields=["name", "workflow"],
                 )
             ]

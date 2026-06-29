@@ -2,7 +2,9 @@ from django.contrib.auth.models import Group
 from django.test import RequestFactory
 from rest_framework.settings import api_settings
 
-from iaso.api.validation_workflows_node_templates.serializers.create import ValidationNodeTemplateCreateSerializer
+from iaso.api.nested_validation_workflows_node_templates.serializers.create import (
+    ValidationNodeTemplateCreateSerializer,
+)
 from iaso.models import Account, UserRole
 from iaso.models.validation_workflow.templates import PositionChoices, ValidationNodeTemplate, ValidationWorkflow
 from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION

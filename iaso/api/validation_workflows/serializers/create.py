@@ -8,14 +8,14 @@ from iaso.models import Form, ValidationWorkflow
 
 class ValidationWorkflowCreateSerializer(ModelSerializer):
     account = serializers.HiddenField(default=CurrentAccountDefault(), write_only=True)
-    created_by = serializers.HiddenField(default=serializers.CurrentUserDefault(), write_only=True)
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault(), write_only=True)
     forms = serializers.PrimaryKeyRelatedField(
         queryset=Form.objects.none(), many=True, required=False, source="form_set", write_only=True, allow_empty=True
     )
 
     class Meta:
         model = ValidationWorkflow
-        fields = ["name", "description", "slug", "account", "created_by", "forms"]
+        fields = ["name", "description", "slug", "account", "user", "forms"]
         extra_kwargs = {"name": {"write_only": True}, "description": {"write_only": True}, "slug": {"read_only": True}}
         validators = [
             UniqueTogetherValidator(

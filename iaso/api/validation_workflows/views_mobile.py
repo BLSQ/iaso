@@ -27,6 +27,11 @@ class ValidationWorkflowMobileViewSet(CustomPaginationListModelMixin, GenericVie
         return (
             Instance.objects.filter_for_user(self.request.user)
             .select_related("form")
-            .filter(form__deleted_at__isnull=True, validationnode__isnull=False)
+            .filter(
+                form__deleted_at__isnull=True,
+                validationnode__isnull=False,
+                form__validation_workflow__deleted_at__isnull=True,
+                validationnode__node__workflow__deleted_at__isnull=True,
+            )
             .distinct("id")
         )

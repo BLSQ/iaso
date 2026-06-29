@@ -123,6 +123,7 @@ def reverse_validation_workflow_version_node_templates(apps, schema_editor):
                         description=wf.description,
                         created_by_id=version.created_by_id,
                         updated_by_id=version.updated_by_id,
+                        deleted_at=wf.deleted_at,
                     ),
                 )
             )
@@ -165,9 +166,7 @@ class Migration(migrations.Migration):
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 (
                     "version",
-                    semantic_version.django_fields.VersionField(
-                        coerce=True, max_length=200, partial=False, unique=True
-                    ),
+                    semantic_version.django_fields.VersionField(coerce=True, max_length=200, partial=False),
                 ),
                 ("version_major", models.PositiveSmallIntegerField()),
                 ("version_minor", models.PositiveSmallIntegerField()),

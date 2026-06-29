@@ -32,13 +32,15 @@ class ValidationNodeTemplateUpdateSerializer(ModelSerializer):
         super().__init__(*args, **kwargs)
         request = self.context.get("request")
         user = getattr(request, "user", None)
-        self.fields["roles_required"].child_relation.queryset = UserRole.objects.filter(
-            account=user.iaso_profile.account
-        )
-        self.fields["name"].validators.append(
-            UniqueValidator(
-                queryset=ValidationNodeTemplate.objects.select_related("workflow", "workflow__account").filter(
-                    workflow__account=user.iaso_profile.account, workflow=self.instance.workflow
-                ),
+        iaso_profile = getattr(user, "iaso_profile", None)
+        account = getattr(iaso_profile, "account", None)
+
+        if account and self.instance:
+            self.fields["roles_required"].child_relation.queryset = UserRole.objects.filter(account=account)
+            self.fields["name"].validators.append(
+                UniqueValidator(
+                    queryset=ValidationNodeTemplate.objects.filter(
+                        workflow__account=account, workflow=self.instance.workflow
+                    ),
+                )
             )
-        )

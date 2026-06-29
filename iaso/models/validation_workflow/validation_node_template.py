@@ -1,7 +1,15 @@
 from django.db import models
 
+from iaso.models import Account
 from iaso.models.base import UserRole
 from iaso.models.common import BulkAutoSlugField, CreatedAndUpdatedModel
+
+
+class ValidationNodeTemplateQuerySet(models.QuerySet):
+    def filter_for_account(self, account: Account):
+        if not account:
+            return self.none()
+        return self.filter(workflow__main_workflow__account=account)
 
 
 class ValidationNodeTemplate(CreatedAndUpdatedModel):
@@ -22,8 +30,14 @@ class ValidationNodeTemplate(CreatedAndUpdatedModel):
     class Meta:
         unique_together = [("workflow", "name"), ("workflow", "slug")]
 
+    objects = ValidationNodeTemplateQuerySet.as_manager()
+
     def __str__(self):
         return self.name
+
+    # @property
+    # def has_previous(self):
+    #     return self.previous_node_templates.exists()
 
     def get_validation_nodes(self):
         return self.validationnode_set.all()

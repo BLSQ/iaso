@@ -1,7 +1,7 @@
 from django.test import RequestFactory
 from rest_framework.settings import api_settings
 
-from iaso.api.validation_workflows_node_templates.serializers.move import ValidationNodeTemplateMoveSerializer
+from iaso.api.nested_validation_workflows_node_templates.serializers.move import ValidationNodeTemplateMoveSerializer
 from iaso.models import Account
 from iaso.models.validation_workflow.templates import PositionChoices, ValidationNodeTemplate, ValidationWorkflow
 from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION

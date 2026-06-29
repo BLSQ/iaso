@@ -95,6 +95,8 @@ from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.mobile.storage import MobileStoragePasswordViewSet
 from .api.modules.views import ModulesViewSet
+from .api.nested_validation_workflow_versions.views import NestedValidationWorkflowVersionsViewSet
+from .api.nested_validation_workflows_node_templates.views import NestedValidationNodeTemplatesView
 from .api.notifications.views import NotificationViewSet
 from .api.openhexa.views import OpenHexaPipelinesViewSet
 from .api.org_unit_change_request_configurations.views import OrgUnitChangeRequestConfigurationViewSet
@@ -138,7 +140,6 @@ from .api.teams.views import TeamViewSet
 from .api.user_roles import UserRolesViewSet
 from .api.validation_workflow_instances.views import ValidationWorkflowInstanceViewSet
 from .api.validation_workflows.views import ValidationWorkflowViewSet
-from .api.validation_workflows_node_templates.views import ValidationNodeTemplatesView
 from .api.validation_workflows_nodes.views import ValidationNodeViewSet
 from .api.workflows.changes import WorkflowChangeViewSet
 from .api.workflows.followups import WorkflowFollowupViewSet
@@ -285,21 +286,22 @@ router.register(
     r"validation-workflows/instance", ValidationWorkflowInstanceViewSet, basename="validation_workflow_instances"
 )
 
-validation_workflow_routes = router.register(
-    r"validation-workflows", ValidationWorkflowViewSet, basename="validation_workflows"
+validation_workflow_routes = (
+    router.register(r"validation-workflows", ValidationWorkflowViewSet, basename="validation_workflows")
+    .register(
+        r"versions",
+        NestedValidationWorkflowVersionsViewSet,
+        basename="nested_validation_workflow_versions",
+        parents_query_lookups=["workflow__slug"],
+    )
+    .register(
+        r"node-templates",
+        NestedValidationNodeTemplatesView,
+        basename="nested_validation_node_templates",
+        parents_query_lookups=["workflow__slug", "version"],
+    )
 )
-validation_workflow_routes.register(
-    r"node-templates",
-    ValidationNodeTemplatesView,
-    basename="validation_node_templates",
-    parents_query_lookups=["workflow__slug"],
-)
-validation_workflow_routes.register(
-    r"versions",
-    ValidationWorkflowViewSet,
-    basename="validation_workflow_versions",
-    parents_query_lookups=["workflow__slug"],
-)
+
 router.register(
     r"validation-workflows/instance/(?P<instance_id>\d+)/nodes",
     ValidationNodeViewSet,

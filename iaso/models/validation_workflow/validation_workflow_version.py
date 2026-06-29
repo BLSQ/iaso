@@ -1,22 +1,29 @@
 from django.contrib.auth import get_user_model
 from django.db import models, transaction
 from django.db.models import Q
+from django.utils.translation import gettext_lazy as _
 
 from iaso.models import Instance
 from iaso.models.common import CreatedAndUpdatedModel, VersionModel
+from iaso.models.common.version import VersionModelQuerySet
 from iaso.models.validation_workflow.validation_node_template import ValidationNodeTemplate
-from iaso.utils.models.soft_deletable import SoftDeletableModel
+from iaso.utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel
 
 
 class PositionChoices(models.TextChoices):
-    last = "last", "Last"
-    first = "first", "First"
-    child_of = "child_of", "Child Of"
+    last = "last", _("Last")
+    first = "first", _("First")
+    child_of = "child_of", _("Child Of")
 
 
-class ValidationWorkflowVersionQuerySet(models.QuerySet):
+class ValidationWorkflowVersionQuerySet(VersionModelQuerySet):
     def latest_version_for_workflow(self, workflow):
-        return self.filter(workflow=workflow).latest("version")
+        return self.filter(workflow=workflow).latest_by_version()
+
+    def filter_for_account(self, account):
+        if not account:
+            return self.none()
+        return self.filter(main_workflow__account=account)
 
 
 class ValidationWorkflowVersion(SoftDeletableModel, CreatedAndUpdatedModel, VersionModel):
@@ -28,6 +35,8 @@ class ValidationWorkflowVersion(SoftDeletableModel, CreatedAndUpdatedModel, Vers
     updated_by = models.ForeignKey(
         get_user_model(), null=True, blank=True, on_delete=models.SET_NULL, related_name="%(class)s_updated_set"
     )
+
+    objects = DefaultSoftDeletableManager.from_queryset(ValidationWorkflowVersionQuerySet)()
 
     class Meta:
         constraints = [
@@ -41,6 +50,10 @@ class ValidationWorkflowVersion(SoftDeletableModel, CreatedAndUpdatedModel, Vers
 
     def __str__(self):
         return f"{self.main_workflow.name} - {self.version}"
+
+    @property
+    def version_as_str(self):
+        return str(self.version)
 
     def is_artifact_allowed(self, instance):
         if self.form_set.count():
@@ -210,7 +223,7 @@ class ValidationWorkflowVersion(SoftDeletableModel, CreatedAndUpdatedModel, Vers
             ignore_conflicts=True,
         )
 
-    def dump_nodes(self):
+    def dump_nodes(self, with_id=False):
         if "node_templates" in getattr(self, "_prefetched_objects_cache", {}):
             node_templates = self._prefetched_objects_cache["node_templates"]
         else:
@@ -219,7 +232,9 @@ class ValidationWorkflowVersion(SoftDeletableModel, CreatedAndUpdatedModel, Vers
         flatten_graph = {x.pk: getattr(x, "prefetched_next_nodes", x.next_node_templates.all()) for x in node_templates}
 
         if "node_templates" in getattr(self, "_prefetched_objects_cache", {}):
-            start = [x for x in self._prefetched_objects_cache["node_templates"] if not x.has_previous][0]
+            start = [x for x in self._prefetched_objects_cache["node_templates"] if not x.has_previous][
+                0
+            ]  # has_previous comes from annotation
         else:
             start = self.get_starting_node()
 
@@ -229,11 +244,11 @@ class ValidationWorkflowVersion(SoftDeletableModel, CreatedAndUpdatedModel, Vers
 
             while True:
                 if current.pk in visited:
-                    path.append(f"[cycle:{current.slug}]")
+                    path.append(f"[cycle:{current.pk if with_id else current.slug}]")
                     return path
 
                 visited.add(current.pk)
-                path.append(current.slug)
+                path.append(current.pk if with_id else current.slug)
 
                 next_nodes = flatten_graph[current.pk]
 

@@ -16,6 +16,7 @@ from phonenumbers import NumberParseException
 from rest_framework import serializers
 from rest_framework.fields import empty
 from rest_framework.relations import MANY_RELATION_KWARGS, ManyRelatedField
+from semantic_version import Version
 
 from iaso.api.common.validators import JSONSchemaFieldValidator
 
@@ -164,3 +165,22 @@ class CountryAwarePhoneNumberField(serializers.CharField):
             return None
 
         return value.as_e164
+
+
+class VersionField(serializers.CharField):
+    default_error_messages = {
+        "invalid": _("Enter a valid version."),
+    }
+
+    def to_internal_value(self, data):
+        value = super().to_internal_value(data)
+
+        if isinstance(value, Version):
+            return value
+
+        try:
+            value = Version(value)
+        except ValueError:
+            self.fail("invalid")
+
+        return value

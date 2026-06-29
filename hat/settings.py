@@ -541,7 +541,8 @@ SPECTACULAR_SETTINGS = {
 }
 
 REST_FRAMEWORK_SERIALIZER_FIELDS_MAPPINGS = {
-    "iaso.utils.models.color.ColorField": "iaso.utils.serializer.color.ColorFieldSerializer"
+    "iaso.utils.models.color.ColorField": "iaso.utils.serializer.color.ColorFieldSerializer",
+    "semantic_version.django_fields.VersionField": "iaso.api.common.serializer_fields.VersionField",
 }
 
 SIMPLE_JWT = {

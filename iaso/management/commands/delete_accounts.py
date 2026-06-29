@@ -21,9 +21,9 @@ What still needs manual code (M2M gap):
   - Orphan audit/export log cleanup (content-type based, not FK based)
 
 Usage:
-  docker compose run --rm iaso manage delete_accounts_v3 --account-to-keep 1
-  docker compose run --rm iaso manage delete_accounts_v3 --account-to-keep 1 --dry-run
-  docker compose run --rm iaso manage delete_accounts_v3 --show-graph
+  docker compose run --rm iaso manage delete_accounts --account-to-keep 1
+  docker compose run --rm iaso manage delete_accounts --account-to-keep 1 --dry-run
+  docker compose run --rm iaso manage delete_accounts --show-graph
 
 
 how to test this crazyness

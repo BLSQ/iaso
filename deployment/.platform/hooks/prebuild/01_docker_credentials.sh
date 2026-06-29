@@ -2,4 +2,4 @@
 set -e
 
 echo "Log in to Dockerhub"
-aws s3 cp s3://iaso-docker-login/config.json ~/.docker/config.json
+sudo aws s3 cp s3://iaso-docker-login/config.json /root/.docker/config.json

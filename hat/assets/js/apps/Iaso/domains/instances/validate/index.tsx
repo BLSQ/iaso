@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, UrlParams } from 'bluesquare-components';
@@ -6,9 +6,9 @@ import { useApiDiffInstancesList } from 'Iaso/api/instanceDiff';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
+import { formatLogContent } from '../compare/components/CompareInstanceLogs';
 import { InstanceDetailRaw } from '../compare/components/InstanceDetailRaw';
 import { InstanceLogDetail } from '../compare/components/InstanceLogDetail';
-import { InstanceLogInfos } from '../compare/components/InstanceLogInfos';
 import { useGetInstance } from '../hooks/requests/useGetInstance';
 import { ValidationPaper } from './components/ValidationPaper/ValidationPaper';
 
@@ -47,9 +47,16 @@ export const ValidateInstance = () => {
     const displaySingleInstance = !diff && !isLoadingInstance && instance;
     const displayDiff =
         diff && instance && !isLoadingInstance && !isLoadingDiff;
+    const diffContent = useMemo(() => {
+        if (diff) {
+            return formatLogContent(diff.results[0], diff.results[1]);
+        }
+        return {};
+    }, [diff]);
     console.log('PARAMS', params);
     console.log('DATA', diff);
     console.log('INSTANCE', instance);
+    console.log('DIFF CONTENT', diffContent);
     return (
         <>
             <TopBar displayBackButton={false} />
@@ -66,25 +73,12 @@ export const ValidateInstance = () => {
                         </Grid>
                     )}
                     {displayDiff && (
-                        <Grid container item xs={12} sm={8} spacing={2}>
-                            <Grid item xs={12} sm={6}>
-                                <InstanceLogDetail
-                                    instanceLogContent={
-                                        diff.results[0].new_value.fields
-                                    }
-                                    isLogDetailLoading={isLoadingDiff}
-                                    isLogDetailError={isError}
-                                />
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <InstanceLogDetail
-                                    instanceLogContent={
-                                        diff.results[1].past_value
-                                    }
-                                    isLogDetailLoading={isLoadingDiff}
-                                    isLogDetailError={isError}
-                                />
-                            </Grid>
+                        <Grid item xs={12} sm={8} spacing={2}>
+                            <InstanceLogDetail
+                                instanceLogContent={diffContent}
+                                isLogDetailLoading={!displayDiff}
+                                isLogDetailError={isError}
+                            />
                         </Grid>
                     )}
                     {instance && (

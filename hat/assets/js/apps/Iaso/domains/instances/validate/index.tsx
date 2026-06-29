@@ -85,7 +85,7 @@ export const ValidateInstance = () => {
             previous.new_value[0].fields.json = removeObjectEntries(
                 changedKeys,
                 {
-                    ...diff.results[1].new_value[0].fields,
+                    ...diff.results[1].new_value[0].fields.json,
                 },
             );
             current.possible_fields = current.possible_fields.filter(field =>

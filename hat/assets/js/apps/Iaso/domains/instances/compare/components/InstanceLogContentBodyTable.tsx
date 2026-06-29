@@ -147,9 +147,8 @@ function QuestionRow({
 }
 
 const getImageUrl = (value, logFiles) => {
-    if (!value) return null;
-    const slugifiedValue = slugifyValue(value);
     if (value && logFiles) {
+        const slugifiedValue = slugifyValue(value);
         if (slugifiedValue.endsWith('jpg')) {
             return (
                 logFiles[slugifiedValue] ??

@@ -7,7 +7,11 @@ from iaso.models import Instance
 from iaso.models.common import CreatedAndUpdatedModel, VersionModel
 from iaso.models.common.version import VersionModelQuerySet
 from iaso.models.validation_workflow.validation_node_template import ValidationNodeTemplate
-from iaso.utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel
+from iaso.utils.models.soft_deletable import (
+    DefaultSoftDeletableManager,
+    OnlyDeletedSoftDeletableManager,
+    SoftDeletableModel,
+)
 
 
 class PositionChoices(models.TextChoices):
@@ -37,6 +41,7 @@ class ValidationWorkflowVersion(SoftDeletableModel, CreatedAndUpdatedModel, Vers
     )
 
     objects = DefaultSoftDeletableManager.from_queryset(ValidationWorkflowVersionQuerySet)()
+    objects_only_delete = OnlyDeletedSoftDeletableManager.from_queryset(ValidationWorkflowVersionQuerySet)()
 
     class Meta:
         constraints = [

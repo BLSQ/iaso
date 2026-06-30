@@ -8,10 +8,11 @@ from iaso.models import Form, ValidationNodeTemplate, ValidationWorkflowVersion
 
 class NestedValidationNodeTemplateSerializer(ModelSerializer):
     roles_required = UserRoleNameSerializer(read_only=True, many=True, allow_null=True)
+    order = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = ValidationNodeTemplate
-        fields = ["slug", "name", "description", "roles_required", "can_skip_previous_nodes"]
+        fields = ["id", "order", "slug", "name", "description", "roles_required", "can_skip_previous_nodes"]
 
 
 class NestedFormSerializer(ModelSerializer):
@@ -67,5 +68,8 @@ class ValidationWorkflowVersionRetrieveSerializer(ModelSerializer):
                 break
 
             current = next_nodes[0]
+
+        for ind, data in enumerate(ordered):
+            data.order = ind + 1
 
         return [NestedValidationNodeTemplateSerializer(instance=data).data for data in ordered]

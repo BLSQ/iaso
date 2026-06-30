@@ -116,7 +116,7 @@ class NestedValidationNodeTemplatesView(NestedViewSetMixin, ModelViewSet):
             **version_lookup,
         )
 
-        qs = ValidationNodeTemplate.objects.filter(workflow=parent_version)
+        qs = ValidationNodeTemplate.objects.filter(workflow=parent_version, workflow__deleted_at__isnull=True)
 
         if self.action in ["delete"]:
             return qs.prefetch_related("roles_required", "next_node_templates", "previous_node_templates")

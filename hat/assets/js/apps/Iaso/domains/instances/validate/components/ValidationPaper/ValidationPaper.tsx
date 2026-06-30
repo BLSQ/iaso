@@ -6,10 +6,9 @@ import { useGetSubmissionValidationStatus } from 'Iaso/domains/instances/compone
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import MESSAGES from '../../messages';
 import { ApprovalForm } from './ApprovalForm';
-import { PreviousRejection } from './PreviousRejection';
 import { StepInfo } from './StepInfo';
 
-type Props = { formName: string; instanceId: number };
+type Props = { formName: string };
 
 type Params = {
     accountId: string;
@@ -17,10 +16,7 @@ type Params = {
     selectedStep?: string;
 } & Partial<UrlParams>;
 
-export const ValidationPaper: FunctionComponent<Props> = ({
-    formName,
-    instanceId,
-}) => {
+export const ValidationPaper: FunctionComponent<Props> = ({ formName }) => {
     const params: Params = useParamsObject(
         baseUrls.instanceValidation,
     ) as Params;
@@ -35,7 +31,6 @@ export const ValidationPaper: FunctionComponent<Props> = ({
                 workflow={currentWorkflow}
                 isLoading={isLoadingWorkflow}
             />
-            <PreviousRejection instanceId={instanceId} />
             <ApprovalForm workflow={currentWorkflow} />
         </WidgetPaper>
     );

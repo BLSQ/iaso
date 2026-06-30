@@ -171,7 +171,6 @@ export const ValidateInstance = () => {
                             <>
                                 <ValidationPaper
                                     formName={instance?.form_name ?? ''}
-                                    instanceId={instance.id}
                                 />
                             </>
                         </Grid>

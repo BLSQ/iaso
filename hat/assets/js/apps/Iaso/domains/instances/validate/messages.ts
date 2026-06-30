@@ -9,6 +9,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.validate',
         defaultMessage: 'Validate',
     },
+    validateInstance: {
+        id: 'iaso.label.validateInstance',
+        defaultMessage: 'Validate submission',
+    },
     comment: {
         id: 'iaso.label.comment',
         defaultMessage: 'Comment',
@@ -20,6 +24,10 @@ const MESSAGES = defineMessages({
     step: {
         id: 'iaso.form.label.step',
         defaultMessage: 'step',
+    },
+    bypassedSteps: {
+        id: 'iaso.form.label.bypassedSteps',
+        defaultMessage: 'Bypassed steps',
     },
     approve: {
         defaultMessage: 'Approve',
@@ -40,6 +48,10 @@ const MESSAGES = defineMessages({
     toggleShowAllFields: {
         defaultMessage: 'Show all fields',
         id: 'iaso.label.toggleShowAllFields',
+    },
+    commentForRejection: {
+        defaultMessage: 'Add comment to enable rejection',
+        id: 'iaso.validationWorkflow.label.commentForRejection',
     },
 });
 

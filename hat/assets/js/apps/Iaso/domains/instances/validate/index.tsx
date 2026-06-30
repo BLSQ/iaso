@@ -1,16 +1,18 @@
 import React, { useMemo, useState } from 'react';
 import { Box, FormControlLabel, FormGroup, Grid, Switch } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { commonStyles, UrlParams, useSafeIntl } from 'bluesquare-components';
+import {
+    commonStyles,
+    UrlParams,
+    useGoBack,
+    useSafeIntl,
+} from 'bluesquare-components';
 import { cloneDeep } from 'lodash';
 import { useApiDiffInstancesList } from 'Iaso/api/instanceDiff';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
-import {
-    formatLogContent,
-    LogContentSource,
-} from '../compare/components/CompareInstanceLogs';
+import { formatLogContent } from '../compare/components/CompareInstanceLogs';
 import { InstanceDetailRaw } from '../compare/components/InstanceDetailRaw';
 import { InstanceLogDetail } from '../compare/components/InstanceLogDetail';
 import { useGetInstance } from '../hooks/requests/useGetInstance';
@@ -24,16 +26,13 @@ const useStyles = makeStyles(theme => ({
 type Params = {
     accountId: string;
     instanceId: string;
+    selectedStep?: string;
 } & Partial<UrlParams>;
 
 const diffParams = {
     limit: 2,
     page: 1,
     order: '-created_at',
-};
-
-type DiffModification = LogContentSource & {
-    diff?: Array<{ path: string }>;
 };
 
 const removeObjectEntries = (
@@ -56,6 +55,8 @@ export const ValidateInstance = () => {
     ) as Params;
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
+    const goBack = useGoBack();
+
     const [showAllFields, setShowAllFields] = useState<boolean>(false);
     const { data: instance, isLoading: isLoadingInstance } = useGetInstance(
         params.instanceId,
@@ -69,9 +70,12 @@ export const ValidateInstance = () => {
         isLoading: isLoadingDiff,
         isError,
     } = useApiDiffInstancesList(params.instanceId, diffParams);
+
     const displaySingleInstance = !diff && !isLoadingInstance && instance;
+
     const displayDiff =
         diff && instance && !isLoadingInstance && !isLoadingDiff;
+
     const diffContent = useMemo(() => {
         if (diff?.results && showAllFields) {
             return formatLogContent(diff?.results?.[1], diff?.results?.[0]);
@@ -106,7 +110,11 @@ export const ValidateInstance = () => {
 
     return (
         <>
-            <TopBar displayBackButton={false} />
+            <TopBar
+                displayBackButton
+                goBack={goBack}
+                title={formatMessage(MESSAGES.validateInstance)}
+            />
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 <Grid container spacing={2}>
                     {displaySingleInstance && (
@@ -121,6 +129,34 @@ export const ValidateInstance = () => {
                     )}
                     {displayDiff && (
                         <Grid item xs={12} sm={8}>
+                            <Box
+                                sx={{
+                                    marginBottom: theme => theme.spacing(2),
+                                    display: 'flex',
+                                    justifyContent: 'flex-end',
+                                }}
+                            >
+                                <FormGroup>
+                                    <FormControlLabel
+                                        style={{ width: 'max-content' }}
+                                        control={
+                                            <Switch
+                                                size="medium"
+                                                checked={showAllFields}
+                                                onChange={() =>
+                                                    setShowAllFields(
+                                                        !showAllFields,
+                                                    )
+                                                }
+                                                color="primary"
+                                            />
+                                        }
+                                        label={formatMessage(
+                                            MESSAGES.toggleShowAllFields,
+                                        )}
+                                    />
+                                </FormGroup>
+                            </Box>
                             <InstanceLogDetail
                                 instanceLogContent={diffContent}
                                 isLogDetailLoading={!displayDiff}
@@ -128,24 +164,6 @@ export const ValidateInstance = () => {
                                 headerA={MESSAGES.previous}
                                 headerB={MESSAGES.current}
                             />
-                            <FormGroup>
-                                <FormControlLabel
-                                    style={{ width: 'max-content' }}
-                                    control={
-                                        <Switch
-                                            size="medium"
-                                            checked={showAllFields}
-                                            onChange={() =>
-                                                setShowAllFields(!showAllFields)
-                                            }
-                                            color="primary"
-                                        />
-                                    }
-                                    label={formatMessage(
-                                        MESSAGES.toggleShowAllFields,
-                                    )}
-                                />
-                            </FormGroup>
                         </Grid>
                     )}
                     {instance && (

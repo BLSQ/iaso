@@ -79,6 +79,13 @@ from iaso.models.org_unit import OrgUnit
 from iaso.models.project import Project
 
 
+try:
+    from django_sql_dashboard.models import Dashboard as _Dashboard
+except (ImportError, RuntimeError):
+    # RuntimeError when django_sql_dashboard is installed but not in INSTALLED_APPS
+    _Dashboard = None
+
+
 # ---------------------------------------------------------------------------
 # Logging
 # ---------------------------------------------------------------------------
@@ -98,7 +105,6 @@ def _chunked_delete(queryset, chunk_size=5000, label=None):
     model = queryset.model
     label = label or model.__name__
     total = 0
-    t0 = time.monotonic()
 
     while True:
         ids = list(queryset.order_by("pk").values_list("pk", flat=True)[:chunk_size])
@@ -132,6 +138,25 @@ _PROJECT_APP_PREFIXES = ("iaso", "plugins")
 # These are flagged as "partial coverage" in --show-graph.
 _PARTIAL_COVERAGE_NOTE = "⚠ partial: SET_NULL path, rows with NULL FK are missed"
 
+# Retry limit for auto-unblocking PROTECT errors: each attempt deletes the
+# blocking objects, so convergence depends on the depth of the PROTECT chain.
+_MAX_PROTECT_UNBLOCK_ATTEMPTS = 10
+
+# Models not reachable via reverse FK from Account — require manual handling.
+_MANUAL_MODELS_NOTE = [
+    (
+        "iaso.DataSource / SourceVersion / OrgUnit",
+        "linked via Project.data_sources M2M, BFS only finds those with credentials",
+    ),
+    ("iaso.Form", "linked via projects M2M"),
+    ("audit.Modification", "content-type based, no FK to Account"),
+    ("iaso.ExportLog", "no FK to Account"),
+    ("django_sql_dashboard.Dashboard", "no FK to Account"),
+    ("django.contrib.sessions.Session", "no FK to Account"),
+    ("vector_control_apiimport", "raw SQL table, not a Django model"),
+    ("users_profile", "legacy raw SQL table"),
+]
+
 
 def _is_project_model(model):
     """True if this model belongs to iaso or a plugin (not a third-party or Django built-in app)."""
@@ -158,9 +183,9 @@ def build_fk_graph(root_model):
     queue = deque([(root_model, None, False)])
 
     while queue:
-        current, current_filter, current_partial = queue.popleft()
+        current_model, current_filter, current_partial = queue.popleft()
 
-        for rel in current._meta.related_objects:
+        for rel in current_model._meta.related_objects:
             if isinstance(rel, ManyToManyRel):
                 continue
 
@@ -169,16 +194,19 @@ def build_fk_graph(root_model):
                 continue
             if getattr(child._meta, "abstract", False) or getattr(child._meta, "swapped", None):
                 continue
+            if getattr(child._meta, "proxy", False):
+                # Proxy models share the parent's DB table; deleting the parent rows covers them.
+                continue
             if not _is_project_model(child):
                 continue
 
             field_name = rel.field.name
             new_filter = field_name if current_filter is None else f"{field_name}__{current_filter}"
-            od_name = getattr(rel.on_delete, "__name__", str(rel.on_delete))
+            on_delete_name = getattr(rel.on_delete, "__name__", str(rel.on_delete))
             is_partial = current_partial or (rel.on_delete is SET_NULL)
 
             visited[child] = (new_filter, is_partial)
-            discovered[child] = (new_filter, od_name, is_partial)
+            discovered[child] = (new_filter, on_delete_name, is_partial)
             queue.append((child, new_filter, is_partial))
 
     # Collect cross-edges between discovered models (for topo sort)
@@ -189,8 +217,8 @@ def build_fk_graph(root_model):
             target = field.related_model
             if target not in discovered or target is model:
                 continue
-            od_name = getattr(field.remote_field.on_delete, "__name__", "?")
-            graph_edges.append((model, target, od_name))
+            on_delete_name = getattr(field.remote_field.on_delete, "__name__", "?")
+            graph_edges.append((model, target, on_delete_name))
 
     return discovered, graph_edges
 
@@ -211,8 +239,8 @@ def topo_sort_deletion_order(discovered, graph_edges):
     for model in discovered:
         ts.add(model)
 
-    for child, parent, od_name in graph_edges:
-        if od_name in ("CASCADE", "PROTECT"):
+    for child, parent, on_delete_name in graph_edges:
+        if on_delete_name in ("CASCADE", "PROTECT"):
             # child must be deleted BEFORE parent
             # ts.add(X, Y) means Y must come before X
             ts.add(parent, child)
@@ -243,7 +271,7 @@ def execute_graph_deletion(discovered, deletion_order, account, chunk_size, dry_
     for model in deletion_order:
         if model not in discovered or model in skip_models:
             continue
-        filter_kwarg, od_name, is_partial = discovered[model]
+        filter_kwarg, on_delete_name, is_partial = discovered[model]
         manager = getattr(model, "objects_include_deleted", model._default_manager)
 
         try:
@@ -261,10 +289,10 @@ def execute_graph_deletion(discovered, deletion_order, account, chunk_size, dry_
             _log(f"  [DRY RUN] would delete {label}")
             continue
 
-        n = 0
-        for attempt in range(5):
+        deleted_count = 0
+        for attempt in range(_MAX_PROTECT_UNBLOCK_ATTEMPTS):
             try:
-                n += _chunked_delete(qs, chunk_size, label=label)
+                deleted_count += _chunked_delete(qs, chunk_size, label=label)
                 break
             except ProtectedError as exc:
                 # Auto-clear blocking objects (e.g. nullable PROTECT FKs from partial-coverage models)
@@ -277,11 +305,10 @@ def execute_graph_deletion(discovered, deletion_order, account, chunk_size, dry_
                         blocker_model.objects.filter(pk__in=pks), chunk_size, f"{blocker_model.__name__}[unblock]"
                     )
 
-        if n:
-            _log(f"  {label}: {n:,} deleted")
-        if n:
+        if deleted_count:
+            _log(f"  {label}: {deleted_count:,} deleted")
             models_with_rows += 1
-            total_deleted += n
+            total_deleted += deleted_count
 
     if not dry_run:
         _log(
@@ -307,7 +334,7 @@ def show_graph(discovered, graph_edges, deletion_order, account=None):
     for model in deletion_order:
         if model not in discovered:
             continue
-        filter_kwarg, od_name, is_partial = discovered[model]
+        filter_kwarg, on_delete_name, is_partial = discovered[model]
         flag = "⚠" if is_partial else " "
         count_str = ""
         if account is not None:
@@ -317,29 +344,15 @@ def show_graph(discovered, graph_edges, deletion_order, account=None):
                 count_str = f"  [{count} rows]"
             except Exception:
                 count_str = "  [?]"
-        _log(f"  {flag} {model._meta.label:53s} {od_name:12s}  {filter_kwarg}{count_str}")
+        _log(f"  {flag} {model._meta.label:53s} {on_delete_name:12s}  {filter_kwarg}{count_str}")
 
     _log("")
     _log("⚠ = path contains a SET_NULL FK — rows where that FK is NULL are NOT found by this filter")
     _log("    These models need manual handling or supplementary filters.")
     _log("")
 
-    # Models NOT discovered (manual handling required)
-    manual = [
-        (
-            "iaso.DataSource / SourceVersion / OrgUnit",
-            "linked via Project.data_sources M2M, BFS only finds those with credentials",
-        ),
-        ("iaso.Form", "linked via projects M2M"),
-        ("audit.Modification", "content-type based, no FK to Account"),
-        ("iaso.ExportLog", "no FK to Account"),
-        ("django_sql_dashboard.Dashboard", "no FK to Account"),
-        ("django.contrib.sessions.Session", "no FK to Account"),
-        ("vector_control_apiimport", "raw SQL table, not a Django model"),
-        ("users_profile", "legacy raw SQL table"),
-    ]
     _log("=== Models NOT in FK graph (manual handling required) ===")
-    for label, reason in manual:
+    for label, reason in _MANUAL_MODELS_NOTE:
         _log(f"  - {label}")
         _log(f"      reason: {reason}")
 
@@ -388,10 +401,10 @@ class Command(BaseCommand):
             self.cursor.execute(sql, params)
         else:
             self.cursor.execute(sql)
-        n = self.cursor.rowcount
-        if n:
-            _log(f"  {label}: {n:,} deleted")
-        return n
+        row_count = self.cursor.rowcount
+        if row_count:
+            _log(f"  {label}: {row_count:,} deleted")
+        return row_count
 
     def _delete_qs(self, queryset, label=None):
         label = label or queryset.model.__name__
@@ -426,7 +439,7 @@ class Command(BaseCommand):
         fast_deletes — no instances are loaded into memory.
         """
 
-        for attempt in range(10):
+        for attempt in range(_MAX_PROTECT_UNBLOCK_ATTEMPTS):
             collector = Collector(using=queryset.db)
             try:
                 collector.collect(queryset)
@@ -441,7 +454,9 @@ class Command(BaseCommand):
                         blocker_model.objects.filter(pk__in=pks), self.chunk_size, f"{blocker_model.__name__}[unblock]"
                     )
         else:
-            raise RuntimeError(f"Could not collect {label} after 10 attempts — PROTECT cycle not resolved")
+            raise RuntimeError(
+                f"Could not collect {label} after {_MAX_PROTECT_UNBLOCK_ATTEMPTS} attempts — PROTECT cycle not resolved"
+            )
 
         collector.sort()
 
@@ -466,7 +481,7 @@ class Command(BaseCommand):
         # plan_models as dict preserves insertion order for cycle-node fallback.
         plan_models = dict.fromkeys(m for m, _, _ in plan_items)
         successors = {m: set() for m in plan_models}
-        in_degree = {m: 0 for m in plan_models}
+        in_degree = {m: 0 for m in plan_models}  # Kahn's algorithm: number of incoming FK edges per model
         for model in plan_models:
             for field in model._meta.local_fields:
                 if isinstance(field, (ForeignKey, OneToOneField)):
@@ -498,6 +513,11 @@ class Command(BaseCommand):
         ordered_models.extend(cycle_nodes)
 
         model_to_item = {m: (qs, pks) for m, qs, pks in plan_items}
+        skipped = [m for m in ordered_models if m not in model_to_item]
+        if skipped:
+            _log(
+                f"  [warn] {label}: {len(skipped)} model(s) in topo order but not in plan: {[m.__name__ for m in skipped]}"
+            )
         ordered_items = [(m, *model_to_item[m]) for m in ordered_models if m in model_to_item]
 
         if plan_items:
@@ -505,8 +525,8 @@ class Command(BaseCommand):
 
         total_steps = len(ordered_items)
         for step, (model, qs, pks) in enumerate(ordered_items, 1):
-            lbl = f"{label}→{model._meta.label}"
-            _log(f"  [{step}/{total_steps}] {lbl}…")
+            step_label = f"{label}→{model._meta.label}"
+            _log(f"  [{step}/{total_steps}] {step_label}…")
             t0 = time.monotonic()
             if qs is not None:
                 n = qs._raw_delete(using=qs.db)
@@ -516,7 +536,7 @@ class Command(BaseCommand):
                     chunk = pks[i : i + self.chunk_size]
                     n += model.objects.filter(pk__in=chunk)._raw_delete(using=queryset.db)
             if n:
-                _log(f"  {lbl}: {n:,} deleted ({time.monotonic() - t0:.1f}s)")
+                _log(f"  {step_label}: {n:,} deleted ({time.monotonic() - t0:.1f}s)")
 
     def _delete_datasource_tree(self, datasources, label_prefix=""):
         """Delete each DataSource fully before moving to the next."""
@@ -524,53 +544,53 @@ class Command(BaseCommand):
         _log(f"  Deleting {len(ds_list)} datasource(s)")
 
         for ds in ds_list:
-            lbl = f"{label_prefix}ds[{ds.id}]"
+            ds_label = f"{label_prefix}ds[{ds.id}]"
             versions_qs = ds.versions.all()
             instances_in_ds = Instance.objects.filter(org_unit__version__in=versions_qs)
             entities_qs = Entity.objects_include_deleted.filter(attributes__in=instances_in_ds)
 
-            with self._doing(f"Entity {lbl}"):
+            with self._doing(f"Entity {ds_label}"):
                 # Instance.entity is DO_NOTHING — PostgreSQL still enforces the FK.
                 # Null it out before deleting Entity to avoid IntegrityError.
                 if not self.dry_run:
                     Instance.objects.filter(entity__in=entities_qs).update(entity=None)
-                self._delete_qs(entities_qs, label=f"Entity[{lbl}]")
+                self._delete_qs(entities_qs, label=f"Entity[{ds_label}]")
 
-            with self._doing(f"InstanceFile {lbl}"):
+            with self._doing(f"InstanceFile {ds_label}"):
                 self._delete_qs(
                     InstanceFile.objects.filter(instance__in=instances_in_ds),
-                    label=f"InstanceFile[{lbl}]",
+                    label=f"InstanceFile[{ds_label}]",
                 )
 
-            with self._doing(f"Instance {lbl}"):
+            with self._doing(f"Instance {ds_label}"):
                 if not self.dry_run:
-                    _chunked_delete(instances_in_ds, self.chunk_size, f"Instance[{lbl}]")
+                    _chunked_delete(instances_in_ds, self.chunk_size, f"Instance[{ds_label}]")
 
             # Planning.org_unit = PROTECT blocks OrgUnit deletion (hence DataSource cascade).
             # Cycle: Planning.selected_sampling_result = PROTECT(PSR) ↔ PSR.planning = CASCADE(Planning)
             # Break it: null Planning.selected_sampling_result → delete PSR → delete Planning.
-            with self._doing(f"Planning/PSR cycle {lbl}"):
+            with self._doing(f"Planning/PSR cycle {ds_label}"):
                 if not self.dry_run:
                     planning_qs = Planning.objects.filter(org_unit__version__in=versions_qs)
                     planning_qs.update(selected_sampling_result=None)
                     _chunked_delete(
                         PlanningSamplingResult.objects.filter(planning__in=planning_qs),
                         self.chunk_size,
-                        f"PlanningSamplingResult[{lbl}]",
+                        f"PlanningSamplingResult[{ds_label}]",
                     )
-                    _chunked_delete(planning_qs, self.chunk_size, f"Planning[{lbl}]")
+                    _chunked_delete(planning_qs, self.chunk_size, f"Planning[{ds_label}]")
 
             if not self.dry_run:
-                with self._doing(f"DataSource cascade {lbl}"):
+                with self._doing(f"DataSource cascade {ds_label}"):
                     # DataSource.default_version → SourceVersion cycle: null first.
                     DataSource.objects.filter(pk=ds.pk).update(default_version=None)
                     # OrgUnit.parent is a self-referential FK; batch _raw_delete fails if any
                     # row's parent is another row in the same batch. Null all within this
                     # datasource's versions before the cascade reaches OrgUnit.
                     OrgUnit.objects.filter(version__in=versions_qs).update(parent=None)
-                    self._cascade_chunked_delete(DataSource.objects.filter(pk=ds.pk), lbl)
+                    self._cascade_chunked_delete(DataSource.objects.filter(pk=ds.pk), ds_label)
             else:
-                _log(f"  [DRY RUN] {lbl}: would cascade-delete DataSource → SourceVersion → OrgUnit → …")
+                _log(f"  [DRY RUN] {ds_label}: would cascade-delete DataSource → SourceVersion → OrgUnit → …")
 
     # -----------------------------------------------------------------------
     # Manual section: Form (M2M-linked)
@@ -602,7 +622,6 @@ class Command(BaseCommand):
             self._sql("DELETE FROM users_profile", label="users_profile")
         except django.db.utils.ProgrammingError:
             pass
-        self._sql("DELETE FROM vector_control_apiimport", label="vector_control_apiimport")
 
         # Instances with no form (PROTECT FK — must go before any Form cleanup)
         no_form = Instance.objects.filter(form=None)
@@ -657,6 +676,11 @@ class Command(BaseCommand):
         )
         self._delete_qs(Instance.objects.filter(form__in=forms_no_form_id), label="Instance[form no form_id]")
         self._delete_qs(forms_no_form_id, label="Form[no form_id]")
+        # Rows with no app_id can't be attributed to any account — delete them to avoid leaks.
+        self._sql(
+            "DELETE FROM vector_control_apiimport WHERE headers->>'QUERY_STRING' NOT LIKE '%app_id=%'",
+            label="vector_control_apiimport[no app_id]",
+        )
         self._delete_qs(Session.objects.all(), label="Session")
         self._delete_qs(Device.objects.filter(projects=None), label="Device[orphan]")
 
@@ -671,13 +695,8 @@ class Command(BaseCommand):
             except Exception:
                 _log(traceback.format_exc())
 
-        try:
-            from django_sql_dashboard.models import Dashboard
-
-            self._delete_qs(Dashboard.objects.all(), label="Dashboard")
-        except (ImportError, RuntimeError):
-            # RuntimeError when django_sql_dashboard is installed but not in INSTALLED_APPS
-            pass
+        if _Dashboard is not None:
+            self._delete_qs(_Dashboard.objects.all(), label="Dashboard")
         self._sql(
             "DELETE FROM iaso_exportrequest WHERE id NOT IN (SELECT DISTINCT export_request_id FROM iaso_exportstatus)",
             label="iaso_exportrequest[orphan]",
@@ -835,14 +854,21 @@ class Command(BaseCommand):
             users = User.objects.filter(pk__in=user_ids)
             self._delete_qs(users, label="User")
 
+        # ---- Step 5b: vector_control_apiimport — delete rows for this account's projects ----
+        # Rows are filtered by app_id (from QUERY_STRING). Rows with no app_id cannot be
+        # attributed to any account and are cleaned up in _post_flight (account-to-keep mode).
+        for project in Project.objects.filter(account=account):
+            self._sql(
+                "DELETE FROM vector_control_apiimport WHERE headers->>'QUERY_STRING' LIKE %s",
+                params=[f"%app_id={project.app_id}%"],
+                label=f"vector_control_apiimport[app_id={project.app_id}]",
+            )
+
         # ---- Step 6: Account itself ----
         if not self.dry_run:
             account_id, account_name = account.id, account.name
             account.delete()
             _log(f"  Account {account_id} ({account_name!r}) deleted")
-
-        self._delete_qs(Device.objects.filter(projects=None), label="Device[orphan]")
-        self._sql("DELETE FROM vector_control_apiimport", label="vector_control_apiimport")
 
     # -----------------------------------------------------------------------
     # Entry point

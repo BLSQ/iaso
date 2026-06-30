@@ -9,12 +9,14 @@ type SubmissionListProps = {
     totalSteps: number;
     instanceId: number;
     timeline: Timeline[];
+    isFirstSubmission: boolean;
 };
 
 export const SubmissionList = ({
     timeline,
     totalSteps,
     instanceId,
+    isFirstSubmission,
 }: SubmissionListProps) => {
     return (
         <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
@@ -45,6 +47,7 @@ export const SubmissionList = ({
                                 <ListItemSecondaryText
                                     timelineItem={timelineItem}
                                     instanceId={instanceId}
+                                    isFirstSubmission={isFirstSubmission}
                                 />
                             }
                         ></ListItemText>

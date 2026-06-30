@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 import { baseUrls } from 'Iaso/constants/urls';
 import { renderWithThemeAndIntlProvider } from '../../../../../tests/helpers';
+import { NO_PERIOD } from '../../periods/constants';
 import { shouldShowRestoreAction, FormActions } from './FormActions';
 
 describe('shouldShowRestoreAction', () => {
@@ -94,7 +95,7 @@ const defaultProps = {
                 id: 1,
                 deleted_at: null,
                 has_mappings: true,
-                period_type: 'MONTHLY',
+                period_type: NO_PERIOD,
                 org_unit_type_ids: [1],
                 latest_form_version: {
                     xls_file: '/test.xls',

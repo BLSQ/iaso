@@ -50,10 +50,6 @@ const removeObjectEntries = (
     return result;
 };
 
-const asDiffModifications = (
-    results: unknown[] | undefined,
-): DiffModification[] | undefined => results as DiffModification[] | undefined;
-
 export const ValidateInstance = () => {
     const params: Params = useParamsObject(
         baseUrls.instanceValidation,

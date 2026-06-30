@@ -526,7 +526,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 status=status.HTTP_409_CONFLICT,
             )
 
-        export_queryset = parquet.build_pyramid_queryset(queryset, extra_fields)
+        try:
+            export_queryset = parquet.build_pyramid_queryset(queryset, extra_fields)
+        except ValueError as e:
+            return JsonResponse({"error": str(e)}, status=status.HTTP_409_CONFLICT)
 
         tmp = tempfile.NamedTemporaryFile(suffix=".parquet", delete=False)
 

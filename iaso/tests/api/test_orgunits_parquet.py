@@ -389,3 +389,17 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
                 "error": "Unsupported query parameters for parquet exports: unknown_unsupported_filter. Allowed parameters extra_fields, order, parquet, searches"
             },
         )
+
+    def test_groups_exploded_code_collision_returns_400(self):
+        """When two group names normalize to the same safe identifier, the API returns 400."""
+        self.client.force_authenticate(self.yoda)
+
+        collision_group = m.Group.objects.create(name="Élite councils", source_version=self.sw_version_1)
+        collision_group.org_units.add(self.jedi_council_corruscant)
+
+        response = self.client.get("/api/orgunits/?order=id&parquet=true&extra_fields=groups_exploded_code")
+        self.assertEqual(response.status_code, 409)
+        error = response.json()["error"]
+        self.assertIn("elite_councils", error)
+        self.assertIn("normalize to", error)
+        self.assertIn("Use groups_exploded instead to avoid column collisions", error)

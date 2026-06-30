@@ -4,7 +4,7 @@ import {
     DropdownOptions,
     textPlaceholder,
     UrlParams,
-    useRedirectTo,
+    useRedirectToReplace,
     useSafeIntl,
 } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
@@ -39,7 +39,7 @@ export const StepInfo: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
 
     const { selectedStep } = params ?? {};
-    const redirectTo = useRedirectTo();
+    const redirectToReplace = useRedirectToReplace();
 
     const activeSteps: Timeline[] = useMemo(() => {
         return (
@@ -76,12 +76,12 @@ export const StepInfo: FunctionComponent<Props> = ({
 
     const onStepSelect = useCallback(
         (_: string, value: string) => {
-            redirectTo(baseUrls.instanceValidation, {
+            redirectToReplace(baseUrls.instanceValidation, {
                 ...params,
                 selectedStep: value,
             });
         },
-        [redirectTo, params],
+        [redirectToReplace, params],
     );
     return (
         <Paper

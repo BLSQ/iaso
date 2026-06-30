@@ -4,16 +4,18 @@ import { makeStyles } from '@mui/styles';
 import {
     ColumnWithAccessor,
     commonStyles,
-    Item,
     LoadingSpinner,
     SortableTable,
     useGoBack,
     useSafeIntl,
 } from 'bluesquare-components';
+import {
+    useApiValidationWorkflowsRetrieve,
+    ValidationWorkflowRetrieve,
+} from 'Iaso/api/validationWorkflows';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { baseUrls } from 'Iaso/constants/urls';
-import { useGetWorkflowDetails } from 'Iaso/domains/validationWorkflowsConfiguration/api/Get';
 import { useSaveNodeOrder } from 'Iaso/domains/validationWorkflowsConfiguration/api/PostPutPatch';
 import { useWorkflowNodesColumns } from 'Iaso/domains/validationWorkflowsConfiguration/config';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
@@ -21,7 +23,6 @@ import { AddNode } from './components/CreateEditNode/CreateEditNode';
 import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
 import { useSortableTableState } from './hooks/useSortableTableState';
 import MESSAGES from './messages';
-// import { useCustomApiValidationWorkflowsRetrieve } from '../api/Get';
 
 const useStyles = makeStyles((theme: any) => {
     return {
@@ -52,18 +53,20 @@ export const ValidationWorkflowConfigurationDetail = () => {
     const goBack = useGoBack();
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    // const { data: workflow, isFetching: isLoading } =
-    //     useCustomApiValidationWorkflowsRetrieve(params.slug);
-    const { data: workflow, isFetching: isLoading } = useGetWorkflowDetails(
-        params.slug,
-    );
+    const { data: workflow, isFetching: isLoading } =
+        useApiValidationWorkflowsRetrieve(params.slug, {
+            query: { enabled: Boolean(params?.slug) },
+        });
+
     const {
         items,
         handleSortChange,
         handleResetOrder,
         isOrderChanged,
         setIsOrderChanged,
-    } = useSortableTableState<Item>(workflow?.node_templates ?? []);
+    } = useSortableTableState<
+        NonNullable<ValidationWorkflowRetrieve['node_templates']>[number]
+    >(workflow?.node_templates ?? []);
     const { mutateAsync: saveOrder } = useSaveNodeOrder(params.slug);
     const saveItems = useCallback(() => {
         const itemsForApi = items.map(item => ({
@@ -72,7 +75,10 @@ export const ValidationWorkflowConfigurationDetail = () => {
         }));
         return saveOrder(itemsForApi).then(() => setIsOrderChanged(false));
     }, [items, saveOrder, setIsOrderChanged]);
-    const columns = useWorkflowNodesColumns(workflow?.slug);
+    const columns = useWorkflowNodesColumns(
+        workflow?.slug,
+        workflow?.has_processes,
+    );
     const title = workflow?.name
         ? `${formatMessage(MESSAGES.configureInstancesValidation)}: ${workflow.name}`
         : formatMessage(MESSAGES.addInstancesValidationWorkflow);
@@ -108,36 +114,42 @@ export const ValidationWorkflowConfigurationDetail = () => {
                         items={items}
                         onChange={handleSortChange}
                         columns={columns as ColumnWithAccessor[]}
+                        disabled={workflow?.has_processes}
                     />
-                    <Box m={2} textAlign="right">
-                        <Box display="inline-block" mr={2}>
-                            <Button
-                                color="primary"
-                                disabled={!isOrderChanged}
-                                data-test="reset-follow-up-order"
-                                onClick={handleResetOrder}
-                                variant="contained"
-                            >
-                                {formatMessage(MESSAGES.resetOrder)}
-                            </Button>
-                        </Box>
+                    {!workflow?.has_processes && (
+                        <Box m={2} textAlign="right">
+                            <Box display="inline-block" mr={2}>
+                                <Button
+                                    color="primary"
+                                    disabled={!isOrderChanged}
+                                    data-test="reset-follow-up-order"
+                                    onClick={handleResetOrder}
+                                    variant="contained"
+                                >
+                                    {formatMessage(MESSAGES.resetOrder)}
+                                </Button>
+                            </Box>
 
-                        <Box display="inline-block" mr={2}>
-                            <Button
-                                color="primary"
-                                disabled={!isOrderChanged}
-                                data-test="save-follow-up-order"
-                                onClick={saveItems}
-                                variant="contained"
-                            >
-                                {formatMessage(MESSAGES.saveOrder)}
-                            </Button>
+                            <Box display="inline-block" mr={2}>
+                                <Button
+                                    color="primary"
+                                    disabled={!isOrderChanged}
+                                    data-test="save-follow-up-order"
+                                    onClick={saveItems}
+                                    variant="contained"
+                                >
+                                    {formatMessage(MESSAGES.saveOrder)}
+                                </Button>
+                            </Box>
+
+                            <AddNode
+                                workflowSlug={workflow?.slug ?? ''}
+                                iconProps={{
+                                    disabled: !Boolean(workflow?.slug),
+                                }}
+                            />
                         </Box>
-                        <AddNode
-                            workflowSlug={workflow?.slug ?? ''}
-                            iconProps={{ disabled: !Boolean(workflow?.slug) }}
-                        />
-                    </Box>
+                    )}
                 </WidgetPaper>
             </Box>
         </>

@@ -30,7 +30,6 @@ class CampaignsForDashboardsViewSet(EtlModelViewset):
     """
 
     results_key = "campaigns"
-    remove_results_key_if_paginated = False
 
     filter_backends = [
         DjangoFilterBackend,

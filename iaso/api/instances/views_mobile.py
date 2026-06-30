@@ -40,6 +40,12 @@ class InstancesMobileViewSet(GenericViewSet, RetrieveModelMixin):
     serializer_class = MobileInstancesSerializer
     pagination_class = Paginator
 
+    @property
+    def results_key(self):
+        if self.action == "attachments":
+            return "attachments"
+        return "results"
+
     def get_queryset(self):
         request = self.request
         queryset: InstanceQuerySet = Instance.objects
@@ -69,7 +75,6 @@ class InstancesMobileViewSet(GenericViewSet, RetrieveModelMixin):
         if image_only:
             queryset = queryset.filter_image()
 
-        self.paginator.results_key = "attachments"
         self.paginator.page_size = self.paginator.get_page_size(request) or 10
         page = self.paginator.paginate_queryset(queryset, request)
         serializer = InstanceFileSerializer(page, many=True, context=self.get_serializer_context())

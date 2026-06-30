@@ -596,3 +596,22 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
             # 6-7: SERIALIZER
             res = self.client.get(reverse("mobile_validation_workflows-list"))
             self.assertJSONResponse(res, status.HTTP_200_OK)
+
+    def test_should_not_see_soft_deleted_workflows(self):
+        self.client.force_authenticate(self.john_wick)
+        self.setup_reject()
+
+        res = self.client.get(reverse("mobile_validation_workflows-list"))
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertValidListData(list_data=res_data, results_key="results", expected_length=1, paginated=True)
+
+        self.validation_workflow.delete()
+
+        self.validation_workflow.refresh_from_db()
+        self.assertIsNotNone(self.validation_workflow.deleted_at)
+
+        res = self.client.get(reverse("mobile_validation_workflows-list"))
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertValidListData(list_data=res_data, results_key="results", expected_length=0, paginated=True)

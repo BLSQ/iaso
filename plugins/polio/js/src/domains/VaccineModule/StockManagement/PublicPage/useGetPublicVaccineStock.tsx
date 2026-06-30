@@ -1,3 +1,4 @@
+import { useAppId } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useAppId';
 import { useApiParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
 import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
 import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
@@ -18,12 +19,10 @@ const getPublicVaccineStock = (queryString = '', usable = true) => {
     return getRequest(`${endpoint}/?${queryString}`);
 };
 export const useGetPublicVaccineStock = allParams => {
+    const appId = useAppId();
     const { tab, ...params } = allParams;
     const isUsable = (tab ?? 'usable') === 'usable';
-    const safeParams = useUrlParams(
-        { ...params, app_id: 'com.poliooutbreaks.app' },
-        defaults,
-    );
+    const safeParams = useUrlParams({ ...params, app_id: appId }, defaults);
     const apiParams = useApiParams(safeParams);
     const queryString = new URLSearchParams(apiParams).toString();
 

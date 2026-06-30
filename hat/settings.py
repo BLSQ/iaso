@@ -66,12 +66,18 @@ TESTING = env.bool("TESTING", default=False)
 IN_TESTS = len(sys.argv) > 1 and sys.argv[1] == "test"
 PLUGINS = env.list("PLUGINS", default=[], delimiter=",")
 ROOT_REDIRECT_PATTERN_NAME = env.str("ROOT_REDIRECT_PATTERN_NAME", default="dashboard:home_iaso")
-
+DEFAULT_APP_ID = env.str("DEFAULT_APP_ID", default="")
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env.str("SECRET_KEY", default=None)
+
+# Old secret keys kept for signature verification only (not used to sign new values).
+# Set this to the previous SECRET_KEY(s) when rotating SECRET_KEY so that existing
+# sessions, password reset tokens and other signed data stay valid during the rollover.
+# Comma separated list of keys, e.g. SECRET_KEY_FALLBACKS=old_key_1,old_key_2
+SECRET_KEY_FALLBACKS = env.list("SECRET_KEY_FALLBACKS", default=[], delimiter=",")
 
 # SECURITY WARNING: keep the encryption key used in production secret!
 ENCRYPTED_TEXT_FIELD_KEY = env.str("ENCRYPTED_TEXT_FIELD_KEY", default=None)
@@ -318,6 +324,8 @@ TEMPLATES = [
                 "hat.common.context_processors.product_fruits_config",
                 "hat.common.context_processors.learn_more_url",
                 "hat.common.context_processors.available_languages",
+                "hat.common.context_processors.default_app_id",
+                "hat.common.context_processors.dns_domain",
             ]
         },
     }
@@ -540,6 +548,7 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=3650),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=3651),
     "TOKEN_OBTAIN_SERIALIZER": "iaso.serializers.CustomTokenObtainPairSerializer",
+    "ROTATE_REFRESH_TOKENS": True,
 }
 
 AWS_S3_REGION_NAME = env.str("AWS_S3_REGION_NAME", default="eu-central-1")

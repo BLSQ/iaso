@@ -1,5 +1,7 @@
 import typing
 
+from rest_framework import status
+
 from iaso import models as m
 from iaso.models import FeatureFlag
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_PROJECTS_PERMISSION
@@ -123,31 +125,31 @@ class AppsAPITestCase(APITestCase):
         """DELETE /apps/<app_id>/ without auth should result in a 401 response"""
 
         response = self.client.delete("/api/apps/org.ghi.p1/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_apps_list(self):
         """GET /apps/ is not implemented, should result in a 404 response"""
 
         response = self.client.get("/api/apps/")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_apps_retrieve_current_not_found(self):
         """GET /apps/current/?app_id= with wrong app id"""
 
         response = self.client.get("/api/apps/current/?app_id=notanappid")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_apps_retrieve_current_no_app_id(self):
         """GET /apps/current/?app_id= without app id"""
 
         response = self.client.get("/api/apps/current/")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_apps_retrieve_current_ok_1(self):
         """GET /apps/current/?app_id= happy path"""
 
         response = self.client.get(f"/api/apps/current/?app_id={self.project_1.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertValidAppData(response_data)
@@ -157,7 +159,7 @@ class AppsAPITestCase(APITestCase):
         """GET /apps/current/?app_id= happy path (with feature flags)"""
 
         response = self.client.get(f"/api/apps/current/?app_id={self.project_2.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertValidAppData(response_data)
@@ -167,13 +169,13 @@ class AppsAPITestCase(APITestCase):
         """GET /apps/<app_id>/ with wrong app id"""
 
         response = self.client.get("/api/apps/org.nope.nope/")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_apps_retrieve_ok_1(self):
         """GET /apps/<app_id>/ happy path - standard detail endpoint, without ?app_id="""
 
         response = self.client.get(f"/api/apps/{self.project_1.app_id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertValidAppData(response_data)
@@ -183,7 +185,7 @@ class AppsAPITestCase(APITestCase):
         """GET /apps/<app_id>/ happy path (with feature flags) - standard detail endpoint, without ?app_id="""
 
         response = self.client.get(f"/api/apps/{self.project_2.app_id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertValidAppData(response_data)
@@ -194,48 +196,13 @@ class AppsAPITestCase(APITestCase):
 
         with self.assertNumQueries(3):
             response = self.client.get(f"/api/apps/{self.project_2.app_id}/")
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
             response_data = response.json()
             self.assertValidAppData(response_data)
             self.assertEqual(2, len(response_data["feature_flags"]))
 
-    def test_app_create_ok_with_auth(self):
-        candidate_app = {
-            "name": "This is a new app",
-            "app_id": "com.this.is.new.app",
-            "description": "A helpful app description",
-            "feature_flags": [{"id": self.flag_1.id, "name": self.flag_1.name, "code": self.flag_1.code}],
-            "needs_authentication": False,
-        }
-        self.client.force_authenticate(self.user_with_projects_permission)
-        response = self.client.post("/api/apps/", candidate_app, format="json")
-        self.assertJSONResponse(response, 201)
-        response_data = response.json()
-        self.assertValidAppData(response_data)
-        self.assertEqual("A helpful app description", response_data["description"])
-        self.assertEqual(1, len(response_data["feature_flags"]))
-
-    def test_app_cant_create_app_with_existing_id(self):
-        candidate_app = {
-            "name": "This is a new app",
-            "app_id": "com.this.is.new.app",
-            "feature_flags": [{"id": self.flag_1.id, "name": self.flag_1.name, "code": self.flag_1.code}],
-            "needs_authentication": False,
-        }
-        self.client.force_authenticate(self.user_with_projects_permission)
-        response = self.client.post("/api/apps/", candidate_app, format="json")
-        self.assertJSONResponse(response, 201)
-        response_data = response.json()
-        self.assertValidAppData(response_data)
-        self.assertEqual(1, len(response_data["feature_flags"]))
-
-        candidate_app_2 = {"name": "This is a new app 2", "app_id": "com.this.is.new.app", "feature_flags": []}
-        response = self.client.post(
-            "/api/apps/", candidate_app_2, format="json"
-        )  # "can't create two apps with the same id"
-        self.assertJSONResponse(response, 400)
-
-    def test_app_create_ok_without_feature_flags_with_auth(self):
+    def test_apps_create_not_allowed(self):
+        """POST /apps/ is no longer supported. Project creation now goes through /api/projects/."""
         candidate_app = {
             "name": "This is a new app",
             "app_id": "com.this.is.new.app",
@@ -244,349 +211,25 @@ class AppsAPITestCase(APITestCase):
         }
         self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.post("/api/apps/", candidate_app, format="json")
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def test_app_create_ok_without_description(self):
+    def test_apps_create_without_auth(self):
+        """POST /apps/ without auth is rejected before the method check."""
         candidate_app = {
             "name": "This is a new app",
             "app_id": "com.this.is.new.app",
             "feature_flags": [],
             "needs_authentication": False,
         }
-        self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.post("/api/apps/", candidate_app, format="json")
-        response_data = response.json()
-        self.assertValidAppData(response_data)
-        self.assertEqual("", response_data["description"])
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
-        project = m.Project.objects.get(app_id=candidate_app["app_id"])
-        self.assertEqual("", project.description)
-
-    def test_app_create_auto_commit_require_auth_ok_with_auth(self):
-        candidate_app = {
-            "name": "This is a new app",
-            "app_id": "com.this.is.new.app",
-            "feature_flags": [{"id": self.flag_1.id, "name": self.flag_1.name, "code": self.flag_1.code}],
-            "needs_authentication": True,
-        }
-        self.client.force_authenticate(self.user_with_projects_permission)
-        response = self.client.post("/api/apps/", candidate_app, format="json")
-        self.assertJSONResponse(response, 201)
-        response_data = response.json()
-        self.assertTrue(FeatureFlag.REQUIRE_AUTHENTICATION in list(ff["code"] for ff in response_data["feature_flags"]))
-
-    def test_app_create_auto_commit_true_when_require_auth_flag_auth_ok(self):
-        candidate_app = {
-            "name": "This is a new app",
-            "app_id": "com.this.is.new.app",
-            "feature_flags": [{"id": self.flag_3.id, "name": self.flag_3.name, "code": self.flag_3.code}],
-        }
-        self.client.force_authenticate(self.user_with_projects_permission)
-        response = self.client.post("/api/apps/", candidate_app, format="json")
-        self.assertJSONResponse(response, 201)
-        response_data = response.json()
-        self.assertValidAppData(response_data)
-        self.assertTrue(FeatureFlag.REQUIRE_AUTHENTICATION in list(ff["code"] for ff in response_data["feature_flags"]))
-        self.assertEqual(True, response_data["needs_authentication"])
-
-    def test_app_create_without_auth(self):
-        candidate_app = {
-            "name": "This is a new app",
-            "app_id": "com.this.is.new.app",
-            "feature_flags": [{"id": self.flag_1.id, "name": self.flag_1.name, "code": self.flag_1.code}],
-            "needs_authentication": False,
-        }
-
-        response = self.client.post("/api/apps/", candidate_app, format="json")
-        self.assertJSONResponse(response, 401)
-
-    def test_read_is_public(self):
-        """Read operations are available to anonymous users (no authentication)."""
-
-        response = self.client.get(f"/api/apps/{self.project_1.app_id}/")
-        self.assertJSONResponse(response, 200)
-        self.assertValidAppData(response.json())
-
-        response = self.client.get(f"/api/apps/current/?app_id={self.project_1.app_id}")
-        self.assertJSONResponse(response, 200)
-        self.assertValidAppData(response.json())
-
-    def test_app_create_requires_projects_permission(self):
-        """An authenticated user without `CORE_PROJECTS_PERMISSION` cannot create an app."""
-
-        candidate_app = {
-            "name": "This is a new app",
-            "app_id": "com.this.is.new.app",
-            "feature_flags": [{"id": self.flag_1.id, "name": self.flag_1.name, "code": self.flag_1.code}],
-            "needs_authentication": False,
-        }
-        self.client.force_authenticate(self.user_without_projects_permission)
-        response = self.client.post("/api/apps/", candidate_app, format="json")
-        self.assertJSONResponse(response, 403)
-
-    def test_app_update_requires_projects_permission(self):
-        """An authenticated user without `CORE_PROJECTS_PERMISSION` cannot update an app."""
-
-        candidate_app = {
-            "name": "This is a newly updated app",
-            "feature_flags": [],
-        }
-        self.client.force_authenticate(self.user_without_projects_permission)
-        response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
-        self.assertJSONResponse(response, 403)
-
-    def test_app_update_and_commit_require_auth_ok_with_auth(self):
-        candidate_app = {
-            "name": "This is a newly updated app",
-            "description": "Updated app description",
-            "feature_flags": [{"id": self.flag_1.id, "name": self.flag_1.name, "code": self.flag_1.code}],
-            "needs_authentication": True,
-        }
+    def test_apps_update_not_allowed(self):
+        """PUT /apps/<app_id>/ is no longer supported. Project updates now go through /api/projects/."""
+        candidate_app = {"name": "This is an existing app", "feature_flags": []}
         self.client.force_authenticate(self.user_with_projects_permission)
         response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
-        self.assertJSONResponse(response, 200)
-        response_data = response.json()
-        self.assertValidAppData(response_data)
-        self.assertEqual("Updated app description", response_data["description"])
-        self.assertGreaterEqual(2, len(response_data["feature_flags"]))
-        self.assertTrue(FeatureFlag.REQUIRE_AUTHENTICATION in list(ff["code"] for ff in response_data["feature_flags"]))
-
-    def test_app_update_OK_without_feature_flags_with_auth(self):
-        candidate_app = {"app_id": "self.project_1ddes.app_id", "name": "This is an existing app", "feature_flags": []}
-        self.client.force_authenticate(self.user_with_projects_permission)
-        response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
-        self.assertJSONResponse(response, 200)
-
-    def test_app_update_auto_commit_require_auth_true_when_flag_auth_ok(self) -> None:
-        candidate_app = {
-            "name": "This is a new app",
-            "app_id": "com.this.is.new.app",
-            "feature_flags": [{"id": self.flag_3.id, "name": self.flag_3.name, "code": self.flag_3.code}],
-        }
-        self.client.force_authenticate(self.user_with_projects_permission)
-        response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
-        self.assertJSONResponse(response, 200)
-        response_data = response.json()
-        self.assertValidAppData(response_data)
-        self.assertTrue(FeatureFlag.REQUIRE_AUTHENTICATION in list(ff["code"] for ff in response_data["feature_flags"]))
-        self.assertEqual(True, response_data["needs_authentication"])
-
-    def test_app_update_with_flag_that_requires_authentication_has_it(self) -> None:
-        candidate_app = {
-            "name": "This is a new app",
-            "app_id": "com.this.is.new.app",
-            "feature_flags": [
-                {"id": self.flag_4.id, "name": self.flag_4.name, "code": self.flag_4.code},
-            ],
-        }
-        self.client.force_authenticate(self.user_with_projects_permission)
-        response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
-        self.assertJSONResponse(response, 400)
-
-        candidate_app = {
-            "name": "This is a new app",
-            "app_id": "com.this.is.new.app",
-            "feature_flags": [
-                {"id": self.flag_3.id, "name": self.flag_3.name, "code": self.flag_3.code},
-                {"id": self.flag_4.id, "name": self.flag_4.name, "code": self.flag_4.code},
-            ],
-        }
-        response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
-        self.assertJSONResponse(response, 200)
-        response_data = response.json()
-        self.assertValidAppData(response_data)
-        self.assertTrue("REQUIRE_AUTHENTICATION" in list(ff["code"] for ff in response_data["feature_flags"]))
-        self.assertTrue(
-            "FEATURE_FLAG_THAT_REQUIRES_AUTHENTICATION" in list(ff["code"] for ff in response_data["feature_flags"])
-        )
-
-    def test_app_update_without_configuration(self):
-        candidate_app = {
-            "name": "This is a newly updated app",
-            "feature_flags": [
-                {
-                    "id": self.flag_5.id,
-                    "name": self.flag_5.name,
-                    "code": self.flag_5.code,
-                }
-            ],
-        }
-        self.client.force_authenticate(self.user_with_projects_permission)
-        response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
-        self.assertJSONResponse(response, 400)
-
-    def test_app_update_with_configuration(self):
-        candidate_app = {
-            "name": "This is a newly updated app",
-            "feature_flags": [
-                {
-                    "id": self.flag_5.id,
-                    "name": self.flag_5.name,
-                    "code": self.flag_5.code,
-                    "configuration": {"distance": 100},
-                }
-            ],
-            "needs_authentication": True,
-        }
-        self.client.force_authenticate(self.user_with_projects_permission)
-        response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
-        self.assertJSONResponse(response, 200)
-        response_data = response.json()
-        self.assertValidAppData(response_data)
-        self.assertTrue(self.flag_5.code in list(ff["code"] for ff in response_data["feature_flags"]))
-        with_configuration = next((x for x in response_data["feature_flags"] if x["code"] == self.flag_5.code), None)
-        self.assertEqual(100, with_configuration["configuration"]["distance"])
-
-    def test_app_update_with_wrong_configuration(self):
-        candidate_app = {
-            "name": "This is a newly updated app",
-            "feature_flags": [
-                {
-                    "id": self.flag_5.id,
-                    "name": self.flag_5.name,
-                    "code": self.flag_5.code,
-                    "configuration": {"dist": 100},
-                }
-            ],
-        }
-        self.client.force_authenticate(self.user_with_projects_permission)
-        response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
-        self.assertJSONResponse(response, 400)
-
-    def test_app_update_with_all_configuration_types(self):
-        candidate_app = {
-            "name": "This is a newly updated app",
-            "feature_flags": [
-                {
-                    "id": self.flag_6.id,
-                    "name": self.flag_6.name,
-                    "code": self.flag_6.code,
-                    "configuration": {
-                        "int": 123,
-                        "long": 123,
-                        "number": 123,
-                        "float": 123.0,
-                        "double": 123.0,
-                        "decimal": 123.0,
-                        "url": "http://www.perdu.com",
-                        "text": "some text",
-                        "str": "some text",
-                        "string": "some text",
-                    },
-                }
-            ],
-        }
-        self.client.force_authenticate(self.user_with_projects_permission)
-        response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
-        self.assertJSONResponse(response, 200)
-
-    def test_app_update_with_wrong_int_type(self):
-        candidate_app = {
-            "name": "This is a newly updated app",
-            "feature_flags": [
-                {
-                    "id": self.flag_6.id,
-                    "name": self.flag_6.name,
-                    "code": self.flag_6.code,
-                    "configuration": {
-                        "int": "test",
-                        "long": 123,
-                        "number": 123,
-                        "float": 123.0,
-                        "double": 123.0,
-                        "decimal": 123.0,
-                        "url": "http://www.perdu.com",
-                        "text": "some text",
-                        "str": "some text",
-                        "string": "some text",
-                    },
-                }
-            ],
-        }
-        self.client.force_authenticate(self.user_with_projects_permission)
-        response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
-        self.assertJSONResponse(response, 400)
-
-    def test_app_update_with_wrong_float_type(self):
-        candidate_app = {
-            "name": "This is a newly updated app",
-            "feature_flags": [
-                {
-                    "id": self.flag_6.id,
-                    "name": self.flag_6.name,
-                    "code": self.flag_6.code,
-                    "configuration": {
-                        "int": 123,
-                        "long": 123,
-                        "number": 123,
-                        "float": "123.G",
-                        "double": 123.0,
-                        "decimal": 123.0,
-                        "url": "http://www.perdu.com",
-                        "text": "some text",
-                        "str": "some text",
-                        "string": "some text",
-                    },
-                }
-            ],
-        }
-        self.client.force_authenticate(self.user_with_projects_permission)
-        response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
-        self.assertJSONResponse(response, 400)
-
-    def test_app_update_with_wrong_string_type(self):
-        candidate_app = {
-            "name": "This is a newly updated app",
-            "feature_flags": [
-                {
-                    "id": self.flag_6.id,
-                    "name": self.flag_6.name,
-                    "code": self.flag_6.code,
-                    "configuration": {
-                        "int": 123,
-                        "long": 123,
-                        "number": 123,
-                        "float": "123.0",
-                        "double": 123.0,
-                        "decimal": 123.0,
-                        "url": "http://www.perdu.com",
-                        "text": 123,
-                        "str": "some text",
-                        "string": "some text",
-                    },
-                }
-            ],
-        }
-        self.client.force_authenticate(self.user_with_projects_permission)
-        response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
-        self.assertJSONResponse(response, 200)
-
-    def test_app_update_with_bad_url(self):
-        candidate_app = {
-            "name": "This is a newly updated app",
-            "feature_flags": [
-                {
-                    "id": self.flag_6.id,
-                    "name": self.flag_6.name,
-                    "code": self.flag_6.code,
-                    "configuration": {
-                        "int": 123,
-                        "long": 123,
-                        "number": 123,
-                        "float": 123.0,
-                        "double": 123.0,
-                        "decimal": 123.0,
-                        "url": "htp://wrong.scheme.com",
-                        "text": "some text",
-                        "str": "some text",
-                        "string": "some text",
-                    },
-                }
-            ],
-        }
-        self.client.force_authenticate(self.user_with_projects_permission)
-        response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def assertValidAppData(self, app_data: typing.Mapping) -> None:
         self.assertHasField(app_data, "id", str)

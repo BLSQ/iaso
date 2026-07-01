@@ -26,7 +26,7 @@ permissions:
 
 jobs:
   deploy:
-    uses: BLSQ/iaso-ci/.github/workflows/docker_deploy.yml@IA-5227-decouple-ci-actions-into-dedicated-repo
+    uses: BLSQ/iaso-ci/.github/workflows/docker_deploy.yml@main
     with:
       image_tag: ${{ github.event.inputs.image_tag }}
       iaso_branch: ${{ github.event.inputs.branch }}

@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   config:
-    uses: BLSQ/iaso-ci/.github/workflows/config.yml@IA-5227-decouple-ci-actions-into-dedicated-repo
+    uses: BLSQ/iaso-ci/.github/workflows/config.yml@main
     permissions:
       pull-requests: write
       contents: read
@@ -25,20 +25,20 @@ jobs:
 
   build_and_push_image:
     needs: config
-    uses: BLSQ/iaso-ci/.github/workflows/docker_build.yml@IA-5227-decouple-ci-actions-into-dedicated-repo
+    uses: BLSQ/iaso-ci/.github/workflows/docker_build.yml@main
     with:
       iaso_branch: develop
       image_tags: ${{ needs.config.outputs.image_tags }}
     secrets: inherit
 
   tests:
-    uses: BLSQ/iaso-ci/.github/workflows/tests.yml@IA-5227-decouple-ci-actions-into-dedicated-repo
+    uses: BLSQ/iaso-ci/.github/workflows/tests.yml@main
     with:
       iaso_branch: develop
 
   deploy_on_staging:
     needs: [ build_and_push_image, tests ]
-    uses: BLSQ/iaso-ci/.github/workflows/docker_deploy.yml@IA-5227-decouple-ci-actions-into-dedicated-repo
+    uses: BLSQ/iaso-ci/.github/workflows/docker_deploy.yml@main
     with:
       iaso_branch: develop
 #      environment: staging

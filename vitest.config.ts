@@ -75,6 +75,7 @@ export default defineConfig({
                     name: 'integration',
                     include: [
                         'hat/assets/js/__tests__/integration/**/*.integration.test.{ts,tsx}',
+                        'hat/assets/js/**/*.integration.test.{ts,tsx}',
                     ],
                     exclude: [
                         ...configDefaults.exclude, '**/build/', '**/dist/', '**/*.min.js', '**/playwright/**',

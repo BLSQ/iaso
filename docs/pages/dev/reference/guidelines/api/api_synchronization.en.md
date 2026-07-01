@@ -234,6 +234,41 @@ export const mutationInvalidates = [
 ];
 ```
 
+Note that it's possible to make a GET operations locale aware, meaning react queries will trigger again if the locale changes.
+
+Example: 
+
+```typescript
+export const modulesOperations = {
+    apiModulesList: {
+        query: {
+            meta: {
+                localeAware: true,
+            },
+            options: {
+                retry: false,
+                staleTime: Infinity,
+                cacheTime: Infinity,
+                keepPreviousData: true,
+            },
+        },
+    },
+    apiModulesDropdownList: {
+        query: {
+            meta: {
+                localeAware: true,
+            },
+            options: {
+                retry: false,
+                staleTime: Infinity,
+                cacheTime: Infinity,
+                keepPreviousData: true,
+            },
+        },
+    },
+};
+```
+
 #### 2. Register operations in the central configuration
 Do not forget to export your operations in `apiConfiguration/index.ts`. (This will allow one of our custom orval fix to work.)
 

@@ -4,7 +4,7 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Box } from '@mui/material';
+import { Box, Tooltip } from '@mui/material';
 import { useRedirectTo, useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { baseUrls } from 'Iaso/constants/urls';
@@ -33,16 +33,15 @@ export const ApprovalForm: FunctionComponent<Props> = ({
     const [comment, setComment] = useState<string>('');
     const { selectedStep, instanceId } = params ?? {};
 
-    const { activeSteps, selectedNodeSlug } = useMemo(
-        () => getValidationStepContext(workflow, selectedStep),
-        [workflow, selectedStep],
-    );
-    const expectedNextStep =
-        activeSteps.length > 0 ? activeSteps[activeSteps.length - 1].id : null;
+    const { expectedNextStepId, selectedNodeSlug, isSelectedStepActive } =
+        useMemo(
+            () => getValidationStepContext(workflow, selectedStep),
+            [workflow, selectedStep],
+        );
     const isBypassStep =
-        expectedNextStep != null &&
+        expectedNextStepId != null &&
         selectedStep != null &&
-        `${expectedNextStep}` !== selectedStep;
+        `${expectedNextStepId}` !== selectedStep;
 
     const { mutateAsync: validateStep, isLoading } = useValidateNode();
     const redirectTo = useRedirectTo();
@@ -52,8 +51,12 @@ export const ApprovalForm: FunctionComponent<Props> = ({
 
     const canSubmit =
         !isLoadingWorkflow &&
-        Boolean(selectedStep) &&
+        isSelectedStepActive &&
         (!isBypassStep || Boolean(selectedNodeSlug));
+    const isRejectDisabled = !canSubmit || !comment || isLoading;
+    const commentForRejectionMessage = formatMessage(
+        MESSAGES.commentForRejection,
+    );
 
     const commonPayload = useMemo(
         () => ({
@@ -91,9 +94,7 @@ export const ApprovalForm: FunctionComponent<Props> = ({
                     labelString={formatMessage(MESSAGES.comment)}
                     disabled={!canSubmit || isLoading}
                     helperText={
-                        !comment
-                            ? formatMessage(MESSAGES.commentForRejection)
-                            : undefined
+                        !comment ? commentForRejectionMessage : undefined
                     }
                 />
             </ValidationSectionPaper>
@@ -110,12 +111,22 @@ export const ApprovalForm: FunctionComponent<Props> = ({
                     onClick={onApprove}
                     disabled={!canSubmit || isLoading}
                 />
-                <ValidateButton
-                    color="error"
-                    buttonText={formatMessage(MESSAGES.reject)}
-                    onClick={onReject}
-                    disabled={!canSubmit || !comment || isLoading}
-                />
+                <Tooltip
+                    title={
+                        isRejectDisabled && !comment
+                            ? commentForRejectionMessage
+                            : undefined
+                    }
+                >
+                    <Box>
+                        <ValidateButton
+                            color="error"
+                            buttonText={formatMessage(MESSAGES.reject)}
+                            onClick={onReject}
+                            disabled={isRejectDisabled}
+                        />
+                    </Box>
+                </Tooltip>
             </Box>
         </>
     );

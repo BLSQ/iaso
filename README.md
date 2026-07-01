@@ -108,7 +108,58 @@ They are usually generated via `AlgorithmRun`, or the matching is done in a Note
 
 # Development environment
 
-## Setup
+## Local setup with uv (without Docker)
+
+[uv](https://docs.astral.sh/uv/) is a fast Python package manager that can replace pip/virtualenv. Use it to run the backend locally without Docker.
+
+### Install uv
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Or via Homebrew on macOS:
+
+```bash
+brew install uv
+```
+
+### Create a virtual environment and sync dependencies
+
+```bash
+# Create a venv pinned to the project's Python version
+uv venv
+
+# Activate it
+source .venv/bin/activate
+
+# Install all dependencies from pyproject.toml (and lock file if present)
+uv sync
+```
+
+`uv sync` reads `pyproject.toml` (and `uv.lock` if it exists), resolves dependencies and installs them into the active venv. Run it again whenever `pyproject.toml` changes.
+
+### Running the Django server locally
+
+Once dependencies are synced, you can run Django commands directly:
+
+```bash
+uv run ./manage.py migrate
+uv run ./manage.py runserver
+```
+
+> **Note:** You still need a running PostgreSQL (with PostGIS) database. You can either use the Docker `db` service (`docker compose up db`) or a locally installed PostgreSQL.
+
+## Transition from `pip` to `uv`
+IASO transitioned from `pip` to `uv` in July 2026. If you installed IASO before that, there are some things you might need to do to pull the latest changes and make your project work with `uv`:
+- if you are using a docker image: rebuild the latest image with `docker compose build iaso`
+- if you are using a local installation (no docker):
+  - install `uv`: https://docs.astral.sh/uv/getting-started/installation/
+  - run `uv sync` to generate a virtual environment and install dependencies (at the root of the project, in `.venv`)
+      - if you already have a virtual environment, you can `uv sync --active` to let `uv` recreate the virtual environment in the same place
+
+
+## Setup (Docker)
 
 A running local instance for development can be spin up via docker compose which will install and
 configure all dep in separate container. As such your computer should only need:
@@ -804,7 +855,7 @@ python manage.py shell_plus --notebook
 
 You will need to populate at least these environment variables with your own values in a `.env` file:
 
-```
+```bash
 # PostgreSQL Database connection details
 RDS_DB_NAME=
 RDS_HOSTNAME=
@@ -812,7 +863,6 @@ RDS_PASSWORD=
 RDS_USERNAME=
 DB_READONLY_PASSWORD=
 DB_READONLY_USERNAME=
-
 # Used for encryption and authorisation
 ENCRYPTED_TEXT_FIELD_KEY=
 SECRET_KEY=
@@ -823,9 +873,8 @@ SECRET_KEY_FALLBACKS=
 # To interact with Enketo/ODK
 ENKETO_API_TOKEN=
 ENKETO_SIGNING_SECRET=
-
-# Docker image tag (defaults to "latest" if not set)
-IMAGE_TAG=
+# Docker image tag (defaults to "develop" if not set)
+PROD_IMAGE_TAG=
 ```
 
 Docker Compose automatically reads a `.env` file in the project root, so no `source` command is needed.
@@ -836,7 +885,7 @@ Note: for production deployments you need an external PostgreSQL database. The `
 
 Proceed to run docker compose on your server:
 
-```
+```bash
 docker compose -f docker-compose.prod.yml up
 ```
 
@@ -856,6 +905,35 @@ use `SECRET_KEY_FALLBACKS`, which lists old keys Django still uses to *verify* (
    the fallback key, while new data is signed with the new key.
 4. Once the oldest signed data has expired (e.g. past `SESSION_COOKIE_AGE` /
    `PASSWORD_RESET_TIMEOUT`), remove the old key from `SECRET_KEY_FALLBACKS`.
+
+
+## Building locally
+
+The production image uses a multi-stage Dockerfile at `docker/prod/Dockerfile`.
+
+Log in to Docker Hub first:
+
+```bash
+docker login
+```
+
+Build and push:
+
+```bash
+docker build -f ./docker/prod/Dockerfile -t blsq/iaso:latest --push .
+```
+
+To tag a specific version instead of `latest`:
+
+```bash
+docker build -f ./docker/prod/Dockerfile -t blsq/iaso:your-tag-here --push .
+```
+
+Build locally only (no push):
+
+```bash
+docker build -f ./docker/prod/Dockerfile -t blsq/iaso:latest .
+```
 
 
 ## System requirements

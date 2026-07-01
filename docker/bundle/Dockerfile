@@ -1,3 +1,4 @@
+#TODO: delete me once the new prod image is tested and working
 # Do a Docker multistage build where we build the NPM package in an image
 # Then transfert it in the filan django image
 ############ NPM Builder ######################################################################
@@ -52,14 +53,18 @@ RUN apt-get update && apt-get --yes  --no-install-recommends install \
     &&  apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 WORKDIR /opt/app
-COPY requirements.txt /opt/app/requirements.txt
-COPY requirements-dev.txt /opt/app/requirements-dev.txt
-RUN pip install -r requirements-dev.txt
+COPY pyproject.toml /opt/app/pyproject.toml
+RUN pip install uv
+# make uv use the system python and install everything in the system, not in a .venv
+ENV UV_PROJECT_ENVIRONMENT=/usr/local
+ENV UV_PYTHON_PREFERENCE=only-system
+ENV UV_NO_DEV=1
+RUN uv sync --python "$(which python3)" --group prod
 
 COPY --from=npmbuilder /opt/app/hat/assets /opt/app/hat/assets
 COPY . /opt/app
-RUN SECRET_KEY=NOT_SO_SECRET python manage.py collectstatic
-RUN SECRET_KEY=NOT_SO_SECRET python manage.py compilemessages
+RUN SECRET_KEY=NOT_SO_SECRET uv run python manage.py collectstatic
+RUN SECRET_KEY=NOT_SO_SECRET uv run python manage.py compilemessages
 
 FROM base AS dev
 # Tell iaso backend to Use the assets build by webpack
@@ -75,9 +80,9 @@ CMD ["manage", "testserver", "--no-input", "iaso/fixtures/user.yaml", "--addrpor
 
 FROM base AS prod
 USER root
-# Only install gunicorn for production
-RUN pip install gunicorn
+
 COPY --from=npmbuilder /opt/app/hat/assets /opt/app/hat/assets
+
 # Migrations are run by the start_gunicorn
 RUN SECRET_KEY=NOT_SO_SECRET python manage.py collectstatic --noinput
 EXPOSE 8081

@@ -1,8 +1,122 @@
 [project]
 name = "Iaso"
 readme = "README.md"
-requires-python = "~=3.9"
+requires-python = ">=3.9,<3.10"
 version = "v1.3"
+dependencies = [
+    "anthropic==0.52.0", # https://github.com/anthropics/anthropic-sdk-python/tags
+    "azure-storage-blob==12.19.0",
+    "beautifulsoup4==4.12.2", # https://pypi.org/project/beautifulsoup4/
+    "boto3==1.42.44", # https://github.com/boto/boto3/tags
+    "celery==5.3.6", # https://github.com/celery/celery/tags
+    "clamav-client==0.6.3", # https://github.com/artefactual-labs/clamav-client/tags
+    "cryptography==45.0.7", # https://github.com/pyca/cryptography
+    "dateparser==1.2.0", # https://github.com/scrapinghub/dateparser/tags
+    "dhis2-py==2.3.0", # https://github.com/davidhuser/dhis2.py/tags
+    "django~=4.2",
+    "django-allauth==0.54.0", # https://github.com/pennersr/django-allauth/tags
+    "django-appconf==1.2.0", # https://github.com/django-compressor/django-appconf
+    "django-autoslug==1.9.9", # https://github.com/justinmayer/django-autoslug
+    "django-axes==8.0.0", # https://github.com/jazzband/django-axes/tags
+    "django-celery-beat==2.6.0", # https://github.com/celery/django-celery-beat/tags
+    "django-celery-results==2.5.1", # https://github.com/celery/django-celery-results/tags
+    "django-contrib-comments==2.2.0", # https://github.com/django/django-contrib-comments/tags
+    "django-cors-headers==4.3.1", # https://github.com/adamchainz/django-cors-headers/tags
+    "django-countries==8.2.0", # https://github.com/SmileyChris/django-countries/tags
+    "django-cte==1.3.2", # https://github.com/dimagi/django-cte/tags
+    "django-extensions==3.2.3", # https://github.com/django-extensions/django-extensions/tags
+    "django-filter==24.2", # https://github.com/carltongibson/django-filter/tags
+    "django-json-widget==1.1.1", # https://github.com/jmrivas86/django-json-widget/tags
+    "django-lazy-services==0.0.3", # https://pypi.org/project/django-lazy-services/
+    "django-ltree==0.5.3", # https://github.com/mariocesar/django-ltree/tags
+    "django-pg-utils==0.1.5", # trypelim - https://pypi.org/project/django-pg-utils/
+    "django-phonenumber-field[phonenumberslite]==7.3.0", # https://django-phonenumber-field.readthedocs.io/en/latest/
+    "django-qr-code==4.0.1", # https://django-qr-code.readthedocs.io/en/latest/
+    "django-redis==4.12.1", # https://github.com/jazzband/django-redis/tags
+    "django-ses==2.6.1", # trypelim - https://github.com/django-ses/django-ses/releases/
+    "django-simple-captcha==0.6.3", # https://github.com/mbi/django-simple-captcha/tags
+    "django-sql-dashboard==1.2", # https://github.com/simonw/django-sql-dashboard/tags
+    "django-storages==1.14.2", # https://github.com/jschneier/django-storages/tags
+    "django-stubs-ext==4.2.7", # https://github.com/typeddjango/django-stubs/tags
+    "django-translated-fields==0.12.0", # https://github.com/matthiask/django-translated-fields/tags
+    "django-webpack-loader",
+    "django-xlsform-validator",
+    "djangorestframework==3.14.0", # https://github.com/encode/django-rest-framework/tags
+    "djangorestframework-csv==3.0.2", # https://github.com/mjumbewu/django-rest-framework-csv/tags
+    "djangorestframework-simplejwt==5.3.1", # https://github.com/jazzband/djangorestframework-simplejwt/tags
+    "drf-excel==2.5.3",
+    "drf-extensions==0.8.0", # https://github.com/chibisov/drf-extensions
+    "drf-spectacular[sidecar]==0.29.0", # https://github.com/tfranzel/drf-spectacular
+    "duckdb==1.3.2", # https://duckdb.org/docs/stable/clients/python/overview
+    "environs==14.4.0", # https://github.com/sloria/environs/tags
+    "fiona==1.10.1", # https://github.com/Toblerity/Fiona/tags
+    "geopandas==1.0.1", # https://github.com/geopandas/geopandas/tags
+    "geopy==2.4.1", # https://github.com/geopy/geopy/tags
+    "gpxpy==1.4.0", # trypelim - https://github.com/tkrajina/gpxpy/tags
+    "gql[requests]==3.4.1", # https://github.com/graphql-python/gql/tags
+    "gspread==5.12.3", # https://github.com/burnash/gspread/tags
+    "gspread-formatting==1.1.2", # https://github.com/robin900/gspread-formatting/tags
+    "ipython==8.18.1", # https://github.com/ipython/ipython/tags
+    "jsonpatch==1.33", # https://github.com/stefankoegl/python-json-patch
+    "jsonref==1.1.0", # https://github.com/gazpachoking/jsonref
+    "jsonschema==4.20.0", # https://github.com/python-jsonschema/jsonschema/tags
+    "libsass==0.23.0", # provides the 'sass' module used by compile_index_scss
+    "lxml==4.9.4", # https://github.com/lxml/lxml/tags
+    "names-generator==0.2.0", # https://github.com/glentner/names_generator
+    "nested-multipart-parser==1.5.0", # https://github.com/remigermain/nested-multipart-parser
+    "numpy==1.26.2", # https://github.com/numpy/numpy/tags
+    "oauth2client==4.1.3", # https://github.com/googleapis/oauth2client/tags
+    "openhexa-sdk==0.3.1",
+    "openhexa-toolbox==2.7.0",
+    "pandas==2.0.3", # https://github.com/pandas-dev/pandas/tags
+    "pillow==10.1.0", # https://github.com/python-pillow/Pillow/tags
+    "psutil==7.2.2", # https://pypi.org/project/psutil/
+    "psycopg2-binary==2.9.9", # https://github.com/psycopg/psycopg2/tags
+    "pycryptodome==3.20.0", # https://github.com/Legrandin/pycryptodome/
+    "pydantic==2.11.3", # https://github.com/pydantic/pydantic/tags
+    "pyjwt==1.7.1", # https://github.com/jpadilla/pyjwt/tags
+    "python-dateutil==2.9.0", # https://github.com/dateutil/dateutil
+    "python-magic==0.4.27", # https://github.com/ahupp/python-magic
+    "pyxform==2.0.3", # https://github.com/XLSForm/pyxform/tags
+    "redis==4.6.0", # https://github.com/redis/redis/tags
+    "requests==2.31.0", # https://github.com/psf/requests/tags
+    "requests-toolbelt==0.9.1",
+    "sentry-sdk[django]==1.38.0", # https://github.com/getsentry/sentry-python/tags
+    "shapely==2.0.2", # https://github.com/shapely/shapely/tags
+    "snaql==0.4.2", # trypelim - https://github.com/zaiev/snaql/tags
+    "snt-malaria-budgeting==0.10.1", # SNT malaria
+    "sqlalchemy==2.0.23", # https://github.com/sqlalchemy/sqlalchemy/tags
+    "tsp-solver2==0.4.1", # trypelim - https://github.com/dmishin/tsp-solver/tags
+    "unidecode==1.3.7", # https://github.com/avian2/unidecode/tags
+    "urllib3<2",
+    "xlsxwriter==3.1.9", # https://github.com/jmcnamara/XlsxWriter/tags
+]
+# ------------------------------------------------------------------------------
+# Comments about some dependencies
+# ------------------------------------------------------------------------------
+# pyxform depends on:
+#
+# 1. xlrd==2.0.1 https://github.com/XLSForm/pyxform/blob/f71955/setup.py#L23
+#     - xlrd supports Python up to 3.9
+#     - https://github.com/python-excel/xlrd/blob/c6d642/CHANGELOG.rst?plain=1#L18
+#     - we are stuck with Python 3.9
+#
+# 2. openpyxl==3.0.9 https://github.com/XLSForm/pyxform/blob/f71955/setup.py#L24
+#     - pandas ≥ 2.1 require openpyxl > 3.0.9
+#     - we are stuck with Pandas < 2.1
+#
+# Since pyxform is used 2 times in Iaso for `create_survey_from_xls`, we should
+# get rid of it to upgrade to newer versions of Python and Pandas.
+# ------------------------------------------------------------------------------
+
+# urllib & requests-toolbelt - bug fix for: "App Engine" was removed from `requests_toolbelt`.
+# ------------------------------------------------------------------------------
+# Google App Engine was removed from requests-toolbelt in 1.0.0:
+# https://github.com/requests/toolbelt/blob/c62d97/HISTORY.rst#100----2023-05-01
+# Stick to a previous version, otherwise this wouldn't work:
+# https://github.com/BLSQ/iaso/blob/a52af7/plugins/polio/tasks/api/refresh_lqas_data.py#L3
+#     gql > requests_toolbelt > appengine
+# ------------------------------------------------------------------------------
 
 [project.urls]
 Repository = "https://github.com/BLSQ/"
@@ -167,6 +281,57 @@ lines-between-types = 1
 omit = [
     "plugins/*/migrations/*",
     "plugins/*/tests/*",
-    "*/migrations/*",  
+    "*/migrations/*",
     "iaso/tests/*"
+]
+
+[tool.uv.sources]
+# Webpack loader.
+# ------------------------------------------------------------------------------
+# This is our custom version of webpack loader to handle S3 better.
+# Use the following line if you want a locally editable version, and comment the other
+# -e git+https://github.com/BLSQ/django-webpack-loader@e94f76d0f8372193f0b662e2a1aba01a9deffb20#egg=django_webpack_loader
+# Use the tar.gz version to install faster
+# ------------------------------------------------------------------------------
+django-webpack-loader = { url = "https://github.com/BLSQ/django-webpack-loader/archive/5fa2b6897b27dc6ff5bb51162e1375fd0aa8afea.tar.gz" }
+django-xlsform-validator = { url = "https://github.com/BLSQ/spreadsheet-xlsform-validator/archive/main.zip" }
+
+[dependency-groups]
+deploy = [
+    "awsebcli==3.26",
+    "boto3==1.42.44",
+    "botocore==1.42.44",
+]
+dev = [
+    "boto3-stubs==1.34.7", # https://pypi.org/project/boto3-stubs/
+    "coverage==7.10.6", # https://coverage.readthedocs.io
+    "django-debug-toolbar==4.4.2", # https://github.com/jazzband/django-debug-toolbar/tags
+    "django-querycount==0.8.3", # https://github.com/bradmontgomery/django-querycount/tags
+    "django-test-migrations==1.4.0", # https://github.com/wemake-services/django-test-migrations/releases
+    "django-sslserver==0.22", # https://pypi.org/project/django-sslserver/
+    "django-stubs==4.2.7", # https://github.com/typeddjango/django-stubs/tags
+    "djangorestframework-stubs==1.10.0", # https://github.com/typeddjango/djangorestframework-stubs/tags
+    "locust==2.20.0", # https://github.com/locustio/locust/tags
+    "lxml-stubs==0.4.0", # https://pypi.org/project/lxml-stubs/
+    "mock==4.0.1", # TODO: replace this because mock is part of the Python standard library.
+    "mypy==1.7.1", # https://github.com/python/mypy/tags
+    "openpyxl-stubs==0.1.25", # https://pypi.org/project/openpyxl-stubs/
+    "pre-commit==4.1.0", # https://github.com/pre-commit/pre-commit/tags
+    "redgreenunittest==0.1.1", # https://pypi.org/project/redgreenunittest/
+    "responses==0.24.1", # https://github.com/getsentry/responses/tags
+    "ruff==0.9.6", # https://github.com/astral-sh/ruff/tags
+    "tblib==3.0.0", # https://github.com/ionelmc/python-tblib/tags
+    "time-machine==2.13.0", # https://github.com/adamchainz/time-machine/tags
+    "typed-ast==1.5.5", # https://github.com/python/typed_ast/tags
+    "types-dataclasses==0.6.6", # https://pypi.org/project/types-dataclasses/
+    "types-dateparser==1.1.4.10", # https://pypi.org/project/types-dateparser/
+    "types-jsonschema==4.20.0.0", # https://pypi.org/project/types-jsonschema/
+    "types-jwt==0.1.3", # https://pypi.org/project/types-jwt/
+    "types-mock==4.0.15", # https://pypi.org/project/types-mock/
+    "types-requests==2.31.0.6", # https://pypi.org/project/types-requests/
+    "vcrpy==4.1.1", # trypelim - https://github.com/kevin1024/vcrpy
+]
+prod = [
+    "gunicorn==23.0.0", # https://github.com/benoitc/gunicorn/tags
+    "py-spy==0.4.2", # https://github.com/benfred/py-spy/releases
 ]

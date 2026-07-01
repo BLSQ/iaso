@@ -18,8 +18,15 @@ import {
     useGetInstanceLogDetail,
 } from '../hooks/useGetInstanceLogs';
 import MESSAGES from '../messages';
+import { FormattedInstanceLog } from '../utils/formattedInstanceLog';
 import { InstanceLogDetail } from './InstanceLogDetail';
 import { InstanceLogInfos } from './InstanceLogInfos';
+
+export type { FormattedInstanceLog } from '../utils/formattedInstanceLog';
+export {
+    EMPTY_FORMATTED_INSTANCE_LOG,
+    hasInstanceLogContent,
+} from '../utils/formattedInstanceLog';
 
 type Params = {
     instanceIds: string;
@@ -32,24 +39,6 @@ export type LogContentSource = {
     files?: Record<string, string> | string[];
     form_descriptor?: Record<string, any>[] | Record<string, any> | null;
     possible_fields?: Record<string, any>[];
-};
-
-export type FormattedInstanceLog = {
-    logA: Record<string, any> | undefined;
-    logB: Record<string, any> | undefined;
-    logAFiles: Record<string, string> | string[] | undefined;
-    logBFiles: Record<string, string> | string[] | undefined;
-    formDescriptorA:
-        | Record<string, any>[]
-        | Record<string, any>
-        | null
-        | undefined;
-    formDescriptorB:
-        | Record<string, any>[]
-        | Record<string, any>
-        | null
-        | undefined;
-    fields: Record<string, any>[] | undefined;
 };
 
 export const formatLogContent = (

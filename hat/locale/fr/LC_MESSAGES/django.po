@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-24 07:39+0000\n"
+"POT-Creation-Date: 2026-07-01 14:04+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -313,6 +313,34 @@ msgstr ""
 #, python-format
 msgid "Login via %(name)s"
 msgstr "Se connecter via %(name)s"
+
+#: hat/views.py
+msgid "Invalid app id {}"
+msgstr "App id invalide {}"
+
+#: hat/views.py
+msgid "Invalid configuration. Please contact the administrator"
+msgstr "Configuration invalide. Veuillez contacter l'administrateur."
+
+#: hat/views.py
+msgid "Access token validation failed"
+msgstr "La validation du jeton d'accès a échoué."
+
+#: hat/views.py
+msgid "Error login to auth server"
+msgstr "Erreur de connexion au serveur d'authentification"
+
+#: hat/views.py
+msgid "Username already exists for this account."
+msgstr "Ce nom d'utilisateur existe déjà pour ce compte."
+
+#: hat/views.py
+msgid "Error login account"
+msgstr "Erreur de connexion au compte"
+
+#: hat/views.py
+msgid "Internal server error"
+msgstr "Erreur interne du serveur"
 
 #~ msgid "User ID"
 #~ msgstr "ID utilisateur"

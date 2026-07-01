@@ -3,12 +3,15 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.settings import api_settings
 
-from iaso.models import Account, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
-from iaso.models.validation_workflow.templates import PositionChoices
-from iaso.tests.api.validation_workflows_node_templates.test_views.common import BaseApiTestCase
+from iaso.models import Account, Project, UserRole, ValidationNodeTemplate
+from iaso.models.validation_workflow.validation_workflow_version import PositionChoices
+from iaso.services.validation_workflows import ValidationWorkflowService
+from iaso.test import SwaggerTestCaseMixin
+
+from .common import BaseApiTestCase
 
 
-class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
+class ValidationNodeTemplateAPICreateTestCase(SwaggerTestCaseMixin, BaseApiTestCase):
     def setUp(self):
         super().setUp()
         self.project = Project.objects.create(name="project", account=self.account)
@@ -18,19 +21,24 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
         self.group = Group.objects.create(name="Group")
         self.user_role = UserRole.objects.create(group=self.group, account=self.account)
 
-        self.validation_workflow = ValidationWorkflow.objects.create(
+        self.validation_workflow = ValidationWorkflowService.create_validation_workflow(
             name="Random other name",
             description="Random description",
-            created_by=self.john_doe,
+            user=self.john_doe,
             account=self.account,
         )
 
-        self.other_validation_workflow = ValidationWorkflow.objects.create(
+        self.other_validation_workflow = ValidationWorkflowService.create_validation_workflow(
             name="Random other name 2",
             description="Random description",
-            created_by=self.john_doe,
+            user=self.john_doe,
             account=self.account_2,
+            version="2.0.0",
         )
+
+        self.validation_workflow_version = self.validation_workflow.get_latest_version()
+        self.other_validation_workflow_version = self.other_validation_workflow.get_latest_version()
+
         (
             self.account_without_feature_flag,
             self.user_without_feature_flag,
@@ -39,18 +47,29 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
         ) = self.create_no_feature_flag_data()
 
         # create some nodes
-        self.first_node = ValidationNodeTemplate.objects.create(name="First node", workflow=self.validation_workflow)
-        self.second_node = ValidationNodeTemplate.objects.create(name="Second node", workflow=self.validation_workflow)
+        self.first_node = ValidationNodeTemplate.objects.create(
+            name="First node", workflow=self.validation_workflow_version
+        )
+        self.second_node = ValidationNodeTemplate.objects.create(
+            name="Second node", workflow=self.validation_workflow_version
+        )
         self.second_node.previous_node_templates.add(self.first_node)
 
         self.outer_workflow_node = ValidationNodeTemplate.objects.create(
-            name="first outer node", workflow=self.other_validation_workflow
+            name="first outer node", workflow=self.other_validation_workflow_version
         )
+
+    def assertValidBody(self, body):
+        self.assertResponseCompliantToSwagger(body, "ValidationNodeTemplateCreateRequest")
 
     def test_permissions(self):
         res = self.client.post(
             reverse(
-                "validation_node_templates-list", kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug}
+                "nested_validation_node_templates-list",
+                kwargs={
+                    "parent_lookup_workflow__slug": self.validation_workflow.slug,
+                    "parent_lookup_version": self.validation_workflow_version.version_as_str,
+                },
             )
         )
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -58,7 +77,11 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
         self.client.force_authenticate(self.john_doe)
         res = self.client.post(
             reverse(
-                "validation_node_templates-list", kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug}
+                "nested_validation_node_templates-list",
+                kwargs={
+                    "parent_lookup_workflow__slug": self.validation_workflow.slug,
+                    "parent_lookup_version": self.validation_workflow_version.version_as_str,
+                },
             )
         )
         self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
@@ -66,7 +89,11 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
         self.client.force_authenticate(self.john_wick)
         res = self.client.post(
             reverse(
-                "validation_node_templates-list", kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug}
+                "nested_validation_node_templates-list",
+                kwargs={
+                    "parent_lookup_workflow__slug": self.validation_workflow.slug,
+                    "parent_lookup_version": self.validation_workflow_version.version_as_str,
+                },
             )
         )
         self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
@@ -74,7 +101,11 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
         self.client.force_authenticate(self.superuser)
         res = self.client.post(
             reverse(
-                "validation_node_templates-list", kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug}
+                "nested_validation_node_templates-list",
+                kwargs={
+                    "parent_lookup_workflow__slug": self.validation_workflow.slug,
+                    "parent_lookup_version": self.validation_workflow_version.version_as_str,
+                },
             )
         )
         self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
@@ -82,8 +113,11 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
         self.client.force_authenticate(self.user_without_feature_flag)
         res = self.client.post(
             reverse(
-                "validation_node_templates-list",
-                kwargs={"parent_lookup_workflow__slug": self.validation_workflow_without_feature_flag.slug},
+                "nested_validation_node_templates-list",
+                kwargs={
+                    "parent_lookup_workflow__slug": self.validation_workflow_without_feature_flag.slug,
+                    "parent_lookup_version": self.validation_workflow_without_feature_flag.get_latest_version().version_as_str,
+                },
             )
         )
         self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
@@ -92,14 +126,36 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
         self.client.force_authenticate(self.john_wick)
         res = self.client.post(
             reverse(
-                "validation_node_templates-list",
-                kwargs={"parent_lookup_workflow__slug": self.other_validation_workflow.slug},
+                "nested_validation_node_templates-list",
+                kwargs={
+                    "parent_lookup_workflow__slug": self.validation_workflow.slug,
+                    "parent_lookup_version": self.other_validation_workflow_version.version_as_str,
+                },
             ),
             data={"name": "random"},
         )
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(
-            res_data, "workflow", f"Object with slug={self.other_validation_workflow.slug} does not exist."
+            res_data,
+            "workflow",
+            f"Object with version={self.other_validation_workflow_version.version_as_str} does not exist.",
+        )
+
+        res = self.client.post(
+            reverse(
+                "nested_validation_node_templates-list",
+                kwargs={
+                    "parent_lookup_workflow__slug": self.other_validation_workflow.slug,
+                    "parent_lookup_version": self.validation_workflow_version.version_as_str,
+                },
+            ),
+            data={"name": "random"},
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(
+            res_data,
+            "workflow",
+            f"Object with version={self.validation_workflow_version.version_as_str} does not exist.",
         )
 
     def test_num_queries_insert_first(self):
@@ -108,8 +164,11 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
         with self.assertNumQueries(16):
             res = self.client.post(
                 reverse(
-                    "validation_node_templates-list",
-                    kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
+                    "nested_validation_node_templates-list",
+                    kwargs={
+                        "parent_lookup_workflow__slug": self.validation_workflow.slug,
+                        "parent_lookup_version": self.validation_workflow_version.version_as_str,
+                    },
                 ),
                 data={
                     "name": "Random name 2",
@@ -128,8 +187,11 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
         with self.assertNumQueries(16):
             res = self.client.post(
                 reverse(
-                    "validation_node_templates-list",
-                    kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
+                    "nested_validation_node_templates-list",
+                    kwargs={
+                        "parent_lookup_workflow__slug": self.validation_workflow.slug,
+                        "parent_lookup_version": self.validation_workflow_version.version_as_str,
+                    },
                 ),
                 data={
                     "name": "Random name 3",
@@ -147,8 +209,11 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
         with self.assertNumQueries(17):
             res = self.client.post(
                 reverse(
-                    "validation_node_templates-list",
-                    kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
+                    "nested_validation_node_templates-list",
+                    kwargs={
+                        "parent_lookup_workflow__slug": self.validation_workflow.slug,
+                        "parent_lookup_version": self.validation_workflow_version.version_as_str,
+                    },
                 ),
                 data={
                     "name": "Random name",
@@ -170,18 +235,25 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
 
     def base_test_happy_flow(self, user):
         self.client.force_authenticate(user)
+
+        body = {
+            "name": "Random node",
+            "description": "Random description",
+            "roles_required": [self.user_role.pk],
+            "position": PositionChoices.child_of,
+            "parent_node_templates": [self.first_node.slug],
+            "can_skip_previous_nodes": True,
+        }
+        self.assertValidBody(body)
         res = self.client.post(
             reverse(
-                "validation_node_templates-list", kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug}
+                "nested_validation_node_templates-list",
+                kwargs={
+                    "parent_lookup_workflow__slug": self.validation_workflow.slug,
+                    "parent_lookup_version": self.validation_workflow_version.version_as_str,
+                },
             ),
-            data={
-                "name": "Random node",
-                "description": "Random description",
-                "roles_required": [self.user_role.pk],
-                "position": PositionChoices.child_of,
-                "parent_node_templates": [self.first_node.slug],
-                "can_skip_previous_nodes": True,
-            },
+            data=body,
         )
         res_data = self.assertJSONResponse(res, status.HTTP_201_CREATED)
 
@@ -190,7 +262,7 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
         # check the db
         created_node = ValidationNodeTemplate.objects.get(slug="random-node")
 
-        self.assertEqual(created_node.workflow, self.validation_workflow)
+        self.assertEqual(created_node.workflow, self.validation_workflow_version)
         self.assertEqual(created_node.name, "Random node")
         self.assertEqual(created_node.description, "Random description")
         self.assertTrue(created_node.can_skip_previous_nodes)
@@ -198,9 +270,9 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
         self.assertEqual(list(created_node.next_node_templates.values_list("pk", flat=True)), [self.second_node.pk])
 
         # check that the whole linear graph has been updated correctly
-        self.validation_workflow.refresh_from_db()
+        self.validation_workflow_version.refresh_from_db()
 
-        self.assertEqual(self.validation_workflow.get_starting_node(), self.first_node)
+        self.assertEqual(self.validation_workflow_version.get_starting_node(), self.first_node)
         self.first_node.refresh_from_db()
         self.assertEqual(list(self.first_node.next_node_templates.values_list("pk", flat=True)), [created_node.pk])
 
@@ -209,24 +281,29 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
         self.assertFalse(self.second_node.next_node_templates.exists())
 
         with self.subTest("Insert starting node"):
+            body = {
+                "name": "Random starting node",
+                "description": "Random description",
+                "position": PositionChoices.first,
+                "can_skip_previous_nodes": True,
+            }
+            self.assertValidBody(body)
             res = self.client.post(
                 reverse(
-                    "validation_node_templates-list",
-                    kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
+                    "nested_validation_node_templates-list",
+                    kwargs={
+                        "parent_lookup_workflow__slug": self.validation_workflow.slug,
+                        "parent_lookup_version": self.validation_workflow_version.version_as_str,
+                    },
                 ),
-                data={
-                    "name": "Random starting node",
-                    "description": "Random description",
-                    "position": PositionChoices.first,
-                    "can_skip_previous_nodes": True,
-                },
+                data=body,
             )
             self.assertJSONResponse(res, status.HTTP_201_CREATED)
 
             # check the db
             second_created_node = ValidationNodeTemplate.objects.get(slug="random-starting-node")
 
-            self.assertEqual(second_created_node.workflow, self.validation_workflow)
+            self.assertEqual(second_created_node.workflow, self.validation_workflow_version)
             self.assertEqual(second_created_node.name, "Random starting node")
             self.assertEqual(second_created_node.description, "Random description")
             self.assertTrue(second_created_node.can_skip_previous_nodes)
@@ -237,7 +314,7 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
 
             created_node = ValidationNodeTemplate.objects.get(slug="random-node")
 
-            self.assertEqual(created_node.workflow, self.validation_workflow)
+            self.assertEqual(created_node.workflow, self.validation_workflow_version)
             self.assertEqual(created_node.name, "Random node")
             self.assertEqual(created_node.description, "Random description")
             self.assertTrue(created_node.can_skip_previous_nodes)
@@ -247,9 +324,9 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
             self.assertEqual(list(created_node.next_node_templates.values_list("pk", flat=True)), [self.second_node.pk])
 
             # check that the whole linear graph has been updated correctly
-            self.validation_workflow.refresh_from_db()
+            self.validation_workflow_version.refresh_from_db()
 
-            self.assertEqual(self.validation_workflow.get_starting_node(), second_created_node)
+            self.assertEqual(self.validation_workflow_version.get_starting_node(), second_created_node)
 
             self.first_node.refresh_from_db()
             self.assertEqual(list(self.first_node.next_node_templates.values_list("pk", flat=True)), [created_node.pk])
@@ -265,23 +342,28 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
 
         # insert a last node
         with self.subTest("Insert last node"):
+            body = {
+                "name": "Random last node",
+                "description": "Random description",
+                "position": PositionChoices.last,
+                "can_skip_previous_nodes": True,
+            }
+            self.assertValidBody(body)
             res = self.client.post(
                 reverse(
-                    "validation_node_templates-list",
-                    kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
+                    "nested_validation_node_templates-list",
+                    kwargs={
+                        "parent_lookup_workflow__slug": self.validation_workflow.slug,
+                        "parent_lookup_version": self.validation_workflow_version.version_as_str,
+                    },
                 ),
-                data={
-                    "name": "Random last node",
-                    "description": "Random description",
-                    "position": PositionChoices.last,
-                    "can_skip_previous_nodes": True,
-                },
+                data=body,
             )
             self.assertJSONResponse(res, status.HTTP_201_CREATED)
 
             # check the db
             last_created_node = ValidationNodeTemplate.objects.get(slug="random-last-node")
-            self.assertEqual(last_created_node.workflow, self.validation_workflow)
+            self.assertEqual(last_created_node.workflow, self.validation_workflow_version)
             self.assertEqual(last_created_node.name, "Random last node")
             self.assertEqual(last_created_node.description, "Random description")
             self.assertTrue(last_created_node.can_skip_previous_nodes)
@@ -291,7 +373,7 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
             )
 
             second_created_node.refresh_from_db()
-            self.assertEqual(second_created_node.workflow, self.validation_workflow)
+            self.assertEqual(second_created_node.workflow, self.validation_workflow_version)
             self.assertEqual(second_created_node.name, "Random starting node")
             self.assertEqual(second_created_node.description, "Random description")
             self.assertTrue(second_created_node.can_skip_previous_nodes)
@@ -302,7 +384,7 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
 
             created_node.refresh_from_db()
 
-            self.assertEqual(created_node.workflow, self.validation_workflow)
+            self.assertEqual(created_node.workflow, self.validation_workflow_version)
             self.assertEqual(created_node.name, "Random node")
             self.assertEqual(created_node.description, "Random description")
             self.assertTrue(created_node.can_skip_previous_nodes)
@@ -314,7 +396,7 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
             # check that the whole linear graph has been updated correctly
             self.validation_workflow.refresh_from_db()
 
-            self.assertEqual(self.validation_workflow.get_starting_node(), second_created_node)
+            self.assertEqual(self.validation_workflow_version.get_starting_node(), second_created_node)
 
             self.first_node.refresh_from_db()
             self.assertEqual(list(self.first_node.next_node_templates.values_list("pk", flat=True)), [created_node.pk])
@@ -334,7 +416,11 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
         self.client.force_authenticate(self.john_wick)
         res = self.client.post(
             reverse(
-                "validation_node_templates-list", kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug}
+                "nested_validation_node_templates-list",
+                kwargs={
+                    "parent_lookup_workflow__slug": self.validation_workflow.slug,
+                    "parent_lookup_version": self.validation_workflow_version.version_as_str,
+                },
             ),
             data={
                 "name": "Random node",
@@ -350,7 +436,11 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
 
         res = self.client.post(
             reverse(
-                "validation_node_templates-list", kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug}
+                "nested_validation_node_templates-list",
+                kwargs={
+                    "parent_lookup_workflow__slug": self.validation_workflow.slug,
+                    "parent_lookup_version": self.validation_workflow_version.version_as_str,
+                },
             ),
             data={
                 "name": "Random node",
@@ -374,8 +464,11 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
         self.client.force_authenticate(self.john_wick)
         res = self.client.post(
             reverse(
-                "validation_node_templates-list",
-                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
+                "nested_validation_node_templates-list",
+                kwargs={
+                    "parent_lookup_workflow__slug": self.validation_workflow.slug,
+                    "parent_lookup_version": self.validation_workflow_version.version_as_str,
+                },
             ),
             data={
                 "name": "Random name 2",

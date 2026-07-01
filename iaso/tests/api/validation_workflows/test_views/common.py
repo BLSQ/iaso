@@ -1,6 +1,7 @@
-from iaso.models import Account, ValidationWorkflow
+from iaso.models import Account
 from iaso.modules import MODULE_VALIDATION_WORKFLOW
 from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION
+from iaso.services.validation_workflows import ValidationWorkflowService
 from iaso.test import APITestCase
 
 
@@ -25,6 +26,7 @@ class BaseValidationWorkflowAPITestCase(APITestCase):
         (
             self.account_without_feature_flag,
             self.user_without_feature_flag,
+            self.base_validation_workflow_without_feature_flag,
             self.validation_workflow_without_feature_flag,
         ) = self.create_no_feature_flag_data()
 
@@ -37,12 +39,17 @@ class BaseValidationWorkflowAPITestCase(APITestCase):
             account=account_without_feature_flag,
             permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION],
         )
-        validation_workflow_without_feature_flag = ValidationWorkflow.objects.create(
+        base_validation_workflow_without_feature_flag = ValidationWorkflowService.create_validation_workflow(
             name="No feature workflow",
             account=account_without_feature_flag,
-            created_by=user_without_feature_flag,
+            user=user_without_feature_flag,
         )
-        return account_without_feature_flag, user_without_feature_flag, validation_workflow_without_feature_flag
+        return (
+            account_without_feature_flag,
+            user_without_feature_flag,
+            base_validation_workflow_without_feature_flag,
+            base_validation_workflow_without_feature_flag.get_latest_version(),
+        )
 
     @staticmethod
     def add_validation_workflow_module(*accounts):
@@ -52,26 +59,3 @@ class BaseValidationWorkflowAPITestCase(APITestCase):
                 account_modules.append(MODULE_VALIDATION_WORKFLOW.codename)
                 account.modules = account_modules
                 account.save()
-
-    def assertValidValidationWorkflowListData(self, list_data, expected_length, paginated=True):
-        results_key = "results"
-        self.assertValidListData(
-            list_data=list_data, results_key=results_key, expected_length=expected_length, paginated=False
-        )
-
-        for data in list_data[results_key]:
-            self.assertIn("slug", data)
-            self.assertIn("name", data)
-            self.assertIn("form_count", data)
-            self.assertIn("created_by", data)
-            self.assertIn("updated_by", data)
-            self.assertIn("created_at", data)
-            self.assertIn("updated_at", data)
-
-    def assertValidValidationWorkflowDropdownListData(self, list_data, expected_length):
-        self.assertValidListData(
-            list_data=list_data, results_key=None, expected_length=expected_length, paginated=False
-        )
-        for data in list_data:
-            self.assertIn("label", data)
-            self.assertIn("value", data)

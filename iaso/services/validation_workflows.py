@@ -31,11 +31,13 @@ class ValidationWorkflowService:
     @staticmethod
     @transaction.atomic
     def create_validation_workflow(
-        *, user, account, name, version=DEFAULT_FIRST_VERSION, description="", deleted_at=None
+        *, user=None, account, name, version=DEFAULT_FIRST_VERSION, description="", deleted_at=None, form_set=None
     ):
         vf = ValidationWorkflow.objects.create(
-            name=name, description=description, account=account, deleted_at=deleted_at
+            name=name, description=description, account=account, deleted_at=deleted_at, created_by=user, updated_by=user
         )
+        if form_set:
+            vf.form_set.set(form_set)
 
         ValidationWorkflowVersion.objects.create(
             main_workflow=vf,
@@ -51,7 +53,7 @@ class ValidationWorkflowService:
     def create_new_version(
         *,
         validation_workflow: ValidationWorkflow,
-        user,
+        user=None,
         version: str = None,
         upgrade: UPGRADE_STRATEGY.keys() = "major",
         clone_node_templates: bool = False,

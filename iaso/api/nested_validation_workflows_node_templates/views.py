@@ -80,13 +80,22 @@ class NestedValidationNodeTemplatesView(NestedViewSetMixin, ModelViewSet):
                 ctx.update(
                     {
                         "version": ValidationWorkflowVersion.objects.filter_for_account(account)
-                        .filter(main_workflow__slug=self.kwargs.get("parent_lookup_workflow__slug", ""))
+                        .filter(
+                            main_workflow__slug=self.kwargs.get("parent_lookup_workflow__slug", ""),
+                            main_workflow__deleted_at__isnull=True,
+                        )
                         .latest_by_version()
                         .version
                     }
                 )
             else:
                 ctx.update({"version": self.kwargs.get("parent_lookup_version")})
+
+            ctx.update(
+                {
+                    "workflow": self.kwargs.get("parent_lookup_workflow__slug"),
+                }
+            )
         return ctx
 
     def get_queryset(self):
@@ -100,8 +109,10 @@ class NestedValidationNodeTemplatesView(NestedViewSetMixin, ModelViewSet):
         else:
             version_lookup = {
                 "version": Subquery(
-                    ValidationWorkflowVersion.objects.filter(
-                        main_workflow__slug=self.kwargs.get("parent_lookup_workflow__slug", "")
+                    ValidationWorkflowVersion.objects.filter_for_account(account)
+                    .filter(
+                        main_workflow__deleted_at__isnull=True,
+                        main_workflow__slug=self.kwargs.get("parent_lookup_workflow__slug", ""),
                     )
                     .order_by_version()
                     .values("version")[:1]
@@ -112,11 +123,13 @@ class NestedValidationNodeTemplatesView(NestedViewSetMixin, ModelViewSet):
             ValidationWorkflowVersion.objects.filter(
                 main_workflow__deleted_at__isnull=True,
                 main_workflow__slug=self.kwargs.get("parent_lookup_workflow__slug"),
-            ),
+            ).filter_for_account(account),
             **version_lookup,
         )
 
-        qs = ValidationNodeTemplate.objects.filter(workflow=parent_version, workflow__deleted_at__isnull=True)
+        qs = ValidationNodeTemplate.objects.filter_for_account(account).filter(
+            workflow=parent_version, workflow__deleted_at__isnull=True, workflow__main_workflow__deleted_at__isnull=True
+        )
 
         if self.action in ["delete"]:
             return qs.prefetch_related("roles_required", "next_node_templates", "previous_node_templates")
@@ -124,7 +137,7 @@ class NestedValidationNodeTemplatesView(NestedViewSetMixin, ModelViewSet):
         if self.action in ["retrieve", "list"]:
             return qs.prefetch_related(Prefetch("roles_required", queryset=UserRole.objects.select_related("group")))
 
-        return qs.select_related("workflow", "workflow__account")
+        return qs
 
     # This endpoint returns a plain list (not paginated).
     # pagination_class=None ensures the OpenAPI schema reflects that.

@@ -1,6 +1,7 @@
-from iaso.models import Account, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import Account, ValidationNodeTemplate
 from iaso.modules import MODULE_VALIDATION_WORKFLOW
 from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION
+from iaso.services.validation_workflows import ValidationWorkflowService
 from iaso.test import APITestCase
 
 
@@ -28,14 +29,15 @@ class BaseApiTestCase(APITestCase):
             account=account_without_feature_flag,
             permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION],
         )
-        validation_workflow_without_feature_flag = ValidationWorkflow.objects.create(
+        validation_workflow_without_feature_flag = ValidationWorkflowService.create_validation_workflow(
             name="No feature workflow",
             account=account_without_feature_flag,
-            created_by=user_without_feature_flag,
+            user=user_without_feature_flag,
         )
+        validation_workflow_without_feature_flag_version = validation_workflow_without_feature_flag.get_latest_version()
         node_template_without_feature_flag = ValidationNodeTemplate.objects.create(
             name="No feature node",
-            workflow=validation_workflow_without_feature_flag,
+            workflow=validation_workflow_without_feature_flag_version,
         )
         return (
             account_without_feature_flag,

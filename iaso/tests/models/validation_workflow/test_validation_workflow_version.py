@@ -6,17 +6,17 @@ from iaso.test import TestCase
 class TestValidationWorkflowVersion(TestCase):
     def test_is_artifact_allowed(self):
         form = Form.objects.create()
-        base_workflow = ValidationWorkflowService.create(
+        base_workflow = ValidationWorkflowService.create_validation_workflow(
             user=None, name="test", account=Account.objects.create(name="test")
         )
-        workflow = base_workflow.versions.latest_by_version()
+        workflow = base_workflow.get_latest_version()
 
         workflow.form_set.set([form])
 
-        another_base_workflow = ValidationWorkflowService.create(
+        another_base_workflow = ValidationWorkflowService.create_validation_workflow(
             user=None, name="another-test", account=Account.objects.create(name="test2")
         )
-        another_workflow = another_base_workflow.versions.latest_by_version()
+        another_workflow = another_base_workflow.get_latest_version()
 
         another_form = Form.objects.create()
 

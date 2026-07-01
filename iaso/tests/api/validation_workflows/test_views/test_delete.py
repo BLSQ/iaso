@@ -2,6 +2,7 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.models import ValidationWorkflow
+from iaso.services.validation_workflows import ValidationWorkflowService
 from iaso.tests.api.validation_workflows.test_views.common import BaseValidationWorkflowAPITestCase
 
 
@@ -10,12 +11,8 @@ class ValidationWorkflowAPIDeleteTestCase(BaseValidationWorkflowAPITestCase):
         super().setUp()
         self.add_validation_workflow_module(self.account)
 
-        self.validation_workflow = ValidationWorkflow.objects.create(
-            name="Name 1",
-            account=self.account,
-            description="description",
-            created_by=self.john_doe,
-            updated_by=self.john_wick,
+        self.validation_workflow = ValidationWorkflowService.create_validation_workflow(
+            name="Name 1", account=self.account, description="description", user=self.john_doe
         )
 
     def base_test_perform_delete(self, user):
@@ -52,7 +49,9 @@ class ValidationWorkflowAPIDeleteTestCase(BaseValidationWorkflowAPITestCase):
         self.assertJSONResponse(res, status.HTTP_204_NO_CONTENT)
         self.client.force_authenticate(self.user_without_feature_flag)
         res = self.client.delete(
-            reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow_without_feature_flag.slug})
+            reverse(
+                "validation_workflows-detail", kwargs={"slug": self.base_validation_workflow_without_feature_flag.slug}
+            )
         )
         self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
 

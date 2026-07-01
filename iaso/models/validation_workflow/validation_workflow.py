@@ -1,4 +1,5 @@
 from autoslug import AutoSlugField
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import Q
 
@@ -18,6 +19,13 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
     name = models.CharField(max_length=256)
     slug = AutoSlugField(populate_from="name", unique=True, unique_with="account_id")
     description = models.TextField(blank=True, max_length=1024)
+
+    created_by = models.ForeignKey(
+        get_user_model(), null=True, blank=True, on_delete=models.SET_NULL, related_name="%(class)s_created_set"
+    )
+    updated_by = models.ForeignKey(
+        get_user_model(), null=True, blank=True, on_delete=models.SET_NULL, related_name="%(class)s_updated_set"
+    )
 
     account = models.ForeignKey("Account", on_delete=models.CASCADE)
 
@@ -40,3 +48,6 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
 
     def __str__(self):
         return self.name
+
+    def get_latest_version(self):
+        return self.versions.latest_by_version()

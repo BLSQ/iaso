@@ -31,7 +31,7 @@ class VersionModel(models.Model):
     objects = models.Manager.from_queryset(VersionModelQuerySet)()
 
     def set_version_fields(self, version=None):
-        version = version or self.version
+        version = version or str(self.version)
 
         if not version:
             raise ValueError(_("Version cannot be empty"))

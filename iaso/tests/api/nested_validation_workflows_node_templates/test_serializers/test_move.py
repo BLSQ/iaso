@@ -2,9 +2,10 @@ from django.test import RequestFactory
 from rest_framework.settings import api_settings
 
 from iaso.api.nested_validation_workflows_node_templates.serializers.move import ValidationNodeTemplateMoveSerializer
-from iaso.models import Account
-from iaso.models.validation_workflow.templates import PositionChoices, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import Account, ValidationNodeTemplate
+from iaso.models.validation_workflow.validation_workflow_version import PositionChoices
 from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION
+from iaso.services.validation_workflows import ValidationWorkflowService
 from iaso.test import TestCase
 
 
@@ -14,21 +15,28 @@ class TestValidationNodeTemplateMoveSerializer(TestCase):
 
         self.account = Account.objects.create(name="account")
         self.other_account = Account.objects.create(name="account2")
-        self.validation_workflow = ValidationWorkflow.objects.create(name="test", account=self.account)
-        self.other_validation_workflow = ValidationWorkflow.objects.create(name="test2", account=self.other_account)
+        self.validation_workflow = ValidationWorkflowService.create_validation_workflow(
+            name="test", account=self.account
+        )
+        self.other_validation_workflow = ValidationWorkflowService.create_validation_workflow(
+            name="test2", account=self.other_account, version="2.0.0"
+        )
+
+        self.validation_workflow_version = self.validation_workflow.get_latest_version()
+        self.other_validation_workflow_version = self.other_validation_workflow.get_latest_version()
 
         self.first_node_template = ValidationNodeTemplate.objects.create(
-            name="first", workflow=self.validation_workflow
+            name="first", workflow=self.validation_workflow_version
         )
         self.second_node_template = ValidationNodeTemplate.objects.create(
-            name="second", workflow=self.validation_workflow
+            name="second", workflow=self.validation_workflow_version
         )
         self.third_node_template = ValidationNodeTemplate.objects.create(
-            name="third", workflow=self.validation_workflow
+            name="third", workflow=self.validation_workflow_version
         )
 
         self.outer_node = ValidationNodeTemplate.objects.create(
-            name="outer node", workflow=self.other_validation_workflow
+            name="outer node", workflow=self.other_validation_workflow_version
         )
 
         self.john_wick = self.create_user_with_profile(

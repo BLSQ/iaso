@@ -66,11 +66,11 @@ class TestValidationWorkflowServiceCreateNewVersion(TestCase):
     def test_create_default(self):
         ValidationWorkflowService.create_new_version(validation_workflow=self.vf, user=self.jim)
         self.vf.refresh_from_db()
-        self.assertNotEqual(self.vf.versions.latest_by_version(), self.version)
+        self.assertNotEqual(self.vf.get_latest_version(), self.version)
 
         self.assertEqual(ValidationNodeTemplate.objects.count(), 2)
 
-        new_version = self.vf.versions.latest_by_version()
+        new_version = self.vf.get_latest_version()
 
         self.assertEqual(new_version.version_as_str, "2.0.0")
 
@@ -84,11 +84,11 @@ class TestValidationWorkflowServiceCreateNewVersion(TestCase):
         )
 
         self.vf.refresh_from_db()
-        self.assertNotEqual(self.vf.versions.latest_by_version(), self.version)
+        self.assertNotEqual(self.vf.get_latest_version(), self.version)
 
         self.assertEqual(ValidationNodeTemplate.objects.count(), 4)
 
-        new_version = self.vf.versions.latest_by_version()
+        new_version = self.vf.get_latest_version()
 
         self.assertEqual(new_version.version_as_str, "2.0.0")
 
@@ -118,29 +118,29 @@ class TestValidationWorkflowServiceCreateNewVersion(TestCase):
         ValidationWorkflowService.create_new_version(validation_workflow=self.vf, user=self.jim, upgrade="major")
 
         self.vf.refresh_from_db()
-        self.assertNotEqual(self.vf.versions.latest_by_version(), self.version)
+        self.assertNotEqual(self.vf.get_latest_version(), self.version)
 
         self.assertEqual(ValidationNodeTemplate.objects.count(), 2)
 
-        new_version = self.vf.versions.latest_by_version()
+        new_version = self.vf.get_latest_version()
 
         self.assertEqual(new_version.version_as_str, "2.0.0")
         ValidationWorkflowService.create_new_version(validation_workflow=self.vf, user=self.jim, upgrade="minor")
         self.vf.refresh_from_db()
-        self.assertNotEqual(self.vf.versions.latest_by_version(), self.version)
+        self.assertNotEqual(self.vf.get_latest_version(), self.version)
 
         self.assertEqual(ValidationNodeTemplate.objects.count(), 2)
 
-        new_version = self.vf.versions.latest_by_version()
+        new_version = self.vf.get_latest_version()
 
         self.assertEqual(new_version.version_as_str, "2.1.0")
         ValidationWorkflowService.create_new_version(validation_workflow=self.vf, user=self.jim, upgrade="patch")
         self.vf.refresh_from_db()
-        self.assertNotEqual(self.vf.versions.latest_by_version(), self.version)
+        self.assertNotEqual(self.vf.get_latest_version(), self.version)
 
         self.assertEqual(ValidationNodeTemplate.objects.count(), 2)
 
-        new_version = self.vf.versions.latest_by_version()
+        new_version = self.vf.get_latest_version()
 
         self.assertEqual(new_version.version_as_str, "2.1.1")
 
@@ -160,10 +160,10 @@ class TestValidationWorkflowServiceCreateNewVersion(TestCase):
         )
 
         self.vf.refresh_from_db()
-        self.assertNotEqual(self.vf.versions.latest_by_version(), self.version)
+        self.assertNotEqual(self.vf.get_latest_version(), self.version)
 
         self.assertEqual(ValidationNodeTemplate.objects.count(), 2)
 
-        new_version = self.vf.versions.latest_by_version()
+        new_version = self.vf.get_latest_version()
 
         self.assertEqual(new_version.version_as_str, "3.1.3")

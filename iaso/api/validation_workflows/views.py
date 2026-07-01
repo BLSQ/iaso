@@ -55,7 +55,7 @@ class ValidationWorkflowViewSet(ModelViewSet):
 
     def get_queryset(self):
         account = self.request.user.iaso_profile.account
-        qs = ValidationWorkflow.objects.filter(account=account).select_related("account")
+        qs = ValidationWorkflow.objects.filter(account=account).select_related("account", "created_by", "updated_by")
         if self.action == "list":
             qs = (
                 qs.prefetch_related("form_set")
@@ -95,7 +95,7 @@ class ValidationWorkflowViewSet(ModelViewSet):
         return qs
 
     @extend_schema(responses=ValidationWorkflowDropdownSerializer(many=True))
-    @action(detail=False, methods=["get"])
+    @action(detail=False, methods=["get"], pagination_class=None)
     def dropdown(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)

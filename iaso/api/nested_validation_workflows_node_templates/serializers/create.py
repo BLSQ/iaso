@@ -6,7 +6,7 @@ from iaso.api.common import HiddenSlugRelatedField, ModelSerializer
 from iaso.api.nested_validation_workflows_node_templates.serializers.common import (
     ValidationWorkflowVersionContextDefault,
 )
-from iaso.models import UserRole, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import UserRole, ValidationNodeTemplate
 from iaso.models.validation_workflow.validation_workflow_version import PositionChoices, ValidationWorkflowVersion
 
 
@@ -23,7 +23,7 @@ class ValidationNodeTemplateCreateSerializer(ModelSerializer):
     )
 
     workflow = HiddenSlugRelatedField(
-        slug_field="slug",
+        slug_field="version",
         write_only=True,
         queryset=ValidationWorkflowVersion.objects.none(),
         required=False,
@@ -60,14 +60,21 @@ class ValidationNodeTemplateCreateSerializer(ModelSerializer):
 
         if account:
             self.fields["roles_required"].child_relation.queryset = UserRole.objects.filter(account=account)
-            self.fields["parent_node_templates"].child_relation.queryset = ValidationNodeTemplate.objects.filter(
-                workflow__main_workflow__account=account
+            self.fields[
+                "parent_node_templates"
+            ].child_relation.queryset = ValidationNodeTemplate.objects.filter_for_account(account).filter(
+                workflow__version=self.context["version"],
+                workflow__deleted_at__isnull=True,
+                workflow__main_workflow__slug=self.context["workflow"],
+                workflow__main_workflow__deleted_at__isnull=True,
             )
 
-            self.fields["workflow"].queryset = ValidationWorkflow.objects.filter(account=user.iaso_profile.account)
+            self.fields["workflow"].queryset = ValidationWorkflowVersion.objects.filter_for_account(
+                account=account
+            ).filter(main_workflow__slug=self.context["workflow"], main_workflow__deleted_at__isnull=True)
             self.validators = [
                 UniqueTogetherValidator(
-                    queryset=ValidationNodeTemplate.objects.filter(workflow__main_workflow__account=account),
+                    queryset=ValidationNodeTemplate.objects.filter_for_account(account),
                     fields=["name", "workflow"],
                 )
             ]

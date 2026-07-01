@@ -3,7 +3,8 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.models import Account, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
-from iaso.tests.api.validation_workflows_node_templates.test_views.common import BaseApiTestCase
+
+from .common import BaseApiTestCase
 
 
 class ValidationNodeTemplateAPIDeleteTestCase(BaseApiTestCase):

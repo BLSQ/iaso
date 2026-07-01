@@ -3,8 +3,9 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.models import Account, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
-from iaso.models.validation_workflow.templates import PositionChoices
-from iaso.tests.api.validation_workflows_node_templates.test_views.common import BaseApiTestCase
+from iaso.models.validation_workflow.validation_workflow_version import PositionChoices
+
+from .common import BaseApiTestCase
 
 
 class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):

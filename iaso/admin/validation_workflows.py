@@ -10,4 +10,4 @@ class ValidationWorkflowAdmin(ModelAdmin):
         if change:
             obj.save()
         else:
-            ValidationWorkflowService.create(user=request.user, **form.cleaned_data)
+            ValidationWorkflowService.create_validation_workflow(user=request.user, **form.cleaned_data)

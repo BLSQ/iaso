@@ -5,9 +5,10 @@ from rest_framework.settings import api_settings
 from iaso.api.nested_validation_workflows_node_templates.serializers.create import (
     ValidationNodeTemplateCreateSerializer,
 )
-from iaso.models import Account, UserRole
-from iaso.models.validation_workflow.templates import PositionChoices, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import Account, UserRole, ValidationNodeTemplate
+from iaso.models.validation_workflow.validation_workflow_version import PositionChoices
 from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION
+from iaso.services.validation_workflows import ValidationWorkflowService
 from iaso.test import TestCase
 
 
@@ -17,21 +18,27 @@ class TestValidationNodeTemplateCreateSerializer(TestCase):
 
         self.account = Account.objects.create(name="account")
         self.other_account = Account.objects.create(name="account2")
-        self.validation_workflow = ValidationWorkflow.objects.create(name="test", account=self.account)
-        self.other_validation_workflow = ValidationWorkflow.objects.create(name="test2", account=self.other_account)
+        self.validation_workflow = ValidationWorkflowService.create_validation_workflow(
+            name="test", account=self.account
+        )
+        self.validation_workflow_version = self.validation_workflow.get_latest_version()
+        self.other_validation_workflow = ValidationWorkflowService.create_validation_workflow(
+            name="test2", account=self.other_account, version="2.0.0"
+        )
+        self.other_validation_workflow_version = self.other_validation_workflow.get_latest_version()
 
         self.other_user_role = UserRole.objects.create(
             account=self.other_account, group=Group.objects.create(name="group")
         )
         self.first_node_template = ValidationNodeTemplate.objects.create(
-            name="first", workflow=self.validation_workflow
+            name="first", workflow=self.validation_workflow_version
         )
         self.second_node_template = ValidationNodeTemplate.objects.create(
-            name="second", workflow=self.validation_workflow
+            name="second", workflow=self.validation_workflow_version
         )
 
         self.outer_node = ValidationNodeTemplate.objects.create(
-            name="outer node", workflow=self.other_validation_workflow
+            name="outer node", workflow=self.other_validation_workflow_version
         )
 
         self.john_wick = self.create_user_with_profile(
@@ -40,7 +47,7 @@ class TestValidationNodeTemplateCreateSerializer(TestCase):
 
         request.user = self.john_wick
 
-        self.context = {"request": request, "workflow_slug": self.validation_workflow.slug}
+        self.context = {"request": request, "version": self.validation_workflow_version.version_as_str}
 
     def test_validation_empty_data(self):
         serializer = ValidationNodeTemplateCreateSerializer(data={}, context=self.context)
@@ -142,7 +149,7 @@ class TestValidationNodeTemplateCreateSerializer(TestCase):
             serializer.errors["roles_required"][0], f'Invalid pk "{self.other_user_role.pk}" - object does not exist.'
         )
 
-    def test_validation_workflow_slug_from_context(self):
+    def test_validation_workflow_version_from_context(self):
         serializer = ValidationNodeTemplateCreateSerializer(
             data={
                 "name": "random name",
@@ -159,12 +166,16 @@ class TestValidationNodeTemplateCreateSerializer(TestCase):
             data={
                 "name": "random name",
             },
-            context={"request": self.context["request"], "workflow_slug": self.other_validation_workflow.slug},
+            context={
+                "request": self.context["request"],
+                "version": self.other_validation_workflow_version.version_as_str,
+            },
         )
         self.assertFalse(serializer.is_valid())
 
         self.assertCountEqual(["workflow"], serializer.errors.keys())
 
         self.assertEqual(
-            serializer.errors["workflow"][0], f"Object with slug={self.other_validation_workflow.slug} does not exist."
+            serializer.errors["workflow"][0],
+            f"Object with version={self.other_validation_workflow_version.version_as_str} does not exist.",
         )

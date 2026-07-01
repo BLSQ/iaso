@@ -1,12 +1,13 @@
 from django.urls import reverse
 from rest_framework import status
 
-from iaso.models import Account, Form, Instance, ValidationWorkflow
+from iaso.models import Account, Form, Instance
+from iaso.services.validation_workflows import DEFAULT_FIRST_VERSION, ValidationWorkflowService
 from iaso.test import SwaggerTestCaseMixin
 from iaso.tests.api.validation_workflows.test_views.common import BaseValidationWorkflowAPITestCase
 
 
-class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
+class ValidationWorkflowAPIListTestCase(SwaggerTestCaseMixin, BaseValidationWorkflowAPITestCase):
     def setUp(self):
         super().setUp()
         self.account_2 = Account.objects.create(name="account_2")
@@ -21,37 +22,39 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
 
         self.vf_pk = None
         for i in range(15):
-            v = ValidationWorkflow.objects.create(
-                name=f"name-{i}",
-                account=self.account,
-                description=f"description-{i}",
-                created_by=self.john_doe,
-                updated_by=self.john_wick,
+            v = ValidationWorkflowService.create_validation_workflow(
+                name=f"name-{i}", account=self.account, description=f"description-{i}", user=self.john_doe
             )
             if i == 0:
                 self.vf_pk = v.pk
                 v.form_set.set([self.form_3])
                 v.save()
 
-        self.validation_workflow_no_form = ValidationWorkflow.objects.create(
+        self.validation_workflow_no_form = ValidationWorkflowService.create_validation_workflow(
             name="no-form",
             account=self.account,
             description="description-no-form",
-            created_by=self.john_doe,
-            updated_by=self.john_wick,
+            user=self.john_doe,
         )
 
-        self.validation_workflow_multiple_forms = ValidationWorkflow.objects.create(
-            name="multiple-forms",
-            account=self.account,
-            description="description-no-form",
-            created_by=self.john_doe,
-            updated_by=self.john_wick,
+        self.validation_workflow_multiple_forms = ValidationWorkflowService.create_validation_workflow(
+            name="multiple-forms", account=self.account, description="description-no-form", user=self.john_doe
         )
+
         self.validation_workflow_multiple_forms.form_set.set([self.form, self.form_2])
         self.validation_workflow_multiple_forms.save()
 
-        self.out_of_account_vw = ValidationWorkflow.objects.create(name="out-of-account", account=self.account_2)
+        self.out_of_account_vw = ValidationWorkflowService.create_validation_workflow(
+            name="out-of-account", account=self.account_2, user=self.john_doe
+        )
+
+    def assertValidValidationWorkflowListData(self, list_data, expected_length, paginated=True):
+        results_key = "results"
+        self.assertValidListData(
+            list_data=list_data, results_key=results_key, expected_length=expected_length, paginated=False
+        )
+
+        self.assertResponseCompliantToSwagger(list_data, "PaginatedValidationWorkflowListList")
 
     def test_output_fields(self):
         for user in [self.john_wick, self.superuser]:
@@ -64,7 +67,10 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
 
                 self.assertEqual(item["form_count"], 2)
                 self.assertEqual(item["created_by"], "John Doe")
-                self.assertEqual(item["updated_by"], "john.wick")
+                self.assertEqual(item["updated_by"], "John Doe")
+                self.assertEqual(item["current_version"], DEFAULT_FIRST_VERSION)
+                self.assertIsNotNone(item["updated_at"])
+                self.assertIsNotNone(item["created_at"])
 
     def test_filter_out_by_account(self):
         """
@@ -166,7 +172,7 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
     def test_search_num_queries_with_parameters_and_one_search_result(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(6):
             res = self.client.get(
                 reverse("validation_workflows-list"), data={"name": "name", "forms": [self.form.pk, self.form_3.pk]}
             )
@@ -176,7 +182,7 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
     def test_search_num_queries_without_parameters_and_multiple_search_results(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(6):
             self.client.force_authenticate(self.john_wick)
             res = self.client.get(reverse("validation_workflows-list"))
             res_json = self.assertJSONResponse(res, 200)
@@ -201,38 +207,3 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
         self.client.force_authenticate(self.user_without_feature_flag)
         res = self.client.get(reverse("validation_workflows-list"))
         self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
-
-
-class ValidationWorkflowAPISwaggerListTestCase(SwaggerTestCaseMixin, BaseValidationWorkflowAPITestCase):
-    def setUp(self):
-        super().setUp()
-        self.add_validation_workflow_module(self.account)
-
-        self.form = Form.objects.create(name="form")
-        Instance.objects.create(name="instance", form=self.form)
-        Instance.objects.create(name="instance2", form=self.form)
-
-        self.form_2 = Form.objects.create(name="form_2")
-        self.form_3 = Form.objects.create(name="form_3")
-        for i in range(15):
-            v = ValidationWorkflow.objects.create(
-                name=f"name-{i}",
-                account=self.account,
-                description=f"description-{i}",
-                created_by=self.john_doe,
-                updated_by=self.john_wick,
-            )
-            if i == 0:
-                self.vf_pk = v.pk
-                v.form_set.set([self.form_3])
-                v.save()
-
-    def test_response_is_compliant(self):
-        self.client.force_authenticate(self.john_wick)
-        res = self.client.get(reverse("validation_workflows-list"))
-        res_json = self.assertJSONResponse(res, 200)
-        self.assertValidValidationWorkflowListData(res_json, 15)
-
-        # res_json["results"][0]["slug"] = 1
-
-        self.assertResponseCompliantToSwagger(res_json, "PaginatedValidationWorkflowListList")

@@ -2,10 +2,11 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.models import Account, Form, Instance, Project, ValidationWorkflow
+from iaso.test import SwaggerTestCaseMixin
 from iaso.tests.api.validation_workflows.test_views.common import BaseValidationWorkflowAPITestCase
 
 
-class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
+class ValidationWorkflowAPIUpdateTestCase(SwaggerTestCaseMixin, BaseValidationWorkflowAPITestCase):
     def setUp(self):
         super().setUp()
         self.project = Project.objects.create(name="project", account=self.account)
@@ -33,6 +34,9 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
         )
         self.validation_workflow.form_set.set([self.form, self.form_2])
 
+    def assertValidBody(self, body):
+        self.assertResponseCompliantToSwagger(body, "ValidationWorkflowUpdateRequest")
+
     def test_permissions(self):
         res = self.client.put(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -51,7 +55,9 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
 
         self.client.force_authenticate(self.user_without_feature_flag)
         res = self.client.put(
-            reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow_without_feature_flag.slug})
+            reverse(
+                "validation_workflows-detail", kwargs={"slug": self.base_validation_workflow_without_feature_flag.slug}
+            )
         )
         self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
 
@@ -81,9 +87,11 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
 
     def base_test_update(self, user):
         self.client.force_authenticate(user)
+        body = {"name": "Random new name", "description": "Random new description"}
+        self.assertValidBody(body)
         res = self.client.put(
             reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}),
-            data={"name": "Random new name", "description": "Random new description"},
+            data=body,
         )
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
 

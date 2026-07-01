@@ -3,10 +3,12 @@ from rest_framework import status
 from rest_framework.settings import api_settings
 
 from iaso.models import Account, Form, Instance, Project, ValidationWorkflow
+from iaso.services.validation_workflows import DEFAULT_FIRST_VERSION
+from iaso.test import SwaggerTestCaseMixin
 from iaso.tests.api.validation_workflows.test_views.common import BaseValidationWorkflowAPITestCase
 
 
-class ValidationWorkflowAPICreateTestCase(BaseValidationWorkflowAPITestCase):
+class ValidationWorkflowAPICreateTestCase(SwaggerTestCaseMixin, BaseValidationWorkflowAPITestCase):
     def setUp(self):
         super().setUp()
 
@@ -26,6 +28,9 @@ class ValidationWorkflowAPICreateTestCase(BaseValidationWorkflowAPITestCase):
         self.form_2.save()
 
         self.form_3 = Form.objects.create(name="form_3")
+
+    def assertValidBody(self, body):
+        self.assertResponseCompliantToSwagger(body, "ValidationWorkflowCreateRequest")
 
     def test_validation(self):
         self.client.force_authenticate(self.john_wick)
@@ -105,14 +110,13 @@ class ValidationWorkflowAPICreateTestCase(BaseValidationWorkflowAPITestCase):
 
     def base_test_happy_flow(self, user):
         self.client.force_authenticate(user)
-        res = self.client.post(
-            reverse("validation_workflows-list"),
-            data={
-                "name": "Validation workflow",
-                "description": "Some description",
-                "forms": [self.form.pk, self.form_2.pk],
-            },
-        )
+        body = {
+            "name": "Validation workflow",
+            "description": "Some description",
+            "forms": [self.form.pk, self.form_2.pk],
+        }
+        self.assertValidBody(body)
+        res = self.client.post(reverse("validation_workflows-list"), data=body)
         res_data = self.assertJSONResponse(res, status.HTTP_201_CREATED)
         self.assertEqual(
             res_data,
@@ -125,7 +129,11 @@ class ValidationWorkflowAPICreateTestCase(BaseValidationWorkflowAPITestCase):
         self.assertEqual(validation_workflow.description, "Some description")
         self.assertEqual(validation_workflow.name, "Validation workflow")
         self.assertEqual(validation_workflow.account, self.account)
-        self.assertEqual(validation_workflow.created_by, user)
+        self.assertEqual(validation_workflow.versions.count(), 1)
+        version = validation_workflow.versions.first()
+        self.assertEqual(version.version_as_str, DEFAULT_FIRST_VERSION)
+        self.assertEqual(version.created_by, user)
+        self.assertEqual(version.updated_by, user)
         self.assertCountEqual(
             list(validation_workflow.form_set.values_list("pk", flat=True)), [self.form.pk, self.form_2.pk]
         )
@@ -158,7 +166,7 @@ class ValidationWorkflowAPICreateTestCase(BaseValidationWorkflowAPITestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(9):
+        with self.assertNumQueries(12):
             res = self.client.post(
                 reverse("validation_workflows-list"),
                 data={
@@ -167,10 +175,10 @@ class ValidationWorkflowAPICreateTestCase(BaseValidationWorkflowAPITestCase):
                     "forms": [self.form.pk, self.form_2.pk],
                 },
             )
-            res_data = self.assertJSONResponse(res, status.HTTP_201_CREATED)
-            self.assertEqual(
-                res_data,
-                {
-                    "slug": "validation-workflow",
-                },
-            )
+        res_data = self.assertJSONResponse(res, status.HTTP_201_CREATED)
+        self.assertEqual(
+            res_data,
+            {
+                "slug": "validation-workflow",
+            },
+        )

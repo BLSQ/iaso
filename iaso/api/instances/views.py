@@ -1084,7 +1084,9 @@ def import_data(instances, user, app_id):
         ):
             try:
                 ValidationWorkflowEngine.start(
-                    instance.form.validation_workflow, user if user.is_authenticated else None, instance
+                    instance.form.validation_workflow.get_latest_version(),
+                    user if user.is_authenticated else None,
+                    instance,
                 )
             except Exception as e:
                 # so we avoid the whole instance creation crashing

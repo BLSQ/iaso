@@ -29,9 +29,14 @@ class ValidationNodeTemplateBulkCreateListSerializer(serializers.ListSerializer)
 
         # pre generate slugs
         existing_slugs = set(
-            ValidationNodeTemplate.objects.filter(
-                workflow__slug=self.context.get("workflow"), workflow__account=iaso_profile.account
-            ).values_list("slug", flat=True)
+            ValidationNodeTemplate.objects.filter_for_account(iaso_profile.account)
+            .filter(
+                workflow__version=self.context.get("version"),
+                workflow__main_workflow__slug=self.context.get("workflow"),
+                workflow__deleted_at__isnull=True,
+                workflow__main_workflow__deleted_at__isnull=True,
+            )
+            .values_list("slug", flat=True)
         )
 
         slug_field = ValidationNodeTemplate._meta.get_field("slug")
@@ -78,7 +83,7 @@ class ValidationNodeTemplateBulkCreateSerializer(ModelSerializer):
         many=True, write_only=True, required=False, queryset=UserRole.objects.none()
     )
     workflow = HiddenSlugRelatedField(
-        slug_field="slug",
+        slug_field="version",
         write_only=True,
         queryset=ValidationWorkflowVersion.objects.none(),
         required=False,
@@ -106,7 +111,7 @@ class ValidationNodeTemplateBulkCreateSerializer(ModelSerializer):
         if account:
             self.fields["roles_required"].child_relation.queryset = UserRole.objects.filter(account=account)
             self.fields["workflow"].queryset = ValidationWorkflowVersion.objects.filter_for_account(account).filter(
-                main_workflow__deleted_at__isnull=True
+                main_workflow__deleted_at__isnull=True, main_workflow__slug=self.context.get("workflow")
             )
 
             self.validators = [

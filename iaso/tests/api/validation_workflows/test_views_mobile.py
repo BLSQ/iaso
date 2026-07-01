@@ -7,10 +7,11 @@ from rest_framework import status
 
 from iaso.api.validation_workflows.constants import DEFAULT_COLOR, MOBILE_STATUS_TO_COLOR
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
-from iaso.models import Account, Form, Project, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import Account, Form, Project, ValidationNodeTemplate
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 from iaso.modules import MODULE_VALIDATION_WORKFLOW
+from iaso.services.validation_workflows import ValidationWorkflowService
 from iaso.test import APITestCase
 
 
@@ -36,9 +37,10 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         )
 
         # setup the validation workflow
-        self.validation_workflow = ValidationWorkflow.objects.create(
-            name="Validation workflow", account=self.account, description="Description"
+        self.base_validation_workflow = ValidationWorkflowService.create_validation_workflow(
+            name="Validation workflow", account=self.account, description="Description", user=self.john_doe
         )
+        self.validation_workflow = self.base_validation_workflow.get_latest_version()
 
         self.first_node = ValidationNodeTemplate.objects.create(name="First node", workflow=self.validation_workflow)
 
@@ -50,7 +52,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.form = Form.objects.create(name="Form", label_keys=["A", "C", "E"])
         self.other_form = Form.objects.create(name="Form 2")
 
-        self.validation_workflow.form_set.set([self.form, self.other_form])
+        self.base_validation_workflow.form_set.set([self.form, self.other_form])
 
         self.other_project = Project.objects.create(account=self.other_account, app_id="1.2")
         self.other_project.forms.add(self.other_form)
@@ -606,6 +608,15 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
 
         self.assertValidListData(list_data=res_data, results_key="results", expected_length=1, paginated=True)
 
+        self.base_validation_workflow.delete()
+        self.base_validation_workflow.refresh_from_db()
+        self.assertIsNotNone(self.base_validation_workflow.deleted_at)
+        res = self.client.get(reverse("mobile_validation_workflows-list"))
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertValidListData(list_data=res_data, results_key="results", expected_length=0, paginated=True)
+
+        self.base_validation_workflow.restore()
         self.validation_workflow.delete()
 
         self.validation_workflow.refresh_from_db()

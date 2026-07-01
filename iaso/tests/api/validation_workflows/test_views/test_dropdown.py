@@ -1,11 +1,59 @@
 from django.urls import reverse
 from rest_framework import status
 
-from iaso.models import Form
-from iaso.tests.api.validation_workflows.test_views.test_list import ValidationWorkflowAPIListTestCase
+from iaso.models import Account, Form, Instance
+from iaso.services.validation_workflows import ValidationWorkflowService
+from iaso.test import SwaggerTestCaseMixin
+from iaso.tests.api.validation_workflows.test_views.common import BaseValidationWorkflowAPITestCase
 
 
-class ValidationWorkflowAPIDropdownTestCase(ValidationWorkflowAPIListTestCase):
+class ValidationWorkflowAPIDropdownTestCase(SwaggerTestCaseMixin, BaseValidationWorkflowAPITestCase):
+    def setUp(self):
+        super().setUp()
+        self.account_2 = Account.objects.create(name="account_2")
+        self.add_validation_workflow_module(self.account, self.account_2)
+
+        self.form = Form.objects.create(name="form")
+        Instance.objects.create(name="instance", form=self.form)
+        Instance.objects.create(name="instance2", form=self.form)
+
+        self.form_2 = Form.objects.create(name="form_2")
+        self.form_3 = Form.objects.create(name="form_3")
+
+        self.vf_pk = None
+        for i in range(15):
+            v = ValidationWorkflowService.create_validation_workflow(
+                name=f"name-{i}", account=self.account, description=f"description-{i}", user=self.john_doe
+            )
+            if i == 0:
+                self.vf_pk = v.pk
+                v.form_set.set([self.form_3])
+                v.save()
+
+        self.validation_workflow_no_form = ValidationWorkflowService.create_validation_workflow(
+            name="no-form",
+            account=self.account,
+            description="description-no-form",
+            user=self.john_doe,
+        )
+
+        self.validation_workflow_multiple_forms = ValidationWorkflowService.create_validation_workflow(
+            name="multiple-forms", account=self.account, description="description-no-form", user=self.john_doe
+        )
+
+        self.validation_workflow_multiple_forms.form_set.set([self.form, self.form_2])
+        self.validation_workflow_multiple_forms.save()
+
+        self.out_of_account_vw = ValidationWorkflowService.create_validation_workflow(
+            name="out-of-account", account=self.account_2, user=self.john_doe
+        )
+
+    def assertValidValidationWorkflowDropdownListData(self, list_data, expected_length):
+        self.assertValidListData(
+            list_data=list_data, results_key=None, expected_length=expected_length, paginated=False
+        )
+        self.assertResponseCompliantToSwagger(list_data, "ValidationWorkflowDropdown", True)
+
     def test_filter_out_by_account(self):
         """
         User should not see workflows that don't belong to his account.

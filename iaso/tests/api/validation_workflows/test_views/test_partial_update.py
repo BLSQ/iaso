@@ -2,10 +2,11 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.models import Account, ValidationWorkflow
+from iaso.test import SwaggerTestCaseMixin
 from iaso.tests.api.validation_workflows.test_views.common import BaseValidationWorkflowAPITestCase
 
 
-class ValidationWorkflowAPIPartialUpdateTestCase(BaseValidationWorkflowAPITestCase):
+class ValidationWorkflowAPIPartialUpdateTestCase(SwaggerTestCaseMixin, BaseValidationWorkflowAPITestCase):
     def setUp(self):
         super().setUp()
 
@@ -15,6 +16,9 @@ class ValidationWorkflowAPIPartialUpdateTestCase(BaseValidationWorkflowAPITestCa
             created_by=self.john_doe,
             account=self.account,
         )
+
+    def assertValidBody(self, body):
+        self.assertResponseCompliantToSwagger(body, "PatchedValidationWorkflowUpdateRequest")
 
     def test_permissions(self):
         res = self.client.patch(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
@@ -34,7 +38,9 @@ class ValidationWorkflowAPIPartialUpdateTestCase(BaseValidationWorkflowAPITestCa
 
         self.client.force_authenticate(self.user_without_feature_flag)
         res = self.client.patch(
-            reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow_without_feature_flag.slug})
+            reverse(
+                "validation_workflows-detail", kwargs={"slug": self.base_validation_workflow_without_feature_flag.slug}
+            )
         )
         self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
 
@@ -67,9 +73,11 @@ class ValidationWorkflowAPIPartialUpdateTestCase(BaseValidationWorkflowAPITestCa
 
     def base_test_partial_update(self, user):
         self.client.force_authenticate(user)
+        body = {"name": "Random new name", "description": "Random new description"}
+        self.assertValidBody(body)
         res = self.client.patch(
             reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}),
-            data={"name": "Random new name", "description": "Random new description"},
+            data=body,
         )
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
 

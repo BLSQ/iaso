@@ -61,8 +61,8 @@ class ValidationWorkflowVersion(SoftDeletableModel, CreatedAndUpdatedModel, Vers
         return str(self.version)
 
     def is_artifact_allowed(self, instance):
-        if self.form_set.count():
-            return isinstance(instance, Instance) and self.form_set.filter(pk=instance.form_id).exists()
+        if self.main_workflow.form_set.exists():
+            return isinstance(instance, Instance) and self.main_workflow.form_set.filter(pk=instance.form_id).exists()
         # by default we don't allow it if no forms has been configured.
         return False
 

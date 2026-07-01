@@ -250,14 +250,6 @@ class Migration(migrations.Migration):
             name="validationnodetemplate",
             unique_together={("workflow", "name"), ("workflow", "slug")},
         ),
-        migrations.RemoveField(
-            model_name="validationworkflow",
-            name="created_by",
-        ),
-        migrations.RemoveField(
-            model_name="validationworkflow",
-            name="updated_by",
-        ),
         migrations.AddConstraint(
             model_name="validationworkflow",
             constraint=models.UniqueConstraint(

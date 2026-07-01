@@ -2,12 +2,13 @@ from django.contrib.auth.models import Group
 from django.urls import reverse
 from rest_framework import status
 
-from iaso.engine.validation_workflow import ValidationWorkflowEngine
-from iaso.models import Account, Form, Instance, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import Account, Form, Instance, Project, UserRole
+from iaso.services.validation_workflows import ValidationWorkflowService
+from iaso.test import SwaggerTestCaseMixin
 from iaso.tests.api.validation_workflows.test_views.common import BaseValidationWorkflowAPITestCase
 
 
-class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
+class ValidationWorkflowAPIRetrieveTestCase(SwaggerTestCaseMixin, BaseValidationWorkflowAPITestCase):
     def setUp(self):
         super().setUp()
         self.project = Project.objects.create(name="project", account=self.account)
@@ -30,42 +31,25 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
 
         self.form_3 = Form.objects.create(name="form_3")
 
-        self.validation_workflow_other_account = ValidationWorkflow.objects.create(
+        self.validation_workflow_other_account = ValidationWorkflowService.create_validation_workflow(
             name="Random other name",
             description="Random description",
-            created_by=self.john_doe,
+            user=self.john_doe,
             account=self.account_2,
         )
 
-        self.validation_workflow = ValidationWorkflow.objects.create(
+        self.validation_workflow = ValidationWorkflowService.create_validation_workflow(
             name="Random name",
             description="Random description",
-            created_by=self.john_doe,
-            updated_by=self.john_wick,
+            user=self.john_doe,
             account=self.account,
         )
+        ValidationWorkflowService.create_new_version(validation_workflow=self.validation_workflow, user=self.john_doe)
         self.validation_workflow.form_set.set([self.form, self.form_2])
         self.validation_workflow.save()
 
-        self.node_template = ValidationNodeTemplate.objects.create(
-            name="First node",
-            description="First node description",
-            can_skip_previous_nodes=False,
-            workflow=self.validation_workflow,
-        )
-
-        self.node_template.roles_required.add(self.user_role)
-        self.node_template.save()
-
-        self.second_node_template = ValidationNodeTemplate.objects.create(
-            name="Second node",
-            description="Second node description",
-            can_skip_previous_nodes=True,
-            workflow=self.validation_workflow,
-        )
-
-        self.node_template.next_node_templates.add(self.second_node_template)
-        self.node_template.save()
+    def assertValidRetrieveData(self, data):
+        self.assertResponseCompliantToSwagger(data, "ValidationWorkflowRetrieve")
 
     def test_permissions(self):
         res = self.client.get(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
@@ -85,7 +69,9 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
 
         self.client.force_authenticate(self.user_without_feature_flag)
         res = self.client.get(
-            reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow_without_feature_flag.slug})
+            reverse(
+                "validation_workflows-detail", kwargs={"slug": self.base_validation_workflow_without_feature_flag.slug}
+            )
         )
         self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
 
@@ -102,19 +88,7 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
             )
             self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_retrieve_workflow_without_nodes(self):
-        validation_workflow = ValidationWorkflow.objects.create(name="without node", account=self.account)
-
-        self.client.force_authenticate(self.john_wick)
-        res = self.client.get(reverse("validation_workflows-detail", kwargs={"slug": validation_workflow.slug}))
-        self.assertJSONResponse(res, status.HTTP_200_OK)
-
     def test_retrieve(self):
-        ValidationWorkflowEngine.start(self.validation_workflow, self.superuser, self.instance)
-        ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes().first(), self.superuser, self.instance, True
-        )
-
         for user in [self.john_wick, self.superuser]:
             with self.subTest(f"with user {user}"):
                 self.client.force_authenticate(user)
@@ -122,6 +96,7 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
                     reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug})
                 )
                 res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+                self.assertValidRetrieveData(res_data)
 
                 # checking main keys
                 with self.subTest("Checking main top level keys"):
@@ -134,22 +109,20 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
                         "created_at",
                         "updated_by",
                         "updated_at",
-                        "node_templates",
-                        "has_processes",
+                        "versions",
                     ]:
                         self.assertIn(k, res_data)
 
+                    print(res_data)
                     self.assertEqual(res_data["name"], "Random name")
                     self.assertEqual(res_data["slug"], "random-name")
                     self.assertEqual(res_data["description"], "Random description")
                     self.assertEqual(res_data["created_by"], self.john_doe.get_full_name())
+                    self.assertEqual(res_data["updated_by"], self.john_doe.get_full_name())
                     self.assertIsNotNone(res_data["created_at"])
                     self.assertIsNotNone(res_data["updated_at"])
-                    self.assertEqual(res_data["updated_by"], self.john_wick.username)
 
-                    self.assertIsNotNone(res_data["forms"])
-                    self.assertIsNotNone(res_data["node_templates"])
-                    self.assertTrue(res_data["has_processes"])
+                    self.assertIsNotNone(res_data["versions"])
 
                 with self.subTest("checking forms"):
                     for form_value in res_data["forms"]:
@@ -163,44 +136,17 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
                         ],
                     )
 
-                with self.subTest("checking node_templates"):
-                    for node_template in res_data["node_templates"]:
-                        for k in ["slug", "name", "description", "can_skip_previous_nodes", "roles_required"]:
-                            self.assertIn(k, node_template)
-
-                    self.assertEqual(
-                        res_data["node_templates"],
-                        [
-                            {
-                                "id": self.node_template.pk,
-                                "order": 1,
-                                "slug": "first-node",
-                                "name": "First node",
-                                "description": "First node description",
-                                "roles_required": [{"name": "Group", "id": self.group.pk}],
-                                "can_skip_previous_nodes": False,
-                            },
-                            {
-                                "id": self.second_node_template.pk,
-                                "order": 2,
-                                "slug": "second-node",
-                                "name": "Second node",
-                                "description": "Second node description",
-                                "roles_required": [],
-                                "can_skip_previous_nodes": True,
-                            },
-                        ],
+                with self.subTest("checking versions"):
+                    self.assertCountEqual(
+                        res_data["versions"],
+                        ["1.0.0", "2.0.0"],
                     )
 
     def test_num_queries(self):
-        ValidationWorkflowEngine.start(self.validation_workflow, self.superuser, self.instance)
-        ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.validation_workflow).first(), self.superuser, self.instance, True
-        )
-
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(10):
+        with self.assertNumQueries(6):
             res = self.client.get(
                 reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug})
             )
-            self.assertEqual(res.status_code, status.HTTP_200_OK)
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidRetrieveData(res_data)

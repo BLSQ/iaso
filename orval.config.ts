@@ -132,5 +132,4 @@ module.exports = {
         ['Validation workflows'],
         validationWorkflowsMutationInvalidates,
     ),
-    // profiles: createConfig('profiles', ['Profiles'])
 };

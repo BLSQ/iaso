@@ -188,11 +188,25 @@ msgstr "Ces IDs d'org unit n'existent pas:"
 msgid "Year must be between 1900 and 2100."
 msgstr "L'année doit être entre 1900 et 2100,"
 
-#: iaso/api/microplanning/views.py
+#: iaso/api/microplanning/filters.py
 msgid "Planning is missing sampling group or target org unit scope"
 msgstr ""
 "La planification manque d'un groupe d'échantillonnage ou d'une unité "
 "organisationnelle cible"
+
+#: iaso/api/microplanning/filters.py
+msgid "One or more org unit types are not target types for this planning"
+msgstr ""
+"Un ou plusieurs types d'unités organisationnelles ne sont pas des types "
+"cibles pour cette planification"
+
+#: iaso/api/microplanning/filters.py
+msgid "Org unit parent ID"
+msgstr "ID du parent de l'unité organisationnelle"
+
+#: iaso/api/microplanning/filters.py iaso/api/stocks/filters.py
+msgid "Org unit type IDs (comma-separated)"
+msgstr "IDs des types d'unité organisationnelle (séparé par des virgules)"
 
 #: iaso/api/microplanning/views.py
 msgid "No assignments to delete"
@@ -373,10 +387,12 @@ msgid "Group must be in the same source version"
 msgstr "Le groupe doit être dans la même version source"
 
 #: iaso/api/org_units.py
+#, python-brace-format
 msgid "InstanceFile with id {} does not exist"
 msgstr "Le fichier d'instance avec l'id {} n'existe pas"
 
 #: iaso/api/org_units.py
+#, python-brace-format
 msgid "Another valid OrgUnit already exists with the code '{}' in this version"
 msgstr ""
 "Une autre unité d'organisation valide existe déjà avec le code '{}' dans "
@@ -528,10 +544,6 @@ msgstr "L'email est requis lorsque l'invitation par email est activée"
 msgid "Password is required when email_invitation is False"
 msgstr ""
 "Le mot de passe est requis lorsque l'invitation par email est désactivée"
-
-#: iaso/api/stocks/filters.py
-msgid "Org unit type IDs (comma-separated)"
-msgstr "IDs des types d'unité organisationnelle (séparé par des virgules)"
 
 #: iaso/api/stocks/filters.py
 msgid "SKUs - SKU IDs (comma-separated)"

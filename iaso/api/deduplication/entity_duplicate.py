@@ -511,6 +511,12 @@ class EntityDuplicateViewSet(ModelViewSet):
         qs = qs.exclude(validation_status=ValidationStatus.PENDING, entity1__deleted_at__isnull=False).exclude(
             validation_status=ValidationStatus.PENDING, entity2__deleted_at__isnull=False
         )
+        qs = qs.select_related(
+            "analyze",
+            "entity1__entity_type__reference_form",
+            "entity1__attributes__org_unit",
+            "entity2__attributes__org_unit",
+        )
         return qs
 
     @extend_schema(parameters=[duplicate_detail_entities_param])

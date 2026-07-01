@@ -97,7 +97,7 @@ export type SamplingResult = {
 export type PlanningOrgUnits = {
     id: number;
     name: string;
-    geo_json: GeoJson;
+    geo_json?: GeoJson;
     has_geo_json: boolean;
     latitude: number;
     longitude: number;
@@ -125,9 +125,15 @@ export type PaginatedAssignment = {
     assignment_type: PlanningOrgUnitAssignmentType | null;
 };
 
+export type OrgUnitTypeDetails = {
+    id: number;
+    name: string;
+};
+
 export type PaginatedPlanningOrgUnit = {
     id: number;
     name: string;
+    org_unit_type: OrgUnitTypeDetails;
     assignment: PaginatedAssignment | null;
 };
 export interface PaginatedPlanningOrgUnits extends PaginationType {

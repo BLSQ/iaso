@@ -66,7 +66,7 @@ TESTING = env.bool("TESTING", default=False)
 IN_TESTS = len(sys.argv) > 1 and sys.argv[1] == "test"
 PLUGINS = env.list("PLUGINS", default=[], delimiter=",")
 ROOT_REDIRECT_PATTERN_NAME = env.str("ROOT_REDIRECT_PATTERN_NAME", default="dashboard:home_iaso")
-
+DEFAULT_APP_ID = env.str("DEFAULT_APP_ID", default="")
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -104,6 +104,13 @@ if static_url:
     CDN_URL = urlparse(static_url).hostname
 else:
     CDN_URL = None
+
+# deployment info for /health/
+DEPLOYED_BY = env.str("DEPLOYED_BY", default="unknown")
+DEPLOYED_ON = env.str("DEPLOYED_ON", default="unknown")
+PROD_IMAGE_CREATION = env.str("PROD_IMAGE_CREATION", default="unknown")
+PROD_IMAGE_DIGEST = env.str("PROD_IMAGE_DIGEST", default="unknown")
+PROD_IMAGE_TAG = env.str("PROD_IMAGE_TAG", default="unknown")
 
 DEV_SERVER = env.bool("DEV_SERVER", default=False)
 ENVIRONMENT = env.str("SENTRY_ENVIRONMENT", default="development").lower()
@@ -325,6 +332,8 @@ TEMPLATES = [
                 "hat.common.context_processors.product_fruits_config",
                 "hat.common.context_processors.learn_more_url",
                 "hat.common.context_processors.available_languages",
+                "hat.common.context_processors.default_app_id",
+                "hat.common.context_processors.dns_domain",
             ]
         },
     }
@@ -547,6 +556,7 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=3650),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=3651),
     "TOKEN_OBTAIN_SERIALIZER": "iaso.serializers.CustomTokenObtainPairSerializer",
+    "ROTATE_REFRESH_TOKENS": True,
 }
 
 AWS_S3_REGION_NAME = env.str("AWS_S3_REGION_NAME", default="eu-central-1")

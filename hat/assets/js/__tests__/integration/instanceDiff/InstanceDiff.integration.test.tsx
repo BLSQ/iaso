@@ -163,7 +163,10 @@ describe('Instance diff integration', () => {
         expect(url.searchParams.get('page')).toBe('2');
         expect(url.searchParams.get('limit')).toBe('10');
 
-        const queryParams = Object.fromEntries(url.searchParams.entries());
+        const queryParams = {
+            page: Number(url.searchParams.get('page')),
+            limit: Number(url.searchParams.get('limit')),
+        };
         expect(() =>
             ApiDiffInstancesListParams.parse(queryParams),
         ).not.toThrow();

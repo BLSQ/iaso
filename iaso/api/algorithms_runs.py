@@ -6,6 +6,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import exceptions, permissions, viewsets
 from rest_framework.response import Response
 
+from iaso.api.common.permissions import HasPermission
 from iaso.models import AlgorithmRun, DataSource, MatchingAlgorithm, SourceVersion
 from iaso.permissions.core_permissions import CORE_LINKS_PERMISSION
 
@@ -22,7 +23,7 @@ class AlgorithmsRunsViewSet(viewsets.ViewSet):
     DELETE /api/algorithmsruns/<id>
     """
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_LINKS_PERMISSION)]
 
     def list(self, request):
         limit = request.GET.get("limit", None)
@@ -67,14 +68,14 @@ class AlgorithmsRunsViewSet(viewsets.ViewSet):
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)
 
-            res["runs"] = map(lambda x: x.as_dict(), page.object_list)
+            res["runs"] = [x.as_dict() for x in page.object_list]
             res["has_next"] = page.has_next()
             res["has_previous"] = page.has_previous()
             res["page"] = page_offset
             res["pages"] = paginator.num_pages
             res["limit"] = limit
             return Response(res)
-        return Response(map(lambda x: x.as_list(), queryset))
+        return Response([x.as_list() for x in queryset])
 
     def create(self, request):
         algo_id = request.data.get("algo")
@@ -98,7 +99,7 @@ class AlgorithmsRunsViewSet(viewsets.ViewSet):
         run_item = get_object_or_404(AlgorithmRun, pk=pk)
         return Response(run_item.as_dict())
 
-    def delete(self, request, pk=None):
+    def destroy(self, request, pk=None):
         run_item = get_object_or_404(AlgorithmRun, pk=pk)
         run_item.delete()
         return Response(True)

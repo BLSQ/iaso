@@ -63,5 +63,6 @@ export const useReasonsForDelayColumns = (): Column[] => {
                 },
             },
         ];
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [formatMessage]);
 };

@@ -1,12 +1,12 @@
-import CheckIcon from '@mui/icons-material/Check';
-import { Box, Paper } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import React, {
     Dispatch,
     FunctionComponent,
     SetStateAction,
     useCallback,
 } from 'react';
+import CheckIcon from '@mui/icons-material/Check';
+import { Box, Paper } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { Legend } from '../../hooks/useGetLegendOptions';
 

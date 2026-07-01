@@ -1,4 +1,5 @@
 import { IntlMessage } from 'bluesquare-components';
+import moment from 'moment';
 import { openSnackBar } from 'Iaso/components/snackBars/EventDispatcher';
 import { errorSnackBar } from 'Iaso/constants/snackBars';
 import { ApiError } from 'Iaso/libs/Api';
@@ -9,33 +10,45 @@ const isApiError = (error: unknown): error is ApiError => {
     return typeof error === 'object' && error !== null && 'status' in error;
 };
 
-type UseQueryOptions<TOptions, TError> = TOptions & {
+type QueryMeta = {
     dispatchOnError?: boolean;
     ignoreErrorCodes?: number[];
     snackErrorMsg?: IntlMessage;
-    onError?: (error: TError) => void;
+    localeAware?: boolean;
 };
 
 export const getCustomQueryOptions = <TOptions, TError>(
-    options: UseQueryOptions<TOptions, TError>,
-): Omit<
-    UseQueryOptions<TOptions, TError>,
-    'dispatchOnError' | 'ignoreErrorCodes' | 'snackErrorMsg'
-> => {
+    options: TOptions,
+): TOptions => {
     // workaround for orval not injecting overrides when using a custom query
-    // see orval.config overrides commented out line
     const defaults =
         // @ts-ignore
         (OperationConfig?.operations?.[options?.queryKey?.[0]]?.query
-            ?.options as UseQueryOptions<TOptions, TError>) ?? {};
+            ?.options as TOptions) ?? {};
+
+    const defaultLocaleAware =
+        // @ts-ignore
+        (OperationConfig?.operations?.[options?.queryKey?.[0]]?.query
+            ?.meta as QueryMeta) ?? {};
+
+    const meta = ((options as any)?.meta ?? {}) as QueryMeta;
 
     const {
         dispatchOnError = true,
         ignoreErrorCodes,
         snackErrorMsg = MESSAGES.defaultQueryApiSuccess,
-        onError: optionsOnError,
-        ...newOptions
-    } = options;
+        localeAware = defaultLocaleAware?.localeAware,
+    } = meta;
+
+    const optionsOnError = (options as any).onError;
+
+    if (localeAware && (options as any)?.queryKey) {
+        (options as any).queryKey = [
+            ...(options as any).queryKey,
+            moment().locale(),
+        ];
+    }
+
     return {
         onError: (error: TError) => {
             if (
@@ -45,11 +58,10 @@ export const getCustomQueryOptions = <TOptions, TError>(
             ) {
                 openSnackBar(errorSnackBar(undefined, snackErrorMsg, error));
             }
-            if (optionsOnError) {
-                optionsOnError(error);
-            }
+
+            optionsOnError?.(error);
         },
         ...defaults,
-        ...(newOptions as TOptions),
-    } as const;
+        ...(options as object),
+    } as TOptions;
 };

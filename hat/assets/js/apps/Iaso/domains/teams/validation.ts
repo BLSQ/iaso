@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { object, string, number, array, ObjectSchema } from 'yup';
+import { useAPIErrorValidator } from '../../libs/validation';
 import { ValidationError } from '../../types/utils';
 import { SaveTeamQuery } from './hooks/requests/useSaveTeam';
-import { useAPIErrorValidator } from '../../libs/validation';
 
 export const useTeamValidation = (
     errors: ValidationError = {},

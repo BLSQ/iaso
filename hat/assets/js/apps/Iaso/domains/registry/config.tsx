@@ -1,16 +1,16 @@
+import React, { Dispatch, ReactElement, SetStateAction } from 'react';
 import MapIcon from '@mui/icons-material/Map';
 import { Box } from '@mui/material';
 import { Column, IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
-import React, { Dispatch, ReactElement, SetStateAction } from 'react';
 
 import { InstanceMetasField } from '../instances/components/ColumnSelect';
 import { Instance } from '../instances/types/instance';
 
-import { LinkToRegistry } from './components/LinkToRegistry';
-
 import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
+
 import { OrgUnitLocationIcon } from '../orgUnits/components/OrgUnitLocationIcon';
 import { OrgUnit } from '../orgUnits/types/orgUnit';
+import { LinkToRegistry } from './components/LinkToRegistry';
 import MESSAGES from './messages';
 
 export const defaultSorted = [{ id: 'org_unit__name', desc: false }];

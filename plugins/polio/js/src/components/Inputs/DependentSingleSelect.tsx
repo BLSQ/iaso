@@ -1,5 +1,5 @@
-import { get } from 'lodash';
 import React, { FunctionComponent } from 'react';
+import { get } from 'lodash';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { DropdownOptions } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
@@ -38,7 +38,7 @@ export const DependentSingleSelect: FunctionComponent<Props> = ({
         form.errors &&
         Boolean(
             (get(form.errors, field.name) && get(form.touched, field.name)) ||
-                showRelatedFieldError,
+            showRelatedFieldError,
         );
 
     const err =

@@ -1,18 +1,18 @@
 import React from 'react';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
 import Grid from '@mui/material/Grid';
+import MenuItem from '@mui/material/MenuItem';
+import TextField from '@mui/material/TextField';
 import {
     AddButton as AddButtonComponent,
     useSafeIntl,
 } from 'bluesquare-components';
-import InputComponent from '../../../components/forms/InputComponent.tsx';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import IasoSearchComponent from './IasoSearchComponent';
-import Dhis2Search from './Dhis2SearchComponent';
-import MESSAGES from '../messages';
-import { mappingTypeOptions } from './MappingTypeOptions';
+import InputComponent from '../../../components/forms/InputComponent.tsx';
 import { useDataSources, useCreateMappingMutation } from '../hooks.js';
+import MESSAGES from '../messages';
+import Dhis2Search from './Dhis2SearchComponent';
+import IasoSearchComponent from './IasoSearchComponent';
+import { mappingTypeOptions } from './MappingTypeOptions';
 
 const CreateMappingVersionDialogComponent = () => {
     const createMappingRequest = useCreateMappingMutation();
@@ -92,7 +92,9 @@ const CreateMappingVersionDialogComponent = () => {
                         collectionName="form_versions"
                         label={formatMessage(MESSAGES.formVersion)}
                         fields="id,form_name,version_id,mapped"
-                        placeholder={formatMessage(MESSAGES.startTypingFormVersion)}
+                        placeholder={formatMessage(
+                            MESSAGES.startTypingFormVersion,
+                        )}
                         mapOptions={options =>
                             options.map(o => ({
                                 name: [

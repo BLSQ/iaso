@@ -1,8 +1,15 @@
-// import { ValidationWorkflowRetrieve } from 'Iaso/api';
-// import { ValidationWorkflowRetrieveResponseItemWithOrderedNodes } from 'Iaso/domains/instances/validationWorkflow/types/validationWorkflows';
-
 export const workflowsOperations = {
     apiValidationWorkflowsList: {
+        query: {
+            options: {
+                retry: false,
+                staleTime: Infinity,
+                cacheTime: Infinity,
+                keepPreviousData: true,
+            },
+        },
+    },
+    apiValidationWorkflowsDropdownList: {
         query: {
             options: {
                 retry: false,
@@ -48,11 +55,15 @@ export const mutationInvalidates = [
         ],
         invalidates: [
             'apiValidationWorkflowsList',
+            'apiValidationWorkflowsDropdownList',
             { query: 'apiValidationWorkflowsRetrieve', params: ['slug'] },
         ],
     },
     {
         onMutations: ['apiValidationWorkflowsCreate'],
-        invalidates: ['apiValidationWorkflowsList'],
+        invalidates: [
+            'apiValidationWorkflowsList',
+            'apiValidationWorkflowsDropdownList',
+        ],
     },
 ];

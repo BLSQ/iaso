@@ -5,12 +5,19 @@ from unittest.mock import MagicMock, patch
 
 import time_machine
 
-from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.files.uploadedfile import InMemoryUploadedFile, SimpleUploadedFile
 from django.test import override_settings
 
 from hat import settings
+from iaso import models as m
 from iaso.test import MockClamavScanResults, TestCase
-from iaso.utils.virus_scan.clamav import VirusScanStatus, scan_disk_file_for_virus, scan_uploaded_file_for_virus
+from iaso.utils.virus_scan.clamav import (
+    VirusScanStatus,
+    scan_disk_file_for_virus,
+    scan_stored_file_for_virus,
+    scan_uploaded_file_for_virus,
+)
+from plugins.polio.models import NotificationImport
 
 
 @override_settings(
@@ -75,6 +82,37 @@ class ClamAVTestCase(TestCase):
 
             self.assertEqual(result, VirusScanStatus.INFECTED)
             self.assertEqual(timestamp_scan, self.DT)
+
+    @time_machine.travel(DT, tick=False)
+    @patch("clamav_client.get_scanner")
+    def test_negative_stored_file(self, mock_get_scanner):
+        mock_scanner = MagicMock()
+        mock_scanner.scan.return_value = MockClamavScanResults(
+            state="OK",
+            details="",
+            passed=True,
+        )
+        mock_get_scanner.return_value = mock_scanner
+
+        account = m.Account.objects.create(name="clamav-test-account")
+        user = self.create_user_with_profile(username="clamav-test-user", account=account)
+
+        with open(self.SAFE_FILE_PATH, "rb") as file:
+            notification_import = NotificationImport.objects.create(
+                account=account,
+                created_by=user,
+                file=SimpleUploadedFile(
+                    "safe.jpg",
+                    file.read(),
+                    content_type="image/jpeg",
+                ),
+                errors=[],
+            )
+
+        result, timestamp_scan = scan_stored_file_for_virus(notification_import.file)
+
+        self.assertEqual(result, VirusScanStatus.CLEAN)
+        self.assertEqual(timestamp_scan, self.DT)
 
     @time_machine.travel(DT, tick=False)
     @patch("clamav_client.get_scanner")

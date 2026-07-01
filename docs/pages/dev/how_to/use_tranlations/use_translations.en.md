@@ -462,3 +462,38 @@ The system uses a fallback mechanism to ensure all strings are translated:
 3. Warnings will be displayed in the console during build when fallbacks are used
 
 For more information on creating plugins with translations, see [Using Plugins in Iaso Frontend](../use_plugins/use_plugins.en.md).
+
+
+### Zod custom errors and translations
+
+See the code in `hat/assets/js/apps/Iaso/libs/zodUtils.ts`
+
+```typescript
+
+const zodMessages = {
+    required: {
+        en: 'This field is required.',
+        fr: 'Ce champ est obligatoire.',
+        es: 'Este campo es obligatorio.',
+        pt: 'Este campo é obrigatório.',
+    },
+};
+
+export async function loadZodLocale(locale: keyof typeof zodLocales) {
+    const loader = zodLocales[locale] ?? zodLocales.en;
+
+    const { default: importLocale } = await loader();
+
+    z.config({
+        ...importLocale(),
+        customError: ({ code, expected, input }) => {
+            if (code === 'invalid_type' && expected === 'string' && !input) {
+                return zodMessages.required?.[locale];
+            }
+            return undefined;
+        },
+    });
+}
+```
+
+You can there extend zodMessages to add custom messages and translations

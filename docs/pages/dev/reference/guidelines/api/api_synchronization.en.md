@@ -23,6 +23,7 @@ We will primarily rely on the following tools:
   - [Generating new files](#generating-new-files)
   - [Integrating React Query hooks](#integrating-react-query-hooks)
   - [Using zod schemas](#using-zod-schemas)
+  - [Integrating with formik](#integrating-with-formik)
   - [Testing](#testing)
     - [Integration testing (without a backend)](#integration-testing-without-a-backend)
     - [E2E Tests](#e2e-tests)
@@ -138,7 +139,7 @@ This ensures that:
 * your endpoint response matches the documented schema
 * regressions are caught early in backend tests
 
-### Utilities 
+### Utilities
 
 A Django management command is available to automatically generate an OpenAPI schema file.
 
@@ -233,6 +234,41 @@ export const mutationInvalidates = [
 ];
 ```
 
+Note that it's possible to make a GET operations locale aware, meaning react queries will trigger again if the locale changes.
+
+Example: 
+
+```typescript
+export const modulesOperations = {
+    apiModulesList: {
+        query: {
+            meta: {
+                localeAware: true,
+            },
+            options: {
+                retry: false,
+                staleTime: Infinity,
+                cacheTime: Infinity,
+                keepPreviousData: true,
+            },
+        },
+    },
+    apiModulesDropdownList: {
+        query: {
+            meta: {
+                localeAware: true,
+            },
+            options: {
+                retry: false,
+                staleTime: Infinity,
+                cacheTime: Infinity,
+                keepPreviousData: true,
+            },
+        },
+    },
+};
+```
+
 #### 2. Register operations in the central configuration
 Do not forget to export your operations in `apiConfiguration/index.ts`. (This will allow one of our custom orval fix to work.)
 
@@ -307,6 +343,65 @@ useApiValidationWorkflowsRetrieve(slug, {...otherQueryOptions})
 
 WIP
 
+### Integrating with formik
+
+Each generated endpoints comed with zod schemas that we can reuse into formik. 
+In order to achieve this, we'll use [zod-formik-adapter](#https://github.com/robertLichtnow/zod-formik-adapter) that allows us to convert zod schemas to formik compatible validation schemas.
+
+There is also a wrapper utility function `withFormikSubmitAsync` that you can use in the formik `save` method to automatically display errors from the backend.
+
+Here under an example:
+
+```typescript
+
+import React from 'react';
+import { Alert, Box } from '@mui/material';
+import {
+    ConfirmCancelModal,
+    makeFullModal,
+    useSafeIntl,
+} from 'bluesquare-components';
+import { Field, FormikProvider, useFormik } from 'formik';
+import { toFormikValidationSchema } from 'zod-formik-adapter';
+import {
+    AccountUpdateAIApiKeyRequest,
+    useApiAccountsAiApiKeyUpdate,
+} from 'Iaso/api/accounts';
+import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
+import PasswordInput from 'Iaso/components/forms/PasswordInput';
+import MESSAGES from 'Iaso/domains/accounts/messages';
+import { withFormikSubmitAsync } from 'Iaso/utils/forms';
+
+type Props = {
+    accountId: number;
+    isOpen: boolean;
+    closeDialog: () => void;
+};
+
+const EditAIApiKeyModal = ({ accountId, isOpen, closeDialog }: Props) => {
+    const { formatMessage } = useSafeIntl();
+    const { mutateAsync: saveAIApiKey } = useApiAccountsAiApiKeyUpdate({
+        mutation: {
+            ignoreErrorCodes: [400],
+        },
+    });
+    const formik = useFormik({
+        initialValues: {},
+        validationSchema: toFormikValidationSchema(
+            AccountUpdateAIApiKeyRequest,
+        ),
+        onSubmit: withFormikSubmitAsync(values =>
+            saveAIApiKey({
+                id: accountId,
+                data: values as AccountUpdateAIApiKeyRequest,
+            }),
+        ),
+    });
+    ...
+
+```
+
+
 ### Testing
 
 The generated code includes a set of testing utilities that make it easier to write efficient and reliable tests:
@@ -337,6 +432,7 @@ describe(() => {
     server.listen({
       onUnhandledRequest: 'error',
     });
+    faker.seed(1); // if you want "fixed" generated mock data 
   });
 
   afterEach(() => {
@@ -345,11 +441,11 @@ describe(() => {
   });
 
   afterAll(() => {
+    faker.seed(Date.now()); // reset
     server.close();
   });
   beforeEach(() => {
     vi.clearAllMocks();
-    faker.seed(Date.now());
     vi.unstubAllEnvs();
   });
 });
@@ -627,6 +723,13 @@ const NewSchema = BaseSchema.extend({
 ```
 
 This allows you to reuse the generated schema while customizing it for your specific needs.
+
+### When running tests with msw, I want to hide all the logs from network interceptor
+
+In your .env :
+```dotenv
+VITEST_DEBUG="!msw:*"
+```
 
 ---
 

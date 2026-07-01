@@ -134,6 +134,7 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                         iconCreateFunction={cluster =>
                             colorClusterCustomMarker(cluster, color)
                         }
+                        // eslint-disable-next-line react/no-array-index-key
                         key={searchIndex}
                         polygonOptions={{
                             fillColor: color,
@@ -167,11 +168,13 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
         }
         return orgUnits.locations.map((orgUnitsBySearch, searchIndex) => (
             <Pane
+                // eslint-disable-next-line react/no-array-index-key
                 key={searchIndex}
                 name={`markers-${searchIndex}`}
                 style={{ zIndex: 500 }}
             >
                 <MarkersListComponent
+                    // eslint-disable-next-line react/no-array-index-key
                     key={searchIndex}
                     markerProps={() => ({
                         ...circleColorMarkerOptions(

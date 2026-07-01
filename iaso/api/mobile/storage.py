@@ -33,7 +33,6 @@ class MobileStoragePasswordViewSet(ModelViewSet):
     """
 
     http_method_names = ["get", "head", "options"]
-    remove_results_key_if_paginated = False
     results_key = "passwords"
     permission_classes = [IsAuthenticated, ReadOnly]
     serializer_class = MobileStoragePasswordSerializer

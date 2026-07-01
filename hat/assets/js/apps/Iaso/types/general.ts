@@ -55,6 +55,7 @@ declare global {
     interface Window {
         STATIC_URL?: string;
         IASO_VERSION?: string;
+        embedDashboard?: typeof import('@superset-ui/embedded-sdk').embedDashboard;
     }
 }
 

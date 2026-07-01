@@ -27,7 +27,7 @@ from iaso.models.microplanning import (
 )
 from iaso.models.team import Team
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
-from iaso.test import APITestCase
+from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
 class PlanningTestCase(APITestCase):
@@ -946,6 +946,202 @@ class PlanningTestCase(APITestCase):
         self.assertEqual(ids, [child.id])
         self.assertTrue(r[0]["has_geo_json"])
 
+    def test_planning_orgunits_children_filter_by_org_unit_parent_id(self):
+        """orgUnitParentId returns planning org units that are direct or indirect descendants of the parent."""
+        self.client.force_authenticate(self.user)
+        parent_type = OrgUnitType.objects.create(name="Region type")
+        parent_type.projects.add(self.project1)
+        district_type = OrgUnitType.objects.create(name="District type")
+        district_type.projects.add(self.project1)
+        child_type = OrgUnitType.objects.create(name="Health post type")
+        child_type.projects.add(self.project1)
+
+        polygon = Polygon(((0, 0), (0, 1), (1, 1), (0, 0)), srid=4326)
+        multipolygon = MultiPolygon(polygon, srid=4326)
+
+        root = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="root-ou",
+            org_unit_type=parent_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        district_a = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="district-a",
+            parent=root,
+            org_unit_type=district_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        district_b = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="district-b",
+            parent=root,
+            org_unit_type=district_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        child_a1 = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="child-a1",
+            parent=district_a,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        child_a2 = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="child-a2",
+            parent=district_a,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        child_b1 = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="child-b1",
+            parent=district_b,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+
+        planning = Planning.objects.create(
+            project=self.project1,
+            name="planning-orgunits-parent-filter",
+            team=self.team1,
+            org_unit=root,
+            started_at="2025-01-01",
+            ended_at="2025-01-02",
+        )
+        planning.target_org_unit_types.set([child_type])
+
+        base = f"/api/microplanning/plannings/{planning.id}/orgunits/children/"
+        unfiltered = self.assertJSONResponse(self.client.get(base, format="json"), 200)
+        self.assertCountEqual(
+            [ou["id"] for ou in unfiltered],
+            [child_a1.id, child_a2.id, child_b1.id],
+        )
+
+        filtered_a = self.assertJSONResponse(
+            self.client.get(f"{base}?orgUnitParentId={district_a.id}", format="json"),
+            200,
+        )
+        self.assertCountEqual([ou["id"] for ou in filtered_a], [child_a1.id, child_a2.id])
+
+        filtered_b = self.assertJSONResponse(
+            self.client.get(f"{base}?orgUnitParentId={district_b.id}", format="json"),
+            200,
+        )
+        self.assertEqual([ou["id"] for ou in filtered_b], [child_b1.id])
+
+        paginated_url = (
+            f"/api/microplanning/plannings/{planning.id}/orgunits/children-paginated/"
+            f"?limit=50&page=1&orgUnitParentId={district_a.id}"
+        )
+        paginated = self.assertJSONResponse(self.client.get(paginated_url, format="json"), 200)
+        self.assertCountEqual(
+            [ou["id"] for ou in paginated["results"]],
+            [child_a1.id, child_a2.id],
+        )
+
+    def test_planning_orgunits_children_filter_by_org_unit_type_ids(self):
+        self.client.force_authenticate(self.user)
+        parent_type = OrgUnitType.objects.create(name="Region type multi")
+        parent_type.projects.add(self.project1)
+        aire_type = OrgUnitType.objects.create(name="Aire type")
+        aire_type.projects.add(self.project1)
+        centre_type = OrgUnitType.objects.create(name="Centre type")
+        centre_type.projects.add(self.project1)
+
+        polygon = Polygon(((0, 0), (0, 1), (1, 1), (0, 0)), srid=4326)
+        multipolygon = MultiPolygon(polygon, srid=4326)
+
+        root = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="root-multi-type",
+            org_unit_type=parent_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        aire = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="aire-1",
+            parent=root,
+            org_unit_type=aire_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        centre = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="centre-1",
+            parent=aire,
+            org_unit_type=centre_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+
+        planning = Planning.objects.create(
+            project=self.project1,
+            name="planning-orgunits-type-filter",
+            team=self.team1,
+            org_unit=root,
+            started_at="2025-01-01",
+            ended_at="2025-01-02",
+        )
+        planning.target_org_unit_types.set([aire_type, centre_type])
+
+        base = f"/api/microplanning/plannings/{planning.id}/orgunits/children/"
+        unfiltered = self.assertJSONResponse(self.client.get(base, format="json"), 200)
+        self.assertCountEqual([ou["id"] for ou in unfiltered], [aire.id, centre.id])
+
+        aires_only = self.assertJSONResponse(
+            self.client.get(f"{base}?orgUnitTypeIds={aire_type.id}", format="json"),
+            200,
+        )
+        self.assertEqual([ou["id"] for ou in aires_only], [aire.id])
+
+        centres_only = self.assertJSONResponse(
+            self.client.get(f"{base}?orgUnitTypeIds={centre_type.id}", format="json"),
+            200,
+        )
+        self.assertEqual([ou["id"] for ou in centres_only], [centre.id])
+
+        both_types = self.assertJSONResponse(
+            self.client.get(f"{base}?orgUnitTypeIds={aire_type.id},{centre_type.id}", format="json"),
+            200,
+        )
+        self.assertCountEqual([ou["id"] for ou in both_types], [aire.id, centre.id])
+
+        paginated_base = f"/api/microplanning/plannings/{planning.id}/orgunits/children-paginated/?limit=50&page=1"
+        paginated_all = self.assertJSONResponse(self.client.get(paginated_base, format="json"), 200)
+        self.assertEqual(paginated_all["count"], 2)
+
+        paginated_aires = self.assertJSONResponse(
+            self.client.get(f"{paginated_base}&orgUnitTypeIds={aire_type.id}", format="json"),
+            200,
+        )
+        self.assertEqual(paginated_aires["count"], 1)
+        self.assertEqual(paginated_aires["results"][0]["id"], aire.id)
+
+        paginated_centres = self.assertJSONResponse(
+            self.client.get(f"{paginated_base}&orgUnitTypeIds={centre_type.id}", format="json"),
+            200,
+        )
+        self.assertEqual(paginated_centres["count"], 1)
+        self.assertEqual(paginated_centres["results"][0]["id"], centre.id)
+
+        paginated_centres_under_aire = self.assertJSONResponse(
+            self.client.get(
+                f"{paginated_base}&orgUnitParentId={aire.id}&orgUnitTypeIds={centre_type.id}",
+                format="json",
+            ),
+            200,
+        )
+        self.assertEqual(paginated_centres_under_aire["count"], 1)
+        self.assertEqual(paginated_centres_under_aire["results"][0]["id"], centre.id)
+
     def test_planning_orgunits_children_search_by_name(self):
         self.client.force_authenticate(self.user)
         parent_type = OrgUnitType.objects.create(name="Parent type search")
@@ -1254,6 +1450,7 @@ class PlanningTestCase(APITestCase):
         user_from_db = User.objects.select_related("iaso_profile").get(pk=self.user.pk)
         team_from_db = Team.objects.get(pk=self.team1.pk)
         self.assertEqual(rows[child.id]["assignment"]["assignment_type"], "user")
+        self.assertEqual(rows[child.id]["org_unit_type"], {"id": child_type.id, "name": child_type.name})
         self.assertEqual(
             rows[child.id]["assignment"]["user"],
             PlanningOrgUnitTableAssignmentUserSerializer(user_from_db).data,
@@ -1408,23 +1605,52 @@ class AssignmentAPITestCase(APITestCase):
         cls.org_unit_type = org_unit_type = OrgUnitType.objects.create(name="test type")
         project = account.project_set.first()
         org_unit_type.projects.add(project)
-        cls.root_org_unit = root_org_unit = OrgUnit.objects.create(version=version, org_unit_type=org_unit_type)
+        cls.root_org_unit = root_org_unit = OrgUnit.objects.create(
+            version=version,
+            org_unit_type=org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+        )
         cls.child1 = OrgUnit.objects.create(
-            version=version, parent=root_org_unit, name="child1", org_unit_type=org_unit_type
+            version=version,
+            parent=root_org_unit,
+            name="child1",
+            org_unit_type=org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.child2 = OrgUnit.objects.create(
-            version=version, parent=root_org_unit, name="child2", org_unit_type=org_unit_type
+            version=version,
+            parent=root_org_unit,
+            name="child2",
+            org_unit_type=org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.child3 = OrgUnit.objects.create(
-            version=version, parent=root_org_unit, name="child3", org_unit_type=org_unit_type
+            version=version,
+            parent=root_org_unit,
+            name="child3",
+            org_unit_type=org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.child4 = OrgUnit.objects.create(
-            version=version, parent=root_org_unit, name="child4", org_unit_type=org_unit_type
+            version=version,
+            parent=root_org_unit,
+            name="child4",
+            org_unit_type=org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.child5 = OrgUnit.objects.create(
-            version=version, parent=root_org_unit, name="child4", org_unit_type=org_unit_type
+            version=version,
+            parent=root_org_unit,
+            name="child4",
+            org_unit_type=org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
-        # OrgUnit.objects.create(version=version, parent=root_org_unit, name="child2")
+        OrgUnit.objects.create(
+            version=version,
+            parent=root_org_unit,
+            name="child2",
+            validation_status=OrgUnit.VALIDATION_VALID,
+        )
 
         cls.form1 = Form.objects.create(name="form1")
         cls.form2 = Form.objects.create(name="form2")
@@ -1453,6 +1679,7 @@ class AssignmentAPITestCase(APITestCase):
             started_at="2025-01-01",
             ended_at="2025-01-10",
         )
+        cls.planning.target_org_unit_types.set([org_unit_type])
         Assignment.objects.create(
             planning=cls.planning,
             user=cls.user,
@@ -1539,7 +1766,7 @@ class AssignmentAPITestCase(APITestCase):
         self.client.force_authenticate(user_with_perms)
         data = {
             "planning": self.planning.id,
-            "org_units": [self.child3.id, self.child4.id],
+            "selected_ids": [self.child3.id, self.child4.id],
             "team": self.team1.id,
         }
 
@@ -1557,7 +1784,7 @@ class AssignmentAPITestCase(APITestCase):
         self.client.force_authenticate(user_no_perms)
         data = {
             "planning": self.planning.id,
-            "org_units": [self.child3.id, self.child4.id],
+            "selected_ids": [self.child3.id, self.child4.id],
             "team": self.team1.id,
         }
 
@@ -1573,7 +1800,7 @@ class AssignmentAPITestCase(APITestCase):
         self.client.force_authenticate(user)
         data = {
             "planning": self.planning.id,
-            "org_units": [self.child3.id, self.child4.id],
+            "selected_ids": [self.child3.id, self.child4.id],
             "team": self.team1.id,
         }
 
@@ -1608,7 +1835,7 @@ class AssignmentAPITestCase(APITestCase):
         self.assertEqual(Modification.objects.count(), 2)
         data = {
             "planning": self.planning.id,
-            "org_units": [self.child2.id],
+            "selected_ids": [self.child2.id],
             "team": self.team1.id,
         }
 
@@ -1637,7 +1864,7 @@ class AssignmentAPITestCase(APITestCase):
         # Create additional assignments for the planning
         data = {
             "planning": self.planning.id,
-            "org_units": [self.child2.id, self.child3.id, self.child4.id],
+            "selected_ids": [self.child2.id, self.child3.id, self.child4.id],
             "team": self.team1.id,
         }
         self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
@@ -1682,14 +1909,14 @@ class AssignmentAPITestCase(APITestCase):
 
         data_team1 = {
             "planning": self.planning.id,
-            "org_units": [self.child2.id, self.child3.id],
+            "selected_ids": [self.child2.id, self.child3.id],
             "team": self.team1.id,
         }
         self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data_team1, format="json")
 
         data_team2 = {
             "planning": self.planning.id,
-            "org_units": [self.child4.id, self.child5.id],
+            "selected_ids": [self.child4.id, self.child5.id],
             "team": team2.id,
         }
         self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data_team2, format="json")
@@ -1740,14 +1967,14 @@ class AssignmentAPITestCase(APITestCase):
 
         data_user1 = {
             "planning": self.planning.id,
-            "org_units": [self.child2.id, self.child3.id],
+            "selected_ids": [self.child2.id, self.child3.id],
             "user": self.user.id,
         }
         self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data_user1, format="json")
 
         data_user2 = {
             "planning": self.planning.id,
-            "org_units": [self.child4.id, self.child5.id],
+            "selected_ids": [self.child4.id, self.child5.id],
             "user": user2.id,
         }
         self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data_user2, format="json")
@@ -1870,7 +2097,7 @@ class AssignmentAPITestCase(APITestCase):
         # Create additional assignments
         data = {
             "planning": self.planning.id,
-            "org_units": [self.child2.id, self.child3.id],
+            "selected_ids": [self.child2.id, self.child3.id],
             "team": self.team1.id,
         }
         self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
@@ -1913,7 +2140,7 @@ class AssignmentAPITestCase(APITestCase):
         # Create additional assignments
         data = {
             "planning": self.planning.id,
-            "org_units": [self.child2.id, self.child3.id],
+            "selected_ids": [self.child2.id, self.child3.id],
             "team": self.team1.id,
         }
         self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
@@ -1960,11 +2187,12 @@ class AssignmentAPITestCase(APITestCase):
             started_at="2025-01-01",
             ended_at="2025-01-10",
         )
+        other_planning.target_org_unit_types.set([self.root_org_unit.org_unit_type])
 
         # Create assignments for the other planning
         other_data = {
             "planning": other_planning.id,
-            "org_units": [self.child2.id, self.child3.id, self.child4.id],
+            "selected_ids": [self.child2.id, self.child3.id, self.child4.id],
             "team": self.team1.id,
         }
         self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=other_data, format="json")
@@ -2315,3 +2543,82 @@ class AssignmentAPITestCase(APITestCase):
 
         response = self.client.post("/api/v2/mobile/plannings/", data={}, format="json")
         self.assertEqual(response.status_code, 403)
+
+
+class MicroplanningSwaggerTestCase(SwaggerTestCaseMixin, APITestCase):
+    fixtures = ["user.yaml"]
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.account = Account.objects.get(name="test")
+        cls.user = User.objects.get(username="test")
+        cls.project1 = cls.account.project_set.create(name="swagger-project")
+        cls.team1 = Team.objects.create(project=cls.project1, name="swagger-team", manager=cls.user)
+        source = DataSource.objects.create(name="Swagger source")
+        source.projects.add(cls.project1)
+        version = SourceVersion.objects.create(data_source=source, number=1)
+        parent_type = OrgUnitType.objects.create(name="Swagger parent type")
+        parent_type.projects.add(cls.project1)
+        child_type = OrgUnitType.objects.create(name="Swagger child type")
+        child_type.projects.add(cls.project1)
+        polygon = Polygon(((0, 0), (0, 1), (1, 1), (0, 0)), srid=4326)
+        multipolygon = MultiPolygon(polygon, srid=4326)
+        cls.root = OrgUnit.objects.create(
+            version=version,
+            name="swagger-root",
+            org_unit_type=parent_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        cls.child = OrgUnit.objects.create(
+            version=version,
+            name="swagger-child",
+            parent=cls.root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        cls.planning = Planning.objects.create(
+            project=cls.project1,
+            name="swagger-planning",
+            team=cls.team1,
+            org_unit=cls.root,
+            started_at="2025-01-01",
+            ended_at="2025-01-02",
+        )
+        cls.planning.target_org_unit_types.set([child_type])
+        Assignment.objects.create(planning=cls.planning, org_unit=cls.child, user=cls.user, created_by=cls.user)
+
+    def test_bulk_create_assignments_response_is_compliant(self):
+        user_with_perms = self.create_user_with_profile(
+            username="swagger_bulk_user",
+            account=self.account,
+            permissions=[CORE_PLANNING_WRITE_PERMISSION],
+        )
+        self.client.force_authenticate(user_with_perms)
+        response = self.client.post(
+            "/api/microplanning/assignments/bulk_create_assignments/",
+            data={
+                "planning": self.planning.id,
+                "selected_ids": [self.child.id],
+                "team": self.team1.id,
+            },
+            format="json",
+        )
+        data = self.assertJSONResponse(response, 200)
+        self.assertResponseCompliantToSwagger(data, "Assignment", as_array=True)
+
+    def test_bulk_delete_assignments_response_is_compliant(self):
+        user_with_perms = self.create_user_with_profile(
+            username="swagger_delete_user",
+            account=self.account,
+            permissions=[CORE_PLANNING_WRITE_PERMISSION],
+        )
+        self.client.force_authenticate(user_with_perms)
+        response = self.client.post(
+            "/api/microplanning/assignments/bulk_delete_assignments/",
+            data={"planning": self.planning.id, "user": self.user.id},
+            format="json",
+        )
+        data = self.assertJSONResponse(response, 200)
+        self.assertResponseCompliantToSwagger(data, "BulkDeleteAssignmentResponse")

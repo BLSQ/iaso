@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 
-import MESSAGES from '../messages';
 import { TEAM_OF_TEAMS, TEAM_OF_USERS } from '../constants';
+import MESSAGES from '../messages';
 
 type Props = {
     type: string;

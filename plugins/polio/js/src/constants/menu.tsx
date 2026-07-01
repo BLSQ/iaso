@@ -3,6 +3,8 @@ import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import CalendarToday from '@mui/icons-material/CalendarToday';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import DataThresholdingIcon from '@mui/icons-material/DataThresholding';
 import DonutSmallIcon from '@mui/icons-material/DonutSmall';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
@@ -12,7 +14,6 @@ import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import MenuBookIcon from '@mui/icons-material/MenuBook';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import PhotoSizeSelectActualIcon from '@mui/icons-material/PhotoSizeSelectActual';
@@ -21,8 +22,6 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import StorageIcon from '@mui/icons-material/Storage';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import DataThresholdingIcon from '@mui/icons-material/DataThresholding';
 import { MenuItem } from '../../../../../hat/assets/js/apps/Iaso/domains/app/types';
 import MESSAGES from './messages';
 import {
@@ -37,7 +36,7 @@ import {
     imOhhPath,
     lqasAfroPath,
     lqasCountryPath,
-    nopvAuthPath,
+    // nopvAuthPath,
     notificationPath,
     reasonsForDelayConfigPath,
     stockManagementPath,
@@ -130,12 +129,12 @@ export const menu: MenuItem[] = [
                 key: 'vaccinemodule',
                 icon: props => <ExtensionIcon {...props} />,
                 subMenu: [
-                    {
-                        label: MESSAGES.nopv2Auth,
-                        key: 'nopv2authorisation',
-                        permissions: nopvAuthPath.permissions,
-                        icon: props => <MenuBookIcon {...props} />,
-                    },
+                    // {
+                    //     label: MESSAGES.nopv2Auth,
+                    //     key: 'nopv2authorisation',
+                    //     permissions: nopvAuthPath.permissions,
+                    //     icon: props => <MenuBookIcon {...props} />,
+                    // },
                     {
                         label: MESSAGES.vaccineSupplyChain,
                         key: 'supplychain',

@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { makeFullModal, useSafeIntl, AlertModal } from 'bluesquare-components';
 import { Divider } from '@mui/material';
+import { makeFullModal, useSafeIntl, AlertModal } from 'bluesquare-components';
 import MESSAGES from '../../../../../constants/messages';
 import { RoundDatesHistoryTable } from '../RoundDatesHistoryTable';
 import { RoundDatesHistoryIconButton } from './RoundDatesHistoryIconButton';

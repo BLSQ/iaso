@@ -1,14 +1,15 @@
 import { useMemo } from 'react';
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
+import { useAppId } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useAppId';
 import { MapShapes } from '../../../../../constants/types';
 import { useGetGeoJson } from '../../../../Campaigns/Scope/hooks/useGetGeoJson';
-import { appId } from '../../../../../constants/app';
 
 const defaultShapes: OrgUnit[] = [];
 export const useMapShapes = (
     countryId?: number,
     isEmbedded = false,
 ): MapShapes => {
+    const appId = useAppId();
     const { data: shapes = defaultShapes, isFetching: isFetchingGeoJson } =
         useGetGeoJson({
             topParentId: countryId,

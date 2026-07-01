@@ -21,6 +21,7 @@ import DialogComponent from '../../../components/dialogs/DialogComponent';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { useVersionsDialogTableColumns } from '../hooks/useVersionsDialogTableColumns';
 import MESSAGES from '../messages';
+import { DataSource } from '../types/dataSources';
 import {
     getSortedSourceVersions,
     getTablePages,
@@ -31,7 +32,6 @@ import {
 import { AddNewEmptyVersion } from './AddNewEmptyVersion';
 import { AddTask } from './AddTaskComponent';
 import { ImportGeoPkgDialog } from './ImportGeoPkgDialog';
-import { DataSource } from '../types/dataSources';
 
 const useStyles = makeStyles(theme => ({
     spanStyle: {

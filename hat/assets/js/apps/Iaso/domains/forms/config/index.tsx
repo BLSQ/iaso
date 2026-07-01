@@ -204,6 +204,16 @@ export const useFormsTableColumns = ({
                         ?.join(', '),
             },
             {
+                Header: formatMessage(MESSAGES.orgUnitsGroups),
+                sortable: false,
+                accessor: 'org_unit_groups',
+                id: 'org_unit_groups',
+                Cell: settings =>
+                    settings.row.original.org_unit_groups
+                        ?.map(g => g.name)
+                        ?.join(', '),
+            },
+            {
                 Header: formatMessage(MESSAGES.instances_count),
                 id: 'instances_count',
                 accessor: 'instances_count',
@@ -240,7 +250,15 @@ export const useFormsTableColumns = ({
             });
         }
         return cols;
-    }, [formatMessage, user, onlyDeleted, showDeleted, orgUnitId, hasDhis2Module, deleteForm]);
+    }, [
+        formatMessage,
+        user,
+        onlyDeleted,
+        showDeleted,
+        orgUnitId,
+        hasDhis2Module,
+        deleteForm,
+    ]);
 };
 
 export const requiredFields = [

@@ -19,7 +19,7 @@ export const FileUploadButtons: FunctionComponent<Props> = ({
     onConfirm,
     isLoading,
     url,
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
+
     onCancel = () => {},
 }) => {
     const buttonStyles = useDownloadButtonStyles();

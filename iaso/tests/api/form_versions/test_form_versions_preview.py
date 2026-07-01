@@ -21,13 +21,16 @@ Expected diff v1 → v2:
     modified: age (integer → text)
 """
 
+import io
 import tempfile
 
 from unittest import mock
 
+import openpyxl
+
 from django.core.files import File
 from django.core.files.storage import default_storage
-from django.core.files.uploadedfile import UploadedFile
+from django.core.files.uploadedfile import SimpleUploadedFile, UploadedFile
 from django.test import override_settings
 
 from iaso import models as m
@@ -75,6 +78,12 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 xls_file=UploadedFile(xls_file),
                 version_id="2020010101",
             )
+
+        # Form assigned to two projects in the same account — used to test IA-5214.
+        second_project = m.Project.objects.create(name="SW Project 2", app_id="sw.project2", account=star_wars)
+        cls.form_two_projects = m.Form.objects.create(name="Form Two Projects", form_id="test_preview_two_projects")
+        project.forms.add(cls.form_two_projects)
+        second_project.forms.add(cls.form_two_projects)
 
     def setUp(self):
         default_storage._root._children.clear()
@@ -171,6 +180,35 @@ class FormVersionPreviewAPITestCase(APITestCase):
         self.assertTrue(
             "xls_file_validation_errors" in data or "xls_file" in data,
             f"Expected an xls_file error key in response, got: {data}",
+        )
+
+    def test_preview_bad_parameters_column_returns_descriptive_error(self):
+        """XLS with a malformed 'parameters' column → 400 with a message that names the column."""
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "survey"
+        ws.append(["type", "name ", "label", "parameters"])
+        ws.append(["range", "amount", "What is the age?", "nd_period"])
+        buf = io.BytesIO()
+        wb.save(buf)
+        xls_file = SimpleUploadedFile(
+            "form.xlsx",
+            buf.getvalue(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            PREVIEW_URL,
+            data={"form_id": self.form_with_version.id, "xls_file": xls_file},
+            format="multipart",
+        )
+        data = self.assertJSONResponse(response, 400)
+        self.assertIn("xls_file_validation_errors", data)
+        error_messages = [e["message"] for e in data["xls_file_validation_errors"]]
+        self.assertTrue(
+            any("parameters" in msg and "nd_period" in msg for msg in error_messages),
+            f"Expected a 'parameters' column error in: {error_messages}",
         )
 
     # -------------------------------------------------------------------------
@@ -303,6 +341,30 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 response = self.client.post(
                     PREVIEW_URL,
                     data={"form_id": self.form_with_version.id, "xls_file": xls_file},
+                    format="multipart",
+                )
+        self.assertJSONResponse(response, 200)
+
+    # -------------------------------------------------------------------------
+    # IA-5214 — form assigned to multiple projects
+    # -------------------------------------------------------------------------
+
+    def test_preview_form_assigned_to_two_projects_succeeds(self):
+        """Preview must succeed and use a bounded number of queries when the form belongs to
+        more than one project in the same account.
+
+        Root cause: filter_for_user_and_app_id joined on projects__account and returned duplicate
+        rows when a form was in multiple projects.  PrimaryKeyRelatedField.get_queryset().get(pk=…)
+        then raised MultipleObjectsReturned.  The Exists-based fix avoids row inflation entirely,
+        so the query count stays the same as the single-project case (5).
+        """
+        self.client.force_authenticate(self.yoda)
+        with open(FIXTURE_V1, "rb") as xls_file:
+            # Same query count as the single-project case — no N+1 from multiple projects.
+            with self.assertNumQueries(5):
+                response = self.client.post(
+                    PREVIEW_URL,
+                    data={"form_id": self.form_two_projects.id, "xls_file": xls_file},
                     format="multipart",
                 )
         self.assertJSONResponse(response, 200)

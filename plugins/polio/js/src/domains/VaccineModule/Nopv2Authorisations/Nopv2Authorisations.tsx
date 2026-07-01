@@ -1,14 +1,14 @@
 import React, { FunctionComponent, useEffect } from 'react';
-import { useSafeIntl, useRedirectToReplace } from 'bluesquare-components';
 import { Box } from '@mui/material';
-import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
+import { useSafeIntl, useRedirectToReplace } from 'bluesquare-components';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
+import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import MESSAGES from '../../../constants/messages';
+import { baseUrls } from '../../../constants/urls';
 import { useStyles } from '../../../styles/theme';
 import { Nopv2AuthorisationsFilters } from './Filters/Nopv2AuthorisationsFilters';
 import { Nopv2AuthorisationsTable } from './Table/Nopv2AuthorisationsTable';
 import { VaccineAuthParams } from './types';
-import { baseUrls } from '../../../constants/urls';
 
 const defaultParams = {
     order: '-current_expiration_date',
@@ -18,6 +18,7 @@ const defaultParams = {
 
 const baseUrl = baseUrls.nopv2Auth;
 
+/** @deprecated at clients request. Code kept because the business need may arise again*/
 export const Nopv2Authorisations: FunctionComponent = () => {
     const params = useParamsObject(baseUrl) as Partial<VaccineAuthParams>;
     const redirectToReplace = useRedirectToReplace();

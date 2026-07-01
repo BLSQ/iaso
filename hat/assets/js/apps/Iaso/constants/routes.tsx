@@ -11,6 +11,9 @@ import { ValidationWorkflowInstances } from 'Iaso/domains/validationWorkflowInst
 import { ValidationWorkflowsConfiguration } from 'Iaso/domains/validationWorkflowsConfiguration';
 import { ValidationWorkflowConfigurationDetail } from 'Iaso/domains/validationWorkflowsConfiguration/details';
 import PageError from '../components/errors/PageError';
+import { Accounts } from '../domains/accounts';
+import AccountsDetails from '../domains/accounts/details';
+import { AccountsEdit } from '../domains/accounts/edit';
 import { Runs } from '../domains/algorithmRuns/Runs';
 import { Assignments } from '../domains/assignments';
 import Completeness from '../domains/completeness';
@@ -36,6 +39,7 @@ import InstanceDetail from '../domains/instances/details';
 import { Links } from '../domains/links';
 import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
+import { Missions } from '../domains/missions';
 import { Modules } from '../domains/modules';
 import { OrgUnits } from '../domains/orgUnits';
 import { OrgUnitChangeRequestConfigs } from '../domains/orgUnits/configuration/OrgUnitChangeRequestConfigs';
@@ -49,7 +53,6 @@ import { ReviewOrgUnitChangesDetail } from '../domains/orgUnits/reviewChanges/de
 import Pages from '../domains/pages';
 import { LotsPayments } from '../domains/payments/LotsPayments';
 import { PotentialPayments } from '../domains/payments/PotentialPayments';
-import { Missions } from '../domains/missions';
 import { Planning } from '../domains/plannings';
 import { Details as PlanningDetails } from '../domains/plannings/details';
 import { Projects } from '../domains/projects';
@@ -65,7 +68,7 @@ import { Details as UserDetails } from '../domains/users/details';
 import { UsersHistory } from '../domains/users/history/UsersHistory';
 import { Workflows } from '../domains/workflows';
 import { Details as WorkflowDetails } from '../domains/workflows/details';
-import { SHOW_PAGES } from '../utils/featureFlags';
+
 import * as Permission from '../utils/permissions';
 import { baseUrls } from './urls';
 
@@ -119,7 +122,6 @@ export const pagesPath = {
     baseUrl: baseUrls.pages,
     routerUrl: `${baseUrls.pages}/*`,
     permissions: [Permission.PAGES, Permission.PAGE_WRITE],
-    featureFlag: SHOW_PAGES,
     element: <Pages />,
 };
 
@@ -529,6 +531,28 @@ export const adminApiImportPath = {
     permissions: [Permission.ACCOUNT_MANAGEMENT],
     element: <ApiImports />,
 };
+
+export const accountsPath = {
+    baseUrl: baseUrls.accounts,
+    routerUrl: `${baseUrls.accounts}/*`,
+    element: <Accounts />,
+    permissions: [Permission.ACCOUNT_MANAGEMENT],
+};
+
+export const accountsDetailsPath = {
+    baseUrl: baseUrls.accountsDetail,
+    routerUrl: `${baseUrls.accountsDetail}/*`,
+    element: <AccountsDetails />,
+    permissions: [Permission.ACCOUNT_MANAGEMENT],
+};
+
+export const accountsEditPath = {
+    baseUrl: baseUrls.accountsEdit,
+    routerUrl: `${baseUrls.accountsEdit}/*`,
+    element: <AccountsEdit />,
+    permissions: [Permission.ACCOUNT_MANAGEMENT],
+};
+
 export const page401 = {
     baseUrl: baseUrls.error401,
     routerUrl: baseUrls.error401,
@@ -632,4 +656,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     validationWorkflowConfigurationPath,
     validationWorkflowsConfigurationDetailPath,
     validationWorkflowInstancesPath,
+    accountsPath,
+    accountsDetailsPath,
+    accountsEditPath,
 ];

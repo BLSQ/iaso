@@ -1,6 +1,11 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { getRequest, IntlMessage, AsyncSelect } from 'bluesquare-components';
+import { useQueryClient } from 'react-query';
+import { openSnackBar } from 'Iaso/components/snackBars/EventDispatcher';
+import { errorSnackBar } from 'Iaso/constants/snackBars';
+import { useAsyncInitialState } from 'Iaso/hooks/useAsyncInitialState';
 import MESSAGES from '../../../constants/messages';
+import { Campaign } from '../../../constants/types';
 import {
     CampaignCategory,
     CAMPAIGNS_ENDPOINT,
@@ -9,12 +14,7 @@ import {
     Options,
     useGetCampaigns,
 } from '../hooks/api/useGetCampaigns';
-import { openSnackBar } from 'Iaso/components/snackBars/EventDispatcher';
-import { errorSnackBar } from 'Iaso/constants/snackBars';
-import { Campaign } from '../../../constants/types';
-import { useAsyncInitialState } from 'Iaso/hooks/useAsyncInitialState';
 import { useCampaignTypeNames } from './useCampaignTypeNames';
-import { useQueryClient } from 'react-query';
 
 type Props = {
     handleChange: (keyValue: string, value: unknown) => void;
@@ -23,9 +23,7 @@ type Props = {
     keyValue?: string;
     clearable?: boolean;
     initialValue?: string; // obr name
-    onHold?: boolean;
     showTest?: boolean;
-    showPlanned?: boolean;
     campaignCategory?: CampaignCategory;
     campaignType?: 'polio' | 'non-polio' | string;
 };
@@ -45,8 +43,6 @@ export const CampaignAsyncSelect: FunctionComponent<Props> = ({
     clearable,
     initialValue,
     campaignCategory = 'regular' as CampaignCategory,
-    onHold = true,
-    showPlanned = true,
     showTest = false,
     campaignType = 'polio',
     label = MESSAGES.campaign,
@@ -61,11 +57,9 @@ export const CampaignAsyncSelect: FunctionComponent<Props> = ({
         return {
             fieldset: 'dropdown',
             campaignCategory,
-            on_hold: onHold,
-            is_planned: showPlanned,
             show_test: showTest,
         };
-    }, [campaignCategory, onHold, showPlanned, showTest]);
+    }, [campaignCategory, showTest]);
     const options: Options = useMemo(() => {
         return {
             enabled: isStateSet,
@@ -107,6 +101,7 @@ export const CampaignAsyncSelect: FunctionComponent<Props> = ({
                 return [];
             }
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [
             campaignTypes,
             baseOptions,
@@ -140,6 +135,7 @@ export const CampaignAsyncSelect: FunctionComponent<Props> = ({
             setSearch(val?.label ? val.label : undefined);
             handleChange(keyValue, val ? val : undefined);
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [handleChange],
     );
 

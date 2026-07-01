@@ -4,15 +4,23 @@ from rest_framework.response import Response
 
 class Paginator(pagination.PageNumberPagination):
     page_size_query_param = "limit"
+    results_key = "results"
 
-    def __init__(self, results_key="results"):
-        self.results_key = results_key
+    def get_results_key(self):
+        if not getattr(self, "request", None):
+            return self.results_key
+
+        view = self.request.parser_context.get("view", None)
+        results_key = getattr(view, "results_key", None) or self.results_key
+        if not results_key:
+            raise AttributeError(f"{view.__class__.__name__} should define a results_key attribute")
+        return results_key
 
     def get_paginated_response(self, data):
         return Response(
             {
                 "count": self.page.paginator.count,
-                self.results_key: data,
+                self.get_results_key(): data,
                 "has_next": self.page.has_next(),
                 "has_previous": self.page.has_previous(),
                 "page": self.page.number,
@@ -49,7 +57,7 @@ class Paginator(pagination.PageNumberPagination):
                     "example": 2,
                     "description": "The total number of pages",
                 },
-                self.results_key: schema,
+                self.get_results_key(): schema,
             },
         }
 

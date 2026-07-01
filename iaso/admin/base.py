@@ -1347,6 +1347,14 @@ class DataSourceVersionsSynchronizationAdmin(admin.ModelAdmin):
         )
 
 
+@admin.register(ReportVersion)
+class ReportVersionAdmin(admin.ModelAdmin):
+    list_display = ("name", "status", "created_at", "updated_at")
+    list_filter = ("status",)
+    search_fields = ("name",)
+    autocomplete_fields = ("created_by", "updated_by")
+
+
 class TemporaryFormAdmin(admin.ModelAdmin):
     list_display = ("uuid", "user", "account", "created_at")
     list_filter = ("account",)
@@ -1364,4 +1372,3 @@ admin.site.register(ExternalCredentials)
 admin.site.register(DevicePosition)
 admin.site.register(BulkCreateUserFile)
 admin.site.register(Report)
-admin.site.register(ReportVersion)

@@ -5,6 +5,8 @@ import React, {
     useCallback,
 } from 'react';
 
+import { Box, Grid, Theme, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     useSafeIntl,
     commonStyles,
@@ -13,18 +15,15 @@ import {
     useGoBack,
 } from 'bluesquare-components';
 
-import { Box, Grid, Theme, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-
-import WidgetPaper from '../../../../../../../hat/assets/js/apps/Iaso/components/papers/WidgetPaperComponent';
-import ErrorPaperComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/papers/ErrorPaperComponent';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
+import ErrorPaperComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/papers/ErrorPaperComponent';
+import WidgetPaper from '../../../../../../../hat/assets/js/apps/Iaso/components/papers/WidgetPaperComponent';
 
-import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
-import { baseUrls } from '../../../constants/urls';
+import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import MESSAGES from '../../../constants/messages';
+import { baseUrls } from '../../../constants/urls';
 
 import { CampaignLogDetail } from './CampaignLogDetail';
 import {

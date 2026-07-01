@@ -15,11 +15,7 @@ from rest_framework.response import Response
 from rest_framework.settings import api_settings
 
 from hat.audit.models import ENTITY_API
-from iaso.api.common import (
-    DeletionFilterBackend,
-    HasPermission,
-    ModelViewSet,
-)
+from iaso.api.common import DeletionFilterBackend, HasPermission, ModelViewSet
 from iaso.api.entities.filters import EntityDateFilterBackend, EntityFilterSet, EntityOrderingFilter
 from iaso.api.entities.pagination import EntityCursorPagination, EntityListPaginator, EntityLocationPaginator
 from iaso.api.entities.renderers import CSVStreamingRenderer, LegacyExportContentNegotation, XlsxStreamingRenderer
@@ -154,12 +150,16 @@ class EntityViewSet(ModelViewSet):
             ),
             Prefetch(
                 "duplicates1",
-                queryset=EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING),
+                queryset=EntityDuplicate.objects.filter(
+                    validation_status=ValidationStatus.PENDING, entity2__deleted_at__isnull=True
+                ),
                 to_attr="pending_duplicates1",
             ),
             Prefetch(
                 "duplicates2",
-                queryset=EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING),
+                queryset=EntityDuplicate.objects.filter(
+                    validation_status=ValidationStatus.PENDING, entity1__deleted_at__isnull=True
+                ),
                 to_attr="pending_duplicates2",
             ),
         )

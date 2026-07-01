@@ -1,10 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ChatIcon from '@mui/icons-material/Chat';
-import ExitIcon from '@mui/icons-material/ExitToApp';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import {
-    Button,
     Divider,
     Drawer,
     IconButton,
@@ -14,8 +12,6 @@ import {
     ListItemText,
     Tooltip,
     Typography,
-    useMediaQuery,
-    useTheme,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
@@ -25,7 +21,6 @@ import { useMenuItems } from '../../../constants/menu';
 import { SIDEBAR_WIDTH } from '../../../constants/uiConstants';
 import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';
-import { getDefaultSourceVersion } from '../../dataSources/utils';
 import { useSidebar } from '../contexts/SideBarContext';
 import { LogoAndTitle } from './LogoAndTitle';
 import MenuItem from './MenuItemComponent';
@@ -105,10 +100,7 @@ const SidebarMenu: FunctionComponent<Props> = ({ location }) => {
     };
     const currentUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
-    const defaultSourceVersion = getDefaultSourceVersion(currentUser);
     const menuItems = useMenuItems();
-    const theme = useTheme();
-    const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
     const userGuideUrl = currentUser.account?.user_manual_path;
     const forumGuideUrl = currentUser.account?.forum_path;
 

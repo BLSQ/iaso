@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { Select } from './Select';
 import MESSAGES from '../../constants/messages';
+import { Select } from './Select';
 
 export const PaymentField = props => {
     const { formatMessage } = useSafeIntl();

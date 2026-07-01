@@ -77,6 +77,8 @@ export type Form = {
     location_field: string;
     org_unit_types: string;
     org_unit_type_ids: number[];
+    org_unit_groups: { id: number; name: string }[];
+    org_unit_group_ids: number[];
     projects: Project[];
     project_ids: number[];
     period_type: 'MONTH' | 'QUARTER' | 'SIX_MONTH' | 'YEAR';
@@ -172,6 +174,7 @@ export type FormDataType = {
     short_name: FieldError<string>;
     depth: FieldError<number | null>;
     org_unit_type_ids: FieldError<number[]>;
+    org_unit_group_ids: FieldError<number[]>;
     project_ids: FieldError<number[]>;
     period_type: FieldError<PeriodType>;
     derived: FieldError<boolean>;

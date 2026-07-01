@@ -49,6 +49,15 @@ class FormsAPITestCase(APITestCase):
         star_wars.save()
         cls.sw_version = sw_version
 
+        cls.form_manager = cls.create_user_with_profile(
+            username="form_manager", account=star_wars, permissions=[CORE_FORMS_PERMISSION]
+        )
+        cls.health_facilities_group = m.Group.objects.create(name="Health facilities", source_version=sw_version)
+        cls.empty_group = m.Group.objects.create(name="Empty group", source_version=sw_version)
+        other_source = m.DataSource.objects.create(name="Other source")
+        other_version = m.SourceVersion.objects.create(data_source=other_source, number=1)
+        cls.unrelated_group = m.Group.objects.create(name="Unrelated group", source_version=other_version)
+
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
         cls.jedi_academy = m.OrgUnitType.objects.create(name="Jedi Academy", short_name="Aca")
         cls.sith_guild = m.OrgUnitType.objects.create(name="Sith guild", short_name="Sith")
@@ -94,6 +103,7 @@ class FormsAPITestCase(APITestCase):
         form_version.save()
         cls.form_2.org_unit_types.add(cls.jedi_council)
         cls.form_2.org_unit_types.add(cls.jedi_academy)
+        cls.form_2.org_unit_groups.add(cls.health_facilities_group)
 
         cls.form_2.instances.create(file=cls.create_file_mock(name="testi1.xml"))
         cls.form_2.instances.create(
@@ -106,6 +116,8 @@ class FormsAPITestCase(APITestCase):
         cls.project_1.forms.add(cls.form_1)
         cls.project_1.forms.add(cls.form_2)
         cls.project_1.save()
+
+        sw_source.projects.add(cls.project_1)
 
     def test_forms_list_without_auth(self):
         """GET /forms/ without auth: 0 result"""
@@ -185,6 +197,17 @@ class FormsAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 0)
+
+    def test_forms_list_filtered_by_org_unit_group(self):
+        self.client.force_authenticate(self.form_manager)
+        # Filter by org unit group `health_facilities_group`: only form_2 is linked to it.
+        response = self.client.get(f"/api/forms/?orgUnitGroupIds={self.health_facilities_group.pk}")
+        res_data = self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(res_data, 1)
+        # Filter by org unit group `empty_group`: no form is linked to it.
+        response = self.client.get(f"/api/forms/?orgUnitGroupIds={self.empty_group.pk}")
+        res_data = self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(res_data, 0)
 
     def test_forms_list_filtered_by_project(self):
         """GET /forms/ filtered by project"""
@@ -419,6 +442,160 @@ class FormsAPITestCase(APITestCase):
         form = m.Form.objects.get(pk=response_data["id"])
         self.assertEqual(1, form.projects.count())
         self.assertEqual(2, form.org_unit_types.count())
+
+    def test_forms_retrieve_with_org_unit_groups(self):
+        """GET /forms/<form_id> returns the org unit groups of the form"""
+
+        self.client.force_authenticate(self.form_manager)
+        response = self.client.get(f"/api/forms/{self.form_2.id}/")
+        form_data = self.assertJSONResponse(response, 200)
+        self.assertHasField(form_data, "org_unit_groups", list)
+        self.assertEqual(1, len(form_data["org_unit_groups"]))
+        self.assertEqual(self.health_facilities_group.id, form_data["org_unit_groups"][0]["id"])
+        self.assertEqual(self.health_facilities_group.name, form_data["org_unit_groups"][0]["name"])
+
+    def test_forms_retrieve_with_org_unit_groups_in_fields_param(self):
+        """GET /forms/<form_id> with the fields param used by the web form detail page"""
+
+        self.client.force_authenticate(self.form_manager)
+        fields = (
+            "id,name,org_unit_types,org_unit_groups,projects,period_type,derived,single_per_period,"
+            "periods_before_allowed,periods_after_allowed,device_field,location_field,label_keys,"
+            "possible_fields,legend_threshold,change_request_mode,validation_workflow"
+        )
+        response = self.client.get(f"/api/forms/{self.form_2.id}/?fields={fields}")
+        form_data = self.assertJSONResponse(response, 200)
+        self.assertHasField(form_data, "org_unit_groups", list)
+        self.assertEqual(1, len(form_data["org_unit_groups"]))
+        self.assertEqual(self.health_facilities_group.id, form_data["org_unit_groups"][0]["id"])
+
+    def test_forms_create_with_org_unit_groups_ok(self):
+        """POST /forms/ with org unit groups"""
+
+        self.client.force_authenticate(self.form_manager)
+        response = self.client.post(
+            "/api/forms/",
+            data={
+                "name": "test form with groups",
+                "period_type": "MONTH",
+                "periods_before_allowed": 1,
+                "periods_after_allowed": 0,
+                "project_ids": [self.project_1.id],
+                "org_unit_type_ids": [self.jedi_council.id],
+                "org_unit_group_ids": [self.health_facilities_group.id],
+            },
+            format="json",
+        )
+        response_data = self.assertJSONResponse(response, 201)
+        self.assertValidFormData(response_data)
+        form = m.Form.objects.get(pk=response_data["id"])
+        self.assertEqual(1, form.org_unit_groups.count())
+        self.assertEqual(self.health_facilities_group, form.org_unit_groups.first())
+
+    def test_forms_create_without_org_unit_groups_ok(self):
+        """POST /forms/ without org unit groups: the field is optional"""
+
+        self.client.force_authenticate(self.form_manager)
+        response = self.client.post(
+            "/api/forms/",
+            data={
+                "name": "test form without groups",
+                "period_type": "MONTH",
+                "periods_before_allowed": 1,
+                "periods_after_allowed": 0,
+                "project_ids": [self.project_1.id],
+                "org_unit_type_ids": [self.jedi_council.id],
+            },
+            format="json",
+        )
+        response_data = self.assertJSONResponse(response, 201)
+        form = m.Form.objects.get(pk=response_data["id"])
+        self.assertEqual(0, form.org_unit_groups.count())
+
+    def test_forms_create_wrong_org_unit_groups(self):
+        """POST /forms/ - org unit group from outside the user's account is rejected at the field level"""
+
+        self.client.force_authenticate(self.form_manager)
+        response = self.client.post(
+            "/api/forms/",
+            data={
+                "name": "test form with invalid groups",
+                "period_type": "MONTH",
+                "periods_before_allowed": 1,
+                "periods_after_allowed": 0,
+                "project_ids": [self.project_1.id],
+                "org_unit_type_ids": [self.jedi_council.id],
+                "org_unit_group_ids": [self.unrelated_group.id],
+            },
+            format="json",
+        )
+        res_data = self.assertJSONResponse(response, 400)
+        self.assertHasError(
+            res_data, "org_unit_group_ids", f'Invalid pk "{self.unrelated_group.id}" - object does not exist.'
+        )
+
+    def test_forms_create_org_unit_groups_not_in_default_version(self):
+        """POST /forms/ - a group of the account but not in the default source version is rejected"""
+
+        self.client.force_authenticate(self.form_manager)
+        # A group on another version of the account's data source (not the account default version).
+        other_version = m.SourceVersion.objects.create(data_source=self.sw_source, number=2)
+        group_on_other_version = m.Group.objects.create(name="Old group", source_version=other_version)
+        response = self.client.post(
+            "/api/forms/",
+            data={
+                "name": "test form with group from a non-default version",
+                "period_type": "MONTH",
+                "periods_before_allowed": 1,
+                "periods_after_allowed": 0,
+                "project_ids": [self.project_1.id],
+                "org_unit_type_ids": [self.jedi_council.id],
+                "org_unit_group_ids": [group_on_other_version.id],
+            },
+            format="json",
+        )
+        res_data = self.assertJSONResponse(response, 400)
+        self.assertHasError(
+            res_data, "org_unit_group_ids", f'Invalid pk "{group_on_other_version.id}" - object does not exist.'
+        )
+
+    def test_forms_patch_org_unit_groups_from_other_account(self):
+        """PATCH /forms/<form_id> with only org_unit_group_ids cannot attach a group from outside the account"""
+
+        self.client.force_authenticate(self.form_manager)
+        response = self.client.patch(
+            f"/api/forms/{self.form_1.id}/",
+            data={"org_unit_group_ids": [self.unrelated_group.id]},
+            format="json",
+        )
+        res_data = self.assertJSONResponse(response, 400)
+        self.assertHasError(res_data, "org_unit_group_ids")
+        self.form_1.refresh_from_db()
+        self.assertEqual(0, self.form_1.org_unit_groups.count())
+
+    def test_forms_update_org_unit_groups_ok(self):
+        """PUT /forms/<form_id>: add then remove org unit groups"""
+
+        self.client.force_authenticate(self.form_manager)
+        data = {
+            "name": "test form 1 (updated)",
+            "period_type": None,
+            "periods_before_allowed": 0,
+            "periods_after_allowed": 0,
+            "project_ids": [self.project_1.id],
+            "org_unit_type_ids": [self.jedi_council.id],
+            "org_unit_group_ids": [self.health_facilities_group.id, self.empty_group.id],
+        }
+        response = self.client.put(f"/api/forms/{self.form_1.id}/", data=data, format="json")
+        self.assertJSONResponse(response, 200)
+        self.form_1.refresh_from_db()
+        self.assertEqual(2, self.form_1.org_unit_groups.count())
+
+        data["org_unit_group_ids"] = []
+        response = self.client.put(f"/api/forms/{self.form_1.id}/", data=data, format="json")
+        self.assertJSONResponse(response, 200)
+        self.form_1.refresh_from_db()
+        self.assertEqual(0, self.form_1.org_unit_groups.count())
 
     def test_forms_create_ok_without_period_type(self):
         """POST /forms/ happy path without period type"""
@@ -969,4 +1146,4 @@ class FormsAPITestCase(APITestCase):
                 at_least_one_query_with_max_and_count = True
 
         self.assertTrue(at_least_one_query_with_max_and_count)
-        self.assertEqual(len(ctx.captured_queries), 10)
+        self.assertEqual(len(ctx.captured_queries), 11)

@@ -131,20 +131,19 @@ def instance_by_LLIN_campaign_form(form, instance_id, orgunit=None):
         number = random.randint(1, 15)
         child_number = random.randint(1, 5)
         default_number = random.randint(0, 2)
-        total = number + default_number + child_number + child_number
-
+        total = default_number + child_number * 2  # Must be maximum 16, total is maximum 12 so OK
         instance_json = {
             "group_theme": {
                 "code_barre": code,
                 "numero_ticket": ticket_number,
                 "nom_prenoms": beneficiary_name.upper(),
-                "contact": random.randint(ticket_number, code),
+                "contact": random.randint(1000000000, 9999999999),  # Phone number must be 10 digits
                 "nombre_personne": total,
                 "nombre_couchage": number,
                 "enfants": child_number,
                 "enfants1": child_number,
                 "femme_enceinte": default_number,
-                "somme_enfant_fe": total - number,
+                "somme_enfant_fe": total,
                 "nombre_milda_donne": round(total * 0.5),
                 "milda_recu_": round(total * 0.5),
                 "a_recu_ses_mildas": round(total * 0.5),

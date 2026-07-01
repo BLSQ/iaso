@@ -6,6 +6,7 @@ import {
     IntlFormatMessage,
     ConfirmCancelModal,
     makeFullModal,
+    LoadingSpinner,
 } from 'bluesquare-components';
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
@@ -25,6 +26,7 @@ import InputComponent from '../../../components/forms/InputComponent';
 import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
 import { TEAM_OF_TEAMS, TEAM_OF_USERS } from '../constants';
 import { useGetTeamsDropdown } from '../hooks/requests/useGetTeams';
+import { useGetTeam } from '../hooks/requests/useGetTeams';
 import {
     convertAPIErrorsToState,
     SaveTeamQuery,
@@ -36,7 +38,8 @@ import { useTeamValidation } from '../validation';
 
 type ModalMode = 'create' | 'edit';
 
-type Props = Partial<SaveTeamQuery> & {
+type Props = {
+    id?: number;
     dialogType: ModalMode;
     isOpen: boolean;
     closeDialog: () => void;
@@ -59,27 +62,21 @@ const formatTitle = (
 const CreateEditTeam: FunctionComponent<Props> = ({
     dialogType,
     id,
-    name,
-    description,
-    project,
-    manager,
-    subTeams,
-    type,
-    users,
-    parent,
     isOpen,
     closeDialog,
-    color,
 }) => {
     const { data: colors } = useGetColors();
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
+    const { data: team, isFetching: isFetchingTeam } = useGetTeam(
+        isOpen ? id : undefined,
+    );
     const { data: projectsDropdown, isFetching: isFetchingProjects } =
         useGetProjectsDropDown();
     const { data: teamsDropdown = [], isFetching: isFetchingTeams } =
         useGetTeamsDropdown(
             {
-                project,
+                project: team?.project,
             },
             id,
         );
@@ -104,15 +101,15 @@ const CreateEditTeam: FunctionComponent<Props> = ({
     const formik = useFormik({
         initialValues: {
             id,
-            name,
-            description,
-            project,
-            manager: manager || currentUser.user_id,
-            subTeams: subTeams || [],
-            type,
-            users: users || [],
-            parent,
-            color,
+            name: team?.name,
+            description: team?.description,
+            project: team?.project,
+            manager: team?.manager || currentUser.user_id,
+            subTeams: team?.sub_teams || [],
+            type: team?.type,
+            users: team?.users || [],
+            parent: team?.parent,
+            color: team?.color,
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -190,6 +187,7 @@ const CreateEditTeam: FunctionComponent<Props> = ({
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}
             >
+                {isFetchingTeam && <LoadingSpinner absolute fixed={false} />}
                 <InputComponent
                     keyValue="name"
                     onChange={onChange}
@@ -203,7 +201,9 @@ const CreateEditTeam: FunctionComponent<Props> = ({
                     <UserAsyncSelect
                         keyValue="manager"
                         handleChange={onChange}
-                        filterUsers={`${values.manager}`}
+                        filterUsers={
+                            values.manager ? `${values.manager}` : undefined
+                        }
                         label={MESSAGES.manager}
                         multi={false}
                     />
@@ -260,7 +260,11 @@ const CreateEditTeam: FunctionComponent<Props> = ({
                         <UserAsyncSelect
                             keyValue="users"
                             handleChange={onChange}
-                            filterUsers={values.users.join(',')}
+                            filterUsers={
+                                values.users
+                                    ? values.users.join(',')
+                                    : undefined
+                            }
                             label={MESSAGES.users}
                             multi
                         />

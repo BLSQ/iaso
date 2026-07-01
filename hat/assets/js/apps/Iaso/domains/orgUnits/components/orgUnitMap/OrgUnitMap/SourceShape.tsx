@@ -1,5 +1,5 @@
-import { useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import { GeoJSON } from 'react-leaflet';
 import MESSAGES from '../../../messages';
 import OrgUnitPopupComponent from '../../OrgUnitPopupComponent';

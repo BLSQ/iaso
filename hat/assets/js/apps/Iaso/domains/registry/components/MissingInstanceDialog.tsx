@@ -15,14 +15,14 @@ import {
     useSafeIntl,
     useRedirectToReplace,
 } from 'bluesquare-components';
-import EnketoIcon from '../../instances/components/EnketoIcon';
-import { useGetCreateInstance } from '../hooks/useGetCreateInstance';
-import { MissingInstanceButton } from './MissingInstanceButton';
 import { baseUrls } from '../../../constants/urls';
 import { CompletenessApiResponse } from '../../completenessStats/types';
+import EnketoIcon from '../../instances/components/EnketoIcon';
+import { useGetCreateInstance } from '../hooks/useGetCreateInstance';
+import { defaultSorted } from '../hooks/useGetEmptyInstanceOrgUnits';
 import MESSAGES from '../messages';
 import { RegistryParams } from '../types';
-import { defaultSorted } from '../hooks/useGetEmptyInstanceOrgUnits';
+import { MissingInstanceButton } from './MissingInstanceButton';
 
 type Props = {
     missingOrgUnitsData: CompletenessApiResponse;

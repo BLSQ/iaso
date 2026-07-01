@@ -1,5 +1,5 @@
-import { useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import { THOUSAND, THOUSAND_GROUP_STYLES } from '../domains/app/constants';
 import { useLocale } from '../domains/app/contexts/LocaleContext';
 

@@ -66,12 +66,18 @@ TESTING = env.bool("TESTING", default=False)
 IN_TESTS = len(sys.argv) > 1 and sys.argv[1] == "test"
 PLUGINS = env.list("PLUGINS", default=[], delimiter=",")
 ROOT_REDIRECT_PATTERN_NAME = env.str("ROOT_REDIRECT_PATTERN_NAME", default="dashboard:home_iaso")
-
+DEFAULT_APP_ID = env.str("DEFAULT_APP_ID", default="")
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env.str("SECRET_KEY", default=None)
+
+# Old secret keys kept for signature verification only (not used to sign new values).
+# Set this to the previous SECRET_KEY(s) when rotating SECRET_KEY so that existing
+# sessions, password reset tokens and other signed data stay valid during the rollover.
+# Comma separated list of keys, e.g. SECRET_KEY_FALLBACKS=old_key_1,old_key_2
+SECRET_KEY_FALLBACKS = env.list("SECRET_KEY_FALLBACKS", default=[], delimiter=",")
 
 # SECURITY WARNING: keep the encryption key used in production secret!
 ENCRYPTED_TEXT_FIELD_KEY = env.str("ENCRYPTED_TEXT_FIELD_KEY", default=None)
@@ -98,6 +104,13 @@ if static_url:
     CDN_URL = urlparse(static_url).hostname
 else:
     CDN_URL = None
+
+# deployment info for /health/
+DEPLOYED_BY = env.str("DEPLOYED_BY", default="unknown")
+DEPLOYED_ON = env.str("DEPLOYED_ON", default="unknown")
+PROD_IMAGE_CREATION = env.str("PROD_IMAGE_CREATION", default="unknown")
+PROD_IMAGE_DIGEST = env.str("PROD_IMAGE_DIGEST", default="unknown")
+PROD_IMAGE_TAG = env.str("PROD_IMAGE_TAG", default="unknown")
 
 DEV_SERVER = env.bool("DEV_SERVER", default=False)
 ENVIRONMENT = env.str("SENTRY_ENVIRONMENT", default="development").lower()
@@ -318,6 +331,8 @@ TEMPLATES = [
                 "hat.common.context_processors.product_fruits_config",
                 "hat.common.context_processors.learn_more_url",
                 "hat.common.context_processors.available_languages",
+                "hat.common.context_processors.default_app_id",
+                "hat.common.context_processors.dns_domain",
             ]
         },
     }
@@ -392,6 +407,19 @@ DATABASE_ROUTERS = [
 ]
 # This database settings which duplicate the main db settings, will be used by the background task worker so that they
 # can have a connexion outside of the transaction to report the progress on a Task. see Comments in services.py
+
+if IN_TESTS:
+    # `task_logs`, `worker` and `dashboard` are separate connection aliases that all use the same
+    # physical database as `default`. By default the test runner builds (and, with `--parallel`,
+    # clones per worker) one test database per alias, so it would create several test databases for
+    # what is really a single one. Declaring these aliases as TEST mirrors of `default` tells Django
+    # they share `default`'s (cloned) test database instead of getting their own. This is required
+    # for `manage.py test --parallel` to work here. See IA-5186.
+    for _mirror_alias in ("task_logs", "worker", "dashboard"):
+        if _mirror_alias in DATABASES:
+            # Rebuild each as its own dict so setting TEST does not mutate `default` (in test mode
+            # `dashboard` is the very same dict object as `default`).
+            DATABASES[_mirror_alias] = {**DATABASES["default"], "TEST": {"MIRROR": "default"}}
 
 # New django 3.2 settings to control which type of field is used by default for primary key
 # Added to remove unecessary warning
@@ -527,6 +555,7 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=3650),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=3651),
     "TOKEN_OBTAIN_SERIALIZER": "iaso.serializers.CustomTokenObtainPairSerializer",
+    "ROTATE_REFRESH_TOKENS": True,
 }
 
 AWS_S3_REGION_NAME = env.str("AWS_S3_REGION_NAME", default="eu-central-1")

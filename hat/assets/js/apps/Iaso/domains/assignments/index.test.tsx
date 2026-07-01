@@ -70,9 +70,12 @@ vi.mock('Iaso/domains/assignments/hooks/requests/useSaveAssignment', () => ({
     useSaveAssignment: mockUseSaveAssignment,
 }));
 
-vi.mock('Iaso/domains/assignments/hooks/requests/useBulkDeleteAssignments', () => ({
-    useBulkDeleteAssignments: mockUseBulkDeleteAssignments,
-}));
+vi.mock(
+    'Iaso/domains/assignments/hooks/requests/useBulkDeleteAssignments',
+    () => ({
+        useBulkDeleteAssignments: mockUseBulkDeleteAssignments,
+    }),
+);
 
 vi.mock('bluesquare-components', async importOriginal => {
     const actual =
@@ -100,52 +103,51 @@ vi.mock('../../components/nav/TopBarComponent', () => ({
     ),
 }));
 
-vi.mock('./components/AssignmentsMap', () => ({
+vi.mock('./components/map/AssignmentsMap', () => ({
     AssignmentsMap: (props: Record<string, unknown>) => {
         captureMapProps(props);
         return <div data-testid="assignments-map" />;
     },
 }));
 
-vi.mock('./components/AssignmentsTable', () => ({
+vi.mock('./components/table/AssignmentsTable', () => ({
     AssignmentsTable: (props: Record<string, unknown>) => {
         captureTableProps(props);
         return <div data-testid="assignments-table" />;
     },
 }));
 
-vi.mock('./components/teams/TeamTable', () => {
-    const ReactImport = require('react') as typeof import('react');
-    return {
-        TeamTable: (props: {
-            setSelectedUser: (u: {
-                id: number;
-                username: string;
-                first_name: string;
-                last_name: string;
-                color: string;
-                iaso_profile_id: number;
-            }) => void;
-        }) => {
-            captureTeamTableProps(props);
-            ReactImport.useEffect(() => {
-                if (teamTableAutoSelectUser.enabled) {
-                    props.setSelectedUser({
-                        id: 1,
-                        username: 'u',
-                        first_name: 'U',
-                        last_name: 'Ser',
-                        color: '#000000',
-                        iaso_profile_id: 1,
-                    });
-                }
-            }, [props.setSelectedUser]);
-            return ReactImport.createElement('div', {
-                'data-testid': 'team-table',
+function MockTeamTable({
+    setSelectedUser,
+}: {
+    setSelectedUser: (u: {
+        id: number;
+        username: string;
+        first_name: string;
+        last_name: string;
+        color: string;
+        iaso_profile_id: number;
+    }) => void;
+}) {
+    captureTeamTableProps({ setSelectedUser });
+    React.useEffect(() => {
+        if (teamTableAutoSelectUser.enabled) {
+            setSelectedUser({
+                id: 1,
+                username: 'u',
+                first_name: 'U',
+                last_name: 'Ser',
+                color: '#000000',
+                iaso_profile_id: 1,
             });
-        },
-    };
-});
+        }
+    }, [setSelectedUser]);
+    return <div data-testid="team-table" />;
+}
+
+vi.mock('./components/teams/TeamTable', () => ({
+    TeamTable: MockTeamTable,
+}));
 
 const defaultParams = {
     planningId: '42',

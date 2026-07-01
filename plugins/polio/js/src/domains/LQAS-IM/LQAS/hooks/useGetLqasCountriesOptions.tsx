@@ -1,19 +1,23 @@
+import { useMemo } from 'react';
+import moment from 'moment';
 import { UseQueryResult } from 'react-query';
+import { getRequest } from 'Iaso/libs/Api';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { DropdownOptions } from 'Iaso/types/utils';
 import { LqasUrlParams } from '..';
+import { useAppId } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useAppId';
 import {
     MonthYear,
     NumberAsString,
     Side,
     UuidAsString,
 } from '../../../../constants/types';
-import { useMemo } from 'react';
-import moment from 'moment';
-import { useSnackQuery } from 'Iaso/libs/apiHooks';
-import { getRequest } from 'Iaso/libs/Api';
-import { DropdownOptions } from 'Iaso/types/utils';
-import { appId } from '../../../../constants/app';
 
-const getLqasCountriesOptions = (monthYear?: MonthYear, isEmbedded = false) => {
+const getLqasCountriesOptions = (
+    appId: string,
+    monthYear?: MonthYear,
+    isEmbedded = false,
+) => {
     const endpoint = '/api/polio/lqasim/countriesoptions';
     const url = monthYear ? `${endpoint}/?month=${monthYear}` : `${endpoint}/`;
     if (isEmbedded) {
@@ -41,6 +45,7 @@ const useMonthYear = ({
 
         if (month) return `${month}-${year}`;
         return undefined;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [side, ...Object.values(params)]);
 };
 
@@ -51,10 +56,11 @@ export const useGetLqasCountriesOptions = ({
 }: UseGetLqasCountriesOptionsArgs): UseQueryResult<
     DropdownOptions<number>[]
 > => {
+    const appId = useAppId();
     const monthYear: MonthYear | undefined = useMonthYear({ side, params });
     return useSnackQuery({
         queryKey: ['lqasCountries', monthYear], // not including isEmbedded to the queryKey since it has no impact on the result
-        queryFn: () => getLqasCountriesOptions(monthYear, isEmbedded),
+        queryFn: () => getLqasCountriesOptions(appId, monthYear, isEmbedded),
         options: {
             enabled: Boolean(monthYear),
             staleTime: 1000 * 60 * 15, // in MS

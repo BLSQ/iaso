@@ -1,4 +1,6 @@
 import { UseQueryResult, UseMutationResult } from 'react-query';
+import { useDeleteTableRow } from 'Iaso/components/tables/TableWithDeepLink';
+import { baseUrls } from '../../../../../constants/urls';
 import {
     getRequest,
     deleteRequest,
@@ -12,16 +14,16 @@ import { useCurrentUser } from '../../../../../utils/usersUtils';
 import MESSAGES from '../../messages';
 import { EntityType } from '../../types/entityType';
 import { PaginatedEntityTypes } from '../../types/paginatedEntityTypes';
-import { useDeleteTableRow } from 'Iaso/components/tables/TableWithDeepLink';
-import {baseUrls} from "../../../../../constants/urls";
 
 type useDeleteArgs = {
     params: Params;
     count: number;
 };
 
-
-export const useDelete = ({params, count}: useDeleteArgs): UseMutationResult =>{
+export const useDelete = ({
+    params,
+    count,
+}: useDeleteArgs): UseMutationResult => {
     const onSuccess = useDeleteTableRow({
         count,
         params,
@@ -34,8 +36,8 @@ export const useDelete = ({params, count}: useDeleteArgs): UseMutationResult =>{
         mutationFn: body => deleteRequest(`/api/entitytypes/${body.id}/`),
         snackSuccessMessage: MESSAGES.deleteSuccess,
         snackErrorMsg: MESSAGES.deleteError,
-        options: { 
-            onSuccess 
+        options: {
+            onSuccess,
         },
     });
 };

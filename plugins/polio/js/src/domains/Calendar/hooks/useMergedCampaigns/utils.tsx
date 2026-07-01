@@ -23,7 +23,7 @@ export const addLayoutInfo = (list: CalendarCampaign[]): CalendarCampaign[] => {
             ...copy.map(
                 (el: CalendarCampaign): CalendarCampaign => ({
                     ...el,
-                    layout: 'middle', 
+                    layout: 'middle',
                 }),
             ),
             { ...last, layout: 'bottom' },

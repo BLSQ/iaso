@@ -29,82 +29,26 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Updated',
         id: 'iaso.label.updated_at',
     },
-    data_collection_forms: {
-        defaultMessage: 'Data collection - Forms',
-        id: 'iaso.modules.data_collection_forms',
-    },
-    default: {
-        defaultMessage: 'Default',
-        id: 'iaso.modules.default',
-    },
-    dhis2_mapping: {
-        defaultMessage: 'DHIS2 mapping',
-        id: 'iaso.modules.dhis2_mapping',
-    },
-    embedded_links: {
-        defaultMessage: 'Embedded links',
-        id: 'iaso.modules.embedded_links',
-    },
-    entities: {
-        defaultMessage: 'Entities',
-        id: 'iaso.modules.entities',
-    },
-    external_storage: {
-        defaultMessage: 'External storage',
-        id: 'iaso.modules.external_storage',
-    },
-    planning: {
-        defaultMessage: 'Planning',
-        id: 'iaso.modules.planning',
-    },
-    polio_project: {
-        defaultMessage: 'Polio project',
-        id: 'iaso.modules.polio_project',
-    },
-    registry: {
-        defaultMessage: 'Registry',
-        id: 'iaso.modules.registry',
-    },
-    payments: {
-        defaultMessage: 'Payments',
-        id: 'iaso.modules.payments',
-    },
-    completeness_per_period: {
-        defaultMessage: 'Completeness per Period',
-        id: 'iaso.modules.completeness_per_period',
-    },
     modulesInformation: {
         id: 'iaso.modules.modulesInformation',
         defaultMessage:
             'You can see here the feature modules that are activated for your account. Contact an admin of your instance if you wish to activate additional features.',
     },
-    trypelim_project: {
-        defaultMessage: 'Trypelim project',
-        id: 'iaso.modules.trypelim_project',
+    dropdownLabel: {
+        defaultMessage: 'Modules',
+        id: 'iaso.modules.dropdown.label',
     },
-    data_validation: {
-        defaultMessage: 'Data validation',
-        id: 'iaso.modules.data_validation',
+    modulesDropDownError: {
+        defaultMessage: 'An error occurred while fetching modules',
+        id: 'iaso.snackBar.fetchModules',
     },
-    saas: {
-        defaultMessage: 'SaaS',
-        id: 'iaso.modules.saas',
+    activated: {
+        defaultMessage: 'Activated',
+        id: 'iaso.modules.activated',
     },
-    stock_management: {
-        defaultMessage: 'Stock management',
-        id: 'iaso.modules.stock_management',
-    },
-    snt_malaria: {
-        defaultMessage: 'SNT Malaria',
-        id: 'iaso.modules.snt_malaria',
-    },
-    form_ai: {
-        defaultMessage: 'Form AI',
-        id: 'iaso.modules.form_ai',
-    },
-    validation_workflow: {
-        defaultMessage: 'Validation workflows',
-        id: 'iaso.modules.validation_workflow',
+    notActivated: {
+        defaultMessage: 'Not activated',
+        id: 'iaso.modules.notActivated',
     },
 });
 

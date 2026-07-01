@@ -83,6 +83,10 @@ class FormsViewSet(ModelViewSet):
         if org_unit_type_ids:
             queryset = queryset.filter(org_unit_types__id__in=org_unit_type_ids.split(","))
 
+        org_unit_group_ids = self.request.query_params.get("orgUnitGroupIds")
+        if org_unit_group_ids:
+            queryset = queryset.filter(org_unit_groups__id__in=org_unit_group_ids.split(","))
+
         projects_ids = self.request.query_params.get("projectsIds")
         if projects_ids:
             queryset = queryset.filter(projects__id__in=projects_ids.split(","))
@@ -176,6 +180,8 @@ class FormsViewSet(ModelViewSet):
                 "org_unit_types__sub_unit_types",
                 "org_unit_types__allow_creating_sub_unit_types",
             ]
+            if is_field_referenced("org_unit_groups", requested_fields, order):
+                prefetch_relations.append("org_unit_groups")
             prefetch_relations.append(
                 Prefetch(
                     "projects__projectfeatureflags_set",

@@ -9,7 +9,12 @@ export const DocumentsCells = (cellInfo: {
     return (
         <>
             {value.map(({ date, file }, index) => (
-                <DocumentCell key={`${file}${index}`} date={date} file={file} />
+                <DocumentCell
+                    // eslint-disable-next-line react/no-array-index-key
+                    key={`${file}${index}`}
+                    date={date}
+                    file={file}
+                />
             ))}
         </>
     );

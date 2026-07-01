@@ -6,10 +6,11 @@ from typing import Any
 
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_spectacular.utils import extend_schema
-from rest_framework import filters, serializers
+from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
+from typing_extensions import deprecated
 
 from iaso.api.common import (
     Custom403Exception,
@@ -118,21 +119,37 @@ class HasVaccineAuthorizationsPermissions(GenericReadWritePerm):
     write_perm = POLIO_VACCINE_AUTHORIZATIONS_ADMIN_PERMISSION
 
 
-@extend_schema(tags=["Polio - vaccine authorizations"])
+@deprecated("Deprecated at client's request. Could be reactivated at any moment, so the code hasn't been deleted")
+@extend_schema(exclude=True, tags=["Polio - vaccine authorizations"])
 class VaccineAuthorizationViewSet(ModelViewSet):
     """
-    Vaccine Authorizations API
-    list: /api/polio/vaccintauthorizations
-    action: /api/polio/get_most_recent_authorizations
+    Deprecated: Vaccine Authorizations API.
+
+    Deprecated at client's request. Could be reactivated at any moment, so the code hasn't been deleted
+
+    list: /api/polio/vaccineauthorizations
+    action: /api/polio/vaccineauthorizations/get_most_recent_authorizations
     """
 
     permission_classes = [HasVaccineAuthorizationsPermissions]
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
     results_key = "results"
-    remove_results_key_if_paginated = True
+    include_results_key_if_not_paginated = False
     serializer_class = VaccineAuthorizationSerializer
     pagination_class = Paginator
     ordering_fields = ["status", "current_expiration_date", "next_expiration_date", "expiration_date", "quantity"]
+
+    def dispatch(self, request, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+        request = self.initialize_request(request, *args, **kwargs)
+        self.request = request
+        self.headers = self.default_response_headers
+        response = Response(
+            {"detail": "This endpoint is deprecated."},
+            status=status.HTTP_410_GONE,
+        )
+        return self.finalize_response(request, response, *args, **kwargs)
 
     def get_queryset(self):
         user = self.request.user

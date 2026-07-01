@@ -44,6 +44,10 @@ from iaso.utils.models.soft_deletable import (
     SoftDeletableModel,
 )
 from iaso.utils.virus_scan.model import ModelWithFile
+from plugins.polio.preparedness.display_utils import (
+    format_campaign_obr_name,
+    format_round_campaign_obr_name,
+)
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
@@ -226,6 +230,13 @@ class RoundDateHistoryEntry(models.Model):
     )
     modified_by = models.ForeignKey("auth.User", on_delete=models.PROTECT, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        if not self.round_id:
+            return f"Round date history {self.pk}"
+        round_label = format_round_campaign_obr_name(self.round, empty="?")
+        number = self.round.number if self.round.number is not None else "?"
+        return f"{round_label} – Round {number} ({self.created_at:%Y-%m-%d})"
 
 
 class ReasonForDelay(SoftDeletableModel):
@@ -435,23 +446,15 @@ class Round(models.Model):
     # Preparedness
     preparedness_spreadsheet_url = models.URLField(null=True, blank=True)
     preparedness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)
-    # Vaccine management
-    date_signed_vrf_received = models.DateField(null=True, blank=True)
-    date_destruction = models.DateField(null=True, blank=True)
-    vials_destroyed = models.IntegerField(null=True, blank=True)
-    reporting_delays_hc_to_district = models.IntegerField(null=True, blank=True)
-    reporting_delays_district_to_region = models.IntegerField(null=True, blank=True)
-    reporting_delays_region_to_national = models.IntegerField(null=True, blank=True)
-    forma_reception = models.DateField(null=True, blank=True)
-    forma_missing_vials = models.IntegerField(null=True, blank=True)
-    forma_usable_vials = models.IntegerField(null=True, blank=True)
-    forma_unusable_vials = models.IntegerField(null=True, blank=True)
-    forma_date = models.DateField(null=True, blank=True)
-    forma_comment = models.TextField(blank=True, null=True)
-
-    # End of vaccine management
 
     objects = models.Manager.from_queryset(RoundQuerySet)()
+
+    def __str__(self):
+        if self.number is not None:
+            obr_name = format_round_campaign_obr_name(self, empty=None)
+            if obr_name:
+                return f"{obr_name} – Round {self.number}"
+        return f"Round {self.pk}"
 
     def delete(self, *args, **kwargs):
         # Explicitly delete groups related to the round's scopes, because the cascade deletion won't work reliably
@@ -476,7 +479,7 @@ class Round(models.Model):
         if (
             self.started_at
             and isinstance(self.started_at, datetime.date)
-            and self.started_at >= timezone.now().date()
+            and self.started_at >= timezone.localdate()
             and self.campaign
             and self.campaign.has_polio_type
             and not self.campaign.is_test
@@ -491,7 +494,7 @@ class Round(models.Model):
     def is_round_over(round):
         if not round.ended_at:
             return False
-        return round.ended_at < date.today()
+        return round.ended_at < timezone.localdate()
 
     @property
     def actual_scopes(self):
@@ -1268,7 +1271,7 @@ class SpreadSheetImport(models.Model):
 
 class CampaignGroup(SoftDeletableModel):
     def __str__(self):
-        return f"{self.name} {','.join(str(c) for c in self.campaigns.all())}"
+        return self.name
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1750,10 +1753,15 @@ class EarmarkedStock(models.Model):
         ]
 
     def __str__(self):
-        if self.campaign and self.round:
-            return f"Earmarked {self.vials_earmarked} vials for {self.campaign.obr_name} Round {self.round.number}"
-        if self.temporary_campaign_name:
-            return f"Earmarked {self.vials_earmarked} vials for ({self.temporary_campaign_name})"
+        campaign_label = format_campaign_obr_name(
+            self.campaign if self.campaign_id else None,
+            non_obr_name=self.temporary_campaign_name,
+            empty="",
+        )
+        if campaign_label and self.round_id and self.round.number is not None:
+            return f"Earmarked {self.vials_earmarked} vials for {campaign_label} Round {self.round.number}"
+        if campaign_label:
+            return f"Earmarked {self.vials_earmarked} vials for {campaign_label}"
         return f"Earmarked {self.vials_earmarked} vials"
 
     @classmethod

@@ -1,3 +1,4 @@
+import React, { FunctionComponent } from 'react';
 import {
     Table,
     TableBody,
@@ -6,7 +7,6 @@ import {
     TableRow,
 } from '@mui/material';
 import { textPlaceholder } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import { SxStyles } from '../../types/general';
 
 type SubTableProps = TableProps & {
@@ -48,6 +48,7 @@ export const SubTable: FunctionComponent<SubTableProps> = ({
                     </TableRow>
                 ) : (
                     values.map((value, index) => (
+                        // eslint-disable-next-line react/no-array-index-key
                         <TableRow key={`${renderValue(value)}${index}`}>
                             <TableCell
                                 sx={{

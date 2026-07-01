@@ -8,8 +8,8 @@ import {
     MENU_HEIGHT_WITH_TABS,
     useSafeIntl,
 } from 'bluesquare-components';
-import { useGetDosesPerVial } from '../hooks/api/useGetDosesPerVial';
 import { DropdownOptions } from 'Iaso/types/utils';
+import { useGetDosesPerVial } from '../hooks/api/useGetDosesPerVial';
 
 export const useSharedStyles = makeStyles({
     scrollableForm: {

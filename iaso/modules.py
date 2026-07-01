@@ -1,4 +1,8 @@
 from dataclasses import dataclass, field
+from typing import Optional
+
+from django.utils.translation import gettext_lazy as _
+from django_stubs_ext import StrOrPromise
 
 
 @dataclass
@@ -7,10 +11,10 @@ class IasoModule:
     Represents a module in the IASO system.
     """
 
-    name: str
+    name: StrOrPromise
     codename: str
-    fr_name: str
     permissions: list = field(default_factory=list)
+    related_plugin: Optional[str] = None
 
     def add_permission(self, permission):
         self.permissions.append(permission)
@@ -20,32 +24,24 @@ class IasoModule:
 
 
 # Add here any new module - it must start with MODULE_ prefix
-MODULE_DATA_COLLECTION = IasoModule(
-    name="Data collection - Forms", codename="DATA_COLLECTION_FORMS", fr_name="Collecte de données - Formulaires"
-)
-MODULE_DEFAULT = IasoModule(name="Default", codename="DEFAULT", fr_name="Par défaut")
-MODULE_DHIS2_MAPPING = IasoModule(name="DHIS2 mapping", codename="DHIS2_MAPPING", fr_name="Mappage DHIS2")
-MODULE_EMBEDDED_LINKS = IasoModule(name="Embedded links", codename="EMBEDDED_LINKS", fr_name="Liens intégrés")
-MODULE_ENTITIES = IasoModule(name="Entities", codename="ENTITIES", fr_name="Entités")
-MODULE_EXTERNAL_STORAGE = IasoModule(name="External storage", codename="EXTERNAL_STORAGE", fr_name="Stockage externe")
-MODULE_PLANNING = IasoModule(name="Planning", codename="PLANNING", fr_name="Planification")
-MODULE_POLIO_PROJECT = IasoModule(name="Polio project", codename="POLIO_PROJECT", fr_name="Projet Polio")
-MODULE_REGISTRY = IasoModule(name="Registry", codename="REGISTRY", fr_name="Registre")
-MODULE_PAYMENTS = IasoModule(name="Payments", codename="PAYMENTS", fr_name="Paiements")
-MODULE_COMPLETENESS_PER_PERIOD = IasoModule(
-    name="Completeness per Period", codename="COMPLETENESS_PER_PERIOD", fr_name="Complétude par période"
-)
-MODULE_TRYPELIM_PROJECT = IasoModule(name="Trypelim project", codename="TRYPELIM_PROJECT", fr_name="Projet Trypelim")
-MODULE_DATA_VALIDATION = IasoModule(
-    name="Data validation", codename="DATA_VALIDATION", fr_name="Validation des données"
-)
-MODULE_SAAS = IasoModule(name="SaaS", codename="SAAS", fr_name="SaaS")
-MODULE_STOCK = IasoModule(name="Stock management", codename="STOCK_MANAGEMENT", fr_name="Gestion des stocks")
-MODULE_SNT_MALARIA = IasoModule(name="SNT Malaria", codename="SNT_MALARIA", fr_name="SNT Malaria")
-MODULE_FORM_AI = IasoModule(name="Form AI", codename="FORM_AI", fr_name="IA pour formulaires")
-MODULE_VALIDATION_WORKFLOW = IasoModule(
-    name="Validation workflow", codename="VALIDATION_WORKFLOW", fr_name="Workflow de validation"
-)
+MODULE_DATA_COLLECTION = IasoModule(name=_("Data collection - Forms"), codename="DATA_COLLECTION_FORMS")
+MODULE_DEFAULT = IasoModule(name=_("Default"), codename="DEFAULT")
+MODULE_DHIS2_MAPPING = IasoModule(name=_("DHIS2 mapping"), codename="DHIS2_MAPPING")
+MODULE_EMBEDDED_LINKS = IasoModule(name=_("Embedded links"), codename="EMBEDDED_LINKS")
+MODULE_ENTITIES = IasoModule(name=_("Entities"), codename="ENTITIES")
+MODULE_EXTERNAL_STORAGE = IasoModule(name=_("External storage"), codename="EXTERNAL_STORAGE")
+MODULE_PLANNING = IasoModule(name=_("Planning"), codename="PLANNING")
+MODULE_POLIO_PROJECT = IasoModule(name=_("Polio project"), codename="POLIO_PROJECT", related_plugin="polio")
+MODULE_REGISTRY = IasoModule(name=_("Registry"), codename="REGISTRY", related_plugin="registry")
+MODULE_PAYMENTS = IasoModule(name=_("Payments"), codename="PAYMENTS")
+MODULE_COMPLETENESS_PER_PERIOD = IasoModule(name=_("Completeness per Period"), codename="COMPLETENESS_PER_PERIOD")
+MODULE_TRYPELIM_PROJECT = IasoModule(name=_("Trypelim project"), codename="TRYPELIM_PROJECT", related_plugin="trypelim")
+MODULE_DATA_VALIDATION = IasoModule(name=_("Data validation"), codename="DATA_VALIDATION")
+MODULE_SAAS = IasoModule(name=_("SaaS"), codename="SAAS", related_plugin="saas")
+MODULE_STOCK = IasoModule(name=_("Stock management"), codename="STOCK_MANAGEMENT")
+MODULE_SNT_MALARIA = IasoModule(name=_("SNT Malaria"), codename="SNT_MALARIA", related_plugin="snt_malaria")
+MODULE_FORM_AI = IasoModule(name=_("Form AI"), codename="FORM_AI")
+MODULE_VALIDATION_WORKFLOW = IasoModule(name=_("Validation workflow"), codename="VALIDATION_WORKFLOW")
 
 MODULES = [
     module for name, module in globals().items() if name.startswith("MODULE_") and isinstance(module, IasoModule)

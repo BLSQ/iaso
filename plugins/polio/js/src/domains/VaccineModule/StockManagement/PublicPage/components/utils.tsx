@@ -13,6 +13,7 @@ export const baseRenderTags = getLabel => (tagValue, getTagProps) =>
         )
         .map((option, index) => (
             <Chip
+                key={option.value}
                 color="secondary"
                 style={{
                     backgroundColor: option.color,
@@ -36,7 +37,11 @@ export const baseRenderTagsWithTooltip =
             .map((option, index) => {
                 const title = getTooltipTitle(option);
                 return (
-                    <Tooltip title={title} key={`${title}-${index}`}>
+                    <Tooltip
+                        title={title}
+                        // eslint-disable-next-line react/no-array-index-key
+                        key={`${title}-${index}`}
+                    >
                         <Chip
                             color="secondary"
                             style={{

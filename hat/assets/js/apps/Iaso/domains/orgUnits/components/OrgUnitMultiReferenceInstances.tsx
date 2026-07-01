@@ -6,12 +6,12 @@ import {
     useSafeIntl,
     LinkWithLocation,
 } from 'bluesquare-components';
-import { baseUrls } from '../../../constants/urls';
 import InputComponent from '../../../components/forms/InputComponent';
-import InstanceFileContent from '../../instances/components/InstanceFileContent';
-import MESSAGES from '../messages';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
+import { baseUrls } from '../../../constants/urls';
+import InstanceFileContent from '../../instances/components/InstanceFileContent';
 import { Instance } from '../../instances/types/instance';
+import MESSAGES from '../messages';
 
 type Props = {
     referenceInstances: Instance[];

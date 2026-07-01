@@ -1,16 +1,16 @@
+import React, { FunctionComponent, useCallback, useState } from 'react';
 import {
     ConfirmCancelModal,
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { FunctionComponent, useCallback, useState } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
-import { Payment, PaymentStatus } from '../../types';
-import MESSAGES from '../../messages';
-import { StatusSelect } from '../StatusSelect';
 import { Selection } from '../../../orgUnits/types/selection';
-import { EditSelectedButton } from '../EditPaymentLot/EditSelectedButton';
 import { BulkPaymentSaveBody } from '../../hooks/requests/useSavePaymentStatus';
+import MESSAGES from '../../messages';
+import { Payment, PaymentStatus } from '../../types';
+import { EditSelectedButton } from '../EditPaymentLot/EditSelectedButton';
+import { StatusSelect } from '../StatusSelect';
 
 type Props = {
     isOpen: boolean;

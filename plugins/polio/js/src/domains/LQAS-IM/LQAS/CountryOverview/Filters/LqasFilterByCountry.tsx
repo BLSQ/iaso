@@ -12,17 +12,17 @@ import {
     IconButton,
     useRedirectToReplace,
 } from 'bluesquare-components';
+import { UseQueryResult } from 'react-query';
+import { LqasUrlParams } from '../..';
 import { DisplayIfUserHasPerm } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import MESSAGES from '../../../../../constants/messages';
 import { POLIO_ADMIN } from '../../../../../constants/permissions';
-import { baseUrls } from '../../../../../constants/urls';
-import { RefreshLqasIMData } from '../../../shared/RefreshLqasIMData';
 import { Campaign, Side } from '../../../../../constants/types';
-import { UseQueryResult } from 'react-query';
-import { useGetCampaigns } from '../../../../Campaigns/hooks/api/useGetCampaigns';
-import { LqasUrlParams } from '../..';
-import { useGetLqasImCountriesOptions } from '../../../shared/hooks/api/useGetLqasImCountriesOptions';
+import { baseUrls } from '../../../../../constants/urls';
 import { sortCampaignNames } from '../../../../../utils';
+import { useGetCampaigns } from '../../../../Campaigns/hooks/api/useGetCampaigns';
+import { useGetLqasImCountriesOptions } from '../../../shared/hooks/api/useGetLqasImCountriesOptions';
+import { RefreshLqasIMData } from '../../../shared/RefreshLqasIMData';
 
 const makeCampaignsDropDown = (
     campaigns: Campaign[] | undefined,
@@ -64,7 +64,6 @@ export const LqasFilterByCountry: FunctionComponent<Props> = ({
             countries: country,
             enabled: Boolean(country),
             show_test: false,
-            on_hold: true,
             is_embedded: isEmbedded,
         }) as UseQueryResult<Campaign[], Error>;
 
@@ -78,9 +77,9 @@ export const LqasFilterByCountry: FunctionComponent<Props> = ({
         return makeCampaignsDropDown(displayedCampaigns);
     }, [country, campaigns]);
 
-    //FIXME use new params
+    // FIXME: use new params
     const onChange = useCallback(
-        (key, value) => {
+        (key: string, value: string) => {
             const newFilters = {
                 ...filters,
                 leftRound: side === 'left' ? undefined : filters.leftRound,

@@ -121,9 +121,6 @@ else:
                 provider_urlpatterns += prov_urlpatterns
         urlpatterns += [path("accounts/", include(provider_urlpatterns))]
 
-    if getattr(settings, "SSO_PROVIDERS", {}):
-        urlpatterns += get_sso_urlpatterns()
-
     urlpatterns += [
         path("robots.txt", robots_txt),
         path(
@@ -208,5 +205,4 @@ else:
     if settings.DEBUG and "debug_toolbar" in settings.INSTALLED_APPS:
         urlpatterns = [path("__debug__/", include("debug_toolbar.urls"))] + urlpatterns
 
-
-urlpatterns += get_sso_urlpatterns()
+    urlpatterns += get_sso_urlpatterns()

@@ -23,7 +23,7 @@ import sentry_sdk
 
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy as _
-from environs import Env as _Env
+from environs import Env as _Env, EnvError
 from requests.exceptions import HTTPError
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -870,8 +870,9 @@ if SSO_WHO_CLIENT_ID:
     SSO_WHO_TENANT_ID = env.str("SSO_WHO_TENANT_ID", default="")
     if not SSO_WHO_TENANT_ID:
         raise ImproperlyConfigured("need SSO_WHO_TENANT_ID when SSO_WHO_CLIENT_ID is set")
-    sso_who_account = env.int("SSO_WHO_ACCOUNT")
-    if not sso_who_account:
+    try:
+        sso_who_account = env.int("SSO_WHO_ACCOUNT")
+    except EnvError:
         raise ImproperlyConfigured("need SSO_WHO_ACCOUNT to associate a tenant to the WHO auth server")
 
     SSO_PROVIDERS["who"] = {

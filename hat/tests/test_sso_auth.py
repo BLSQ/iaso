@@ -22,7 +22,7 @@ SSO_TEST_CONFIG = {
         "login_path": "polio/login/",
         "callback_path": "polio/login/callback/",
         "token_path": "polio/token/",
-        "account_id": "test_account",
+        "account_id": 1,
         "email_recipients_new_account": [],
     },
 }
@@ -108,3 +108,76 @@ class SSOAuthTestCase(APITestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["message"], "missing token")
+
+    @patch("requests.get")
+    def test_complete_login_wrong_app_id(self, mock_get):
+        self.assertEqual(m.User.objects.count(), 0)
+        self.assertEqual(m.Profile.objects.count(), 0)
+        self.assertEqual(SocialAccount.objects.count(), 0)
+
+        extra_data: ExtraData = {
+            "email": "jane@who.int",
+            "sub": "abc-123-def",
+            "given_name": "Jane",
+            "family_name": "Doe",
+        }
+        mock_response = mock_get.return_value
+        mock_response.json.return_value = extra_data
+
+        response = self.client.post(
+            "/polio/token/?app_id=wrong_app_id&app_version=2501",
+            format="json",
+            data={"token": "f4k3-t0k3n"},
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json(),
+            {"details": "Invalid app id wrong_app_id", "message": "Invalid app id wrong_app_id", "result": "error"},
+        )
+
+    @override_settings(
+        SSO_PROVIDERS={
+            "who": {
+                "name": "WHO",
+                "client_id": "test-client-id",
+                "client_secret": "test-secret",
+                "authorize_url": "https://login.microsoftonline.com/test-tenant/oauth2/v2.0/authorize",
+                "token_url": "https://login.microsoftonline.com/test-tenant/oauth2/v2.0/token",
+                "userinfo_url": "https://graph.microsoft.com/oidc/userinfo",
+                "login_path": "polio/login/",
+                "callback_path": "polio/login/callback/",
+                "token_path": "polio/token/",
+                "account_id": 100000,
+                "email_recipients_new_account": [],
+            },
+        }
+    )
+    @patch("requests.get")
+    def test_complete_login_wrong_account_in_settings(self, mock_get):
+        self.assertEqual(m.User.objects.count(), 0)
+        self.assertEqual(m.Profile.objects.count(), 0)
+        self.assertEqual(SocialAccount.objects.count(), 0)
+
+        extra_data: ExtraData = {
+            "email": "jane@who.int",
+            "sub": "abc-123-def",
+            "given_name": "Jane",
+            "family_name": "Doe",
+        }
+        mock_response = mock_get.return_value
+        mock_response.json.return_value = extra_data
+
+        response = self.client.post(
+            "/polio/token/",
+            format="json",
+            data={"token": "f4k3-t0k3n"},
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json(),
+            {
+                "details": "Invalid configuration. Please contact the administrator",
+                "message": "Invalid configuration. Please contact the administrator",
+                "result": "error",
+            },
+        )

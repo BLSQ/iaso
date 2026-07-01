@@ -132,7 +132,9 @@ class WFP2Adapter(Auth0OAuth2Adapter):
         app_id = request.GET.get(APP_ID, None)
 
         if app_id:
-            account = get_object_or_404(Project, app_id=app_id).account
+            account = get_object_or_404(
+                Project.objects.filter(account__name=self.settings["IASO_ACCOUNT_NAME"]), app_id=app_id
+            ).account
             if app_id != self.settings["IASO_ACCOUNT_NAME"]:
                 uid = f"{app_id}_{uid}"
         else:

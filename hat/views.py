@@ -13,6 +13,7 @@ from allauth.socialaccount.providers.oauth2.views import (
     OAuth2LoginView,
     OAuth2View,
 )
+from django.utils.translation import gettext_lazy as _
 
 
 class SSOLoginView(OAuth2LoginView):
@@ -28,7 +29,6 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied
 from django.core.mail import EmailMultiAlternatives
 from django.http import HttpRequest, JsonResponse
-from django.shortcuts import get_object_or_404
 from django.template import loader
 from django.views.decorators.csrf import csrf_exempt
 from oauthlib.oauth2 import OAuth2Error
@@ -62,6 +62,18 @@ def send_mail(subject_template_name, email_template_name, context, from_email, t
         email_message.attach_alternative(html_email, "text/html")
 
     email_message.send()
+
+
+class InvalidAppIdException(Exception):
+    def __init__(self, app_id: str):
+        message = _("Invalid app id {}").format(app_id)
+        super().__init__(message)
+
+
+class InvalidAccountConfiguration(Exception):
+    def __init__(self):
+        message = _("Invalid configuration. Please contact the administrator")
+        super().__init__(message)
 
 
 class SSOBaseAdapter(OAuth2Adapter):
@@ -119,15 +131,22 @@ class SSOBaseAdapter(OAuth2Adapter):
 
         uid = extra_data["sub"].lower().strip()
 
-        app_id = request.GET.get(APP_ID, None)
-        account_name = self.sso_config["account_id"]
+        app_id: str = request.GET.get(APP_ID, None)
+        account_name: int = self.sso_config["account_id"]
 
         if app_id:
-            account = get_object_or_404(Project, app_id=app_id).account
-            if app_id != account_name:
+            try:
+                account = Project.objects.filter(account_id=account_name).get(app_id=app_id).account
+            except Project.DoesNotExist:
+                raise InvalidAppIdException(app_id)
+
+            if app_id != str(account_name):
                 uid = f"{app_id}_{uid}"
         else:
-            account = Account.objects.get(id=account_name)
+            try:
+                account = Account.objects.get(id=account_name)
+            except Account.DoesNotExist:
+                raise InvalidAccountConfiguration
 
         try:
             social_account = SocialAccount.objects.get(uid=uid, provider=self.provider_id)
@@ -229,20 +248,43 @@ def make_token_view(provider_id):
             social_account = adapter.complete_login(request, app=None, token=token, response=None)
         except HTTPError as e:
             logger.exception(str(e))
-            if e.response.status_code == 401 and e.response.json()["error"] == "invalid_token":
+
+            # just in case e.response.json() crashes
+            try:
+                data = e.response.json()
+                error_code = data.get("error")
+            except Exception:
+                error_code = None
+
+            if e.response.status_code == 401 and error_code == "invalid_token":
                 return JsonResponse(
-                    {"message": "Access token validation failed", "result": "error", "error": "invalid_token"},
+                    {"message": _("Access token validation failed"), "result": "error", "details": "invalid_token"},
                     status=401,
                 )
             return JsonResponse(
-                {"result": "error", "message": "Error login to auth server", "details": e.response.text}, status=500
+                {
+                    "result": "error",
+                    "message": _("Error login to auth server"),
+                    "details": _("Error login to auth server"),
+                },
+                status=500,
             )
-        except UsernameAlreadyExistsError as e:
-            return JsonResponse({"result": "error", "message": e.message, "details": e.message}, status=409)
+        except (InvalidAppIdException, InvalidAccountConfiguration) as e:
+            return JsonResponse({"result": "error", "message": str(e), "details": str(e)}, status=400)
+        except UsernameAlreadyExistsError:
+            return JsonResponse(
+                {
+                    "result": "error",
+                    "message": _("Username already exists for this account."),
+                    "details": _("Username already exists for this account."),
+                },
+                status=409,
+            )
         except Exception as e:
             logger.exception(str(e))
             return JsonResponse(
-                {"result": "error", "message": "Error login account", "details": "Internal server error"}, status=500
+                {"result": "error", "message": _("Error login account"), "details": _("Internal server error")},
+                status=500,
             )
 
         user = social_account.user

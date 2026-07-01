@@ -62,10 +62,20 @@ jobs:
       - name: upgrade npm
         run: |
           npm install --global npm@11.13.0
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v5
+      - name: Install Python 3.9
+        uses: actions/setup-python@v6
         with:
-          python-version: 3.9
+          python-version-file: "pyproject.toml"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: 'uv.lock'
+          cache-suffix: old_deploy
+      - name: Translate pyproject.toml into requirements.txt for EBS
+        run: |
+          uv export --no-dev --no-hashes --group prod --format requirements.txt -o requirements.txt
+          git add requirements.txt
 
       - name: Setup beanstalk
         # the specification of botocore is due to a deployment problem with 1.21 to remove later
@@ -96,7 +106,7 @@ jobs:
           CI: false
 
       - name: deploy to beanstalk
-        run: python scripts/eb_deploy.py ${{ steps.config.outputs.ENVIRONMENT }}
+        run: python scripts/eb_deploy.py ${{ steps.config.outputs.ENVIRONMENT }} python
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

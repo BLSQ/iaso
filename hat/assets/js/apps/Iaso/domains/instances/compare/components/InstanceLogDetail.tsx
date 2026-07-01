@@ -18,6 +18,7 @@ type Props = {
     isLogDetailError: boolean;
     headerA?: IntlMessage;
     headerB?: IntlMessage;
+    tableMaxHeight?: string;
 };
 
 export const InstanceLogDetail: FunctionComponent<Props> = ({
@@ -26,6 +27,7 @@ export const InstanceLogDetail: FunctionComponent<Props> = ({
     isLogDetailError,
     headerA,
     headerB,
+    tableMaxHeight,
 }) => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
@@ -54,6 +56,7 @@ export const InstanceLogDetail: FunctionComponent<Props> = ({
                         fileContent={instanceLogContent}
                         headerA={headerA}
                         headerB={headerB}
+                        tableMaxHeight={tableMaxHeight}
                     />
                 )}
             </Paper>

@@ -23,11 +23,20 @@ export const getValidationStepContext = (
     workflow: ValidationNodeRetrieveResponse | undefined,
     selectedStep: string | undefined,
 ) => {
-    const timeline = getWorkflowTimeline(workflow);
-    const activeSteps = getActiveStepsFromTimeline(timeline);
-    const selectedNodeSlug =
-        timeline.find(step => `${step.id}` === selectedStep)
-            ?.node_template_slug ?? '';
+    const activeSteps = getActiveStepsFromTimeline(
+        getWorkflowTimeline(workflow),
+    );
+    const selectedActiveStep = activeSteps.find(
+        step => `${step.id}` === selectedStep,
+    );
 
-    return { activeSteps, selectedNodeSlug };
+    // Timeline is in descending order; the next expected step is the last active one.
+    const expectedNextStepId = activeSteps.at(-1)?.id ?? null;
+
+    return {
+        activeSteps,
+        expectedNextStepId,
+        selectedNodeSlug: selectedActiveStep?.node_template_slug ?? '',
+        isSelectedStepActive: Boolean(selectedActiveStep),
+    };
 };

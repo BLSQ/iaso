@@ -1,4 +1,5 @@
 import { IntlMessage } from 'bluesquare-components';
+import moment from 'moment';
 import { openSnackBar } from 'Iaso/components/snackBars/EventDispatcher';
 import { errorSnackBar } from 'Iaso/constants/snackBars';
 import { ApiError } from 'Iaso/libs/Api';
@@ -13,6 +14,7 @@ type QueryMeta = {
     dispatchOnError?: boolean;
     ignoreErrorCodes?: number[];
     snackErrorMsg?: IntlMessage;
+    localeAware?: boolean;
 };
 
 export const getCustomQueryOptions = <TOptions, TError>(
@@ -24,15 +26,28 @@ export const getCustomQueryOptions = <TOptions, TError>(
         (OperationConfig?.operations?.[options?.queryKey?.[0]]?.query
             ?.options as TOptions) ?? {};
 
+    const defaultLocaleAware =
+        // @ts-ignore
+        (OperationConfig?.operations?.[options?.queryKey?.[0]]?.query
+            ?.meta as QueryMeta) ?? {};
+
     const meta = ((options as any)?.meta ?? {}) as QueryMeta;
 
     const {
         dispatchOnError = true,
         ignoreErrorCodes,
         snackErrorMsg = MESSAGES.defaultQueryApiSuccess,
+        localeAware = defaultLocaleAware?.localeAware,
     } = meta;
 
     const optionsOnError = (options as any).onError;
+
+    if (localeAware && (options as any)?.queryKey) {
+        (options as any).queryKey = [
+            ...(options as any).queryKey,
+            moment().locale(),
+        ];
+    }
 
     return {
         onError: (error: TError) => {

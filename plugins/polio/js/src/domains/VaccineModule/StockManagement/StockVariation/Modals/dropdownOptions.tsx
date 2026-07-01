@@ -153,5 +153,5 @@ export const useAvailablePresentations = (
             });
         }
         return availableOptions;
-    }, [dosesOptions, formData.doses_per_vial, usable]);
+    }, [dosesOptions, formData?.doses_per_vial, usable]);
 };

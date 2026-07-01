@@ -53,20 +53,24 @@ export const useGetLegendOptions = (
     }, [orgUnit, subOrgUnitTypes]);
 
     // Adjust the color of the first legend option based on selectedChildrenId
-    useEffect(() => {
-        if (legendOptions.length > 0) {
-            const adjustedOptions = [...legendOptions];
+    useEffect(
+        () => {
+            if (legendOptions.length > 0) {
+                const adjustedOptions = [...legendOptions];
 
-            const color = selectedChildrenId
-                ? theme.palette.primary.main
-                : selectedOrgUnitColor;
-            adjustedOptions[0] = {
-                ...adjustedOptions[0],
-                color,
-            };
-            setLegendOptions(adjustedOptions);
-        }
-    }, [legendOptions, selectedChildrenId, theme.palette.primary.main]);
+                const color = selectedChildrenId
+                    ? theme.palette.primary.main
+                    : selectedOrgUnitColor;
+                adjustedOptions[0] = {
+                    ...adjustedOptions[0],
+                    color,
+                };
+                setLegendOptions(adjustedOptions);
+            }
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [legendOptions, theme.palette.primary.main],
+    );
 
     return { legendOptions, setLegendOptions };
 };

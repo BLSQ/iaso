@@ -115,7 +115,15 @@ export const Instances: FunctionComponent<Props> = ({
             redirectToReplace(baseUrl, newParams);
         }
         // Only preselect a form if forms list contain an element and params is empty
-    }, [formIds, formsList, isFetchingForms, isLoading, orgunitTypeDetail, params, redirectToReplace]);
+    }, [
+        formIds,
+        formsList,
+        isFetchingForms,
+        isLoading,
+        orgunitTypeDetail,
+        params,
+        redirectToReplace,
+    ]);
     return (
         <Box>
             {currentType && !isLoading && (

@@ -8,8 +8,12 @@ export const DocumentsCells = (cellInfo: {
     const value = cellInfo?.value ?? [];
     return (
         <>
-            {value.map(({ date, file }) => (
-                <DocumentCell key={`${file}${date}`} date={date} file={file} />
+            {value.map(({ date, file }, index) => (
+                <DocumentCell
+                    key={`${file ?? `file-${index}`}${date ?? `date-${index}`}`}
+                    date={date}
+                    file={file}
+                />
             ))}
         </>
     );

@@ -66,9 +66,11 @@ const truncateFileName = (fileName: string) => {
 };
 
 export const makeFileLinks = (files: FileWithName[]): React.ReactNode => {
-    return files.map(file => {
+    return files.map((file, index) => {
         return (
-            <Link key={`${file.filename}`} download href={file.file}>
+            // fine here as we cannot really deduct something unique from file
+            // eslint-disable-next-line react/no-array-index-key
+            <Link key={`${file.filename}-${index}`} download to={file.file}>
                 {/* @ts-ignore */}
                 <Typography variant="body2" style={{ wordWrap: 'anywhere' }}>
                     {truncateFileName(file.filename)}
@@ -84,7 +86,7 @@ export const makeLinks = (
     if (!links) return null;
     return links.map(link => {
         return (
-            <Link key={`${link.alias}-${link.url}`} download href={link.url}>
+            <Link key={`${link.alias}-${link.url}`} download to={link.url}>
                 {/* @ts-ignore */}
                 <Typography variant="body2" style={{ wordWrap: 'anywhere' }}>
                     {link.alias}

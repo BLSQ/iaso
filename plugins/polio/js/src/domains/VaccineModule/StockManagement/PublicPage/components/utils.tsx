@@ -1,5 +1,4 @@
 import React from 'react';
-import { Tooltip } from '@mui/material';
 import Chip from '@mui/material/Chip';
 
 export const defaultGetLabel = o => (o?.label ? o.label : '');
@@ -25,33 +24,6 @@ export const baseRenderTags = getLabel => (tagValue, getTagProps) =>
         ));
 
 export const defaultRenderTags = baseRenderTags(defaultGetLabel);
-
-export const baseRenderTagsWithTooltip =
-    getLabel => getTooltipTitle => (tagValue, getTagProps) =>
-        tagValue
-            .sort((a, b) =>
-                getLabel(a).localeCompare(getLabel(b), undefined, {
-                    sensitivity: 'accent',
-                }),
-            )
-            .map((option, index) => {
-                const title = getTooltipTitle(option);
-                return (
-                    <Tooltip title={title} key={`tooltip-${title}`}>
-                        <Chip
-                            color="secondary"
-                            style={{
-                                backgroundColor: option.color,
-                                color: 'white',
-                            }}
-                            label={getLabel(option)}
-                            {...getTagProps({ index })}
-                        />
-                    </Tooltip>
-                );
-            });
-
-export const renderTagsWithTooltip = baseRenderTagsWithTooltip(defaultGetLabel);
 
 export const getExtraProps = (
     getOptionLabel,
@@ -85,6 +57,3 @@ export const getExtraProps = (
 export const getOption = (value, options) => {
     return options.find(o => `${o.value}` === `${value}`);
 };
-
-export const getMultiOption = (value, options, getOptionSelected) =>
-    options.find(option => getOptionSelected(option, value));

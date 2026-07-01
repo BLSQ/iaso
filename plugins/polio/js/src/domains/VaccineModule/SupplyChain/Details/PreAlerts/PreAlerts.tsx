@@ -52,7 +52,7 @@ export const PreAlerts: FunctionComponent<Props> = ({
                 return (
                     <PreAlert
                         index={index}
-                        key={`pre-alter-${item?.id ?? item?.po_number}`}
+                        key={`pre-alert-${item?.id ?? item?.po_number ?? index}`}
                         dosesForVaccineOptions={dosesPerVaccineOptions}
                     />
                 );

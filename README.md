@@ -150,7 +150,14 @@ uv run ./manage.py runserver
 
 > **Note:** You still need a running PostgreSQL (with PostGIS) database. You can either use the Docker `db` service (`docker compose up db`) or a locally installed PostgreSQL.
 
----
+## Transition from `pip` to `uv`
+IASO transitioned from `pip` to `uv` in July 2026. If you installed IASO before that, there are some things you might need to do to pull the latest changes and make your project work with `uv`:
+- if you are using a docker image: rebuild the latest image with `docker compose build iaso`
+- if you are using a local installation (no docker):
+  - install `uv`: https://docs.astral.sh/uv/getting-started/installation/
+  - run `uv sync` to generate a virtual environment and install dependencies (at the root of the project, in `.venv`)
+      - if you already have a virtual environment, you can `uv sync --active` to let `uv` recreate the virtual environment in the same place
+
 
 ## Setup (Docker)
 

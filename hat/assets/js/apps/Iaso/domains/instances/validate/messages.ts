@@ -53,6 +53,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Add comment to enable rejection',
         id: 'iaso.validationWorkflow.label.commentForRejection',
     },
+    noPreviousVersion: {
+        id: 'iaso.validation.label.noPreviousVersion',
+        defaultMessage: 'No previous version to compare',
+    },
 });
 
 export default MESSAGES;

@@ -21,7 +21,7 @@ const ProtectedRoute: FunctionComponent<Props> = ({
     allRoutes = [],
     component,
 }) => {
-    const { featureFlag, permissions, isRootUrl, baseUrl } = routeConfig;
+    const { featureFlag, permissions, isRootUrl, baseUrl, ignoreAccountId } = routeConfig;
     const params = useParamsObject(baseUrl);
     const paramsString = useParams()['*'];
     const navigate = useNavigate();
@@ -30,7 +30,9 @@ const ProtectedRoute: FunctionComponent<Props> = ({
 
     // TODO test wrong account feature
     const isWrongAccount = Boolean(
-        params?.accountId && params?.accountId !== `${currentUser.account?.id}`,
+        !ignoreAccountId &&
+            params?.accountId &&
+            params?.accountId !== `${currentUser.account?.id}`,
     );
 
     let isAuthorized =
@@ -62,6 +64,9 @@ const ProtectedRoute: FunctionComponent<Props> = ({
     ]);
 
     useEffect(() => {
+        if (ignoreAccountId) {
+            return;
+        }
         // Checking with paramsString because params maybe empty if the config is not correct for useParamsObject
         if (
             !(paramsString ?? '').includes('accountId') &&
@@ -72,7 +77,14 @@ const ProtectedRoute: FunctionComponent<Props> = ({
                 state: location.state ? { ...location.state } : null,
             });
         }
-    }, [currentUser.account, baseUrl, navigate, paramsString, location.state]);
+    }, [
+        currentUser.account,
+        baseUrl,
+        navigate,
+        paramsString,
+        location.state,
+        ignoreAccountId,
+    ]);
 
     useEffect(() => {
         if (currentUser && Sentry?.setUser) {

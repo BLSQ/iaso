@@ -20,6 +20,7 @@ export type RouteCustom = {
     allowAnonymous?: boolean;
     isRootUrl?: boolean;
     element: ReactNode;
+    ignoreAccountId?: boolean;
 };
 
 export type Redirection = {

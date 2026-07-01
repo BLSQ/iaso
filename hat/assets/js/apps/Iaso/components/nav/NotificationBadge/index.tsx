@@ -11,8 +11,11 @@ import {
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useRedirectToReplace } from 'bluesquare-components';
+import { RedirectFn } from 'bluesquare-components/dist/types/Routing/redirections';
+import moment from 'moment';
 import { useGetNotifications } from 'Iaso/components/nav/NotificationBadge/hooks/requests';
 import { baseUrls } from 'Iaso/constants/urls';
+import { dateFormat } from 'Iaso/utils/dates';
 
 const styles = theme => ({
     menuButton: {
@@ -24,6 +27,15 @@ const styles = theme => ({
 });
 
 const useStyles = makeStyles(styles);
+
+const onAPIImportClicked = (redirectToReplace: RedirectFn) => {
+    const fromDate = new Date();
+    fromDate.setDate(fromDate.getDate() - 30);
+    redirectToReplace(baseUrls.adminApiImport, {
+        hasProblem: 'true',
+        fromDate: moment(fromDate).format(dateFormat),
+    });
+};
 
 export const NotificationBadge: FunctionComponent = () => {
     const [open, setOpen] = useState(false);
@@ -89,9 +101,8 @@ export const NotificationBadge: FunctionComponent = () => {
                                                     notification.type ==
                                                     'APIIMPORT'
                                                 ) {
-                                                    redirectToReplace(
-                                                        baseUrls.adminApiImport,
-                                                        { hasProblem: 'true' },
+                                                    onAPIImportClicked(
+                                                        redirectToReplace,
                                                     );
                                                 }
                                             }}

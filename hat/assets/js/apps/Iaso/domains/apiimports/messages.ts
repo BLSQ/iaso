@@ -25,6 +25,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'JSON',
         id: 'iaso.apiimport.json_body',
     },
+    exception: {
+        defaultMessage: 'Exception',
+        id: 'iaso.apiimport.exception',
+    },
     headers: {
         defaultMessage: 'Headers',
         id: 'iaso.apiimport.headers',

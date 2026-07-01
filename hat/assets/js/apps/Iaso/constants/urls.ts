@@ -661,6 +661,9 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'hasProblem',
             'appId',
             'appVersion',
+            'userId',
+            'fromDate',
+            'toDate',
         ],
     },
     accounts: {

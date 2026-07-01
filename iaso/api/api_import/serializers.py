@@ -30,6 +30,7 @@ class APIImportSerializer(serializers.ModelSerializer):
             "file",
             "app_id",
             "app_version",
+            "exception",
         ]
 
     @staticmethod
@@ -41,3 +42,9 @@ class APIImportSerializer(serializers.ModelSerializer):
         if obj.headers:
             obj.headers.pop("HTTP_AUTHORIZATION", None)
         return obj.headers
+
+
+class APIImportFilterSerializer(serializers.Serializer):
+    users = UserNestedSerializer(read_only=True, many=True)
+    app_ids = serializers.ListSerializer(read_only=True, child=serializers.CharField())
+    app_versions = serializers.ListSerializer(read_only=True, child=serializers.CharField())

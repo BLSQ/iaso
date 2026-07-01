@@ -3,8 +3,11 @@ import SearchIcon from '@mui/icons-material/Search';
 import { Button, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import DatesRange from 'Iaso/components/filters/DatesRange';
+import { useGetApiImportsFilters } from 'Iaso/domains/apiimports/hooks/requests';
 import { Params } from 'Iaso/domains/apiimports/types/filters';
 import { useFilterState } from 'Iaso/hooks/useFilterState';
+import { DropdownOptions } from 'Iaso/types/utils';
 import InputComponent from '../../../components/forms/InputComponent';
 import { baseUrl } from '../config';
 import MESSAGES from '../messages';
@@ -17,12 +20,40 @@ type Props = {
     params: Params;
 };
 
+const listAsOptions = (list?: string[]): Array<DropdownOptions<string>> => {
+    return (
+        list?.map(v => {
+            return {
+                value: v,
+                label: v,
+            };
+        }) ?? []
+    );
+};
+
 const Filters: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl: baseUrl, params });
+
+    const { data, isFetching } = useGetApiImportsFilters();
+    const appIds = useMemo(() => listAsOptions(data?.app_ids), [data]);
+    const appVersions = useMemo(
+        () => listAsOptions(data?.app_versions),
+        [data],
+    );
+    const users = useMemo(() => {
+        return (
+            data?.users?.map(user => {
+                return {
+                    value: user.id,
+                    label: user.username,
+                };
+            }) ?? []
+        );
+    }, [data]);
     const typeOptions = useMemo(
         () => [
             { value: 'bulk', label: formatMessage(MESSAGES.import_type_bulk) },
@@ -51,19 +82,48 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={12} sm={4} md={2}>
                 <InputComponent
                     keyValue="appId"
                     onChange={(_key, value) => handleChange('appId', value)}
                     value={filters.appId}
-                    type="search"
+                    type="select"
+                    options={appIds}
                     label={MESSAGES.app_id}
                     onEnterPressed={handleSearch}
                     onErrorChange={setTextSearchError}
-                    blockForbiddenChars
+                    loading={isFetching}
                 />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid item xs={12} sm={4} md={2}>
+                <InputComponent
+                    keyValue="appVersion"
+                    onChange={(_key, value) =>
+                        handleChange('appVersion', value)
+                    }
+                    value={filters.appVersion}
+                    type="select"
+                    options={appVersions}
+                    loading={isFetching}
+                    label={MESSAGES.app_version}
+                    onEnterPressed={handleSearch}
+                    onErrorChange={setTextSearchError}
+                />
+            </Grid>
+            <Grid item xs={12} sm={4} md={2}>
+                <InputComponent
+                    keyValue="userId"
+                    onChange={(_key, value) => handleChange('userId', value)}
+                    value={filters.userId}
+                    type="select"
+                    options={users}
+                    loading={isFetching}
+                    label={MESSAGES.user}
+                    onEnterPressed={handleSearch}
+                    onErrorChange={setTextSearchError}
+                />
+            </Grid>
+            <Grid item xs={12} sm={4} md={2}>
                 <InputComponent
                     keyValue="importType"
                     onChange={(_key, value) =>
@@ -76,7 +136,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     options={typeOptions}
                 />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid item xs={12} sm={4} md={2}>
                 <InputComponent
                     keyValue="hasProblem"
                     onChange={(_key, value) =>
@@ -89,12 +149,21 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     options={yesNoOptions}
                 />
             </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+                <DatesRange
+                    onChangeDate={handleChange}
+                    dateFrom={filters.fromDate}
+                    dateTo={filters.toDate}
+                    keyDateFrom="fromDate"
+                    keyDateTo="toDate"
+                />
+            </Grid>
 
             <Grid
                 item
                 xs={12}
                 sm={6}
-                md={3}
+                md={6}
                 container
                 justifyContent="flex-end"
                 alignItems="center"

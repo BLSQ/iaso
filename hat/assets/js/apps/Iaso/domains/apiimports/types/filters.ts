@@ -6,6 +6,9 @@ export type Filters = {
     hasProblem?: boolean;
     appId?: string;
     appVersion?: string;
+    fromDate?: string;
+    toDate?: string;
+    userId?: string;
 };
 
 export type Params = Filters & PaginationParams;

@@ -101,6 +101,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.selectVersionToCompare',
         defaultMessage: 'Please select the version to compare',
     },
+    emptyLogContent: {
+        id: 'iaso.instance.logs.emptyContent',
+        defaultMessage: 'No content to display',
+    },
 });
 
 export default MESSAGES;

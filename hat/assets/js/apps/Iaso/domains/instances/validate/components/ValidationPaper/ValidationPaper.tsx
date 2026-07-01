@@ -1,25 +1,20 @@
 import React, { FunctionComponent } from 'react';
-import { UrlParams, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useGetSubmissionValidationStatus } from 'Iaso/domains/instances/components/ValidationWorkflow/useGetSubmissionValidationStatus';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import MESSAGES from '../../messages';
+import { InstanceValidationParams } from '../../types';
 import { ApprovalForm } from './ApprovalForm';
 import { StepInfo } from './StepInfo';
 
 type Props = { formName: string };
 
-type Params = {
-    accountId: string;
-    instanceId: string;
-    selectedStep?: string;
-} & Partial<UrlParams>;
-
 export const ValidationPaper: FunctionComponent<Props> = ({ formName }) => {
-    const params: Params = useParamsObject(
+    const params = useParamsObject(
         baseUrls.instanceValidation,
-    ) as Params;
+    ) as InstanceValidationParams;
     const { formatMessage } = useSafeIntl();
     const { data: currentWorkflow, isLoading: isLoadingWorkflow } =
         useGetSubmissionValidationStatus(parseInt(params.instanceId, 10));
@@ -31,7 +26,10 @@ export const ValidationPaper: FunctionComponent<Props> = ({ formName }) => {
                 workflow={currentWorkflow}
                 isLoading={isLoadingWorkflow}
             />
-            <ApprovalForm workflow={currentWorkflow} />
+            <ApprovalForm
+                workflow={currentWorkflow}
+                isLoadingWorkflow={isLoadingWorkflow}
+            />
         </WidgetPaper>
     );
 };

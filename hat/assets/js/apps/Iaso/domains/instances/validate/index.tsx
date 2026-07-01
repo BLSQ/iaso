@@ -1,33 +1,31 @@
 import React, { useMemo, useState } from 'react';
-import { Box, FormControlLabel, FormGroup, Grid, Switch } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import {
-    commonStyles,
-    UrlParams,
-    useGoBack,
-    useSafeIntl,
-} from 'bluesquare-components';
-import { cloneDeep } from 'lodash';
+    Box,
+    FormControlLabel,
+    FormGroup,
+    Grid,
+    Switch,
+    useTheme,
+} from '@mui/material';
+import { commonStyles, useGoBack, useSafeIntl } from 'bluesquare-components';
 import { useApiDiffInstancesList } from 'Iaso/api/instanceDiff';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
-import { formatLogContent } from '../compare/components/CompareInstanceLogs';
-import { InstanceDetailRaw } from '../compare/components/InstanceDetailRaw';
+import {
+    formatLogContent,
+    LogContentSource,
+} from '../compare/components/CompareInstanceLogs';
 import { InstanceLogDetail } from '../compare/components/InstanceLogDetail';
+import { FormattedInstanceLog } from '../compare/utils/formattedInstanceLog';
 import { useGetInstance } from '../hooks/requests/useGetInstance';
 import { ValidationPaper } from './components/ValidationPaper/ValidationPaper';
 import MESSAGES from './messages';
-
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-}));
-
-type Params = {
-    accountId: string;
-    instanceId: string;
-    selectedStep?: string;
-} & Partial<UrlParams>;
+import { InstanceValidationParams } from './types';
+import {
+    formatFilteredDiffContent,
+    getChangedKeysFromDiff,
+} from './utils/formatFilteredDiffContent';
 
 const diffParams = {
     limit: 2,
@@ -35,25 +33,11 @@ const diffParams = {
     order: '-created_at',
 };
 
-const removeObjectEntries = (
-    list: string[],
-    obj: Record<string, any>,
-): Record<string, any> => {
-    const result: Record<string, any> = {};
-    const objKeys = Object.keys(obj);
-    objKeys.forEach(key => {
-        if (list.includes(key)) {
-            result[key] = obj[key];
-        }
-    });
-    return result;
-};
-
 export const ValidateInstance = () => {
-    const params: Params = useParamsObject(
+    const params = useParamsObject(
         baseUrls.instanceValidation,
-    ) as Params;
-    const classes = useStyles();
+    ) as InstanceValidationParams;
+    const theme = useTheme();
     const { formatMessage } = useSafeIntl();
     const goBack = useGoBack();
 
@@ -71,41 +55,47 @@ export const ValidateInstance = () => {
         isError,
     } = useApiDiffInstancesList(params.instanceId, diffParams);
 
-    const displaySingleInstance = !diff && !isLoadingInstance && instance;
+    const isDiffContentLoading = isLoadingInstance || isLoadingDiff;
+    const diffResultCount = diff?.results?.length ?? 0;
+    const hasDiffContent =
+        !isDiffContentLoading && Boolean(diff) && diffResultCount >= 2;
+    const showDiffPlaceholder =
+        !isDiffContentLoading &&
+        Boolean(instance) &&
+        Boolean(diff) &&
+        !isError &&
+        diffResultCount < 2;
+    const showDiffPanel =
+        Boolean(instance) &&
+        (isDiffContentLoading ||
+            isError ||
+            hasDiffContent ||
+            showDiffPlaceholder);
 
-    const displayDiff =
-        diff && instance && !isLoadingInstance && !isLoadingDiff;
-
-    const diffContent = useMemo(() => {
-        if (diff?.results && showAllFields) {
-            return formatLogContent(diff?.results?.[1], diff?.results?.[0]);
-        } else if ((diff?.results ?? [])?.length > 0) {
-            const previous = cloneDeep(diff.results[1]);
-            const current = cloneDeep(diff.results[0]);
-            const changedKeys = (diff?.results?.[0]?.diff ?? []).map(
-                diffObj =>
-                    diffObj.path.split('/')[diffObj.path.split('/').length - 1],
-            );
-
-            current.new_value[0].fields.json = removeObjectEntries(
-                changedKeys,
-                {
-                    ...diff.results[0].new_value[0].fields.json,
-                },
-            );
-            previous.new_value[0].fields.json = removeObjectEntries(
-                changedKeys,
-                {
-                    ...diff.results[1].new_value[0].fields.json,
-                },
-            );
-            current.possible_fields = current.possible_fields.filter(field =>
-                changedKeys.includes(field.name),
-            );
-
-            return formatLogContent(previous, current);
+    const diffContent = useMemo((): FormattedInstanceLog | null => {
+        const results = diff?.results;
+        if (!results || results.length < 2) {
+            return null;
         }
-        return {};
+
+        const previousResult = results[1] as
+            | Partial<LogContentSource>
+            | undefined;
+        const currentResult = results[0] as
+            | Partial<LogContentSource>
+            | undefined;
+
+        if (showAllFields || !previousResult || !currentResult) {
+            return formatLogContent(previousResult, currentResult);
+        }
+
+        const changedKeys = getChangedKeysFromDiff(results[0]?.diff);
+
+        return formatFilteredDiffContent(
+            previousResult,
+            currentResult,
+            changedKeys,
+        );
     }, [diff, showAllFields]);
 
     return (
@@ -115,64 +105,92 @@ export const ValidateInstance = () => {
                 goBack={goBack}
                 title={formatMessage(MESSAGES.validateInstance)}
             />
-            <Box className={`${classes.containerFullHeightNoTabPadded}`}>
+            <Box sx={commonStyles(theme).containerFullHeightNoTabPadded}>
                 <Grid container spacing={2}>
-                    {displaySingleInstance && (
+                    {showDiffPanel && (
                         <Grid item xs={12} sm={8}>
-                            <InstanceDetailRaw
-                                data={instance}
-                                isLoading={isLoadingDiff || isLoadingInstance}
-                                isError={isError}
-                                showTitle
-                            />
-                        </Grid>
-                    )}
-                    {displayDiff && (
-                        <Grid item xs={12} sm={8}>
-                            <Box
-                                sx={{
-                                    marginBottom: theme => theme.spacing(2),
-                                    display: 'flex',
-                                    justifyContent: 'flex-end',
-                                }}
-                            >
-                                <FormGroup>
-                                    <FormControlLabel
-                                        style={{ width: 'max-content' }}
-                                        control={
-                                            <Switch
-                                                size="medium"
-                                                checked={showAllFields}
-                                                onChange={() =>
-                                                    setShowAllFields(
-                                                        !showAllFields,
-                                                    )
+                            {isDiffContentLoading && (
+                                <InstanceLogDetail
+                                    instanceLogContent={null}
+                                    isLogDetailLoading
+                                    isLogDetailError={isError}
+                                    headerA={MESSAGES.previous}
+                                    headerB={MESSAGES.current}
+                                />
+                            )}
+                            {!isDiffContentLoading && isError && (
+                                <InstanceLogDetail
+                                    instanceLogContent={null}
+                                    isLogDetailLoading={false}
+                                    isLogDetailError
+                                    headerA={MESSAGES.previous}
+                                    headerB={MESSAGES.current}
+                                />
+                            )}
+                            {hasDiffContent && (
+                                <>
+                                    <Box
+                                        sx={{
+                                            marginBottom: theme =>
+                                                theme.spacing(2),
+                                            display: 'flex',
+                                            justifyContent: 'flex-end',
+                                        }}
+                                    >
+                                        <FormGroup>
+                                            <FormControlLabel
+                                                style={{
+                                                    width: 'max-content',
+                                                }}
+                                                control={
+                                                    <Switch
+                                                        size="medium"
+                                                        checked={showAllFields}
+                                                        onChange={(
+                                                            _,
+                                                            checked,
+                                                        ) =>
+                                                            setShowAllFields(
+                                                                checked,
+                                                            )
+                                                        }
+                                                        color="primary"
+                                                    />
                                                 }
-                                                color="primary"
+                                                label={formatMessage(
+                                                    MESSAGES.toggleShowAllFields,
+                                                )}
                                             />
-                                        }
-                                        label={formatMessage(
-                                            MESSAGES.toggleShowAllFields,
-                                        )}
+                                        </FormGroup>
+                                    </Box>
+                                    <InstanceLogDetail
+                                        instanceLogContent={diffContent}
+                                        isLogDetailLoading={false}
+                                        isLogDetailError={false}
+                                        headerA={MESSAGES.previous}
+                                        headerB={MESSAGES.current}
                                     />
-                                </FormGroup>
-                            </Box>
-                            <InstanceLogDetail
-                                instanceLogContent={diffContent}
-                                isLogDetailLoading={!displayDiff}
-                                isLogDetailError={isError}
-                                headerA={MESSAGES.previous}
-                                headerB={MESSAGES.current}
-                            />
+                                </>
+                            )}
+                            {showDiffPlaceholder && (
+                                <InstanceLogDetail
+                                    instanceLogContent={null}
+                                    isLogDetailLoading={false}
+                                    isLogDetailError={false}
+                                    emptyPlaceholder={
+                                        MESSAGES.noPreviousVersion
+                                    }
+                                    headerA={MESSAGES.previous}
+                                    headerB={MESSAGES.current}
+                                />
+                            )}
                         </Grid>
                     )}
                     {instance && (
                         <Grid item xs={12} sm={4}>
-                            <>
-                                <ValidationPaper
-                                    formName={instance?.form_name ?? ''}
-                                />
-                            </>
+                            <ValidationPaper
+                                formName={instance?.form_name ?? ''}
+                            />
                         </Grid>
                     )}
                 </Grid>

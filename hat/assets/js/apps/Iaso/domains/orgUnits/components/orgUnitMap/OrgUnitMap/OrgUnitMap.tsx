@@ -290,7 +290,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
 
     useEffect(() => {
         setDrawMessages(formatMessage);
-        // This effect should only run on mount
+        // This effect should only run on mount, eslint disable is ok
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 

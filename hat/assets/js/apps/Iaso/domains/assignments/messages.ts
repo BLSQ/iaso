@@ -126,6 +126,26 @@ const MESSAGES = defineMessages({
         id: 'iaso.assignment.deleteAssignmentsWarning',
         defaultMessage: 'Are you sure you want to delete {count} assignments?',
     },
+    bulkAssign: {
+        defaultMessage: 'Assign all {targetOrgUnitType} in {parentOrgUnitName}',
+        id: 'iaso.assignment.bulkAssign',
+    },
+    selectAll: {
+        id: 'iaso.label.selectAll',
+        defaultMessage: 'Select all',
+    },
+    unSelectAll: {
+        id: 'iaso.label.unSelectAll',
+        defaultMessage: 'Unselect all',
+    },
+    assign: {
+        id: 'iaso.assignment.assign',
+        defaultMessage: 'Assign',
+    },
+    targetOrgUnitType: {
+        id: 'iaso.assignment.targetOrgUnitType',
+        defaultMessage: 'Target org unit type',
+    },
 });
 
 export default MESSAGES;

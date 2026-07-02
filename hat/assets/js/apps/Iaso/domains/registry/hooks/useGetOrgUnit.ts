@@ -44,8 +44,7 @@ export const useFetchOrgUnits = (appId?: string): FetchOrgUnitsListResult => {
                 );
             }
         },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [queryClient],
+        [appId, queryClient],
     );
 
     return { fetchOrgUnit, isFetching };

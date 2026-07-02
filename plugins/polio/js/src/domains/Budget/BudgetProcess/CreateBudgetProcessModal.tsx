@@ -41,7 +41,7 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
             confirm(values);
         },
     });
-    const { isSubmitting, isValid, dirty } = formik;
+    const { isSubmitting, isValid, dirty, setFieldValue, values } = formik;
     const allowConfirm = !isSubmitting && isValid && dirty;
 
     // Filter "Campaign" values on "Country" change.
@@ -51,24 +51,22 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
     useEffect(() => {
         const campaigns = dropdownsData?.campaigns || [];
         const filtered = campaigns.filter(
-            i => String(i.country_id) === String(formik.values.country),
+            i => String(i.country_id) === String(values.country),
         );
-        formik.setFieldValue('campaign', '');
+        setFieldValue('campaign', '');
         setCampaignOptions(filtered);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dropdownsData?.campaigns, formik.values.country]);
+    }, [dropdownsData?.campaigns, setFieldValue, values.country]);
 
     // Filter "Rounds" values on "Campaign" change.
     const [currentRoundsOptions, setRoundsOptions] = useState<Options[]>([]);
     useEffect(() => {
         const rounds = dropdownsData?.rounds || [];
         const filtered = rounds.filter(
-            i => String(i.campaign_id) === String(formik.values.campaign),
+            i => String(i.campaign_id) === String(values.campaign),
         );
-        formik.setFieldValue('round', undefined);
+        setFieldValue('round', undefined);
         setRoundsOptions(filtered);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dropdownsData?.rounds, formik.values.campaign]);
+    }, [dropdownsData?.rounds, values.campaign, setFieldValue]);
 
     const titleMessage = formatMessage(MESSAGES.createBudgetProcessTitle);
 

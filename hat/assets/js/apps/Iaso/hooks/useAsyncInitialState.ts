@@ -29,9 +29,11 @@ export const useAsyncInitialState = <T>(
             isSet.current = true;
         }
     }, [initialState, keepSynced]);
+
+    const hasValue = isSet.current;
+
     return useMemo(
-        () => [state, setState, isSet.current],
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [state, setState, isSet.current],
+        () => [state, setState, hasValue],
+        [state, setState, hasValue],
     );
 };

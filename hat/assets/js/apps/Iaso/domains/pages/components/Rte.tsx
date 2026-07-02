@@ -79,8 +79,7 @@ const Rte: FunctionComponent<Props> = ({
                 form.setFieldValue(field.name, quill.root.innerHTML);
             });
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [quill]);
+    }, [field.name, form, quill]);
 
     return (
         <FormControl component="fieldset" className={classes.formControl}>

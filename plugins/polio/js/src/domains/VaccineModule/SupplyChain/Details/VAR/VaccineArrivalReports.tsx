@@ -28,7 +28,7 @@ export const VaccineArrivalReports: FunctionComponent<Props> = ({
     const onClick = useCallback(() => {
         setFieldValue(VAR, [...values[VAR], emptyArrivalReport]);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [setFieldValue, values, vaccine]);
+    }, [setFieldValue, values, vaccine, emptyArrivalReport]);
 
     const currentUser = useCurrentUser();
     const theMessage = userHasOneOfPermissions(

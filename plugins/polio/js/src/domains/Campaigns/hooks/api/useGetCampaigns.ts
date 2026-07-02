@@ -98,29 +98,7 @@ export const useGetCampaignsOptions = (
     options: Options,
     asCsv = false,
 ): GetCampaignsParams => {
-    return useMemo(
-        () => makeCampaignOptions(options, asCsv),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [
-            asCsv,
-            options.pageSize,
-            options.page,
-            options.order,
-            options.countries,
-            options.search,
-            options.roundStartFrom,
-            options.roundStartTo,
-            options.showOnlyDeleted,
-            options.campaignType,
-            options.campaignCategory,
-            options.campaignGroups,
-            options.orgUnitGroups,
-            options.show_test,
-            options.enabled,
-            options.fieldset,
-            options.is_embedded,
-        ],
-    );
+    return useMemo(() => makeCampaignOptions(options, asCsv), [options, asCsv]);
 };
 
 export const makeCampaignQueryKey = ({
@@ -152,27 +130,7 @@ export const useCampaignsQueryKey = ({
 }): { queryKey: QueryKey; params: GetCampaignsParams } => {
     return useMemo(() => {
         return makeCampaignQueryKey({ queryKey, options, asCsv });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [
-        queryKey,
-        asCsv,
-        options.pageSize,
-        options.page,
-        options.order,
-        options.countries,
-        options.search,
-        options.roundStartFrom,
-        options.roundStartTo,
-        options.showOnlyDeleted,
-        options.campaignType,
-        options.campaignCategory,
-        options.campaignGroups,
-        options.orgUnitGroups,
-        options.show_test,
-        options.enabled,
-        options.fieldset,
-        options.is_embedded,
-    ]);
+    }, [queryKey, options, asCsv]);
 };
 export const useGetCampaigns = (
     options: Options = {},

@@ -41,7 +41,7 @@ const CreateChronogramModal: FunctionComponent<Props> = ({
             confirm(values);
         },
     });
-    const { isSubmitting, isValid, dirty } = formik;
+    const { isSubmitting, isValid, dirty, setFieldValue, values } = formik;
     const allowConfirm = !isSubmitting && isValid && dirty;
 
     // Filter "Campaign" values on "Country" change.
@@ -51,12 +51,11 @@ const CreateChronogramModal: FunctionComponent<Props> = ({
     useEffect(() => {
         const campaigns = dropdownsData?.campaigns || [];
         const filtered = campaigns.filter(
-            i => String(i.country_id) === String(formik.values.country),
+            i => String(i.country_id) === String(values.country),
         );
-        formik.setFieldValue('campaign', '');
+        setFieldValue('campaign', '');
         setCampaignOptions(filtered);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dropdownsData?.campaigns, formik.values.country]);
+    }, [dropdownsData?.campaigns, setFieldValue, values.country]);
 
     // Filter "Rounds" values on "Campaign" change.
     const [currentRoundsOptions, setRoundsOptions] = useState<
@@ -67,7 +66,7 @@ const CreateChronogramModal: FunctionComponent<Props> = ({
         const filtered = rounds
             .filter(
                 i =>
-                    String(i.campaign_id) === String(formik.values.campaign) &&
+                    String(i.campaign_id) === String(values.campaign) &&
                     !i.on_hold,
             )
             .map(r => {
@@ -76,10 +75,9 @@ const CreateChronogramModal: FunctionComponent<Props> = ({
                     value: r.value,
                 };
             });
-        formik.setFieldValue('round', undefined);
+        setFieldValue('round', undefined);
         setRoundsOptions(filtered);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dropdownsData?.rounds, formik.values.campaign]);
+    }, [dropdownsData?.rounds, formatMessage, setFieldValue, values.campaign]);
 
     return (
         <FormikProvider value={formik}>

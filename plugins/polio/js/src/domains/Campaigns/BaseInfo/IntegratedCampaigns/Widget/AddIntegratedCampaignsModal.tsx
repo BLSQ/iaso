@@ -22,7 +22,7 @@ const AddIntegratedCampaignsModal: FunctionComponent<Props> = ({
     const handleConfirm = useCallback(() => {
         setFieldTouched('integrated_campaigns', true);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [setFieldValue, initialValues]);
+    }, [setFieldTouched, initialValues]);
 
     const handleCancel = useCallback(() => {
         setFieldTouched('integrated_campaigns', false);

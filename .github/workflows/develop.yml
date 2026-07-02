@@ -41,7 +41,6 @@ jobs:
     uses: BLSQ/iaso-ci/.github/workflows/docker_deploy.yml@main
     with:
       iaso_branch: develop
-#      environment: staging
-      environment: migration
+      environment: staging
       image_tag: develop
     secrets: inherit

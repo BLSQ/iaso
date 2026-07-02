@@ -13,7 +13,6 @@ from iaso import models as m
 from iaso.api.org_unit_change_requests.views import OrgUnitChangeRequestViewSet
 from iaso.permissions.core_permissions import CORE_ORG_UNITS_CHANGE_REQUEST_REVIEW_PERMISSION
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
-from iaso.utils.models.common import get_creator_name
 
 
 class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
@@ -772,12 +771,49 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.assertEqual(new_values["deleted_at"], None)
         self.assertEqual(new_values["updated_by"], self.user_with_review_perm.pk)
 
+    # Golden CSV for `test_export_to_csv`, for two vanilla change requests (no
+    # `requested_fields`) on `self.org_unit` from `setUpTestData`. Only the truly
+    # dynamic values (ids, dates, reference instance ids) are placeholders: everything
+    # else is a hardcoded expected value, on purpose, so this test doesn't re-derive
+    # its expectations with the same logic as the view (which would let a shared bug
+    # hide from the test).
+
+    # I know the tuple of fields is long, and csv is quite large, so not too bad
+    EXPORT_TO_CSV_TEMPLATE = (
+        # Headers
+        "Id,Org unit ID,External reference,Name,Parent,Org unit type,Groups,Created,Created by,Updated,Updated by,"
+        "Name before change,Name after change,Name conclusion,"
+        "Parent 1 before change,Parent 1 after change,"
+        "Ref Ext parent 1 before change,Ref Ext parent 1 after change,Ref Ext parent 1 conclusion,"
+        "Ref Ext parent 2 before change,Ref Ext parent 2 after change,Ref Ext parent 2 conclusion,"
+        "Ref Ext parent 3 before change,Ref Ext parent 3 after change,Ref Ext parent 3 conclusion,"
+        "Opening date before change,Opening date after change,Opening date conclusion,"
+        "Closing date before change,Closing date after change,Closing date conclusion,"
+        "Groups before change,Groups after change,Groups conclusion,"
+        "Localisation before change,Localisation after change,Localisation conclusion,"
+        "Geometry before change,Geometry after change,Geometry conclusion,"
+        "Code before change,Code after change,Code conclusion,"
+        "Reference submission before,Reference submission after\n"
+        # Line 2
+        '{id_foo},{org_unit_id},112244,,,Org unit type,"Group 1,Group 2,Group 3",{created_foo},,{updated_foo},,,'
+        "Foo,same,,,,,same,,,same,,,same,,,same,"
+        '{closing_date},{closing_date},same,"Group 1,Group 2,Group 3","Group 1,Group 2,Group 3",same,,,same,,,same,,,same,'
+        '"{references}","{references}"\n'
+        # Line 3
+        '{id_bar},{org_unit_id},112244,,,Org unit type,"Group 1,Group 2,Group 3",{created_bar},,{updated_bar},,,'
+        "Bar,same,,,,,same,,,same,,,same,,,same,"
+        '{closing_date},{closing_date},same,"Group 1,Group 2,Group 3","Group 1,Group 2,Group 3",same,,,same,,,same,,,same,'
+        '"{references}","{references}"\n'
+    )
+
     def test_export_to_csv(self):
         """
-        It tests the CSV export for the org change requests list.
+        It tests the CSV export for the org change requests list, by comparing the
+        actual CSV against a template where only the genuinely dynamic values are
+        substituted in.
         """
-        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
-        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
+        change_request_foo = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
+        change_request_bar = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
 
         self.client.force_authenticate(self.user)
 
@@ -789,195 +825,32 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         )
 
         response_csv = response.getvalue().decode("utf-8")
-        response_string = "".join(s for s in response_csv)
-        reader = csv.reader(io.StringIO(response_string), delimiter=",")
-
-        data = list(reader)
+        data = list(csv.reader(io.StringIO(response_csv)))
         self.assertEqual(len(data), 3)  # Header + 2 change requests
 
-        data_headers = data[0]
-        self.assertEqual(data_headers, OrgUnitChangeRequestViewSet.CSV_HEADER_COLUMNS)
-
-        first_data_row = data[1]
-
-        # Helper function to determine if a field has changed
-        def get_conclusion(field_name, old_value, new_value):
-            field_mapping = {
-                "name": "new_name",
-                "parent": "new_parent",
-                "ref_ext_parent_1": "new_parent",
-                "ref_ext_parent_2": "new_parent",
-                "ref_ext_parent_3": "new_parent",
-                "opening_date": "new_opening_date",
-                "closing_date": "new_closed_date",
-                "groups": "new_groups",
-                "localisation": "new_location",
-                "reference_submission": "new_reference_instances",
-            }
-            requested_field = field_mapping.get(field_name)
-            if requested_field not in change_request.requested_fields:
-                return "same"
-            if old_value == new_value:
-                return "same"
-            return "updated"
-
-        # Get parent reference extensions
-        def get_parent_ref_ext(parent, level):
-            if not parent:
-                return None
-
-            # Get ancestors up to the specified level
-            ancestors = list(parent.ancestors().order_by("path"))
-            if level <= len(ancestors):
-                return ancestors[level - 1].source_ref
-            return None
-
-        # Get location string
-        def get_location_str(location):
-            if not location:
-                return None
-            return f"{location.y}, {location.x}"
-
-        # Get reference instance IDs
-        def get_reference_instance_ids(instances):
-            if not instances.exists():
-                return ""
-            return ",".join(str(instance.id) for instance in instances.all().order_by("id"))
-
-        # Basic expected data
-        expected_row_data = [
-            str(change_request.id),
-            str(change_request.org_unit_id),
-            change_request.org_unit.source_ref,
-            change_request.org_unit.name,
-            change_request.org_unit.parent.name if change_request.org_unit.parent else None,
-            change_request.org_unit.org_unit_type.name if change_request.org_unit.org_unit_type else None,
-            ",".join(group.name for group in change_request.org_unit.groups.all()),
-            datetime.datetime.strftime(change_request.created_at, "%Y-%m-%d"),
-            get_creator_name(change_request.created_by) if change_request.created_by else None,
-            datetime.datetime.strftime(change_request.updated_at, "%Y-%m-%d"),
-            get_creator_name(change_request.updated_by) if change_request.updated_by else None,
-        ]
-
-        # Name changes
-        name_before = change_request.old_name if change_request.kind == change_request.Kind.ORG_UNIT_CHANGE else ""
-        name_after = change_request.new_name if change_request.new_name else change_request.org_unit.name
-        name_conclusion = get_conclusion("name", name_before, name_after)
-
-        expected_row_data.extend([name_before, name_after, name_conclusion])
-
-        # Parent changes
-        parent_before = change_request.old_parent.name if change_request.old_parent else ""
-        parent_after = (
-            change_request.new_parent.name
-            if change_request.new_parent
-            else change_request.org_unit.parent.name
-            if change_request.org_unit.parent
-            else None
+        reference_ids = ",".join(str(pk) for pk in sorted([self.instance_1.pk, self.instance_2.pk, self.instance_3.pk]))
+        expected_csv = self.EXPORT_TO_CSV_TEMPLATE.format(
+            id_foo=change_request_foo.id,
+            id_bar=change_request_bar.id,
+            org_unit_id=self.org_unit.id,
+            created_foo=change_request_foo.created_at.strftime("%Y-%m-%d"),
+            updated_foo=change_request_foo.updated_at.strftime("%Y-%m-%d"),
+            created_bar=change_request_bar.created_at.strftime("%Y-%m-%d"),
+            updated_bar=change_request_bar.updated_at.strftime("%Y-%m-%d"),
+            closing_date=self.DT.strftime("%Y-%m-%d"),
+            references=reference_ids,
         )
+        expected_data = list(csv.reader(io.StringIO(expected_csv)))
 
-        expected_row_data.extend([parent_before, parent_after])
+        self.assertEqual(data[0], OrgUnitChangeRequestViewSet.CSV_HEADER_COLUMNS)
+        self.assertEqual(expected_data[0], OrgUnitChangeRequestViewSet.CSV_HEADER_COLUMNS)
 
-        # Reference extensions for parents
-        for level in range(1, 4):
-            parent_before = change_request.old_parent if change_request.old_parent else None
-            parent_after = change_request.new_parent if change_request.new_parent else change_request.org_unit.parent
-
-            ref_ext_before = get_parent_ref_ext(parent_before, level)
-            ref_ext_after = get_parent_ref_ext(parent_after, level)
-            ref_ext_conclusion = get_conclusion(f"ref_ext_parent_{level}", ref_ext_before, ref_ext_after)
-
-            expected_row_data.extend([ref_ext_before, ref_ext_after, ref_ext_conclusion])
-
-        # Opening date changes
-        opening_date_before = (
-            change_request.old_opening_date.strftime("%Y-%m-%d") if change_request.old_opening_date else ""
-        )
-        opening_date_after = (
-            change_request.new_opening_date.strftime("%Y-%m-%d")
-            if change_request.new_opening_date
-            else (
-                change_request.org_unit.opening_date.strftime("%Y-%m-%d")
-                if change_request.org_unit.opening_date
-                else None
-            )
-        )
-        opening_date_conclusion = get_conclusion("opening_date", opening_date_before, opening_date_after)
-
-        expected_row_data.extend([opening_date_before, opening_date_after, opening_date_conclusion])
-
-        # Closing date changes
-        closing_date_before = (
-            change_request.old_closed_date.strftime("%Y-%m-%d") if change_request.old_closed_date else ""
-        )
-        closing_date_after = (
-            change_request.new_closed_date.strftime("%Y-%m-%d")
-            if change_request.new_closed_date
-            else (
-                change_request.org_unit.closed_date.strftime("%Y-%m-%d")
-                if change_request.org_unit.closed_date
-                else None
-            )
-        )
-        closing_date_conclusion = get_conclusion("closing_date", closing_date_before, closing_date_after)
-
-        expected_row_data.extend([closing_date_before, closing_date_after, closing_date_conclusion])
-
-        # Groups changes
-        groups_before = ",".join(group.name for group in change_request.old_groups.all())
-        groups_after = (
-            ",".join(group.name for group in change_request.new_groups.all())
-            if change_request.new_groups.exists()
-            else ",".join(group.name for group in change_request.org_unit.groups.all())
-        )
-        groups_conclusion = get_conclusion("groups", groups_before, groups_after)
-
-        expected_row_data.extend([groups_before, groups_after, groups_conclusion])
-
-        # Location changes
-        location_before = get_location_str(change_request.old_location)
-        location_after = (
-            get_location_str(change_request.new_location)
-            if change_request.new_location
-            else get_location_str(change_request.org_unit.location)
-        )
-        location_conclusion = get_conclusion("localisation", location_before, location_after)
-
-        expected_row_data.extend([location_before, location_after, location_conclusion])
-
-        # Geometry changes
-        geom_before = change_request.old_geom.wkt[:80] if change_request.old_geom else ""
-        geom_after = (
-            (change_request.new_geom.wkt[:80] if change_request.new_geom else "")
-            if "new_geom" in change_request.requested_fields
-            else (change_request.org_unit.geom.wkt[:80] if change_request.org_unit.geom else "")
-        )
-        geom_conclusion = get_conclusion("geom", geom_before, geom_after)
-        expected_row_data.extend([geom_before, geom_after, geom_conclusion])
-
-        # Code changes
-        code_before = change_request.old_code
-        code_after = (
-            change_request.new_code if "new_code" in change_request.requested_fields else change_request.org_unit.code
-        )
-        code_conclusion = get_conclusion("code", code_before, code_after)
-        expected_row_data.extend([code_before, code_after, code_conclusion])
-
-        # Reference instances changes
-        reference_before = get_reference_instance_ids(change_request.old_reference_instances)
-        reference_after = (
-            get_reference_instance_ids(change_request.new_reference_instances)
-            if change_request.new_reference_instances.exists()
-            else get_reference_instance_ids(change_request.org_unit.reference_instances)
-        )
-
-        expected_row_data.extend([reference_before, reference_after])
-
-        # Convert None values to empty strings for comparison
-        expected_row_data = ["" if v is None else str(v) for v in expected_row_data]
-        first_data_row = ["" if v is None else str(v) for v in first_data_row]
-
-        self.assertEqual(first_data_row, expected_row_data)
+        # The queryset is only ordered by `org_unit__name`, which is identical for
+        # both change requests here, so rows aren't guaranteed to come back in
+        # creation order: sort both sides by `Id` before comparing everything at once.
+        data[1:] = sorted(data[1:], key=lambda row: int(row[0]))
+        expected_data[1:] = sorted(expected_data[1:], key=lambda row: int(row[0]))
+        self.assertEqual(data, expected_data)
 
     def test_export_to_csv_with_new_change_request(self):
         """

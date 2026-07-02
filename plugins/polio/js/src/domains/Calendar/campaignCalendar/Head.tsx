@@ -19,6 +19,16 @@ type Props = {
     params: Record<string, string>;
 };
 
+const DAYS_OF_WEEK = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+];
+
 export const Head: FunctionComponent<Props> = ({
     headers,
     orders,
@@ -146,19 +156,17 @@ export const Head: FunctionComponent<Props> = ({
                     />
                 ))}
                 {headers.weeks.map(week => {
-                    return Array(7)
-                        .fill(null)
-                        .map(_ => (
-                            <TableCell
-                                className={classnames([
-                                    classes.tableCellHead,
-                                    classes.tableCellHidden,
-                                ])}
-                                key={`day-${week.year}-${week.month}-${week.value}`}
-                                align="center"
-                                colSpan={1}
-                            />
-                        ));
+                    return DAYS_OF_WEEK.map(day => (
+                        <TableCell
+                            className={classnames([
+                                classes.tableCellHead,
+                                classes.tableCellHidden,
+                            ])}
+                            key={`day-${week.year}-${week.month}-${week.value}-${day}`}
+                            align="center"
+                            colSpan={1}
+                        />
+                    ));
                 })}
             </TableRow>
         </TableHead>

@@ -106,7 +106,7 @@ export const drawEmptyFirstCells = ({
                 .forEach(_ => {
                     result.push(
                         <EmptyCell
-                            key={`empty-cell-${id}-start`}
+                            key={`empty-cell-${id}-start-${result.length + 1}`}
                             colSpan={7}
                             isCurrentWeek={
                                 result.length + 1 === currentWeekIndex

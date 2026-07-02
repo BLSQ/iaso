@@ -141,7 +141,7 @@ class MobileEntityTypesViewSet(ModelViewSet):
         else:
             queryset = filter_on_user_and_app_id(queryset, user, app_id)
 
-        if queryset:
+        if queryset is not None:
             queryset = queryset.filter(entity_type__pk=type_pk)
 
         queryset = filter_for_mobile_entity(queryset, self.request)

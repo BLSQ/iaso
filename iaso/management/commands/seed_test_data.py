@@ -460,7 +460,7 @@ class Command(BaseCommand):
         print("        https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso")
         print("     in the menu ")
         print("        Change the App ID : ", project.app_id)
-        print("        Change URL server : with the ngrok one (good luck, try to send it by email)")
+        print("        Change URL server : with the ngrok one (use the qr code scanning in the app)")
         print("     then in the Connection section")
         print("        user and password : ", "testemail" + dhis2_version)
 

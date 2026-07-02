@@ -7,9 +7,9 @@
  */
 import { z as zod } from 'zod';
 
-export const paginatedModificationListResultsItemObjectIdMax = 40;
+export const paginatedInstanceModificationListResultsItemObjectIdMax = 40;
 
-export const PaginatedModificationList = zod.strictObject({
+export const PaginatedInstanceModificationList = zod.strictObject({
     count: zod.number().optional(),
     has_next: zod.boolean().optional(),
     has_previous: zod.boolean().optional(),
@@ -23,7 +23,9 @@ export const PaginatedModificationList = zod.strictObject({
                 content_type: zod.string(),
                 object_id: zod
                     .string()
-                    .max(paginatedModificationListResultsItemObjectIdMax),
+                    .max(
+                        paginatedInstanceModificationListResultsItemObjectIdMax,
+                    ),
                 diff: zod.array(
                     zod
                         .strictObject({
@@ -49,14 +51,17 @@ export const PaginatedModificationList = zod.strictObject({
                 ),
                 past_value: zod.unknown(),
                 new_value: zod.unknown(),
+                files: zod.record(zod.string(), zod.url()),
+                possible_fields: zod.array(zod.unknown()),
+                form_descriptor: zod.unknown(),
             }),
         )
         .optional(),
 });
 
-export type PaginatedModificationList = zod.input<
-    typeof PaginatedModificationList
+export type PaginatedInstanceModificationList = zod.input<
+    typeof PaginatedInstanceModificationList
 >;
-export type PaginatedModificationListOutput = zod.output<
-    typeof PaginatedModificationList
+export type PaginatedInstanceModificationListOutput = zod.output<
+    typeof PaginatedInstanceModificationList
 >;

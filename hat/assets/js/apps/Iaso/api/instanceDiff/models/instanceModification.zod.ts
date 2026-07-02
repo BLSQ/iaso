@@ -7,12 +7,12 @@
  */
 import { z as zod } from 'zod';
 
-export const modificationObjectIdMax = 40;
+export const instanceModificationObjectIdMax = 40;
 
-export const Modification = zod.strictObject({
+export const InstanceModification = zod.strictObject({
     created_at: zod.iso.datetime({ offset: true }),
     content_type: zod.string(),
-    object_id: zod.string().max(modificationObjectIdMax),
+    object_id: zod.string().max(instanceModificationObjectIdMax),
     diff: zod.array(
         zod
             .strictObject({
@@ -31,7 +31,12 @@ export const Modification = zod.strictObject({
     ),
     past_value: zod.unknown(),
     new_value: zod.unknown(),
+    files: zod.record(zod.string(), zod.url()),
+    possible_fields: zod.array(zod.unknown()),
+    form_descriptor: zod.unknown(),
 });
 
-export type Modification = zod.input<typeof Modification>;
-export type ModificationOutput = zod.output<typeof Modification>;
+export type InstanceModification = zod.input<typeof InstanceModification>;
+export type InstanceModificationOutput = zod.output<
+    typeof InstanceModification
+>;

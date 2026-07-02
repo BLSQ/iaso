@@ -17,7 +17,7 @@ import type {
 
 import { customFetchInstance } from '../../../../../../orval/client/custom-fetch';
 import { getCustomQueryOptions } from '../../../../../../orval/mutator/custom-query-options';
-import { PaginatedModificationList } from '../../models';
+import { PaginatedInstanceModificationList } from '../../models';
 import type { ApiDiffInstancesListParams } from '../../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -48,8 +48,8 @@ export const apiDiffInstancesList = async (
     instanceId: string,
     params?: ApiDiffInstancesListParams,
     options?: RequestInit,
-): Promise<PaginatedModificationList> => {
-    return customFetchInstance<PaginatedModificationList>(
+): Promise<PaginatedInstanceModificationList> => {
+    return customFetchInstance<PaginatedInstanceModificationList>(
         getApiDiffInstancesListUrl(instanceId, params),
         {
             credentials: 'same-origin',

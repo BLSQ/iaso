@@ -11,11 +11,13 @@ import { HttpResponse, delay, http } from 'msw';
 import type { RequestHandlerOptions } from 'msw';
 
 import { OpEnum } from '../../models';
-import type { PaginatedModificationList } from '../../models';
+import type { PaginatedInstanceModificationList } from '../../models';
 
 export const getApiDiffInstancesListResponseMock = (
-    overrideResponse: Partial<Extract<PaginatedModificationList, object>> = {},
-): PaginatedModificationList =>
+    overrideResponse: Partial<
+        Extract<PaginatedInstanceModificationList, object>
+    > = {},
+): PaginatedInstanceModificationList =>
     faker.helpers.arrayElement([
         {
             count: faker.helpers.arrayElement([faker.number.int(), undefined]),
@@ -61,6 +63,14 @@ export const getApiDiffInstancesListResponseMock = (
                     })),
                     past_value: {},
                     new_value: {},
+                    files: {
+                        [faker.string.alphanumeric(5)]: faker.internet.url(),
+                    },
+                    possible_fields: Array.from(
+                        { length: faker.number.int({ min: 1, max: 10 }) },
+                        (_, i) => i + 1,
+                    ).map(() => ({})),
+                    form_descriptor: {},
                 })),
                 undefined,
             ]),
@@ -110,6 +120,14 @@ export const getApiDiffInstancesListResponseMock = (
                     })),
                     past_value: {},
                     new_value: {},
+                    files: {
+                        [faker.string.alphanumeric(5)]: faker.internet.url(),
+                    },
+                    possible_fields: Array.from(
+                        { length: faker.number.int({ min: 1, max: 10 }) },
+                        (_, i) => i + 1,
+                    ).map(() => ({})),
+                    form_descriptor: {},
                 })),
                 undefined,
             ]),
@@ -119,10 +137,12 @@ export const getApiDiffInstancesListResponseMock = (
 
 export const getApiDiffInstancesListMockHandler = (
     overrideResponse?:
-        | PaginatedModificationList
+        | PaginatedInstanceModificationList
         | ((
               info: Parameters<Parameters<typeof http.get>[1]>[0],
-          ) => Promise<PaginatedModificationList> | PaginatedModificationList),
+          ) =>
+              | Promise<PaginatedInstanceModificationList>
+              | PaginatedInstanceModificationList),
     options?: RequestHandlerOptions,
 ) => {
     return http.get(

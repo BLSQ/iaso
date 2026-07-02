@@ -7,7 +7,7 @@
  */
 
 export * from './apiDiffInstancesListParams.zod';
+export * from './instanceModification.zod';
 export * from './jsonPatchOperation.zod';
-export * from './modification.zod';
 export * from './opEnum.zod';
-export * from './paginatedModificationList.zod';
+export * from './paginatedInstanceModificationList.zod';

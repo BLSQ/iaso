@@ -458,6 +458,30 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.assertIsNotNone(self.org_unit.simplified_geom)
         self.assertEqual(self.org_unit.validation_status, m.OrgUnit.VALIDATION_VALID)
 
+    @time_machine.travel(DT, tick=False)
+    def test_partial_update_approve_new_code(self):
+        self.client.force_authenticate(self.user_with_review_perm)
+
+        new_code = "000000000000001"
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            created_by=self.user,
+            new_code=new_code,
+            requested_fields=["new_code"],
+        )
+
+        data = {
+            "status": change_request.Statuses.APPROVED,
+            "approved_fields": ["new_code"],
+        }
+        response = self.client.patch(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        change_request.refresh_from_db()
+        self.assertEqual(change_request.status, change_request.Statuses.APPROVED)
+        self.org_unit.refresh_from_db()
+        self.assertEqual(self.org_unit.code, new_code)
+
     def test_update_should_be_forbidden(self):
         self.client.force_authenticate(self.user_with_review_perm)
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")

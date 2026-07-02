@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from itertools import islice
 from typing import Optional
 
-from django.contrib.gis.geos import MultiPolygon, Point
-from django.contrib.sites.models import Site
+from django.conf import settings
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point
 
 from iaso.diffing import Differ
 from iaso.models import DataSourceVersionsSynchronization, Group, OrgUnit, OrgUnitChangeRequest
@@ -104,7 +104,7 @@ class DataSourceVersionsSynchronizer:
         self._report_progress("Bulk created change request groups")
 
         if self.task:
-            domain = Site.objects.get_current().domain
+            domain = settings.DNS_DOMAIN
             scheme = "http" if domain.startswith("localhost") else "https"
             account_id = self.data_source_sync.account_id
             sync_id = self.data_source_sync.pk
@@ -417,8 +417,6 @@ class DataSourceVersionsSynchronizer:
         if "geometry" in changes:
             after_wkt = changes["geometry"]
             if after_wkt:
-                from django.contrib.gis.geos import GEOSGeometry
-
                 geom = GEOSGeometry(after_wkt)
                 if geom.geom_type == "Point":
                     if not geom.hasz:

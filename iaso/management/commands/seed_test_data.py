@@ -8,9 +8,10 @@ from uuid import uuid4
 import requests
 
 from dhis2 import Api
+from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.gis.geos import MultiPolygon, Point, Polygon
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
 from django.contrib.sites.models import Site
 from django.core import management
 from django.core.files.uploadedfile import InMemoryUploadedFile, UploadedFile
@@ -22,6 +23,7 @@ from lxml import etree
 
 from iaso.dhis2.datavalue_exporter import DataValueExporter
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
+from iaso.management.commands.command_logger import CommandLogger
 from iaso.models import (
     Account,
     DataSource,
@@ -144,12 +146,6 @@ class Command(BaseCommand):
         )
         for proj in (project, project2):
             proj.feature_flags.add(flag_auth, flag_auto_upload)
-
-        site = Site.objects.get_current()
-        if site.domain == "example.com":
-            site.domain = "localhost:8081"
-            site.name = "Iaso (local)"
-            site.save()
 
         datasource, _ds_created = DataSource.objects.get_or_create(
             name="reference_play_test" + dhis2_version, credentials=credentials
@@ -526,8 +522,6 @@ class Command(BaseCommand):
           source_version_to_compare_with = demo_version     (this source)
           field_names = [name, geometry, code, opening_date, closing_date]
         """
-        import json
-
         print("********* seeding geom/code demo version")
 
         demo_datasource, _ = DataSource.objects.get_or_create(name=datasource.name + "_geom_demo")
@@ -581,8 +575,6 @@ class Command(BaseCommand):
             scenario) while aggressive simplification (0.05° tolerance) reduces the new
             shape to a handful of vertices, making the difference obvious on the map.
             """
-            from django.contrib.gis.geos import GEOSGeometry
-
             geojson = json.loads(ou.geom.geojson)
             geojson["coordinates"] = _shift_geojson_coords(geojson["coordinates"], dx=0.1, dy=0.1)
             shifted = GEOSGeometry(json.dumps(geojson), srid=4326)
@@ -790,8 +782,6 @@ class Command(BaseCommand):
         )
 
         field_names = ["name", "geometry", "code", "opening_date", "closed_date"]
-        from iaso.management.commands.command_logger import CommandLogger
-
         sync.create_json_diff(field_names=field_names, logger_to_use=CommandLogger(self.stdout))
         print(f"  Diff computed: {sync.count_update} updates, {sync.count_create} creations")
 
@@ -800,9 +790,7 @@ class Command(BaseCommand):
         geom_cr_count = sync.change_requests.exclude(new_geom=None).count()
         print(f"  Change requests created: {cr_count} total, {geom_cr_count} with geometry change")
 
-        from django.contrib.sites.models import Site
-
-        domain = Site.objects.get_current().domain
+        domain = settings.DNS_DOMAIN
         scheme = "http" if domain.startswith("localhost") else "https"
         url = (
             f"{scheme}://{domain}/dashboard/validation/changeRequest"

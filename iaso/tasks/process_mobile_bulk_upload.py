@@ -89,7 +89,7 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                         uuid = instance_data["id"]
                         instance = Instance.objects.get(uuid=uuid)
                         original = copy(instance)
-                        instance = process_instance_xml(uuid, instance_data, zip_ref, user)
+                        instance = process_instance_xml(instance, instance_data, zip_ref, user)
                         stats["new_instances"] += 1
                         new_instance_files += process_instance_attachments(dirs[uuid], instance)
                         log_modification(v1=original, v2=instance, source=BULK_UPLOAD, user=user)
@@ -163,8 +163,8 @@ def get_directory_handlers(zip_ref):
     return result
 
 
-def process_instance_xml(uuid, instance_data, zip_ref, user):
-    instance = Instance.objects.get(uuid=uuid)
+def process_instance_xml(instance: Instance, instance_data, zip_ref, user):
+    uuid = instance.uuid
     filename = ntpath.basename(instance_data.get("file", None))
     logger.info(f"Processing instance {instance.uuid}")
     with zip_ref.open(os.path.join(uuid, filename), "r") as f:

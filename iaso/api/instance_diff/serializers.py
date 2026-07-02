@@ -9,35 +9,26 @@ from iaso.api.common import ModelSerializer
 from iaso.api.common.serializer import JsonPatchOperationSerializer
 
 
-class ModificationSerializer(ModelSerializer):
+class InstanceModificationSerializer(ModelSerializer):
+    files = serializers.SerializerMethodField()
+    possible_fields = serializers.SerializerMethodField()
+    form_descriptor = serializers.SerializerMethodField()
     content_type = serializers.CharField(read_only=True, source="content_type.name")
     diff = serializers.SerializerMethodField()
 
     class Meta:
         model = Modification
-        fields = ["created_at", "content_type", "object_id", "diff", "past_value", "new_value"]
-
-    @extend_schema_field(JsonPatchOperationSerializer(many=True, allow_empty=True))
-    def get_diff(self, obj):
-        past_value = obj.past_value[0].get("fields", None) if obj.past_value else None
-        new_value = obj.new_value[0].get("fields", None) if obj.new_value else None
-        return jsonpatch.JsonPatch.from_diff(past_value, new_value).patch
-
-
-class InstanceModificationSerializer(ModificationSerializer):
-    INSTANCE_SELECT_RELATED = ("form_version",)
-    INSTANCE_PREFETCH_RELATED = ("instancefile_set",)
-
-    files = serializers.SerializerMethodField()
-    possible_fields = serializers.SerializerMethodField()
-    form_descriptor = serializers.SerializerMethodField()
-
-    class Meta(ModificationSerializer.Meta):
-        fields = [*ModificationSerializer.Meta.fields, "files", "possible_fields", "form_descriptor"]
-
-    @classmethod
-    def instance_queryset(cls, queryset):
-        return queryset.select_related(*cls.INSTANCE_SELECT_RELATED).prefetch_related(*cls.INSTANCE_PREFETCH_RELATED)
+        fields = [
+            "created_at",
+            "content_type",
+            "object_id",
+            "diff",
+            "past_value",
+            "new_value",
+            "files",
+            "possible_fields",
+            "form_descriptor",
+        ]
 
     def _get_instance_data(self):
         # files, possible_fields and form_descriptor depend on the Instance, not on each
@@ -65,6 +56,12 @@ class InstanceModificationSerializer(ModificationSerializer):
                 "form_descriptor": form_version.form_descriptor if form_version else None,
             }
         return self.context[cache_key]
+
+    @extend_schema_field(JsonPatchOperationSerializer(many=True, allow_empty=True))
+    def get_diff(self, obj):
+        past_value = obj.past_value[0].get("fields", None) if obj.past_value else None
+        new_value = obj.new_value[0].get("fields", None) if obj.new_value else None
+        return jsonpatch.JsonPatch.from_diff(past_value, new_value).patch
 
     @extend_schema_field(serializers.DictField(child=serializers.URLField()))
     def get_files(self, obj):

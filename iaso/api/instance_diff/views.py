@@ -26,10 +26,13 @@ class InstanceDiffViewSet(CustomPaginationListModelMixin, GenericViewSet):
     http_method_names = ["get"]
     pagination_class = InstanceDiffPaginator
 
+    def instance_queryset(self, queryset):
+        return queryset.select_related("form_version").prefetch_related("instancefile_set")
+
     def get_instance(self):
         if not hasattr(self, "_instance"):
             self._instance = get_object_or_404(
-                InstanceModificationSerializer.instance_queryset(Instance.objects.filter_for_user(self.request.user)),
+                self.instance_queryset(Instance.objects.filter_for_user(self.request.user)),
                 pk=self.kwargs["instance_id"],
             )
         return self._instance

@@ -4,6 +4,8 @@ import uuid
 from unittest import mock
 
 from django.core.files import File
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from rest_framework import status
 
 from iaso import models as m
@@ -562,10 +564,17 @@ class EntityTypeAPITestCase(APITestCase):
         deleted_instance_2.save()
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/mobile/entitytypes/{entity_type.pk}/entities/?app_id={self.project.app_id}")
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get(
+                f"/api/mobile/entitytypes/{entity_type.pk}/entities/?app_id={self.project.app_id}"
+            )
         response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(response_json["count"], 0)  # all entities have their reference instance deleted
+        # `filter_for_mobile_entity` must not force early evaluation of an empty
+        # queryset (e.g. via `if queryset:`), which would add an extra query.
+        self.assertEqual(len(ctx.captured_queries), 4)
 
     def test_entity_types_are_account_restricted(self):
         self.client.force_authenticate(self.yoda)

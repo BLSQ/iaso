@@ -23,6 +23,7 @@ import MESSAGES from '../messages';
 type Message = {
     role: 'user' | 'assistant';
     content: string;
+    id: string;
 };
 
 type Props = {
@@ -145,12 +146,8 @@ export const ChatPanel: FunctionComponent<Props> = ({
                         </Typography>
                     </Box>
                 )}
-                {messages.map((msg, index) => (
-                    <Box
-                        // eslint-disable-next-line react/no-array-index-key
-                        key={index}
-                        sx={styles.messageRow(msg.role)}
-                    >
+                {messages.map(msg => (
+                    <Box key={msg.id} sx={styles.messageRow(msg.role)}>
                         <Box sx={styles.avatar(msg.role)}>
                             {msg.role === 'user' ? (
                                 <PersonIcon sx={{ fontSize: 18 }} />

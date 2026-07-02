@@ -1,4 +1,3 @@
-/* eslint-disable react/no-array-index-key */
 import React, {
     FunctionComponent,
     useCallback,
@@ -208,7 +207,9 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
             <Box px={4} mt={4}>
                 {searches.map((_, searchIndex) => (
                     <Box
-                        key={searchIndex}
+                        /* acceptable here to use index */
+                        /* eslint-disable-next-line react/no-array-index-key */
+                        key={`searchbox-${searchIndex}`}
                         className={
                             searchIndex === currentSearchIndex
                                 ? ''

@@ -13,8 +13,7 @@ export const CustomTick: FunctionComponent<any> = ({ x, y, payload }) => {
             <g transform={`translate(${x},${y})`}>
                 {valuesAsWords.map((word, index) => (
                     <text
-                        // eslint-disable-next-line react/no-array-index-key
-                        key={word + index}
+                        key={word}
                         x={0}
                         y={15 * index}
                         dy={16}

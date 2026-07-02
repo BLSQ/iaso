@@ -58,6 +58,7 @@ const styles: SxStyles = {
 };
 
 type Message = {
+    id: string;
     role: 'user' | 'assistant';
     content: string;
 };
@@ -125,7 +126,11 @@ const FormAI: FunctionComponent = () => {
 
                     setMessages(prev => [
                         ...prev,
-                        { role: 'assistant', content: displayMsg },
+                        {
+                            role: 'assistant',
+                            content: displayMsg,
+                            id: crypto.randomUUID(),
+                        },
                     ]);
 
                     const userCtx =
@@ -158,7 +163,10 @@ const FormAI: FunctionComponent = () => {
     const handleSaveNewVersion = useCallback((result: SaveVersionResponse) => {
         setHasUnsavedChanges(false);
         const msg = `Saved as version ${result.version_id}`;
-        setMessages(prev => [...prev, { role: 'assistant', content: msg }]);
+        setMessages(prev => [
+            ...prev,
+            { role: 'assistant', content: msg, id: crypto.randomUUID() },
+        ]);
     }, []);
 
     const handleSaveNewForm = useCallback(
@@ -169,14 +177,20 @@ const FormAI: FunctionComponent = () => {
             setSelectedFormOption({ id: formId, label: formName });
             setHasUnsavedChanges(false);
             const msg = `Created form "${formName}"`;
-            setMessages(prev => [...prev, { role: 'assistant', content: msg }]);
+            setMessages(prev => [
+                ...prev,
+                { role: 'assistant', content: msg, id: crypto.randomUUID() },
+            ]);
         },
         [],
     );
 
     const handleSendMessage = useCallback(
         (message: string) => {
-            setMessages(prev => [...prev, { role: 'user', content: message }]);
+            setMessages(prev => [
+                ...prev,
+                { role: 'user', content: message, id: crypto.randomUUID() },
+            ]);
 
             sendMessage(
                 {
@@ -191,6 +205,7 @@ const FormAI: FunctionComponent = () => {
                             {
                                 role: 'assistant',
                                 content: data.assistant_message,
+                                id: crypto.randomUUID(),
                             },
                         ]);
                         if (data.conversation_history) {
@@ -212,6 +227,7 @@ const FormAI: FunctionComponent = () => {
                                 content: formatMessage(
                                     MESSAGES.errorGenerating,
                                 ),
+                                id: crypto.randomUUID(),
                             },
                         ]);
                     },

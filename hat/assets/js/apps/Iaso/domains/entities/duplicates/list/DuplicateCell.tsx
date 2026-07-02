@@ -40,11 +40,7 @@ export const DuplicateCell: FunctionComponent<Props> = ({
                 const duplicate = duplicateField[index];
                 const className = field !== duplicate ? classes.diff : '';
                 return (
-                    <p
-                        className={className}
-                        // eslint-disable-next-line react/no-array-index-key
-                        key={`${entity}-${field}-${index}`}
-                    >
+                    <p className={className} key={`${entity}-${field}`}>
                         {convertValueIfDate(field)}
                     </p>
                 );

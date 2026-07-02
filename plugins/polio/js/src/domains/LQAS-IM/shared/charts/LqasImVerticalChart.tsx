@@ -70,11 +70,10 @@ export const LqasImVerticalChart: FunctionComponent<Props> = ({
                                     itemStyle={{ color: 'black' }}
                                 />
                                 <Bar dataKey="value" minPointSize={3}>
-                                    {data.map((_entry, index) => {
+                                    {data.map(entry => {
                                         return (
                                             <Cell
-                                                // eslint-disable-next-line react/no-array-index-key
-                                                key={`cell-${index}`}
+                                                key={`cell-${entry.name}`}
                                                 fill={blue[500]}
                                             />
                                         );

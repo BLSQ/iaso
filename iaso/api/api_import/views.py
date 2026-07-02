@@ -5,10 +5,13 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin
 from rest_framework.response import Response
+from rest_framework_csv.renderers import CSVRenderer
 
 from hat.api_import.models import APIImport
 from iaso.api.api_import.filters import APIImportFilterSet
@@ -19,6 +22,7 @@ from iaso.api.common import CONTENT_TYPE_CSV
 from iaso.models import Project
 
 
+@extend_schema(tags=["API import"])
 class APIImportViewSet(viewsets.GenericViewSet, ListModelMixin):
     CSV_HEADER_COLUMNS = [
         "Created At",
@@ -55,6 +59,7 @@ class APIImportViewSet(viewsets.GenericViewSet, ListModelMixin):
             )
         return queryset
 
+    @extend_schema(responses={200: APIImportFilterSerializer})
     @action(methods=["GET"], detail=False)
     def filters(self, request):
         queryset = APIImport.objects
@@ -76,7 +81,8 @@ class APIImportViewSet(viewsets.GenericViewSet, ListModelMixin):
             ).data
         )
 
-    @action(detail=False, methods=["get"])
+    @extend_schema(responses={200: OpenApiTypes.BINARY})
+    @action(detail=False, methods=["get"], renderer_classes=[CSVRenderer])
     def export_to_csv(self, request):
         filename = "%s--%s" % ("api_imports", datetime.now().strftime("%Y-%m-%d"))
 
@@ -89,10 +95,10 @@ class APIImportViewSet(viewsets.GenericViewSet, ListModelMixin):
         for api_import in filtered_request.iterator(chunk_size=20):
             row = [
                 api_import.created_at.strftime("%Y-%m-%d"),
-                api_import.user.id,
-                api_import.user.username,
-                api_import.user.first_name,
-                api_import.user.last_name,
+                api_import.user.id if api_import.user else None,
+                api_import.user.username if api_import.user else None,
+                api_import.user.first_name if api_import.user else None,
+                api_import.user.last_name if api_import.user else None,
                 api_import.import_type,
                 api_import.json_body,
                 api_import.headers,

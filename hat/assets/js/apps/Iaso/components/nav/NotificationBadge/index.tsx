@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useRef, useState } from 'react';
+import React, { FunctionComponent, useCallback, useRef, useState } from 'react';
 import { NotificationImportant } from '@mui/icons-material';
 import {
     ClickAwayListener,
@@ -11,7 +11,6 @@ import {
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useRedirectToReplace } from 'bluesquare-components';
-import { RedirectFn } from 'bluesquare-components/dist/types/Routing/redirections';
 import moment from 'moment';
 import { useGetNotifications } from 'Iaso/components/nav/NotificationBadge/hooks/requests';
 import { baseUrls } from 'Iaso/constants/urls';
@@ -28,21 +27,20 @@ const styles = theme => ({
 
 const useStyles = makeStyles(styles);
 
-const onAPIImportClicked = (redirectToReplace: RedirectFn) => {
-    const fromDate = new Date();
-    fromDate.setDate(fromDate.getDate() - 30);
-    redirectToReplace(baseUrls.adminApiImport, {
-        hasProblem: 'true',
-        fromDate: moment(fromDate).format(dateFormat),
-    });
-};
-
 export const NotificationBadge: FunctionComponent = () => {
     const [open, setOpen] = useState(false);
     const anchorRef = useRef<HTMLDivElement>(null);
     const classes = useStyles();
     const { data, isFetching } = useGetNotifications();
     const redirectToReplace = useRedirectToReplace();
+    const onAPIImportClicked = useCallback(() => {
+        const fromDate = new Date();
+        fromDate.setDate(fromDate.getDate() - 30);
+        redirectToReplace(baseUrls.adminApiImport, {
+            hasProblem: 'true',
+            fromDate: moment(fromDate).format(dateFormat),
+        });
+    }, [redirectToReplace]);
     if (isFetching || data?.length == 0) {
         return <></>;
     }
@@ -54,6 +52,7 @@ export const NotificationBadge: FunctionComponent = () => {
         ) != null
             ? 'error'
             : 'inherit';
+
     return (
         <>
             <IconButton
@@ -101,9 +100,7 @@ export const NotificationBadge: FunctionComponent = () => {
                                                     notification.type ==
                                                     'APIIMPORT'
                                                 ) {
-                                                    onAPIImportClicked(
-                                                        redirectToReplace,
-                                                    );
+                                                    onAPIImportClicked();
                                                 }
                                             }}
                                         >

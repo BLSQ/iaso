@@ -14,7 +14,7 @@ class UserNestedSerializer(serializers.ModelSerializer):
 
 
 class APIImportSerializer(serializers.ModelSerializer):
-    user = UserNestedSerializer(read_only=True)
+    user = UserNestedSerializer(read_only=True, allow_null=True)
     headers = serializers.SerializerMethodField(method_name="get_headers")
     created_at = TimestampField(read_only=True)
 

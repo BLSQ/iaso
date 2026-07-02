@@ -7,15 +7,13 @@ import {
     LoadingSpinner,
     useSafeIntl,
 } from 'bluesquare-components';
+import { useApiApiImportList } from 'Iaso/api/apiImports/';
 import DownloadButtonsComponent from 'Iaso/components/DownloadButtonsComponent';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { Filters } from 'Iaso/domains/apiimports/components/Filters';
 import { baseUrl, useColumns } from 'Iaso/domains/apiimports/config';
-import {
-    paramsToApiParams,
-    useGetApiImports,
-} from 'Iaso/domains/apiimports/hooks/requests';
+import { paramsToApiParams } from 'Iaso/domains/apiimports/hooks/requests';
 import MESSAGES from 'Iaso/domains/apiimports/messages';
 import { Params } from 'Iaso/domains/apiimports/types/filters';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
@@ -28,8 +26,7 @@ export const ApiImports: FunctionComponent = () => {
     const params = useParamsObject(baseUrl) as unknown as Params;
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-
-    const { data, isFetching } = useGetApiImports(params);
+    const { data, isFetching } = useApiApiImportList(paramsToApiParams(params));
     const columns = useColumns();
 
     const csv_params = useMemo(() => paramsToApiParams(params), [params]);

@@ -3,8 +3,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import { Button, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import { useApiApiImportFiltersRetrieve } from 'Iaso/api/apiImports';
 import DatesRange from 'Iaso/components/filters/DatesRange';
-import { useGetApiImportsFilters } from 'Iaso/domains/apiimports/hooks/requests';
 import { Params } from 'Iaso/domains/apiimports/types/filters';
 import { useFilterState } from 'Iaso/hooks/useFilterState';
 import { DropdownOptions } from 'Iaso/types/utils';
@@ -38,7 +38,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl: baseUrl, params });
 
-    const { data, isFetching } = useGetApiImportsFilters();
+    const { data, isFetching } = useApiApiImportFiltersRetrieve();
     const appIds = useMemo(() => listAsOptions(data?.app_ids), [data]);
     const appVersions = useMemo(
         () => listAsOptions(data?.app_versions),

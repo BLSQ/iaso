@@ -23,6 +23,17 @@ const useStyles = makeStyles(theme => ({
         marginBottom: 0,
         position: 'relative',
     },
+    legendSwatch: {
+        width: 16,
+        height: 4,
+        borderRadius: 1,
+    },
+    legendSwatchOld: {
+        backgroundColor: theme.palette.error.main,
+    },
+    legendSwatchNew: {
+        backgroundColor: theme.palette.success.main,
+    },
 }));
 
 type Props = {
@@ -60,12 +71,7 @@ export const CompareGeoJsonMap: FunctionComponent<Props> = ({
                     {oldLabel && (
                         <Box display="flex" alignItems="center" gap={0.5}>
                             <Box
-                                sx={{
-                                    width: 16,
-                                    height: 4,
-                                    bgcolor: theme.palette.error.main,
-                                    borderRadius: 1,
-                                }}
+                                className={`${classes.legendSwatch} ${classes.legendSwatchOld}`}
                             />
                             <Typography variant="caption">
                                 {oldLabel}
@@ -75,12 +81,7 @@ export const CompareGeoJsonMap: FunctionComponent<Props> = ({
                     {newLabel && (
                         <Box display="flex" alignItems="center" gap={0.5}>
                             <Box
-                                sx={{
-                                    width: 16,
-                                    height: 4,
-                                    bgcolor: theme.palette.success.main,
-                                    borderRadius: 1,
-                                }}
+                                className={`${classes.legendSwatch} ${classes.legendSwatchNew}`}
                             />
                             <Typography variant="caption">
                                 {newLabel}

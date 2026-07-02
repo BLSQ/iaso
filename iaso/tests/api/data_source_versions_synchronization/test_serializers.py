@@ -252,7 +252,7 @@ class CreateJsonDiffParametersSerializerTestCase(TestCase):
             # Options.
             "ignore_groups": True,
             "show_deleted_org_units": False,
-            "field_names": ["name", "parent", "opening_date", "closed_date"],
+            "field_names": ["name", "parent", "opening_date", "closed_date", "code"],
         }
         serializer = CreateJsonDiffParametersSerializer(
             data=json_diff_params, context={"data_source_versions_synchronization": self.data_source_sync}
@@ -280,13 +280,14 @@ class CreateJsonDiffParametersSerializerTestCase(TestCase):
         # Options.
         self.assertEqual(data["ignore_groups"], True)
         self.assertEqual(data["show_deleted_org_units"], False)
-        self.assertEqual(len(data["field_names"]), 4)
+        self.assertEqual(len(data["field_names"]), 5)
         self.assertIn("name", data["field_names"])
         self.assertIn("parent", data["field_names"])
         self.assertIn("opening_date", data["field_names"])
         self.assertIn("closed_date", data["field_names"])
+        self.assertIn("code", data["field_names"])
 
-    def test_deserialize_error_code_in_field_names(self):
+    def test_deserialize_error_unknown_field_in_field_names(self):
         json_diff_params = {
             # Version to update.
             "source_version_to_update_validation_status": OrgUnit.VALIDATION_NEW,
@@ -310,7 +311,7 @@ class CreateJsonDiffParametersSerializerTestCase(TestCase):
                 "opening_date",
                 "closed_date",
                 "code",
-                "not_a_valid_field",  # this one is invalid
+                "unknown_field",  # this one is invalid
             ],
         }
         serializer = CreateJsonDiffParametersSerializer(
@@ -318,7 +319,7 @@ class CreateJsonDiffParametersSerializerTestCase(TestCase):
         )
 
         self.assertFalse(serializer.is_valid())
-        self.assertIn("not_a_valid_field", serializer.errors["field_names"][0])
+        self.assertIn("unknown_field", serializer.errors["field_names"][0])
 
     def test_validate_source_version_to_update_top_org_unit(self):
         json_diff_params = {

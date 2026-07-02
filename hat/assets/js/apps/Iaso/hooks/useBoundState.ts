@@ -12,7 +12,6 @@ export const useBoundState = <T>(
         if (!isEqual(value, boundValue)) {
             setValue(boundValue);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [boundValue]);
+    }, [boundValue, value]);
     return [value, setValue];
 };

@@ -39,6 +39,8 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
         )
 
         cls.data_source = m.DataSource.objects.create(name="Data source")
+        cls.project = m.Project.objects.create(name="Project1", account=cls.account)
+        cls.project.data_sources.add(cls.data_source)
         cls.source_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
         cls.source_2 = m.SourceVersion.objects.create(data_source=cls.data_source, number=2)
         cls.source_3 = m.SourceVersion.objects.create(data_source=cls.data_source, number=3)
@@ -133,7 +135,7 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
             "source_version_to_compare_with": self.source_3.pk,
         }
         response = self.client.post("/api/datasources/sync/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 201, response.data)
 
         data_source_sync = m.DataSourceVersionsSynchronization.objects.get(id=response.data["id"])
         self.assertEqual(data_source_sync.name, "Foo synchronization")

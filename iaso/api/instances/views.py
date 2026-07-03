@@ -66,6 +66,7 @@ from iaso.models import (
 )
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.forms import CR_MODE_IF_REFERENCE_FORM
+from iaso.models.instances import resolve_status_form_ids
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_STORAGE_PERMISSION
 from iaso.utils.date_and_time import timestamp_to_datetime
 from iaso.utils.models.common import check_instance_bulk_gps_push, check_instance_reference_bulk_link, get_creator_name
@@ -614,6 +615,9 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response({"res": "ok"})
 
     def retrieve(self, request, pk=None):
+        # Cheap lookup by pk to know which form the instance belongs to, so with_status() can skip the
+        # (expensive on large datasets) duplicates computation when that form isn't single_per_period.
+        form_id = Instance.objects.filter(pk=pk).values_list("form_id", flat=True).first()
         queryset = (
             self.get_queryset()
             .prefetch_related(
@@ -631,7 +635,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 "org_unit__org_unit_type",
                 "org_unit__version__data_source__credentials",
             )
-            .with_status()
+            .with_status(form_ids=resolve_status_form_ids(form_id))
         )
         instance: Instance = get_object_or_404(queryset, pk=pk)
         self.check_object_permissions(request, instance)

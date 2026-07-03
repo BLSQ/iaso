@@ -859,7 +859,10 @@ class InstancesAPITestCase(TaskAPITestCase):
 
         instance = self.create_form_instance(form=self.form_1, org_unit=parent, project=self.project)
 
-        with self.assertNumQueries(17):
+        # 19, not 17: retrieve() now spends one extra query fetching the instance's form_id upfront, and
+        # with_status() spends another checking whether that form is single_per_period, to be able to skip
+        # the (expensive on large datasets) duplicates computation otherwise.
+        with self.assertNumQueries(19):
             response = self.client.get(f"/api/instances/{instance.id}/")
         self.assertEqual(response.status_code, 200)
 
@@ -1338,7 +1341,9 @@ class InstancesAPITestCase(TaskAPITestCase):
             org_unit=self.jedi_council_corruscant, instance=self.instance_1, form=self.form_1
         )
 
-        with self.assertNumQueries(10):
+        # 11, not 10: with_status() now spends one extra query checking whether the filtered-in form(s) are
+        # single_per_period, to be able to skip the (expensive on large datasets) duplicates computation otherwise.
+        with self.assertNumQueries(11):
             response = self.client.get(
                 f"/api/instances/?form_ids={self.instance_1.form.id}&csv=true", headers={"Content-Type": "text/csv"}
             )

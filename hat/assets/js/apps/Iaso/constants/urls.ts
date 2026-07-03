@@ -505,7 +505,24 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     missions: {
         url: 'planning/missions',
-        params: ['accountId', 'search', 'missionType', ...paginationPathParams],
+        params: [
+            'accountId',
+            'search',
+            'mission_type',
+            ...paginationPathParams,
+        ],
+    },
+    missionsDetails: {
+        url: 'planning/missions/detail',
+        params: ['accountId', 'id'],
+    },
+    missionsEdit: {
+        url: 'planning/missions/edit',
+        params: ['accountId', 'id'],
+    },
+    missionsCreate: {
+        url: 'planning/missions/create',
+        params: ['accountId'],
     },
     assignments: {
         url: 'planning/assignments',
@@ -799,6 +816,10 @@ type IasoBaseUrls = {
     validationWorkflowsConfiguration: string;
     validationWorkflowsConfigurationDetail: string;
     validationWorkflowInstances: string;
+    missions: string;
+    missionsDetails: string;
+    missionsEdit: string;
+    missionsCreate: string;
 };
 
 export const baseUrls = extractUrls(baseRouteConfigs) as IasoBaseUrls;

@@ -25,6 +25,18 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Forms',
         id: 'iaso.forms.title',
     },
+    formsNumber: {
+        defaultMessage: 'Number of forms',
+        id: 'iaso.formsNumber.title',
+    },
+    generalInfoTitle: {
+        defaultMessage: 'Information',
+        id: 'iaso.missions.title.generalInfoTitle',
+    },
+    alertSelectMissionType: {
+        defaultMessage: 'Please select a mission type',
+        id: 'iaso.missions.alert.selectMissionType',
+    },
     orgUnitType: {
         defaultMessage: 'Org unit type',
         id: 'iaso.missions.label.orgUnitType',
@@ -49,18 +61,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.deleteWarning',
         defaultMessage: 'Are you sure you want to delete {name}?',
     },
-    FORM_FILLING: {
-        defaultMessage: 'Form Filling',
-        id: 'iaso.missions.type.formFilling',
-    },
-    ORG_UNIT_AND_FORM: {
-        defaultMessage: 'Org Unit and Form',
-        id: 'iaso.missions.type.orgUnitAndForm',
-    },
-    ENTITY_AND_FORM: {
-        defaultMessage: 'Entity and Form',
-        id: 'iaso.missions.type.entityAndForm',
-    },
     created_at: {
         id: 'iaso.label.created_at',
         defaultMessage: 'Created',
@@ -68,6 +68,10 @@ const MESSAGES = defineMessages({
     createMission: {
         id: 'iaso.missions.label.createMission',
         defaultMessage: 'Create mission',
+    },
+    detailMissionLabel: {
+        id: 'iaso.missions.label.detailMissionLabel',
+        defaultMessage: 'Mission details',
     },
     editMission: {
         id: 'iaso.missions.label.editMission',
@@ -100,6 +104,14 @@ const MESSAGES = defineMessages({
     max: {
         id: 'iaso.missions.label.max',
         defaultMessage: 'Max',
+    },
+    view: {
+        defaultMessage: 'View',
+        id: 'iaso.label.view',
+    },
+    edit: {
+        defaultMessage: 'Edit',
+        id: 'iaso.label.edit',
     },
 });
 

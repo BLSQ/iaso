@@ -22,13 +22,13 @@ class NestedMissionFormThroughFormCreateSerializer(ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if getattr(self.context.get("request", None), "user", None):
-            self.fields["form"].queryset = Form.objects.filter_on_user_projects(self.context["request"].user)
+            self.fields["form"].queryset = Form.objects.filter_for_user_and_app_id(self.context["request"].user)
 
     def set_context(self, context):
         # method to trigger again the queryset computation
         self.context.update(context)
         if getattr(self.context.get("request", None), "user", None):
-            self.fields["form"].queryset = Form.objects.filter_on_user_projects(self.context["request"].user)
+            self.fields["form"].queryset = Form.objects.filter_for_user_and_app_id(self.context["request"].user)
 
     def validate(self, attrs):
         min_val = attrs.get("min_cardinality", 0)
@@ -55,6 +55,14 @@ class MissionFormCreateSerializer(ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["forms"].child.set_context(self.context)
+
+    def validate_forms(self, forms):
+        form_ids = [item["form"].pk for item in forms]
+
+        if len(form_ids) != len(set(form_ids)):
+            raise serializers.ValidationError(_("Each form may only be specified once."))
+
+        return forms
 
     @transaction.atomic
     def create(self, validated_data):

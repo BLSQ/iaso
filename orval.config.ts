@@ -108,5 +108,6 @@ module.exports = {
     accounts: createConfig('accounts', ['Account'], accountsMutationInvalidates),
     accountFeatureFlags: createConfig('accountFeatureFlags', ['Account feature flags']),
     modules: createConfig('modules', ["Modules"]),
+    missions: createConfig("missions", ['Missions']),
     validationWorkflows: createConfig('validationWorkflows', ['Validation workflows'], validationWorkflowsMutationInvalidates),
 };

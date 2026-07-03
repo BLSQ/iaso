@@ -138,6 +138,12 @@ class MissionEntityType(Mission):
 
     entity_type = models.ForeignKey("EntityType", on_delete=models.PROTECT, related_name="mission_entity_type")
     forms = models.ManyToManyField("Form", related_name="mission_entities", through=MissionEntityTypeThroughForm)
+    min_cardinality = models.PositiveIntegerField(
+        default=1, help_text="Minimum number of times this form should be filled"
+    )
+    max_cardinality = models.PositiveIntegerField(
+        null=True, blank=True, help_text="Maximum number of times this form can be filled (null = unlimited)"
+    )
 
     def get_assignments(self):
         raise NotImplementedError

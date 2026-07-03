@@ -9,8 +9,20 @@ from iaso.models.microplanning import MissionOrgUnitType
 from iaso.models.microplanning.missions import MissionOrgUnitTypeThroughForm
 
 
+class OrgUnitTypeScopedFormField(serializers.PrimaryKeyRelatedField):
+    def get_queryset(self):
+        if getattr(self.context.get("request", None), "user", None):
+            queryset = Form.objects.filter_on_user_projects(self.context["request"].user)
+
+        org_unit_type_pk = self.parent.parent.initial_data.get("org_unit_type")
+        if org_unit_type_pk:
+            queryset = queryset.filter(org_unit_type_id=org_unit_type_pk)
+
+        return queryset
+
+
 class NestedMissionOrgUnitTypeThroughFormCreateSerializer(ModelSerializer):
-    form = serializers.PrimaryKeyRelatedField(queryset=Form.objects.none(), write_only=True)
+    form = OrgUnitTypeScopedFormField(queryset=Form.objects.none(), write_only=True)
 
     class Meta:
         model = MissionOrgUnitTypeThroughForm
@@ -73,6 +85,8 @@ class MissionOrgUnitTypeCreateSerializer(ModelSerializer):
             self.fields["org_unit_type"].queryset = OrgUnitType.objects.filter_for_user_and_app_id(
                 self.context["request"].user
             )
+
+            self.fields["forms"].child.set_context(self.context)
 
     def validate(self, attrs):
         min_val = attrs.get("min_cardinality", 0)

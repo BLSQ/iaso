@@ -9,9 +9,9 @@ class BaseMissionPolymorphicSerializer(PolymorphicSerializer):
 
     def to_resource_type(self, model_or_instance):
         if isinstance(model_or_instance, type):
-            return model_or_instance.MISSION_TYPE
+            return str(model_or_instance.MISSION_TYPE)
 
-        return model_or_instance.mission_type
+        return str(model_or_instance.mission_type)
 
     def to_representation(self, instance):
         if isinstance(instance, Mapping):

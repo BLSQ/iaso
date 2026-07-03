@@ -545,6 +545,16 @@ SPECTACULAR_SETTINGS = {
     },
     "DISABLE_ERRORS_AND_WARNINGS": env.bool("DRF_SPECTACULAR_DISABLE_ERRORS_AND_WARNINGS", default=True),
     "COMPONENT_SPLIT_REQUEST": True,
+    "ENUM_NAME_OVERRIDES": {"MissionTypeEnum": "iaso.models.microplanning.MissionType"},
+    # 'APPEND_COMPONENTS': {
+    #     'schemas': {
+    #         'MissionType': {
+    #             'type': 'string',
+    #             'enum': ['FORM_FILLING', 'ORG_UNIT_AND_FORM', 'ENTITY_AND_FORM'],
+    #             'description': '* `FORM_FILLING` - Form Filling\n* `ORG_UNIT_AND_FORM` - Org Unit and Form\n* `ENTITY_AND_FORM` - Entity and Form'
+    #         }
+    #     }
+    # }
 }
 
 REST_FRAMEWORK_SERIALIZER_FIELDS_MAPPINGS = {

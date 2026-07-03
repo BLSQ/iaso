@@ -1,40 +1,17 @@
-import React, { FunctionComponent, ReactNode } from 'react';
+import React, { FunctionComponent } from 'react';
 import { Done } from '@mui/icons-material';
 import CloseIcon from '@mui/icons-material/Close';
-import { Table, TableBody, TableRow, TableCell } from '@mui/material';
+import { Table, TableBody } from '@mui/material';
 import { TablePropsSizeOverrides } from '@mui/material/Table/Table';
-import { makeStyles } from '@mui/styles';
 import { OverridableStringUnion } from '@mui/types/esm';
 import { useSafeIntl } from 'bluesquare-components';
 
 import moment from 'moment';
+import { PaperTableRow } from 'Iaso/components/tables/PaperTableRow';
 import { APIImport } from 'Iaso/domains/apiimports/types/apiimport';
 import { textOrPlaceholder } from 'Iaso/domains/apiimports/utils';
 import getDisplayName from 'Iaso/utils/usersUtils';
 import MESSAGES from '../messages';
-
-const useStyles = makeStyles(theme => ({
-    leftCell: {
-        // @ts-ignore
-        borderRight: `1px solid ${theme.palette.ligthGray.border}`,
-        fontWeight: 'bold',
-    },
-}));
-
-type RowProps = {
-    label: string;
-    value?: string | ReactNode;
-};
-
-const Row: FunctionComponent<RowProps> = ({ label, value }) => {
-    const classes = useStyles();
-    return (
-        <TableRow>
-            <TableCell className={classes.leftCell}>{label}</TableCell>
-            <TableCell>{value}</TableCell>
-        </TableRow>
-    );
-};
 
 type Props = {
     apiImport: APIImport;
@@ -50,7 +27,7 @@ export const APIImportBaseInfo: FunctionComponent<Props> = ({
         <>
             <Table size={size} data-test="api-import-base-info">
                 <TableBody>
-                    <Row
+                    <PaperTableRow
                         label={formatMessage(MESSAGES.is_successful)}
                         value={
                             <>
@@ -63,23 +40,23 @@ export const APIImportBaseInfo: FunctionComponent<Props> = ({
                             </>
                         }
                     />
-                    <Row
+                    <PaperTableRow
                         label={formatMessage(MESSAGES.created_at)}
                         value={moment.unix(apiImport.created_at).format('LTS')}
                     />
-                    <Row
+                    <PaperTableRow
                         label={formatMessage(MESSAGES.user)}
                         value={getDisplayName(apiImport.user)}
                     />
-                    <Row
+                    <PaperTableRow
                         label={formatMessage(MESSAGES.import_type)}
                         value={apiImport.import_type}
                     />
-                    <Row
+                    <PaperTableRow
                         label={formatMessage(MESSAGES.app_id)}
                         value={textOrPlaceholder(apiImport.app_id)}
                     />
-                    <Row
+                    <PaperTableRow
                         label={formatMessage(MESSAGES.app_version)}
                         value={textOrPlaceholder(apiImport.app_version)}
                     />

@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
-import { Button, Grid } from '@mui/material';
+import { Box, Button, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { useApiApiImportFiltersRetrieve } from 'Iaso/api/apiImports';
@@ -81,92 +81,92 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     );
 
     return (
-        <Grid container spacing={2}>
-            <Grid item xs={12} sm={4} md={2}>
-                <InputComponent
-                    keyValue="appId"
-                    onChange={(_key, value) => handleChange('appId', value)}
-                    value={filters.appId}
-                    type="select"
-                    options={appIds}
-                    label={MESSAGES.app_id}
-                    onEnterPressed={handleSearch}
-                    onErrorChange={setTextSearchError}
-                    loading={isFetching}
-                />
+        <>
+            <Grid container spacing={2}>
+                <Grid item xs={12} sm={4} md={2}>
+                    <InputComponent
+                        keyValue="appId"
+                        onChange={(_key, value) => handleChange('appId', value)}
+                        value={filters.appId}
+                        type="select"
+                        options={appIds}
+                        label={MESSAGES.app_id}
+                        onEnterPressed={handleSearch}
+                        onErrorChange={setTextSearchError}
+                        loading={isFetching}
+                    />
+                    <InputComponent
+                        keyValue="hasProblem"
+                        onChange={(_key, value) =>
+                            handleChange('hasProblem', value)
+                        }
+                        value={filters.hasProblem}
+                        type="select"
+                        label={MESSAGES.has_problem}
+                        onEnterPressed={handleSearch}
+                        options={yesNoOptions}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={4} md={2}>
+                    <InputComponent
+                        keyValue="appVersion"
+                        onChange={(_key, value) =>
+                            handleChange('appVersion', value)
+                        }
+                        value={filters.appVersion}
+                        type="select"
+                        options={appVersions}
+                        loading={isFetching}
+                        label={MESSAGES.app_version}
+                        onEnterPressed={handleSearch}
+                        onErrorChange={setTextSearchError}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={4} md={2}>
+                    <InputComponent
+                        keyValue="userId"
+                        onChange={(_key, value) =>
+                            handleChange('userId', value)
+                        }
+                        value={filters.userId}
+                        type="select"
+                        options={users}
+                        loading={isFetching}
+                        label={MESSAGES.user}
+                        onEnterPressed={handleSearch}
+                        onErrorChange={setTextSearchError}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={4} md={2}>
+                    <InputComponent
+                        keyValue="importType"
+                        onChange={(_key, value) =>
+                            handleChange('importType', value)
+                        }
+                        value={filters.importType}
+                        type="select"
+                        label={MESSAGES.import_type}
+                        onEnterPressed={handleSearch}
+                        options={typeOptions}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6} md={4}>
+                    <DatesRange
+                        onChangeDate={handleChange}
+                        dateFrom={filters.fromDate}
+                        dateTo={filters.toDate}
+                        keyDateFrom="fromDate"
+                        keyDateTo="toDate"
+                    />
+                </Grid>
             </Grid>
-            <Grid item xs={12} sm={4} md={2}>
-                <InputComponent
-                    keyValue="appVersion"
-                    onChange={(_key, value) =>
-                        handleChange('appVersion', value)
-                    }
-                    value={filters.appVersion}
-                    type="select"
-                    options={appVersions}
-                    loading={isFetching}
-                    label={MESSAGES.app_version}
-                    onEnterPressed={handleSearch}
-                    onErrorChange={setTextSearchError}
-                />
-            </Grid>
-            <Grid item xs={12} sm={4} md={2}>
-                <InputComponent
-                    keyValue="userId"
-                    onChange={(_key, value) => handleChange('userId', value)}
-                    value={filters.userId}
-                    type="select"
-                    options={users}
-                    loading={isFetching}
-                    label={MESSAGES.user}
-                    onEnterPressed={handleSearch}
-                    onErrorChange={setTextSearchError}
-                />
-            </Grid>
-            <Grid item xs={12} sm={4} md={2}>
-                <InputComponent
-                    keyValue="importType"
-                    onChange={(_key, value) =>
-                        handleChange('importType', value)
-                    }
-                    value={filters.importType}
-                    type="select"
-                    label={MESSAGES.import_type}
-                    onEnterPressed={handleSearch}
-                    options={typeOptions}
-                />
-            </Grid>
-            <Grid item xs={12} sm={4} md={2}>
-                <InputComponent
-                    keyValue="hasProblem"
-                    onChange={(_key, value) =>
-                        handleChange('hasProblem', value)
-                    }
-                    value={filters.hasProblem}
-                    type="select"
-                    label={MESSAGES.has_problem}
-                    onEnterPressed={handleSearch}
-                    options={yesNoOptions}
-                />
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-                <DatesRange
-                    onChangeDate={handleChange}
-                    dateFrom={filters.fromDate}
-                    dateTo={filters.toDate}
-                    keyDateFrom="fromDate"
-                    keyDateTo="toDate"
-                />
-            </Grid>
-
-            <Grid
-                item
-                xs={12}
-                sm={6}
-                md={6}
-                container
-                justifyContent="flex-end"
-                alignItems="center"
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                    mb: 2,
+                }}
             >
                 <Button
                     data-test="search-button"
@@ -179,8 +179,8 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     <SearchIcon className={classes.buttonIcon} />
                     {formatMessage(MESSAGES.search)}
                 </Button>
-            </Grid>
-        </Grid>
+            </Box>
+        </>
     );
 };
 

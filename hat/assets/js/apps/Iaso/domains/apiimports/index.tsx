@@ -41,7 +41,7 @@ export const ApiImports: FunctionComponent = () => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={params} />
-                <Box mb={2} display="flex" justifyContent="flex-end">
+                <Box display="flex" justifyContent="flex-end">
                     <DownloadButtonsComponent csvUrl={csv_url} />
                 </Box>
                 <TableWithDeepLink
@@ -54,6 +54,7 @@ export const ApiImports: FunctionComponent = () => {
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}
                     params={params}
+                    marginTop={false}
                 />
             </Box>
         </>

@@ -122,7 +122,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
         useGetGroupDropdown(
             { projectIds: currentForm.project_ids.value.join(',') },
             // we only want to fetch the groups if the project ids are set, project ids is a required field
-            Boolean(currentForm.project_ids?.value?.length)
+            Boolean(currentForm.project_ids?.value?.length),
         );
     useEffect(() => {
         if (
@@ -329,9 +329,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                             options={allOrgUnitGroups || []}
                             label={MESSAGES.orgUnitsGroups}
                             loading={isOuGroupLoading}
-                            disabled={
-                                !currentForm.project_ids?.value?.length
-                            }
+                            disabled={!currentForm.project_ids?.value?.length}
                         />
                     </InputWithInfos>
                     <ValidationWorkflowDropdown
@@ -448,7 +446,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                         <Grid item>
                             <LinkWithLocation
                                 className={classes.linkWithIcon}
-                                to={`/${baseUrls.instances}/formIds/${currentForm.id.value}/tab/list`}
+                                to={`/${baseUrls.instances}/formIds/${currentForm.id.value}/tab/list/isSearchActive/true`}
                             >
                                 <FormatListBulleted />
                                 {formatMessage(MESSAGES.records)}

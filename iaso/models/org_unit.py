@@ -10,6 +10,7 @@ import django_cte
 
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.gis.db.models.fields import MultiPolygonField, PointField
+from django.contrib.gis.geos import MultiPolygon as GEOSMultiPolygon
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.indexes import GinIndex, GistIndex
 from django.core.exceptions import ValidationError
@@ -894,8 +895,6 @@ class OrgUnitChangeRequest(SoftDeletableModel):
                 self.org_unit.groups.clear()
                 self.org_unit.groups.add(*self.new_groups.all())
             elif field_name == "new_geom":
-                from django.contrib.gis.geos import MultiPolygon as GEOSMultiPolygon
-
                 self.org_unit.geom = self.new_geom
                 if self.new_geom is not None:
                     simplified = self.new_geom.simplify(tolerance=0.001, preserve_topology=True)

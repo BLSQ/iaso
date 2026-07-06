@@ -94,8 +94,6 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
         "opening_date",
         "closing_date",
         "location",
-        "geom",
-        "code",
         "org_unit_type",
         "parent_type",
         "editable_reference_forms",

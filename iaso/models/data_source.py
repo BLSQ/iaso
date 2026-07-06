@@ -185,7 +185,7 @@ class DataSourceVersionsSynchronization(models.Model):
         ["name", "parent", "opening_date", "closed_date", "groups","geometry", "code"]
 
     The two versions may belong to the same data source (e.g. comparing two
-    successive imports of the same DHIS2 instance) or to different data sources
+    successive imports of the same DHIS2 instance) or two different data sources
     (e.g. merging data from multiple authoritative sources into a single reference
     pyramid). Org units are matched across versions by their `source_ref` value.
 

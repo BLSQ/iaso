@@ -724,3 +724,17 @@ class ValidationWorkflowInstanceAPIRetrieveTestCaseResubmissionWithNextByPass(Sw
         res = self.client.get(reverse("validation_workflow_instances-detail", kwargs={"pk": instance.pk}))
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertEqual(res_data, {"total_steps": 0, "validation_status": "", "submissions": []})
+
+    def test_should_not_see_result_if_validation_workflow_is_soft_deleted(self):
+        ValidationWorkflowEngine.start(self.validation_workflow, self.john_wick, self.instance)
+
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.get(reverse("validation_workflow_instances-detail", kwargs={"pk": self.instance.pk}))
+        self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.validation_workflow.delete()
+        self.validation_workflow.refresh_from_db()
+        self.assertIsNotNone(self.validation_workflow.deleted_at)
+
+        res = self.client.get(reverse("validation_workflow_instances-detail", kwargs={"pk": self.instance.pk}))
+        res_data = self.assertJSONResponse(res, status.HTTP_404_NOT_FOUND)

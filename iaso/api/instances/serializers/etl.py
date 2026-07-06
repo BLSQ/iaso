@@ -28,12 +28,14 @@ class ETLInstanceListSerializer(ModelSerializer):
     file_content = serializers.SerializerMethodField()
     file_url = serializers.SerializerMethodField()
     history = serializers.SerializerMethodField()
+    workflow_deprecated = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Instance
         fields = [
             "id",
             "general_validation_status",
+            "workflow_deprecated",
             "file_url",
             "file_content",
             "history",

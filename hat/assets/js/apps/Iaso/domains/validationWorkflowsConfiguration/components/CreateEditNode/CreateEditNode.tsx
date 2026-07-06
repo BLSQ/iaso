@@ -44,7 +44,8 @@ export const CreateEditNode: FunctionComponent<Props> = ({
     const { data: node } = useGetNode({ nodeSlug, workflowSlug });
     const { data: userRoles, isFetching: isLoadingRoles } =
         useGetUserRolesDropDown();
-    const { mutateAsync: save } = useSaveNode();
+
+    const { mutateAsync: save } = useSaveNode(node?.slug);
     const validationSchema = useNodeValidation();
     const formik = useFormik<NodeFormValues>({
         initialValues: {

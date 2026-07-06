@@ -1,3 +1,4 @@
+import json
 import tempfile
 
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
@@ -5,7 +6,12 @@ from django.db import connection
 
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION, CORE_ORG_UNITS_READ_PERMISSION
-from iaso.tests.utils_parquet import BaseAPITransactionTestCase, compare_or_create_snapshot, write_response_to_file
+from iaso.tests.utils_parquet import (
+    BaseAPITransactionTestCase,
+    compare_or_create_snapshot,
+    read_parquet,
+    write_response_to_file,
+)
 
 
 # use BaseAPITransactionTestCase to make records are visible to duckdb (committed)
@@ -243,7 +249,7 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
 
         self.client.force_authenticate(self.yoda)
 
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(4):  # +1 for the groups_exploded pre-query included in :all
             response = self.client.get("/api/orgunits/?order=id&parquet=true&extra_fields=:all")
 
             self.assertEqual(response.status_code, 200)
@@ -284,13 +290,93 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
                     stable_columns,
                 )
 
+    def test_can_retrieve_org_units_with_groups_exploded(self):
+        """groups_exploded adds one binary column per group that has any org unit in the selection"""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get("/api/orgunits/?order=id&parquet=true&extra_fields=groups_exploded")
+
+        self.assertEqual(response.status_code, 200)
+        self.assert_parquet_content_type(response)
+
+        with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
+            write_response_to_file(response, f)
+            rows = read_parquet(f)
+
+        # Only elite_group is linked to an org unit -- id + normalized name
+        expected_col = f"group_{self.elite_group.id}_elite_councils"
+        self.assertIn(expected_col, rows[0].keys())
+        # unofficial_group and another_group have no linked org units → no column
+        self.assertNotIn(f"group_{self.unofficial_group.id}_unofficial_jedi_councils", rows[0].keys())
+        self.assertNotIn(f"group_{self.another_group.id}_another_group", rows[0].keys())
+
+        corruscant_row = next(r for r in rows if r["org_unit_name"] == "Corruscant Jedi Council")
+        self.assertEqual(corruscant_row[expected_col], 1)
+
+        endor_row = next(r for r in rows if r["org_unit_name"] == "Endor Jedi Council")
+        self.assertEqual(endor_row[expected_col], 0)
+
+    def test_can_retrieve_org_units_with_groups_json(self):
+        """groups_json adds a single JSON column listing all groups per org unit"""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get("/api/orgunits/?order=id&parquet=true&extra_fields=groups_json")
+
+        self.assertEqual(response.status_code, 200)
+        self.assert_parquet_content_type(response)
+
+        with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
+            write_response_to_file(response, f)
+            rows = read_parquet(f)
+
+        self.assertIn("org_unit_groups", rows[0].keys())
+
+        corruscant_row = next(r for r in rows if r["org_unit_name"] == "Corruscant Jedi Council")
+        groups = json.loads(corruscant_row["org_unit_groups"])
+        self.assertEqual(groups, [{"id": self.elite_group.id, "name": "Elite councils"}])
+
+        endor_row = next(r for r in rows if r["org_unit_name"] == "Endor Jedi Council")
+        self.assertEqual(json.loads(endor_row["org_unit_groups"]), [])
+
+    def test_can_retrieve_org_units_with_groups_exploded_code(self):
+        """groups_exploded_code uses accent-stripped normalized names — columns are safe SQL identifiers"""
+        self.client.force_authenticate(self.yoda)
+
+        # Create a group whose name has an accent and a hyphen to exercise normalization
+        accented_group = m.Group.objects.create(name="Île-de-France", source_version=self.sw_version_1)
+        accented_group.org_units.add(self.jedi_council_corruscant)
+
+        response = self.client.get("/api/orgunits/?order=id&parquet=true&extra_fields=groups_exploded_code")
+
+        self.assertEqual(response.status_code, 200)
+        self.assert_parquet_content_type(response)
+
+        with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
+            write_response_to_file(response, f)
+            rows = read_parquet(f)
+
+        # groups_exploded_code: no id in column name, just normalized name
+        elite_col = "group_elite_councils"
+        accented_col = "group_ile_de_france"
+
+        self.assertIn(elite_col, rows[0].keys())
+        self.assertIn(accented_col, rows[0].keys())
+
+        corruscant_row = next(r for r in rows if r["org_unit_name"] == "Corruscant Jedi Council")
+        self.assertEqual(corruscant_row[elite_col], 1)
+        self.assertEqual(corruscant_row[accented_col], 1)
+
+        endor_row = next(r for r in rows if r["org_unit_name"] == "Endor Jedi Council")
+        self.assertEqual(endor_row[elite_col], 0)
+        self.assertEqual(endor_row[accented_col], 0)
+
     def test_bad_request_parquet_validates_unknown_extra_fields(self):
         response = self.client.get("/api/orgunits/?order=id&parquet=true&extra_fields=bad_param")
         self.assertEqual(response.status_code, 409)
         self.assertEqual(
             response.json(),
             {
-                "error": "Unknown extra_fields for parquet exports: bad_param, only supported geom_geojson, location_geojson, simplified_geom_geojson, biggest_polygon_geojson, :all."
+                "error": "Unknown extra_fields for parquet exports: bad_param, only supported geom_geojson, location_geojson, simplified_geom_geojson, biggest_polygon_geojson, groups_exploded, groups_exploded_code, groups_json, :all."
             },
         )
 
@@ -303,3 +389,17 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
                 "error": "Unsupported query parameters for parquet exports: unknown_unsupported_filter. Allowed parameters extra_fields, order, parquet, searches"
             },
         )
+
+    def test_groups_exploded_code_collision_returns_400(self):
+        """When two group names normalize to the same safe identifier, the API returns 400."""
+        self.client.force_authenticate(self.yoda)
+
+        collision_group = m.Group.objects.create(name="Élite councils", source_version=self.sw_version_1)
+        collision_group.org_units.add(self.jedi_council_corruscant)
+
+        response = self.client.get("/api/orgunits/?order=id&parquet=true&extra_fields=groups_exploded_code")
+        self.assertEqual(response.status_code, 409)
+        error = response.json()["error"]
+        self.assertIn("elite_councils", error)
+        self.assertIn("normalize to", error)
+        self.assertIn("Use groups_exploded instead to avoid column collisions", error)

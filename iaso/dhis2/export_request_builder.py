@@ -2,6 +2,7 @@ from django.core.paginator import Paginator
 from django.db import transaction
 
 from iaso.models import ALIVE_STATUSES, DERIVED, ExportRequest, ExportStatus, Instance
+from iaso.models.instances import resolve_status_form_ids
 
 
 class NothingToExportError(Exception):
@@ -42,7 +43,9 @@ class ExportRequestBuilder:
         if launcher:
             instances = instances.filter(project__account=launcher.iaso_profile.account)
         # don't export duplicate instances
-        instances = instances.with_status().exclude(status=Instance.STATUS_DUPLICATED)
+        instances = instances.with_status(
+            form_ids=resolve_status_form_ids(filters.get("form_id"), filters.get("form_ids"))
+        ).exclude(status=Instance.STATUS_DUPLICATED)
         # don't export deleted instances
         instances = instances.filter(deleted=False)
         # don't export instances with json empty or test devices

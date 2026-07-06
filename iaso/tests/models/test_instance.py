@@ -95,6 +95,29 @@ class InstanceModelTestCase(TestCase, InstanceBase):
         self.assertStatusIs(self.instance_5, m.Instance.STATUS_READY)
         self.assertStatusIs(self.instance_6, m.Instance.STATUS_READY)
 
+    def test_with_status_skips_duplicates_query_when_no_single_per_period_form(self):
+        """
+        with_status(form_ids=...) should drop the duplicates GROUP BY/HAVING computation from the
+        generated SQL when none of the given forms are single_per_period, since only single_per_period
+        forms can ever produce STATUS_DUPLICATED instances.
+        """
+        # form_2 alone: not single_per_period -> duplicates computation is skipped from the SQL entirely.
+        sql = str(m.Instance.objects.with_status(form_ids=[self.form_2.id]).query)
+        self.assertNotIn("GROUP BY", sql)
+
+        # form_1 alone: single_per_period -> duplicates computation is kept.
+        sql = str(m.Instance.objects.with_status(form_ids=[self.form_1.id]).query)
+        self.assertIn("GROUP BY", sql)
+
+        # form_1 and form_2: at least one single_per_period form -> duplicates computation is kept.
+        sql = str(m.Instance.objects.with_status(form_ids=[self.form_1.id, self.form_2.id]).query)
+        self.assertIn("GROUP BY", sql)
+
+        # No form_ids given: can't know in advance without an extra query, so duplicates computation is
+        # kept unconditionally, against every single_per_period form (previous behavior).
+        sql = str(m.Instance.objects.with_status().query)
+        self.assertIn("GROUP BY", sql)
+
     def test_instance_status_duplicated_over_exported(self):
         instance_1 = self.create_form_instance(
             form=self.form_1,

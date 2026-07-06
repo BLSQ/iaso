@@ -1,12 +1,16 @@
+import copy
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Case, When, Subquery, IntegerField, Value, OuterRef, Count
 from django.utils.translation import gettext_lazy as _
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
 from polymorphic.query import PolymorphicQuerySet
 
 from iaso.models.common import CreatedAndUpdatedModel
+from iaso.models.querysets import RelatedPolymorphicQuerySet
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 
 
@@ -16,16 +20,52 @@ class MissionType(models.TextChoices):
     ENTITY_AND_FORM = "ENTITY_AND_FORM", _("Entity and Form")
 
 
-class MissionQuerySet(PolymorphicQuerySet):
+class MissionQuerySet(RelatedPolymorphicQuerySet):
+
+    def annotate_with_form_count(self):
+        form_count_sq = (
+            MissionFormThroughForm.objects.filter(mission_form_id=OuterRef("missionform__mission_ptr_id"))
+            .values("mission_form_id")
+            .annotate(c=Count("form_id"))
+            .values("c")[:1]
+        )
+
+        out_count_sq = (
+            MissionOrgUnitTypeThroughForm.objects.filter(
+                mission_org_unit_type_id=OuterRef("missionorgunittype__mission_ptr_id")
+            )
+            .values("mission_org_unit_type_id")
+            .annotate(c=Count("form_id"))
+            .values("c")[:1]
+        )
+
+        et_count_sq = (
+            MissionEntityTypeThroughForm.objects.filter(
+                mission_entity_type_id=OuterRef("missionentitytype__mission_ptr_id")
+            )
+            .values("mission_entity_type_id")
+            .annotate(c=Count("form_id"))
+            .values("c")[:1]
+        )
+        return self.annotate(
+                    forms_count=Case(
+                        When(mission_type=MissionType.FORM_FILLING, then=Subquery(form_count_sq)),
+                        When(mission_type=MissionType.ORG_UNIT_AND_FORM, then=Subquery(out_count_sq)),
+                        When(mission_type=MissionType.ENTITY_AND_FORM, then=Subquery(et_count_sq)),
+                        output_field=IntegerField(),
+                        default=Value(0),
+                    )
+                )
     def filter_for_user(self, user: User):
         iaso_profile = getattr(user, "iaso_profile", None)
         account = getattr(iaso_profile, "account", None)
         if not account:
             return self.none()
-        return self.filter(account=user.iaso_profile.account)
+        return self.filter(account=account)
 
+class MissionManager(PolymorphicManager.from_queryset(MissionQuerySet)):
     def get_queryset(self):
-        return super().get_queryset().filter(deleted_at__isnull=False)
+        return super().get_queryset().filter(deleted_at__isnull=True)
 
 
 class Mission(SoftDeletableModel, CreatedAndUpdatedModel, PolymorphicModel):
@@ -34,7 +74,7 @@ class Mission(SoftDeletableModel, CreatedAndUpdatedModel, PolymorphicModel):
     class Meta:
         ordering = ("name",)
 
-    objects = PolymorphicManager.from_queryset(MissionQuerySet)()
+    objects = MissionManager()
 
     name = models.CharField(max_length=200)
     description = models.CharField(max_length=500, blank=True)

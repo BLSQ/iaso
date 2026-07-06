@@ -6,17 +6,17 @@ from iaso.api.common import ModelSerializer
 from iaso.api.common.serializer_fields import CurrentAccountDefault
 from iaso.models import Form, OrgUnitType
 from iaso.models.microplanning import MissionOrgUnitType
-from iaso.models.microplanning.missions import MissionOrgUnitTypeThroughForm
+from iaso.models.microplanning.missions import MissionOrgUnitTypeThroughForm, MissionType
 
 
 class OrgUnitTypeScopedFormField(serializers.PrimaryKeyRelatedField):
     def get_queryset(self):
         if getattr(self.context.get("request", None), "user", None):
-            queryset = Form.objects.filter_on_user_projects(self.context["request"].user)
+            queryset = Form.objects.filter_for_user_and_app_id(self.context["request"].user)
 
-        org_unit_type_pk = self.parent.parent.initial_data.get("org_unit_type")
+        org_unit_type_pk = self.parent.parent.parent.initial_data.get("org_unit_type")
         if org_unit_type_pk:
-            queryset = queryset.filter(org_unit_type_id=org_unit_type_pk)
+            queryset = queryset.filter(org_unit_types__id=org_unit_type_pk)
 
         return queryset
 
@@ -35,13 +35,13 @@ class NestedMissionOrgUnitTypeThroughFormCreateSerializer(ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if getattr(self.context.get("request", None), "user", None):
-            self.fields["form"].queryset = Form.objects.filter_on_user_projects(self.context["request"].user)
+            self.fields["form"].queryset = Form.objects.filter_for_user_and_app_id(self.context["request"].user)
 
     def set_context(self, context):
         # method to trigger again the queryset computation
         self.context.update(context)
         if getattr(self.context.get("request", None), "user", None):
-            self.fields["form"].queryset = Form.objects.filter_on_user_projects(self.context["request"].user)
+            self.fields["form"].queryset = Form.objects.filter_for_user_and_app_id(self.context["request"].user)
 
     def validate(self, attrs):
         min_val = attrs.get("min_cardinality", 0)
@@ -56,7 +56,7 @@ class NestedMissionOrgUnitTypeThroughFormCreateSerializer(ModelSerializer):
 class MissionOrgUnitTypeCreateSerializer(ModelSerializer):
     created_by = serializers.HiddenField(default=serializers.CurrentUserDefault(), write_only=True)
     account_id = serializers.HiddenField(default=CurrentAccountDefault(), write_only=True)
-    org_unit_type = serializers.PrimaryKeyRelatedField(queryset=OrgUnitType.objects.none(), write_only=True)
+    org_unit_type = serializers.PrimaryKeyRelatedField(queryset=OrgUnitType.objects.none(), write_only=True, required=True)
     forms = NestedMissionOrgUnitTypeThroughFormCreateSerializer(
         many=True, required=True, allow_empty=False, write_only=True
     )
@@ -72,10 +72,11 @@ class MissionOrgUnitTypeCreateSerializer(ModelSerializer):
             "forms",
             "min_cardinality",
             "max_cardinality",
+            "mission_type"
         ]
 
         extra_kwargs = {
-            "min_cardinality": {"write_only": True},
+            "min_cardinality": {"write_only": True, "default": 0},
             "max_cardinality": {"write_only": True},
         }
 
@@ -96,6 +97,14 @@ class MissionOrgUnitTypeCreateSerializer(ModelSerializer):
                 {"min_cardinality": _("Minimum cardinality must be inferior than the maximum cardinality")}
             )
         return attrs
+
+    def validate_forms(self, forms):
+        form_ids = [item["form"].pk for item in forms]
+
+        if len(form_ids) != len(set(form_ids)):
+            raise serializers.ValidationError(_("Each form may only be specified once."))
+
+        return forms
 
     @transaction.atomic
     def create(self, validated_data):

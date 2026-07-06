@@ -5,7 +5,7 @@ from rest_framework import serializers
 from iaso.api.common import ModelSerializer
 from iaso.api.common.serializer_fields import CurrentAccountDefault
 from iaso.models import Form, MissionForm
-from iaso.models.microplanning.missions import MissionFormThroughForm
+from iaso.models.microplanning.missions import MissionFormThroughForm, MissionType
 
 
 class NestedMissionFormThroughFormCreateSerializer(ModelSerializer):
@@ -15,7 +15,7 @@ class NestedMissionFormThroughFormCreateSerializer(ModelSerializer):
         model = MissionFormThroughForm
         fields = ["form", "min_cardinality", "max_cardinality"]
         extra_kwargs = {
-            "min_cardinality": {"write_only": True},
+            "min_cardinality": {"write_only": True, "default": 0},
             "max_cardinality": {"write_only": True},
         }
 
@@ -47,7 +47,7 @@ class MissionFormCreateSerializer(ModelSerializer):
 
     class Meta:
         model = MissionForm
-        fields = ["id", "name", "description", "forms", "created_by", "account_id"]
+        fields = ["id", "name", "description", "forms", "created_by", "account_id", 'mission_type']
         read_only_fields = ["id"]
 
         extra_kwargs = {"id": {"read_only": True}, "name": {"write_only": True}, "description": {"write_only": True}}

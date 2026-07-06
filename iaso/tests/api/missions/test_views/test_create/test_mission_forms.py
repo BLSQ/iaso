@@ -1,7 +1,8 @@
 from django.urls import reverse
 from rest_framework import status
+from rest_framework.settings import api_settings
 
-from iaso.models import Account, Form, Project
+from iaso.models import Account, Form, MissionForm, Project
 from iaso.models.microplanning import MissionType
 from iaso.permissions.core_permissions import CORE_MISSION_READ_PERMISSION, CORE_MISSION_WRITE_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
@@ -9,7 +10,7 @@ from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 class MissionFormAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
     @classmethod
-    def setUpClass(cls):
+    def setUpTestData(cls):
         cls.account = Account.objects.create(name="account")
         cls.other_account = Account.objects.create(name="other_account")
 
@@ -106,7 +107,7 @@ class MissionFormAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
             reverse("missions-list"), data={"mission_type": MissionType.FORM_FILLING, "name": "name", "forms": []}
         )
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        self.assertHasError(res_data, "forms", "This list may not be empty.")
+        self.assertEqual(res_data, {"forms": {api_settings.NON_FIELD_ERRORS_KEY: ["This list may not be empty."]}})
 
     def test_validation_should_provide_forms_that_belong_to_account(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
@@ -151,10 +152,82 @@ class MissionFormAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertHasError(res_data, "forms", "Each form may only be specified once.")
 
     def test_validation_min_max_cardinality(self):
-        pass
+        self.client.force_authenticate(user=self.user_account_write_perm)
+
+        res = self.client.post(
+            reverse("missions-list"),
+            data={
+                "mission_type": MissionType.FORM_FILLING,
+                "name": "name",
+                "forms": [
+                    {"form": self.form_1.pk, "min_cardinality": 3, "max_cardinality": 1},
+                    {"form": self.form_2.pk, "min_cardinality": 2, "max_cardinality": 1},
+                ],
+            },
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            res_data,
+            {"forms": [
+                {"min_cardinality": ["Minimum cardinality must be inferior than the maximum cardinality"]},
+                {"min_cardinality": ["Minimum cardinality must be inferior than the maximum cardinality"]},
+            ],
+            }
+        )
 
     def test_num_queries(self):
-        pass
+        self.client.force_authenticate(user=self.user_account_write_perm)
+
+        with self.assertNumQueries(12):
+            res = self.client.post(
+                reverse("missions-list"),
+                data={
+                    "mission_type": MissionType.FORM_FILLING,
+                    "name": "name",
+                    "description": "description",
+                    "forms": [
+                        {"form": self.form_1.pk, "min_cardinality": 1, "max_cardinality": 2},
+                        {"form": self.form_2.pk, "min_cardinality": 2, "max_cardinality": 3},
+                        {"form": self.form_3.pk, "min_cardinality": 3, "max_cardinality": 4},
+                    ],
+                },
+            )
+
+        self.assertJSONResponse(res, status.HTTP_201_CREATED)
 
     def test_create(self):
-        pass
+        self.client.force_authenticate(user=self.user_account_write_perm)
+
+        body = {
+                "mission_type": MissionType.FORM_FILLING,
+                "name": "name",
+                "description": "description",
+                "forms": [
+                    {"form": self.form_1.pk, "min_cardinality": 1, "max_cardinality": 2},
+                    {"form": self.form_2.pk, "min_cardinality": 2, "max_cardinality": 3},
+                    {"form": self.form_3.pk, "min_cardinality": 3, "max_cardinality": 4},
+                ],
+            }
+        self.assertValidBodyData(body)
+        res = self.client.post(
+            reverse("missions-list"),
+            data=body,
+        )
+
+        self.assertJSONResponse(res, status.HTTP_201_CREATED)
+
+        self.assertEqual(MissionForm.objects.count(), 1)
+
+        mission_form = MissionForm.objects.first()
+
+        self.assertEqual(mission_form.name, "name")
+        self.assertEqual(mission_form.description, "description")
+        self.assertEqual(mission_form.created_by, self.user_account_write_perm)
+        self.assertEqual(mission_form.account, self.account)
+
+        self.assertEqual(mission_form.forms.count(), 3)
+
+        self.assertCountEqual(
+            list(mission_form.missionformthroughform_set.values_list("min_cardinality", "max_cardinality", "form_id")),
+            [(1, 2, self.form_1.pk), (2, 3, self.form_2.pk), (3, 4, self.form_3.pk)],
+        )

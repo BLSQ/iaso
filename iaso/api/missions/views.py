@@ -1,6 +1,7 @@
-from django.db.models import Case, Count, F, IntegerField, Value, When
+from django.db.models import Prefetch
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
-from rest_framework import status
+from rest_framework import filters, status
 from rest_framework.decorators import action
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from rest_framework.response import Response
@@ -14,11 +15,16 @@ from iaso.api.missions.serializers.list import MissionPolymorphicListSerializer
 from iaso.api.missions.serializers.retrieve import MissionPolymorphicRetrieveSerializer
 from iaso.api.missions.serializers.update import MissionPolymorphicUpdateSerializer
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
-from iaso.models import Mission
-from iaso.models.microplanning import MissionType
+from iaso.models import Mission, MissionForm
+from iaso.models.microplanning import MissionEntityType, MissionOrgUnitType, MissionType
 
+from ...models.microplanning.missions import (
+    MissionEntityTypeThroughForm,
+    MissionFormThroughForm,
+    MissionOrgUnitTypeThroughForm,
+)
+from .filters import MissionFilter
 from .permissions import MissionPermission
-from .serializers.filters import MissionFilter
 from .serializers.mission_types import MissionTypeDropdownSerializer
 
 
@@ -27,8 +33,10 @@ class MissionViewSet(AuditMixin, ModelViewSet):
     remove_results_key_if_paginated = True
     permission_classes = [AuthenticationEnforcedPermission, MissionPermission]
     ordering_fields = ["id", "name", "mission_type", "created_at"]
+    ordering = ["id"]
     audit_serializer = AuditMissionSerializer  # type: ignore
     pagination_class = MissionPagination
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
     filterset_class = MissionFilter
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
 
@@ -47,32 +55,23 @@ class MissionViewSet(AuditMixin, ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return (
-            Mission.objects.filter_for_user(user)
-            .annotate(
-                mission_form_count=Count("missionform__forms", distinct=True),
-                org_unit_form_count=Count("missionorgunittype__forms", distinct=True),
-                entity_form_count=Count("missionentitytype__forms", distinct=True),
+        queryset = Mission.objects.filter_for_user(user)
+        if self.action == "list":
+            return (
+                queryset.select_polymorphic_related(MissionOrgUnitType, "org_unit_type")
+                .select_polymorphic_related(MissionEntityType, "entity_type")
+                .annotate_with_form_count()
             )
-            .annotate(
-                forms_count=Case(
-                    When(
-                        mission_type=MissionType.FORM_FILLING,
-                        then=F("mission_form_count"),
-                    ),
-                    When(
-                        mission_type=MissionType.ORG_UNIT_AND_FORM,
-                        then=F("org_unit_form_count"),
-                    ),
-                    When(
-                        mission_type=MissionType.ENTITY_AND_FORM,
-                        then=F("entity_form_count"),
-                    ),
-                    default=Value(0),
-                    output_field=IntegerField(),
-                )
-            )
-        )
+        
+        if self.action == "retrieve":
+            return (queryset
+                    .prefetch_polymorphic_related(MissionForm, Prefetch("missionformthroughform_set", queryset=MissionFormThroughForm.objects.select_related("form")))
+                    .prefetch_polymorphic_related(MissionOrgUnitType, Prefetch("missionorgunittypethroughform_set", queryset=MissionOrgUnitTypeThroughForm.objects.select_related("form")))
+                    .prefetch_polymorphic_related(MissionEntityType, Prefetch("missionentitytypethroughform_set", queryset=MissionEntityTypeThroughForm.objects.select_related("form")))
+                    .select_polymorphic_related(MissionOrgUnitType, "org_unit_type")
+                    .select_polymorphic_related(MissionEntityType, "entity_type"))
+
+        return queryset
 
     @extend_schema(responses={200: MissionTypeDropdownSerializer(MissionType, many=True)})
     @action(detail=False, pagination_class=None, url_path="mission-types-dropdown", filter_backends=[])

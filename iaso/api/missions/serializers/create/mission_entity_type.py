@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer
 from iaso.api.common.serializer_fields import CurrentAccountDefault
-from iaso.models import EntityType, Form
+from iaso.models import EntityType, Form, entity
 from iaso.models.microplanning import MissionEntityType
 from iaso.models.microplanning.missions import MissionEntityTypeThroughForm
 
@@ -12,17 +12,17 @@ from iaso.models.microplanning.missions import MissionEntityTypeThroughForm
 class EntityTypeScopedFormField(serializers.PrimaryKeyRelatedField):
     def get_queryset(self):
         if getattr(self.context.get("request", None), "user", None):
-            queryset = Form.objects.filter_on_user_projects(self.context["request"].user)
+            queryset = Form.objects.filter_for_user_and_app_id(self.context["request"].user)
 
-        org_unit_type_pk = self.parent.parent.initial_data.get("org_unit_type")
-        if org_unit_type_pk:
-            queryset = queryset.filter(org_unit_type_id=org_unit_type_pk)
+        entity_type_pk = self.parent.parent.parent.initial_data.get("entity_type")
+        if entity_type_pk:
+            queryset = queryset.filter(entitytype__id=entity_type_pk)
 
         return queryset
 
 
 class NestedMissionEntityTypeThroughFormCreateSerializer(ModelSerializer):
-    form = serializers.PrimaryKeyRelatedField(queryset=Form.objects.none(), write_only=True)
+    form = EntityTypeScopedFormField(queryset=Form.objects.none(), write_only=True)
 
     class Meta:
         model = MissionEntityTypeThroughForm
@@ -35,13 +35,13 @@ class NestedMissionEntityTypeThroughFormCreateSerializer(ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if getattr(self.context.get("request", None), "user", None):
-            self.fields["form"].queryset = Form.objects.filter_on_user_projects(self.context["request"].user)
+            self.fields["form"].queryset = Form.objects.filter_for_user_and_app_id(self.context["request"].user)
 
     def set_context(self, context):
         # method to trigger again the queryset computation
         self.context.update(context)
         if getattr(self.context.get("request", None), "user", None):
-            self.fields["form"].queryset = Form.objects.filter_on_user_projects(self.context["request"].user)
+            self.fields["form"].queryset = Form.objects.filter_for_user_and_app_id(self.context["request"].user)
 
     def validate(self, attrs):
         min_val = attrs.get("min_cardinality", 0)
@@ -96,6 +96,14 @@ class MissionEntityTypeCreateSerializer(ModelSerializer):
                 {"min_cardinality": _("Minimum cardinality must be inferior than the maximum cardinality")}
             )
         return attrs
+
+    def validate_forms(self, forms):
+        form_ids = [item["form"].pk for item in forms]
+
+        if len(form_ids) != len(set(form_ids)):
+            raise serializers.ValidationError(_("Each form may only be specified once."))
+
+        return forms
 
     @transaction.atomic
     def create(self, validated_data):

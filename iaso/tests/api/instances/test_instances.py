@@ -3226,7 +3226,11 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.yoda)
         self.yoda.iaso_profile.projects.add(self.project)
 
-        expected_queries = 14
+        # 15, not 14: with_lock_info() is now applied only to the page's ids (fetched via a separate,
+        # cheap id-only query) instead of to the whole queryset before pagination, to avoid forcing
+        # PostgreSQL to evaluate (join, group, sort) the entire matching instance set before truncating
+        # it to a page, which is extremely expensive on large accounts.
+        expected_queries = 15
 
         with self.assertNumQueries(expected_queries):
             response = self.client.get("/api/instances/?limit=3000")

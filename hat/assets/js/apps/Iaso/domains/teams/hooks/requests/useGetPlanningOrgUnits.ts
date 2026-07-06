@@ -15,12 +15,13 @@ export const tableDefaults = {
 };
 
 export const useGetPlanningOrgUnitsChildren = (
-    planningId: string,
-    params?: AssignmentParams,
+    planningId?: number,
+    orgUnitTypeIds?: string,
+    search?: string,
 ): UseQueryResult<PlanningOrgUnits[], Error> => {
     const apiParams = {
-        search: params?.search,
-        orgUnitTypeIds: params?.orgUnitTypeIds,
+        search: search,
+        orgUnitTypeIds: orgUnitTypeIds,
     };
     const url = makeUrlWithParams(
         `${PLANNINGS_API_URL}${planningId}/orgunits/children/`,
@@ -31,7 +32,7 @@ export const useGetPlanningOrgUnitsChildren = (
         queryFn: () => getRequest(url),
         options: {
             enabled: Boolean(planningId),
-            staleTime: Infinity,
+            // staleTime: Infinity,
             cacheTime: Infinity,
             keepPreviousData: true,
         },

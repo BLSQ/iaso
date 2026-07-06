@@ -131,8 +131,16 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
         isSaving,
     } = useAssignmentsContext();
 
+    const orgUnitTypeIds =
+        selectedOrgUnitTypes.map(type => type.value).length > 0
+            ? selectedOrgUnitTypes.map(type => type.value).join(',')
+            : undefined;
     const { data: childrenOrgUnits, isFetching: isLoadingChildrenOrgUnits } =
-        useGetPlanningOrgUnitsChildren(planningId, params);
+        useGetPlanningOrgUnitsChildren(
+            planning?.id,
+            orgUnitTypeIds,
+            params.search,
+        );
     const { data: rootOrgUnit, isFetching: isLoadingRootOrgUnit } =
         useGetPlanningOrgUnitsRoot(planningId);
 

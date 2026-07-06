@@ -1,5 +1,13 @@
-import { Dispatch, FunctionComponent, SetStateAction, useMemo } from 'react';
+import { FunctionComponent, useState, useCallback, useMemo } from 'react';
 import React from 'react';
+import {
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
+} from '@mui/material';
 import { Pane } from 'react-leaflet';
 import { useGetAssignmentColor } from 'Iaso/domains/app/hooks/useGetAssignmentColor';
 import { FilterOrgUnitsResult } from 'Iaso/domains/assignments/utils';
@@ -21,9 +29,7 @@ type Props = {
     assignments?: AssignmentsResult;
     selectedOrgUnitTypes: OrgUnitTypeHierarchyDropdownValue[];
     rootTeam?: Team;
-    setSelectedOrgUnitTypes: Dispatch<
-        SetStateAction<OrgUnitTypeHierarchyDropdownValue[]>
-    >;
+    handleClickParentOrgUnit: (id: number) => void;
 };
 
 export const TargetOrgUnits: FunctionComponent<Props> = ({
@@ -34,8 +40,10 @@ export const TargetOrgUnits: FunctionComponent<Props> = ({
     assignments,
     selectedOrgUnitTypes,
     rootTeam,
-    setSelectedOrgUnitTypes,
+    handleClickParentOrgUnit,
 }) => {
+    const [showMultiassignSelectionDialog, setShowMultiassignSelectionDialog] =
+        useState(false);
     const getAssignmentColor = useGetAssignmentColor(assignments, rootTeam);
     const targetOrgUnitsShapes: FilterOrgUnitsResult = useMemo(
         () =>
@@ -56,8 +64,32 @@ export const TargetOrgUnits: FunctionComponent<Props> = ({
             ),
         [orgUnits, assignments, selectedOrgUnitTypes],
     );
+
+    const handleClickShape = useCallback(
+        (id: number) => {
+            // setShowMultiassignSelectionDialog(true);
+            handleSaveAssignment(id);
+        },
+        [handleSaveAssignment],
+    );
     return (
         <>
+            <Dialog
+                open={showMultiassignSelectionDialog}
+                onClose={() => setShowMultiassignSelectionDialog(false)}
+            >
+                <DialogTitle>TEST</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>TEST</DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={() => setShowMultiassignSelectionDialog(false)}
+                    >
+                        Cancel
+                    </Button>
+                </DialogActions>
+            </Dialog>
             <Pane
                 name="target-org-units-shapes-unassigned"
                 style={{
@@ -69,7 +101,7 @@ export const TargetOrgUnits: FunctionComponent<Props> = ({
                         key={ou.id}
                         ou={ou}
                         canAssign={canAssign}
-                        handleClick={handleSaveAssignment}
+                        handleClick={handleClickShape}
                         getAssignmentColor={getAssignmentColor}
                         opacity={0.3}
                     />
@@ -86,7 +118,7 @@ export const TargetOrgUnits: FunctionComponent<Props> = ({
                         key={ou.id}
                         ou={ou}
                         canAssign={canAssign}
-                        handleClick={handleSaveAssignment}
+                        handleClick={handleClickShape}
                         getAssignmentColor={getAssignmentColor}
                     />
                 ))}

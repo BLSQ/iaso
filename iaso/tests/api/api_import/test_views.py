@@ -1,14 +1,15 @@
 from datetime import datetime
 
+from django.http import HttpResponse
 from rest_framework import status
 
 from hat.api_import.models import APIImport
 from iaso.models import Account, Project
 from iaso.permissions.core_permissions import CORE_ACCOUNT_MANAGEMENT_PERMISSION
-from iaso.test import APITestCase
+from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
-class APIImportViewSetTest(APITestCase):
+class APIImportViewSetTest(SwaggerTestCaseMixin, APITestCase):
     BASE_URL = "/api/api_import/"
 
     def setUp(self):
@@ -59,6 +60,28 @@ class APIImportViewSetTest(APITestCase):
         )
         apiimport.created_at = datetime(2026, 4, 12)
         apiimport.save()
+
+    def test_assertValidSchema(self):
+        url = "/api/api_import/"
+        self.client.force_authenticate(self.user_with_permission)
+        res = self.client.get(url)
+        res_json = self.assertJSONResponse(res, 200)
+        self.assertResponseCompliantToSwagger(res_json, "PaginatedAPIImportList")
+
+    def test_assertValidFiltersSchema(self):
+        url = "/api/api_import/filters/"
+        self.client.force_authenticate(self.user_with_permission)
+        res = self.client.get(url)
+        res_json = self.assertJSONResponse(res, 200)
+        self.assertResponseCompliantToSwagger(res_json, "APIImportFilter")
+
+    def test_export_csv(self):
+        url = "/api/api_import/export_to_csv/"
+        self.client.force_authenticate(self.user_with_permission)
+        res = self.client.get(url)
+        self.assertIsInstance(res, HttpResponse)
+        self.assertEqual(200, res.status_code)
+        self.assertEqual("text/csv", res["Content-Type"])
 
     def test_retrieve_anonymous(self):
         response = self.client.get(f"{self.BASE_URL}1/")

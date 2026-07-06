@@ -1,5 +1,5 @@
-export const accountFeatureFlagsOperations = {
-    apiAccountFeatureFlagsList: {
+export const apiImportsOperations = {
+    apiApiImportList: {
         query: {
             options: {
                 retry: false,
@@ -9,7 +9,7 @@ export const accountFeatureFlagsOperations = {
             },
         },
     },
-    apiAccountFeatureFlagsDropdownList: {
+    apiApiImportFiltersRetrieve: {
         query: {
             options: {
                 retry: false,

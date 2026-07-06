@@ -44,6 +44,7 @@
     "iaso.analytics.consent.accept": "Accepter",
     "iaso.analytics.consent.decline": "Refuser",
     "iaso.analytics.consent.description": "Nous utilisons Sentry pour collecter des données de rejeu de session afin d'améliorer la qualité de nos services et de débugger les problèmes. Cela inclut la capture de vos interactions avec notre application.",
+    "iaso.apiimport.exception": "Exception",
     "iaso.apiimport.has_problem": "A un problème?",
     "iaso.apiimport.headers": "Entêtes",
     "iaso.apiimport.import_type": "Type d'import",

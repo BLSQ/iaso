@@ -1,6 +1,6 @@
 from django.db.models import Prefetch
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import PolymorphicProxySerializer, extend_schema
 from rest_framework import filters, status
 from rest_framework.decorators import action
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
@@ -62,14 +62,32 @@ class MissionViewSet(AuditMixin, ModelViewSet):
                 .select_polymorphic_related(MissionEntityType, "entity_type")
                 .annotate_with_form_count()
             )
-        
+
         if self.action == "retrieve":
-            return (queryset
-                    .prefetch_polymorphic_related(MissionForm, Prefetch("missionformthroughform_set", queryset=MissionFormThroughForm.objects.select_related("form")))
-                    .prefetch_polymorphic_related(MissionOrgUnitType, Prefetch("missionorgunittypethroughform_set", queryset=MissionOrgUnitTypeThroughForm.objects.select_related("form")))
-                    .prefetch_polymorphic_related(MissionEntityType, Prefetch("missionentitytypethroughform_set", queryset=MissionEntityTypeThroughForm.objects.select_related("form")))
-                    .select_polymorphic_related(MissionOrgUnitType, "org_unit_type")
-                    .select_polymorphic_related(MissionEntityType, "entity_type"))
+            return (
+                queryset.prefetch_polymorphic_related(
+                    MissionForm,
+                    Prefetch(
+                        "missionformthroughform_set", queryset=MissionFormThroughForm.objects.select_related("form")
+                    ),
+                )
+                .prefetch_polymorphic_related(
+                    MissionOrgUnitType,
+                    Prefetch(
+                        "missionorgunittypethroughform_set",
+                        queryset=MissionOrgUnitTypeThroughForm.objects.select_related("form"),
+                    ),
+                )
+                .prefetch_polymorphic_related(
+                    MissionEntityType,
+                    Prefetch(
+                        "missionentitytypethroughform_set",
+                        queryset=MissionEntityTypeThroughForm.objects.select_related("form"),
+                    ),
+                )
+                .select_polymorphic_related(MissionOrgUnitType, "org_unit_type")
+                .select_polymorphic_related(MissionEntityType, "entity_type")
+            )
 
         return queryset
 
@@ -78,3 +96,13 @@ class MissionViewSet(AuditMixin, ModelViewSet):
     def mission_types_dropdown(self, request, *args, **kwargs):
         serializer = self.get_serializer(MissionType, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        request=PolymorphicProxySerializer(
+            component_name="MissionPolymorphicUpdateRequest",
+            serializers=list(MissionPolymorphicUpdateSerializer.model_serializer_mapping.values()),
+            resource_type_field_name=None,
+        ),
+    )
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)

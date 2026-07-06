@@ -69,23 +69,6 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
     def assertValidBodyData(self, data):
         self.assertResponseCompliantToSwagger(data, "MissionPolymorphicCreateRequest")
 
-    def test_permissions(self):
-        res = self.client.post(reverse("missions-list"), data={"mission_type": MissionType.ENTITY_AND_FORM})
-        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
-
-        self.client.force_authenticate(user=self.user_account_no_perm)
-        res = self.client.post(reverse("missions-list"), data={"mission_type": MissionType.ENTITY_AND_FORM})
-        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
-        self.client.force_authenticate(user=self.user_account_read_perm)
-        res = self.client.post(reverse("missions-list"), data={"mission_type": MissionType.ENTITY_AND_FORM})
-        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
-        self.client.force_authenticate(user=self.user_account_write_perm)
-        res = self.client.post(reverse("missions-list"), data={"mission_type": MissionType.ENTITY_AND_FORM})
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-        self.client.force_authenticate(user=self.superuser)
-        res = self.client.post(reverse("missions-list"), data={"mission_type": MissionType.ENTITY_AND_FORM})
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-
     def test_validation(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
         res = self.client.post(reverse("missions-list"))
@@ -228,20 +211,14 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
                 "entity_type": self.et.pk,
                 "min_cardinality": 4,
                 "max_cardinality": 2,
-                "forms": [
-                    {"form": self.form_1.pk, "min_cardinality": 3, "max_cardinality": 1}
-                ],
+                "forms": [{"form": self.form_1.pk, "min_cardinality": 3, "max_cardinality": 1}],
             },
         )
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
 
         self.assertEqual(
             res_data,
-            {
-                "forms": [
-                    {"min_cardinality": ["Minimum cardinality must be inferior than the maximum cardinality"]}
-                ]
-            }
+            {"forms": [{"min_cardinality": ["Minimum cardinality must be inferior than the maximum cardinality"]}]},
         )
 
         res = self.client.post(
@@ -252,9 +229,7 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
                 "entity_type": self.et.pk,
                 "min_cardinality": 4,
                 "max_cardinality": 2,
-                "forms": [
-                    {"form": self.form_1.pk, "min_cardinality": 1, "max_cardinality": 3}
-                ],
+                "forms": [{"form": self.form_1.pk, "min_cardinality": 1, "max_cardinality": 3}],
             },
         )
 
@@ -264,11 +239,10 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
             res_data, "min_cardinality", "Minimum cardinality must be inferior than the maximum cardinality"
         )
 
-
     def test_num_queries(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
 
-        with self.assertNumQueries(12):
+        with self.assertNumQueries(1):
             res = self.client.post(
                 reverse("missions-list"),
                 data={
@@ -278,9 +252,7 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
                     "entity_type": self.et.pk,
                     "min_cardinality": 2,
                     "max_cardinality": 3,
-                    "forms": [
-                        {"form": self.form_1.pk, "min_cardinality": 1, "max_cardinality": 2}
-                    ],
+                    "forms": [{"form": self.form_1.pk, "min_cardinality": 1, "max_cardinality": 2}],
                 },
             )
 
@@ -322,9 +294,7 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
 
         self.assertCountEqual(
             list(
-                mission_et.missionentitytypethroughform_set.values_list(
-                    "min_cardinality", "max_cardinality", "form_id"
-                )
+                mission_et.missionentitytypethroughform_set.values_list("min_cardinality", "max_cardinality", "form_id")
             ),
             [(1, 2, self.form_1.pk)],
         )

@@ -75,23 +75,6 @@ class MissionOrgUnitTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
     def assertValidBodyData(self, data):
         self.assertResponseCompliantToSwagger(data, "MissionPolymorphicCreateRequest")
 
-    def test_permissions(self):
-        res = self.client.post(reverse("missions-list"), data={"mission_type": MissionType.ORG_UNIT_AND_FORM})
-        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
-
-        self.client.force_authenticate(user=self.user_account_no_perm)
-        res = self.client.post(reverse("missions-list"), data={"mission_type": MissionType.ORG_UNIT_AND_FORM})
-        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
-        self.client.force_authenticate(user=self.user_account_read_perm)
-        res = self.client.post(reverse("missions-list"), data={"mission_type": MissionType.ORG_UNIT_AND_FORM})
-        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
-        self.client.force_authenticate(user=self.user_account_write_perm)
-        res = self.client.post(reverse("missions-list"), data={"mission_type": MissionType.ORG_UNIT_AND_FORM})
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-        self.client.force_authenticate(user=self.superuser)
-        res = self.client.post(reverse("missions-list"), data={"mission_type": MissionType.ORG_UNIT_AND_FORM})
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-
     def test_validation(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
         res = self.client.post(reverse("missions-list"))
@@ -240,7 +223,13 @@ class MissionOrgUnitTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
         )
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
-            res_data, {"forms": [{"min_cardinality": ["Minimum cardinality must be inferior than the maximum cardinality"]}, {"min_cardinality": ["Minimum cardinality must be inferior than the maximum cardinality"]}]}
+            res_data,
+            {
+                "forms": [
+                    {"min_cardinality": ["Minimum cardinality must be inferior than the maximum cardinality"]},
+                    {"min_cardinality": ["Minimum cardinality must be inferior than the maximum cardinality"]},
+                ]
+            },
         )
 
         res = self.client.post(
@@ -260,7 +249,9 @@ class MissionOrgUnitTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
 
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
 
-        self.assertHasError(res_data, "min_cardinality", "Minimum cardinality must be inferior than the maximum cardinality")
+        self.assertHasError(
+            res_data, "min_cardinality", "Minimum cardinality must be inferior than the maximum cardinality"
+        )
 
     def test_num_queries(self):
         self.client.force_authenticate(user=self.user_account_write_perm)

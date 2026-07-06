@@ -22,13 +22,13 @@ class NestedMissionFormThroughFormUpdateSerializer(ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if getattr(self.context.get("request", None), "user", None):
-            self.fields["form"].queryset = Form.objects.filter_on_user_projects(self.context["request"].user)
+            self.fields["form"].queryset = Form.objects.filter_for_user_and_app_id(self.context["request"].user)
 
     def set_context(self, context):
         # method to trigger again the queryset computation
         self.context.update(context)
         if getattr(self.context.get("request", None), "user", None):
-            self.fields["form"].queryset = Form.objects.filter_on_user_projects(self.context["request"].user)
+            self.fields["form"].queryset = Form.objects.filter_for_user_and_app_id(self.context["request"].user)
 
     def validate(self, attrs):
         min_val = attrs.get("min_cardinality", 0)
@@ -56,18 +56,47 @@ class MissionFormUpdateSerializer(ModelSerializer):
         super().__init__(*args, **kwargs)
         self.fields["forms"].child.set_context(self.context)
 
+    def validate_forms(self, forms):
+        form_ids = [item["form"].pk for item in forms]
+
+        if len(form_ids) != len(set(form_ids)):
+            raise serializers.ValidationError(_("Each form may only be specified once."))
+
+        return forms
+
     @transaction.atomic
-    def create(self, validated_data):
+    def update(self, instance, validated_data):
         through_data = validated_data.pop("forms")
 
-        mission = self.Meta.model.objects.create(**validated_data)
+        instance = super().update(instance, validated_data)
 
-        through_instances = []
+        # get the current m2m fields
+        existing = {obj.form_id: obj for obj in instance.missionformthroughform_set.all()}
+        incoming = {item["form"].id: item for item in through_data}
 
-        for item_data in through_data:
-            instance = NestedMissionFormThroughFormUpdateSerializer.Meta.model(mission_form=mission, **item_data)
-            through_instances.append(instance)
+        # delete
+        MissionFormThroughForm.objects.filter(form_id__in=list(existing.keys() - incoming.keys())).delete()
 
-        MissionFormThroughForm.objects.bulk_create(through_instances)
+        # update existing
+        bulk_updates = []
 
-        return mission
+        for form_id in existing.keys() & incoming.keys():
+            obj = existing[form_id]
+            data = incoming[form_id]
+
+            obj.min_cardinality = data["min_cardinality"]
+            obj.max_cardinality = data["max_cardinality"]
+
+            bulk_updates.append(obj)
+
+        MissionFormThroughForm.objects.bulk_update(bulk_updates, fields=["min_cardinality", "max_cardinality"])
+
+        # create new
+        MissionFormThroughForm.objects.bulk_create(
+            [
+                MissionFormThroughForm(**incoming[form_id], mission_form_id=instance.id)
+                for form_id in incoming.keys() - existing.keys()
+            ]
+        )
+
+        return instance

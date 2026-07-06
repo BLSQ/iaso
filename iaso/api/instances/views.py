@@ -456,13 +456,24 @@ class InstancesViewSet(viewsets.ViewSet):
                 limit = int(limit)
                 page_offset = int(page_offset)
 
-                queryset = queryset.with_lock_info(user=request.user)
-
                 paginator = Paginator(queryset, limit)
                 res = {"count": paginator.count}
                 if page_offset > paginator.num_pages:
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
+
+                # with_lock_info has no filters related to it's just "enrichment" of the page, so it can be done after the pagination,
+                # and not on the whole queryset during the count.
+                # its JOIN/GROUP BY is cheap for a handful of rows, but
+                # forces PostgreSQL to evaluate (join, group, sort) the entire matching instance set
+                # before it can be truncated to a page when applied beforehand, which is extremely slow
+                # on large accounts (minutes, on an account with a few million instances).
+                # Fetched via values_list() (rather than iterating page.object_list) to avoid pulling in
+                # the queryset's select_related/prefetch_related for a result we only use for its ids.
+                #
+                #
+                page_ids = list(page.object_list.values_list("id", flat=True))
+                locked_page = queryset.filter(pk__in=page_ids).with_lock_info(user=request.user)
 
                 def as_dict_formatter(instance: Annotated[Instance, LockAnnotation]) -> Dict:
                     d = instance.as_dict_with_descriptor() if with_descriptor == "true" else instance.as_dict()
@@ -472,7 +483,7 @@ class InstancesViewSet(viewsets.ViewSet):
                     d["is_reference_instance"] = instance._is_reference_instance
                     return d
 
-                res["instances"] = map(as_dict_formatter, page.object_list)
+                res["instances"] = map(as_dict_formatter, locked_page)
                 res["has_next"] = page.has_next()
                 res["has_previous"] = page.has_previous()
                 res["page"] = page_offset

@@ -182,7 +182,7 @@ class DataSourceVersionsSynchronization(models.Model):
 
     Fields that can be synchronized:
 
-        ["name", "parent", "opening_date", "closed_date", "geometry", "code"]
+        ["name", "parent", "opening_date", "closed_date", "groups","geometry", "code"]
 
     The two versions may belong to the same data source (e.g. comparing two
     successive imports of the same DHIS2 instance) or to different data sources
@@ -200,7 +200,7 @@ class DataSourceVersionsSynchronization(models.Model):
 
     """
 
-    SYNCHRONIZABLE_FIELDS = ["name", "parent", "opening_date", "closed_date", "geometry", "code"]
+    SYNCHRONIZABLE_FIELDS = ["name", "parent", "opening_date", "closed_date", "groups", "geometry", "code"]
     # `groups` are synchronizable, but are handled via the `ignore_groups` param of the `Differ`.
 
     name = models.CharField(

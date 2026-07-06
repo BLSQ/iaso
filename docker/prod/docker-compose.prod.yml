@@ -121,8 +121,6 @@ services:
         driver: json-file
         options:
           max-size: 5k
-      volumes:
-        - "static-files:/opt/app/static"
       stdin_open: true
       tty: true
     nginx:
@@ -131,7 +129,6 @@ services:
         - '80:80'
       volumes:
         - ".platform/nginx/nginx.conf:/etc/nginx/nginx.conf"
-        - "static-files:/opt/app/static"
       depends_on:
         - iaso
 
@@ -152,6 +149,3 @@ services:
     #       POSTGRES_DB: ${RDS_DB_NAME}
     #       POSTGRES_USER: postgres
     #       POSTGRES_PASSWORD: postgres
-
-volumes:
-  static-files:

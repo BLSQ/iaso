@@ -1,4 +1,7 @@
 import csv
+import os
+
+from pathlib import Path
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
@@ -16,6 +19,7 @@ def fullname(o):
 def model_and_fields_with_files(account_id_to_keep):
     file_path = "./media/account/" + account_id_to_keep + "/inventory.csv"
     print("producing ", file_path)
+    os.makedirs(Path(file_path).parent.absolute(), exist_ok=True)
 
     fieldnames = ["source", "destination", "model", "field_name", "id"]
 
@@ -43,7 +47,7 @@ def model_and_fields_with_files(account_id_to_keep):
 
                     print("\t", "count", m.objects.count())
                     LIMIT = 10000
-                    all_objects = m.objects.order_by("id").all()
+                    all_objects = m.objects.order_by("pk").all()
 
                     paginator = Paginator(all_objects, LIMIT)
 
@@ -62,7 +66,7 @@ def model_and_fields_with_files(account_id_to_keep):
                                         "destination": target_file_name,
                                         "model": object.__class__.__qualname__,
                                         "field_name": field.name,
-                                        "id": object.id,
+                                        "id": object.pk,
                                     }
                                     csv_writer.writerows([record])
 

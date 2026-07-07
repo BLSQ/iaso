@@ -1,21 +1,59 @@
 from django.contrib import admin
+from polymorphic.admin import PolymorphicChildModelAdmin, PolymorphicChildModelFilter, PolymorphicParentModelAdmin
 
-from iaso.admin.base import admin_attr_decorator
-from iaso.models import Mission
-
-
-# class MissionFormInline(admin.TabularInline):
-#     model = MissionForm
-#     extra = 1
-#     raw_id_fields = ("form",)
+from iaso.models import (
+    Mission,
+    MissionEntityType,
+    MissionEntityTypeThroughForm,
+    MissionForm,
+    MissionFormThroughForm,
+    MissionOrgUnitType,
+    MissionOrgUnitTypeThroughForm,
+)
 
 
 @admin.register(Mission)
-@admin_attr_decorator
-class MissionAdmin(admin.ModelAdmin):
-    # list_display = ("id", "name", "mission_type", "account", "org_unit_type", "entity_type")
-    list_filter = ("mission_type", "account")
-    search_fields = ("name",)
-    # raw_id_fields = ("org_unit_type", "entity_type", "created_by")
-    readonly_fields = ("created_at", "updated_at")
-    # inlines = [MissionFormInline]
+class MissionAdmin(PolymorphicParentModelAdmin):
+    base_model = Mission
+    child_models = (MissionForm, MissionOrgUnitType, MissionEntityType)
+    list_filter = (PolymorphicChildModelFilter, "account")
+    list_display = ("name", "mission_type", "account")
+
+
+class MissionFormThroughFormInline(admin.TabularInline):
+    model = MissionFormThroughForm
+    extra = 0
+
+
+@admin.register(MissionForm)
+class MissionFormAdmin(PolymorphicChildModelAdmin):
+    base_model = MissionForm
+    list_filter = ("account",)
+    list_display = ("name", "mission_type", "account")
+    inlines = [MissionFormThroughFormInline]
+
+
+class MissionOrgUnitTypeThroughFormInline(admin.TabularInline):
+    model = MissionOrgUnitTypeThroughForm
+    extra = 0
+
+
+@admin.register(MissionOrgUnitType)
+class MissionOrgUnitTypeAdmin(PolymorphicChildModelAdmin):
+    base_model = MissionOrgUnitType
+    list_filter = ("account",)
+    list_display = ("name", "mission_type", "account", "org_unit_type", "min_cardinality", "max_cardinality")
+    inlines = [MissionOrgUnitTypeThroughFormInline]
+
+
+class MissionEntityTypeThroughFormInline(admin.TabularInline):
+    model = MissionEntityTypeThroughForm
+    extra = 0
+
+
+@admin.register(MissionEntityType)
+class MissionEntityTypeAdmin(PolymorphicChildModelAdmin):
+    base_model = MissionEntityType
+    list_filter = ("account",)
+    list_display = ("name", "mission_type", "account", "entity_type", "min_cardinality", "max_cardinality")
+    inlines = [MissionEntityTypeThroughFormInline]

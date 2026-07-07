@@ -88,6 +88,9 @@ class Mission(SoftDeletableModel, CreatedAndUpdatedModel, PolymorphicModel):
         self.mission_type = self.MISSION_TYPE
         super().save(*args, **kwargs)
 
+    def __str__(self):
+        return self.name
+
 
 class MissionFormThroughForm(models.Model):
     mission_form = models.ForeignKey("MissionForm", on_delete=models.CASCADE)

@@ -10,10 +10,6 @@ import { useGetFormsDropdownOptions } from '../forms/hooks/useGetFormsDropdownOp
 import { ChatPanel } from './components/ChatPanel';
 import { FormPreview } from './components/FormPreview';
 import { SaveFormDialog } from './components/SaveFormDialog';
-<<<<<<< Updated upstream
-=======
-// import { useGetFormsDropdown } from './hooks/requests/useGetFormsDropdown';
->>>>>>> Stashed changes
 import { useLoadForm } from './hooks/requests/useLoadForm';
 import { useSendMessage } from './hooks/requests/useSendMessage';
 import MESSAGES from './messages';
@@ -98,11 +94,7 @@ const FormAI: FunctionComponent = () => {
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
     const { mutate: sendMessage, isLoading } = useSendMessage();
-<<<<<<< Updated upstream
     const { data: forms } = useGetFormsDropdownOptions({
-=======
-    const { data: formOptions = [] } = useGetFormsDropdownOptions({
->>>>>>> Stashed changes
         extraFields: ['form_id', 'latest_form_version'],
     });
     const { mutate: loadForm, isLoading: isLoadingForm } = useLoadForm();

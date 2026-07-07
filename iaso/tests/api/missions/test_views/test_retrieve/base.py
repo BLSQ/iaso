@@ -1,13 +1,13 @@
-from iaso.models import Account, Project, EntityType, OrgUnitType, Form, MissionForm
-from iaso.models.microplanning.missions import (
+from iaso.models import Account, EntityType, Form, MissionForm, OrgUnitType, Project
+from iaso.models.missions import (
+    MissionEntityType,
+    MissionEntityTypeThroughForm,
     MissionFormThroughForm,
     MissionOrgUnitType,
     MissionOrgUnitTypeThroughForm,
-    MissionEntityType,
-    MissionEntityTypeThroughForm,
 )
 from iaso.permissions.core_permissions import CORE_MISSION_READ_PERMISSION, CORE_MISSION_WRITE_PERMISSION
-from iaso.test import SwaggerTestCaseMixin, APITestCase
+from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
 class MissionAPIRetrieveBaseTestCase(SwaggerTestCaseMixin, APITestCase):
@@ -80,20 +80,6 @@ class MissionAPIRetrieveBaseTestCase(SwaggerTestCaseMixin, APITestCase):
         cls.form_4.projects.add(cls.project)
         cls.form_5.projects.add(cls.project)
 
-        # set out
-        cls.form_1.org_unit_types.set([cls.out, cls.out_2])
-        cls.form_2.org_unit_types.set([cls.out, cls.out_3])
-        cls.form_3.org_unit_types.set([cls.out_2, cls.out_2])
-
-        cls.form_1.entitytype_set.add(cls.et)
-        cls.form_1.entitytype_set.add(cls.et_2)
-
-        cls.form_2.entitytype_set.add(cls.et)
-        cls.form_2.entitytype_set.add(cls.et_2)
-
-        cls.form_3.entitytype_set.add(cls.et_2)
-        cls.form_3.entitytype_set.add(cls.et_3)
-
         cls.form_6 = Form.objects.create(name="form_6")
         cls.form_7 = Form.objects.create(name="form_7")
 
@@ -156,7 +142,11 @@ class MissionAPIRetrieveBaseTestCase(SwaggerTestCaseMixin, APITestCase):
             name="mission_et_2", account=cls.account, entity_type=cls.et_2, min_cardinality=2, max_cardinality=3
         )
         cls.mission_et_3 = MissionEntityType.objects.create(
-            name="mission_et_3", account=cls.other_account, entity_type=cls.et_other_account, min_cardinality=3, max_cardinality=3
+            name="mission_et_3",
+            account=cls.other_account,
+            entity_type=cls.et_other_account,
+            min_cardinality=3,
+            max_cardinality=3,
         )
 
         MissionEntityTypeThroughForm.objects.bulk_create(

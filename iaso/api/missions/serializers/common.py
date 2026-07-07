@@ -1,6 +1,5 @@
 from collections.abc import Mapping
 
-from rest_framework import serializers
 from rest_framework.fields import empty
 from rest_polymorphic.serializers import PolymorphicSerializer
 
@@ -11,20 +10,9 @@ class BaseMissionPolymorphicSerializer(PolymorphicSerializer):
 
     def is_valid(self, *args, **kwargs):
         valid = super(PolymorphicSerializer, self).is_valid(*args, **kwargs)
-        try:
-            if self.instance:
-                resource_type = self.to_resource_type(self.instance)
-                serializer = self._get_serializer_from_model_or_instance(self.instance)
-            else:
-                resource_type = self._get_resource_type_from_mapping(self.initial_data)
-                serializer = self._get_serializer_from_resource_type(resource_type)
-
-        except serializers.ValidationError:
-            child_valid = False
-        else:
-            child_valid = serializer.is_valid(*args, **kwargs)
-            self._errors.update(serializer.errors)
-        return valid and child_valid
+        if hasattr(self, "_child_serializer"):
+            self._errors.update(self._child_serializer.errors)
+        return valid
 
     def run_validation(self, data=empty):
         if self.instance:

@@ -6,8 +6,9 @@ from iaso.api.common import (
     ModelViewSet,
 )
 from iaso.api.permission_checks import ReadOnly
-from iaso.models.microplanning import Assignment, Mission, MissionType, Planning
+from iaso.models.microplanning import Assignment, Planning
 
+from ...models.missions import Mission, MissionType
 from .serializers import MobilePlanningSerializer, MobilePlanningV2Serializer
 
 

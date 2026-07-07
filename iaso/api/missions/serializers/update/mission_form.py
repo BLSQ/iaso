@@ -5,7 +5,7 @@ from rest_framework import serializers
 from iaso.api.common import ModelSerializer
 from iaso.api.common.serializer_fields import CurrentAccountDefault
 from iaso.models import Form, MissionForm
-from iaso.models.microplanning.missions import MissionFormThroughForm
+from iaso.models.missions import MissionFormThroughForm
 
 
 class NestedMissionFormThroughFormUpdateSerializer(ModelSerializer):
@@ -18,11 +18,6 @@ class NestedMissionFormThroughFormUpdateSerializer(ModelSerializer):
             "min_cardinality": {"write_only": True},
             "max_cardinality": {"write_only": True},
         }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if getattr(self.context.get("request", None), "user", None):
-            self.fields["form"].queryset = Form.objects.filter_for_user_and_app_id(self.context["request"].user)
 
     def set_context(self, context):
         # method to trigger again the queryset computation

@@ -2,7 +2,7 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.models import Account
-from iaso.models.microplanning import MissionType
+from iaso.models.missions import MissionType
 from iaso.permissions.core_permissions import CORE_MISSION_READ_PERMISSION, CORE_MISSION_WRITE_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
@@ -77,8 +77,11 @@ class MissionAPIMissionTypeDropdownTestCase(SwaggerTestCaseMixin, APITestCase):
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
 
         self.assertValidData(res_data)
-        self.assertEqual(res_data, [
-            {"label": MissionType.FORM_FILLING.label, "value": MissionType.FORM_FILLING.value},
-            {"label": MissionType.ORG_UNIT_AND_FORM.label, "value": MissionType.ORG_UNIT_AND_FORM.value},
-            {"label": MissionType.ENTITY_AND_FORM.label, "value": MissionType.ENTITY_AND_FORM.value}
-        ])
+        self.assertEqual(
+            res_data,
+            [
+                {"label": MissionType.FORM_FILLING.label, "value": MissionType.FORM_FILLING.value},
+                {"label": MissionType.ORG_UNIT_AND_FORM.label, "value": MissionType.ORG_UNIT_AND_FORM.value},
+                {"label": MissionType.ENTITY_AND_FORM.label, "value": MissionType.ENTITY_AND_FORM.value},
+            ],
+        )

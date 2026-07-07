@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.settings import api_settings
 
 from iaso.models import Account, Form, MissionForm, Project
-from iaso.models.microplanning import MissionType
+from iaso.models.missions import MissionType
 from iaso.permissions.core_permissions import CORE_MISSION_READ_PERMISSION, CORE_MISSION_WRITE_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
@@ -162,7 +162,7 @@ class MissionFormAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
     def test_num_queries(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
 
-        with self.assertNumQueries(12):
+        with self.assertNumQueries(11):
             res = self.client.post(
                 reverse("missions-list"),
                 data={

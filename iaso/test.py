@@ -24,8 +24,8 @@ from django.utils import timezone
 from django_test_migrations.contrib.unittest_case import MigratorTestCase
 from django_test_migrations.migrator import Migrator
 from jinja2 import Environment, FileSystemLoader
-from rest_framework.test import APIClient, APITestCase as BaseAPITestCase
 from openapi_schema_validator import validate
+from rest_framework.test import APIClient, APITestCase as BaseAPITestCase
 
 from hat.api_import.models import APIImport
 from iaso import models as m

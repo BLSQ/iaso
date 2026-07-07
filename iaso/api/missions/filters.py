@@ -1,6 +1,6 @@
 import django_filters
 
-from iaso.models.microplanning import MissionType
+from iaso.models.missions import MissionType
 
 
 class MissionFilter(django_filters.FilterSet):

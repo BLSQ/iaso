@@ -2,7 +2,7 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.models import Account, Form, MissionForm, Project
-from iaso.models.microplanning.missions import Mission, MissionFormThroughForm
+from iaso.models.missions import Mission, MissionFormThroughForm
 from iaso.permissions.core_permissions import CORE_MISSION_READ_PERMISSION, CORE_MISSION_WRITE_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 

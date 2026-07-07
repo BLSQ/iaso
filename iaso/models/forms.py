@@ -124,6 +124,11 @@ class FormQuerySet(models.QuerySet):
             return self
         return self.filter(projects__in=user_projects_ids)
 
+    def filter_on_entity_type(self, entity_type) -> models.QuerySet:
+        return self.exclude(entitytype__isnull=False).filter(
+            workflowfollowup__workflow_version__workflow__entity_type=entity_type
+        )
+
 
 class Form(SoftDeletableModel):
     """Metadata about a form

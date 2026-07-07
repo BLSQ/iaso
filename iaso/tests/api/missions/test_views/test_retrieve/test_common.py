@@ -1,12 +1,12 @@
 from django.urls import reverse
 from rest_framework import status
+
 from iaso.tests.api.missions.test_views.test_retrieve.base import MissionAPIRetrieveBaseTestCase
 
 
 class MissionAPIRetrieveCommonTestCase(MissionAPIRetrieveBaseTestCase):
-
     def test_permissions(self):
-        res = self.client.get(reverse("missions-detail"))
+        res = self.client.get(reverse("missions-detail", kwargs={"pk": self.mission_form_1.pk}))
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
         self.client.force_authenticate(user=self.user_account_no_perm)
@@ -24,7 +24,7 @@ class MissionAPIRetrieveCommonTestCase(MissionAPIRetrieveBaseTestCase):
         self.client.force_authenticate(user=self.superuser)
         res = self.client.get(reverse("missions-detail", kwargs={"pk": self.mission_form_1.pk}))
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        
+
     def test_should_see_missions_only_belonging_to_account(self):
         self.client.force_authenticate(self.user_account_read_perm)
 

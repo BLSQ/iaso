@@ -1,20 +1,25 @@
 from django.urls import reverse
-from django.utils.timezone import now
 from rest_framework import status
 
-from iaso.models import Account, EntityType, Form, MissionForm, OrgUnitType, Project
-from iaso.models.microplanning import MissionEntityType, MissionOrgUnitType, MissionType
-from iaso.models.microplanning.missions import (
+from iaso.models import (
+    Account,
+    EntityType,
+    Form,
+    MissionEntityType,
     MissionEntityTypeThroughForm,
+    MissionForm,
     MissionFormThroughForm,
+    MissionOrgUnitType,
     MissionOrgUnitTypeThroughForm,
+    OrgUnitType,
+    Project,
 )
+from iaso.models.missions import MissionType
 from iaso.permissions.core_permissions import CORE_MISSION_READ_PERMISSION, CORE_MISSION_WRITE_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
 class MissionAPIListTestCase(SwaggerTestCaseMixin, APITestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.account = Account.objects.create(name="account")
@@ -49,8 +54,6 @@ class MissionAPIListTestCase(SwaggerTestCaseMixin, APITestCase):
             is_superuser=True,
         )
 
-
-
         # create some data
 
         cls.project = Project.objects.create(name="project", account=cls.account)
@@ -73,7 +76,6 @@ class MissionAPIListTestCase(SwaggerTestCaseMixin, APITestCase):
         cls.out_2.projects.add(cls.project)
         cls.out_other_account.projects.add(cls.project_other_account)
 
-
         # forms
         cls.form_1 = Form.objects.create(name="form_1")
         cls.form_2 = Form.objects.create(name="form_2")
@@ -86,20 +88,6 @@ class MissionAPIListTestCase(SwaggerTestCaseMixin, APITestCase):
         cls.form_3.projects.add(cls.project)
         cls.form_4.projects.add(cls.project)
         cls.form_5.projects.add(cls.project)
-
-        # set out
-        cls.form_1.org_unit_types.set([cls.out, cls.out_2])
-        cls.form_2.org_unit_types.set([cls.out, cls.out_3])
-        cls.form_3.org_unit_types.set([cls.out_2, cls.out_2])
-
-        cls.form_1.entitytype_set.add(cls.et)
-        cls.form_1.entitytype_set.add(cls.et_2)
-
-        cls.form_2.entitytype_set.add(cls.et)
-        cls.form_2.entitytype_set.add(cls.et_2)
-
-        cls.form_3.entitytype_set.add(cls.et_2)
-        cls.form_3.entitytype_set.add(cls.et_3)
 
         cls.form_6 = Form.objects.create(name="form_6")
         cls.form_7 = Form.objects.create(name="form_7")
@@ -132,9 +120,15 @@ class MissionAPIListTestCase(SwaggerTestCaseMixin, APITestCase):
             ]
         )
 
-        cls.mission_out_1 = MissionOrgUnitType.objects.create(name="mission_out_1", account=cls.account, org_unit_type=cls.out, min_cardinality=1, max_cardinality=3)
-        cls.mission_out_2 = MissionOrgUnitType.objects.create(name="mission_out_2", account=cls.account, org_unit_type=cls.out_2, min_cardinality=2, max_cardinality=4)
-        cls.mission_out_3 = MissionOrgUnitType.objects.create(name="mission_out_3", account=cls.other_account, org_unit_type=cls.out_other_account)
+        cls.mission_out_1 = MissionOrgUnitType.objects.create(
+            name="mission_out_1", account=cls.account, org_unit_type=cls.out, min_cardinality=1, max_cardinality=3
+        )
+        cls.mission_out_2 = MissionOrgUnitType.objects.create(
+            name="mission_out_2", account=cls.account, org_unit_type=cls.out_2, min_cardinality=2, max_cardinality=4
+        )
+        cls.mission_out_3 = MissionOrgUnitType.objects.create(
+            name="mission_out_3", account=cls.other_account, org_unit_type=cls.out_other_account
+        )
 
         MissionOrgUnitTypeThroughForm.objects.bulk_create(
             [
@@ -146,13 +140,19 @@ class MissionAPIListTestCase(SwaggerTestCaseMixin, APITestCase):
                 ),
                 MissionOrgUnitTypeThroughForm(
                     mission_org_unit_type=cls.mission_out_2, form=cls.form_3, min_cardinality=3, max_cardinality=3
-                )
+                ),
             ]
         )
 
-        cls.mission_et_1 = MissionEntityType.objects.create(name="mission_et_1", account=cls.account, entity_type=cls.et)
-        cls.mission_et_2 = MissionEntityType.objects.create(name="mission_et_2", account=cls.account, entity_type=cls.et_2)
-        cls.mission_et_3 = MissionEntityType.objects.create(name="mission_et_3", account=cls.other_account, entity_type=cls.et_other_account)
+        cls.mission_et_1 = MissionEntityType.objects.create(
+            name="mission_et_1", account=cls.account, entity_type=cls.et
+        )
+        cls.mission_et_2 = MissionEntityType.objects.create(
+            name="mission_et_2", account=cls.account, entity_type=cls.et_2
+        )
+        cls.mission_et_3 = MissionEntityType.objects.create(
+            name="mission_et_3", account=cls.other_account, entity_type=cls.et_other_account
+        )
 
         MissionEntityTypeThroughForm.objects.bulk_create(
             [
@@ -167,7 +167,7 @@ class MissionAPIListTestCase(SwaggerTestCaseMixin, APITestCase):
                 ),
             ]
         )
-        
+
         # deleted missions
         cls.soft_deleted_mission = MissionForm.objects.create(name="soft_deleted_mission_form", account=cls.account)
         cls.soft_deleted_mission.delete()
@@ -212,13 +212,13 @@ class MissionAPIListTestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertValidData(res_data, 6)
 
         with self.subTest("Mission type filter"):
-            res = self.client.get(reverse("missions-list"), data={
-                "mission_type": MissionType.FORM_FILLING
-            })
+            res = self.client.get(reverse("missions-list"), data={"mission_type": MissionType.FORM_FILLING})
             res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidData(res_data, 2)
 
-            self.assertCountEqual([x["id"] for x in res_data["results"]], [self.mission_form_1.pk, self.mission_form_2.pk])
+            self.assertCountEqual(
+                [x["id"] for x in res_data["results"]], [self.mission_form_1.pk, self.mission_form_2.pk]
+            )
 
             res = self.client.get(reverse("missions-list"), data={"mission_type": MissionType.ORG_UNIT_AND_FORM})
             res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
@@ -232,9 +232,7 @@ class MissionAPIListTestCase(SwaggerTestCaseMixin, APITestCase):
             res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidData(res_data, 2)
 
-            self.assertCountEqual(
-                [x["id"] for x in res_data["results"]], [self.mission_et_1.pk, self.mission_et_2.pk]
-            )
+            self.assertCountEqual([x["id"] for x in res_data["results"]], [self.mission_et_1.pk, self.mission_et_2.pk])
 
         with self.subTest("Search filter"):
             res = self.client.get(reverse("missions-list"), data={"search": "MISSION_FORM"})
@@ -255,18 +253,17 @@ class MissionAPIListTestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_should_see_missions_belonging_to_account(self):
         self.client.force_authenticate(self.user_account_read_perm)
-        
+
         res = self.client.get(reverse("missions-list"))
-        res_data =self.assertJSONResponse(res, status.HTTP_200_OK)
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data, 6)
 
         results_pk = [x["id"] for x in res_data["results"]]
         self.assertNotIn(self.mission_et_3.pk, results_pk)
         self.assertNotIn(self.mission_out_3.pk, results_pk)
         self.assertNotIn(self.mission_form_3.pk, results_pk)
-    
-    def test_should_not_see_soft_deleted_mission(self):
 
+    def test_should_not_see_soft_deleted_mission(self):
         self.assertIsNotNone(self.soft_deleted_mission.deleted_at)
 
         self.client.force_authenticate(self.user_account_read_perm)
@@ -286,7 +283,7 @@ class MissionAPIListTestCase(SwaggerTestCaseMixin, APITestCase):
         results = res_data["results"]
 
         first_result = results[0]
-        
+
         self.assertEqual(first_result["id"], self.mission_form_1.pk)
         self.assertEqual(first_result["mission_type"], MissionType.FORM_FILLING.label)
         self.assertEqual(first_result["forms_count"], 3)
@@ -326,5 +323,3 @@ class MissionAPIListTestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(sixth_result["forms_count"], 1)
         self.assertEqual(sixth_result["entity_type"], {"id": self.et_2.pk, "name": self.et_2.name})
         self.assertIsNotNone(sixth_result["created_at"])
-
-

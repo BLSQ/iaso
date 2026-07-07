@@ -3,12 +3,12 @@ from rest_framework import status
 from rest_framework.settings import api_settings
 
 from iaso.models import Account, Form, OrgUnitType, Project
-from iaso.models.missions import MissionOrgUnitType, MissionType
+from iaso.models.missions import MissionOrgUnitType, MissionOrgUnitTypeThroughForm
 from iaso.permissions.core_permissions import CORE_MISSION_READ_PERMISSION, CORE_MISSION_WRITE_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
-class MissionOrgUnitTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
+class MissionOrgUnitTypeAPIUpdateTestCase(SwaggerTestCaseMixin, APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.account = Account.objects.create(name="account")
@@ -43,71 +43,97 @@ class MissionOrgUnitTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
             is_superuser=True,
         )
 
+        # create some data
+
         cls.project = Project.objects.create(name="project", account=cls.account)
         cls.project_other_account = Project.objects.create(name="project", account=cls.other_account)
 
+        # out
+
         cls.out = OrgUnitType.objects.create(name="out")
         cls.out_2 = OrgUnitType.objects.create(name="out2")
+        cls.out_3 = OrgUnitType.objects.create(name="out2")
         cls.out_other_account = OrgUnitType.objects.create(name="out_other_account")
 
         cls.out.projects.add(cls.project)
         cls.out_2.projects.add(cls.project)
         cls.out_other_account.projects.add(cls.project_other_account)
 
+        # forms
         cls.form_1 = Form.objects.create(name="form_1")
         cls.form_2 = Form.objects.create(name="form_2")
         cls.form_3 = Form.objects.create(name="form_3")
+        cls.form_4 = Form.objects.create(name="form_4")
+        cls.form_5 = Form.objects.create(name="form_5")
 
         cls.form_1.projects.add(cls.project)
         cls.form_2.projects.add(cls.project)
         cls.form_3.projects.add(cls.project)
+        cls.form_4.projects.add(cls.project)
+        cls.form_5.projects.add(cls.project)
 
-        cls.form_1.org_unit_types.add(cls.out)
-        cls.form_2.org_unit_types.add(cls.out)
-        cls.form_3.org_unit_types.add(cls.out_2)
+        # set out
+        cls.form_1.org_unit_types.set([cls.out, cls.out_2])
+        cls.form_2.org_unit_types.set([cls.out, cls.out_3])
+        cls.form_3.org_unit_types.set([cls.out_2, cls.out_2])
 
-        cls.form_4 = Form.objects.create(name="form_4")
-        cls.form_5 = Form.objects.create(name="form_5")
+        cls.form_6 = Form.objects.create(name="form_6")
+        cls.form_7 = Form.objects.create(name="form_7")
 
-        cls.form_4.projects.add(cls.project_other_account)
-        cls.form_5.projects.add(cls.project_other_account)
+        cls.form_6.projects.add(cls.project_other_account)
+        cls.form_7.projects.add(cls.project_other_account)
+
+    def setUp(self):
+        super().setUp()
+        # missions
+
+        self.mission_out_1 = MissionOrgUnitType.objects.create(
+            name="mission_out_1", account=self.account, org_unit_type=self.out, min_cardinality=1, max_cardinality=3
+        )
+        self.mission_out_2 = MissionOrgUnitType.objects.create(
+            name="mission_out_2", account=self.account, org_unit_type=self.out_2, min_cardinality=2, max_cardinality=4
+        )
+        self.mission_out_3 = MissionOrgUnitType.objects.create(
+            name="mission_out_3", account=self.other_account, org_unit_type=self.out_other_account
+        )
+
+        MissionOrgUnitTypeThroughForm.objects.bulk_create(
+            [
+                MissionOrgUnitTypeThroughForm(
+                    mission_org_unit_type=self.mission_out_1, form=self.form_1, min_cardinality=1, max_cardinality=3
+                ),
+                MissionOrgUnitTypeThroughForm(
+                    mission_org_unit_type=self.mission_out_1, form=self.form_2, min_cardinality=2, max_cardinality=3
+                ),
+                MissionOrgUnitTypeThroughForm(
+                    mission_org_unit_type=self.mission_out_2, form=self.form_3, min_cardinality=3, max_cardinality=3
+                ),
+            ]
+        )
 
     def assertValidBodyData(self, data):
-        self.assertResponseCompliantToSwagger(data, "MissionPolymorphicCreateRequest")
+        self.assertResponseCompliantToSwagger(data, "MissionOrgUnitTypeUpdateRequest")
 
     def test_validation(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
-        res = self.client.post(reverse("missions-list"))
 
-        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        self.assertHasError(res_data, "mission_type", "This field is required")
-
-        res = self.client.post(reverse("missions-list"), data={"mission_type": "wrong"})
-        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        self.assertHasError(res_data, "mission_type", "Invalid mission_type")
-
-        res = self.client.post(reverse("missions-list"), data={"mission_type": MissionType.ORG_UNIT_AND_FORM})
+        res = self.client.put(reverse("missions-detail", kwargs={"pk": self.mission_out_1.pk}))
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(res_data, "name", "This field is required.")
 
-        res = self.client.post(
-            reverse("missions-list"), data={"mission_type": MissionType.ORG_UNIT_AND_FORM, "name": "test"}
-        )
+        res = self.client.put(reverse("missions-detail", kwargs={"pk": self.mission_out_1.pk}), data={"name": "test"})
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(res_data, "org_unit_type", "This field is required.")
 
     def test_validation_should_have_one_form(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
-        res = self.client.post(
-            reverse("missions-list"), data={"mission_type": MissionType.ORG_UNIT_AND_FORM, "name": "name"}
-        )
+        res = self.client.put(reverse("missions-detail", kwargs={"pk": self.mission_out_1.pk}), data={"name": "name"})
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(res_data, "forms", "This field is required.")
 
-        res = self.client.post(
-            reverse("missions-list"),
+        res = self.client.put(
+            reverse("missions-detail", kwargs={"pk": self.mission_out_1.pk}),
             data={
-                "mission_type": MissionType.ORG_UNIT_AND_FORM,
                 "name": "name",
                 "org_unit_type": self.out.pk,
                 "forms": [],
@@ -119,10 +145,9 @@ class MissionOrgUnitTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
     def test_validation_should_provide_org_unit_type_that_belong_to_account(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
 
-        res = self.client.post(
-            reverse("missions-list"),
+        res = self.client.put(
+            reverse("missions-detail", kwargs={"pk": self.mission_out_1.pk}),
             data={
-                "mission_type": MissionType.ORG_UNIT_AND_FORM,
                 "name": "name",
                 "org_unit_type": self.out_other_account.pk,
                 "forms": [],
@@ -136,10 +161,9 @@ class MissionOrgUnitTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
     def test_validation_should_provide_forms_that_belong_to_out(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
 
-        res = self.client.post(
-            reverse("missions-list"),
+        res = self.client.put(
+            reverse("missions-detail", kwargs={"pk": self.mission_out_1.pk}),
             data={
-                "mission_type": MissionType.ORG_UNIT_AND_FORM,
                 "name": "name",
                 "org_unit_type": self.out_2.pk,
                 "forms": [
@@ -154,7 +178,7 @@ class MissionOrgUnitTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
             res_data,
             {
                 "forms": [
-                    {"form": [f'Invalid pk "{self.form_1.pk}" - object does not exist.']},
+                    {},
                     {"form": [f'Invalid pk "{self.form_2.pk}" - object does not exist.']},
                 ]
             },
@@ -163,15 +187,14 @@ class MissionOrgUnitTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
     def test_validation_should_provide_forms_that_belong_to_account(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
 
-        res = self.client.post(
-            reverse("missions-list"),
+        res = self.client.put(
+            reverse("missions-detail", kwargs={"pk": self.mission_out_1.pk}),
             data={
-                "mission_type": MissionType.ORG_UNIT_AND_FORM,
                 "name": "name",
                 "org_unit_type": self.out.pk,
                 "forms": [
-                    {"form": self.form_4.pk, "min_cardinality": 1, "max_cardinality": 2},
-                    {"form": self.form_5.pk, "min_cardinality": 1, "max_cardinality": 2},
+                    {"form": self.form_6.pk, "min_cardinality": 1, "max_cardinality": 2},
+                    {"form": self.form_7.pk, "min_cardinality": 1, "max_cardinality": 2},
                 ],
             },
         )
@@ -180,8 +203,8 @@ class MissionOrgUnitTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
             res_data,
             {
                 "forms": [
-                    {"form": [f'Invalid pk "{self.form_4.pk}" - object does not exist.']},
-                    {"form": [f'Invalid pk "{self.form_5.pk}" - object does not exist.']},
+                    {"form": [f'Invalid pk "{self.form_6.pk}" - object does not exist.']},
+                    {"form": [f'Invalid pk "{self.form_7.pk}" - object does not exist.']},
                 ]
             },
         )
@@ -189,10 +212,9 @@ class MissionOrgUnitTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
     def test_validation_forms_should_be_unique(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
 
-        res = self.client.post(
-            reverse("missions-list"),
+        res = self.client.put(
+            reverse("missions-detail", kwargs={"pk": self.mission_out_1.pk}),
             data={
-                "mission_type": MissionType.ORG_UNIT_AND_FORM,
                 "name": "name",
                 "org_unit_type": self.out.pk,
                 "forms": [
@@ -207,10 +229,9 @@ class MissionOrgUnitTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
     def test_validation_min_max_cardinality(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
 
-        res = self.client.post(
-            reverse("missions-list"),
+        res = self.client.put(
+            reverse("missions-detail", kwargs={"pk": self.mission_out_1.pk}),
             data={
-                "mission_type": MissionType.ORG_UNIT_AND_FORM,
                 "name": "name",
                 "org_unit_type": self.out.pk,
                 "min_cardinality": 4,
@@ -232,10 +253,9 @@ class MissionOrgUnitTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
             },
         )
 
-        res = self.client.post(
-            reverse("missions-list"),
+        res = self.client.put(
+            reverse("missions-detail", kwargs={"pk": self.mission_out_1.pk}),
             data={
-                "mission_type": MissionType.ORG_UNIT_AND_FORM,
                 "name": "name",
                 "org_unit_type": self.out.pk,
                 "min_cardinality": 4,
@@ -254,67 +274,65 @@ class MissionOrgUnitTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
         )
 
     def test_num_queries(self):
-        self.client.force_authenticate(user=self.user_account_write_perm)
-
-        with self.assertNumQueries(11):
-            res = self.client.post(
-                reverse("missions-list"),
-                data={
-                    "mission_type": MissionType.ORG_UNIT_AND_FORM.value,
-                    "name": "name",
-                    "description": "description",
-                    "org_unit_type": self.out.pk,
-                    "min_cardinality": 2,
-                    "max_cardinality": 3,
-                    "forms": [
-                        {"form": self.form_1.pk, "min_cardinality": 1, "max_cardinality": 2},
-                        {"form": self.form_2.pk, "min_cardinality": 2, "max_cardinality": 3},
-                    ],
-                },
-            )
-
-        self.assertJSONResponse(res, status.HTTP_201_CREATED)
-
-    def test_create(self):
-        self.client.force_authenticate(user=self.user_account_write_perm)
+        self.client.force_authenticate(user=self.superuser)
 
         body = {
-            "mission_type": MissionType.ORG_UNIT_AND_FORM.value,
-            "name": "name",
-            "description": "description",
-            "org_unit_type": self.out.pk,
-            "min_cardinality": 2,
-            "max_cardinality": 3,
+            "name": "new name",
+            "description": "new description",
+            "org_unit_type": self.out_2.pk,
+            "min_cardinality": 6,
+            "max_cardinality": 8,
             "forms": [
-                {"form": self.form_1.pk, "min_cardinality": 1, "max_cardinality": 2},
-                {"form": self.form_2.pk, "min_cardinality": 2, "max_cardinality": 3},
+                {"form": self.form_1.pk, "min_cardinality": 4, "max_cardinality": 9},
+                {"form": self.form_3.pk, "min_cardinality": 2, "max_cardinality": 4},
             ],
         }
+
         self.assertValidBodyData(body)
-        res = self.client.post(
-            reverse("missions-list"),
+
+        with self.assertNumQueries(14):
+            res = self.client.put(
+                reverse("missions-detail", kwargs={"pk": self.mission_out_1.pk}),
+                data=body,
+            )
+
+        self.assertJSONResponse(res, status.HTTP_200_OK)
+
+    def test_update(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        body = {
+            "name": "new name",
+            "description": "new description",
+            "org_unit_type": self.out_2.pk,
+            "min_cardinality": 6,
+            "max_cardinality": 8,
+            "forms": [
+                {"form": self.form_1.pk, "min_cardinality": 4, "max_cardinality": 9},
+                {"form": self.form_3.pk, "min_cardinality": 2, "max_cardinality": 4},
+            ],
+        }
+
+        self.assertValidBodyData(body)
+
+        res = self.client.put(
+            reverse("missions-detail", kwargs={"pk": self.mission_out_1.pk}),
             data=body,
         )
 
-        self.assertJSONResponse(res, status.HTTP_201_CREATED)
+        self.assertJSONResponse(res, status.HTTP_200_OK)
 
-        self.assertEqual(MissionOrgUnitType.objects.count(), 1)
+        self.mission_out_1.refresh_from_db()
 
-        mission_out = MissionOrgUnitType.objects.first()
-
-        self.assertEqual(mission_out.name, "name")
-        self.assertEqual(mission_out.description, "description")
-        self.assertEqual(mission_out.org_unit_type_id, self.out.pk)
-        self.assertEqual(mission_out.min_cardinality, 2)
-        self.assertEqual(mission_out.max_cardinality, 3)
-
-        self.assertEqual(mission_out.forms.count(), 2)
-
-        self.assertCountEqual(
+        self.assertEqual(self.mission_out_1.name, "new name")
+        self.assertEqual(self.mission_out_1.description, "new description")
+        self.assertEqual(self.mission_out_1.min_cardinality, 6)
+        self.assertEqual(self.mission_out_1.max_cardinality, 8)
+        self.assertEqual(
             list(
-                mission_out.missionorgunittypethroughform_set.values_list(
-                    "min_cardinality", "max_cardinality", "form_id"
+                self.mission_out_1.missionorgunittypethroughform_set.values_list(
+                    "form_id", "min_cardinality", "max_cardinality"
                 )
             ),
-            [(1, 2, self.form_1.pk), (2, 3, self.form_2.pk)],
+            [(self.form_1.pk, 4, 9), (self.form_3.pk, 2, 4)],
         )

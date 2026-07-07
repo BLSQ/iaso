@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.settings import api_settings
 
 from iaso.models import Account, Form, MissionForm, Project
-from iaso.models.microplanning.missions import MissionFormThroughForm
+from iaso.models.missions import MissionFormThroughForm
 from iaso.permissions.core_permissions import CORE_MISSION_READ_PERMISSION, CORE_MISSION_WRITE_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
@@ -67,39 +67,41 @@ class MissionFormAPIUpdateTestCase(SwaggerTestCaseMixin, APITestCase):
         cls.form_6.projects.add(cls.project_other_account)
         cls.form_7.projects.add(cls.project_other_account)
 
+    def setUp(self):
+        super().setUp()
         # missions
-        cls.mission_form_1 = MissionForm.objects.create(
-            name="mission_form_1", description="mission_form_1", account=cls.account
+        self.mission_form_1 = MissionForm.objects.create(
+            name="mission_form_1", description="mission_form_1", account=self.account
         )
-        cls.mission_form_2 = MissionForm.objects.create(
-            name="mission_form_2", description="mission_form_2", account=cls.account
+        self.mission_form_2 = MissionForm.objects.create(
+            name="mission_form_2", description="mission_form_2", account=self.account
         )
-        cls.mission_form_3 = MissionForm.objects.create(
-            name="mission_form_3", description="mission_form_3", account=cls.other_account
+        self.mission_form_3 = MissionForm.objects.create(
+            name="mission_form_3", description="mission_form_3", account=self.other_account
         )
 
         MissionFormThroughForm.objects.bulk_create(
             [
                 MissionFormThroughForm(
-                    mission_form=cls.mission_form_1, form=cls.form_1, min_cardinality=1, max_cardinality=3
+                    mission_form=self.mission_form_1, form=self.form_1, min_cardinality=1, max_cardinality=3
                 ),
                 MissionFormThroughForm(
-                    mission_form=cls.mission_form_1, form=cls.form_2, min_cardinality=2, max_cardinality=3
+                    mission_form=self.mission_form_1, form=self.form_2, min_cardinality=2, max_cardinality=3
                 ),
                 MissionFormThroughForm(
-                    mission_form=cls.mission_form_1, form=cls.form_3, min_cardinality=3, max_cardinality=3
+                    mission_form=self.mission_form_1, form=self.form_3, min_cardinality=3, max_cardinality=3
                 ),
                 MissionFormThroughForm(
-                    mission_form=cls.mission_form_2, form=cls.form_4, min_cardinality=4, max_cardinality=5
+                    mission_form=self.mission_form_2, form=self.form_4, min_cardinality=4, max_cardinality=5
                 ),
                 MissionFormThroughForm(
-                    mission_form=cls.mission_form_2, form=cls.form_5, min_cardinality=5, max_cardinality=6
+                    mission_form=self.mission_form_2, form=self.form_5, min_cardinality=5, max_cardinality=6
                 ),
             ]
         )
 
     def assertValidBodyData(self, data):
-        self.assertResponseCompliantToSwagger(data, "PatchedMissionFormUpdateTypedRequest")
+        self.assertResponseCompliantToSwagger(data, "MissionFormUpdateRequest")
 
     def test_validation_should_have_one_form(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
@@ -121,8 +123,8 @@ class MissionFormAPIUpdateTestCase(SwaggerTestCaseMixin, APITestCase):
             data={
                 "name": "name",
                 "forms": [
-                    {"form": self.form_4.pk, "min_cardinality": 1, "max_cardinality": 2},
-                    {"form": self.form_5.pk, "min_cardinality": 1, "max_cardinality": 2},
+                    {"form": self.form_6.pk, "min_cardinality": 1, "max_cardinality": 2},
+                    {"form": self.form_7.pk, "min_cardinality": 1, "max_cardinality": 2},
                 ],
             },
         )
@@ -131,8 +133,8 @@ class MissionFormAPIUpdateTestCase(SwaggerTestCaseMixin, APITestCase):
             res_data,
             {
                 "forms": [
-                    {"form": [f'Invalid pk "{self.form_4.pk}" - object does not exist.']},
-                    {"form": [f'Invalid pk "{self.form_5.pk}" - object does not exist.']},
+                    {"form": [f'Invalid pk "{self.form_6.pk}" - object does not exist.']},
+                    {"form": [f'Invalid pk "{self.form_7.pk}" - object does not exist.']},
                 ]
             },
         )
@@ -179,35 +181,38 @@ class MissionFormAPIUpdateTestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.superuser)
+        self.client.force_authenticate(self.superuser)
 
-        with self.assertNumQueries(3):
+        body = {
+            "name": "new name",
+            "description": "",
+            "forms": [
+                {"form": self.form_1.pk, "min_cardinality": 12, "max_cardinality": 15},
+                {"form": self.form_4.pk, "min_cardinality": 1, "max_cardinality": 5},
+            ],
+        }
+        self.assertValidBodyData(body)
+
+        with self.assertNumQueries(13):
             res = self.client.put(
-                reverse("missions-detail", kwargs={"pk": self.mission_form_2.pk}),
-                data={
-                    "name": "new name",
-                    "description": "",
-                    "forms": [
-                        {"form": self.form_1.pk, "min_cardinality": 12, "max_cardinality": 15},
-                        {"form": self.form_5.pk, "min_cardinality": 1, "max_cardinality": 5},
-                    ],
-                },
+                reverse("missions-detail", kwargs={"pk": self.mission_form_1.pk}),
+                data=body,
             )
         self.assertJSONResponse(res, status.HTTP_200_OK)
 
     def test_update(self):
         self.client.force_authenticate(self.superuser)
 
-        res = self.client.put(
-            reverse("missions-detail", kwargs={"pk": self.mission_form_1.pk}),
-            data={
-                "name": "new name",
-                "description": "",
-                "forms": [
-                    {"form": self.form_1.pk, "min_cardinality": 12, "max_cardinality": 15},
-                    {"form": self.form_4.pk, "min_cardinality": 1, "max_cardinality": 5},
-                ],
-            },
-        )
+        body = {
+            "name": "new name",
+            "description": "",
+            "forms": [
+                {"form": self.form_1.pk, "min_cardinality": 12, "max_cardinality": 15},
+                {"form": self.form_4.pk, "min_cardinality": 1, "max_cardinality": 5},
+            ],
+        }
+        self.assertValidBodyData(body)
+        res = self.client.put(reverse("missions-detail", kwargs={"pk": self.mission_form_1.pk}), data=body)
 
         self.assertJSONResponse(res, status.HTTP_200_OK)
 

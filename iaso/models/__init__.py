@@ -12,7 +12,16 @@ from .forms import Form, FormAttachment, FormPredefinedFilter, FormVersion
 from .import_gpkg import ImportGPKG
 from .instances import Instance, InstanceFile, InstanceLock, InstanceQuerySet
 from .metric import MetricType, MetricValue
-from .microplanning import Mission, MissionForm, Planning
+from .microplanning import Planning
+from .missions import (
+    Mission,
+    MissionEntityType,
+    MissionEntityTypeThroughForm,
+    MissionForm,
+    MissionFormThroughForm,
+    MissionOrgUnitType,
+    MissionOrgUnitTypeThroughForm,
+)
 from .openhexa import OpenHEXAInstance, OpenHEXAWorkspace
 from .org_unit import OrgUnit, OrgUnitChangeRequest, OrgUnitReferenceInstance, OrgUnitType
 from .org_unit_change_request_configuration import OrgUnitChangeRequestConfiguration
@@ -74,6 +83,11 @@ __all__ = [
     "MetricValue",
     "Mission",
     "MissionForm",
+    "MissionFormThroughForm",
+    "MissionEntityType",
+    "MissionEntityTypeThroughForm",
+    "MissionOrgUnitType",
+    "MissionOrgUnitTypeThroughForm",
     "OpenHEXAInstance",
     "OpenHEXAWorkspace",
     "OrgUnit",

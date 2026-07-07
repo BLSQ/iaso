@@ -4,25 +4,27 @@ from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer
 from iaso.api.common.serializer_fields import CurrentAccountDefault
-from iaso.models import EntityType, Form
-from iaso.models.microplanning import MissionEntityType
-from iaso.models.microplanning.missions import MissionEntityTypeThroughForm
+from iaso.models import EntityType, Form, MissionEntityType
+from iaso.models.missions import MissionEntityTypeThroughForm
 
 
 class EntityTypeScopedFormField(serializers.PrimaryKeyRelatedField):
     def get_queryset(self):
-        if getattr(self.context.get("request", None), "user", None):
-            queryset = Form.objects.filter_on_user_projects(self.context["request"].user)
+        if not getattr(self.context.get("request", None), "user", None):
+            return Form.objects.none()
 
-        org_unit_type_pk = self.parent.parent.initial_data.get("org_unit_type")
-        if org_unit_type_pk:
-            queryset = queryset.filter(org_unit_type_id=org_unit_type_pk)
+        entity_type_pk = self.parent.parent.parent.initial_data.get("entity_type")
 
-        return queryset
+        if not entity_type_pk:
+            return Form.objects.none()
+
+        return Form.objects.filter_for_user_and_app_id(self.context["request"].user).filter_on_entity_type(
+            entity_type_pk
+        )
 
 
 class NestedMissionEntityTypeThroughFormUpdateSerializer(ModelSerializer):
-    form = serializers.PrimaryKeyRelatedField(queryset=Form.objects.none(), write_only=True)
+    form = EntityTypeScopedFormField(queryset=Form.objects.none(), write_only=True)
 
     class Meta:
         model = MissionEntityTypeThroughForm
@@ -31,17 +33,6 @@ class NestedMissionEntityTypeThroughFormUpdateSerializer(ModelSerializer):
             "min_cardinality": {"write_only": True},
             "max_cardinality": {"write_only": True},
         }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if getattr(self.context.get("request", None), "user", None):
-            self.fields["form"].queryset = Form.objects.filter_on_user_projects(self.context["request"].user)
-
-    def set_context(self, context):
-        # method to trigger again the queryset computation
-        self.context.update(context)
-        if getattr(self.context.get("request", None), "user", None):
-            self.fields["form"].queryset = Form.objects.filter_on_user_projects(self.context["request"].user)
 
     def validate(self, attrs):
         min_val = attrs.get("min_cardinality", 0)
@@ -86,7 +77,6 @@ class MissionEntityTypeUpdateSerializer(ModelSerializer):
         account = getattr(iaso_profile, "account", None)
         if account:
             self.fields["entity_type"].queryset = EntityType.objects.filter(account=account)
-            self.fields["forms"].child.set_context(self.context)
 
     def validate(self, attrs):
         min_val = attrs.get("min_cardinality", 0)
@@ -97,20 +87,47 @@ class MissionEntityTypeUpdateSerializer(ModelSerializer):
             )
         return attrs
 
+    def validate_forms(self, forms):
+        form_ids = [item["form"].pk for item in forms]
+
+        if len(form_ids) != len(set(form_ids)):
+            raise serializers.ValidationError(_("Each form may only be specified once."))
+
+        return forms
+
     @transaction.atomic
-    def create(self, validated_data):
+    def update(self, instance, validated_data):
         through_data = validated_data.pop("forms")
 
-        mission = self.Meta.model.objects.create(**validated_data)
+        instance = super().update(instance, validated_data)
 
-        through_instances = []
+        # get the current m2m fields
+        existing = {obj.form_id: obj for obj in instance.missionentitytypethroughform_set.all()}
+        incoming = {item["form"].id: item for item in through_data}
 
-        for item_data in through_data:
-            instance = NestedMissionEntityTypeThroughFormUpdateSerializer.Meta.model(
-                mission_entity_type=mission, **item_data
-            )
-            through_instances.append(instance)
+        # delete
+        MissionEntityTypeThroughForm.objects.filter(form_id__in=list(existing.keys() - incoming.keys())).delete()
 
-        MissionEntityTypeThroughForm.objects.bulk_create(through_instances)
+        # update existing
+        bulk_updates = []
 
-        return mission
+        for form_id in existing.keys() & incoming.keys():
+            obj = existing[form_id]
+            data = incoming[form_id]
+
+            obj.min_cardinality = data["min_cardinality"]
+            obj.max_cardinality = data["max_cardinality"]
+
+            bulk_updates.append(obj)
+
+        MissionEntityTypeThroughForm.objects.bulk_update(bulk_updates, fields=["min_cardinality", "max_cardinality"])
+
+        # create new
+        MissionEntityTypeThroughForm.objects.bulk_create(
+            [
+                MissionEntityTypeThroughForm(**incoming[form_id], mission_entity_type_id=instance.id)
+                for form_id in incoming.keys() - existing.keys()
+            ]
+        )
+
+        return instance

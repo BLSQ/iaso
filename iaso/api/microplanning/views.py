@@ -20,7 +20,8 @@ from iaso.api.common import (
     ReadOnlyOrHasPermission,
 )
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
-from iaso.models.microplanning import Assignment, Mission, Planning
+from iaso.models.microplanning import Assignment, Planning
+from iaso.models.missions import Mission
 from iaso.models.org_unit import OrgUnit
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
 

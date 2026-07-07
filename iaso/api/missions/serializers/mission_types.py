@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from iaso.models.microplanning import MissionType
+from iaso.models.missions import MissionType
 
 
 class MissionTypeDropdownSerializer(serializers.Serializer):

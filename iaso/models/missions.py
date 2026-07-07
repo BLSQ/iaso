@@ -1,13 +1,10 @@
-import copy
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models import Case, When, Subquery, IntegerField, Value, OuterRef, Count
+from django.db.models import Case, Count, IntegerField, OuterRef, Subquery, Value, When
 from django.utils.translation import gettext_lazy as _
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
-from polymorphic.query import PolymorphicQuerySet
 
 from iaso.models.common import CreatedAndUpdatedModel
 from iaso.models.querysets import RelatedPolymorphicQuerySet
@@ -21,7 +18,6 @@ class MissionType(models.TextChoices):
 
 
 class MissionQuerySet(RelatedPolymorphicQuerySet):
-
     def annotate_with_form_count(self):
         form_count_sq = (
             MissionFormThroughForm.objects.filter(mission_form_id=OuterRef("missionform__mission_ptr_id"))
@@ -48,20 +44,22 @@ class MissionQuerySet(RelatedPolymorphicQuerySet):
             .values("c")[:1]
         )
         return self.annotate(
-                    forms_count=Case(
-                        When(mission_type=MissionType.FORM_FILLING, then=Subquery(form_count_sq)),
-                        When(mission_type=MissionType.ORG_UNIT_AND_FORM, then=Subquery(out_count_sq)),
-                        When(mission_type=MissionType.ENTITY_AND_FORM, then=Subquery(et_count_sq)),
-                        output_field=IntegerField(),
-                        default=Value(0),
-                    )
-                )
+            forms_count=Case(
+                When(mission_type=MissionType.FORM_FILLING, then=Subquery(form_count_sq)),
+                When(mission_type=MissionType.ORG_UNIT_AND_FORM, then=Subquery(out_count_sq)),
+                When(mission_type=MissionType.ENTITY_AND_FORM, then=Subquery(et_count_sq)),
+                output_field=IntegerField(),
+                default=Value(0),
+            )
+        )
+
     def filter_for_user(self, user: User):
         iaso_profile = getattr(user, "iaso_profile", None)
         account = getattr(iaso_profile, "account", None)
         if not account:
             return self.none()
         return self.filter(account=account)
+
 
 class MissionManager(PolymorphicManager.from_queryset(MissionQuerySet)):
     def get_queryset(self):

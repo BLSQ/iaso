@@ -15,14 +15,14 @@ from iaso.api.missions.serializers.list import MissionPolymorphicListSerializer
 from iaso.api.missions.serializers.retrieve import MissionPolymorphicRetrieveSerializer
 from iaso.api.missions.serializers.update import MissionPolymorphicUpdateSerializer
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
-from iaso.models import Mission, MissionForm
-from iaso.models.microplanning import MissionEntityType, MissionOrgUnitType, MissionType
-
-from ...models.microplanning.missions import (
+from iaso.models import Mission, MissionEntityType, MissionForm, MissionOrgUnitType
+from iaso.models.missions import (
     MissionEntityTypeThroughForm,
     MissionFormThroughForm,
     MissionOrgUnitTypeThroughForm,
+    MissionType,
 )
+
 from .filters import MissionFilter
 from .permissions import MissionPermission
 from .serializers.mission_types import MissionTypeDropdownSerializer

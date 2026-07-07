@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer
 from iaso.models import MissionForm
-from iaso.models.microplanning.missions import MissionFormThroughForm
+from iaso.models.missions import MissionFormThroughForm
 
 
 class NestedMissionFormThroughFormSerializer(ModelSerializer):

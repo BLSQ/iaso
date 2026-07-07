@@ -5,20 +5,22 @@ from rest_framework import serializers
 from iaso.api.common import ModelSerializer
 from iaso.api.common.serializer_fields import CurrentAccountDefault
 from iaso.models import Form, OrgUnitType
-from iaso.models.microplanning import MissionOrgUnitType
-from iaso.models.microplanning.missions import MissionOrgUnitTypeThroughForm, MissionType
+from iaso.models.missions import MissionOrgUnitType, MissionOrgUnitTypeThroughForm
 
 
 class OrgUnitTypeScopedFormField(serializers.PrimaryKeyRelatedField):
     def get_queryset(self):
-        if getattr(self.context.get("request", None), "user", None):
-            queryset = Form.objects.filter_for_user_and_app_id(self.context["request"].user)
+        if not getattr(self.context.get("request", None), "user", None):
+            return Form.objects.none()
 
         org_unit_type_pk = self.parent.parent.parent.initial_data.get("org_unit_type")
-        if org_unit_type_pk:
-            queryset = queryset.filter(org_unit_types__id=org_unit_type_pk)
 
-        return queryset
+        if not org_unit_type_pk:
+            return Form.objects.none()
+
+        return Form.objects.filter_for_user_and_app_id(self.context["request"].user).filter(
+            org_unit_types__id=org_unit_type_pk
+        )
 
 
 class NestedMissionOrgUnitTypeThroughFormCreateSerializer(ModelSerializer):
@@ -31,17 +33,6 @@ class NestedMissionOrgUnitTypeThroughFormCreateSerializer(ModelSerializer):
             "min_cardinality": {"write_only": True},
             "max_cardinality": {"write_only": True},
         }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if getattr(self.context.get("request", None), "user", None):
-            self.fields["form"].queryset = Form.objects.filter_for_user_and_app_id(self.context["request"].user)
-
-    def set_context(self, context):
-        # method to trigger again the queryset computation
-        self.context.update(context)
-        if getattr(self.context.get("request", None), "user", None):
-            self.fields["form"].queryset = Form.objects.filter_for_user_and_app_id(self.context["request"].user)
 
     def validate(self, attrs):
         min_val = attrs.get("min_cardinality", 0)
@@ -56,7 +47,9 @@ class NestedMissionOrgUnitTypeThroughFormCreateSerializer(ModelSerializer):
 class MissionOrgUnitTypeCreateSerializer(ModelSerializer):
     created_by = serializers.HiddenField(default=serializers.CurrentUserDefault(), write_only=True)
     account_id = serializers.HiddenField(default=CurrentAccountDefault(), write_only=True)
-    org_unit_type = serializers.PrimaryKeyRelatedField(queryset=OrgUnitType.objects.none(), write_only=True, required=True)
+    org_unit_type = serializers.PrimaryKeyRelatedField(
+        queryset=OrgUnitType.objects.none(), write_only=True, required=True
+    )
     forms = NestedMissionOrgUnitTypeThroughFormCreateSerializer(
         many=True, required=True, allow_empty=False, write_only=True
     )
@@ -72,7 +65,7 @@ class MissionOrgUnitTypeCreateSerializer(ModelSerializer):
             "forms",
             "min_cardinality",
             "max_cardinality",
-            "mission_type"
+            "mission_type",
         ]
 
         extra_kwargs = {
@@ -82,12 +75,12 @@ class MissionOrgUnitTypeCreateSerializer(ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if getattr(self.context.get("request", None), "user", None):
-            self.fields["org_unit_type"].queryset = OrgUnitType.objects.filter_for_user_and_app_id(
-                self.context["request"].user
-            )
+        user = getattr(self.context.get("request", None), "user", None)
+        iaso_profile = getattr(user, "iaso_profile", None)
+        account = getattr(iaso_profile, "account", None)
 
-            self.fields["forms"].child.set_context(self.context)
+        if account:
+            self.fields["org_unit_type"].queryset = OrgUnitType.objects.filter(projects__account=account)
 
     def validate(self, attrs):
         min_val = attrs.get("min_cardinality", 0)
@@ -115,9 +108,7 @@ class MissionOrgUnitTypeCreateSerializer(ModelSerializer):
         through_instances = []
 
         for item_data in through_data:
-            instance = NestedMissionOrgUnitTypeThroughFormCreateSerializer.Meta.model(
-                mission_org_unit_type=mission, **item_data
-            )
+            instance = MissionOrgUnitTypeThroughForm(mission_org_unit_type=mission, **item_data)
             through_instances.append(instance)
 
         MissionOrgUnitTypeThroughForm.objects.bulk_create(through_instances)

@@ -5,7 +5,7 @@ from rest_framework import serializers
 from iaso.api.common import ModelSerializer
 from iaso.api.common.serializer_fields import CurrentAccountDefault
 from iaso.models import Form, MissionForm
-from iaso.models.microplanning.missions import MissionFormThroughForm, MissionType
+from iaso.models.missions import MissionFormThroughForm
 
 
 class NestedMissionFormThroughFormCreateSerializer(ModelSerializer):
@@ -18,11 +18,6 @@ class NestedMissionFormThroughFormCreateSerializer(ModelSerializer):
             "min_cardinality": {"write_only": True, "default": 0},
             "max_cardinality": {"write_only": True},
         }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if getattr(self.context.get("request", None), "user", None):
-            self.fields["form"].queryset = Form.objects.filter_for_user_and_app_id(self.context["request"].user)
 
     def set_context(self, context):
         # method to trigger again the queryset computation
@@ -47,7 +42,7 @@ class MissionFormCreateSerializer(ModelSerializer):
 
     class Meta:
         model = MissionForm
-        fields = ["id", "name", "description", "forms", "created_by", "account_id", 'mission_type']
+        fields = ["id", "name", "description", "forms", "created_by", "account_id", "mission_type"]
         read_only_fields = ["id"]
 
         extra_kwargs = {"id": {"read_only": True}, "name": {"write_only": True}, "description": {"write_only": True}}
@@ -73,7 +68,7 @@ class MissionFormCreateSerializer(ModelSerializer):
         through_instances = []
 
         for item_data in through_data:
-            instance = NestedMissionFormThroughFormCreateSerializer.Meta.model(mission_form=mission, **item_data)
+            instance = MissionFormThroughForm(mission_form=mission, **item_data)
             through_instances.append(instance)
 
         MissionFormThroughForm.objects.bulk_create(through_instances)

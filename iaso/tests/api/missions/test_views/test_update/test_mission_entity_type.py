@@ -2,14 +2,22 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.settings import api_settings
 
-from iaso.models import Account, EntityType, Form, MissionEntityType, Project, Workflow, WorkflowVersion
-from iaso.models.missions import MissionType
+from iaso.models import (
+    Account,
+    EntityType,
+    Form,
+    MissionEntityType,
+    MissionEntityTypeThroughForm,
+    Project,
+    Workflow,
+    WorkflowVersion,
+)
 from iaso.models.workflow import WorkflowFollowup, WorkflowVersionsStatus
 from iaso.permissions.core_permissions import CORE_MISSION_READ_PERMISSION, CORE_MISSION_WRITE_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
-class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
+class MissionEntityTypeAPIUpdateTestCase(SwaggerTestCaseMixin, APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.account = Account.objects.create(name="account")
@@ -44,33 +52,40 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
             is_superuser=True,
         )
 
+        # create some data
+
         cls.project = Project.objects.create(name="project", account=cls.account)
         cls.project_other_account = Project.objects.create(name="project", account=cls.other_account)
 
+        # entity types
+        cls.et = EntityType.objects.create(name="et", account=cls.account)
+        cls.et_2 = EntityType.objects.create(name="et2", account=cls.account)
+        cls.et_3 = EntityType.objects.create(name="et3", account=cls.account)
+        cls.et_other_account = EntityType.objects.create(name="et3", account=cls.other_account)
+
+        # forms
         cls.form_1 = Form.objects.create(name="form_1")
         cls.form_2 = Form.objects.create(name="form_2")
         cls.form_3 = Form.objects.create(name="form_3")
+        cls.form_4 = Form.objects.create(name="form_4")
+        cls.form_5 = Form.objects.create(name="form_5")
 
         cls.form_1.projects.add(cls.project)
         cls.form_2.projects.add(cls.project)
         cls.form_3.projects.add(cls.project)
+        cls.form_4.projects.add(cls.project)
+        cls.form_5.projects.add(cls.project)
 
-        cls.et = EntityType.objects.create(name="et", account=cls.account)
-        cls.et_2 = EntityType.objects.create(name="et2", account=cls.account)
-        cls.et_3 = EntityType.objects.create(name="et3", account=cls.account)
+        # set out
+        cls.attach_entity_types_to_form(cls.et, cls.form_1, cls.form_2, cls.form_4)
+        cls.attach_entity_types_to_form(cls.et_2, cls.form_3, cls.form_4)
+        cls.attach_entity_types_to_form(cls.et_3, cls.form_5)
 
-        # associate ets with some forms
-        cls.attach_entity_types_to_form(cls.et, cls.form_1, cls.form_2)
-        cls.attach_entity_types_to_form(cls.et_2, cls.form_2, cls.form_3)
-        cls.attach_entity_types_to_form(cls.et_3, cls.form_3)
+        cls.form_6 = Form.objects.create(name="form_6")
+        cls.form_7 = Form.objects.create(name="form_7")
 
-        cls.et_other_account = EntityType.objects.create(name="et_other_account", account=cls.other_account)
-
-        cls.form_4 = Form.objects.create(name="form_4")
-        cls.form_5 = Form.objects.create(name="form_5")
-
-        cls.form_4.projects.add(cls.project_other_account)
-        cls.form_5.projects.add(cls.project_other_account)
+        cls.form_6.projects.add(cls.project_other_account)
+        cls.form_7.projects.add(cls.project_other_account)
 
     @classmethod
     def attach_entity_types_to_form(cls, entity_type, *forms):
@@ -87,42 +102,55 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
         )
         followup.forms.set(forms)
 
-    def assertValidBodyData(self, data):
-        self.assertResponseCompliantToSwagger(data, "MissionPolymorphicCreateRequest")
+    def setUp(self):
+        super().setUp()
+        self.mission_et_1 = MissionEntityType.objects.create(
+            name="mission_et_1", account=self.account, entity_type=self.et
+        )
+        self.mission_et_2 = MissionEntityType.objects.create(
+            name="mission_et_2", account=self.account, entity_type=self.et_2
+        )
+        self.mission_et_3 = MissionEntityType.objects.create(
+            name="mission_et_3", account=self.other_account, entity_type=self.et_other_account
+        )
+
+        MissionEntityTypeThroughForm.objects.bulk_create(
+            [
+                MissionEntityTypeThroughForm(
+                    mission_entity_type=self.mission_et_1, form=self.form_1, min_cardinality=1, max_cardinality=3
+                ),
+                MissionEntityTypeThroughForm(
+                    mission_entity_type=self.mission_et_1, form=self.form_2, min_cardinality=2, max_cardinality=3
+                ),
+                MissionEntityTypeThroughForm(
+                    mission_entity_type=self.mission_et_2, form=self.form_3, min_cardinality=3, max_cardinality=3
+                ),
+            ]
+        )
+
+    def assertValidBodyData(self, body):
+        self.assertResponseCompliantToSwagger(body, "MissionEntityTypeUpdateRequest")
 
     def test_validation(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
-        res = self.client.post(reverse("missions-list"))
 
-        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        self.assertHasError(res_data, "mission_type", "This field is required")
-
-        res = self.client.post(reverse("missions-list"), data={"mission_type": "wrong"})
-        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        self.assertHasError(res_data, "mission_type", "Invalid mission_type")
-
-        res = self.client.post(reverse("missions-list"), data={"mission_type": MissionType.ENTITY_AND_FORM})
+        res = self.client.put(reverse("missions-detail", kwargs={"pk": self.mission_et_1.pk}))
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(res_data, "name", "This field is required.")
 
-        res = self.client.post(
-            reverse("missions-list"), data={"mission_type": MissionType.ENTITY_AND_FORM, "name": "test"}
-        )
+        res = self.client.put(reverse("missions-detail", kwargs={"pk": self.mission_et_1.pk}), data={"name": "test"})
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(res_data, "entity_type", "This field is required.")
 
     def test_validation_should_have_one_form(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
-        res = self.client.post(
-            reverse("missions-list"), data={"mission_type": MissionType.ENTITY_AND_FORM, "name": "name"}
-        )
+        res = self.client.put(reverse("missions-detail", kwargs={"pk": self.mission_et_1.pk}), data={"name": "name"})
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(res_data, "forms", "This field is required.")
 
-        res = self.client.post(
-            reverse("missions-list"),
+        res = self.client.put(
+            reverse("missions-detail", kwargs={"pk": self.mission_et_1.pk}),
             data={
-                "mission_type": MissionType.ENTITY_AND_FORM,
                 "name": "name",
                 "entity_type": self.et.pk,
                 "forms": [],
@@ -134,10 +162,9 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
     def test_validation_should_provide_entity_type_that_belong_to_account(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
 
-        res = self.client.post(
-            reverse("missions-list"),
+        res = self.client.put(
+            reverse("missions-detail", kwargs={"pk": self.mission_et_1.pk}),
             data={
-                "mission_type": MissionType.ENTITY_AND_FORM,
                 "name": "name",
                 "entity_type": self.et_other_account.pk,
                 "forms": [],
@@ -151,10 +178,9 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
     def test_validation_should_provide_forms_that_belong_to_entity_type(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
 
-        res = self.client.post(
-            reverse("missions-list"),
+        res = self.client.put(
+            reverse("missions-detail", kwargs={"pk": self.mission_et_1.pk}),
             data={
-                "mission_type": MissionType.ENTITY_AND_FORM,
                 "name": "name",
                 "entity_type": self.et.pk,
                 "forms": [
@@ -179,15 +205,14 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
     def test_validation_should_provide_forms_that_belong_to_account(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
 
-        res = self.client.post(
-            reverse("missions-list"),
+        res = self.client.put(
+            reverse("missions-detail", kwargs={"pk": self.mission_et_1.pk}),
             data={
-                "mission_type": MissionType.ENTITY_AND_FORM,
                 "name": "name",
                 "entity_type": self.et.pk,
                 "forms": [
-                    {"form": self.form_4.pk, "min_cardinality": 1, "max_cardinality": 2},
-                    {"form": self.form_5.pk, "min_cardinality": 1, "max_cardinality": 2},
+                    {"form": self.form_6.pk, "min_cardinality": 1, "max_cardinality": 2},
+                    {"form": self.form_7.pk, "min_cardinality": 1, "max_cardinality": 2},
                 ],
             },
         )
@@ -196,8 +221,8 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
             res_data,
             {
                 "forms": [
-                    {"form": [f'Invalid pk "{self.form_4.pk}" - object does not exist.']},
-                    {"form": [f'Invalid pk "{self.form_5.pk}" - object does not exist.']},
+                    {"form": [f'Invalid pk "{self.form_6.pk}" - object does not exist.']},
+                    {"form": [f'Invalid pk "{self.form_7.pk}" - object does not exist.']},
                 ]
             },
         )
@@ -205,10 +230,9 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
     def test_validation_forms_should_be_unique(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
 
-        res = self.client.post(
-            reverse("missions-list"),
+        res = self.client.put(
+            reverse("missions-detail", kwargs={"pk": self.mission_et_1.pk}),
             data={
-                "mission_type": MissionType.ENTITY_AND_FORM,
                 "name": "name",
                 "entity_type": self.et.pk,
                 "forms": [
@@ -223,10 +247,9 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
     def test_validation_min_max_cardinality(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
 
-        res = self.client.post(
-            reverse("missions-list"),
+        res = self.client.put(
+            reverse("missions-detail", kwargs={"pk": self.mission_et_1.pk}),
             data={
-                "mission_type": MissionType.ENTITY_AND_FORM,
                 "name": "name",
                 "entity_type": self.et.pk,
                 "min_cardinality": 4,
@@ -241,10 +264,9 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
             {"forms": [{"min_cardinality": ["Minimum cardinality must be inferior than the maximum cardinality"]}]},
         )
 
-        res = self.client.post(
-            reverse("missions-list"),
+        res = self.client.put(
+            reverse("missions-detail", kwargs={"pk": self.mission_et_1.pk}),
             data={
-                "mission_type": MissionType.ENTITY_AND_FORM,
                 "name": "name",
                 "entity_type": self.et.pk,
                 "min_cardinality": 4,
@@ -260,61 +282,61 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
         )
 
     def test_num_queries(self):
-        self.client.force_authenticate(user=self.user_account_write_perm)
-
-        with self.assertNumQueries(10):
-            res = self.client.post(
-                reverse("missions-list"),
-                data={
-                    "mission_type": MissionType.ENTITY_AND_FORM.value,
-                    "name": "name",
-                    "description": "description",
-                    "entity_type": self.et.pk,
-                    "min_cardinality": 2,
-                    "max_cardinality": 3,
-                    "forms": [{"form": self.form_1.pk, "min_cardinality": 1, "max_cardinality": 2}],
-                },
-            )
-
-        self.assertJSONResponse(res, status.HTTP_201_CREATED)
-
-    def test_create(self):
-        self.client.force_authenticate(user=self.user_account_write_perm)
+        self.client.force_authenticate(self.superuser)
 
         body = {
-            "mission_type": MissionType.ENTITY_AND_FORM,
-            "name": "name",
-            "description": "description",
+            "name": "new name",
+            "description": "new description",
             "entity_type": self.et.pk,
-            "min_cardinality": 2,
-            "max_cardinality": 3,
+            "min_cardinality": 1,
+            "max_cardinality": 2,
             "forms": [
-                {"form": self.form_1.pk, "min_cardinality": 1, "max_cardinality": 2},
+                {"form": self.form_1.pk, "min_cardinality": 9, "max_cardinality": 10},
+                {"form": self.form_4.pk, "min_cardinality": 10, "max_cardinality": 11},
             ],
         }
         self.assertValidBodyData(body)
-        res = self.client.post(
-            reverse("missions-list"),
+
+        with self.assertNumQueries(14):
+            res = self.client.put(
+                reverse("missions-detail", kwargs={"pk": self.mission_et_1.pk}),
+                data=body,
+            )
+        self.assertJSONResponse(res, status.HTTP_200_OK)
+
+    def test_update(self):
+        self.client.force_authenticate(self.superuser)
+
+        body = {
+            "name": "new name",
+            "description": "new description",
+            "entity_type": self.et.pk,
+            "min_cardinality": 1,
+            "max_cardinality": 2,
+            "forms": [
+                {"form": self.form_1.pk, "min_cardinality": 9, "max_cardinality": 10},
+                {"form": self.form_4.pk, "min_cardinality": 10, "max_cardinality": 11},
+            ],
+        }
+        self.assertValidBodyData(body)
+
+        res = self.client.put(
+            reverse("missions-detail", kwargs={"pk": self.mission_et_1.pk}),
             data=body,
         )
+        self.assertJSONResponse(res, status.HTTP_200_OK)
 
-        self.assertJSONResponse(res, status.HTTP_201_CREATED)
+        self.mission_et_1.refresh_from_db()
 
-        self.assertEqual(MissionEntityType.objects.count(), 1)
-
-        mission_et = MissionEntityType.objects.first()
-
-        self.assertEqual(mission_et.name, "name")
-        self.assertEqual(mission_et.description, "description")
-        self.assertEqual(mission_et.entity_type_id, self.et.pk)
-        self.assertEqual(mission_et.min_cardinality, 2)
-        self.assertEqual(mission_et.max_cardinality, 3)
-
-        self.assertEqual(mission_et.forms.count(), 1)
-
-        self.assertCountEqual(
+        self.assertEqual(self.mission_et_1.name, "new name")
+        self.assertEqual(self.mission_et_1.description, "new description")
+        self.assertEqual(self.mission_et_1.min_cardinality, 1)
+        self.assertEqual(self.mission_et_1.max_cardinality, 2)
+        self.assertEqual(
             list(
-                mission_et.missionentitytypethroughform_set.values_list("min_cardinality", "max_cardinality", "form_id")
+                self.mission_et_1.missionentitytypethroughform_set.values_list(
+                    "form_id", "min_cardinality", "max_cardinality"
+                )
             ),
-            [(1, 2, self.form_1.pk)],
+            [(self.form_1.pk, 9, 10), (self.form_4.pk, 10, 11)],
         )

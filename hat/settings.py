@@ -108,6 +108,13 @@ if static_url:
 else:
     CDN_URL = None
 
+# deployment info for /health/
+DEPLOYED_BY = env.str("DEPLOYED_BY", default="unknown")
+DEPLOYED_ON = env.str("DEPLOYED_ON", default="unknown")
+PROD_IMAGE_CREATION = env.str("PROD_IMAGE_CREATION", default="unknown")
+PROD_IMAGE_DIGEST = env.str("PROD_IMAGE_DIGEST", default="unknown")
+PROD_IMAGE_TAG = env.str("PROD_IMAGE_TAG", default="unknown")
+
 DEV_SERVER = env.bool("DEV_SERVER", default=False)
 ENVIRONMENT = env.str("SENTRY_ENVIRONMENT", default="development").lower()
 SENTRY_URL = env.str("SENTRY_URL", default="")

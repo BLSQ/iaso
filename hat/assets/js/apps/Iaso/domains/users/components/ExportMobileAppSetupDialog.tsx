@@ -172,8 +172,7 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<DialogProps> = ({
                 setPresignedUrl(resp.presigned_url),
             );
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [taskData]);
+    }, [taskData, taskId]);
 
     return (
         <ConfirmCancelModal

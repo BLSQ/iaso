@@ -1,0 +1,46 @@
+name: Iaso develop branch
+
+on:
+  push:
+    branches:
+      - develop
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  config:
+    uses: BLSQ/iaso-ci/.github/workflows/config.yml@main
+    permissions:
+      pull-requests: write
+      contents: read
+    with:
+      branch: develop
+      pr_title: ${{ github.event.pull_request.title }}
+
+  build_and_push_image:
+    needs: config
+    uses: BLSQ/iaso-ci/.github/workflows/docker_build.yml@main
+    with:
+      iaso_branch: develop
+      image_tags: ${{ needs.config.outputs.image_tags }}
+    secrets: inherit
+
+  tests:
+    uses: BLSQ/iaso-ci/.github/workflows/tests.yml@main
+    with:
+      iaso_branch: develop
+
+  deploy_on_staging:
+    needs: [ build_and_push_image, tests ]
+    uses: BLSQ/iaso-ci/.github/workflows/docker_deploy.yml@main
+    with:
+      iaso_branch: develop
+      environment: staging
+      image_tag: develop
+    secrets: inherit

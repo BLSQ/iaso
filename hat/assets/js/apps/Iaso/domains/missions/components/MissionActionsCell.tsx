@@ -1,56 +1,50 @@
 import React, { FunctionComponent } from 'react';
-import { IconButton } from 'bluesquare-components';
-import {
-    PaginatedMissionPolymorphicListList,
-    useApiMicroplanningMissionsDestroy,
-} from 'Iaso/api/missions';
+import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
-import { baseUrls } from 'Iaso/constants/urls';
 import { ColumnCell } from 'Iaso/types/general';
-import { MISSION_READ, MISSION_WRITE } from 'Iaso/utils/permissions';
+import { PLANNING_WRITE } from 'Iaso/utils/permissions';
 import MESSAGES from '../messages';
+import { Mission } from '../types';
+import { CreateEditMissionDialog } from './CreateEditMissionDialog';
 
-type MissionActionsCellProps = ColumnCell<
-    NonNullable<PaginatedMissionPolymorphicListList['results']>[number]
->;
+interface MissionActionsCellProps extends ColumnCell<Mission> {
+    deleteMission: (id: number) => void;
+}
 
 export const MissionActionsCell: FunctionComponent<MissionActionsCellProps> = ({
     row: { original: mission },
+    deleteMission,
 }) => {
-    const { mutateAsync: deleteMission } = useApiMicroplanningMissionsDestroy();
     return (
-        <>
-            <DisplayIfUserHasPerm permissions={[MISSION_READ]}>
-                <IconButton
-                    tooltipMessage={MESSAGES.view}
-                    icon="remove-red-eye"
-                    url={`/${baseUrls.missionsDetails}/id/${mission.id}/`}
-                />
-            </DisplayIfUserHasPerm>
-            <DisplayIfUserHasPerm permissions={[MISSION_WRITE]}>
-                <IconButton
-                    tooltipMessage={MESSAGES.edit}
-                    icon="edit"
-                    url={`/${baseUrls.missionsEdit}/id/${mission.id}/`}
-                />
-                <DeleteDialog
-                    titleMessage={{
-                        ...MESSAGES.deleteMission,
-                        values: {
-                            missionName: mission.name,
-                        },
-                    }}
-                    message={{
-                        ...MESSAGES.deleteWarning,
-                        values: {
-                            name: mission.name,
-                        },
-                    }}
-                    onConfirm={() => deleteMission({ id: mission.id })}
-                    keyName="delete-mission"
-                />
-            </DisplayIfUserHasPerm>
-        </>
+        <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>
+            <CreateEditMissionDialog
+                mission={mission}
+                renderTrigger={({ openDialog }) => (
+                    <IconButtonComponent
+                        onClick={openDialog}
+                        icon="edit"
+                        tooltipMessage={MESSAGES.editMission}
+                        size="small"
+                    />
+                )}
+            />
+            <DeleteDialog
+                titleMessage={{
+                    ...MESSAGES.deleteMission,
+                    values: {
+                        missionName: mission.name,
+                    },
+                }}
+                message={{
+                    ...MESSAGES.deleteWarning,
+                    values: {
+                        name: mission.name,
+                    },
+                }}
+                onConfirm={() => deleteMission(mission.id)}
+                keyName="delete-mission"
+            />
+        </DisplayIfUserHasPerm>
     );
 };

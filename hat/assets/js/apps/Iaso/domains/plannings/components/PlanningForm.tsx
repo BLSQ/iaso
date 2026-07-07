@@ -24,7 +24,7 @@ import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useBulkDeleteAssignments } from 'Iaso/domains/assignments/hooks/requests/useBulkDeleteAssignments';
-// import { useGetMissionsDropdownOptions } from 'Iaso/domains/missions/hooks/requests/useGetMissionsDropdownOptions';
+import { useGetMissionsDropdownOptions } from 'Iaso/domains/missions/hooks/requests/useGetMissionsDropdownOptions';
 import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
 import { useGetOrgUnit } from 'Iaso/domains/orgUnits/components/TreeView/requests';
 import {

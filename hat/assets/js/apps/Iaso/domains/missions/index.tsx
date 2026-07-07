@@ -1,49 +1,30 @@
 import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { commonStyles, UrlParams, useSafeIntl } from 'bluesquare-components';
-import { useApiMicroplanningMissionsList } from 'Iaso/api/missions';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';
-import { useApiParams } from 'Iaso/hooks/useApiParams';
-import { useUrlParams } from 'Iaso/hooks/useUrlParams';
-import {
-    ParamsWithAccountId,
-    useParamsObject,
-} from 'Iaso/routing/hooks/useParamsObject';
+import { useActiveParams } from 'Iaso/routing/hooks/useActiveParams';
+import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import TopBar from '../../components/nav/TopBarComponent';
 import { MissionFilters } from './components/MissionFilters';
 import { useMissionColumns } from './config';
+import { useGetMissions } from './hooks/requests/useGetMissions';
 import MESSAGES from './messages';
+import { MissionParams } from './types';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
 const baseUrl = baseUrls.missions;
-
-const defaults = {
-    order: 'name',
-    pageSize: 20,
-    page: 1,
-};
-
 export const Missions: FunctionComponent = () => {
-    const params: ParamsWithAccountId & Partial<UrlParams> =
-        useParamsObject(baseUrl);
-
-    const safeParams = useUrlParams(params, defaults);
-    const { limit, page, ...apiParams } = useApiParams(safeParams);
-
+    const params = useParamsObject(baseUrl);
+    const apiParams = useActiveParams(params) as MissionParams;
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const { data, isLoading } = useApiMicroplanningMissionsList({
-        limit: limit ? parseInt(limit) : undefined,
-        page: page ? parseInt(page) : undefined,
-        ...apiParams,
-    });
-
-    const columns = useMissionColumns();
+    const { data, isFetching } = useGetMissions(apiParams);
+    const columns = useMissionColumns(params, data?.count ?? 0);
 
     return (
         <>
@@ -63,9 +44,9 @@ export const Missions: FunctionComponent = () => {
                     columns={columns}
                     count={data?.count ?? 0}
                     params={apiParams}
-                    extraProps={{ loading: isLoading }}
+                    extraProps={{ loading: isFetching }}
                     columnSelectorEnabled
-                    columnSelectorButtonType="button"
+                    countOnTop={false}
                 />
             </Box>
         </>

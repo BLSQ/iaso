@@ -46,7 +46,7 @@ class NestedMissionEntityTypeThroughFormCreateSerializer(ModelSerializer):
 
 class MissionEntityTypeCreateSerializer(ModelSerializer):
     created_by = serializers.HiddenField(default=serializers.CurrentUserDefault(), write_only=True)
-    account_id = serializers.HiddenField(default=CurrentAccountDefault(), write_only=True)
+    account_id = serializers.HiddenField(default=CurrentAccountDefault(returns_id=True), write_only=True)
     entity_type = serializers.PrimaryKeyRelatedField(queryset=EntityType.objects.none(), write_only=True)
     forms = NestedMissionEntityTypeThroughFormCreateSerializer(
         many=True, required=True, allow_empty=False, write_only=True

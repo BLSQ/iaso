@@ -1,3 +1,4 @@
+from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from rest_framework import status
 
@@ -130,8 +131,8 @@ class MissionAPIDeleteTestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
-
-        with self.assertNumQueries(7):
+        ContentType.objects.clear_cache()
+        with self.assertNumQueries(9):
             res = self.client.delete(reverse("missions-detail", kwargs={"pk": self.mission_form_2.pk}))
 
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)

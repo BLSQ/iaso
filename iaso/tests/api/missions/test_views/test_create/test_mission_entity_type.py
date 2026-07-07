@@ -1,3 +1,4 @@
+from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.settings import api_settings
@@ -262,7 +263,8 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
     def test_num_queries(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
 
-        with self.assertNumQueries(10):
+        ContentType.objects.clear_cache()
+        with self.assertNumQueries(11):
             res = self.client.post(
                 reverse("missions-list"),
                 data={

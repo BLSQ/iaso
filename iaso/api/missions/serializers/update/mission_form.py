@@ -38,7 +38,7 @@ class NestedMissionFormThroughFormUpdateSerializer(ModelSerializer):
 class MissionFormUpdateSerializer(ModelSerializer):
     forms = NestedMissionFormThroughFormUpdateSerializer(many=True, required=True, allow_empty=False, write_only=True)
     created_by = serializers.HiddenField(default=serializers.CurrentUserDefault(), write_only=True)
-    account_id = serializers.HiddenField(default=CurrentAccountDefault(), write_only=True)
+    account_id = serializers.HiddenField(default=CurrentAccountDefault(returns_id=True), write_only=True)
 
     class Meta:
         model = MissionForm

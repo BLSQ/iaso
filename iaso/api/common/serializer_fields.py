@@ -169,8 +169,13 @@ class CountryAwarePhoneNumberField(serializers.CharField):
 class CurrentAccountDefault:
     requires_context = True
 
+    def __init__(self, returns_id=False):
+        self.returns_id = returns_id
+
     def __call__(self, serializer_field):
         try:
-            return serializer_field.context["request"].user.iaso_profile.account_id
+            if self.returns_id:
+                return serializer_field.context["request"].user.iaso_profile.account_id
+            return serializer_field.context["request"].user.iaso_profile.account
         except (KeyError, ValueError):
             return None

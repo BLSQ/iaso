@@ -1,3 +1,4 @@
+from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.settings import api_settings
@@ -297,7 +298,9 @@ class MissionEntityTypeAPIUpdateTestCase(SwaggerTestCaseMixin, APITestCase):
         }
         self.assertValidBodyData(body)
 
-        with self.assertNumQueries(14):
+        ContentType.objects.clear_cache()
+
+        with self.assertNumQueries(16):
             res = self.client.put(
                 reverse("missions-detail", kwargs={"pk": self.mission_et_1.pk}),
                 data=body,

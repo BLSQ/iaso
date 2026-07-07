@@ -46,7 +46,7 @@ class NestedMissionOrgUnitTypeThroughFormUpdateSerializer(ModelSerializer):
 
 class MissionOrgUnitTypeUpdateSerializer(ModelSerializer):
     created_by = serializers.HiddenField(default=serializers.CurrentUserDefault(), write_only=True)
-    account_id = serializers.HiddenField(default=CurrentAccountDefault(), write_only=True)
+    account_id = serializers.HiddenField(default=CurrentAccountDefault(returns_id=True), write_only=True)
     org_unit_type = serializers.PrimaryKeyRelatedField(queryset=OrgUnitType.objects.none(), write_only=True)
     forms = NestedMissionOrgUnitTypeThroughFormUpdateSerializer(
         many=True, required=True, allow_empty=False, write_only=True

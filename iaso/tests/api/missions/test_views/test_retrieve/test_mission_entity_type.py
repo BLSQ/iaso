@@ -1,3 +1,4 @@
+from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from rest_framework import status
 
@@ -9,7 +10,8 @@ class MissionAPIRetrieveMissionEntityTypeTestCase(MissionAPIRetrieveBaseTestCase
     def test_num_queries(self):
         self.client.force_authenticate(self.user_account_read_perm)
 
-        with self.assertNumQueries(5):
+        ContentType.objects.clear_cache()
+        with self.assertNumQueries(7):
             res = self.client.get(reverse("missions-detail", kwargs={"pk": self.mission_et_1.pk}))
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)

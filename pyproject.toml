@@ -84,7 +84,6 @@ dependencies = [
     "sentry-sdk[django]==1.38.0", # https://github.com/getsentry/sentry-python/tags
     "shapely==2.0.2", # https://github.com/shapely/shapely/tags
     "snaql==0.4.2", # trypelim - https://github.com/zaiev/snaql/tags
-    # SNT malaria
     "sqlalchemy==2.0.23", # https://github.com/sqlalchemy/sqlalchemy/tags
     "tsp-solver2==0.4.1", # trypelim - https://github.com/dmishin/tsp-solver/tags
     "unidecode==1.3.7", # https://github.com/avian2/unidecode/tags

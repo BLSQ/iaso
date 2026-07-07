@@ -1120,7 +1120,9 @@ class FormsAPITestCase(APITestCase):
             self.assertNotIn(MAX_QUERY_INSTANCE_UPDATED_AT, sql, f"Found unexpected query: {sql}")
             self.assertNotIn(COUNT_QUERY_INSTANCE, sql, f"Found unexpected query: {sql}")
 
-        self.assertEqual(len(ctx.captured_queries), 9)
+        # get_queryset now prefetches only what the requested fields serialize, so asking
+        # for possible_fields alone skips the projects / org_unit_types / latest_version
+        self.assertLessEqual(len(ctx.captured_queries), 9)
 
     def test_form_details_full_details(self):
         self.client.force_authenticate(self.yoda)
@@ -1141,3 +1143,41 @@ class FormsAPITestCase(APITestCase):
 
         self.assertTrue(at_least_one_query_with_max_and_count)
         self.assertEqual(len(ctx.captured_queries), 11)
+
+    def test_dropdown_uses_a_lighter_serializer_than_the_list(self):
+        """The action selects the serializer: /dropdown/ returns id+name only, while the
+        list keeps the full FormSerializer payload for the very same forms."""
+        self.client.force_authenticate(user=self.yoda)
+
+        dropdown_forms = self.assertJSONResponse(self.client.get("/api/forms/dropdown/"), 200)["forms"]
+        self.assertTrue(dropdown_forms)
+        for form in dropdown_forms:
+            self.assertEqual(set(form.keys()), {"id", "name"})
+
+        list_form = self.assertJSONResponse(self.client.get("/api/forms/"), 200)["forms"][0]
+        for heavy_field in ["period_type", "latest_form_version", "instances_count"]:
+            self.assertIn(heavy_field, list_form)
+
+    def test_dropdown_returns_only_the_requested_fields(self):
+        self.client.force_authenticate(user=self.yoda)
+        response = self.client.get("/api/forms/dropdown/", {"fields": "id,name,form_id,period_type"})
+        forms = self.assertJSONResponse(response, 200)["forms"]
+
+        survey = {f["name"]: f for f in forms}["Hydroponic public survey"]
+        self.assertEqual(set(survey.keys()), {"id", "name", "form_id", "period_type"})
+        self.assertEqual(survey["form_id"], "sample2")
+        self.assertEqual(survey["period_type"], "QUARTER")
+
+    def test_dropdown_default_avoids_the_list_prefetch_and_version_queries(self):
+        """The shared get_queryset stays lean for the dropdown: no with_latest_version(),
+        and no more queries than the list which prefetches its full tree."""
+        self.client.force_authenticate(user=self.yoda)
+
+        with CaptureQueriesContext(connection) as dropdown_ctx:
+            self.assertJSONResponse(self.client.get("/api/forms/dropdown/"), 200)
+        with CaptureQueriesContext(connection) as list_ctx:
+            self.assertJSONResponse(self.client.get("/api/forms/"), 200)
+
+        dropdown_sql = " ".join(q["sql"] for q in dropdown_ctx.captured_queries)
+        self.assertNotIn("iaso_formversion", dropdown_sql)
+        self.assertLess(len(dropdown_ctx.captured_queries), len(list_ctx.captured_queries))

@@ -19,6 +19,7 @@ from datetime import timedelta
 from typing import Any, Dict
 from urllib.parse import urlparse
 
+import rtoml
 import sentry_sdk
 
 from django.core.exceptions import ImproperlyConfigured
@@ -111,6 +112,13 @@ DEPLOYED_ON = env.str("DEPLOYED_ON", default="unknown")
 PROD_IMAGE_CREATION = env.str("PROD_IMAGE_CREATION", default="unknown")
 PROD_IMAGE_DIGEST = env.str("PROD_IMAGE_DIGEST", default="unknown")
 PROD_IMAGE_TAG = env.str("PROD_IMAGE_TAG", default="unknown")
+try:
+    with open(os.path.join(BASE_DIR, "pyproject.toml")) as opened_file:
+        pyproject_toml = rtoml.load(opened_file)
+    version = pyproject_toml["project"]["version"]
+except Exception as e:
+    version = "error - unknown version"
+IASO_VERSION = version
 
 DEV_SERVER = env.bool("DEV_SERVER", default=False)
 ENVIRONMENT = env.str("SENTRY_ENVIRONMENT", default="development").lower()
@@ -686,12 +694,6 @@ WEBPACK_LOADER = {
 
 AUTH_PROFILE_MODULE = "hat.users.Profile"
 
-try:
-    from hat.__version__ import VERSION
-except Exception as e:
-    print("error importing hat.__version__", e)
-    VERSION = "undetected_version"
-
 
 if SENTRY_URL:
     traces_sample_rate = env.float("SENTRY_TRACES_SAMPLE_RATE", default=0.1)
@@ -748,7 +750,7 @@ if SENTRY_URL:
         error_sampler=sentry_error_sampler,
         integrations=integrations,
         send_default_pii=True,
-        release=VERSION,
+        release=IASO_VERSION,
     )
 
 # Workers configuration

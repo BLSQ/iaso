@@ -11,6 +11,7 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
+from rest_framework.response import Response
 
 from dynamic_fields.filter_backends import DynamicFieldsFilterBackendBackwardCompatible
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
@@ -25,7 +26,7 @@ from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.utils.date_and_time import timestamp_to_datetime
 
 from .permissions import HasFormPermission
-from .serializers import FormSerializer
+from .serializers import FormDropdownSerializer, FormSerializer
 
 
 @extend_schema(tags=["Forms"])
@@ -167,31 +168,42 @@ class FormsViewSet(ModelViewSet):
         if search:
             queryset = queryset.filter(name__icontains=search)
 
+        prefetch_fields = requested_fields
+        if not prefetch_fields:
+            serializer_default_fields = getattr(self.get_serializer_class().Meta, "default_fields", None)
+            prefetch_fields = ",".join(serializer_default_fields) if serializer_default_fields else None
+
+        def _wants(field_name):
+            return is_field_referenced(field_name, prefetch_fields, order)
+
         if not is_request_from_manifest:
-            # prefetch all relations returned by default ex /api/forms/?order=name&limit=50&page=1
-            # TODO
-            #  - be smarter cfr is_field_referenced
-            prefetch_relations = [
-                "projects",
-                "projects__feature_flags",
-                "reference_of_org_unit_types",
-                "org_unit_types",
-                "org_unit_types__reference_forms",
-                "org_unit_types__sub_unit_types",
-                "org_unit_types__allow_creating_sub_unit_types",
-            ]
-            if is_field_referenced("org_unit_groups", requested_fields, order):
+            prefetch_relations = []
+            if _wants("projects") or _wants("project_ids"):
+                prefetch_relations += [
+                    "projects",
+                    "projects__feature_flags",
+                    Prefetch(
+                        "projects__projectfeatureflags_set",
+                        queryset=ProjectFeatureFlags.objects.select_related("featureflag"),
+                    ),
+                ]
+            if _wants("org_unit_types") or _wants("org_unit_type_ids"):
+                prefetch_relations += [
+                    "org_unit_types",
+                    "org_unit_types__reference_forms",
+                    "org_unit_types__sub_unit_types",
+                    "org_unit_types__allow_creating_sub_unit_types",
+                ]
+            if _wants("org_unit_groups") or _wants("org_unit_group_ids"):
                 prefetch_relations.append("org_unit_groups")
-            prefetch_relations.append(
-                Prefetch(
-                    "projects__projectfeatureflags_set",
-                    queryset=ProjectFeatureFlags.objects.select_related("featureflag"),
-                )
-            )
-            queryset = queryset.prefetch_related(*prefetch_relations)
+            if _wants("reference_form_of_org_unit_types"):
+                prefetch_relations.append("reference_of_org_unit_types")
+            if prefetch_relations:
+                queryset = queryset.prefetch_related(*prefetch_relations)
 
         # optimize latest version loading to not trigger a select n+1 on form_version
-        queryset = queryset.with_latest_version()
+        if _wants("latest_form_version") or _wants("possible_fields_with_latest_version"):
+            queryset = queryset.with_latest_version()
 
         # TODO: allow this only from a predefined list for security purposes
 
@@ -201,6 +213,21 @@ class FormsViewSet(ModelViewSet):
         queryset = queryset.distinct()
 
         return queryset
+
+    def get_serializer_class(self):
+        if self.action == "dropdown":
+            return FormDropdownSerializer
+        return FormSerializer
+
+    @extend_schema(responses={200: FormDropdownSerializer(many=True)})
+    @action(detail=False, methods=["get"], pagination_class=None)
+    def dropdown(self, request: Request, *args, **kwargs):
+        """
+        Lightweight forms list for dropdowns.
+        """
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({self.results_key: serializer.data})
 
     def list(self, request: Request, *args, **kwargs):
         # TODO: use accept header to determine format - or at least the standard "format" parameter

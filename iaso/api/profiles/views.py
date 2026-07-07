@@ -124,7 +124,14 @@ class ProfilesViewSet(ModelViewSet):
 
     def get_queryset(self):
         account = self.request.user.iaso_profile.account
-        qs = Profile.objects.filter(account=account).with_editable_org_unit_types()
+        qs = Profile.objects.filter(account=account)
+
+        if self.action == "dropdown":
+            # ProfileDropdownSerializer only reads obj.user_id and obj.user.username/first_name/last_name,
+            # so skip the editable_org_unit_types annotation (extra joins + GROUP BY) it never uses.
+            return qs.select_related("user")
+
+        qs = qs.with_editable_org_unit_types()
 
         if self.action == "list":
             if self.request.query_params.get("managedUsersOnly", "").lower() in ["true", "1"]:

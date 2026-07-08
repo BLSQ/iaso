@@ -15,6 +15,15 @@ from iaso.permissions.core_permissions import CORE_ORG_UNITS_CHANGE_REQUEST_REVI
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
+def parse_csv_rows(response):
+    """Parse a CSV `HttpResponse` into a list of dicts keyed by column name, e.g.
+    `row["Name conclusion"]` instead of a magic-index `row[13]`.
+    """
+    response_csv = response.getvalue().decode("utf-8")
+    header, *rows = csv.reader(io.StringIO(response_csv))
+    return [dict(zip(header, row)) for row in rows]
+
+
 class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
     """
     Test actions on the ViewSet.
@@ -865,16 +874,10 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         response = self.client.get("/api/orgunits/changes/export_to_csv/")
         self.assertEqual(response.status_code, 200)
 
-        response_csv = response.getvalue().decode("utf-8")
-        reader = csv.reader(io.StringIO(response_csv), delimiter=",")
-        data = list(reader)
-
-        # Skip header row
-        first_data_row = data[1]
+        first_data_row = parse_csv_rows(response)[0]
 
         # Check that the name conclusion is "updated" for a NEW change request with a name change
-        name_conclusion_index = 13  # Index of "Name conclusion" column
-        self.assertEqual(first_data_row[name_conclusion_index], "updated")
+        self.assertEqual(first_data_row["Name conclusion"], "updated")
 
     def test_export_to_csv_with_approved_change_request(self):
         """
@@ -893,21 +896,14 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         response = self.client.get("/api/orgunits/changes/export_to_csv/")
         self.assertEqual(response.status_code, 200)
 
-        response_csv = response.getvalue().decode("utf-8")
-        reader = csv.reader(io.StringIO(response_csv), delimiter=",")
-        data = list(reader)
-
-        # Skip header row
-        first_data_row = data[1]
+        first_data_row = parse_csv_rows(response)[0]
 
         # Check that the name conclusion is "updated" for an APPROVED change request with a name change
-        name_conclusion_index = 13  # Index of "Name conclusion" column
-        self.assertEqual(first_data_row[name_conclusion_index], "updated")
+        self.assertEqual(first_data_row["Name conclusion"], "updated")
 
         # Check that the groups conclusion is "same" for an APPROVED change request
         # where the field was requested but not changed
-        groups_conclusion_index = 33  # Index of "Groups conclusion" column
-        self.assertEqual(first_data_row[groups_conclusion_index], "same")
+        self.assertEqual(first_data_row["Groups conclusion"], "same")
 
     def test_export_to_csv_with_rejected_change_request(self):
         """
@@ -925,18 +921,43 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         response = self.client.get("/api/orgunits/changes/export_to_csv/")
         self.assertEqual(response.status_code, 200)
 
-        response_csv = response.getvalue().decode("utf-8")
-        reader = csv.reader(io.StringIO(response_csv), delimiter=",")
-        data = list(reader)
-
-        # Skip header row
-        first_data_row = data[1]
+        first_data_row = parse_csv_rows(response)[0]
 
         # Check that the name conclusion is "updated" for a REJECTED change request with a name change
-        name_conclusion_index = 13  # Index of "Name conclusion" column
-        self.assertEqual(first_data_row[name_conclusion_index], "updated")
+        self.assertEqual(first_data_row["Name conclusion"], "updated")
 
         # Check that the groups conclusion is "same" for a REJECTED change request
         # where the field was requested but not changed
-        groups_conclusion_index = 33  # Index of "Groups conclusion" column
-        self.assertEqual(first_data_row[groups_conclusion_index], "same")
+        self.assertEqual(first_data_row["Groups conclusion"], "same")
+
+    def test_export_to_csv_ref_ext_parent_should_report_ancestor_source_ref(self):
+        """
+        Regression test: the "Ref Ext parent N" columns are supposed to report the
+        `source_ref` of the org unit's ancestors (e.g. its country/region code), but
+        currently always come back empty.
+
+        `self.org_unit` (source_ref="112244") has no parent, so it is its own sole
+        "ancestor" at level 1. A change request on a *child* of `self.org_unit` should
+        therefore report "112244" in "Ref Ext parent 1 after change" — but the query
+        that's supposed to populate this (a `Prefetch("ancestors", ..., to_attr=
+        "cached_ancestors")` in `OrgUnitChangeRequestViewSet.export_to_csv`) silently
+        never runs, because `ancestors()` is a plain method (from django_ltree's
+        `TreeModel`), not a real Django relation that `prefetch_related()` can use.
+        See `get_parent_ref_ext` in `iaso.api.org_unit_change_requests.csv_export`.
+        """
+        child_org_unit = m.OrgUnit.objects.create(
+            org_unit_type=self.org_unit_type,
+            version=self.version,
+            parent=self.org_unit,
+            source_ref="55667788",
+        )
+        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=child_org_unit, new_name="Child renamed")
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get("/api/orgunits/changes/export_to_csv/")
+        self.assertEqual(response.status_code, 200)
+
+        row = next(r for r in parse_csv_rows(response) if r["Id"] == str(change_request.id))
+
+        self.assertEqual(row["Ref Ext parent 1 after change"], self.org_unit.source_ref)

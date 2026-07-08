@@ -16,6 +16,7 @@ from rest_framework.response import Response
 
 from hat.audit import models as audit_models
 from iaso.api.common import CONTENT_TYPE_CSV
+from iaso.api.org_unit_change_requests.csv_export import CHANGE_FIELDS
 from iaso.api.org_unit_change_requests.filters import OrgUnitChangeRequestListFilter
 from iaso.api.org_unit_change_requests.pagination import OrgUnitChangeRequestPagination
 from iaso.api.org_unit_change_requests.permissions import (
@@ -139,6 +140,10 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                 "org_unit__version__data_source",
                 "data_source_synchronization",
             )
+            # `json_diff` holds the full diff used to create every change request of a sync
+            # (can be several MB) and select_related() joins it in whole for every single row,
+            # multiplying that payload by the row count. Nothing here reads it off the relation.
+            .defer("data_source_synchronization__json_diff")
             .prefetch_related(
                 "org_unit__groups",
                 Prefetch("org_unit__reference_instances", queryset=Instance.non_deleted_objects.select_related("form")),
@@ -290,6 +295,21 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                 "created_by",
                 "updated_by",
             )
+            # old_parent/new_parent/org_unit__parent are only ever read for their `.name` below.
+            # Without this, select_related() pulls their full geometry columns for every row,
+            # which blows up the query result size (observed: "out of memory for query result"
+            # on ~1300 rows) even though that geometry is never used.
+            .defer(
+                "org_unit__parent__geom",
+                "org_unit__parent__simplified_geom",
+                "org_unit__parent__catchment",
+                "old_parent__geom",
+                "old_parent__simplified_geom",
+                "old_parent__catchment",
+                "new_parent__geom",
+                "new_parent__simplified_geom",
+                "new_parent__catchment",
+            )
             .prefetch_related(
                 "org_unit__groups",
                 "old_groups",
@@ -339,47 +359,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         writer = csv.writer(response)
         writer.writerow(self.CSV_HEADER_COLUMNS)
 
-        # Helper functions moved outside the loop
-        def get_conclusion(change_request, field_name, old_value, new_value):
-            field_mapping = {
-                "name": "new_name",
-                "parent": "new_parent",
-                "ref_ext_parent_1": "new_parent",
-                "ref_ext_parent_2": "new_parent",
-                "ref_ext_parent_3": "new_parent",
-                "opening_date": "new_opening_date",
-                "closing_date": "new_closed_date",
-                "groups": "new_groups",
-                "localisation": "new_location",
-                "geom": "new_geom",
-                "code": "new_code",
-                "reference_submission": "new_reference_instances",
-            }
-            requested_field = field_mapping.get(field_name)
-            if requested_field not in change_request.requested_fields:
-                return "same"
-            if old_value == new_value:
-                return "same"
-            return "updated"
-
-        def get_parent_ref_ext(parent, level):
-            if not parent or not hasattr(parent, "cached_ancestors"):
-                return None
-            if level <= len(parent.cached_ancestors):
-                return parent.cached_ancestors[level - 1].source_ref
-            return None
-
-        def get_location_str(location):
-            if not location:
-                return None
-            return f"{location.y}, {location.x}"
-
-        def get_reference_instance_ids(instances):
-            if not instances.exists():
-                return ""
-            return ",".join(str(instance.id) for instance in instances.all().order_by("id"))
-
-        for change_request in filtered_org_unit_changes_requests.iterator(chunk_size=20):
+        for change_request in filtered_org_unit_changes_requests.iterator(chunk_size=500):
             # Basic row data - all data is already prefetched
             row = [
                 change_request.id,
@@ -395,121 +375,8 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                 get_creator_name(change_request.updated_by) if change_request.updated_by else None,
             ]
 
-            # Name changes
-            name_before = change_request.old_name if change_request.kind == change_request.Kind.ORG_UNIT_CHANGE else ""
-            name_after = change_request.new_name if change_request.new_name else change_request.org_unit.name
-            name_conclusion = get_conclusion(change_request, "name", name_before, name_after)
-            row.extend([name_before, name_after, name_conclusion])
-
-            # Parent changes
-            parent_before = change_request.old_parent.name if change_request.old_parent else ""
-            parent_after = (
-                change_request.new_parent.name
-                if change_request.new_parent
-                else change_request.org_unit.parent.name
-                if change_request.org_unit.parent
-                else None
-            )
-            row.extend([parent_before, parent_after])
-
-            # Reference extensions for parents
-            for level in range(1, 4):
-                parent_before = change_request.old_parent
-                parent_after = (
-                    change_request.new_parent if change_request.new_parent else change_request.org_unit.parent
-                )
-
-                ref_ext_before = get_parent_ref_ext(parent_before, level)
-                ref_ext_after = get_parent_ref_ext(parent_after, level)
-                ref_ext_conclusion = get_conclusion(
-                    change_request, f"ref_ext_parent_{level}", ref_ext_before, ref_ext_after
-                )
-                row.extend([ref_ext_before, ref_ext_after, ref_ext_conclusion])
-
-            # Opening date changes
-            opening_date_before = (
-                change_request.old_opening_date.strftime("%Y-%m-%d") if change_request.old_opening_date else ""
-            )
-            opening_date_after = (
-                change_request.new_opening_date.strftime("%Y-%m-%d")
-                if change_request.new_opening_date
-                else (
-                    change_request.org_unit.opening_date.strftime("%Y-%m-%d")
-                    if change_request.org_unit.opening_date
-                    else None
-                )
-            )
-            opening_date_conclusion = get_conclusion(
-                change_request, "opening_date", opening_date_before, opening_date_after
-            )
-            row.extend([opening_date_before, opening_date_after, opening_date_conclusion])
-
-            # Closing date changes
-            closing_date_before = (
-                change_request.old_closed_date.strftime("%Y-%m-%d") if change_request.old_closed_date else ""
-            )
-            closing_date_after = (
-                change_request.new_closed_date.strftime("%Y-%m-%d")
-                if change_request.new_closed_date
-                else (
-                    change_request.org_unit.closed_date.strftime("%Y-%m-%d")
-                    if change_request.org_unit.closed_date
-                    else None
-                )
-            )
-            closing_date_conclusion = get_conclusion(
-                change_request, "closing_date", closing_date_before, closing_date_after
-            )
-            row.extend([closing_date_before, closing_date_after, closing_date_conclusion])
-
-            # Groups changes
-            groups_before = ",".join(group.name for group in change_request.old_groups.all())
-            groups_after = (
-                ",".join(group.name for group in change_request.new_groups.all())
-                if change_request.new_groups.exists()
-                else ",".join(group.name for group in change_request.org_unit.groups.all())
-            )
-            groups_conclusion = get_conclusion(change_request, "groups", groups_before, groups_after)
-            row.extend([groups_before, groups_after, groups_conclusion])
-
-            # Location changes
-            location_before = get_location_str(change_request.old_location)
-            location_after = (
-                get_location_str(change_request.new_location)
-                if "new_location" in change_request.requested_fields
-                else get_location_str(change_request.org_unit.location)
-            )
-            location_conclusion = get_conclusion(change_request, "localisation", location_before, location_after)
-            row.extend([location_before, location_after, location_conclusion])
-
-            # Geometry (polygon) changes
-            geom_before_full = change_request.old_geom.wkt if change_request.old_geom else ""
-            geom_after_full = (
-                (change_request.new_geom.wkt if change_request.new_geom else "")
-                if "new_geom" in change_request.requested_fields
-                else (change_request.org_unit.geom.wkt if change_request.org_unit.geom else "")
-            )
-            geom_conclusion = get_conclusion(change_request, "geom", geom_before_full, geom_after_full)
-            row.extend([geom_before_full[:80], geom_after_full[:80], geom_conclusion])
-
-            # Code changes
-            code_before = change_request.old_code
-            code_after = (
-                change_request.new_code
-                if "new_code" in change_request.requested_fields
-                else (change_request.org_unit.code or "")
-            )
-            code_conclusion = get_conclusion(change_request, "code", code_before, code_after)
-            row.extend([code_before, code_after, code_conclusion])
-
-            # Reference instances changes
-            reference_before = get_reference_instance_ids(change_request.old_reference_instances)
-            reference_after = (
-                get_reference_instance_ids(change_request.new_reference_instances)
-                if change_request.new_reference_instances.exists()
-                else get_reference_instance_ids(change_request.org_unit.reference_instances)
-            )
-            row.extend([reference_before, reference_after])
+            for field in CHANGE_FIELDS:
+                field.append_to(row, change_request)
 
             writer.writerow(row)
 

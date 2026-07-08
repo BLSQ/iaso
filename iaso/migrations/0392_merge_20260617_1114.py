@@ -4,11 +4,9 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0371_merge_20260331_1612"),
         ("iaso", "0391_alter_formattachment_file"),
     ]
 
-    operations = [
-    ]
+    operations = []

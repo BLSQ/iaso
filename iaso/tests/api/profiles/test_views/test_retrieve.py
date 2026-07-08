@@ -64,13 +64,11 @@ class ProfileRetrieveAPITestCase(BaseProfileAPITestCase):
         self.assertEqual(response_data["account"]["feature_flags"], [])
 
     def test_profile_retrieve_read_only_permissions(self):
-        """GET /profiles/ with auth (user has read only permissions)"""
+        """GET /profiles/<id> without users admin/managed permissions is denied"""
 
         self.client.force_authenticate(self.jane)
         response = self.client.get(reverse("profiles-detail", kwargs={"pk": self.jane.iaso_profile.id}))
-        response_data = self.assertJSONResponse(response, 200)
-        self.assertValidProfileData(response_data)
-        self.assertEqual(response_data["user_name"], "janedoe")
+        self.assertJSONResponse(response, 403)
 
     def test_retrieve_profile_me_without_auth(self):
         """GET /profiles/me/ without auth should result in a 401"""

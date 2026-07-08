@@ -58,10 +58,7 @@ class InstanceModificationSerializer(ModelSerializer):
                 )
             form_version = instance.form_version
             self.context[cache_key] = {
-                "files": {
-                    instance_file.name: instance_file.file.url
-                    for instance_file in instance.instancefile_set.filter(deleted=False)
-                },
+                "files": {instance_file.name: instance_file.file.url for instance_file in instance.active_files},
                 "possible_fields": (
                     form_version.possible_fields if form_version and form_version.possible_fields else []
                 ),

@@ -1,7 +1,9 @@
 from types import SimpleNamespace
 from unittest import TestCase
 
-from django.contrib.gis.geos import Point, Polygon
+from django.contrib.gis.geos import GEOSGeometry, Point, Polygon
+from django.db import connection
+from django.test import TestCase as DjangoTestCase
 
 from iaso.diffing.comparisons import _COORD_RE, GeometryFieldType, _round_coord
 
@@ -59,6 +61,17 @@ class RoundCoordTests(TestCase):
             self.round_coord(wkt),
             "MULTIPOLYGON (((1.12 2.76, 3.12 4.76, 1.12 2.76)), ((5.12 6.76, 7.12 8.76, 5.12 6.76)))",
         )
+
+    def test_absorbs_genuine_geos_wkt_round_trip_floating_point_drift(self):
+        # This isn't a hand-crafted approximation: -0.17621109437216642 is a real
+        # double that needs 17 significant digits to round-trip exactly, but GEOS's
+        # WKT writer caps output at 16. Writing it to WKT and reading it back
+        # therefore yields a *different* double (-0.1762110943721664) — the exact
+        # "WKT serialization round-trip" drift the _COORD_DECIMALS comment refers to.
+        original = Point(29.82193420798778, -0.17621109437216642)
+        roundtripped = GEOSGeometry(original.wkt)
+        self.assertNotEqual(original.y, roundtripped.y)  # the drift is real, not simulated
+        self.assertEqual(self.round_coord(original.wkt), self.round_coord(roundtripped.wkt))
 
 
 class GeometryFieldTypeTests(TestCase):
@@ -173,3 +186,34 @@ class PolygonNormalizeBehaviorTests(TestCase):
 
         self.assertIsNone(return_value)
         self.assertNotEqual(polygon.wkt, original_wkt)
+
+
+class GeometryFieldTypeRealWorldPrecisionTests(DjangoTestCase):
+    """
+    Regression test for the actual "different number of decimal places" scenario
+    the _COORD_DECIMALS comment defends against: iaso.utils.geojson_queryset (used
+    to serve org unit geometries, e.g. iaso/api/org_units.py) reads geometries back
+    via PostGIS's ST_AsGeoJSON, which truncates coordinates to 9 decimal digits by
+    default. A MultiPolygon — the shape org unit geom/simplified_geom actually use —
+    saved with more decimals than that comes back from the DB with genuinely fewer
+    decimals than what's stored — a real precision mismatch, not a simulated one.
+    """
+
+    def test_is_same_survives_st_as_geojson_decimal_truncation_on_read(self):
+        field_type = GeometryFieldType("geometry")
+        wkt = (
+            "MULTIPOLYGON (((29.5123456789123 -3.4123456789123, "
+            "29.6123456789123 -3.4123456789123, "
+            "29.6123456789123 -3.3123456789123, "
+            "29.5123456789123 -3.4123456789123)))"
+        )
+        stored = GEOSGeometry(wkt, srid=4326)
+
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT ST_AsGeoJSON(ST_GeomFromText(%s, 4326))", [wkt])
+            geojson = cursor.fetchone()[0]
+        read_back = GEOSGeometry(geojson)
+
+        # ST_AsGeoJSON really did truncate the decimals, it's not a no-op round trip.
+        self.assertNotEqual(stored.wkt, read_back.wkt)
+        self.assertTrue(field_type.is_same(stored, read_back))

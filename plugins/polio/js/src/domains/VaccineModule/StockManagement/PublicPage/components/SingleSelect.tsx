@@ -153,8 +153,7 @@ export const SingleSelect: FunctionComponent<Props> = ({
             }
         }
         return tempErrors;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [value, options, errors, loading, hasValue]);
+    }, [errors, freeSolo, value, options, hasValue, loading, formatMessage]);
 
     const fixedValue = useMemo(
         () => (hasValue ? (getOption(value, options) ?? value) : null),
@@ -175,7 +174,7 @@ export const SingleSelect: FunctionComponent<Props> = ({
     const handleInputChange = useCallback(
         (_, newInputValue) => freeSolo && onChange(newInputValue),
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [onChange, returnFullObject],
+        [onChange, returnFullObject, freeSolo],
     );
 
     return (

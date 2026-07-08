@@ -83,6 +83,12 @@ export const useCampaignFormState = ({ campaignId, enableAPI = true }) => {
         },
     });
 
+    const {
+        handleSubmit: formikHandleSubmit,
+        values,
+        initialValues: formikInitialValues,
+    } = formik;
+
     const handleSubmit = useCallback(
         (values, helpers) => {
             saveCampaign(convertEmptyStringToNull(values), {
@@ -114,28 +120,26 @@ export const useCampaignFormState = ({ campaignId, enableAPI = true }) => {
             queryClient.invalidateQueries('subActivities');
         }
     }, [isUpdated, formik, queryClient]);
-    const isFormChanged = !isEqual(formik.values, formik.initialValues);
+    const isFormChanged = !isEqual(values, formikInitialValues);
 
     const handleConfirm = useCallback(() => {
         // If scope type has changed
         if (
-            formik.values.separate_scopes_per_round !==
-                formik.initialValues.separate_scopes_per_round &&
-            formik.values.id
+            values.separate_scopes_per_round !==
+                formikInitialValues.separate_scopes_per_round &&
+            values.id
         ) {
             // Open warning modal
             setIsScopeWarningOpen(true);
         } else {
-            formik.handleSubmit();
+            formikHandleSubmit();
         }
-        // All hooks deps present, but ES-lint wants to add formik object, which is too much
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
-        formik.handleSubmit,
-        formik.resetForm,
-        formik.values.id,
-        formik.values.separate_scopes_per_round,
-        formik.initialValues.separate_scopes_per_round,
+        values.separate_scopes_per_round,
+        values.id,
+        formikInitialValues.separate_scopes_per_round,
+        setIsScopeWarningOpen,
+        formikHandleSubmit,
     ]);
 
     const saveDisabled =

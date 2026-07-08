@@ -1,24 +1,37 @@
-import { mutationInvalidates as validationWorkflowsMutationInvalidates} from './hat/assets/js/orval/apiConfiguration/validationWorkflows/configuration';
-import { createSchemaTransformer, normalizeSchema } from './hat/assets/js/orval/transformer/fakerTransformer';
+import { mutationInvalidates as validationWorkflowsMutationInvalidates } from './hat/assets/js/orval/apiConfiguration/validationWorkflows/configuration';
+import {
+    createSchemaTransformer,
+    normalizeSchema,
+} from './hat/assets/js/orval/transformer/fakerTransformer';
 import { mutationInvalidates as accountsMutationInvalidates } from './hat/assets/js/orval/apiConfiguration/accounts/configuration';
 
 require('dotenv').config();
 
 const ORVAL_TARGET = `${process.env.ORVAL_TARGET_URL_PROTOCOL || 'http'}://${process.env.ORVAL_TARGET_URL_DOMAIN || 'localhost:8000'}`;
-const ORVAL_TARGET_FILE = process.env?.ORVAL_TARGET_FILE
+const ORVAL_TARGET_FILE = process.env?.ORVAL_TARGET_FILE;
 
-const createConfig = (project: string, tags: string[] | RegExp[], mutationInvalidates?: any[], schemas?: string[] | RegExp[]) => {
+const createConfig = (
+    project: string,
+    tags: string[] | RegExp[],
+    mutationInvalidates?: any[],
+    schemas?: string[] | RegExp[],
+) => {
     return {
         input: {
-            target: ORVAL_TARGET_FILE ? ORVAL_TARGET_FILE : new URL('/swagger/?format=json', ORVAL_TARGET).toString(),
+            target: ORVAL_TARGET_FILE
+                ? ORVAL_TARGET_FILE
+                : new URL('/swagger/?format=json', ORVAL_TARGET).toString(),
             filters: {
                 tags: tags,
-                ...schemas ? {schemas: schemas} : {}
+                ...(schemas ? { schemas: schemas } : {}),
             },
             parserOptions: {
                 headers: [
                     {
-                        domains: [process.env.ORVAL_TARGET_URL_DOMAIN || 'localhost:8000'],
+                        domains: [
+                            process.env.ORVAL_TARGET_URL_DOMAIN ||
+                                'localhost:8000',
+                        ],
                         headers: {
                             Authorization: `Bearer ${process.env.API_TOKEN}`,
                             Accept: 'application/json',
@@ -28,16 +41,15 @@ const createConfig = (project: string, tags: string[] | RegExp[], mutationInvali
             },
             override: {
                 transformer: createSchemaTransformer(normalizeSchema),
-            }
+            },
         },
-
 
         output: {
             mode: 'tags-split',
             client: 'react-query',
             clean: true,
             baseUrl: {
-                runtime: 'process.env.ORVAL_API_BASE_URL'
+                runtime: 'process.env.ORVAL_API_BASE_URL',
             },
             workspace: `./hat/assets/js/apps/Iaso/api/${project}`,
             override: {
@@ -69,7 +81,7 @@ const createConfig = (project: string, tags: string[] | RegExp[], mutationInvali
                 mutator: {
                     path: '../../../../orval/client/custom-fetch.ts',
                     name: 'customFetchInstance',
-                    runtimeValidation: true
+                    runtimeValidation: true,
                 },
                 zod: {
                     strict: {
@@ -84,7 +96,10 @@ const createConfig = (project: string, tags: string[] | RegExp[], mutationInvali
             mock: {
                 type: 'msw',
                 preferredContentType: 'application/json',
-                delay: () => process.env?.MSW_DELAY ? parseInt(process.env.MSW_DELAY) : 0,
+                delay: () =>
+                    process.env?.MSW_DELAY
+                        ? parseInt(process.env.MSW_DELAY)
+                        : 0,
                 delayFunctionLazyExecute: true,
                 arrayMin: 1,
             },
@@ -95,18 +110,28 @@ const createConfig = (project: string, tags: string[] | RegExp[], mutationInvali
             },
         },
 
-
         hooks: {
-            afterAllFilesWrite: [
-                'eslint --cache --fix',
-            ],
+            afterAllFilesWrite: ['eslint --cache --fix'],
         },
     };
 };
 
 module.exports = {
-    accounts: createConfig('accounts', ['Account'], accountsMutationInvalidates),
-    accountFeatureFlags: createConfig('accountFeatureFlags', ['Account feature flags']),
-    modules: createConfig('modules', ["Modules"]),
-    validationWorkflows: createConfig('validationWorkflows', ['Validation workflows'], validationWorkflowsMutationInvalidates),
+    accounts: createConfig(
+        'accounts',
+        ['Account'],
+        accountsMutationInvalidates,
+    ),
+    accountFeatureFlags: createConfig('accountFeatureFlags', [
+        'Account feature flags',
+    ]),
+    apiImports: createConfig('apiImports', ['API import']),
+    instanceDiff: createConfig('instanceDiff', ['Submission diff']),
+    modules: createConfig('modules', ['Modules']),
+    validationWorkflows: createConfig(
+        'validationWorkflows',
+        ['Validation workflows'],
+        validationWorkflowsMutationInvalidates,
+    ),
+    // profiles: createConfig('profiles', ['Profiles'])
 };

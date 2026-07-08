@@ -1,5 +1,7 @@
 import uuid
 
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from rest_framework import status
 
 from iaso import models as m
@@ -8,6 +10,18 @@ from iaso.tests.api.entities.common_base_with_setup import EntityAPITestCase
 
 class MobileEntityAPITestCase(EntityAPITestCase):
     BASE_URL = "/api/mobile/entities/"
+
+    def test_list_entities_empty_does_not_issue_extra_query_for_queryset_truthiness(self):
+        self.client.force_authenticate(self.yoda)
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id})
+
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response_json["count"], 0)
+        # `filter_for_mobile_entity` must not force early evaluation of an empty
+        # queryset (e.g. via `if queryset:`), which would add an extra query.
+        self.assertEqual(len(ctx.captured_queries), 7)
 
     def test_list_entities_with_filtered_out_entities_with_soft_deleted_instances(self):
         uuid_valid_instance = uuid.uuid4()

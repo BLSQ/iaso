@@ -210,7 +210,6 @@ export const useColumnsFromFieldsList = (
 };
 
 export const useEntitiesDetailsColumns = (
-    entityId: number | null,
     fields: Array<string> = [],
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -264,7 +263,6 @@ export const useEntitiesDetailsColumns = (
                 ),
             },
         ],
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [formatMessage, columnsFromList, entityId],
+        [formatMessage, columnsFromList],
     );
 };

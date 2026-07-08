@@ -99,28 +99,33 @@ const OrgUnitTypeFilterComponent: FunctionComponent<Props> = ({
             });
         }
     }, [computedBounds, map, canFitToBounds]);
-    const updateOrgUnitTypesSelected = newOrgUnitTypesSelected => {
-        const promisesArray: Promise<any>[] = [];
-        const oldOrgUnitsTypes: any[] = [];
-        newOrgUnitTypesSelected.forEach(ot => {
-            if (!ot.orgUnits) {
-                promisesArray.push(
-                    fetchSubOrgUnitsByType(
-                        `&orgUnitParentId=${currentOrgUnit.id}&orgUnitTypeId=${ot.id}&withShapes=true&validation_status=all`,
-                        ot,
-                    ),
-                );
-            } else {
-                oldOrgUnitsTypes.push(ot);
-            }
-        });
-        setIsLoading(true);
-        Promise.all(promisesArray).then(orgUnits => {
-            const orgUnitsTypesWithData = oldOrgUnitsTypes.concat(orgUnits);
-            setOrgUnitTypesSelected(orgUnitsTypesWithData);
-            setIsLoading(false);
-        });
-    };
+    const updateOrgUnitTypesSelected = useCallback(
+        newOrgUnitTypesSelected => {
+            const promisesArray: Promise<any>[] = [];
+            const oldOrgUnitsTypes: any[] = [];
+
+            newOrgUnitTypesSelected.forEach(ot => {
+                if (!ot.orgUnits) {
+                    promisesArray.push(
+                        fetchSubOrgUnitsByType(
+                            `&orgUnitParentId=${currentOrgUnit.id}&orgUnitTypeId=${ot.id}&withShapes=true&validation_status=all`,
+                            ot,
+                        ),
+                    );
+                } else {
+                    oldOrgUnitsTypes.push(ot);
+                }
+            });
+
+            setIsLoading(true);
+
+            Promise.all(promisesArray).then(orgUnits => {
+                setOrgUnitTypesSelected(oldOrgUnitsTypes.concat(orgUnits));
+                setIsLoading(false);
+            });
+        },
+        [currentOrgUnit.id, fetchSubOrgUnitsByType],
+    );
 
     const hanldeOnChange = selection => {
         if (!selection) {
@@ -130,32 +135,36 @@ const OrgUnitTypeFilterComponent: FunctionComponent<Props> = ({
         }
     };
 
-    useEffect(() => {
-        const newOrgUnitTypesSelected: any[] = [];
-        let newOrgUnitTypesList: any[] = [];
-        orgUnitTypes.forEach(ot => {
-            if (
-                currentOrgUnit?.org_unit_type?.sub_unit_types.find(
-                    o => o.id === ot.id,
-                )
-            ) {
-                newOrgUnitTypesSelected.push(ot);
-                if (!newOrgUnitTypesList.find(o => o.id === ot.id)) {
-                    newOrgUnitTypesList.push(ot);
+    useEffect(
+        () => {
+            const newOrgUnitTypesSelected: any[] = [];
+            let newOrgUnitTypesList: any[] = [];
+            orgUnitTypes.forEach(ot => {
+                if (
+                    currentOrgUnit?.org_unit_type?.sub_unit_types.find(
+                        o => o.id === ot.id,
+                    )
+                ) {
+                    newOrgUnitTypesSelected.push(ot);
+                    if (!newOrgUnitTypesList.find(o => o.id === ot.id)) {
+                        newOrgUnitTypesList.push(ot);
+                    }
                 }
-            }
 
-            const subsOt = getSubOrgunits(ot, orgUnitTypes, [ot]);
-            const missingOt = subsOt.filter(
-                out => !newOrgUnitTypesList.some(o => o.id === out.id),
-            );
-            newOrgUnitTypesList = newOrgUnitTypesList.concat(missingOt);
-        });
-        updateOrgUnitTypesSelected(newOrgUnitTypesSelected);
-        setOrgUnitTypesList(newOrgUnitTypesList);
-        return () => setOrgUnitTypesSelected([]);
+                const subsOt = getSubOrgunits(ot, orgUnitTypes, [ot]);
+                const missingOt = subsOt.filter(
+                    out => !newOrgUnitTypesList.some(o => o.id === out.id),
+                );
+                newOrgUnitTypesList = newOrgUnitTypesList.concat(missingOt);
+            });
+            updateOrgUnitTypesSelected(newOrgUnitTypesSelected);
+            setOrgUnitTypesList(newOrgUnitTypesList);
+            return () => setOrgUnitTypesSelected([]);
+        },
+        // leave it like that otherwise it causes an infinite loop in ou map details
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [orgUnitTypes]);
+        [orgUnitTypes],
+    );
 
     return (
         <Box m={4}>

@@ -1,6 +1,8 @@
 import django_filters
 
-from django.db.models import Exists, OuterRef, Q, QuerySet
+from django.db.models import BooleanField, ExpressionWrapper, OuterRef, Q, QuerySet, Subquery, Value
+from django.db.models.functions import Coalesce
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from iaso.models import OrgUnit, OrgUnitType
@@ -25,7 +27,7 @@ def search_queryset(queryset, value):
     return queryset
 
 
-class CampaignFilterV2(django_filters.rest_framework.FilterSet):
+class CampaignFilter(django_filters.rest_framework.FilterSet):
     class Meta:
         model = Campaign
         fields = {
@@ -69,18 +71,36 @@ class CampaignFilterV2(django_filters.rest_framework.FilterSet):
     def filter_campaign_category(self, queryset: QuerySet, _, value: str) -> QuerySet:
         """
         PLANNED and ON_HOLD are mutually exclusive on the business side (not on the model yet)
-        ON_HOLD returns campaigns on hold or with at least 1 round on hold
+        ON_HOLD returns a campaign when:
+          - it is on hold at campaign level, or
+          - it is not finished and its ongoing-or-next active round is on hold, or
+          - it is finished and its last round (highest `number`) was on hold.
+        An active round is one that has not ended yet (ended_at >= today); a campaign is finished
+        once its last round has ended (ended_at < today). A NULL ended_at means the campaign is
+        still unfinished, so it cannot match the "finished" branch.
         PREVENTIVE and REGULAR are "the same" except for the is_preventive field
         There is no fine-grained filtering for e.g preventive on hold campaigns at the moment as it would clutter the already
         charged UI
 
         Individual filters for each boolean would make more sense, but that would require some UI design first
         """
-        rounds_on_hold = Round.objects.filter(
-            campaign_id=OuterRef("pk"),
-            on_hold=True,
+
+        today = timezone.localdate()
+
+        # ongoing-or-next active round on hold: earliest (by started_at) round not yet ended.
+        # With ended_at >= today, a round ending today still counts as active/ongoing.
+        next_active_round_on_hold = Subquery(
+            Round.objects.filter(
+                campaign_id=OuterRef("pk"),
+                ended_at__gte=today,
+            )
+            .order_by("started_at")  # earliest not-yet-ended round; pick first
+            .values("on_hold")[:1]
         )
-        queryset = queryset.annotate(has_round_on_hold=Exists(rounds_on_hold))
+
+        queryset = queryset.annotate(
+            has_round_on_hold=Coalesce(next_active_round_on_hold, Value(False), output_field=BooleanField())
+        )
         if value == REGULAR:
             return (
                 queryset.filter(is_preventive=False)
@@ -94,7 +114,28 @@ class CampaignFilterV2(django_filters.rest_framework.FilterSet):
                 .filter(Q(on_hold=False) & Q(has_round_on_hold=False))
             )
         if value == ON_HOLD:
-            return queryset.filter(Q(on_hold=True) | Q(has_round_on_hold=True))
+            # finished campaign whose last round (highest `number`) was on hold.
+            # A single subquery returns the precomputed boolean to avoid a redundant scan;
+            # a NULL ended_at yields NULL here and is coalesced to False (unfinished -> excluded).
+            last_round_on_hold_finished = Subquery(
+                Round.objects.filter(campaign_id=OuterRef("pk"))
+                .order_by("-number")
+                .annotate(
+                    finished_on_hold=ExpressionWrapper(
+                        Q(on_hold=True) & Q(ended_at__lt=today),
+                        output_field=BooleanField(),
+                    )
+                )
+                .values("finished_on_hold")[:1]
+            )
+            queryset = queryset.annotate(
+                has_last_round_on_hold_finished=Coalesce(
+                    last_round_on_hold_finished, Value(False), output_field=BooleanField()
+                )
+            )
+            return queryset.filter(
+                Q(on_hold=True) | Q(has_round_on_hold=True) | Q(has_last_round_on_hold_finished=True)
+            )
         if value == PLANNED:
             return queryset.filter(is_planned=True)
         return queryset

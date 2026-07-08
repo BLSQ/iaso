@@ -44,8 +44,9 @@ const InstanceDetailsExportRequests: FunctionComponent<Props> = ({
             {currentInstance.export_statuses &&
                 currentInstance.export_statuses.length > 0 && <Divider />}
             {currentInstance.export_statuses.map((exportStatus, index) => (
-                // eslint-disable-next-line react/no-array-index-key
-                <React.Fragment key={index}>
+                <React.Fragment
+                    key={`${exportStatus.export_request.created_at}-${exportStatus.export_request.launcher.full_name}`}
+                >
                     <InstanceDetailsField
                         label={formatMessage(MESSAGES.exportStatus)}
                         value={exportStatus.status}

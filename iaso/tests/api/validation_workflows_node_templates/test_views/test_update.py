@@ -229,3 +229,19 @@ class ValidationNodeTemplateAPIUpdateTestCase(BaseApiTestCase):
         )
 
         self.assertJSONResponse(res, status.HTTP_200_OK)
+
+    def test_forbid_if_validation_workflow_is_soft_deleted(self):
+        self.client.force_authenticate(self.john_wick)
+
+        self.validation_workflow.delete()
+        self.validation_workflow.refresh_from_db()
+        self.assertIsNotNone(self.validation_workflow.deleted_at)
+
+        res = self.client.put(
+            reverse(
+                "validation_node_templates-detail",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
+            ),
+            data={"name": "test", "roles_required": [self.user_role.pk]},
+        )
+        self.assertJSONResponse(res, status.HTTP_404_NOT_FOUND)

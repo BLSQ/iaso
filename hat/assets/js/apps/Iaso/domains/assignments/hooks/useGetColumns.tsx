@@ -2,7 +2,7 @@ import React from 'react';
 import { Column, useSafeIntl } from 'bluesquare-components';
 import { LinkToOrgUnit } from 'Iaso/domains/orgUnits/components/LinkToOrgUnit';
 import { PaginatedPlanningOrgUnit } from 'Iaso/domains/plannings/types';
-import { AssignmentCell } from '../components/AssignmentCell';
+import { AssignmentCell } from '../components/table/AssignmentCell';
 import MESSAGES from '../messages';
 
 export const useGetColumns = (): Column[] => {
@@ -11,13 +11,12 @@ export const useGetColumns = (): Column[] => {
         {
             Header: 'Id',
             accessor: 'id',
-            sortable: false,
             width: 50,
         },
         {
             Header: formatMessage(MESSAGES.name),
             accessor: 'name',
-            sortable: false,
+            id: 'name',
             Cell: ({
                 row: { original: orgUnit },
             }: {

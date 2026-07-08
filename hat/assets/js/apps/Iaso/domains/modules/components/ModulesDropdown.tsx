@@ -1,8 +1,6 @@
 import React from 'react';
-import moment from 'moment';
 import {
     ApiModulesDropdownListParams,
-    getApiModulesDropdownListQueryKey,
     useApiModulesDropdownList,
 } from 'Iaso/api/modules';
 import InputComponent from 'Iaso/components/forms/InputComponent';
@@ -30,17 +28,12 @@ export const ModulesDropdown = ({
         currentUser,
     );
 
-    // todo: queryKey def could maybe be more generic at orval config level?
     const { data, isLoading } = useApiModulesDropdownList(params, {
         query: {
             meta: {
                 snackErrorMsg: MESSAGES.modulesDropDownError,
             },
             enabled: hasPermissions,
-            queryKey: [
-                ...getApiModulesDropdownListQueryKey(params),
-                moment().locale(),
-            ],
         },
     });
 

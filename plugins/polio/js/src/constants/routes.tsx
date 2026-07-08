@@ -20,8 +20,6 @@ import { Lqas } from '../domains/LQAS-IM/LQAS';
 import { LqasAfroOverview } from '../domains/LQAS-IM/LQAS/LqasAfroOverview/LqasAfroOverview';
 import { Notifications } from '../domains/Notifications';
 import { NationalLogisticsPlan } from '../domains/VaccineModule/NationalLogisticsPlan/NationalLogisticsPlan';
-import { Nopv2AuthorisationsDetails } from '../domains/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails';
-import { Nopv2Authorisations } from '../domains/VaccineModule/Nopv2Authorisations/Nopv2Authorisations';
 import { PerformanceDashboard } from '../domains/VaccineModule/PerformanceDashboard/PerformanceDashboard';
 import { PerformanceThresholds } from '../domains/VaccineModule/PerformanceThresholds/PerformanceThresholds';
 import { VaccineRepository } from '../domains/VaccineModule/Repository/VaccineRepository';
@@ -182,19 +180,21 @@ export const budgetDetailsPath: RoutePath = {
     permissions: [BUDGET, BUDGET_ADMIN],
 };
 
-export const nopvAuthPath: RoutePath = {
-    baseUrl: baseUrls.nopv2Auth,
-    routerUrl: `${baseUrls.nopv2Auth}/*`,
-    element: <Nopv2Authorisations />,
-    permissions: [POLIO, POLIO_ADMIN],
-};
+// feature deprecated at client's request, but kept "just in case" (at client's request also)
+// export const nopvAuthPath: RoutePath = {
+//     baseUrl: baseUrls.nopv2Auth,
+//     routerUrl: `${baseUrls.nopv2Auth}/*`,
+//     element: <Nopv2Authorisations />,
+//     permissions: [POLIO, POLIO_ADMIN],
+// };
 
-export const nopvAuthDetailsPath: RoutePath = {
-    baseUrl: baseUrls.nopv2AuthDetails,
-    routerUrl: `${baseUrls.nopv2AuthDetails}/*`,
-    element: <Nopv2AuthorisationsDetails />,
-    permissions: [POLIO, POLIO_ADMIN],
-};
+// feature deprecated at client's request, but kept "just in case" (at client's request also)
+// export const nopvAuthDetailsPath: RoutePath = {
+//     baseUrl: baseUrls.nopv2AuthDetails,
+//     routerUrl: `${baseUrls.nopv2AuthDetails}/*`,
+//     element: <Nopv2AuthorisationsDetails />,
+//     permissions: [POLIO, POLIO_ADMIN],
+// };
 
 export const supplychainPath: RoutePath = {
     baseUrl: baseUrls.vaccineSupplyChain,
@@ -330,8 +330,8 @@ export const routes: (RoutePath | AnonymousRoutePath)[] = [
     imOhhPath,
     budgetPath,
     budgetDetailsPath,
-    nopvAuthPath,
-    nopvAuthDetailsPath,
+    // nopvAuthPath,
+    // nopvAuthDetailsPath,
     supplychainPath,
     supplychainDetailsPath,
     stockManagementPath,

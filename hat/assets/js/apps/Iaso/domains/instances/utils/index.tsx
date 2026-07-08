@@ -225,8 +225,10 @@ const renderValue = (settings: Setting<Instance>, c: VisibleColumn) => {
             <pre style={{ textAlign: 'left' }}>
                 {value.map((val, index) => (
                     <>
-                        {/* eslint-disable-next-line react/no-array-index-key */}
-                        <KeyValueFields key={`arr${index}`} entry={val} />
+                        <KeyValueFields
+                            key={`${val ?? `arr${index}`}`}
+                            entry={val}
+                        />
                         <br />
                     </>
                 ))}

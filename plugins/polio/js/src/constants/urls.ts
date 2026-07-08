@@ -63,7 +63,6 @@ export const campaignParams = [
     'campaignCategory',
     'campaignGroups',
     'show_test',
-    'on_hold',
     'filterLaunched',
 ];
 
@@ -128,6 +127,7 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             ...campaignParams,
             'orgUnitGroups',
             'periodType',
+            'showIntegrated',
         ],
     },
     embeddedVaccineRepository: {

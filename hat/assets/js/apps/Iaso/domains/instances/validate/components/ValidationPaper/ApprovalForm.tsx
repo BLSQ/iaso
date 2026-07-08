@@ -15,7 +15,6 @@ import { useValidateNode } from '../../hooks/api';
 import MESSAGES from '../../messages';
 import { InstanceValidationParams } from '../../types';
 import { getValidationStepContext } from '../../utils/getActiveSteps';
-import { ValidationSectionPaper } from './ValidationSectionPaper';
 
 type Props = {
     workflow: ValidationNodeRetrieveResponse | undefined;
@@ -85,24 +84,20 @@ export const ApprovalForm: FunctionComponent<Props> = ({
         }
     }, [commonPayload, onSave, validateStep]);
     return (
-        <>
-            <ValidationSectionPaper withTopMargin>
-                <InputComponent
-                    type="textarea"
-                    keyValue="comment"
-                    onChange={(_, value) => setComment(value)}
-                    labelString={formatMessage(MESSAGES.comment)}
-                    disabled={!canSubmit || isLoading}
-                    helperText={
-                        !comment ? commentForRejectionMessage : undefined
-                    }
-                />
-            </ValidationSectionPaper>
+        <Box sx={{ m: 2 }}>
+            <InputComponent
+                type="textarea"
+                keyValue="comment"
+                onChange={(_, value) => setComment(value)}
+                labelString={formatMessage(MESSAGES.comment)}
+                disabled={!canSubmit || isLoading}
+                helperText={!comment ? commentForRejectionMessage : undefined}
+            />
             <Box
                 sx={{
                     display: 'flex',
                     justifyContent: 'space-between',
-                    padding: theme => theme.spacing(2),
+                    mt: 2,
                 }}
             >
                 <ValidateButton
@@ -128,6 +123,6 @@ export const ApprovalForm: FunctionComponent<Props> = ({
                     </Box>
                 </Tooltip>
             </Box>
-        </>
+        </Box>
     );
 };

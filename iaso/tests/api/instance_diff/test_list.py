@@ -102,6 +102,7 @@ class InstanceDiffAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
     def assertValidData(self, data, expected_length):
         self.assertValidListData(list_data=data, expected_length=expected_length, paginated=True, results_key="results")
+        self.assertResponseCompliantToSwagger(data, "PaginatedInstanceModificationList")
 
     def test_permission(self):
         res = self.client.get(reverse("instances_diff-list", kwargs={"instance_id": self.instance.id}))

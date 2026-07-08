@@ -12,7 +12,6 @@ import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import MESSAGES from '../../messages';
 import { InstanceValidationParams } from '../../types';
 import { getActiveSteps } from '../../utils/getActiveSteps';
-import { ValidationSectionPaper } from './ValidationSectionPaper';
 
 type Props = {
     formName: string;
@@ -65,7 +64,7 @@ export const StepInfo: FunctionComponent<Props> = ({
         [redirectToReplace, params],
     );
     return (
-        <ValidationSectionPaper>
+        <Box m={2}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Typography sx={{ fontWeight: 'bold' }}>
                     {formatMessage(MESSAGES.form)}
@@ -90,6 +89,6 @@ export const StepInfo: FunctionComponent<Props> = ({
                 </Typography>
                 <Typography>{bypassedSteps}</Typography>
             </Box>
-        </ValidationSectionPaper>
+        </Box>
     );
 };

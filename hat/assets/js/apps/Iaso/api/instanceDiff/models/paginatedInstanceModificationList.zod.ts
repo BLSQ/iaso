@@ -7,8 +7,6 @@
  */
 import { z as zod } from 'zod';
 
-export const paginatedInstanceModificationListResultsItemObjectIdMax = 40;
-
 export const PaginatedInstanceModificationList = zod.strictObject({
     count: zod.number().optional(),
     has_next: zod.boolean().optional(),
@@ -21,11 +19,7 @@ export const PaginatedInstanceModificationList = zod.strictObject({
             zod.strictObject({
                 created_at: zod.iso.datetime({ offset: true }),
                 content_type: zod.string(),
-                object_id: zod
-                    .string()
-                    .max(
-                        paginatedInstanceModificationListResultsItemObjectIdMax,
-                    ),
+                object_id: zod.string(),
                 diff: zod.array(
                     zod
                         .strictObject({
@@ -53,7 +47,7 @@ export const PaginatedInstanceModificationList = zod.strictObject({
                 new_value: zod.unknown(),
                 files: zod.record(zod.string(), zod.url()),
                 possible_fields: zod.array(zod.unknown()),
-                form_descriptor: zod.unknown(),
+                form_descriptor: zod.unknown().nullable(),
             }),
         )
         .optional(),

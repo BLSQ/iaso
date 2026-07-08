@@ -43,7 +43,7 @@ export const getApiDiffInstancesListResponseMock = (
                         length: { min: 10, max: 20 },
                     }),
                     object_id: faker.string.alpha({
-                        length: { min: 10, max: 40 },
+                        length: { min: 10, max: 20 },
                     }),
                     diff: Array.from(
                         { length: faker.number.int({ min: 1, max: 10 }) },
@@ -100,7 +100,7 @@ export const getApiDiffInstancesListResponseMock = (
                         length: { min: 10, max: 20 },
                     }),
                     object_id: faker.string.alpha({
-                        length: { min: 10, max: 40 },
+                        length: { min: 10, max: 20 },
                     }),
                     diff: Array.from(
                         { length: faker.number.int({ min: 1, max: 10 }) },

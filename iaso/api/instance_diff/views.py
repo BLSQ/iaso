@@ -39,8 +39,12 @@ class InstanceDiffViewSet(CustomPaginationListModelMixin, GenericViewSet):
 
     def get_queryset(self):
         instance_content_type = ContentType.objects.get_for_model(Instance)
+
+        # so we trigger a 404 if not found
+        instance = self.get_instance()
+
         return Modification.objects.select_related("content_type").filter(
-            content_type=instance_content_type, object_id=str(self.get_instance().pk)
+            content_type=instance_content_type, object_id=str(instance.pk)
         )
 
     def get_serializer_context(self):

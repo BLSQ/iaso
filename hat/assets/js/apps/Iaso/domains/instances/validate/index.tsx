@@ -107,8 +107,15 @@ export const ValidateInstance = () => {
             />
             <Box sx={commonStyles(theme).containerFullHeightNoTabPadded}>
                 <Grid container spacing={2}>
+                    {instance && (
+                        <Grid item xs={12} sm={6}>
+                            <ValidationPaper
+                                formName={instance?.form_name ?? ''}
+                            />
+                        </Grid>
+                    )}
                     {showDiffPanel && (
-                        <Grid item xs={12} sm={8}>
+                        <Grid item xs={12}>
                             {isDiffContentLoading && (
                                 <InstanceLogDetail
                                     instanceLogContent={null}
@@ -184,13 +191,6 @@ export const ValidateInstance = () => {
                                     headerB={MESSAGES.current}
                                 />
                             )}
-                        </Grid>
-                    )}
-                    {instance && (
-                        <Grid item xs={12} sm={4}>
-                            <ValidationPaper
-                                formName={instance?.form_name ?? ''}
-                            />
                         </Grid>
                     )}
                 </Grid>

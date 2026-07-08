@@ -13,7 +13,6 @@ import { getDisplayName, User } from '../../../../utils/usersUtils';
 import { LinkToForm } from '../../../forms/components/LinkToForm';
 import { LinkToOrgUnit } from '../../../orgUnits/components/LinkToOrgUnit';
 import { useGetOrgUnitDetail } from '../../../orgUnits/hooks/requests/useGetOrgUnitDetail';
-import { usePrettyPeriod } from '../../../periods/utils';
 
 import MESSAGES from '../messages';
 import InstanceLogInfosRow from './InstanceLogInfosRow';

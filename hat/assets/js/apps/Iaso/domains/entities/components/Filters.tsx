@@ -33,10 +33,7 @@ import { useFindCustomComponent } from '../../../plugins/hooks/customComponents'
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 import { useGetGroupDropdown } from '../../orgUnits/hooks/requests/useGetGroups';
-import {
-    useGetTeamsDropdown,
-    useGetTeam,
-} from '../../teams/hooks/requests/useGetTeams';
+import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
 import { baseUrl } from '../config';
 import {
     useGetEntitiesApiParams,
@@ -108,11 +105,11 @@ const Filters: FunctionComponent<Props> = ({
     const TeamsFilterOverride = useFindCustomComponent(
         'iaso.entities.label.submitterTeam',
     );
-    const { data: selectedTeam } = useGetTeam(
-        !TeamsFilterOverride && filters?.submitterTeamId
-            ? parseInt(filters.submitterTeamId, 10)
-            : 0,
-    );
+    // const { data: selectedTeam } = useGetTeam(
+    //     !TeamsFilterOverride && filters?.submitterTeamId
+    //         ? parseInt(filters.submitterTeamId, 10)
+    //         : 0,
+    // );
     const dataSourceId = currentUser?.account?.default_version?.data_source?.id;
     const sourceVersionId = currentUser?.account?.default_version?.id;
     const { data: groups, isFetching: isFetchingGroups } = useGetGroupDropdown({

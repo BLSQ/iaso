@@ -342,7 +342,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         m.EntityDuplicate.objects.create(
             entity1=entities[0], entity2=entities[1], validation_status=ValidationStatus.PENDING
         )
-        with self.assertNumQueries(10):
+        with self.assertNumQueries(9):
             response = self.client.get("/api/entities/", format="json")
         self.assertEqual(response.status_code, 200)
         result = response.json()["result"]
@@ -351,9 +351,12 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertTrue(target_result["has_duplicates"])
 
     def test_list_entities_annotate_last_saved_at(self):
-        """Test `last_saved_instance` is annotated correctly without n+1 queries"""
+        """Test `last_saved_instance` is annotated via a cheap correlated subquery, without n+1 queries"""
 
-        expensive_annotation = """MAX(COALESCE("iaso_instance"."source_created_at", "iaso_instance"."created_at"))"""
+        subquery_annotation = (
+            """(SELECT COALESCE(U0."source_created_at", U0."created_at") AS "saved_at" """
+            """FROM "iaso_instance" U0 WHERE U0."entity_id" = ("iaso_entity"."id") ORDER BY 1 DESC LIMIT 1)"""
+        )
 
         self.client.force_authenticate(self.yoda)
         source_created_at = timezone.make_aware(datetime.datetime(2025, 2, 3))
@@ -366,6 +369,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
                 source_created_at=source_created_at + timedelta(days=i),
             )
 
+        # The subquery annotation (no join fan-out, no GROUP BY) is used regardless of ordering.
         with CaptureQueriesContext(connection) as ctx:
             response = self.client.get("/api/entities/", data={"order": "id"}, format="json")
         data = self.assertJSONResponse(response, 200)
@@ -373,8 +377,8 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(len(result), 3)
         self.assertEqual(result[0]["last_saved_instance"], "2025-02-03T00:00:00Z")
 
-        self.assertEqual(len(ctx.captured_queries), 8)
-        self.assertNotIn(expensive_annotation, "".join(q["sql"] for q in ctx.captured_queries))
+        self.assertEqual(len(ctx.captured_queries), 7)
+        self.assertIn(subquery_annotation, "".join(q["sql"] for q in ctx.captured_queries))
 
         with CaptureQueriesContext(connection) as ctx:
             response = self.client.get("/api/entities/", data={"order": "-last_saved_instance"}, format="json")
@@ -383,8 +387,8 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(len(result), 3)
         self.assertEqual(result[0]["last_saved_instance"], "2025-02-05T00:00:00Z")
 
-        self.assertEqual(len(ctx.captured_queries), 6)
-        self.assertIn(expensive_annotation, "".join(q["sql"] for q in ctx.captured_queries))
+        self.assertEqual(len(ctx.captured_queries), 5)
+        self.assertIn(subquery_annotation, "".join(q["sql"] for q in ctx.captured_queries))
 
     @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1), tick=False)
     def test_list_entities_single_entity_type(self):

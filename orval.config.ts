@@ -125,6 +125,7 @@ module.exports = {
     accountFeatureFlags: createConfig('accountFeatureFlags', [
         'Account feature flags',
     ]),
+    apiImports: createConfig('apiImports', ['API import']),
     instanceDiff: createConfig('instanceDiff', ['Submission diff']),
     modules: createConfig('modules', ['Modules']),
     validationWorkflows: createConfig(

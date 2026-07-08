@@ -47,7 +47,7 @@ export const MultiRows: FunctionComponent<RowObjectProps> = ({
             value={
                 <Table size="small" className={classes.table}>
                     <TableBody>
-                        {items.map((subItem, index) => {
+                        {items.map((subItem, index: number) => {
                             const item =
                                 type === 'array' ? subItem : logDetail[logKey];
                             const multiRowIndex =
@@ -58,8 +58,7 @@ export const MultiRows: FunctionComponent<RowObjectProps> = ({
                             return (
                                 <Row
                                     cellWithMargin={false}
-                                    // eslint-disable-next-line react/no-array-index-key
-                                    key={`${logKey}-${index}`}
+                                    key={`${logKey}-${logDetail.id}-${multiRowIndex}`}
                                     value={
                                         <ExpandableItem
                                             backgroundColor="#f7f7f7"

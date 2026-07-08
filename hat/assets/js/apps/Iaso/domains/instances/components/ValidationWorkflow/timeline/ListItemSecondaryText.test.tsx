@@ -5,6 +5,17 @@ import { describe, expect, it, vi } from 'vitest';
 import { renderWithThemeAndIntlProvider } from '../../../../../../../tests/helpers';
 import { ListItemSecondaryText } from './ListItemSecondaryText';
 
+const mockRedirectTo = vi.fn();
+
+vi.mock('bluesquare-components', async importOriginal => {
+    const actual =
+        await importOriginal<typeof import('bluesquare-components')>();
+    return {
+        ...actual,
+        useRedirectTo: () => mockRedirectTo,
+    };
+});
+
 // Mock modal components
 vi.mock(
     'Iaso/domains/instances/components/ValidationWorkflow/ValidationModal',
@@ -47,6 +58,7 @@ describe('ListItemSecondaryText', () => {
                     status: 'UNKNOWN',
                 }}
                 instanceId={123}
+                isFirstSubmission
             />,
         );
         expect(container.innerHTML).toBe('');
@@ -62,6 +74,7 @@ describe('ListItemSecondaryText', () => {
                     status: 'UNKNOWN',
                 }}
                 instanceId={123}
+                isFirstSubmission
             />,
         );
         expect(container.innerHTML).toBe('');
@@ -75,7 +88,7 @@ describe('ListItemSecondaryText', () => {
                     type: 'TIMELINE',
                     status: 'UNKNOWN',
                 }}
-                isMostRecent={true}
+                isFirstSubmission
                 instanceId={123}
             />,
         );
@@ -93,6 +106,7 @@ describe('ListItemSecondaryText', () => {
                     user_can_do_actions: true,
                 }}
                 instanceId={123}
+                isFirstSubmission
             />,
         );
 
@@ -114,6 +128,7 @@ describe('ListItemSecondaryText', () => {
                     user_can_do_actions: true,
                 }}
                 instanceId={123}
+                isFirstSubmission
             />,
         );
 
@@ -134,6 +149,7 @@ describe('ListItemSecondaryText', () => {
                     status: 'SKIPPED',
                 }}
                 instanceId={123}
+                isFirstSubmission
             />,
         );
 
@@ -149,6 +165,7 @@ describe('ListItemSecondaryText', () => {
                     status: 'APPROVED',
                 }}
                 instanceId={123}
+                isFirstSubmission
             />,
         );
 
@@ -166,6 +183,7 @@ describe('ListItemSecondaryText', () => {
                     status: 'REJECTED',
                 }}
                 instanceId={123}
+                isFirstSubmission
             />,
         );
 
@@ -184,6 +202,7 @@ describe('ListItemSecondaryText', () => {
                     comment: '',
                 }}
                 instanceId={123}
+                isFirstSubmission
             />,
         );
 
@@ -200,6 +219,7 @@ describe('ListItemSecondaryText', () => {
                     user_can_do_actions: false,
                 }}
                 instanceId={123}
+                isFirstSubmission
             />,
         );
 

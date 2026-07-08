@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   config:
-    uses: BLSQ/iaso-ci/.github/workflows/config.yml@main
+    uses: BLSQ/iaso-ci/.github/workflows/config.yml@trypelim
     permissions:
       pull-requests: write
       contents: read
@@ -24,13 +24,13 @@ jobs:
 
   build_and_push_image:
     needs: config
-    uses: BLSQ/iaso-ci/.github/workflows/docker_build.yml@main
+    uses: BLSQ/iaso-ci/.github/workflows/docker_build.yml@trypelim
     with:
       iaso_branch: ${{ github.head_ref || github.ref_name }}
       image_tags: ${{ needs.config.outputs.image_tags }}
     secrets: inherit
 
   tests:
-    uses: BLSQ/iaso-ci/.github/workflows/tests.yml@main
+    uses: BLSQ/iaso-ci/.github/workflows/tests.yml@trypelim
     with:
       iaso_branch: ${{ github.head_ref || github.ref_name }}

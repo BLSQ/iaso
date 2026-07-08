@@ -29,13 +29,13 @@ jobs:
 
   tests:
     needs: [ check_on_main ]
-    uses: BLSQ/iaso-ci/.github/workflows/tests.yml@main
+    uses: BLSQ/iaso-ci/.github/workflows/tests.yml@trypelim
     with:
       iaso_branch: main
 
   build_and_push_image:
     needs: [ check_on_main, tests ]
-    uses: BLSQ/iaso-ci/.github/workflows/docker_build.yml@main
+    uses: BLSQ/iaso-ci/.github/workflows/docker_build.yml@trypelim
     with:
       iaso_branch: main-test
       image_tags: ${{ github.ref_name }},main

@@ -10,13 +10,13 @@ import {
 } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { stringToBoolean } from 'Iaso/utils/dataManipulation';
+import { useFindCustomComponent } from '../../../plugins/hooks/customComponents';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
 import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles';
-import { useFindCustomComponent } from '../../../plugins/hooks/customComponents';
 import { useGetPermissionsDropDown } from '../hooks/useGetPermissionsDropdown';
 import MESSAGES from '../messages';
 

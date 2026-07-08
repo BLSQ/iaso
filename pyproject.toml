@@ -83,6 +83,7 @@ dependencies = [
     "requests-toolbelt==0.9.1",
     "sentry-sdk[django]==1.38.0", # https://github.com/getsentry/sentry-python/tags
     "shapely==2.0.2", # https://github.com/shapely/shapely/tags
+    "simpleeval==1.0.3", # https://github.com/danthedeckie/simpleeval/tags
     "snaql==0.4.2", # trypelim - https://github.com/zaiev/snaql/tags
     "sqlalchemy==2.0.23", # https://github.com/sqlalchemy/sqlalchemy/tags
     "tsp-solver2==0.4.1", # trypelim - https://github.com/dmishin/tsp-solver/tags

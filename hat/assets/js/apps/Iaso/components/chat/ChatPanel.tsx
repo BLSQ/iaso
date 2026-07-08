@@ -16,19 +16,18 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
-import MESSAGES from '../messages';
 
-type Message = {
+export type ChatMessage = {
     role: 'user' | 'assistant';
     content: string;
     id: string;
 };
 
 type Props = {
-    messages: Message[];
+    messages: ChatMessage[];
     isLoading: boolean;
+    placeholder: string;
     onSendMessage: (message: string) => void;
 };
 
@@ -108,9 +107,9 @@ const styles: SxStyles = {
 export const ChatPanel: FunctionComponent<Props> = ({
     messages,
     isLoading,
+    placeholder,
     onSendMessage,
 }) => {
-    const { formatMessage } = useSafeIntl();
     const [inputValue, setInputValue] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -141,9 +140,7 @@ export const ChatPanel: FunctionComponent<Props> = ({
             <Box sx={styles.messagesArea}>
                 {messages.length === 0 && (
                     <Box sx={styles.emptyState}>
-                        <Typography variant="body1">
-                            {formatMessage(MESSAGES.placeholder)}
-                        </Typography>
+                        <Typography variant="body1">{placeholder}</Typography>
                     </Box>
                 )}
                 {messages.map(msg => (
@@ -182,7 +179,7 @@ export const ChatPanel: FunctionComponent<Props> = ({
                     multiline
                     maxRows={4}
                     size="small"
-                    placeholder={formatMessage(MESSAGES.placeholder)}
+                    placeholder={placeholder}
                     value={inputValue}
                     onChange={e => setInputValue(e.target.value)}
                     onKeyDown={handleKeyDown}

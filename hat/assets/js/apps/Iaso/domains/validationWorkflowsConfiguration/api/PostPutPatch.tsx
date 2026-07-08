@@ -43,10 +43,10 @@ export const useSaveNode = (nodeSlug?: string): UseMutationResult<any, any> => {
                 : []),
         ] as string[];
     }, [nodeSlug]);
-
+    const invalidateQueryKey = [...queryKey, WF_BASE_QUERYKEY];
     return useSnackMutation({
         mutationFn: saveNode,
-        invalidateQueryKey: [...queryKey, WF_BASE_QUERYKEY],
+        invalidateQueryKey: invalidateQueryKey,
     });
 };
 

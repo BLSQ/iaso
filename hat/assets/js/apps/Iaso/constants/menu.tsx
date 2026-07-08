@@ -540,7 +540,8 @@ export const useMenuItems = (): MenuItems => {
 
     if (
         hasFeatureFlag(currentUser, SHOW_DHIS2_LINK) &&
-        currentUser?.account?.default_version?.data_source.url
+        currentUser?.account?.default_version?.data_source.url &&
+        !basicItems.find(item => item.key === 'dhis2')
     ) {
         basicItems.push({
             label: formatMessage(MESSAGES.dhis2),

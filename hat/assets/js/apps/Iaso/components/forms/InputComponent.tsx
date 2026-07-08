@@ -223,6 +223,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         }}
                         debounceTime={debounceTime}
                         dataTestId={dataTestId}
+                        helperText={helperText}
                     />
                 );
             case 'password':

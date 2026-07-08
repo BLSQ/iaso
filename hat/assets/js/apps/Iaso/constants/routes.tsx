@@ -1,6 +1,7 @@
 import React, { ReactElement } from 'react';
 
 import { ApiImports } from 'Iaso/domains/apiimports';
+import { ValidateInstance } from 'Iaso/domains/instances/validate';
 import { PipelineList } from 'Iaso/domains/openHexa';
 import { PipelineDetails } from 'Iaso/domains/openHexa/details';
 import { StockKeepingUnits } from 'Iaso/domains/stock';
@@ -33,7 +34,7 @@ import FormDetail from '../domains/forms/detail';
 import { FormsStats } from '../domains/forms/stats';
 import { Welcome } from '../domains/home/components/ExtraGrid/Welcome';
 import Instances from '../domains/instances';
-import CompareSubmissions from '../domains/instances/compare';
+import { CompareSubmissions } from '../domains/instances/compare';
 import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs';
 import InstanceDetail from '../domains/instances/details';
 import { Links } from '../domains/links';
@@ -157,6 +158,12 @@ export const instanceDetailPath = {
     element: <InstanceDetail />,
 };
 
+export const validateInstancePath = {
+    baseUrl: baseUrls.instanceValidation,
+    routerUrl: `${baseUrls.instanceValidation}/*`,
+    permissions: [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE], // TODO use correct perm
+    element: <ValidateInstance />,
+};
 export const compareInstanceLogsPath = {
     baseUrl: baseUrls.compareInstanceLogs,
     routerUrl: `${baseUrls.compareInstanceLogs}/*`,
@@ -597,6 +604,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     mappingDetailPath,
     instancesPath,
     instanceDetailPath,
+    validateInstancePath,
     compareInstanceLogsPath,
     compareInstancesPath,
     orgUnitsPath,

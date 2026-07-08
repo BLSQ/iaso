@@ -85,9 +85,8 @@ export const AnalysisTooltipTitle: FunctionComponent<Props> = ({
                     ))}
                 </Grid>
                 <Grid item xs={7}>
-                    {data.map((item, index) => (
-                        // eslint-disable-next-line react/no-array-index-key
-                        <Box key={`${item.value}-${index}`} display="block">
+                    {data.map(item => (
+                        <Box key={`${item.value}`} display="block">
                             {item.value}
                         </Box>
                     ))}

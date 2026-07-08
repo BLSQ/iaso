@@ -267,7 +267,9 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
         )
         instances = [self.instance_1, self.instance_2, self.instance_3, self.instance_4]
 
-        with self.assertNumQueries(8):
+        # 9, not 8: with_status() now spends one extra query checking whether the filtered-in form(s) are
+        # single_per_period, to be able to skip the (expensive on large datasets) duplicates computation otherwise.
+        with self.assertNumQueries(9):
             response = self.client.get(
                 f"/api/instances/?form_ids={self.instance_1.form.id}&parquet=true&order=id",
                 headers={"Content-Type": "text/csv"},

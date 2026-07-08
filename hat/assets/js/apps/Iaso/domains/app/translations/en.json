@@ -43,6 +43,7 @@
     "iaso.analytics.consent.accept": "Accept",
     "iaso.analytics.consent.decline": "Decline",
     "iaso.analytics.consent.description": "We use Sentry to collect session replay data to improve our service quality and debug issues. This includes recording your interactions with our application.",
+    "iaso.apiimport.exception": "Exception",
     "iaso.apiimport.has_problem": "Has problem?",
     "iaso.apiimport.headers": "Headers",
     "iaso.apiimport.import_type": "Import type",

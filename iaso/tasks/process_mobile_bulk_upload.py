@@ -26,7 +26,7 @@ from django.utils.translation import gettext as _
 from beanstalk_worker import task_decorator
 from hat.api.export_utils import timestamp_to_utc_datetime
 from hat.api_import.models import APIImport
-from hat.audit.models import BULK_UPLOAD, BULK_UPLOAD_MERGED_ENTITY, log_modification
+from hat.audit.models import BULK_UPLOAD, log_modification
 from hat.sync.views import create_instance_file, process_instance_file
 from iaso.api.instances.views import import_data as import_instances
 from iaso.api.org_unit_change_requests.serializers import OrgUnitChangeRequestWriteSerializer
@@ -87,9 +87,12 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
 
                     for instance_data in instances_data:
                         uuid = instance_data["id"]
-                        instance = process_instance_xml(uuid, instance_data, zip_ref, user)
+                        instance = Instance.objects.get(uuid=uuid)
+                        original = copy(instance)
+                        instance = process_instance_xml(instance, instance_data, zip_ref, user)
                         stats["new_instances"] += 1
                         new_instance_files += process_instance_attachments(dirs[uuid], instance)
+                        log_modification(v1=original, v2=instance, source=BULK_UPLOAD, user=user)
 
                     duplicated_count = duplicate_instance_files(new_instance_files)
                     stats["new_instance_files"] = len(new_instance_files) + duplicated_count
@@ -160,8 +163,8 @@ def get_directory_handlers(zip_ref):
     return result
 
 
-def process_instance_xml(uuid, instance_data, zip_ref, user):
-    instance = Instance.objects.get(uuid=uuid)
+def process_instance_xml(instance: Instance, instance_data, zip_ref, user):
+    uuid = instance.uuid
     filename = ntpath.basename(instance_data.get("file", None))
     logger.info(f"Processing instance {instance.uuid}")
     with zip_ref.open(os.path.join(uuid, filename), "r") as f:
@@ -187,13 +190,11 @@ def update_instance_file_if_needed(instance, incoming_updated_at, file, user):
             str(instance.source_updated_at),
             str(incoming_updated_at),
         )
-        original = copy(instance)
         instance.file = file
         instance.last_modified_by = user
         instance.source_updated_at = incoming_updated_at
         instance.save()
         instance.get_and_save_json_of_xml(force=True, tries=8)
-        log_modification(original, instance, BULK_UPLOAD, user=user)
         update_merged_entity_ref_form_if_needed(instance, incoming_updated_at, file, user)
     else:
         logger.info(
@@ -233,13 +234,11 @@ def update_merged_entity_ref_form_if_needed(instance, incoming_updated_at, file,
             str(instance_to_update.source_updated_at),
             str(incoming_updated_at),
         )
-        original = copy(instance_to_update)
         instance_to_update.file = file
         instance_to_update.last_modified_by = user
         instance_to_update.source_updated_at = incoming_updated_at
         instance_to_update.save()
         instance_to_update.get_and_save_json_of_xml(force=True, tries=8)
-        log_modification(original, instance_to_update, BULK_UPLOAD_MERGED_ENTITY, user=user)
 
 
 # Create form attachments for all non-XML files in the form's directory

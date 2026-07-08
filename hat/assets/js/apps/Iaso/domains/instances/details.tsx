@@ -26,7 +26,6 @@ import {
 import { ClassNames } from '../../types/utils';
 import { EntityBaseInfo } from '../entities/components/EntityBaseInfo';
 import { useGetEntityFields } from '../entities/hooks/useGetEntityFields';
-import { useGetInstance } from './compare/hooks/useGetInstance';
 import InstanceDetailsChangeRequests from './components/InstanceDetailsChangeRequests';
 import InstanceDetailsExportRequests from './components/InstanceDetailsExportRequests';
 import InstanceDetailsInfos from './components/InstanceDetailsInfos';
@@ -36,6 +35,7 @@ import InstanceFileContent from './components/InstanceFileContent';
 import InstancesFilesList from './components/InstancesFilesListComponent';
 import SpeedDialInstance from './components/SpeedDialInstance';
 import { INSTANCE_METAS_FIELDS } from './constants';
+import { useGetInstance } from './hooks/requests/useGetInstance';
 import {
     ReassignInstancePayload,
     useReassignInstance,

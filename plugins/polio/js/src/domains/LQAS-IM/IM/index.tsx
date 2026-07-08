@@ -1,4 +1,3 @@
-/* eslint-disable react/no-array-index-key */
 import React, { FunctionComponent } from 'react';
 import { Grid, Box, Paper } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
@@ -141,7 +140,9 @@ export const ImStats: FunctionComponent = () => {
                                 <Grid
                                     item
                                     xs={6}
-                                    key={`IM-bar-chart ${rnd}_${index}`}
+                                    // ok to disable here as rnd is a number and so hard to make it unique
+                                    // eslint-disable-next-line react/no-array-index-key
+                                    key={`IM-bar-chart ${rnd}-${index}`}
                                 >
                                     <Paper elevation={paperElevation}>
                                         <LqasImHorizontalChart

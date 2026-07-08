@@ -55,8 +55,7 @@ export const LqasCountryViewFilters: FunctionComponent<Props> = ({
             [`${side}FilterType`]: !classicModeOn ? 'country' : 'date',
         };
         redirectToReplace(currentUrl, newParams);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [redirectToReplace, currentUrl, classicModeOn]);
+    }, [classicModeOn, params, side, redirectToReplace, currentUrl]);
 
     return (
         <Box>

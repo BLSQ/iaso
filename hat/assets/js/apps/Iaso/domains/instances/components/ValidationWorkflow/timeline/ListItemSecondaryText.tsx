@@ -1,7 +1,8 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useCallback } from 'react';
 import { Box, Typography } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { useRedirectTo, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
+import { baseUrls } from 'Iaso/constants/urls';
 import {
     ValidateNodeApproveByPassModal,
     ValidateNodeApproveModal,
@@ -10,17 +11,30 @@ import {
 } from 'Iaso/domains/instances/components/ValidationWorkflow/ValidationModal';
 import { Timeline } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodes';
 import MESSAGES from '../../../messages';
+import { ValidateButton } from '../ValidateButton';
 
 type ListItemSecondaryTextProps = {
     timelineItem: Timeline;
     instanceId: number;
+    isFirstSubmission: boolean;
 };
 export const ListItemSecondaryText = ({
     timelineItem,
     instanceId,
+    isFirstSubmission,
 }: ListItemSecondaryTextProps) => {
     const { formatMessage } = useSafeIntl();
-
+    const canBypass =
+        timelineItem.type === 'NEXT_BYPASS' && timelineItem.user_can_do_actions;
+    const canValidate =
+        timelineItem.status === 'UNKNOWN' && timelineItem.user_can_do_actions;
+    const redirectTo = useRedirectTo();
+    const goToReview = useCallback(() => {
+        redirectTo(baseUrls.instanceValidation, {
+            instanceId: `${instanceId}`,
+            selectedStep: `${timelineItem.id}`,
+        });
+    }, [instanceId, redirectTo, timelineItem.id]);
     if (
         timelineItem.type === 'NEXT_STEP' ||
         (timelineItem.type === 'NEXT_BYPASS' &&
@@ -28,11 +42,31 @@ export const ListItemSecondaryText = ({
     ) {
         return;
     }
+    if (!isFirstSubmission && (canBypass || canValidate)) {
+        return (
+            <>
+                <Typography sx={{ textTransform: 'uppercase' }}>
+                    {formatMessage(MESSAGES.pending)}
+                </Typography>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        my: 1,
+                        pr: 2,
+                        flexWrap: 'wrap',
+                    }}
+                >
+                    <ValidateButton
+                        buttonText={formatMessage(MESSAGES.review)}
+                        onClick={goToReview}
+                    />
+                </Box>
+            </>
+        );
+    }
 
-    if (
-        timelineItem.type === 'NEXT_BYPASS' &&
-        timelineItem.user_can_do_actions
-    ) {
+    if (canBypass && isFirstSubmission) {
         return (
             <>
                 <Typography sx={{ textTransform: 'uppercase' }}>
@@ -68,7 +102,7 @@ export const ListItemSecondaryText = ({
         );
     }
 
-    if (timelineItem.status === 'UNKNOWN') {
+    if (timelineItem.status === 'UNKNOWN' && isFirstSubmission) {
         return (
             <>
                 <Typography sx={{ textTransform: 'uppercase' }}>

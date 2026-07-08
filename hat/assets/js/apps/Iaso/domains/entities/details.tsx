@@ -40,7 +40,7 @@ export const Details: FunctionComponent = () => {
     const { isLoading: isLoadingEntityFields, fields: entityFields } =
         useGetEntityFields(entity);
 
-    const columns = useEntitiesDetailsColumns(entity?.id ?? null, []);
+    const columns = useEntitiesDetailsColumns([]);
 
     const { data, isLoading: isLoadingSubmissions } = useGetSubmissions(
         params,

@@ -117,8 +117,7 @@ export const useBudgetColumns = (
             },
         ];
         return cols;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [formatMessage, isUserPolioBudgetAdmin]);
+    }, [count, formatMessage, isUserPolioBudgetAdmin, params]);
 };
 
 export const useBudgetDetailsColumns = (

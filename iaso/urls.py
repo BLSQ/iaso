@@ -87,7 +87,7 @@ from .api.microplanning.views import (
 )
 from .api.microplanning.views_mobile import MobilePlanningViewSet
 from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
-from .api.mobile.entity import MobileEntityDeletedViewSet, MobileEntityViewSet, InternalMobileEntityViewSet
+from .api.mobile.entity import InternalMobileEntityViewSet, MobileEntityDeletedViewSet, MobileEntityViewSet
 from .api.mobile.entity_type import MobileEntityTypesViewSet
 from .api.mobile.group_sets import MobileGroupSetsViewSet
 from .api.mobile.groups import MobileGroupsViewSet

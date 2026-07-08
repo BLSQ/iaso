@@ -5,10 +5,8 @@ from unittest.mock import patch
 
 import jsonschema
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission, User
-from django.core.exceptions import ValidationError
+from django.contrib.auth.models import Permission
 from django.core.files.storage import default_storage
 from rest_framework import status
 

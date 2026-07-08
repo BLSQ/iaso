@@ -559,9 +559,9 @@ class RetryMechanismTest(TestCase):
     def test_call_endpoint_total_failure(self, mock_sleep):
         from iaso.tasks.export_mobile_app_setup_for_user import _call_endpoint
 
-        self.iaso_client.get.side_effect = Exception("Failure")
+        self.iaso_client.get.side_effect = ValueError("Failure")
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(ValueError):
             _call_endpoint(self.iaso_client, self.url, self.filename, max_retries=3, delay=1)
 
         self.assertEqual(self.iaso_client.get.call_count, 3)

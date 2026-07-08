@@ -103,18 +103,3 @@ export const useGetOrgUnitInstances = (
         },
     });
 };
-
-export const useGetInstance = (
-    instanceId: number | string | undefined,
-    keepPreviousData = true,
-): UseQueryResult<Instance, Error> => {
-    return useSnackQuery({
-        queryKey: ['instance', instanceId],
-        queryFn: () => getRequest(`/api/instances/${instanceId}/`),
-        options: {
-            enabled: Boolean(instanceId),
-            retry: false,
-            keepPreviousData,
-        },
-    });
-};

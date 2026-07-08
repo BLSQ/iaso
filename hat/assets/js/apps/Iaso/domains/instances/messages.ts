@@ -889,6 +889,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'No data found.',
         id: 'iaso.label.noData',
     },
+    review: {
+        defaultMessage: 'Review',
+        id: 'iaso.label.review',
+    },
 });
 
 export default MESSAGES;

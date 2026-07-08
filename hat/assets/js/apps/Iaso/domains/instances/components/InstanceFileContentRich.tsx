@@ -134,7 +134,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const getRawValue = (descriptor: Descriptor, data: Data): string => {
-    const value = data[descriptor.name];
+    const value = data?.[descriptor.name];
     if (value === undefined) {
         return textPlaceholder;
     }
@@ -151,7 +151,7 @@ const getDisplayedValue = (
     data: Data,
     activeLocale: string,
 ): string => {
-    const value = data[descriptor.name];
+    const value = data?.[descriptor.name];
     if (value === undefined) {
         return textPlaceholder;
     }
@@ -220,7 +220,7 @@ const PhotoField: FunctionComponent<PhotoFieldProps> = ({
     files = [],
 }) => {
     const classes = useStyles();
-    const value = data[descriptor.name];
+    const value = data?.[descriptor.name];
     const fileUrl = useMemo(() => {
         if (value && files.length > 0) {
             const slugifiedValue = slugifyValue(value);
@@ -268,7 +268,7 @@ const FileField: FunctionComponent<FileFieldProps> = ({
     files = [],
 }) => {
     const classes = useStyles();
-    const value = data[descriptor.name];
+    const value = data?.[descriptor.name];
 
     const fileUrl = useMemo(() => {
         if (value && files.length > 0) {
@@ -331,7 +331,7 @@ const FormChild = ({
 }: FormChildProps): JSX.Element | null => {
     switch (descriptor.type) {
         case 'repeat':
-            return data[descriptor.name] ? (
+            return data?.[descriptor.name] ? (
                 <>
                     {(data[descriptor.name] as Data[]).map(subdata => (
                         <FormGroup

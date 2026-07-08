@@ -1,13 +1,13 @@
-import { UseQueryResult } from 'react-query';
 import { getSort } from 'bluesquare-components';
-import { getRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
-import { useSnackQuery } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { UseQueryResult } from 'react-query';
 import {
     Instance,
     PaginatedInstances,
 } from '../../../../../hat/assets/js/apps/Iaso/domains/instances/types/instance';
-import { makeUrlWithParams } from '../../../../../hat/assets/js/apps/Iaso/libs/utils';
 import { OrgUnitStatus } from '../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
+import { getRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import { useSnackQuery } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { makeUrlWithParams } from '../../../../../hat/assets/js/apps/Iaso/libs/utils';
 import { RegistryParams } from '../types';
 
 export const defaultSorted = [{ id: 'org_unit__name', desc: false }];
@@ -113,7 +113,7 @@ export const useGetOrgUnitInstances = (
     });
 };
 
-export const useGetInstance = (
+export const useGetInstanceForRegistry = (
     instanceId: number | string | undefined,
     registrySlug: string,
     keepPreviousData = true,

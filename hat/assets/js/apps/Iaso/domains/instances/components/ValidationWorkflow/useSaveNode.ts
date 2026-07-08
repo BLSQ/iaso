@@ -4,14 +4,14 @@ import { postRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
 import { API_URL } from '../../../validationWorkflowsConfiguration/constants';
 
-type CompleteNodeBody =
+export type CompleteNodeBody =
     | {
           comment?: string;
           approved: true;
       }
     | { approved: false; comment: string };
 
-type CompleteNodeByPassBody =
+export type CompleteNodeByPassBody =
     | {
           comment?: string;
           approved: true;

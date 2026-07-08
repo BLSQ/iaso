@@ -18,6 +18,7 @@ const defaultParams = {
 
 const baseUrl = baseUrls.nopv2Auth;
 
+/** @deprecated at clients request. Code kept because the business need may arise again*/
 export const Nopv2Authorisations: FunctionComponent = () => {
     const params = useParamsObject(baseUrl) as Partial<VaccineAuthParams>;
     const redirectToReplace = useRedirectToReplace();

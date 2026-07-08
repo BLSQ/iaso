@@ -60,9 +60,11 @@ export const AddMultipleLinks: FunctionComponent<Props> = ({
             </div>
             <Box mt={1}>
                 {links.length > 1 &&
-                    links.map((_link, index) => (
-                        // eslint-disable-next-line react/no-array-index-key
-                        <NamedLink index={index} key={`lonk-${index}`} />
+                    links.map((link, index) => (
+                        <NamedLink
+                            index={index}
+                            key={`link-${link.alias}-${link.url}`}
+                        />
                     ))}
                 {/* if the condition is on length === 0 the UI will flicker and the field lose focus because of re-render */}
                 {links.length <= 1 && <NamedLink index={0} />}

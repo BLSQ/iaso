@@ -19,7 +19,7 @@ const __dirname = path.dirname(__filename);
 // Frontend sources: main app + polio plugin JS bundle.
 const lintedJsPaths = [
     'hat/assets/js/**/*.{js,jsx,ts,tsx}',
-    'plugins/polio/js/**/*.{js,jsx,ts,tsx}',
+    'plugins/**/js/**/*.{js,jsx,ts,tsx}',
 ];
 
 const compat = new FlatCompat({
@@ -146,10 +146,7 @@ export default defineConfig([
             'class-methods-use-this': 'warn',
             'constructor-super': 'warn',
             'import/no-extraneous-dependencies': 'off',
-            'import/no-unresolved': [
-                'warn',
-                { ignore: ['^IasoModules/'] },
-            ],
+            'import/no-unresolved': ['warn', { ignore: ['^IasoModules/'] }],
             'import/prefer-default-export': 'off',
             'jsx-a11y/anchor-is-valid': 'off',
             'jsx-a11y/click-events-have-key-events': 'off',
@@ -300,10 +297,7 @@ export default defineConfig([
             'constructor-super': 'warn',
             'import/no-extraneous-dependencies': 'off',
             'import/no-named-as-default': 'warn',
-            'import/no-unresolved': [
-                'warn',
-                { ignore: ['^IasoModules/'] },
-            ],
+            'import/no-unresolved': ['warn', { ignore: ['^IasoModules/'] }],
             'import/prefer-default-export': 'off',
             'jsx-a11y/anchor-is-valid': 'off',
             'jsx-a11y/click-events-have-key-events': 'off',

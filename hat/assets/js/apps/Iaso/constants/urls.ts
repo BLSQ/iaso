@@ -39,6 +39,8 @@ const orgUnitDetailsFormsParams = paginationPathParamsWithPrefix(FORMS_PREFIX);
 export const CHANGE_REQUEST = 'changeRequest';
 export const CHANGE_REQUEST_CONFIG = 'changeRequestConfig';
 export const CONFIGURATION = 'configuration';
+export const FORMS_SUBMISSIONS = 'forms/submissions';
+export const FORMS_STATS = 'forms/stats';
 const VALIDATION = 'validation';
 const VALIDATION_CHANGE_REQUEST = `${VALIDATION}/${CHANGE_REQUEST}`;
 const VALIDATION_CHANGE_REQUEST_CONFIG = `${VALIDATION}/${CHANGE_REQUEST_CONFIG}`;
@@ -90,9 +92,9 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParamsWithPrefix('predefinedFilters'),
         ],
     },
-    formsStats: { url: 'forms/stats', params: ['accountId', 'projectIds'] },
+    formsStats: { url: FORMS_STATS, params: ['accountId', 'projectIds'] },
     instances: {
-        url: 'forms/submissions/list',
+        url: `${FORMS_SUBMISSIONS}/list`,
         params: [
             'accountId',
             'formIds',
@@ -130,6 +132,10 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     instanceDetail: {
         url: 'forms/submission',
         params: ['accountId', 'instanceId', 'referenceFormId'],
+    },
+    instanceValidation: {
+        url: 'forms/submission/validate',
+        params: ['accountId', 'instanceId', 'selectedStep'],
     },
     compareInstanceLogs: {
         url: 'forms/compareInstanceLogs',
@@ -661,6 +667,9 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'hasProblem',
             'appId',
             'appVersion',
+            'userId',
+            'fromDate',
+            'toDate',
         ],
     },
     accounts: {
@@ -733,6 +742,7 @@ type IasoBaseUrls = {
     formsStats: string;
     instances: string;
     instanceDetail: string;
+    instanceValidation: string;
     compareInstanceLogs: string;
     compareInstances: string;
     mappings: string;

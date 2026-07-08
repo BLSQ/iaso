@@ -479,7 +479,7 @@ class Round(models.Model):
         if (
             self.started_at
             and isinstance(self.started_at, datetime.date)
-            and self.started_at >= timezone.now().date()
+            and self.started_at >= timezone.localdate()
             and self.campaign
             and self.campaign.has_polio_type
             and not self.campaign.is_test
@@ -494,7 +494,7 @@ class Round(models.Model):
     def is_round_over(round):
         if not round.ended_at:
             return False
-        return round.ended_at < date.today()
+        return round.ended_at < timezone.localdate()
 
     @property
     def actual_scopes(self):

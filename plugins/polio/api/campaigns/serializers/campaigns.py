@@ -73,13 +73,13 @@ class CampaignSerializer(serializers.ModelSerializer):
         return obj.single_vaccines_extended
 
     def get_general_status(self, campaign):
-        now_utc = timezone.now().date()
+        today = timezone.localdate()
         ordered_rounds = list(campaign.rounds.all())
         ordered_rounds.sort(key=lambda x: x.number, reverse=True)
         for round in ordered_rounds:
-            if round.ended_at and now_utc > round.ended_at:
+            if round.ended_at and today > round.ended_at:
                 return _("Round {} ended").format(round.number)
-            if round.started_at and now_utc >= round.started_at:
+            if round.started_at and today >= round.started_at:
                 return _("Round {} started").format(round.number)
         return _("Preparing")
 

@@ -1,0 +1,35 @@
+name: deploy_docker_manual
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Tag to deploy (without the "blsq/iaso:" prefix, e.g. "develop", "IA-4856", or "v2026.06.01")
+        required: true
+        type: string
+      branch:
+        description: Branch to deploy
+        required: true
+        default: main
+      environment:
+        description: playground, staging, demo or prod for worker and web or exact Env name like iaso-stg-worker. Using `upgrade` for now to test
+        required: true
+        default: upgrade
+      slack_channel:
+        description: Slack Channel for notification (iasops by default)
+        required: false
+        default: iasops
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  deploy:
+    uses: BLSQ/iaso-ci/.github/workflows/docker_deploy.yml@main
+    with:
+      image_tag: ${{ github.event.inputs.image_tag }}
+      iaso_branch: ${{ github.event.inputs.branch }}
+      environment: ${{ github.event.inputs.environment }}
+      slack_channel: ${{ github.event.inputs.slack_channel }}
+    secrets: inherit

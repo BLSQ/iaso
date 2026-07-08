@@ -10,7 +10,7 @@ from unittest import mock
 import requests
 
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import TestCase, tag
 
 from iaso.models import SUCCESS, Account, Form, Project, Task
 from iaso.plugins import is_trypelim_plugin_active
@@ -261,6 +261,7 @@ class DownloadFormAttachmentsTest(TestCase):
         self.assertEqual(result["results"][0]["file"], "formattachments/16/1.png")
 
 
+@tag("trypelim")
 class ExportMobileAppSetupTrypelimFeatures(TestCase):
     """Test trypelim-specific features for the export mobile setup task."""
 

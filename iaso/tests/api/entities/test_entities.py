@@ -12,7 +12,7 @@ import time_machine
 
 from django.core.files import File
 from django.db import connection
-from django.test.utils import CaptureQueriesContext
+from django.test.utils import CaptureQueriesContext, tag
 from django.utils import timezone
 from rest_framework import status
 
@@ -93,6 +93,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         self.assertEqual(response.status_code, 400)
 
+    @tag("trypelim")
     def test_retrieve_entity(self):
         self.client.force_authenticate(self.yoda)
 
@@ -122,6 +123,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         res_json = self.assertJSONResponse(response, 200)
         self.assertValidListData(list_data=res_json, expected_length=2, results_key="result")
 
+    @tag("trypelim")
     def test_retrieve_entity_without_attributes(self):
         self.client.force_authenticate(self.yoda)
 
@@ -168,6 +170,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         self.assertEqual(response.status_code, 200)
 
+    @tag("trypelim")
     def test_retrieve_entity_without_permission_hides_nfc_cards(self):
         restricted_user = self.create_user_with_profile(
             username="restricted",
@@ -189,6 +192,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         response_data = response.json()
         self.assertNotIn("nfc_cards", response_data)
 
+    @tag("trypelim")
     def test_retrieve_entity_without_module_hides_nfc_cards(self):
         f"""nfc_cards should be hidden when the account lacks the {MODULE_EXTERNAL_STORAGE},
         even if the user has the storage permission."""
@@ -220,6 +224,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         response_data = response.json()
         self.assertNotIn("nfc_cards", response_data)
 
+    @tag("trypelim")
     def test_retrieve_entity_with_permission_and_module_shows_nfc_cards(self):
         f"""nfc_cards should be present when the user has the storage permission
         and the account has the {MODULE_EXTERNAL_STORAGE}."""
@@ -324,6 +329,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(len(data["result"]), 1)
         self.assertEqual(data["result"][0]["id"], entity_2.id)
 
+    @tag("trypelim")
     def test_list_entities_annotate_duplicates(self):
         """
         Test that the list of entities at /api/entities includes duplicate annotations.
@@ -390,6 +396,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(len(ctx.captured_queries), 6)
         self.assertIn(expensive_annotation, "".join(q["sql"] for q in ctx.captured_queries))
 
+    @tag("trypelim")
     @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1), tick=False)
     def test_list_entities_single_entity_type(self):
         """Test the 'entityTypeIds' parameter of /api/entities with a single entity type id.
@@ -489,6 +496,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         ]
         self.assertEqual(row_to_test, expected_row)
 
+    @tag("trypelim")
     def test_list_entities_search_uuid_filter(self):
         """
         Test the 'uuids:' search filter of /api/entities with comma-separated UUIDs
@@ -572,6 +580,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
             response.json(), ["Failed parsing uuids in search 'uuids:8872wwfb-651f 4b0f-89af 35f0a06d9b44'"]
         )
 
+    @tag("trypelim")
     def test_list_entities_search_ids_filter(self):
         """
         Test the 'ids:' search filter of /api/entities with comma-separated IDs
@@ -647,6 +656,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(len(response.json()["result"]), 1)
         self.assertEqual(response.json()["result"][0]["id"], entity1.id)
 
+    @tag("trypelim")
     def test_list_entities_filter_by_date(self):
         """
         Test the date filters of /api/entities
@@ -710,6 +720,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]["id"], entity1.id)
 
+    @tag("trypelim")
     def test_list_entities_search_in_instances(self):
         """
         Test the 'fields_search' filter of /api/entities
@@ -853,6 +864,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
             }
         )
 
+    @tag("trypelim")
     def test_list_entities_fields_search_soft_deleted_instances(self):
         self.client.force_authenticate(self.yoda)
         self.form_2 = m.Form.objects.create(name="Form 2", form_id="form_2")
@@ -895,6 +907,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         res = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(res["result"]), 0)
 
+    @tag("trypelim")
     def test_list_entities_filter_by_date_soft_deleted_instances(self):
         self.client.force_authenticate(self.yoda)
 
@@ -918,6 +931,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         res = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(res["result"]), 0)
 
+    @tag("trypelim")
     def test_list_entities_prefetch_soft_deleted_instances(self):
         self.client.force_authenticate(self.yoda)
 
@@ -937,6 +951,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(len(resp["instances"]), 1)
         self.assertEqual(resp["instances"][0], instance_active.id)
 
+    @tag("trypelim")
     def test_get_entity_by_id(self):
         self.client.force_authenticate(self.yoda)
 
@@ -973,6 +988,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         self.assertEqual(response.status_code, 404)
 
+    @tag("trypelim")
     def test_update_entity(self):
         self.client.force_authenticate(self.yoda)
 
@@ -1001,6 +1017,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         self.assertEqual(response.status_code, 200)
 
+    @tag("trypelim")
     def test_retrieve_only_non_deleted_entity(self):
         self.client.force_authenticate(self.yoda)
 
@@ -1052,6 +1069,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         self.assertEqual(response.status_code, 404)
 
+    @tag("trypelim")
     def test_retrieve_entity_only_same_account(self):
         self.client.force_authenticate(self.yoda)
 
@@ -1076,6 +1094,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
 
+    @tag("trypelim")
     @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1), tick=False)
     def test_export_entities(self):
         self.client.force_authenticate(self.yoda)
@@ -1124,6 +1143,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         ]
         self.assertEqual(row_to_test, expected_row)
 
+    @tag("trypelim")
     @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1), tick=False)
     def test_entities_empty_export(self):
         self.client.force_authenticate(self.yoda)
@@ -1441,6 +1461,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(response_entity_instance[0]["id"], instance_app_id.uuid)
         self.assertEqual(response_entity_instance[0]["json"], instance_app_id.json)
 
+    @tag("trypelim")
     def test_retrieve_entities_user_geo_restrictions(self):
         version = self.account.default_version
         province_type = m.OrgUnitType.objects.create(name="Province", short_name="province", depth=1)

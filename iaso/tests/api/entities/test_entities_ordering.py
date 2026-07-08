@@ -1,11 +1,13 @@
 from datetime import timedelta
 
+from django.test import tag
 from django.utils.timezone import now
 
 from iaso import models as m
 from iaso.tests.api.entities.common_base_with_setup import EntityAPITestCase
 
 
+@tag("trypelim")
 class WebEntityOrderingAPITestCase(EntityAPITestCase):
     """Test custom ordering filter logic for the entity list api."""
 

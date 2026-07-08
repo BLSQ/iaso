@@ -1,6 +1,8 @@
 from http import HTTPStatus
 from uuid import uuid4
 
+from django.test import tag
+
 from iaso import models as m
 from iaso.models.deduplication import ValidationStatus
 from iaso.permissions.core_permissions import (
@@ -208,6 +210,7 @@ class StaleEntitiesDuplicationAPITestCase(APITestCase):
         self.assertIn(self.dup_normal.id, results_ids)
         self.assertNotIn(self.dup_stale.id, results_ids)
 
+    @tag("trypelim")
     def test_stale_duplicates_filtered_from_entity_api(self):
         self.client.force_authenticate(self.user)
 
@@ -224,6 +227,7 @@ class StaleEntitiesDuplicationAPITestCase(APITestCase):
         data = self.assertJSONResponse(response, HTTPStatus.OK)
         self.assertEqual(data["duplicates"], [self.entities[1].pk])
 
+    @tag("trypelim")
     def test_has_duplicates_flag_on_entity_list(self):
         self.client.force_authenticate(self.user)
 

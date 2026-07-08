@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.test import tag
 from django.utils.timezone import now
 
 from iaso import models as m
@@ -51,6 +52,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         self.entity_4_null.created_at = base_time + timedelta(days=1)  # Newest
         self.entity_4_null.save()
 
+    @tag("trypelim")
     def test_cursor_pagination_desc(self):
         self.client.force_authenticate(self.yoda)
 
@@ -83,6 +85,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         self.assertEqual(data_page_1["result"][0]["id"], self.entity_4_null.id)
         self.assertEqual(data_page_1["result"][1]["id"], self.entity_3.id)
 
+    @tag("trypelim")
     def test_cursor_pagination_asc_nullable(self):
         self.client.force_authenticate(self.yoda)
 
@@ -110,6 +113,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         self.assertEqual(data_back["result"][1]["id"], self.entity_3.id)
         self.assertIsNone(data_back["previous"])
 
+    @tag("trypelim")
     def test_cursor_pagination_desc_nullable(self):
         self.client.force_authenticate(self.yoda)
 
@@ -137,6 +141,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         self.assertEqual(data_back["result"][0]["id"], self.entity_4_null.id)
         self.assertEqual(data_back["result"][1]["id"], self.entity_2.id)
 
+    @tag("trypelim")
     def test_cursor_pagination_desc_nullable_json(self):
         """Test traversing with nullable JSON fields (desc, nulls first)."""
         self.client.force_authenticate(self.yoda)
@@ -180,6 +185,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         self.assertEqual(data_back["result"][1]["id"], self.entity_2.id)
         self.assertIsNone(data_back["previous"], "Start of data reached, previous should be null")
 
+    @tag("trypelim")
     def test_cursor_sea_of_nulls_desc(self):
         """Test traversing through a block of null fields using tie-breakers."""
         self.client.force_authenticate(self.yoda)
@@ -219,6 +225,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         self.assertEqual(len(data_back["result"]), 3)
         self.assertEqual([e["id"] for e in data_back["result"]], [e["id"] for e in data_p1["result"]])
 
+    @tag("trypelim")
     def test_cursor_sea_of_nulls_asc(self):
         """Test traversing through a block of null fields when sorting ASC (nulls last)."""
         self.client.force_authenticate(self.yoda)
@@ -261,6 +268,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
 
         self.assertEqual([e["id"] for e in data_back_p2["result"]], [e["id"] for e in data_p2["result"]])
 
+    @tag("trypelim")
     def test_cursor_sea_of_identical_fields(self):
         """Test traversing through a page of identical fields (id tie-breaker)."""
         self.client.force_authenticate(self.yoda)
@@ -284,6 +292,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         p2_ids = {e["id"] for e in data_p2["result"]}
         self.assertEqual(len(p1_ids.intersection(p2_ids)), 0, "Pages should not overlap.")
 
+    @tag("trypelim")
     def test_cursor_empty_queryset(self):
         self.client.force_authenticate(self.yoda)
 
@@ -297,6 +306,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         self.assertIsNone(data["next"])
         self.assertIsNone(data["previous"])
 
+    @tag("trypelim")
     def test_cursor_json_missing_null_and_empty(self):
         """Test invalid and null json values on the entity attributes."""
         self.client.force_authenticate(self.yoda)
@@ -346,6 +356,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
 
         self.assertEqual([e["id"] for e in data_back["result"]], [e["id"] for e in data_p1["result"]])
 
+    @tag("trypelim")
     def test_cursor_mid_pagination_deletion(self):
         """Test pagination doesn't break if the cursor's reference item is deleted."""
         self.client.force_authenticate(self.yoda)
@@ -382,6 +393,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
 
         self.assertEqual(data_filtered["count"], 2)
 
+    @tag("trypelim")
     def test_cursor_multiple_columns(self):
         """Test multiple field ordering with mixed ASC/DESC directions."""
 
@@ -435,6 +447,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         self.assertEqual(data_back["result"][1]["id"], e2.id)
         self.assertIsNone(data_back["previous"])
 
+    @tag("trypelim")
     def test_cursor_multiple_columns_nullable(self):
         self.client.force_authenticate(self.yoda)
 

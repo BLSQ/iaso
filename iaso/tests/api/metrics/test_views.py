@@ -479,6 +479,64 @@ class MetricValueAPITestCase(APITestCase):
         response = self.client.get(self.BASE_URL)
         self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
+    def test_metric_value_list_without_reference_year_returns_all_values(self):
+        """Without reference_year, no year filtering is applied: dated and timeless values are all returned."""
+        timeless_value = MetricValue.objects.create(
+            metric_type=self.metric_type,
+            org_unit=self.org_unit,
+            year=None,
+            value=999.0,
+        )
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.BASE_URL)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        returned_ids = {item["id"] for item in data}
+        self.assertEqual(returned_ids, {self.metric_value_1.id, self.metric_value_2.id, timeless_value.id})
+
+    def test_metric_value_list_filter_by_reference_year_includes_year_match_and_timeless(self):
+        """reference_year keeps values for that exact year plus timeless (year=None) values."""
+        timeless_value = MetricValue.objects.create(
+            metric_type=self.metric_type,
+            org_unit=self.org_unit,
+            year=None,
+            value=999.0,
+        )
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"{self.BASE_URL}?reference_year=2020")
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        returned_ids = {item["id"] for item in data}
+        self.assertEqual(returned_ids, {self.metric_value_1.id, timeless_value.id})
+        self.assertNotIn(self.metric_value_2.id, returned_ids)
+
+    def test_metric_value_list_filter_by_reference_year_with_no_match_returns_only_timeless(self):
+        """A reference_year with no matching dated values still returns the timeless values."""
+        timeless_value = MetricValue.objects.create(
+            metric_type=self.metric_type,
+            org_unit=self.org_unit,
+            year=None,
+            value=999.0,
+        )
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"{self.BASE_URL}?reference_year=1999")
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        returned_ids = {item["id"] for item in data}
+        self.assertEqual(returned_ids, {timeless_value.id})
+
+    def test_metric_value_list_invalid_reference_year_is_ignored(self):
+        """A non-integer reference_year is silently ignored, so all values are returned unfiltered."""
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"{self.BASE_URL}?reference_year=not-a-year")
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        returned_ids = {item["id"] for item in data}
+        self.assertEqual(returned_ids, {self.metric_value_1.id, self.metric_value_2.id})
+
     def test_metric_value_post(self):
         payload = {
             "metric_type": self.metric_type.id,

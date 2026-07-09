@@ -18,10 +18,13 @@ def migrate_forms_to_missions(apps, schema_editor):
     # get content_type for mission_form
     mission_form_ct = ContentType.objects.get_for_model(MissionForm)
 
-    for planning in Planning.objects.prefetch_related("forms").select_related("project__account").all():
+    for planning in (
+        Planning.objects.filter(project__account__isnull=False, project__isnull=False)
+        .prefetch_related("forms")
+        .select_related("project__account")
+        .all()
+    ):
         account = planning.project.account
-        if not account:
-            continue
 
         mission_objects = []
         mission_form_through_objects = []

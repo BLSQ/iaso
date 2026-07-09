@@ -107,7 +107,9 @@ class MissionOrgUnitTypeUpdateSerializer(ModelSerializer):
         incoming = {item["form"].id: item for item in through_data}
 
         # delete
-        MissionOrgUnitTypeThroughForm.objects.filter(form_id__in=list(existing.keys() - incoming.keys())).delete()
+        MissionOrgUnitTypeThroughForm.objects.filter(
+            form_id__in=list(existing.keys() - incoming.keys()), mission_org_unit_type__id=instance.id
+        ).delete()
 
         # update existing
         bulk_updates = []

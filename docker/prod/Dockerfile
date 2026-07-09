@@ -22,7 +22,12 @@ COPY ../../plugins/ ./plugins/
 # Copy webpack configuration files
 COPY ../../tsconfig.json ../../babel-register.js ./
 
-# Build webpack assets
+# Build webpack assets for IASO
+RUN npm run webpack-prod
+
+# install old FE trypelim dependencies and build it
+WORKDIR /opt/app/plugins/trypelim/
+RUN npm ci --legacy-peer-deps
 RUN npm run webpack-prod
 
 # ── Stage 2: Python dependency builder ────────────────────────────────────────
@@ -90,6 +95,8 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Copy webpack assets
 COPY --from=npmbuilder --chown=appuser:appuser /opt/app/hat/assets /opt/app/hat/assets
+# Copy trypelim webpack assets
+COPY --from=npmbuilder --chown=appuser:appuser /opt/app/plugin/trypelim/assets/webpack /opt/app/plugins/trypelim/assets/webpack
 
 # Copy project code (all owned by appuser, no separate chown layer needed)
 COPY --chown=appuser:appuser ../../hat ./hat

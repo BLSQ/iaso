@@ -30,12 +30,12 @@ class NestedMissionEntityTypeThroughFormCreateSerializer(ModelSerializer):
         model = MissionEntityTypeThroughForm
         fields = ["form", "min_cardinality", "max_cardinality"]
         extra_kwargs = {
-            "min_cardinality": {"write_only": True},
+            "min_cardinality": {"write_only": True, "required": True},
             "max_cardinality": {"write_only": True},
         }
 
     def validate(self, attrs):
-        min_val = attrs.get("min_cardinality", 0)
+        min_val = attrs.get("min_cardinality")
         max_val = attrs.get("max_cardinality")
         if max_val is not None and min_val > max_val:
             raise serializers.ValidationError(
@@ -66,7 +66,7 @@ class MissionEntityTypeCreateSerializer(ModelSerializer):
         ]
 
         extra_kwargs = {
-            "min_cardinality": {"write_only": True},
+            "min_cardinality": {"write_only": True, "required": True},
             "max_cardinality": {"write_only": True},
         }
 
@@ -79,7 +79,7 @@ class MissionEntityTypeCreateSerializer(ModelSerializer):
             self.fields["entity_type"].queryset = EntityType.objects.filter(account=account)
 
     def validate(self, attrs):
-        min_val = attrs.get("min_cardinality", 0)
+        min_val = attrs.get("min_cardinality")
         max_val = attrs.get("max_cardinality")
         if max_val is not None and min_val > max_val:
             raise serializers.ValidationError(

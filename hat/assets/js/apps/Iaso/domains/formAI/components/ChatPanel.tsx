@@ -13,18 +13,49 @@ import {
     Button,
     CircularProgress,
     Paper,
+    SxProps,
     TextField,
+    Theme,
     Typography,
 } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../messages';
 
+type MessageRole = 'user' | 'assistant';
+
 type Message = {
-    role: 'user' | 'assistant';
+    role: MessageRole;
     content: string;
     id: string;
 };
+
+const messageRow = (role: MessageRole): SxProps<Theme> => ({
+    display: 'flex',
+    gap: 1,
+    alignItems: 'flex-start',
+    flexDirection: role === 'user' ? 'row-reverse' : 'row',
+});
+
+const avatar = (role: MessageRole): SxProps<Theme> => ({
+    width: 32,
+    height: 32,
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    bgcolor: role === 'user' ? 'primary.main' : 'grey.300',
+    color: role === 'user' ? 'primary.contrastText' : 'text.primary',
+    flexShrink: 0,
+});
+
+const bubble = (role: MessageRole): SxProps<Theme> => ({
+    p: 1.5,
+    maxWidth: '80%',
+    bgcolor: role === 'user' ? 'primary.light' : 'grey.100',
+    color: role === 'user' ? 'primary.contrastText' : 'text.primary',
+    borderRadius: 2,
+});
 
 type Props = {
     messages: Message[];
@@ -33,11 +64,12 @@ type Props = {
 };
 
 const styles: SxStyles = {
-    paper: {
+    root: {
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
+        borderRight: theme => `1px solid ${theme.palette.divider}`,
     },
     messagesArea: {
         flex: 1,
@@ -54,30 +86,6 @@ const styles: SxStyles = {
         height: '100%',
         color: 'text.secondary',
     },
-    messageRow: (role: 'user' | 'assistant') => ({
-        display: 'flex',
-        gap: 1,
-        alignItems: 'flex-start',
-        flexDirection: role === 'user' ? 'row-reverse' : 'row',
-    }),
-    avatar: (role: 'user' | 'assistant') => ({
-        width: 32,
-        height: 32,
-        borderRadius: '50%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        bgcolor: role === 'user' ? 'primary.main' : 'grey.300',
-        color: role === 'user' ? 'primary.contrastText' : 'text.primary',
-        flexShrink: 0,
-    }),
-    bubble: (role: 'user' | 'assistant') => ({
-        p: 1.5,
-        maxWidth: '80%',
-        bgcolor: role === 'user' ? 'primary.light' : 'grey.100',
-        color: role === 'user' ? 'primary.contrastText' : 'text.primary',
-        borderRadius: 2,
-    }),
     loadingAvatar: {
         width: 32,
         height: 32,
@@ -137,7 +145,7 @@ export const ChatPanel: FunctionComponent<Props> = ({
     );
 
     return (
-        <Paper elevation={1} sx={styles.paper}>
+        <Box sx={styles.root}>
             <Box sx={styles.messagesArea}>
                 {messages.length === 0 && (
                     <Box sx={styles.emptyState}>
@@ -147,15 +155,15 @@ export const ChatPanel: FunctionComponent<Props> = ({
                     </Box>
                 )}
                 {messages.map(msg => (
-                    <Box key={msg.id} sx={styles.messageRow(msg.role)}>
-                        <Box sx={styles.avatar(msg.role)}>
+                    <Box key={msg.id} sx={messageRow(msg.role)}>
+                        <Box sx={avatar(msg.role)}>
                             {msg.role === 'user' ? (
                                 <PersonIcon sx={{ fontSize: 18 }} />
                             ) : (
                                 <SmartToyIcon sx={{ fontSize: 18 }} />
                             )}
                         </Box>
-                        <Paper elevation={0} sx={styles.bubble(msg.role)}>
+                        <Paper elevation={0} sx={bubble(msg.role)}>
                             <Typography
                                 variant="body2"
                                 sx={{ whiteSpace: 'pre-wrap' }}
@@ -197,6 +205,6 @@ export const ChatPanel: FunctionComponent<Props> = ({
                     <SendIcon />
                 </Button>
             </Box>
-        </Paper>
+        </Box>
     );
 };

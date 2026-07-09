@@ -5,20 +5,24 @@ import React, {
     useRef,
     useState,
 } from 'react';
-import DownloadIcon from '@mui/icons-material/Download';
-import { Box, Button, Paper, Typography } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { Box, Typography } from '@mui/material';
+import { MENU_HEIGHT_WITHOUT_TABS, useSafeIntl } from 'bluesquare-components';
+import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../messages';
+import { ACTIONS_HEIGHT } from './Actions';
 
 type Props = {
-    xlsformUuid: string | null;
     xformXml: string | null;
 };
-
-export const FormPreview: FunctionComponent<Props> = ({
-    xlsformUuid,
-    xformXml,
-}) => {
+const styles: SxStyles = {
+    root: {
+        height: `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px - ${ACTIONS_HEIGHT}px)`,
+        overflow: 'hidden',
+        flex: 1,
+        position: 'relative',
+    },
+};
+export const FormPreview: FunctionComponent<Props> = ({ xformXml }) => {
     const { formatMessage } = useSafeIntl();
     const iframeRef = useRef<HTMLIFrameElement>(null);
     // Increment key to force iframe remount when XML changes
@@ -54,65 +58,36 @@ export const FormPreview: FunctionComponent<Props> = ({
     const showIframe = Boolean(xformXml);
 
     return (
-        <Paper
-            elevation={1}
-            sx={{
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-            }}
-        >
-            {xlsformUuid && (
+        <Box sx={styles.root}>
+            {showIframe ? (
+                <iframe
+                    key={iframeKey}
+                    ref={iframeRef}
+                    src={`${window.STATIC_URL ?? '/static/'}odk-preview/index.html`}
+                    title="ODK Form Preview"
+                    onLoad={handleIframeLoad}
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                        border: 'none',
+                    }}
+                />
+            ) : (
                 <Box
                     sx={{
-                        p: 1,
-                        borderBottom: '1px solid #e0e0e0',
                         display: 'flex',
-                        justifyContent: 'flex-end',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '100%',
+                        color: 'text.secondary',
+                        backgroundColor: '#f1f5f9',
                     }}
                 >
-                    <Button
-                        variant="outlined"
-                        size="small"
-                        startIcon={<DownloadIcon />}
-                        href={`/api/form_ai/download/${xlsformUuid}/`}
-                        download="form.xlsx"
-                    >
-                        {formatMessage(MESSAGES.downloadXlsForm)}
-                    </Button>
+                    <Typography variant="body1">
+                        {formatMessage(MESSAGES.previewPlaceholder)}
+                    </Typography>
                 </Box>
             )}
-            <Box sx={{ flex: 1, position: 'relative' }}>
-                {showIframe ? (
-                    <iframe
-                        key={iframeKey}
-                        ref={iframeRef}
-                        src={`${window.STATIC_URL ?? '/static/'}odk-preview/index.html`}
-                        title="ODK Form Preview"
-                        onLoad={handleIframeLoad}
-                        style={{
-                            width: '100%',
-                            height: '100%',
-                            border: 'none',
-                        }}
-                    />
-                ) : (
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            height: '100%',
-                            color: 'text.secondary',
-                        }}
-                    >
-                        <Typography variant="body1">
-                            {formatMessage(MESSAGES.previewPlaceholder)}
-                        </Typography>
-                    </Box>
-                )}
-            </Box>
-        </Paper>
+        </Box>
     );
 };

@@ -14,7 +14,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.formAI.send',
     },
     downloadXlsForm: {
-        defaultMessage: 'Download XLSForm',
+        defaultMessage: 'XLSForm',
         id: 'iaso.formAI.downloadXlsForm',
     },
     previewPlaceholder: {
@@ -76,11 +76,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.formAI.save',
     },
     editProperties: {
-        defaultMessage: 'Edit properties',
+        defaultMessage: 'Properties',
         id: 'iaso.formAI.editProperties',
     },
     saveForm: {
-        defaultMessage: 'Save form',
+        defaultMessage: 'Save',
         id: 'iaso.formAI.saveForm',
     },
     saveNewVersionOf: {

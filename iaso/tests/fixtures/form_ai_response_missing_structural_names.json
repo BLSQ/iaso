@@ -1,0 +1,244 @@
+{
+  "survey": [
+    {
+      "type": "note",
+      "name": "note",
+      "label": "Formulaire de livraison à un site"
+    },
+    {
+      "type": "begin group",
+      "name": "as",
+      "label": "Site",
+      "appearance": "field-list",
+      "body::intent": "iaso.action.pick_ou(map='name:nom_site;id:id_site',ou_type='Site de Distribution',limit_root='true')"
+    },
+    {
+      "type": "text",
+      "name": "id_site",
+      "label": "Identifiant site",
+      "hint": "Identifiant technique du site",
+      "required": "True"
+    },
+    {
+      "type": "text",
+      "name": "nom_site",
+      "label": "Nom Site",
+      "hint": "Nom du site qui va recevoir"
+    },
+    {
+      "type": "end group "
+    },
+    {
+      "type": "text",
+      "name": "nom_capitaine",
+      "label": "Nom du capitaine",
+      "hint": "Encodez le nom du capitaine",
+      "required": "True"
+    },
+    {
+      "type": "begin_group",
+      "name": "scan_possible",
+      "label": "Possibilité de scanner les ballots",
+      "appearance": "field-list"
+    },
+    {
+      "type": "select_one oui_non",
+      "name": "scan_ballots",
+      "label": "Pouvez-vous scanner les ballots?",
+      "required": "True",
+      "default": "oui"
+    },
+    {
+      "type": "select_one raison",
+      "name": "raison_ballots_non_scannes",
+      "label": "Si non pourquoi?",
+      "required": "True",
+      "relevant": "${scan_ballots} = 'non'"
+    },
+    {
+      "type": "text",
+      "name": "autre_raison",
+      "label": "Autre raison",
+      "required": "True",
+      "relevant": "${raison_ballots_non_scannes} = 'autre'"
+    },
+    {
+      "type": "end_group"
+    },
+    {
+      "type": "begin_repeat",
+      "name": "ballots",
+      "label": "Ballot",
+      "hint": "Vous pouvez scanner un nombre illimité de codes.",
+      "relevant": "${scan_ballots} = 'oui'"
+    },
+    {
+      "type": "begin_group",
+      "name": "scan_des_codes_qr",
+      "label": "Scan des codes-barres",
+      "appearance": "field-list"
+    },
+    {
+      "type": "select_one oui_non",
+      "name": "code_qr_non_abime",
+      "label": "Le ballot a-t-il un code-barres non abimé?",
+      "required": "True",
+      "default": "oui"
+    },
+    {
+      "type": "barcode",
+      "name": "code_qr",
+      "label": "Code-barres du ballot",
+      "hint": "Alignez le code-barres dans le cadre pour le scanner.",
+      "required": "True",
+      "relevant": "${code_qr_non_abime} = 'oui'"
+    },
+    {
+      "type": "calculate",
+      "name": "ordre",
+      "label": "ordre",
+      "calculation": "position(..)"
+    },
+    {
+      "type": "end_group"
+    },
+    {
+      "type": "end_repeat"
+    },
+    {
+      "type": "begin_repeat",
+      "name": "saisie_ballots",
+      "label": "Ballot",
+      "hint": "Vous pouvez enregistrer un nombre illimité de codes.",
+      "relevant": "${scan_ballots} = 'non'"
+    },
+    {
+      "type": "begin_group",
+      "name": "saisie_des_codes_qr",
+      "label": "Saisie des codes-barres",
+      "appearance": "field-list"
+    },
+    {
+      "type": "select_one oui_non",
+      "name": "ballot_avec_code_qr",
+      "label": "Le ballot a-t-il un code-barres?",
+      "required": "True",
+      "default": "oui"
+    },
+    {
+      "type": "text",
+      "name": "code_qr_saisie",
+      "label": "Saisir le code-barres",
+      "required": "True",
+      "relevant": "${ballot_avec_code_qr} = 'oui'"
+    },
+    {
+      "type": "calculate",
+      "name": "ordre_saisie",
+      "label": "ordre_saisie",
+      "calculation": "position(..)"
+    },
+    {
+      "type": "end_group"
+    },
+    {
+      "type": "end_repeat"
+    },
+    {
+      "type": "calculate",
+      "name": "nombre_scan_ballots",
+      "label": "Nombre de ballots scannés",
+      "calculation": "count(${ballots})"
+    },
+    {
+      "type": "calculate",
+      "name": "nombre_total_ballots",
+      "label": "Nombre total de ballots",
+      "calculation": "count(${ballots})+count(${saisie_ballots})"
+    },
+    {
+      "type": "note",
+      "name": "resume",
+      "label": "Nombre total de ballots enregistrés : ${nombre_total_ballots}"
+    },
+    {
+      "type": "begin_group",
+      "name": "decompte",
+      "label": "Décompte",
+      "appearance": "field-list"
+    },
+    {
+      "type": "integer",
+      "name": "nombre_ballots",
+      "label": "Nombre de ballots effectivement envoyés",
+      "hint": "Encodez le nombre de ballots envoyés",
+      "required": "True"
+    },
+    {
+      "type": "integer",
+      "name": "nombre_milda",
+      "label": "Nombre de MILDA (en pièces) effectivement envoyées",
+      "hint": "Encodez le nombre de MILDA envoyées (hors ballots)",
+      "required": "True"
+    },
+    {
+      "type": "image",
+      "name": "bon_livraison",
+      "label": "Photo du bordereau de livraison",
+      "hint": "Prenez une photo du bordereau de livraison",
+      "required": "True",
+      "parameters": "max-pixels=1024"
+    },
+    {
+      "type": "end_group"
+    },
+    {
+      "type": "start",
+      "name": "start",
+      "label": "Start"
+    },
+    {
+      "type": "end",
+      "name": "end",
+      "label": "End"
+    }
+  ],
+  "choices": [
+    {
+      "list_name": "oui_non",
+      "name": "oui",
+      "label": "Oui"
+    },
+    {
+      "list_name": "oui_non",
+      "name": "non",
+      "label": "Non"
+    },
+    {
+      "list_name": "raison",
+      "name": "appareil_photo_defectueux",
+      "label": "Appareil photo défectueux"
+    },
+    {
+      "list_name": "raison",
+      "name": "manque_de_luminosite",
+      "label": "Manque de luminosité"
+    },
+    {
+      "list_name": "raison",
+      "name": "refus_du_transporteur",
+      "label": "Refus du transporteur"
+    },
+    {
+      "list_name": "raison",
+      "name": "autre",
+      "label": "Autre (préciser)"
+    }
+  ],
+  "settings": {
+    "form_title": "Livraison Site",
+    "form_id": "livraison_site",
+    "version": "2025120601"
+  },
+  "message": "I added a new required text question 'nom_capitaine' (Nom du capitaine) right after the Site group, so the captain's name is captured before proceeding to the ballot scanning sections."
+}

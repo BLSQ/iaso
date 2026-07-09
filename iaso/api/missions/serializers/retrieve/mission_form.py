@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer
+from iaso.api.missions.serializers.retrieve.common import MissionTypeSerializer
 from iaso.models import MissionForm
 from iaso.models.missions import MissionFormThroughForm
 
@@ -25,9 +26,11 @@ class NestedMissionFormThroughFormSerializer(ModelSerializer):
 
 
 class MissionFormRetrieveSerializer(ModelSerializer):
-    mission_type = serializers.CharField(read_only=True, source="get_mission_type_display")
+    mission_type = MissionTypeSerializer(source="*")
 
-    forms = NestedMissionFormThroughFormSerializer(many=True, read_only=True, source="missionformthroughform_set")
+    forms = NestedMissionFormThroughFormSerializer(
+        many=True, read_only=True, source="missionformthroughform_set", allow_empty=False, allow_null=False
+    )
 
     class Meta:
         model = MissionForm

@@ -1,9 +1,13 @@
-import { mutationInvalidates as validationWorkflowsMutationInvalidates } from './hat/assets/js/orval/apiConfiguration/validationWorkflows/configuration';
+import {
+    mutationInvalidates as validationWorkflowsMutationInvalidates,
+} from './hat/assets/js/orval/apiConfiguration/validationWorkflows/configuration';
 import {
     createSchemaTransformer,
     normalizeSchema,
 } from './hat/assets/js/orval/transformer/fakerTransformer';
-import { mutationInvalidates as accountsMutationInvalidates } from './hat/assets/js/orval/apiConfiguration/accounts/configuration';
+import {
+    mutationInvalidates as accountsMutationInvalidates,
+} from './hat/assets/js/orval/apiConfiguration/accounts/configuration';
 
 require('dotenv').config();
 
@@ -30,7 +34,7 @@ const createConfig = (
                     {
                         domains: [
                             process.env.ORVAL_TARGET_URL_DOMAIN ||
-                                'localhost:8000',
+                            'localhost:8000',
                         ],
                         headers: {
                             Authorization: `Bearer ${process.env.API_TOKEN}`,
@@ -66,11 +70,11 @@ const createConfig = (
                     useInvalidate: true,
                     mutationInvalidates: mutationInvalidates ?? [],
                     queryOptions: {
-                        path: './hat/assets/js/orval/mutator/custom-query-options.ts',
+                        path: '../../../../orval/mutator/custom-query-options.ts',
                         name: 'getCustomQueryOptions',
                     },
                     mutationOptions: {
-                        path: './hat/assets/js/orval/mutator/custom-mutation-options.ts',
+                        path: '../../../../orval/mutator/custom-mutation-options.ts',
                         name: 'useCustomMutationOptions',
                         optionalQueryClient: true,
                     },
@@ -94,14 +98,16 @@ const createConfig = (
                 },
             },
             mock: {
-                type: 'msw',
-                preferredContentType: 'application/json',
-                delay: () =>
-                    process.env?.MSW_DELAY
-                        ? parseInt(process.env.MSW_DELAY)
-                        : 0,
-                delayFunctionLazyExecute: true,
-                arrayMin: 1,
+                generators: [{
+                    type: 'msw',
+                    preferredContentType: 'application/json',
+                    delay: () =>
+                        process.env?.MSW_DELAY
+                            ? parseInt(process.env.MSW_DELAY)
+                            : 0,
+                    delayFunctionLazyExecute: true,
+                    arrayMin: 1,
+                }],
             },
             target: './endpoints',
             schemas: {
@@ -127,7 +133,7 @@ module.exports = {
     ]),
     apiImports: createConfig('apiImports', ['API import']),
     instanceDiff: createConfig('instanceDiff', ['Submission diff']),
-    missions: createConfig("missions", ['Missions']),
+    missions: createConfig('missions', ['Missions']),
     modules: createConfig('modules', ['Modules']),
     validationWorkflows: createConfig(
         'validationWorkflows',

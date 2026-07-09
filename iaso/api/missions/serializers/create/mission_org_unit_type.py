@@ -5,7 +5,7 @@ from rest_framework import serializers
 from iaso.api.common import ModelSerializer
 from iaso.api.common.serializer_fields import CurrentAccountDefault
 from iaso.models import Form, OrgUnitType
-from iaso.models.missions import MissionOrgUnitType, MissionOrgUnitTypeThroughForm
+from iaso.models.missions import MissionOrgUnitType, MissionOrgUnitTypeThroughForm, MissionType
 
 
 class OrgUnitTypeScopedFormField(serializers.PrimaryKeyRelatedField):
@@ -30,12 +30,12 @@ class NestedMissionOrgUnitTypeThroughFormCreateSerializer(ModelSerializer):
         model = MissionOrgUnitTypeThroughForm
         fields = ["form", "min_cardinality", "max_cardinality"]
         extra_kwargs = {
-            "min_cardinality": {"write_only": True},
+            "min_cardinality": {"write_only": True, "required": True},
             "max_cardinality": {"write_only": True},
         }
 
     def validate(self, attrs):
-        min_val = attrs.get("min_cardinality", 0)
+        min_val = attrs.get("min_cardinality")
         max_val = attrs.get("max_cardinality")
         if max_val is not None and min_val > max_val:
             raise serializers.ValidationError(
@@ -53,10 +53,14 @@ class MissionOrgUnitTypeCreateSerializer(ModelSerializer):
     forms = NestedMissionOrgUnitTypeThroughFormCreateSerializer(
         many=True, required=True, allow_empty=False, write_only=True
     )
+    mission_type = serializers.ChoiceField(
+        choices=[MissionType.ORG_UNIT_AND_FORM.value], write_only=True, required=True
+    )
 
     class Meta:
         model = MissionOrgUnitType
         fields = [
+            "id",
             "name",
             "description",
             "created_by",
@@ -67,9 +71,9 @@ class MissionOrgUnitTypeCreateSerializer(ModelSerializer):
             "max_cardinality",
             "mission_type",
         ]
-
+        read_only_fields = ["id"]
         extra_kwargs = {
-            "min_cardinality": {"write_only": True, "default": 0},
+            "min_cardinality": {"write_only": True, "required": True},
             "max_cardinality": {"write_only": True},
         }
 

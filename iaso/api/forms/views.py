@@ -91,6 +91,10 @@ class FormsViewSet(ModelViewSet):
         if projects_ids:
             queryset = queryset.filter(projects__id__in=projects_ids.split(","))
 
+        entity_types_ids = self.request.query_params.get("entity_type_ids")
+        if entity_types_ids:
+            queryset = queryset.filter_on_entity_types_ids(*entity_types_ids.split(","))
+
         requested_fields = self.request.query_params.get("fields")
 
         is_request_from_manifest = self.request.path.endswith("/manifest/")

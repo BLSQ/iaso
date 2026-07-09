@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import { FormikProps, FieldInputProps } from 'formik';
-import { get } from 'lodash';
 import {
     MissionTypeEnum,
     useApiMicroplanningMissionsMissionTypesDropdownList,
@@ -24,8 +23,6 @@ export type ModulesDropdownProps = {
 export const MissionTypeDropdown: FunctionComponent<ModulesDropdownProps> = ({
     handleChange,
     label,
-    field,
-    form,
     value,
     keyValue,
     ...props
@@ -40,29 +37,18 @@ export const MissionTypeDropdown: FunctionComponent<ModulesDropdownProps> = ({
             },
         });
 
-    const inputKeyValue = field ? field.name : keyValue;
-    const inputValue = field ? field.value : value;
-
-    const hasError =
-        form && field ? Boolean(get(form.errors, field.name)) : false;
-
     return hasPermission ? (
         <InputComponent
-            {...field}
-            keyValue={inputKeyValue}
+            keyValue={keyValue}
             type="select"
-            value={inputValue}
+            value={value}
             options={data ?? []}
             label={label ?? MESSAGES.missionType}
             onChange={(keyValue, value) => {
                 if (handleChange) {
                     handleChange(keyValue, value);
-                } else if (form && field) {
-                    form.setFieldTouched(field.name, true);
-                    form.setFieldValue(field.name, value);
                 }
             }}
-            errors={hasError ? get(form.errors, field.name) : []}
             loading={isLoading}
             {...props}
         />

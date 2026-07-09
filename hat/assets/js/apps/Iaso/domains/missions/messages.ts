@@ -25,6 +25,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Forms',
         id: 'iaso.forms.title',
     },
+    form: {
+        defaultMessage: 'Form',
+        id: 'iaso.form.title',
+    },
+    noResultsFound: {
+        defaultMessage: 'No results found.',
+        id: 'iaso.missions.noResultsFound',
+    },
     formsNumber: {
         defaultMessage: 'Number of forms',
         id: 'iaso.formsNumber.title',
@@ -112,6 +120,10 @@ const MESSAGES = defineMessages({
     edit: {
         defaultMessage: 'Edit',
         id: 'iaso.label.edit',
+    },
+    missionDetailTitle: {
+        defaultMessage: 'Mission {name}',
+        id: 'iaso.missions.title.missionDetail',
     },
 });
 

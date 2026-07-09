@@ -3,6 +3,8 @@ import React, { ReactElement } from 'react';
 import { ApiImports } from 'Iaso/domains/apiimports';
 import { ValidateInstance } from 'Iaso/domains/instances/validate';
 import { MissionCreate } from 'Iaso/domains/missions/create';
+import { MissionDetail } from 'Iaso/domains/missions/details';
+import { MissionEdit } from 'Iaso/domains/missions/edit';
 import { PipelineList } from 'Iaso/domains/openHexa';
 import { PipelineDetails } from 'Iaso/domains/openHexa/details';
 import { StockKeepingUnits } from 'Iaso/domains/stock';
@@ -440,6 +442,20 @@ export const missionsCreatePath = {
     element: <MissionCreate />,
 };
 
+export const missionsDetailPath = {
+    baseUrl: baseUrls.missionsDetails,
+    routerUrl: `${baseUrls.missionsDetails}/*`,
+    permissions: [Permission.MISSION_READ],
+    element: <MissionDetail />,
+};
+
+export const missionsEditPath = {
+    baseUrl: baseUrls.missionsEdit,
+    routerUrl: `${baseUrls.missionsEdit}/*`,
+    permissions: [Permission.MISSION_READ, Permission.MISSION_WRITE],
+    element: <MissionEdit />,
+};
+
 export const assignmentsPath = {
     baseUrl: baseUrls.assignments,
     routerUrl: `${baseUrls.assignments}/*`,
@@ -647,6 +663,8 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     planningDetailsPath,
     missionsPath,
     missionsCreatePath,
+    missionsDetailPath,
+    missionsEditPath,
     assignmentsPath,
     entitiesPath,
     entityDetailsPath,

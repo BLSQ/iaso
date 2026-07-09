@@ -2,27 +2,34 @@ import React, { FunctionComponent } from 'react';
 import { Alert, Box, Button, Grid } from '@mui/material';
 import { LinkButton, useSafeIntl } from 'bluesquare-components';
 import { Field, FormikProps } from 'formik';
-import {
-    ApiMicroplanningMissionsCreateBody,
-    MissionTypeEnum,
-} from 'Iaso/api/missions';
+import { MissionTypeDropdownValueEnum } from 'Iaso/api/missions';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
-import { MissionFormInput } from 'Iaso/domains/missions/components/forms/MissionFormInput';
+import { MissionEntityTypeInput } from 'Iaso/domains/missions/components/forms/MissionEntityTypeInput';
+import { MissionFormsBaseInput } from 'Iaso/domains/missions/components/forms/MissionFormsBaseInput';
 import { MissionOrgUnitTypeInput } from 'Iaso/domains/missions/components/forms/MissionOrgUnitTypeInput';
+import { MissionTypeDropdownInput } from 'Iaso/domains/missions/components/MissionTypeDropdownInput';
+import { MissionCreateBody } from 'Iaso/domains/missions/schemas/create';
 import TextInput from 'Iaso/domains/pages/components/TextInput';
 import MESSAGES from '../messages';
-import { MissionTypeDropdown } from './MissionTypeDropdown';
 
-type CreateEditMissionFormProps = {
+type CreateMissionFormProps = {
     cancelUrl?: string;
     allowConfirm: boolean;
-    formik: FormikProps<ApiMicroplanningMissionsCreateBody>;
+    formik: FormikProps<MissionCreateBody>;
     successButtonMessage: string;
 };
-export const CreateMissionForm: FunctionComponent<
-    CreateEditMissionFormProps
-> = ({ cancelUrl, allowConfirm, formik, successButtonMessage }) => {
+
+export const CreateMissionForm: FunctionComponent<CreateMissionFormProps> = ({
+    cancelUrl,
+    allowConfirm,
+    formik,
+    successButtonMessage,
+}) => {
     const { formatMessage } = useSafeIntl();
+
+    const handleChangeMissionType = (_keyValue: string, _value: number) => {
+        formik.setFieldValue('forms', []);
+    };
 
     return (
         <Grid container spacing={2}>
@@ -37,21 +44,22 @@ export const CreateMissionForm: FunctionComponent<
                             name="name"
                             component={TextInput}
                             required
-                            // margin={'normal'}
                             sx={{ mx: 0, my: 1 }}
                         />
                         <Field
                             label={formatMessage(MESSAGES.description)}
                             name="description"
                             component={TextInput}
-                            // margin={'normal'}
                             sx={{ mx: 0, my: 1 }}
                         />
                         <Field
-                            label={MESSAGES.missionType}
+                            label={formatMessage(MESSAGES.missionType)}
                             name={'mission_type'}
-                            component={MissionTypeDropdown}
+                            component={MissionTypeDropdownInput}
+                            onChange={handleChangeMissionType}
                             required
+                            clearable={false}
+                            withMarginTop
                             sx={{ mx: 0, my: 1 }}
                         />
                     </Box>
@@ -69,17 +77,17 @@ export const CreateMissionForm: FunctionComponent<
                             </Alert>
                         )}
                         {formik.values?.mission_type ===
-                            MissionTypeEnum.enum.FORM_FILLING && (
-                            <MissionFormInput />
+                            MissionTypeDropdownValueEnum.enum.FORM_FILLING && (
+                            <MissionFormsBaseInput />
                         )}
                         {formik.values?.mission_type ===
-                            MissionTypeEnum.enum.ORG_UNIT_AND_FORM && (
+                            MissionTypeDropdownValueEnum.enum
+                                .ORG_UNIT_AND_FORM && (
                             <MissionOrgUnitTypeInput />
                         )}
                         {formik.values?.mission_type ===
-                            MissionTypeEnum.enum.ENTITY_AND_FORM && (
-                            <div>ENTITY_AND_FORM</div>
-                        )}
+                            MissionTypeDropdownValueEnum.enum
+                                .ENTITY_AND_FORM && <MissionEntityTypeInput />}
                     </Box>
                 </WidgetPaper>
                 <Box
@@ -97,7 +105,7 @@ export const CreateMissionForm: FunctionComponent<
                         variant="contained"
                         type={'submit'}
                         color={'success'}
-                        // disabled={!allowConfirm}
+                        disabled={!allowConfirm}
                         sx={{ ml: 2 }}
                         onClick={() => allowConfirm && formik.handleSubmit()}
                     >

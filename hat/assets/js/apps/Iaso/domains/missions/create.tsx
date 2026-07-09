@@ -4,12 +4,13 @@ import { useSafeIntl, useRedirectTo } from 'bluesquare-components';
 import { useFormik, FormikProvider } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import {
-    ApiMicroplanningMissionsCreateBody,
+    MissionTypeDropdownValueEnum,
     useApiMicroplanningMissionsCreate,
 } from 'Iaso/api/missions';
 import { MainWrapper } from 'Iaso/components/MainWrapper';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
+import { MissionCreateBody } from 'Iaso/domains/missions/schemas/create';
 import { withFormikSubmitAsync } from 'Iaso/utils/forms';
 import { CreateMissionForm } from './components/CreateMissionForm';
 import MESSAGES from './messages';
@@ -42,13 +43,16 @@ export const MissionCreate: FunctionComponent = () => {
         },
     });
 
-    const formik = useFormik<ApiMicroplanningMissionsCreateBody>({
-        validationSchema: toFormikValidationSchema(
-            ApiMicroplanningMissionsCreateBody,
-        ),
-        initialValues: {},
+    const formik = useFormik<MissionCreateBody>({
+        validationSchema: toFormikValidationSchema(MissionCreateBody),
+        initialValues: {
+            name: '',
+            mission_type: MissionTypeDropdownValueEnum.enum.FORM_FILLING,
+            forms: [],
+        },
         validateOnBlur: true,
         enableReinitialize: true,
+        validateOnMount: true,
         onSubmit: withFormikSubmitAsync(values => create({ data: values })),
     });
 
@@ -71,7 +75,7 @@ export const MissionCreate: FunctionComponent = () => {
                     <CreateMissionForm
                         formik={formik}
                         allowConfirm={allowConfirm}
-                        cancelUrl={baseUrls.missions}
+                        cancelUrl={`/${baseUrls.missions}/`}
                         successButtonMessage={formatMessage(MESSAGES.create)}
                     />
                 </FormikProvider>

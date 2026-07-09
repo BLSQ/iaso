@@ -149,3 +149,22 @@ services:
     #       POSTGRES_DB: ${RDS_DB_NAME}
     #       POSTGRES_USER: postgres
     #       POSTGRES_PASSWORD: postgres
+
+    couchdb:
+      image: couchdb:1.7
+      profiles:
+        - 'trypelim'
+      ports:
+        - '5984:5984'
+      environment:
+        COUCHDB_USER: ${COUCHDB_USER}
+        COUCHDB_PASSWORD: ${COUCHDB_PASSWORD}
+      logging: *iaso_logging
+
+    redis:
+      image: redis:3.2
+      profiles:
+        - 'trypelim'
+      ports:
+        - '6379:6379'
+      logging: *iaso_logging

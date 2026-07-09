@@ -1885,6 +1885,7 @@ dependencies = [
     { name = "requests-toolbelt" },
     { name = "sentry-sdk", extra = ["django"] },
     { name = "shapely" },
+    { name = "simpleeval" },
     { name = "snaql" },
     { name = "sqlalchemy" },
     { name = "tsp-solver2" },
@@ -2014,6 +2015,7 @@ requires-dist = [
     { name = "requests-toolbelt", specifier = "==0.9.1" },
     { name = "sentry-sdk", extras = ["django"], specifier = "==1.38.0" },
     { name = "shapely", specifier = "==2.0.2" },
+    { name = "simpleeval", specifier = "==1.0.3" },
     { name = "snaql", specifier = "==0.4.2" },
     { name = "sqlalchemy", specifier = "==2.0.23" },
     { name = "tsp-solver2", specifier = "==0.4.1" },
@@ -2179,7 +2181,7 @@ name = "jinxed"
 version = "2.0.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "ansicon" },
+    { name = "ansicon", marker = "sys_platform == 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/3c/5e/2eea62fd64689685b082f29e1dcd0e57a19009c90733318a4bc9ddb54b2c/jinxed-2.0.4.tar.gz", hash = "sha256:a92ac48923433c0a88577bb0479191788813fd5055ef17ff2b04a701a1b83f19", size = 135991, upload-time = "2026-05-23T16:30:58.304Z" }
 wheels = [
@@ -3648,6 +3650,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/0b/45/72b2f6c9c02e02d73edeb3e63cb724e5a67f84d1ecadb06a2309a2c022a9/shapely-2.0.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:dea9a0651333cf96ef5bb2035044e3ad6a54f87d90e50fe4c2636debf1b77abc", size = 2473597, upload-time = "2023-10-12T20:38:23.679Z" },
     { url = "https://files.pythonhosted.org/packages/1c/b4/e08e2d0732dcf2b9432f1a13ee85e1150e6a2b31fbb242e2adbf50843a57/shapely-2.0.2-cp39-cp39-win32.whl", hash = "sha256:b8eb0a92f7b8c74f9d8fdd1b40d395113f59bd8132ca1348ebcc1f5aece94b96", size = 1291995, upload-time = "2023-10-12T20:38:26.542Z" },
     { url = "https://files.pythonhosted.org/packages/51/18/7a6dfefc08d5899dfca0cde9ada7a58006d06cccc0818e68b2a60bdba8e3/shapely-2.0.2-cp39-cp39-win_amd64.whl", hash = "sha256:794affd80ca0f2c536fc948a3afa90bd8fb61ebe37fe873483ae818e7f21def4", size = 1438271, upload-time = "2023-10-12T20:38:29.187Z" },
+]
+
+[[package]]
+name = "simpleeval"
+version = "1.0.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ff/6f/15be211749430f52f2c8f0c69158a6fc961c03aac93fa28d44d1a6f5ebc7/simpleeval-1.0.3.tar.gz", hash = "sha256:67bbf246040ac3b57c29cf048657b9cf31d4e7b9d6659684daa08ca8f1e45829", size = 24358, upload-time = "2024-11-02T10:29:46.912Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a0/e9/e58082fbb8cecbb6fb4133033c40cc50c248b1a331582be3a0f39138d65b/simpleeval-1.0.3-py3-none-any.whl", hash = "sha256:e3bdbb8c82c26297c9a153902d0fd1858a6c3774bf53ff4f134788c3f2035c38", size = 15762, upload-time = "2024-11-02T10:29:45.706Z" },
 ]
 
 [[package]]

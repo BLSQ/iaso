@@ -10,7 +10,6 @@ import django_cte
 
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.gis.db.models.fields import MultiPolygonField, PointField
-from django.contrib.gis.geos import MultiPolygon as GEOSMultiPolygon
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.indexes import GinIndex, GistIndex
 from django.core.exceptions import ValidationError
@@ -24,6 +23,7 @@ from django_ltree.models import TreeModel  # type: ignore
 from iaso.models.data_source import SourceVersion
 
 from ..utils.expressions import ArraySubquery
+from ..utils.gis import simplify_geom
 from ..utils.models.common import get_creator_name
 from ..utils.models.soft_deletable import SoftDeletableModel
 from .project import Project
@@ -896,13 +896,7 @@ class OrgUnitChangeRequest(SoftDeletableModel):
                 self.org_unit.groups.add(*self.new_groups.all())
             elif field_name == "new_geom":
                 self.org_unit.geom = self.new_geom
-                if self.new_geom is not None:
-                    simplified = self.new_geom.simplify(tolerance=0.001, preserve_topology=True)
-                    if simplified.geom_type == "Polygon":
-                        simplified = GEOSMultiPolygon(simplified)
-                    self.org_unit.simplified_geom = simplified
-                else:
-                    self.org_unit.simplified_geom = None
+                self.org_unit.simplified_geom = simplify_geom(self.new_geom) if self.new_geom is not None else None
             elif field_name == "new_reference_instances":
                 current_reference_instances = list(self.org_unit.reference_instances.all())
 

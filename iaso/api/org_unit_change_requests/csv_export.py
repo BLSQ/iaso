@@ -21,12 +21,19 @@ def get_reference_instance_ids(instances):
     return ",".join(str(instance.id) for instance in instances.all().order_by("id"))
 
 
-def get_parent_ref_ext(parent, level):
-    if not parent or not hasattr(parent, "cached_ancestors"):
+def get_parent_ref_ext(parent, level, ancestor_source_ref_by_id):
+    """Source ref of the ancestor `level` levels up from the root (1 = the top-level ancestor).
+
+    `path` is the list of ancestor pks from root to self inclusive that django_ltree maintains
+    on every `OrgUnit` — used here instead of `parent.ancestors()` because that's a plain method
+    (not a real Django relation, see `django_ltree.models.TreeModel`) and so can't be
+    `Prefetch()`-ed like the FKs/M2Ms below. Callers must batch-fetch `ancestor_source_ref_by_id`
+    (id -> source_ref) once for the whole export instead of querying per row.
+    """
+    if not parent or not parent.path or level > len(parent.path):
         return None
-    if level <= len(parent.cached_ancestors):
-        return parent.cached_ancestors[level - 1].source_ref
-    return None
+    ancestor_pk = int(parent.path[level - 1])
+    return ancestor_source_ref_by_id.get(ancestor_pk)
 
 
 def _fmt_date(d):
@@ -150,30 +157,43 @@ def _ref_ext_parent_after(cr):
     return cr.new_parent if cr.new_parent else cr.org_unit.parent
 
 
-# "Ref Ext parent 1/2/3" columns: how many levels up the tree to report, from the
-# change request's before/after parent. All three share the same `requested_field`
-# because they're all derived from the parent change, not a field of their own.
-REF_EXT_PARENT_FIELDS = [
-    ChangeField(
-        "new_parent",
-        before=lambda cr, level=level: get_parent_ref_ext(_ref_ext_parent_before(cr), level),
-        after=lambda cr, level=level: get_parent_ref_ext(_ref_ext_parent_after(cr), level),
-    )
-    for level in range(1, 4)
-]
+def _make_ref_ext_parent_fields(ancestor_source_ref_by_id):
+    """ "Ref Ext parent 1/2/3" columns: how many levels up the tree to report, from the
+    change request's before/after parent. All three share the same `requested_field`
+    because they're all derived from the parent change, not a field of their own.
 
-# Order matches `OrgUnitChangeRequestViewSet.CSV_HEADER_COLUMNS`, right after the
-# basic (non-diffed) columns: id, org unit id, source ref, name, parent, type, groups,
-# created/updated (by/at).
-CHANGE_FIELDS = [
-    NAME_FIELD,
-    PARENT_FIELD,
-    *REF_EXT_PARENT_FIELDS,
-    OPENING_DATE_FIELD,
-    CLOSING_DATE_FIELD,
-    GROUPS_FIELD,
-    LOCATION_FIELD,
-    GEOM_FIELD,
-    CODE_FIELD,
-    REFERENCE_INSTANCES_FIELD,
-]
+    Built fresh per export call (not a module-level constant) because each field needs
+    to close over `ancestor_source_ref_by_id`, the id -> source_ref lookup batch-fetched
+    once for the whole export — see `get_parent_ref_ext`.
+    """
+    return [
+        ChangeField(
+            "new_parent",
+            before=lambda cr, level=level: get_parent_ref_ext(
+                _ref_ext_parent_before(cr), level, ancestor_source_ref_by_id
+            ),
+            after=lambda cr, level=level: get_parent_ref_ext(
+                _ref_ext_parent_after(cr), level, ancestor_source_ref_by_id
+            ),
+        )
+        for level in range(1, 4)
+    ]
+
+
+def get_change_fields(ancestor_source_ref_by_id):
+    """Order matches `OrgUnitChangeRequestViewSet.CSV_HEADER_COLUMNS`, right after the
+    basic (non-diffed) columns: id, org unit id, source ref, name, parent, type, groups,
+    created/updated (by/at).
+    """
+    return [
+        NAME_FIELD,
+        PARENT_FIELD,
+        *_make_ref_ext_parent_fields(ancestor_source_ref_by_id),
+        OPENING_DATE_FIELD,
+        CLOSING_DATE_FIELD,
+        GROUPS_FIELD,
+        LOCATION_FIELD,
+        GEOM_FIELD,
+        CODE_FIELD,
+        REFERENCE_INSTANCES_FIELD,
+    ]

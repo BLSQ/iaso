@@ -16,7 +16,7 @@ from rest_framework.response import Response
 
 from hat.audit import models as audit_models
 from iaso.api.common import CONTENT_TYPE_CSV
-from iaso.api.org_unit_change_requests.csv_export import CHANGE_FIELDS
+from iaso.api.org_unit_change_requests.csv_export import get_change_fields
 from iaso.api.org_unit_change_requests.filters import OrgUnitChangeRequestListFilter
 from iaso.api.org_unit_change_requests.pagination import OrgUnitChangeRequestPagination
 from iaso.api.org_unit_change_requests.permissions import (
@@ -317,36 +317,6 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                 "org_unit__reference_instances",
                 "old_reference_instances",
                 "new_reference_instances",
-                Prefetch(
-                    "old_parent",
-                    queryset=OrgUnit.objects.prefetch_related(
-                        Prefetch(
-                            "ancestors",
-                            queryset=OrgUnit.objects.only("id", "source_ref").order_by("path"),
-                            to_attr="cached_ancestors",
-                        )
-                    ),
-                ),
-                Prefetch(
-                    "new_parent",
-                    queryset=OrgUnit.objects.prefetch_related(
-                        Prefetch(
-                            "ancestors",
-                            queryset=OrgUnit.objects.only("id", "source_ref").order_by("path"),
-                            to_attr="cached_ancestors",
-                        )
-                    ),
-                ),
-                Prefetch(
-                    "org_unit__parent",
-                    queryset=OrgUnit.objects.prefetch_related(
-                        Prefetch(
-                            "ancestors",
-                            queryset=OrgUnit.objects.only("id", "source_ref").order_by("path"),
-                            to_attr="cached_ancestors",
-                        )
-                    ),
-                ),
             )
             .order_by("org_unit__name")
         )
@@ -354,6 +324,23 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         filtered_org_unit_changes_requests = OrgUnitChangeRequestListFilter(
             request.GET, queryset=org_unit_changes_requests
         ).qs
+
+        # The "Ref Ext parent N" columns report the `source_ref` of ancestors of the before/after
+        # parent. `OrgUnit.ancestors()` is a plain method (django_ltree's `TreeModel`), not a real
+        # Django relation, so it can't be `Prefetch()`-ed. Instead, batch-fetch the source_ref of
+        # every ancestor pk referenced by `path` (the ancestor pks from root to self, maintained by
+        # django_ltree) in one query, up front, rather than querying per row.
+        ancestor_pks = set()
+        for old_parent_path, new_parent_path, org_unit_parent_path in filtered_org_unit_changes_requests.values_list(
+            "old_parent__path", "new_parent__path", "org_unit__parent__path"
+        ):
+            for path in (old_parent_path, new_parent_path, org_unit_parent_path):
+                if path:
+                    ancestor_pks.update(int(pk) for pk in path[:3])
+        ancestor_source_ref_by_id = (
+            dict(OrgUnit.objects.filter(pk__in=ancestor_pks).values_list("id", "source_ref")) if ancestor_pks else {}
+        )
+        change_fields = get_change_fields(ancestor_source_ref_by_id)
 
         response = HttpResponse(content_type=CONTENT_TYPE_CSV)
         writer = csv.writer(response)
@@ -375,7 +362,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                 get_creator_name(change_request.updated_by) if change_request.updated_by else None,
             ]
 
-            for field in CHANGE_FIELDS:
+            for field in change_fields:
                 field.append_to(row, change_request)
 
             writer.writerow(row)

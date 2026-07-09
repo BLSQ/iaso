@@ -650,13 +650,13 @@ class ImportMetricValuesSerializerTestCase(TestCase):
 
         self.assertEqual(mv1.metric_type, self.mt_1)
         self.assertEqual(mv1.org_unit, self.district1)
-        self.assertEqual(mv1.year, None)
+        self.assertEqual(mv1.year, 2024)
         self.assertEqual(mv1.value, 1)
         self.assertEqual(mv1.string_value, "")
 
         self.assertEqual(mv2.metric_type, self.mt_2)
         self.assertEqual(mv2.org_unit, self.district1)
-        self.assertEqual(mv2.year, None)
+        self.assertEqual(mv2.year, 2024)
         self.assertEqual(mv2.value, 5)
         self.assertEqual(mv2.string_value, "")
 
@@ -668,13 +668,13 @@ class ImportMetricValuesSerializerTestCase(TestCase):
 
         self.assertEqual(mv3.metric_type, self.mt_1)
         self.assertEqual(mv3.org_unit, self.district2)
-        self.assertEqual(mv3.year, None)
+        self.assertEqual(mv3.year, 2024)
         self.assertEqual(mv3.value, 20)
         self.assertEqual(mv3.string_value, "")
 
         self.assertEqual(mv4.metric_type, self.mt_2)
         self.assertEqual(mv4.org_unit, self.district2)
-        self.assertEqual(mv4.year, None)
+        self.assertEqual(mv4.year, 2024)
         self.assertEqual(mv4.value, 15)
         self.assertEqual(mv4.string_value, "")
 

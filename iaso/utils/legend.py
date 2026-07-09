@@ -86,7 +86,6 @@ ORDINAL = {
 
 
 def get_legend_config(metric_type, scale):
-    print(f"Getting legend config for metric type {metric_type} with scale {scale}")
     # Temporary: use old way as fallback if legend_type was not defined
     if not metric_type.legend_type:
         return __get_legend_config(metric_type)

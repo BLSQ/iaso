@@ -28,7 +28,6 @@ RUN npm run webpack-prod
 # install old FE trypelim dependencies and build it
 WORKDIR /opt/app/plugins/trypelim/
 RUN npm ci --legacy-peer-deps
-RUN rm -f assets/webpack/*
 RUN npm run webpack-prod
 
 # ── Stage 2: Python dependency builder ────────────────────────────────────────
@@ -98,7 +97,6 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 COPY --from=npmbuilder --chown=appuser:appuser /opt/app/hat/assets /opt/app/hat/assets
 # Copy trypelim webpack assets
 COPY --from=npmbuilder --chown=appuser:appuser /opt/app/plugins/trypelim/assets/webpack /opt/app/plugins/trypelim/assets/webpack
-COPY --from=npmbuilder --chown=appuser:appuser /opt/app/plugins/trypelim/assets/messages /opt/app/plugins/trypelim/assets/messages
 
 # Copy project code (all owned by appuser, no separate chown layer needed)
 COPY --chown=appuser:appuser ../../hat ./hat

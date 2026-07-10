@@ -8,6 +8,7 @@ from django.test import override_settings
 
 from hat.views import ExtraData
 from iaso import models as m
+from iaso.models.tenant_users import UserCreationData
 from iaso.test import APITestCase
 
 
@@ -286,8 +287,8 @@ class SSOAuthTestCase(APITestCase):
         self.assertEqual(SocialAccount.objects.count(), 0)
 
     @patch("requests.get")
-    def test_complete_login_multiple_users_across_accounts(self, mock_get):
-        """Fail when the email maps to users in more than one account, not just within one."""
+    def test_complete_login_multiple_unlinked_users_across_accounts(self, mock_get):
+        """Fail when the email maps to unlinked users in more than one account."""
         other_account, _, _, _ = self.create_account_datasource_version_project(
             source_name="Other source", account_name="Other account", project_name="Other project", app_id="other_app"
         )
@@ -311,3 +312,42 @@ class SSOAuthTestCase(APITestCase):
         self.assertEqual(response.status_code, 409)
         self.assertEqual(response.json()["message"], "Could not log you in. Please contact the administrator")
         self.assertEqual(SocialAccount.objects.count(), 0)
+
+    @patch("requests.get")
+    def test_complete_login_tenant_user_resolves_to_main_user(self, mock_get):
+        """A tenant user (same email across accounts) resolves to their main_user, not a failure."""
+        other_account, _, _, _ = self.create_account_datasource_version_project(
+            source_name="Other source", account_name="Other account", project_name="Other project", app_id="other_app"
+        )
+        # jane starts in self.account...
+        self.create_user_with_profile(username="jane@who.int", email="jane@who.int", account=self.account)
+        # ...and is added to a second account, turning her into a tenant user (main_user + account_users).
+        _, main_user, account_user_other = m.TenantUser.objects.create_user_or_tenant_user(
+            data=UserCreationData(
+                username="jane@who.int",
+                email="jane@who.int",
+                first_name="Jane",
+                last_name="Doe",
+                account=other_account,
+            )
+        )
+        m.Profile.objects.create(account=other_account, user=account_user_other)
+
+        extra_data: ExtraData = {
+            "email": "jane@who.int",
+            "sub": "abc-123-def",
+            "given_name": "Jane",
+            "family_name": "Doe",
+        }
+        mock_response = mock_get.return_value
+        mock_response.json.return_value = extra_data
+
+        response = self.client.post(
+            f"/polio/token/?app_id={self.project.app_id}&app_version=2501",
+            format="json",
+            data={"token": make_test_token()},
+        )
+        self.assertEqual(response.status_code, 200)
+        # The social account links to the tenant main_user, not one of the account users.
+        social_account = SocialAccount.objects.get(uid="abc-123-def")
+        self.assertEqual(social_account.user, main_user)

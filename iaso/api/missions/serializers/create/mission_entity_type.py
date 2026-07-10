@@ -5,7 +5,7 @@ from rest_framework import serializers
 from iaso.api.common import ModelSerializer
 from iaso.api.common.serializer_fields import CurrentAccountDefault
 from iaso.models import EntityType, Form
-from iaso.models.missions import MissionEntityType, MissionEntityTypeThroughForm
+from iaso.models.missions import MissionEntityType, MissionEntityTypeThroughForm, MissionType
 
 
 class EntityTypeScopedFormField(serializers.PrimaryKeyRelatedField):
@@ -51,10 +51,12 @@ class MissionEntityTypeCreateSerializer(ModelSerializer):
     forms = NestedMissionEntityTypeThroughFormCreateSerializer(
         many=True, required=True, allow_empty=False, write_only=True
     )
+    mission_type = serializers.ChoiceField(choices=[MissionType.ENTITY_AND_FORM.value], write_only=True, required=True)
 
     class Meta:
         model = MissionEntityType
         fields = [
+            "id",
             "name",
             "description",
             "created_by",
@@ -63,7 +65,9 @@ class MissionEntityTypeCreateSerializer(ModelSerializer):
             "forms",
             "min_cardinality",
             "max_cardinality",
+            "mission_type",
         ]
+        read_only_fields = ["id"]
 
         extra_kwargs = {
             "min_cardinality": {"write_only": True, "required": True},

@@ -5,7 +5,7 @@ from rest_framework import serializers
 from iaso.api.common import ModelSerializer
 from iaso.api.common.serializer_fields import CurrentAccountDefault
 from iaso.models import Form, MissionForm
-from iaso.models.missions import MissionFormThroughForm
+from iaso.models.missions import MissionFormThroughForm, MissionType
 
 
 class NestedMissionFormThroughFormCreateSerializer(ModelSerializer):
@@ -39,13 +39,14 @@ class MissionFormCreateSerializer(ModelSerializer):
     forms = NestedMissionFormThroughFormCreateSerializer(many=True, required=True, allow_empty=False, write_only=True)
     created_by = serializers.HiddenField(default=serializers.CurrentUserDefault(), write_only=True)
     account_id = serializers.HiddenField(default=CurrentAccountDefault(returns_id=True), write_only=True)
+    mission_type = serializers.ChoiceField(choices=[MissionType.FORM_FILLING.value], write_only=True, required=True)
 
     class Meta:
         model = MissionForm
         fields = ["id", "name", "description", "forms", "created_by", "account_id", "mission_type"]
         read_only_fields = ["id"]
 
-        extra_kwargs = {"id": {"read_only": True}, "name": {"write_only": True}, "description": {"write_only": True}}
+        extra_kwargs = {"name": {"write_only": True}, "description": {"write_only": True}}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

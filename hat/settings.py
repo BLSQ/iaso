@@ -519,7 +519,7 @@ REST_FRAMEWORK = {
         "rest_framework_csv.renderers.CSVRenderer",
     ),
     "TEST_REQUEST_DEFAULT_FORMAT": "json",  # The default format that should be used when making test requests.
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_SCHEMA_CLASS": "iaso.drf_spectacular_utils.schema.AutoSchemaWithMinItems",
 }
 
 SPECTACULAR_SETTINGS = {

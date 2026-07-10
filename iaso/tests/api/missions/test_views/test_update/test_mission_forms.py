@@ -180,6 +180,24 @@ class MissionFormAPIUpdateTestCase(SwaggerTestCaseMixin, APITestCase):
             },
         )
 
+        res = self.client.put(
+            reverse("missions-detail", kwargs={"pk": self.mission_form_1.pk}),
+            data={
+                "name": "name",
+                "forms": [
+                    {"form": self.form_1.pk, "max_cardinality": 1},
+                    {"form": self.form_2.pk, "min_cardinality": 1, "max_cardinality": 4},
+                ],
+            },
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            res_data,
+            {
+                "forms": [{"min_cardinality": ["This field is required."]}, {}],
+            },
+        )
+
     def test_num_queries(self):
         self.client.force_authenticate(self.superuser)
         self.client.force_authenticate(self.superuser)

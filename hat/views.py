@@ -323,11 +323,22 @@ def make_token_view(provider_id):
                 status=500,
             )
         except InvalidTokenException as e:
-            return JsonResponse({"result": "error", "message": str(e), "details": str(e)}, status=401)
-        except (InvalidAppIdException, InvalidAccountConfiguration) as e:
-            return JsonResponse({"result": "error", "message": str(e), "details": str(e)}, status=400)
+            # Log the detail server-side; return a static message so we don't leak state to the client.
+            logger.warning("SSO token rejected: %s", e)
+            message = _("Token was not issued for this application")
+            return JsonResponse({"result": "error", "message": message, "details": message}, status=401)
+        except InvalidAppIdException as e:
+            logger.warning("SSO login rejected: %s", e)
+            message = _("Invalid app id")
+            return JsonResponse({"result": "error", "message": message, "details": message}, status=400)
+        except InvalidAccountConfiguration as e:
+            logger.warning("SSO login rejected: %s", e)
+            message = _("Invalid configuration. Please contact the administrator")
+            return JsonResponse({"result": "error", "message": message, "details": message}, status=400)
         except MultipleUsersWithSameEmailException as e:
-            return JsonResponse({"result": "error", "message": str(e), "details": str(e)}, status=409)
+            logger.warning("SSO login rejected: %s", e)
+            message = _("Could not log you in. Please contact the administrator")
+            return JsonResponse({"result": "error", "message": message, "details": message}, status=409)
         except UsernameAlreadyExistsError:
             return JsonResponse(
                 {

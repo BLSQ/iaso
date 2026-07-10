@@ -152,7 +152,7 @@ class SSOAuthTestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json(),
-            {"details": "Invalid app id wrong_app_id", "message": "Invalid app id wrong_app_id", "result": "error"},
+            {"details": "Invalid app id", "message": "Invalid app id", "result": "error"},
         )
 
     @override_settings(
@@ -285,6 +285,6 @@ class SSOAuthTestCase(APITestCase):
             data={"token": make_test_token()},
         )
         self.assertEqual(response.status_code, 409)
-        self.assertEqual(response.json()["message"], "Multiple users found with email jane@who.int")
+        self.assertEqual(response.json()["message"], "Could not log you in. Please contact the administrator")
         # Ambiguous match must not create a social account or log anyone in.
         self.assertEqual(SocialAccount.objects.count(), 0)

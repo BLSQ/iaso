@@ -6,7 +6,7 @@ from unittest.mock import patch
 from allauth.socialaccount.models import SocialAccount
 from django.test import override_settings
 
-from hat.views import ExtraData
+from hat.sso_views import ExtraData
 from iaso import models as m
 from iaso.models.tenant_users import UserCreationData
 from iaso.test import APITestCase

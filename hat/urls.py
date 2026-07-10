@@ -13,7 +13,7 @@ from django.urls import include, path
 from django.views.generic import RedirectView, TemplateView
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
-from hat.views import SSOCallbackView, SSOLoginView, get_adapter_class, make_token_view
+from hat.sso_views import SSOCallbackView, SSOLoginView, get_adapter_class, make_token_view
 from iaso.auth.views import IasoLogoutView, IasoPasswordResetView
 from iaso.views import ModelDataView, health, health_clamav, page, robots_txt
 

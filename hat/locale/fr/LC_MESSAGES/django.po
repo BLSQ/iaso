@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-10 07:42+0000\n"
+"POT-Creation-Date: 2026-07-10 19:43+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -25,6 +25,50 @@ msgstr "Français"
 #: hat/settings.py
 msgid "English"
 msgstr "Anglais"
+
+#: hat/sso_views.py
+msgid "Invalid app id {}"
+msgstr "App id invalide {}"
+
+#: hat/sso_views.py
+msgid "Invalid configuration. Please contact the administrator"
+msgstr "Configuration invalide. Veuillez contacter l'administrateur."
+
+#: hat/sso_views.py
+msgid "Token was not issued for this application"
+msgstr "Le jeton n'a pas été émis pour cette application."
+
+#: hat/sso_views.py
+msgid "Multiple users found with email {}"
+msgstr "Plusieurs utilisateurs trouvés avec l'adresse e-mail {}"
+
+#: hat/sso_views.py
+msgid "Access token validation failed"
+msgstr "La validation du jeton d'accès a échoué."
+
+#: hat/sso_views.py
+msgid "Error login to auth server"
+msgstr "Erreur de connexion au serveur d'authentification"
+
+#: hat/sso_views.py
+msgid "Invalid app id"
+msgstr "Identifiant d'application invalide"
+
+#: hat/sso_views.py
+msgid "Could not log you in. Please contact the administrator"
+msgstr "Impossible de vous connecter. Veuillez contacter l'administrateur."
+
+#: hat/sso_views.py
+msgid "Username already exists for this account."
+msgstr "Ce nom d'utilisateur existe déjà pour ce compte."
+
+#: hat/sso_views.py
+msgid "Error login account"
+msgstr "Erreur de connexion au compte"
+
+#: hat/sso_views.py
+msgid "Internal server error"
+msgstr "Erreur interne du serveur"
 
 #: hat/templates/iaso/forgot_password.html
 msgid "Forgot password?"
@@ -301,50 +345,6 @@ msgstr ""
 #, python-format
 msgid "Login via %(name)s"
 msgstr "Se connecter via %(name)s"
-
-#: hat/views.py
-msgid "Invalid app id {}"
-msgstr "App id invalide {}"
-
-#: hat/views.py
-msgid "Invalid configuration. Please contact the administrator"
-msgstr "Configuration invalide. Veuillez contacter l'administrateur."
-
-#: hat/views.py
-msgid "Token was not issued for this application"
-msgstr "Le jeton n'a pas été émis pour cette application."
-
-#: hat/views.py
-msgid "Multiple users found with email {}"
-msgstr "Plusieurs utilisateurs trouvés avec l'adresse e-mail {}"
-
-#: hat/views.py
-msgid "Access token validation failed"
-msgstr "La validation du jeton d'accès a échoué."
-
-#: hat/views.py
-msgid "Error login to auth server"
-msgstr "Erreur de connexion au serveur d'authentification"
-
-#: hat/views.py
-msgid "Invalid app id"
-msgstr "Identifiant d'application invalide"
-
-#: hat/views.py
-msgid "Could not log you in. Please contact the administrator"
-msgstr "Impossible de vous connecter. Veuillez contacter l'administrateur."
-
-#: hat/views.py
-msgid "Username already exists for this account."
-msgstr "Ce nom d'utilisateur existe déjà pour ce compte."
-
-#: hat/views.py
-msgid "Error login account"
-msgstr "Erreur de connexion au compte"
-
-#: hat/views.py
-msgid "Internal server error"
-msgstr "Erreur interne du serveur"
 
 #, python-brace-format
 #~ msgid "Dynamic fields cannot contain both {all_fields} and {default_fields}"

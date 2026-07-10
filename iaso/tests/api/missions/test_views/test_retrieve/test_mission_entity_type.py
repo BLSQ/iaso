@@ -24,7 +24,10 @@ class MissionAPIRetrieveMissionEntityTypeTestCase(MissionAPIRetrieveBaseTestCase
 
         self.assertEqual(res_data["id"], self.mission_et_1.pk)
         self.assertEqual(res_data["name"], "mission_et_1")
-        self.assertEqual(res_data["mission_type"], MissionType.ENTITY_AND_FORM.label)
+        self.assertEqual(
+            res_data["mission_type"],
+            {"value": MissionType.ENTITY_AND_FORM.value, "label": MissionType.ENTITY_AND_FORM.label},
+        )
         self.assertEqual(res_data["min_cardinality"], 1)
         self.assertEqual(res_data["max_cardinality"], 3)
         self.assertEqual(

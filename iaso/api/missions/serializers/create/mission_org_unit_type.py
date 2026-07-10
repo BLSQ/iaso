@@ -87,7 +87,7 @@ class MissionOrgUnitTypeCreateSerializer(ModelSerializer):
             self.fields["org_unit_type"].queryset = OrgUnitType.objects.filter(projects__account=account)
 
     def validate(self, attrs):
-        min_val = attrs.get("min_cardinality", 0)
+        min_val = attrs.get("min_cardinality")
         max_val = attrs.get("max_cardinality")
         if max_val is not None and min_val > max_val:
             raise serializers.ValidationError(

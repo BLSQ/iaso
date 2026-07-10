@@ -30,12 +30,12 @@ class NestedMissionEntityTypeThroughFormUpdateSerializer(ModelSerializer):
         model = MissionEntityTypeThroughForm
         fields = ["form", "min_cardinality", "max_cardinality"]
         extra_kwargs = {
-            "min_cardinality": {"write_only": True},
+            "min_cardinality": {"write_only": True, "required": True},
             "max_cardinality": {"write_only": True},
         }
 
     def validate(self, attrs):
-        min_val = attrs.get("min_cardinality", 0)
+        min_val = attrs.get("min_cardinality")
         max_val = attrs.get("max_cardinality")
         if max_val is not None and min_val > max_val:
             raise serializers.ValidationError(
@@ -66,7 +66,7 @@ class MissionEntityTypeUpdateSerializer(ModelSerializer):
         ]
 
         extra_kwargs = {
-            "min_cardinality": {"write_only": True},
+            "min_cardinality": {"write_only": True, "required": True},
             "max_cardinality": {"write_only": True},
         }
 
@@ -79,7 +79,7 @@ class MissionEntityTypeUpdateSerializer(ModelSerializer):
             self.fields["entity_type"].queryset = EntityType.objects.filter(account=account)
 
     def validate(self, attrs):
-        min_val = attrs.get("min_cardinality", 0)
+        min_val = attrs.get("min_cardinality")
         max_val = attrs.get("max_cardinality")
         if max_val is not None and min_val > max_val:
             raise serializers.ValidationError(
@@ -106,7 +106,9 @@ class MissionEntityTypeUpdateSerializer(ModelSerializer):
         incoming = {item["form"].id: item for item in through_data}
 
         # delete
-        MissionEntityTypeThroughForm.objects.filter(form_id__in=list(existing.keys() - incoming.keys())).delete()
+        MissionEntityTypeThroughForm.objects.filter(
+            form_id__in=list(existing.keys() - incoming.keys()), mission_entity_type__id=instance.id
+        ).delete()
 
         # update existing
         bulk_updates = []

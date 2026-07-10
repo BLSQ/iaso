@@ -15,7 +15,7 @@ class NestedMissionFormThroughFormCreateSerializer(ModelSerializer):
         model = MissionFormThroughForm
         fields = ["form", "min_cardinality", "max_cardinality"]
         extra_kwargs = {
-            "min_cardinality": {"write_only": True, "default": 0},
+            "min_cardinality": {"write_only": True, "required": True},
             "max_cardinality": {"write_only": True},
         }
 
@@ -26,7 +26,7 @@ class NestedMissionFormThroughFormCreateSerializer(ModelSerializer):
             self.fields["form"].queryset = Form.objects.filter_for_user_and_app_id(self.context["request"].user)
 
     def validate(self, attrs):
-        min_val = attrs.get("min_cardinality", 0)
+        min_val = attrs.get("min_cardinality")
         max_val = attrs.get("max_cardinality")
         if max_val is not None and min_val > max_val:
             raise serializers.ValidationError(
@@ -46,11 +46,7 @@ class MissionFormCreateSerializer(ModelSerializer):
         fields = ["id", "name", "description", "forms", "created_by", "account_id", "mission_type"]
         read_only_fields = ["id"]
 
-        extra_kwargs = {
-            "id": {"read_only": True},
-            "name": {"write_only": True, "required": True},
-            "description": {"write_only": True},
-        }
+        extra_kwargs = {"name": {"write_only": True}, "description": {"write_only": True}}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

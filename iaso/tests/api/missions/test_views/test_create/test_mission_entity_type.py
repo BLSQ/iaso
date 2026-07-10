@@ -112,6 +112,13 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(res_data, "entity_type", "This field is required.")
 
+        res = self.client.post(
+            reverse("missions-list"),
+            data={"mission_type": MissionType.ENTITY_AND_FORM, "name": "test", "entity_type": self.et.pk},
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(res_data, "min_cardinality", "This field is required.")
+
     def test_validation_should_have_one_form(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
         res = self.client.post(
@@ -126,6 +133,7 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
                 "mission_type": MissionType.ENTITY_AND_FORM,
                 "name": "name",
                 "entity_type": self.et.pk,
+                "min_cardinality": 1,
                 "forms": [],
             },
         )
@@ -158,6 +166,7 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
                 "mission_type": MissionType.ENTITY_AND_FORM,
                 "name": "name",
                 "entity_type": self.et.pk,
+                "min_cardinality": 1,
                 "forms": [
                     {"form": self.form_1.pk, "min_cardinality": 1, "max_cardinality": 2},
                     {"form": self.form_2.pk, "min_cardinality": 1, "max_cardinality": 2},
@@ -186,6 +195,7 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
                 "mission_type": MissionType.ENTITY_AND_FORM,
                 "name": "name",
                 "entity_type": self.et.pk,
+                "min_cardinality": 1,
                 "forms": [
                     {"form": self.form_4.pk, "min_cardinality": 1, "max_cardinality": 2},
                     {"form": self.form_5.pk, "min_cardinality": 1, "max_cardinality": 2},
@@ -212,6 +222,7 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
                 "mission_type": MissionType.ENTITY_AND_FORM,
                 "name": "name",
                 "entity_type": self.et.pk,
+                "min_cardinality": 1,
                 "forms": [
                     {"form": self.form_1.pk, "min_cardinality": 1, "max_cardinality": 2},
                     {"form": self.form_1.pk, "min_cardinality": 1, "max_cardinality": 3},
@@ -259,6 +270,22 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertHasError(
             res_data, "min_cardinality", "Minimum cardinality must be inferior than the maximum cardinality"
         )
+
+        res = self.client.post(
+            reverse("missions-list"),
+            data={
+                "mission_type": MissionType.ENTITY_AND_FORM,
+                "name": "name",
+                "entity_type": self.et.pk,
+                "min_cardinality": 4,
+                "max_cardinality": 2,
+                "forms": [{"form": self.form_1.pk, "max_cardinality": 3}],
+            },
+        )
+
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+
+        self.assertEqual(res_data, {"forms": [{"min_cardinality": ["This field is required."]}]})
 
     def test_num_queries(self):
         self.client.force_authenticate(user=self.user_account_write_perm)

@@ -30,12 +30,12 @@ class NestedMissionOrgUnitTypeThroughFormUpdateSerializer(ModelSerializer):
         model = MissionOrgUnitTypeThroughForm
         fields = ["form", "min_cardinality", "max_cardinality"]
         extra_kwargs = {
-            "min_cardinality": {"write_only": True},
+            "min_cardinality": {"write_only": True, "required": True},
             "max_cardinality": {"write_only": True},
         }
 
     def validate(self, attrs):
-        min_val = attrs.get("min_cardinality", 0)
+        min_val = attrs.get("min_cardinality")
         max_val = attrs.get("max_cardinality")
         if max_val is not None and min_val > max_val:
             raise serializers.ValidationError(
@@ -66,7 +66,7 @@ class MissionOrgUnitTypeUpdateSerializer(ModelSerializer):
         ]
 
         extra_kwargs = {
-            "min_cardinality": {"write_only": True},
+            "min_cardinality": {"write_only": True, "required": True},
             "max_cardinality": {"write_only": True},
         }
 
@@ -80,7 +80,7 @@ class MissionOrgUnitTypeUpdateSerializer(ModelSerializer):
             self.fields["org_unit_type"].queryset = OrgUnitType.objects.filter(projects__account=account)
 
     def validate(self, attrs):
-        min_val = attrs.get("min_cardinality", 0)
+        min_val = attrs.get("min_cardinality")
         max_val = attrs.get("max_cardinality")
         if max_val is not None and min_val > max_val:
             raise serializers.ValidationError(
@@ -107,7 +107,9 @@ class MissionOrgUnitTypeUpdateSerializer(ModelSerializer):
         incoming = {item["form"].id: item for item in through_data}
 
         # delete
-        MissionOrgUnitTypeThroughForm.objects.filter(form_id__in=list(existing.keys() - incoming.keys())).delete()
+        MissionOrgUnitTypeThroughForm.objects.filter(
+            form_id__in=list(existing.keys() - incoming.keys()), mission_org_unit_type__id=instance.id
+        ).delete()
 
         # update existing
         bulk_updates = []

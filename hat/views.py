@@ -1,3 +1,6 @@
+import base64
+import binascii
+import json
 import typing
 
 from logging import getLogger
@@ -76,6 +79,37 @@ class InvalidAccountConfiguration(Exception):
         super().__init__(message)
 
 
+class InvalidTokenException(Exception):
+    def __init__(self):
+        message = _("Token was not issued for this application")
+        super().__init__(message)
+
+
+class MultipleUsersWithSameEmailException(Exception):
+    def __init__(self, email: str):
+        message = _("Multiple users found with email {}").format(email)
+        super().__init__(message)
+
+
+def decode_jwt_claims(token: str) -> dict:
+    """Decode a JWT payload WITHOUT verifying its signature.
+
+    The token's authenticity is established separately by the Microsoft Graph
+    userinfo call in ``complete_login`` (which rejects forged or expired tokens),
+    so here we only decode the payload to read the ``appid``/``azp`` claim and
+    confirm the token was issued for our own app registration. This must always
+    stay paired with the userinfo call — on its own an unverified payload is
+    forgeable.
+    """
+    try:
+        payload_segment = token.split(".")[1]
+        padding = "=" * (-len(payload_segment) % 4)
+        decoded = base64.urlsafe_b64decode(payload_segment + padding)
+        return json.loads(decoded)
+    except (AttributeError, IndexError, ValueError, binascii.Error):
+        raise InvalidTokenException()
+
+
 class SSOBaseAdapter(OAuth2Adapter):
     """Base adapter for generic SSO providers. Subclasses are created dynamically via create_adapter_class()."""
 
@@ -120,10 +154,27 @@ class SSOBaseAdapter(OAuth2Adapter):
             )
 
     def complete_login(self, request, app, token: str, response) -> SocialAccount:
+        # Ensure the presented access token was issued for our own app registration
+        # (client id), and not for another app or another tenant. Together with the
+        # Graph userinfo call below (which proves the token is genuine), this blocks
+        # token-replay / nOAuth-style impersonation on the unauthenticated token endpoint.
+        claims = decode_jwt_claims(token)
+        token_app_id = claims.get("appid") or claims.get("azp")
+        if token_app_id != self.sso_config["client_id"]:
+            raise InvalidTokenException()
+
+        # Pin the tenant the token was issued from. This is the control that actually
+        # stops nOAuth-style forgery: even a multi-tenant app would let an attacker mint
+        # a token (with our appid) from their own tenant carrying a forged email, but its
+        # `tid` would not match ours. Enforced only for providers that declare a tenant_id
+        # (i.e. Entra); other OIDC providers should validate `iss` instead.
+        expected_tenant_id = self.sso_config.get("tenant_id")
+        if expected_tenant_id and claims.get("tid") != expected_tenant_id:
+            raise InvalidTokenException()
+
         extra_data_get = requests.get(self.profile_url, headers={"Authorization": f"Bearer {token}"})
         extra_data_get.raise_for_status()
         extra_data: ExtraData = extra_data_get.json()
-
         try:
             email = extra_data["email"].lower().strip()
         except KeyError:
@@ -149,7 +200,10 @@ class SSOBaseAdapter(OAuth2Adapter):
             social_account = SocialAccount.objects.get(uid=uid, provider=self.provider_id)
             social_account.extra_data = extra_data
         except SocialAccount.DoesNotExist:
-            user = User.objects.filter(iaso_profile__account=account, email=email).first()
+            matching_users = User.objects.filter(iaso_profile__account=account, email=email)
+            if matching_users.count() > 1:
+                raise MultipleUsersWithSameEmailException(email)
+            user = matching_users.first()
 
             if not user:
                 new_user, tenant_main_user, tenant_account_user = TenantUser.objects.create_user_or_tenant_user(
@@ -200,6 +254,8 @@ class SSOCallbackView(OAuth2View):
             OAuth2Error,
             RequestException,
             ProviderException,
+            InvalidTokenException,
+            MultipleUsersWithSameEmailException,
         ) as e:
             return render_authentication_error(request, self.adapter.provider_id, exception=e)
 
@@ -266,8 +322,12 @@ def make_token_view(provider_id):
                 },
                 status=500,
             )
+        except InvalidTokenException as e:
+            return JsonResponse({"result": "error", "message": str(e), "details": str(e)}, status=401)
         except (InvalidAppIdException, InvalidAccountConfiguration) as e:
             return JsonResponse({"result": "error", "message": str(e), "details": str(e)}, status=400)
+        except MultipleUsersWithSameEmailException as e:
+            return JsonResponse({"result": "error", "message": str(e), "details": str(e)}, status=409)
         except UsernameAlreadyExistsError:
             return JsonResponse(
                 {

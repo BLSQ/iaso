@@ -888,6 +888,7 @@ if SSO_WHO_CLIENT_ID:
     SSO_PROVIDERS["who"] = {
         "name": "WHO",
         "client_id": SSO_WHO_CLIENT_ID,
+        "tenant_id": SSO_WHO_TENANT_ID,
         "client_secret": env.str("SSO_WHO_CLIENT_SECRET", default=""),
         "pkce_enabled": True,
         "scope": ["openid", "profile", "email"],

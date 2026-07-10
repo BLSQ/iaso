@@ -225,9 +225,9 @@ class FormsViewSet(ModelViewSet):
         """
         Lightweight forms list for dropdowns.
         """
-        queryset = self.get_queryset()
+        queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
-        return Response({self.results_key: serializer.data})
+        return Response(serializer.data)
 
     def list(self, request: Request, *args, **kwargs):
         # TODO: use accept header to determine format - or at least the standard "format" parameter

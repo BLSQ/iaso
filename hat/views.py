@@ -183,16 +183,16 @@ class SSOBaseAdapter(OAuth2Adapter):
         uid = extra_data["sub"].lower().strip()
 
         app_id: str = request.GET.get(APP_ID, None)
-        acount_id: int = self.sso_config["account_id"]
+        account_id: int = self.sso_config["account_id"]
 
         if app_id:
             try:
-                account = Project.objects.filter(account_id=acount_id).get(app_id=app_id).account
+                account = Project.objects.filter(account_id=account_id).get(app_id=app_id).account
             except Project.DoesNotExist:
                 raise InvalidAppIdException(app_id)
         else:
             try:
-                account = Account.objects.get(id=acount_id)
+                account = Account.objects.get(id=account_id)
             except Account.DoesNotExist:
                 raise InvalidAccountConfiguration
 

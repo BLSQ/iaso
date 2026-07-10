@@ -58,10 +58,6 @@ class SSOAuthTestCase(APITestCase):
 
     @patch("requests.get")
     def test_complete_login_ok(self, mock_get):
-        self.assertEqual(m.User.objects.count(), 0)
-        self.assertEqual(m.Profile.objects.count(), 0)
-        self.assertEqual(SocialAccount.objects.count(), 0)
-
         extra_data: ExtraData = {
             "email": "jane@who.int",
             "sub": "abc-123-def",
@@ -131,10 +127,6 @@ class SSOAuthTestCase(APITestCase):
 
     @patch("requests.get")
     def test_complete_login_wrong_app_id(self, mock_get):
-        self.assertEqual(m.User.objects.count(), 0)
-        self.assertEqual(m.Profile.objects.count(), 0)
-        self.assertEqual(SocialAccount.objects.count(), 0)
-
         extra_data: ExtraData = {
             "email": "jane@who.int",
             "sub": "abc-123-def",
@@ -154,6 +146,10 @@ class SSOAuthTestCase(APITestCase):
             response.json(),
             {"details": "Invalid app id", "message": "Invalid app id", "result": "error"},
         )
+        # Nothing should be provisioned for an invalid app id.
+        self.assertEqual(m.User.objects.count(), 0)
+        self.assertEqual(m.Profile.objects.count(), 0)
+        self.assertEqual(SocialAccount.objects.count(), 0)
 
     @override_settings(
         SSO_PROVIDERS={
@@ -175,10 +171,6 @@ class SSOAuthTestCase(APITestCase):
     )
     @patch("requests.get")
     def test_complete_login_wrong_account_in_settings(self, mock_get):
-        self.assertEqual(m.User.objects.count(), 0)
-        self.assertEqual(m.Profile.objects.count(), 0)
-        self.assertEqual(SocialAccount.objects.count(), 0)
-
         extra_data: ExtraData = {
             "email": "jane@who.int",
             "sub": "abc-123-def",
@@ -202,6 +194,10 @@ class SSOAuthTestCase(APITestCase):
                 "result": "error",
             },
         )
+        # Nothing should be provisioned when the account is misconfigured.
+        self.assertEqual(m.User.objects.count(), 0)
+        self.assertEqual(m.Profile.objects.count(), 0)
+        self.assertEqual(SocialAccount.objects.count(), 0)
 
     @patch("requests.get")
     def test_complete_login_wrong_token_app_id(self, mock_get):

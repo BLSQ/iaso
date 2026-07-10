@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-01 14:04+0000\n"
+"POT-Creation-Date: 2026-07-10 07:42+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -17,18 +17,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.5\n"
-
-#: dynamic_fields/filter_backends.py
-#, python-brace-format
-msgid "Dynamic fields cannot contain both {all_fields} and {default_fields}"
-msgstr ""
-"Les champs dynamiques ne peuvent pas contenir à la fois {all_fields} et "
-"{default_fields}"
-
-#: dynamic_fields/filter_backends.py
-#, python-brace-format
-msgid "Invalid dynamic fields: {fields}"
-msgstr "Champs dynamiques invalides : {fields}"
 
 #: hat/settings.py
 msgid "French"
@@ -323,12 +311,28 @@ msgid "Invalid configuration. Please contact the administrator"
 msgstr "Configuration invalide. Veuillez contacter l'administrateur."
 
 #: hat/views.py
+msgid "Token was not issued for this application"
+msgstr "Le jeton n'a pas été émis pour cette application."
+
+#: hat/views.py
+msgid "Multiple users found with email {}"
+msgstr "Plusieurs utilisateurs trouvés avec l'adresse e-mail {}"
+
+#: hat/views.py
 msgid "Access token validation failed"
 msgstr "La validation du jeton d'accès a échoué."
 
 #: hat/views.py
 msgid "Error login to auth server"
 msgstr "Erreur de connexion au serveur d'authentification"
+
+#: hat/views.py
+msgid "Invalid app id"
+msgstr "Identifiant d'application invalide"
+
+#: hat/views.py
+msgid "Could not log you in. Please contact the administrator"
+msgstr "Impossible de vous connecter. Veuillez contacter l'administrateur."
 
 #: hat/views.py
 msgid "Username already exists for this account."
@@ -341,6 +345,16 @@ msgstr "Erreur de connexion au compte"
 #: hat/views.py
 msgid "Internal server error"
 msgstr "Erreur interne du serveur"
+
+#, python-brace-format
+#~ msgid "Dynamic fields cannot contain both {all_fields} and {default_fields}"
+#~ msgstr ""
+#~ "Les champs dynamiques ne peuvent pas contenir à la fois {all_fields} et "
+#~ "{default_fields}"
+
+#, python-brace-format
+#~ msgid "Invalid dynamic fields: {fields}"
+#~ msgstr "Champs dynamiques invalides : {fields}"
 
 #~ msgid "User ID"
 #~ msgstr "ID utilisateur"

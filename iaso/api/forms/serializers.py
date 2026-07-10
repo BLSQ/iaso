@@ -221,10 +221,10 @@ class FormSerializer(DynamicFieldsModelSerializerBackwardCompatible):
         return form
 
 
-class FormDropdownSerializer(FormSerializer):
-    """
-    Dropdown for Form serializer.
-    """
+class FormDropdownSerializer(ModelSerializer):
+    value = serializers.IntegerField(source="id", read_only=True)
+    label = serializers.CharField(source="name", read_only=True)
 
-    class Meta(FormSerializer.Meta):
-        default_fields = ["id", "name"]
+    class Meta:
+        model = Form
+        fields = ["value", "label"]

@@ -31,7 +31,6 @@ export const MissionFormUpdateRequest = zod.strictObject({
                     .number()
                     .min(missionFormUpdateRequestFormsItemMinCardinalityMin)
                     .max(missionFormUpdateRequestFormsItemMinCardinalityMax)
-                    .optional()
                     .describe(
                         'Minimum number of times this form should be filled',
                     ),

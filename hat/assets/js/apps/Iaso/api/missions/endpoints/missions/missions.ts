@@ -5,7 +5,7 @@
  * Iaso Swagger
  * OpenAPI spec version: v1
  */
-import { useMutation, useQuery } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import type {
     InvalidateOptions,
     MutationFunction,
@@ -211,15 +211,19 @@ export const apiMicroplanningMissionsCreate = async (
 export const useApiMicroplanningMissionsCreateMutationOptions = <
     TError = unknown,
     TContext = unknown,
->(options?: {
-    mutation?: UseMutationOptions<
-        Awaited<ReturnType<typeof apiMicroplanningMissionsCreate>>,
-        TError,
-        { data?: MissionPolymorphicCreateRequest },
-        TContext
-    >;
-    request?: SecondParameter<typeof customFetchInstance>;
-}): UseMutationOptions<
+>(
+    queryClient: QueryClient,
+    options?: {
+        mutation?: UseMutationOptions<
+            Awaited<ReturnType<typeof apiMicroplanningMissionsCreate>>,
+            TError,
+            { data?: MissionPolymorphicCreateRequest },
+            TContext
+        >;
+        skipInvalidation?: boolean;
+        request?: SecondParameter<typeof customFetchInstance>;
+    },
+): UseMutationOptions<
     Awaited<ReturnType<typeof apiMicroplanningMissionsCreate>>,
     TError,
     { data?: MissionPolymorphicCreateRequest },
@@ -243,9 +247,23 @@ export const useApiMicroplanningMissionsCreateMutationOptions = <
         return apiMicroplanningMissionsCreate(data, requestOptions);
     };
 
+    const onSuccess = (
+        data: Awaited<ReturnType<typeof apiMicroplanningMissionsCreate>>,
+        variables: { data?: MissionPolymorphicCreateRequest },
+        context: TContext | undefined,
+    ) => {
+        if (!options?.skipInvalidation) {
+            queryClient.invalidateQueries({
+                queryKey: getApiMicroplanningMissionsListQueryKey(),
+            });
+        }
+        mutationOptions?.onSuccess?.(data, variables, context);
+    };
+
     const customOptions = useCustomMutationOptions({
         ...mutationOptions,
         mutationFn,
+        onSuccess,
     });
 
     return customOptions;
@@ -269,6 +287,7 @@ export const useApiMicroplanningMissionsCreate = <
         { data?: MissionPolymorphicCreateRequest },
         TContext
     >;
+    skipInvalidation?: boolean;
     request?: SecondParameter<typeof customFetchInstance>;
 }): UseMutationResult<
     Awaited<ReturnType<typeof apiMicroplanningMissionsCreate>>,
@@ -276,8 +295,12 @@ export const useApiMicroplanningMissionsCreate = <
     { data?: MissionPolymorphicCreateRequest },
     TContext
 > => {
+    const backupQueryClient = useQueryClient();
     return useMutation(
-        useApiMicroplanningMissionsCreateMutationOptions(options),
+        useApiMicroplanningMissionsCreateMutationOptions(
+            backupQueryClient,
+            options,
+        ),
     );
 };
 export const getApiMicroplanningMissionsRetrieveUrl = (id: number) => {
@@ -416,15 +439,19 @@ export const apiMicroplanningMissionsUpdate = async (
 export const useApiMicroplanningMissionsUpdateMutationOptions = <
     TError = unknown,
     TContext = unknown,
->(options?: {
-    mutation?: UseMutationOptions<
-        Awaited<ReturnType<typeof apiMicroplanningMissionsUpdate>>,
-        TError,
-        { id: number; data?: MissionPolymorphicUpdateRequestRequest },
-        TContext
-    >;
-    request?: SecondParameter<typeof customFetchInstance>;
-}): UseMutationOptions<
+>(
+    queryClient: QueryClient,
+    options?: {
+        mutation?: UseMutationOptions<
+            Awaited<ReturnType<typeof apiMicroplanningMissionsUpdate>>,
+            TError,
+            { id: number; data?: MissionPolymorphicUpdateRequestRequest },
+            TContext
+        >;
+        skipInvalidation?: boolean;
+        request?: SecondParameter<typeof customFetchInstance>;
+    },
+): UseMutationOptions<
     Awaited<ReturnType<typeof apiMicroplanningMissionsUpdate>>,
     TError,
     { id: number; data?: MissionPolymorphicUpdateRequestRequest },
@@ -448,9 +475,31 @@ export const useApiMicroplanningMissionsUpdateMutationOptions = <
         return apiMicroplanningMissionsUpdate(id, data, requestOptions);
     };
 
+    const onSuccess = (
+        data: Awaited<ReturnType<typeof apiMicroplanningMissionsUpdate>>,
+        variables: {
+            id: number;
+            data?: MissionPolymorphicUpdateRequestRequest;
+        },
+        context: TContext | undefined,
+    ) => {
+        if (!options?.skipInvalidation) {
+            queryClient.invalidateQueries({
+                queryKey: getApiMicroplanningMissionsListQueryKey(),
+            });
+            queryClient.invalidateQueries({
+                queryKey: getApiMicroplanningMissionsRetrieveQueryKey(
+                    variables.id,
+                ),
+            });
+        }
+        mutationOptions?.onSuccess?.(data, variables, context);
+    };
+
     const customOptions = useCustomMutationOptions({
         ...mutationOptions,
         mutationFn,
+        onSuccess,
     });
 
     return customOptions;
@@ -474,6 +523,7 @@ export const useApiMicroplanningMissionsUpdate = <
         { id: number; data?: MissionPolymorphicUpdateRequestRequest },
         TContext
     >;
+    skipInvalidation?: boolean;
     request?: SecondParameter<typeof customFetchInstance>;
 }): UseMutationResult<
     Awaited<ReturnType<typeof apiMicroplanningMissionsUpdate>>,
@@ -481,8 +531,12 @@ export const useApiMicroplanningMissionsUpdate = <
     { id: number; data?: MissionPolymorphicUpdateRequestRequest },
     TContext
 > => {
+    const backupQueryClient = useQueryClient();
     return useMutation(
-        useApiMicroplanningMissionsUpdateMutationOptions(options),
+        useApiMicroplanningMissionsUpdateMutationOptions(
+            backupQueryClient,
+            options,
+        ),
     );
 };
 export const getApiMicroplanningMissionsPartialUpdateUrl = (id: number) => {
@@ -512,15 +566,19 @@ export const apiMicroplanningMissionsPartialUpdate = async (
 export const useApiMicroplanningMissionsPartialUpdateMutationOptions = <
     TError = unknown,
     TContext = unknown,
->(options?: {
-    mutation?: UseMutationOptions<
-        Awaited<ReturnType<typeof apiMicroplanningMissionsPartialUpdate>>,
-        TError,
-        { id: number; data?: PatchedMissionPolymorphicUpdateRequest },
-        TContext
-    >;
-    request?: SecondParameter<typeof customFetchInstance>;
-}): UseMutationOptions<
+>(
+    queryClient: QueryClient,
+    options?: {
+        mutation?: UseMutationOptions<
+            Awaited<ReturnType<typeof apiMicroplanningMissionsPartialUpdate>>,
+            TError,
+            { id: number; data?: PatchedMissionPolymorphicUpdateRequest },
+            TContext
+        >;
+        skipInvalidation?: boolean;
+        request?: SecondParameter<typeof customFetchInstance>;
+    },
+): UseMutationOptions<
     Awaited<ReturnType<typeof apiMicroplanningMissionsPartialUpdate>>,
     TError,
     { id: number; data?: PatchedMissionPolymorphicUpdateRequest },
@@ -544,9 +602,31 @@ export const useApiMicroplanningMissionsPartialUpdateMutationOptions = <
         return apiMicroplanningMissionsPartialUpdate(id, data, requestOptions);
     };
 
+    const onSuccess = (
+        data: Awaited<ReturnType<typeof apiMicroplanningMissionsPartialUpdate>>,
+        variables: {
+            id: number;
+            data?: PatchedMissionPolymorphicUpdateRequest;
+        },
+        context: TContext | undefined,
+    ) => {
+        if (!options?.skipInvalidation) {
+            queryClient.invalidateQueries({
+                queryKey: getApiMicroplanningMissionsListQueryKey(),
+            });
+            queryClient.invalidateQueries({
+                queryKey: getApiMicroplanningMissionsRetrieveQueryKey(
+                    variables.id,
+                ),
+            });
+        }
+        mutationOptions?.onSuccess?.(data, variables, context);
+    };
+
     const customOptions = useCustomMutationOptions({
         ...mutationOptions,
         mutationFn,
+        onSuccess,
     });
 
     return customOptions;
@@ -570,6 +650,7 @@ export const useApiMicroplanningMissionsPartialUpdate = <
         { id: number; data?: PatchedMissionPolymorphicUpdateRequest },
         TContext
     >;
+    skipInvalidation?: boolean;
     request?: SecondParameter<typeof customFetchInstance>;
 }): UseMutationResult<
     Awaited<ReturnType<typeof apiMicroplanningMissionsPartialUpdate>>,
@@ -577,8 +658,12 @@ export const useApiMicroplanningMissionsPartialUpdate = <
     { id: number; data?: PatchedMissionPolymorphicUpdateRequest },
     TContext
 > => {
+    const backupQueryClient = useQueryClient();
     return useMutation(
-        useApiMicroplanningMissionsPartialUpdateMutationOptions(options),
+        useApiMicroplanningMissionsPartialUpdateMutationOptions(
+            backupQueryClient,
+            options,
+        ),
     );
 };
 export const getApiMicroplanningMissionsDestroyUrl = (id: number) => {
@@ -602,15 +687,19 @@ export const apiMicroplanningMissionsDestroy = async (
 export const useApiMicroplanningMissionsDestroyMutationOptions = <
     TError = unknown,
     TContext = unknown,
->(options?: {
-    mutation?: UseMutationOptions<
-        Awaited<ReturnType<typeof apiMicroplanningMissionsDestroy>>,
-        TError,
-        { id: number },
-        TContext
-    >;
-    request?: SecondParameter<typeof customFetchInstance>;
-}): UseMutationOptions<
+>(
+    queryClient: QueryClient,
+    options?: {
+        mutation?: UseMutationOptions<
+            Awaited<ReturnType<typeof apiMicroplanningMissionsDestroy>>,
+            TError,
+            { id: number },
+            TContext
+        >;
+        skipInvalidation?: boolean;
+        request?: SecondParameter<typeof customFetchInstance>;
+    },
+): UseMutationOptions<
     Awaited<ReturnType<typeof apiMicroplanningMissionsDestroy>>,
     TError,
     { id: number },
@@ -634,9 +723,28 @@ export const useApiMicroplanningMissionsDestroyMutationOptions = <
         return apiMicroplanningMissionsDestroy(id, requestOptions);
     };
 
+    const onSuccess = (
+        data: Awaited<ReturnType<typeof apiMicroplanningMissionsDestroy>>,
+        variables: { id: number },
+        context: TContext | undefined,
+    ) => {
+        if (!options?.skipInvalidation) {
+            queryClient.invalidateQueries({
+                queryKey: getApiMicroplanningMissionsListQueryKey(),
+            });
+            queryClient.invalidateQueries({
+                queryKey: getApiMicroplanningMissionsRetrieveQueryKey(
+                    variables.id,
+                ),
+            });
+        }
+        mutationOptions?.onSuccess?.(data, variables, context);
+    };
+
     const customOptions = useCustomMutationOptions({
         ...mutationOptions,
         mutationFn,
+        onSuccess,
     });
 
     return customOptions;
@@ -658,6 +766,7 @@ export const useApiMicroplanningMissionsDestroy = <
         { id: number },
         TContext
     >;
+    skipInvalidation?: boolean;
     request?: SecondParameter<typeof customFetchInstance>;
 }): UseMutationResult<
     Awaited<ReturnType<typeof apiMicroplanningMissionsDestroy>>,
@@ -665,8 +774,12 @@ export const useApiMicroplanningMissionsDestroy = <
     { id: number },
     TContext
 > => {
+    const backupQueryClient = useQueryClient();
     return useMutation(
-        useApiMicroplanningMissionsDestroyMutationOptions(options),
+        useApiMicroplanningMissionsDestroyMutationOptions(
+            backupQueryClient,
+            options,
+        ),
     );
 };
 export const getApiMicroplanningMissionsMissionTypesDropdownListUrl = () => {

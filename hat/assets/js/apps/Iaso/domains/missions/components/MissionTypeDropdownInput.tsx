@@ -9,13 +9,13 @@ import { userHasPermission } from 'Iaso/domains/users/utils';
 import { MISSION_READ } from 'Iaso/utils/permissions';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import MESSAGES from '../messages';
-export type ModulesDropdownProps = Omit<
-    SelectInputProps,
+export type ModulesDropdownProps<T> = Omit<
+    SelectInputProps<T>,
     'options' | 'loading'
 >;
 
 export const MissionTypeDropdownInput: FunctionComponent<
-    ModulesDropdownProps
+    ModulesDropdownProps<string>
 > = ({ label, ...props }) => {
     const currentUser = useCurrentUser();
     const hasPermission = userHasPermission(MISSION_READ, currentUser);

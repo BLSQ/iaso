@@ -1,18 +1,10 @@
 import React, { FunctionComponent } from 'react';
-import { Alert } from '@mui/material';
 import {
     useSafeIntl,
     useRedirectTo,
     LoadingSpinner,
 } from 'bluesquare-components';
-import { useFormik, FormikProvider } from 'formik';
-import zod from 'zod';
-import { toFormikValidationSchema } from 'zod-formik-adapter';
 import {
-    MissionEntityTypeUpdateRequest,
-    MissionFormUpdateRequest,
-    MissionOrgUnitTypeUpdateRequest,
-    MissionTypeDropdownValueEnum,
     useApiMicroplanningMissionsRetrieve,
     useApiMicroplanningMissionsUpdate,
 } from 'Iaso/api/missions';
@@ -20,10 +12,16 @@ import Page404 from 'Iaso/components/errors/Page404';
 import { MainWrapper } from 'Iaso/components/MainWrapper';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
-import { EditMissionForm } from 'Iaso/domains/missions/components/EditMissionForm';
+import { EditBaseMissionEntityType } from 'Iaso/domains/missions/components/edit/EditBaseMissionEntityType';
+import { EditBaseMissionForm } from 'Iaso/domains/missions/components/edit/EditBaseMissionForm';
+import { EditBaseMissionOrgUnitType } from 'Iaso/domains/missions/components/edit/EditBaseMissionOrgUnitType';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
-import { withFormikSubmitAsync } from 'Iaso/utils/forms';
 import MESSAGES from './messages';
+import {
+    isMissionEntityTypeRetrieve,
+    isMissionFormRetrieve,
+    isMissionOrgUnitTypeRetrieve,
+} from './utils';
 
 export const MissionEdit: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
@@ -47,43 +45,11 @@ export const MissionEdit: FunctionComponent = () => {
         },
     });
 
-    const schema = React.useMemo(() => {
-        switch (data?.mission_type?.value) {
-            case MissionTypeDropdownValueEnum.enum.FORM_FILLING:
-                return MissionFormUpdateRequest;
-            case MissionTypeDropdownValueEnum.enum.ORG_UNIT_AND_FORM:
-                return MissionOrgUnitTypeUpdateRequest;
-            case MissionTypeDropdownValueEnum.enum.ENTITY_AND_FORM:
-                return MissionEntityTypeUpdateRequest;
-            default:
-                return MissionFormUpdateRequest;
-        }
-    }, [data]);
-
-    const formik = useFormik<zod.input<typeof schema>>({
-        validationSchema: toFormikValidationSchema(schema),
-        initialValues: {
-            ...data,
-            name: data?.name ?? '',
-            forms:
-                data?.forms?.map(f => ({
-                    form: f.form,
-                    min_cardinality: f.min_cardinality,
-                    max_cardinality: f?.max_cardinality,
-                })) ?? [],
-        },
-        validateOnBlur: true,
-        enableReinitialize: true,
-        onSubmit: withFormikSubmitAsync(values => save({ data: values })),
-    });
-
-    const allowConfirm = formik.isValid && formik.dirty && !formik.isSubmitting;
-
     if (isLoading) {
         return (
             <>
                 <TopBar
-                    title={formatMessage(MESSAGES.title)}
+                    title={formatMessage(MESSAGES.editMissionNoName)}
                     displayBackButton
                     goBack={() => redirectTo(redirectBackUrl)}
                 />
@@ -99,24 +65,35 @@ export const MissionEdit: FunctionComponent = () => {
     return (
         <>
             <TopBar
-                title={formatMessage(MESSAGES.createMission)}
+                title={formatMessage(MESSAGES.editMission, { name: data.name })}
                 goBack={() => redirectTo(redirectBackUrl)}
                 displayBackButton
             />
             <MainWrapper sx={{ p: 4 }}>
-                <FormikProvider value={formik}>
-                    {formik.status && (
-                        <Alert severity={'error'} sx={{ mb: 2 }}>
-                            {formik.status}
-                        </Alert>
-                    )}
-                    <EditMissionForm
-                        formik={formik}
-                        allowConfirm={allowConfirm}
-                        cancelUrl={redirectBackUrl}
-                        successButtonMessage={formatMessage(MESSAGES.create)}
+                {isMissionFormRetrieve(data) && (
+                    <EditBaseMissionForm
+                        data={data}
+                        missionId={missionId}
+                        save={save}
+                        redirectBackUrl={redirectBackUrl}
                     />
-                </FormikProvider>
+                )}
+                {isMissionOrgUnitTypeRetrieve(data) && (
+                    <EditBaseMissionOrgUnitType
+                        data={data}
+                        missionId={missionId}
+                        save={save}
+                        redirectBackUrl={redirectBackUrl}
+                    />
+                )}
+                {isMissionEntityTypeRetrieve(data) && (
+                    <EditBaseMissionEntityType
+                        data={data}
+                        missionId={missionId}
+                        save={save}
+                        redirectBackUrl={redirectBackUrl}
+                    />
+                )}
             </MainWrapper>
         </>
     );

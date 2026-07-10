@@ -17,17 +17,7 @@ import MESSAGES from './messages';
 
 export const MissionCreate: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
-    // const currentUser = useCurrentUser();
 
-    // const initialData = React.useMemo(() => {
-    //     if (!data) return { name: '' }; // just for TS compliance as name is required
-    //
-    //     const { id: _id, created_at: _createdAt, ...rest } = data;
-    //     return {
-    //         ...rest,
-    //         feature_flags: rest?.feature_flags?.map(({ code }) => code),
-    //     };
-    // }, [data]);
     const redirectTo = useRedirectTo();
 
     const redirectBackUrl: string = `${baseUrls.missionsDetails}/id/`;

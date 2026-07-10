@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Grid, Stack } from '@mui/material';
+import { Box, Grid, Stack, Theme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     commonStyles,
@@ -7,13 +7,7 @@ import {
     useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
-import {
-    MissionEntityTypeRetrieve,
-    MissionFormRetrieve,
-    MissionOrgUnitTypeRetrieve,
-    MissionTypeValueEnum,
-    useApiMicroplanningMissionsRetrieve,
-} from 'Iaso/api/missions';
+import { useApiMicroplanningMissionsRetrieve } from 'Iaso/api/missions';
 import Page404 from 'Iaso/components/errors/Page404';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
@@ -24,30 +18,14 @@ import { TopActions } from 'Iaso/domains/missions/components/details/TopActions'
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { FormWidgetPaper } from './components/details/FormWidgetPaper';
 import MESSAGES from './messages';
+import {
+    isMissionEntityTypeRetrieve,
+    isMissionFormRetrieve,
+    isMissionOrgUnitTypeRetrieve,
+} from './utils';
 
 const baseRedirectUrl = `${baseUrls.missions}`;
-const useStyles = makeStyles(theme => ({ ...commonStyles(theme) }));
-
-function isMissionForm(data: any): data is MissionFormRetrieve {
-    return data?.mission_type?.value === MissionTypeValueEnum.enum.FORM_FILLING;
-}
-
-function isMissionEntityTypeRetrieve(
-    data: any,
-): data is MissionEntityTypeRetrieve {
-    return (
-        data?.mission_type?.value === MissionTypeValueEnum.enum.ENTITY_AND_FORM
-    );
-}
-
-function isMissionOrgUnitTypeRetrieve(
-    data: any,
-): data is MissionOrgUnitTypeRetrieve {
-    return (
-        data?.mission_type?.value ===
-        MissionTypeValueEnum.enum.ORG_UNIT_AND_FORM
-    );
-}
+const useStyles = makeStyles((theme: Theme) => ({ ...commonStyles(theme) }));
 
 export const MissionDetail = () => {
     const params = useParamsObject(baseUrls.missionsDetails);
@@ -98,9 +76,9 @@ export const MissionDetail = () => {
                             />
                         </Stack>
                     </Box>
-                    <Grid container spacing={2}>
+                    <Grid container spacing={2} sx={{ width: '100%' }}>
                         <Grid item xs={12} sm={6}>
-                            {isMissionForm(data) && (
+                            {isMissionFormRetrieve(data) && (
                                 <GeneralInfoWidgetPaperMissionForm
                                     mission={data}
                                 />
@@ -117,7 +95,7 @@ export const MissionDetail = () => {
                             )}
                         </Grid>
                     </Grid>
-                    <Grid container spacing={2} sx={{ mt: 2 }}>
+                    <Grid container spacing={2} sx={{ mt: 2, width: '100%' }}>
                         <Grid item xs={12} sm={9}>
                             <FormWidgetPaper mission={data} />
                         </Grid>

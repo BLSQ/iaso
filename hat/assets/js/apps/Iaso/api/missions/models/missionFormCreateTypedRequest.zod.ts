@@ -11,7 +11,6 @@ export const missionFormCreateTypedRequestTwoNameMax = 200;
 
 export const missionFormCreateTypedRequestTwoDescriptionMax = 500;
 
-export const missionFormCreateTypedRequestTwoFormsItemMinCardinalityDefault = 0;
 export const missionFormCreateTypedRequestTwoFormsItemMinCardinalityMin = 0;
 export const missionFormCreateTypedRequestTwoFormsItemMinCardinalityMax = 2147483647;
 
@@ -36,9 +35,6 @@ export const MissionFormCreateTypedRequest = zod.strictObject({
                     )
                     .max(
                         missionFormCreateTypedRequestTwoFormsItemMinCardinalityMax,
-                    )
-                    .default(
-                        missionFormCreateTypedRequestTwoFormsItemMinCardinalityDefault,
                     )
                     .describe(
                         'Minimum number of times this form should be filled',

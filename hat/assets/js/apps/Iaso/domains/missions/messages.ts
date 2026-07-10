@@ -79,6 +79,10 @@ const MESSAGES = defineMessages({
     },
     editMission: {
         id: 'iaso.missions.label.editMission',
+        defaultMessage: 'Edit mission {name}',
+    },
+    editMissionNoName: {
+        id: 'iaso.missions.label.editMissionNoName',
         defaultMessage: 'Edit mission',
     },
     cancel: {
@@ -124,6 +128,22 @@ const MESSAGES = defineMessages({
     missionDetailTitle: {
         defaultMessage: 'Mission {name}',
         id: 'iaso.missions.title.missionDetail',
+    },
+    infinity: {
+        defaultMessage: 'Infinity',
+        id: 'iaso.missions.infinity',
+    },
+    delete: {
+        defaultMessage: 'Delete',
+        id: 'iaso.missions.delete',
+    },
+    pleaseSelectOrgUnitType: {
+        defaultMessage: 'Please select an org unit type',
+        id: 'iaso.missions.selectOuType',
+    },
+    pleaseSelectEntityType: {
+        defaultMessage: 'Please select an entity type',
+        id: 'iaso.missions.selectEntityType',
     },
 });
 

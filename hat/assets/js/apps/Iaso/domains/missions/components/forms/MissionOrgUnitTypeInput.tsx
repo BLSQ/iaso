@@ -1,17 +1,33 @@
 import React from 'react';
 import { Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { Field, useFormikContext } from 'formik';
+import { Field } from 'formik';
+import { FormikProps } from 'formik/dist/types';
+import {
+    MissionOrgUnitTypeCreateRequest,
+    MissionOrgUnitTypeUpdateRequest,
+} from 'Iaso/api/missions';
 import { NumberInput } from 'Iaso/components/forms/NumberInput';
 import { SelectInput } from 'Iaso/components/forms/SelectInput';
 import { UseGetFormsDropdownParams } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { MissionFormsBaseInput } from 'Iaso/domains/missions/components/forms/MissionFormsBaseInput';
-import { MissionCreateBody } from 'Iaso/domains/missions/schemas/create';
 import { useGetOrgUnitTypesDropdownOptions } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import MESSAGES from '../../messages';
 
-export const MissionOrgUnitTypeInput = () => {
+type MissionOrgUnitTypeInputProps<TSchema> = {
+    formik: FormikProps<TSchema>;
+};
+
+export const MissionOrgUnitTypeInput = <
+    TSchema extends
+        | MissionOrgUnitTypeUpdateRequest
+        | MissionOrgUnitTypeCreateRequest,
+>({
+    formik,
+}: MissionOrgUnitTypeInputProps<TSchema>) => {
     const [params, setParams] = React.useState<UseGetFormsDropdownParams>();
+    const [formInputDisabled, setFormInputDisabled] =
+        React.useState<boolean>(false);
 
     const { data: orgUnitTypes, isLoading: isLoadingOrgUnitTypeOptions } =
         useGetOrgUnitTypesDropdownOptions();
@@ -22,14 +38,19 @@ export const MissionOrgUnitTypeInput = () => {
     }));
 
     const { formatMessage } = useSafeIntl();
-    const formik = useFormikContext<MissionCreateBody>();
+
+    const { values } = formik;
+
+    React.useEffect(() => {
+        setFormInputDisabled(!values?.org_unit_type);
+    }, [values]);
 
     const handleOrgUnitTypeChange = (_keyValue: string, value: number) => {
         if (value) {
             setParams({ params: { orgUnitTypeIds: value } });
         }
-
         formik.setFieldValue('forms', []);
+        formik.setFieldTouched('forms', false);
     };
 
     return (
@@ -67,7 +88,16 @@ export const MissionOrgUnitTypeInput = () => {
                 </Grid>
             </Grid>
 
-            <MissionFormsBaseInput params={params} />
+            <MissionFormsBaseInput
+                params={params}
+                formik={formik}
+                formSelectProps={{
+                    disabled: formInputDisabled,
+                    helperText: formInputDisabled
+                        ? formatMessage(MESSAGES.pleaseSelectOrgUnitType)
+                        : undefined,
+                }}
+            />
         </>
     );
 };

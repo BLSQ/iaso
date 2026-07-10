@@ -88,6 +88,9 @@ export const FormWidgetPaper: React.FunctionComponent<FormWidgetPaperProps> = ({
                                                     <AllInclusiveIcon
                                                         fontSize="small"
                                                         color="primary"
+                                                        aria-label={formatMessage(
+                                                            MESSAGES.infinity,
+                                                        )}
                                                     />
                                                 )}
                                             </TableCell>

@@ -24,7 +24,6 @@ export const NestedMissionEntityTypeThroughFormCreateRequest = zod.strictObject(
             .max(
                 nestedMissionEntityTypeThroughFormCreateRequestMinCardinalityMax,
             )
-            .optional()
             .describe('Minimum number of times this form should be filled'),
         max_cardinality: zod
             .number()

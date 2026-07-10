@@ -1,29 +1,50 @@
-import React, { FunctionComponent } from 'react';
-import { Alert, Box, Button, Grid } from '@mui/material';
+import React from 'react';
+import { Box, Button, Grid } from '@mui/material';
 import { LinkButton, useSafeIntl } from 'bluesquare-components';
 import { Field, FormikProps } from 'formik';
-import { MissionTypeDropdownValueEnum } from 'Iaso/api/missions';
+import {
+    MissionEntityTypeUpdateRequest,
+    MissionFormUpdateRequest,
+    MissionOrgUnitTypeUpdateRequest,
+    MissionTypeDropdownValueEnum,
+} from 'Iaso/api/missions';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { MissionEntityTypeInput } from 'Iaso/domains/missions/components/forms/MissionEntityTypeInput';
 import { MissionFormsBaseInput } from 'Iaso/domains/missions/components/forms/MissionFormsBaseInput';
 import { MissionOrgUnitTypeInput } from 'Iaso/domains/missions/components/forms/MissionOrgUnitTypeInput';
-import { MissionCreateBody } from 'Iaso/domains/missions/schemas/create';
 import TextInput from 'Iaso/domains/pages/components/TextInput';
 import MESSAGES from '../messages';
 
-type EditMissionFormProps = {
-    cancelUrl?: string;
-    allowConfirm: boolean;
-    formik: FormikProps<MissionCreateBody>;
-    successButtonMessage: string;
-};
+type EditMissionFormProps =
+    | {
+          missionType: typeof MissionTypeDropdownValueEnum.enum.ORG_UNIT_AND_FORM;
+          formik: FormikProps<MissionOrgUnitTypeUpdateRequest>;
+          cancelUrl?: string;
+          allowConfirm: boolean;
+          successButtonMessage: string;
+      }
+    | {
+          missionType: typeof MissionTypeDropdownValueEnum.enum.FORM_FILLING;
+          formik: FormikProps<MissionFormUpdateRequest>;
+          cancelUrl?: string;
+          allowConfirm: boolean;
+          successButtonMessage: string;
+      }
+    | {
+          missionType: typeof MissionTypeDropdownValueEnum.enum.ENTITY_AND_FORM;
+          formik: FormikProps<MissionEntityTypeUpdateRequest>;
+          cancelUrl?: string;
+          allowConfirm: boolean;
+          successButtonMessage: string;
+      };
 
-export const EditMissionForm: FunctionComponent<EditMissionFormProps> = ({
+export const EditMissionForm = ({
     cancelUrl,
     allowConfirm,
     formik,
     successButtonMessage,
-}) => {
+    missionType,
+}: EditMissionFormProps) => {
     const { formatMessage } = useSafeIntl();
 
     return (
@@ -56,23 +77,28 @@ export const EditMissionForm: FunctionComponent<EditMissionFormProps> = ({
                     sx={{ mb: 2 }}
                 >
                     <Box sx={{ m: 2 }}>
-                        {!formik.values?.mission_type && (
-                            <Alert severity={'info'}>
-                                {formatMessage(MESSAGES.alertSelectMissionType)}
-                            </Alert>
-                        )}
-                        {formik.values?.mission_type ===
+                        {missionType ===
                             MissionTypeDropdownValueEnum.enum.FORM_FILLING && (
-                            <MissionFormsBaseInput />
+                            <MissionFormsBaseInput formik={formik} />
                         )}
-                        {formik.values?.mission_type ===
+                        {missionType ===
                             MissionTypeDropdownValueEnum.enum
                                 .ORG_UNIT_AND_FORM && (
-                            <MissionOrgUnitTypeInput />
+                            <MissionOrgUnitTypeInput
+                                formik={
+                                    formik as FormikProps<MissionOrgUnitTypeUpdateRequest>
+                                }
+                            />
                         )}
-                        {formik.values?.mission_type ===
+                        {missionType ===
                             MissionTypeDropdownValueEnum.enum
-                                .ENTITY_AND_FORM && <MissionEntityTypeInput />}
+                                .ENTITY_AND_FORM && (
+                            <MissionEntityTypeInput
+                                formik={
+                                    formik as FormikProps<MissionEntityTypeUpdateRequest>
+                                }
+                            />
+                        )}
                     </Box>
                 </WidgetPaper>
                 <Box

@@ -46,7 +46,6 @@ export const PatchedMissionEntityTypeUpdateRequest = zod.strictObject({
                     .max(
                         patchedMissionEntityTypeUpdateRequestFormsItemMinCardinalityMax,
                     )
-                    .optional()
                     .describe(
                         'Minimum number of times this form should be filled',
                     ),

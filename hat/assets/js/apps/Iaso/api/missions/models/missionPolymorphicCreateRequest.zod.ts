@@ -11,7 +11,6 @@ export const missionPolymorphicCreateRequestOneTwoNameMax = 200;
 
 export const missionPolymorphicCreateRequestOneTwoDescriptionMax = 500;
 
-export const missionPolymorphicCreateRequestOneTwoFormsItemMinCardinalityDefault = 0;
 export const missionPolymorphicCreateRequestOneTwoFormsItemMinCardinalityMin = 0;
 export const missionPolymorphicCreateRequestOneTwoFormsItemMinCardinalityMax = 2147483647;
 
@@ -72,9 +71,6 @@ export const MissionPolymorphicCreateRequest = zod.union([
                         )
                         .max(
                             missionPolymorphicCreateRequestOneTwoFormsItemMinCardinalityMax,
-                        )
-                        .default(
-                            missionPolymorphicCreateRequestOneTwoFormsItemMinCardinalityDefault,
                         )
                         .describe(
                             'Minimum number of times this form should be filled',
@@ -173,7 +169,6 @@ export const MissionPolymorphicCreateRequest = zod.union([
                         .max(
                             missionPolymorphicCreateRequestThreeTwoFormsItemMinCardinalityMax,
                         )
-                        .optional()
                         .describe(
                             'Minimum number of times this form should be filled',
                         ),
@@ -196,7 +191,6 @@ export const MissionPolymorphicCreateRequest = zod.union([
             .number()
             .min(missionPolymorphicCreateRequestThreeTwoMinCardinalityMin)
             .max(missionPolymorphicCreateRequestThreeTwoMinCardinalityMax)
-            .optional()
             .describe('Minimum number of times this form should be filled'),
         max_cardinality: zod
             .number()

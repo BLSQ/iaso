@@ -1,10 +1,10 @@
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { DropdownOptions } from 'bluesquare-components';
 import { get } from 'lodash';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 
-export type SelectInputProps = {
-    options: DropdownOptions<number>[];
+export type SelectInputProps<T> = {
+    options: DropdownOptions<T>[];
     label: string;
     field: Record<string, any>;
     form: Record<string, any>;
@@ -18,7 +18,7 @@ export type SelectInputProps = {
     loading?: boolean;
 };
 
-export const SelectInput: FunctionComponent<SelectInputProps> = ({
+export const SelectInput = <T,>({
     options,
     label,
     field,
@@ -31,7 +31,7 @@ export const SelectInput: FunctionComponent<SelectInputProps> = ({
     required = false,
     freeSolo = false,
     loading = false,
-}) => {
+}: SelectInputProps<T>) => {
     const hasError =
         form.errors &&
         Boolean(get(form.errors, field.name) && get(form.touched, field.name));

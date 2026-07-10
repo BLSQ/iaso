@@ -11,7 +11,6 @@ export const missionFormCreateRequestNameMax = 200;
 
 export const missionFormCreateRequestDescriptionMax = 500;
 
-export const missionFormCreateRequestFormsItemMinCardinalityDefault = 0;
 export const missionFormCreateRequestFormsItemMinCardinalityMin = 0;
 export const missionFormCreateRequestFormsItemMinCardinalityMax = 2147483647;
 
@@ -32,9 +31,6 @@ export const MissionFormCreateRequest = zod.strictObject({
                     .number()
                     .min(missionFormCreateRequestFormsItemMinCardinalityMin)
                     .max(missionFormCreateRequestFormsItemMinCardinalityMax)
-                    .default(
-                        missionFormCreateRequestFormsItemMinCardinalityDefault,
-                    )
                     .describe(
                         'Minimum number of times this form should be filled',
                     ),

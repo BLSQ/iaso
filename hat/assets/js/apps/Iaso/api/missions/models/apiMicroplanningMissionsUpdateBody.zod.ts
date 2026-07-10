@@ -71,7 +71,6 @@ export const ApiMicroplanningMissionsUpdateBody = zod.union([
                         .max(
                             apiMicroplanningMissionsUpdateBodyOneFormsItemMinCardinalityMax,
                         )
-                        .optional()
                         .describe(
                             'Minimum number of times this form should be filled',
                         ),
@@ -113,7 +112,6 @@ export const ApiMicroplanningMissionsUpdateBody = zod.union([
                         .max(
                             apiMicroplanningMissionsUpdateBodyTwoFormsItemMinCardinalityMax,
                         )
-                        .optional()
                         .describe(
                             'Minimum number of times this form should be filled',
                         ),
@@ -136,7 +134,6 @@ export const ApiMicroplanningMissionsUpdateBody = zod.union([
             .number()
             .min(apiMicroplanningMissionsUpdateBodyTwoMinCardinalityMin)
             .max(apiMicroplanningMissionsUpdateBodyTwoMinCardinalityMax)
-            .optional()
             .describe('Minimum number of times this form should be filled'),
         max_cardinality: zod
             .number()
@@ -169,7 +166,6 @@ export const ApiMicroplanningMissionsUpdateBody = zod.union([
                         .max(
                             apiMicroplanningMissionsUpdateBodyThreeFormsItemMinCardinalityMax,
                         )
-                        .optional()
                         .describe(
                             'Minimum number of times this form should be filled',
                         ),
@@ -192,7 +188,6 @@ export const ApiMicroplanningMissionsUpdateBody = zod.union([
             .number()
             .min(apiMicroplanningMissionsUpdateBodyThreeMinCardinalityMin)
             .max(apiMicroplanningMissionsUpdateBodyThreeMinCardinalityMax)
-            .optional()
             .describe('Minimum number of times this form should be filled'),
         max_cardinality: zod
             .number()

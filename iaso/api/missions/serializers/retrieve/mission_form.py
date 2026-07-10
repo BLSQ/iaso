@@ -34,10 +34,11 @@ class MissionFormRetrieveSerializer(ModelSerializer):
 
     class Meta:
         model = MissionForm
-        fields = ["id", "name", "mission_type", "created_at", "forms"]
+        fields = ["id", "name", "description", "mission_type", "created_at", "forms"]
 
         extra_kwargs = {
             "id": {"read_only": True},
             "created_at": {"read_only": True},
             "name": {"read_only": True},
+            "description": {"read_only": True},
         }

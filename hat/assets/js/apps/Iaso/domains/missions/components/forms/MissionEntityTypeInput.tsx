@@ -1,23 +1,43 @@
 import React from 'react';
 import { Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { Field, useFormikContext } from 'formik';
+import { Field } from 'formik';
+import { FormikProps } from 'formik/dist/types';
+import {
+    MissionEntityTypeUpdateRequest,
+    MissionEntityTypeCreateRequest,
+} from 'Iaso/api/missions';
 import { NumberInput } from 'Iaso/components/forms/NumberInput';
 import { SelectInput } from 'Iaso/components/forms/SelectInput';
 import { useGetEntityTypesDropdown } from 'Iaso/domains/entities/hooks/requests';
 import { UseGetFormsDropdownParams } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { MissionFormsBaseInput } from 'Iaso/domains/missions/components/forms/MissionFormsBaseInput';
-import { MissionCreateBody } from 'Iaso/domains/missions/schemas/create';
 import MESSAGES from '../../messages';
 
-export const MissionEntityTypeInput = () => {
-    const [params, setParams] = React.useState<UseGetFormsDropdownParams>();
+type MissionEntityTypeInputProps<TSchema> = {
+    formik: FormikProps<TSchema>;
+};
 
+export const MissionEntityTypeInput = <
+    TSchema extends
+        | MissionEntityTypeUpdateRequest
+        | MissionEntityTypeCreateRequest,
+>({
+    formik,
+}: MissionEntityTypeInputProps<TSchema>) => {
+    const [params, setParams] = React.useState<UseGetFormsDropdownParams>();
+    const [formInputDisabled, setFormInputDisabled] =
+        React.useState<boolean>(false);
     const { data: entityTypesOptions, isLoading: isLoadingEntityTypeOptions } =
         useGetEntityTypesDropdown();
 
     const { formatMessage } = useSafeIntl();
-    const formik = useFormikContext<MissionCreateBody>();
+
+    const { values } = formik;
+
+    React.useEffect(() => {
+        setFormInputDisabled(!values?.entity_type);
+    }, [values]);
 
     const handleEntityTypeChange = (_keyValue: string, value: number) => {
         if (value) {
@@ -25,6 +45,7 @@ export const MissionEntityTypeInput = () => {
         }
 
         formik.setFieldValue('forms', []);
+        formik.setFieldTouched('forms', false);
     };
 
     return (
@@ -62,7 +83,16 @@ export const MissionEntityTypeInput = () => {
                 </Grid>
             </Grid>
 
-            <MissionFormsBaseInput params={params} />
+            <MissionFormsBaseInput
+                params={params}
+                formik={formik}
+                formSelectProps={{
+                    disabled: formInputDisabled,
+                    helperText: formInputDisabled
+                        ? formatMessage(MESSAGES.pleaseSelectEntityType)
+                        : undefined,
+                }}
+            />
         </>
     );
 };

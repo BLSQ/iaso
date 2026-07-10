@@ -2,7 +2,11 @@ import React, { FunctionComponent } from 'react';
 import { Alert, Box, Button, Grid } from '@mui/material';
 import { LinkButton, useSafeIntl } from 'bluesquare-components';
 import { Field, FormikProps } from 'formik';
-import { MissionTypeDropdownValueEnum } from 'Iaso/api/missions';
+import {
+    MissionEntityTypeCreateRequest,
+    MissionOrgUnitTypeCreateRequest,
+    MissionTypeDropdownValueEnum,
+} from 'Iaso/api/missions';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { MissionEntityTypeInput } from 'Iaso/domains/missions/components/forms/MissionEntityTypeInput';
 import { MissionFormsBaseInput } from 'Iaso/domains/missions/components/forms/MissionFormsBaseInput';
@@ -29,6 +33,15 @@ export const CreateMissionForm: FunctionComponent<CreateMissionFormProps> = ({
 
     const handleChangeMissionType = (_keyValue: string, _value: number) => {
         formik.setFieldValue('forms', []);
+        formik.setFieldTouched('forms', false);
+
+        ['org_unit_type', 'entity_type', 'max_cardinality'].forEach(f => {
+            formik.setFieldValue(f, undefined);
+            formik.setFieldTouched(f, false);
+        });
+
+        formik.setFieldValue('min_cardinality', 1);
+        formik.setFieldTouched('min_cardinality', false);
     };
 
     return (
@@ -78,16 +91,26 @@ export const CreateMissionForm: FunctionComponent<CreateMissionFormProps> = ({
                         )}
                         {formik.values?.mission_type ===
                             MissionTypeDropdownValueEnum.enum.FORM_FILLING && (
-                            <MissionFormsBaseInput />
+                            <MissionFormsBaseInput formik={formik} />
                         )}
                         {formik.values?.mission_type ===
                             MissionTypeDropdownValueEnum.enum
                                 .ORG_UNIT_AND_FORM && (
-                            <MissionOrgUnitTypeInput />
+                            <MissionOrgUnitTypeInput
+                                formik={
+                                    formik as FormikProps<MissionOrgUnitTypeCreateRequest>
+                                }
+                            />
                         )}
                         {formik.values?.mission_type ===
                             MissionTypeDropdownValueEnum.enum
-                                .ENTITY_AND_FORM && <MissionEntityTypeInput />}
+                                .ENTITY_AND_FORM && (
+                            <MissionEntityTypeInput
+                                formik={
+                                    formik as FormikProps<MissionEntityTypeCreateRequest>
+                                }
+                            />
+                        )}
                     </Box>
                 </WidgetPaper>
                 <Box

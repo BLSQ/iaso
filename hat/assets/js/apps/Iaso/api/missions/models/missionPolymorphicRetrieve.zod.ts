@@ -7,23 +7,12 @@
  */
 import { z as zod } from 'zod';
 
-export const missionPolymorphicRetrieveTwoTwoMinCardinalityMin = 0;
-export const missionPolymorphicRetrieveTwoTwoMinCardinalityMax = 2147483647;
-
-export const missionPolymorphicRetrieveTwoTwoMaxCardinalityMin = 0;
-export const missionPolymorphicRetrieveTwoTwoMaxCardinalityMax = 2147483647;
-
-export const missionPolymorphicRetrieveThreeTwoMinCardinalityMin = 0;
-export const missionPolymorphicRetrieveThreeTwoMinCardinalityMax = 2147483647;
-
-export const missionPolymorphicRetrieveThreeTwoMaxCardinalityMin = 0;
-export const missionPolymorphicRetrieveThreeTwoMaxCardinalityMax = 2147483647;
-
 export const MissionPolymorphicRetrieve = zod.union([
     zod.strictObject({
         mission_type: zod.enum(['FORM_FILLING']),
         id: zod.number(),
         name: zod.string(),
+        description: zod.string(),
         created_at: zod.iso.datetime({ offset: true }),
         forms: zod
             .array(
@@ -49,6 +38,7 @@ export const MissionPolymorphicRetrieve = zod.union([
         mission_type: zod.enum(['ORG_UNIT_AND_FORM']),
         id: zod.number(),
         name: zod.string(),
+        description: zod.string(),
         created_at: zod.iso.datetime({ offset: true }),
         org_unit_type: zod.strictObject({
             id: zod.number(),
@@ -73,15 +63,10 @@ export const MissionPolymorphicRetrieve = zod.union([
         ),
         min_cardinality: zod
             .number()
-            .min(missionPolymorphicRetrieveTwoTwoMinCardinalityMin)
-            .max(missionPolymorphicRetrieveTwoTwoMinCardinalityMax)
-            .optional()
             .describe('Minimum number of times this form should be filled'),
         max_cardinality: zod
             .number()
-            .min(missionPolymorphicRetrieveTwoTwoMaxCardinalityMin)
-            .max(missionPolymorphicRetrieveTwoTwoMaxCardinalityMax)
-            .nullish()
+            .nullable()
             .describe(
                 'Maximum number of times this form can be filled (null = unlimited)',
             ),
@@ -90,6 +75,7 @@ export const MissionPolymorphicRetrieve = zod.union([
         mission_type: zod.enum(['ENTITY_AND_FORM']),
         id: zod.number(),
         name: zod.string(),
+        description: zod.string(),
         created_at: zod.iso.datetime({ offset: true }),
         entity_type: zod.strictObject({
             id: zod.number(),
@@ -114,15 +100,10 @@ export const MissionPolymorphicRetrieve = zod.union([
         ),
         min_cardinality: zod
             .number()
-            .min(missionPolymorphicRetrieveThreeTwoMinCardinalityMin)
-            .max(missionPolymorphicRetrieveThreeTwoMinCardinalityMax)
-            .optional()
             .describe('Minimum number of times this form should be filled'),
         max_cardinality: zod
             .number()
-            .min(missionPolymorphicRetrieveThreeTwoMaxCardinalityMin)
-            .max(missionPolymorphicRetrieveThreeTwoMaxCardinalityMax)
-            .nullish()
+            .nullable()
             .describe(
                 'Maximum number of times this form can be filled (null = unlimited)',
             ),

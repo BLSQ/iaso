@@ -7,7 +7,6 @@
  */
 import { z as zod } from 'zod';
 
-export const nestedMissionFormThroughFormCreateRequestMinCardinalityDefault = 0;
 export const nestedMissionFormThroughFormCreateRequestMinCardinalityMin = 0;
 export const nestedMissionFormThroughFormCreateRequestMinCardinalityMax = 2147483647;
 
@@ -20,7 +19,6 @@ export const NestedMissionFormThroughFormCreateRequest = zod.strictObject({
         .number()
         .min(nestedMissionFormThroughFormCreateRequestMinCardinalityMin)
         .max(nestedMissionFormThroughFormCreateRequestMinCardinalityMax)
-        .default(nestedMissionFormThroughFormCreateRequestMinCardinalityDefault)
         .describe('Minimum number of times this form should be filled'),
     max_cardinality: zod
         .number()

@@ -71,7 +71,6 @@ export const MissionPolymorphicUpdateRequestRequest = zod.union([
                         .max(
                             missionPolymorphicUpdateRequestRequestOneFormsItemMinCardinalityMax,
                         )
-                        .optional()
                         .describe(
                             'Minimum number of times this form should be filled',
                         ),
@@ -113,7 +112,6 @@ export const MissionPolymorphicUpdateRequestRequest = zod.union([
                         .max(
                             missionPolymorphicUpdateRequestRequestTwoFormsItemMinCardinalityMax,
                         )
-                        .optional()
                         .describe(
                             'Minimum number of times this form should be filled',
                         ),
@@ -136,7 +134,6 @@ export const MissionPolymorphicUpdateRequestRequest = zod.union([
             .number()
             .min(missionPolymorphicUpdateRequestRequestTwoMinCardinalityMin)
             .max(missionPolymorphicUpdateRequestRequestTwoMinCardinalityMax)
-            .optional()
             .describe('Minimum number of times this form should be filled'),
         max_cardinality: zod
             .number()
@@ -169,7 +166,6 @@ export const MissionPolymorphicUpdateRequestRequest = zod.union([
                         .max(
                             missionPolymorphicUpdateRequestRequestThreeFormsItemMinCardinalityMax,
                         )
-                        .optional()
                         .describe(
                             'Minimum number of times this form should be filled',
                         ),
@@ -192,7 +188,6 @@ export const MissionPolymorphicUpdateRequestRequest = zod.union([
             .number()
             .min(missionPolymorphicUpdateRequestRequestThreeMinCardinalityMin)
             .max(missionPolymorphicUpdateRequestRequestThreeMinCardinalityMax)
-            .optional()
             .describe('Minimum number of times this form should be filled'),
         max_cardinality: zod
             .number()

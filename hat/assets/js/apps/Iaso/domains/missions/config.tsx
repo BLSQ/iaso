@@ -11,11 +11,6 @@ export const useMissionColumns = (): Column[] => {
     return useMemo<Column[]>(
         () => [
             {
-                Header: 'Id',
-                accessor: 'id',
-                width: 80,
-            },
-            {
                 Header: formatMessage(MESSAGES.name),
                 accessor: 'name',
                 id: 'name',
@@ -29,7 +24,7 @@ export const useMissionColumns = (): Column[] => {
                 Header: formatMessage(MESSAGES.formsNumber),
                 accessor: 'forms_count',
                 sortable: false,
-                Cell: NumberCell,
+                Cell: (s: any) => <NumberCell {...s} />,
             },
             {
                 Header: formatMessage(MESSAGES.orgUnitType),

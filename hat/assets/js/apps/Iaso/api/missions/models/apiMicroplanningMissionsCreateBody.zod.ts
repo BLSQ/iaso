@@ -11,7 +11,6 @@ export const apiMicroplanningMissionsCreateBodyOneTwoNameMax = 200;
 
 export const apiMicroplanningMissionsCreateBodyOneTwoDescriptionMax = 500;
 
-export const apiMicroplanningMissionsCreateBodyOneTwoFormsItemMinCardinalityDefault = 0;
 export const apiMicroplanningMissionsCreateBodyOneTwoFormsItemMinCardinalityMin = 0;
 export const apiMicroplanningMissionsCreateBodyOneTwoFormsItemMinCardinalityMax = 2147483647;
 
@@ -72,9 +71,6 @@ export const ApiMicroplanningMissionsCreateBody = zod.union([
                         )
                         .max(
                             apiMicroplanningMissionsCreateBodyOneTwoFormsItemMinCardinalityMax,
-                        )
-                        .default(
-                            apiMicroplanningMissionsCreateBodyOneTwoFormsItemMinCardinalityDefault,
                         )
                         .describe(
                             'Minimum number of times this form should be filled',
@@ -173,7 +169,6 @@ export const ApiMicroplanningMissionsCreateBody = zod.union([
                         .max(
                             apiMicroplanningMissionsCreateBodyThreeTwoFormsItemMinCardinalityMax,
                         )
-                        .optional()
                         .describe(
                             'Minimum number of times this form should be filled',
                         ),
@@ -196,7 +191,6 @@ export const ApiMicroplanningMissionsCreateBody = zod.union([
             .number()
             .min(apiMicroplanningMissionsCreateBodyThreeTwoMinCardinalityMin)
             .max(apiMicroplanningMissionsCreateBodyThreeTwoMinCardinalityMax)
-            .optional()
             .describe('Minimum number of times this form should be filled'),
         max_cardinality: zod
             .number()

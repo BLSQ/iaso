@@ -11,6 +11,7 @@ export const MissionFormRetrieveTyped = zod.strictObject({
     mission_type: zod.enum(['FORM_FILLING']),
     id: zod.number(),
     name: zod.string(),
+    description: zod.string(),
     created_at: zod.iso.datetime({ offset: true }),
     forms: zod
         .array(

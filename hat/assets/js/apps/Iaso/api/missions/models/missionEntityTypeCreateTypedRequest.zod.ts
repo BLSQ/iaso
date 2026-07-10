@@ -46,7 +46,6 @@ export const MissionEntityTypeCreateTypedRequest = zod.strictObject({
                     .max(
                         missionEntityTypeCreateTypedRequestTwoFormsItemMinCardinalityMax,
                     )
-                    .optional()
                     .describe(
                         'Minimum number of times this form should be filled',
                     ),
@@ -69,7 +68,6 @@ export const MissionEntityTypeCreateTypedRequest = zod.strictObject({
         .number()
         .min(missionEntityTypeCreateTypedRequestTwoMinCardinalityMin)
         .max(missionEntityTypeCreateTypedRequestTwoMinCardinalityMax)
-        .optional()
         .describe('Minimum number of times this form should be filled'),
     max_cardinality: zod
         .number()

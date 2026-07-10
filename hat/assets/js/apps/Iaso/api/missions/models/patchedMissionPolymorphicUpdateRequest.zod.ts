@@ -73,7 +73,6 @@ export const PatchedMissionPolymorphicUpdateRequest = zod.union([
                         .max(
                             patchedMissionPolymorphicUpdateRequestOneTwoFormsItemMinCardinalityMax,
                         )
-                        .optional()
                         .describe(
                             'Minimum number of times this form should be filled',
                         ),
@@ -118,7 +117,6 @@ export const PatchedMissionPolymorphicUpdateRequest = zod.union([
                         .max(
                             patchedMissionPolymorphicUpdateRequestTwoTwoFormsItemMinCardinalityMax,
                         )
-                        .optional()
                         .describe(
                             'Minimum number of times this form should be filled',
                         ),
@@ -177,7 +175,6 @@ export const PatchedMissionPolymorphicUpdateRequest = zod.union([
                         .max(
                             patchedMissionPolymorphicUpdateRequestThreeTwoFormsItemMinCardinalityMax,
                         )
-                        .optional()
                         .describe(
                             'Minimum number of times this form should be filled',
                         ),

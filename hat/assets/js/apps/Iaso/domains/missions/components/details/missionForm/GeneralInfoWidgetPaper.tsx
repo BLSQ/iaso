@@ -29,6 +29,12 @@ export const GeneralInfoWidgetPaper: React.FunctionComponent<
                     />
                     <Row
                         field={{
+                            label: formatMessage(MESSAGES.description),
+                            value: mission.description,
+                        }}
+                    />
+                    <Row
+                        field={{
                             label: formatMessage(MESSAGES.missionType),
                             value: mission.mission_type.label,
                         }}

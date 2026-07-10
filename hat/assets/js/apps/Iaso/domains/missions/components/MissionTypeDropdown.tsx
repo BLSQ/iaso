@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { FormikProps, FieldInputProps } from 'formik';
 import {
-    MissionTypeEnum,
+    MissionTypeDropdownValueEnum,
     useApiMicroplanningMissionsMissionTypesDropdownList,
 } from 'Iaso/api/missions';
 import InputComponent from 'Iaso/components/forms/InputComponent';
@@ -13,7 +13,7 @@ export type ModulesDropdownProps = {
     handleChange?: (keyValue: string, value: string | number) => void;
     field?: FieldInputProps<any>;
     form?: FormikProps<any>;
-    value?: MissionTypeEnum;
+    value?: MissionTypeDropdownValueEnum;
     keyValue?: string;
 } & Omit<
     React.ComponentProps<typeof InputComponent>,

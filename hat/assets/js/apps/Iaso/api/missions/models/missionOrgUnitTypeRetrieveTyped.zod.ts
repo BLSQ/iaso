@@ -7,16 +7,11 @@
  */
 import { z as zod } from 'zod';
 
-export const missionOrgUnitTypeRetrieveTypedTwoMinCardinalityMin = 0;
-export const missionOrgUnitTypeRetrieveTypedTwoMinCardinalityMax = 2147483647;
-
-export const missionOrgUnitTypeRetrieveTypedTwoMaxCardinalityMin = 0;
-export const missionOrgUnitTypeRetrieveTypedTwoMaxCardinalityMax = 2147483647;
-
 export const MissionOrgUnitTypeRetrieveTyped = zod.strictObject({
     mission_type: zod.enum(['ORG_UNIT_AND_FORM']),
     id: zod.number(),
     name: zod.string(),
+    description: zod.string(),
     created_at: zod.iso.datetime({ offset: true }),
     org_unit_type: zod.strictObject({
         id: zod.number(),
@@ -39,15 +34,10 @@ export const MissionOrgUnitTypeRetrieveTyped = zod.strictObject({
     ),
     min_cardinality: zod
         .number()
-        .min(missionOrgUnitTypeRetrieveTypedTwoMinCardinalityMin)
-        .max(missionOrgUnitTypeRetrieveTypedTwoMinCardinalityMax)
-        .optional()
         .describe('Minimum number of times this form should be filled'),
     max_cardinality: zod
         .number()
-        .min(missionOrgUnitTypeRetrieveTypedTwoMaxCardinalityMin)
-        .max(missionOrgUnitTypeRetrieveTypedTwoMaxCardinalityMax)
-        .nullish()
+        .nullable()
         .describe(
             'Maximum number of times this form can be filled (null = unlimited)',
         ),

@@ -1,8 +1,39 @@
 export const missionsOperations = {
-    // apiMicroplanningMissionsMissionTypesDropdownList: {
-    //     response: {
-    //         // This forces Orval/Zod to name the array items cleanly
-    //         name: 'MissionType',
-    //     },
-    // },
+    apiMicroplanningMissionsList: {
+        query: {
+            options: {
+                retry: false,
+                staleTime: Infinity,
+                cacheTime: Infinity,
+                keepPreviousData: true,
+            },
+        },
+    },
+    apiMicroplanningMissionsRetrieve: {
+        query: {
+            options: {
+                staleTime: Infinity,
+                cacheTime: Infinity,
+                keepPreviousData: true,
+            },
+        },
+    },
 };
+
+export const mutationInvalidates = [
+    {
+        onMutations: [
+            'apiMicroplanningMissionsDestroy',
+            'apiMicroplanningMissionsUpdate',
+            'apiMicroplanningMissionsPartialUpdate',
+        ],
+        invalidates: [
+            'apiMicroplanningMissionsList',
+            { query: 'apiMicroplanningMissionsRetrieve', params: ['id'] },
+        ],
+    },
+    {
+        onMutations: ['apiMicroplanningMissionsCreate'],
+        invalidates: ['apiMicroplanningMissionsList'],
+    },
+];

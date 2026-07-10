@@ -269,6 +269,9 @@ export const getApiMicroplanningMissionsRetrieveResponseMissionFormRetrieveTyped
                 ...{
                     id: faker.number.int(),
                     name: faker.string.alpha({ length: { min: 10, max: 20 } }),
+                    description: faker.string.alpha({
+                        length: { min: 10, max: 20 },
+                    }),
                     mission_type: {
                         value: faker.helpers.arrayElement(
                             Object.values(MissionTypeValueEnum),
@@ -314,6 +317,9 @@ export const getApiMicroplanningMissionsRetrieveResponseMissionOrgUnitTypeRetrie
                 ...{
                     id: faker.number.int(),
                     name: faker.string.alpha({ length: { min: 10, max: 20 } }),
+                    description: faker.string.alpha({
+                        length: { min: 10, max: 20 },
+                    }),
                     mission_type: {
                         value: faker.helpers.arrayElement(
                             Object.values(MissionTypeValueEnum),
@@ -346,16 +352,10 @@ export const getApiMicroplanningMissionsRetrieveResponseMissionOrgUnitTypeRetrie
                             null,
                         ]),
                     })),
-                    min_cardinality: faker.helpers.arrayElement([
-                        faker.number.int({ min: 0, max: 2147483647 }),
-                        undefined,
-                    ]),
+                    min_cardinality: faker.number.int(),
                     max_cardinality: faker.helpers.arrayElement([
-                        faker.helpers.arrayElement([
-                            faker.number.int({ min: 0, max: 2147483647 }),
-                            null,
-                        ]),
-                        undefined,
+                        faker.number.int(),
+                        null,
                     ]),
                 },
             },
@@ -380,14 +380,9 @@ export const getApiMicroplanningMissionsRetrieveResponseMissionEntityTypeRetriev
                 ...{
                     id: faker.number.int(),
                     name: faker.string.alpha({ length: { min: 10, max: 20 } }),
-                    mission_type: {
-                        value: faker.helpers.arrayElement(
-                            Object.values(MissionTypeValueEnum),
-                        ),
-                        label: faker.string.alpha({
-                            length: { min: 10, max: 20 },
-                        }),
-                    },
+                    description: faker.string.alpha({
+                        length: { min: 10, max: 20 },
+                    }),
                     created_at:
                         faker.date.past().toISOString().slice(0, 19) + 'Z',
                     entity_type: {
@@ -412,17 +407,19 @@ export const getApiMicroplanningMissionsRetrieveResponseMissionEntityTypeRetriev
                             null,
                         ]),
                     })),
-                    min_cardinality: faker.helpers.arrayElement([
-                        faker.number.int({ min: 0, max: 2147483647 }),
-                        undefined,
-                    ]),
+                    min_cardinality: faker.number.int(),
                     max_cardinality: faker.helpers.arrayElement([
-                        faker.helpers.arrayElement([
-                            faker.number.int({ min: 0, max: 2147483647 }),
-                            null,
-                        ]),
-                        undefined,
+                        faker.number.int(),
+                        null,
                     ]),
+                    mission_type: {
+                        value: faker.helpers.arrayElement(
+                            Object.values(MissionTypeValueEnum),
+                        ),
+                        label: faker.string.alpha({
+                            length: { min: 10, max: 20 },
+                        }),
+                    },
                 },
             },
             mission_type: faker.helpers.arrayElement([

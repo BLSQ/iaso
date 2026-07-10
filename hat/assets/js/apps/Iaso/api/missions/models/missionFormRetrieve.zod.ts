@@ -10,6 +10,7 @@ import { z as zod } from 'zod';
 export const MissionFormRetrieve = zod.strictObject({
     id: zod.number(),
     name: zod.string(),
+    description: zod.string(),
     mission_type: zod.strictObject({
         value: zod
             .enum(['FORM_FILLING', 'ORG_UNIT_AND_FORM', 'ENTITY_AND_FORM'])

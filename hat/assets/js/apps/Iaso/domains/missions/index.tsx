@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Box } from '@mui/material';
+import { Box, Theme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, UrlParams, useSafeIntl } from 'bluesquare-components';
 import { useApiMicroplanningMissionsList } from 'Iaso/api/missions';
@@ -16,7 +16,7 @@ import { MissionFilters } from './components/MissionFilters';
 import { useMissionColumns } from './config';
 import MESSAGES from './messages';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
     ...commonStyles(theme),
 }));
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useRedirectTo } from 'bluesquare-components';
 import { useApiMicroplanningMissionsDestroy } from 'Iaso/api/missions';
 import { DeleteButton } from 'Iaso/components/Buttons/DeleteButton';
 import { EditButton } from 'Iaso/components/Buttons/EditButton';
@@ -17,7 +18,15 @@ export const TopActions: React.FunctionComponent<TopActionsProps> = ({
     missionId,
     missionName,
 }) => {
-    const { mutateAsync: deleteMission } = useApiMicroplanningMissionsDestroy();
+    const redirectTo = useRedirectTo();
+
+    const { mutateAsync: deleteMission } = useApiMicroplanningMissionsDestroy({
+        mutation: {
+            onSuccess: () => {
+                redirectTo(baseUrls.missions);
+            },
+        },
+    });
 
     return (
         <>

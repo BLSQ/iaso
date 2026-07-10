@@ -73,7 +73,6 @@ export const ApiMicroplanningMissionsPartialUpdateBody = zod.union([
                         .max(
                             apiMicroplanningMissionsPartialUpdateBodyOneTwoFormsItemMinCardinalityMax,
                         )
-                        .optional()
                         .describe(
                             'Minimum number of times this form should be filled',
                         ),
@@ -118,7 +117,6 @@ export const ApiMicroplanningMissionsPartialUpdateBody = zod.union([
                         .max(
                             apiMicroplanningMissionsPartialUpdateBodyTwoTwoFormsItemMinCardinalityMax,
                         )
-                        .optional()
                         .describe(
                             'Minimum number of times this form should be filled',
                         ),
@@ -187,7 +185,6 @@ export const ApiMicroplanningMissionsPartialUpdateBody = zod.union([
                         .max(
                             apiMicroplanningMissionsPartialUpdateBodyThreeTwoFormsItemMinCardinalityMax,
                         )
-                        .optional()
                         .describe(
                             'Minimum number of times this form should be filled',
                         ),

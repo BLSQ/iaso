@@ -200,10 +200,13 @@ class SSOBaseAdapter(OAuth2Adapter):
             social_account = SocialAccount.objects.get(uid=uid, provider=self.provider_id)
             social_account.extra_data = extra_data
         except SocialAccount.DoesNotExist:
-            matching_users = User.objects.filter(iaso_profile__account=account, email=email)
-            if matching_users.count() > 1:
+            # Fail on an ambiguous email rather than guessing who to log in as: if more
+            # than one account-bound user shares this email — in the resolved account or
+            # across several accounts — we cannot safely pick one.
+            users_with_email = User.objects.filter(email=email, iaso_profile__isnull=False)
+            if users_with_email.count() > 1:
                 raise MultipleUsersWithSameEmailException(email)
-            user = matching_users.first()
+            user = users_with_email.filter(iaso_profile__account=account).first()
 
             if not user:
                 new_user, tenant_main_user, tenant_account_user = TenantUser.objects.create_user_or_tenant_user(

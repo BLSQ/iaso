@@ -284,3 +284,30 @@ class SSOAuthTestCase(APITestCase):
         self.assertEqual(response.json()["message"], "Could not log you in. Please contact the administrator")
         # Ambiguous match must not create a social account or log anyone in.
         self.assertEqual(SocialAccount.objects.count(), 0)
+
+    @patch("requests.get")
+    def test_complete_login_multiple_users_across_accounts(self, mock_get):
+        """Fail when the email maps to users in more than one account, not just within one."""
+        other_account, _, _, _ = self.create_account_datasource_version_project(
+            source_name="Other source", account_name="Other account", project_name="Other project", app_id="other_app"
+        )
+        self.create_user_with_profile(username="jane_who", email="jane@who.int", account=self.account)
+        self.create_user_with_profile(username="jane_other", email="jane@who.int", account=other_account)
+
+        extra_data: ExtraData = {
+            "email": "jane@who.int",
+            "sub": "abc-123-def",
+            "given_name": "Jane",
+            "family_name": "Doe",
+        }
+        mock_response = mock_get.return_value
+        mock_response.json.return_value = extra_data
+
+        response = self.client.post(
+            f"/polio/token/?app_id={self.project.app_id}&app_version=2501",
+            format="json",
+            data={"token": make_test_token()},
+        )
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.json()["message"], "Could not log you in. Please contact the administrator")
+        self.assertEqual(SocialAccount.objects.count(), 0)

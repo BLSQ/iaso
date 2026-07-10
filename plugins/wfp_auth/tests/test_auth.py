@@ -84,7 +84,6 @@ class WFPAuthTestCase(APITestCase):
                     "token": "f4k3-t0k3n",
                 },
             )
-        print(response.json())
         self.assertEqual(response.status_code, 200)
 
         # Users.

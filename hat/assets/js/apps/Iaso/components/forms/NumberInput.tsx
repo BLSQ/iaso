@@ -1,36 +1,33 @@
-import React, { FunctionComponent, useMemo } from 'react';
-import { DropdownOptions } from 'bluesquare-components';
+import React, { useMemo } from 'react';
+import { FormikProps } from 'formik';
+import { FieldInputProps } from 'formik/dist/types';
 import { get } from 'lodash';
-import InputComponent from 'Iaso/components/forms/InputComponent';
+import InputComponent, {
+    InputComponentProps,
+} from 'Iaso/components/forms/InputComponent';
 
-export type NumberInputProps = {
-    options: DropdownOptions<number>[];
+export type NumberInputProps<TSchema, TValues> = {
+    field: FieldInputProps<TSchema>;
+    form: FormikProps<TValues>;
     label: string;
-    field: Record<string, any>;
-    form: Record<string, any>;
-    withMarginTop?: boolean;
-    clearable?: boolean;
-    required?: boolean;
-    disabled?: boolean;
-    onChange?: (_keyValue: string, value: any) => void;
-    renderTags?: (tagValue: Array<any>, getTagProps: any) => Array<any>;
-    freeSolo?: boolean;
-    loading?: boolean;
-};
+} & Omit<
+    InputComponentProps,
+    | 'keyValue'
+    | 'type'
+    | 'value'
+    | 'label'
+    | 'labelString'
+    | 'options'
+    | 'errors'
+>;
 
-export const NumberInput: FunctionComponent<NumberInputProps> = ({
+export const NumberInput = <TSchema, TValues>({
     label,
     field,
     form,
     onChange,
-    renderTags,
-    disabled = false,
-    clearable = true,
-    withMarginTop = false,
-    required = false,
-    freeSolo = false,
-    loading = false,
-}) => {
+    ...props
+}: NumberInputProps<TSchema, TValues>) => {
     const hasError =
         form.errors &&
         Boolean(get(form.errors, field.name) && get(form.touched, field.name));
@@ -43,21 +40,15 @@ export const NumberInput: FunctionComponent<NumberInputProps> = ({
         <InputComponent
             keyValue={field.name}
             type="number"
-            withMarginTop={withMarginTop}
             value={field.value}
-            disabled={disabled}
-            clearable={clearable}
-            required={required}
             labelString={label}
-            loading={loading}
-            renderTags={renderTags}
             onChange={(keyValue, value) => {
                 if (onChange) onChange(keyValue, value);
                 form.setFieldTouched(field.name, true);
                 form.setFieldValue(field.name, value);
             }}
             errors={hasError ? errors : []}
-            freeSolo={freeSolo}
+            {...props}
         />
     );
 };

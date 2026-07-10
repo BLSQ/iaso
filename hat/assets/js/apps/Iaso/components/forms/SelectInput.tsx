@@ -1,37 +1,30 @@
 import React, { useMemo } from 'react';
 import { DropdownOptions } from 'bluesquare-components';
+import { FormikProps } from 'formik';
+import { FieldInputProps } from 'formik/dist/types';
 import { get } from 'lodash';
-import InputComponent from 'Iaso/components/forms/InputComponent';
+import InputComponent, {
+    InputComponentProps,
+} from 'Iaso/components/forms/InputComponent';
 
-export type SelectInputProps<T> = {
+export type SelectInputProps<T, TSchema, TValues> = {
     options: DropdownOptions<T>[];
+    field: FieldInputProps<TSchema>;
+    form: FormikProps<TValues>;
     label: string;
-    field: Record<string, any>;
-    form: Record<string, any>;
-    withMarginTop?: boolean;
-    clearable?: boolean;
-    required?: boolean;
-    disabled?: boolean;
-    onChange?: (_keyValue: string, value: any) => void;
-    renderTags?: (tagValue: Array<any>, getTagProps: any) => Array<any>;
-    freeSolo?: boolean;
-    loading?: boolean;
-};
+} & Omit<
+    InputComponentProps,
+    'keyValue' | 'errors' | 'type' | 'label' | 'labelString' | 'options'
+>;
 
-export const SelectInput = <T,>({
+export const SelectInput = <T, TSchema, TValues>({
     options,
     label,
     field,
     form,
     onChange,
-    renderTags,
-    disabled = false,
-    clearable = true,
-    withMarginTop = false,
-    required = false,
-    freeSolo = false,
-    loading = false,
-}: SelectInputProps<T>) => {
+    ...props
+}: SelectInputProps<T, TSchema, TValues>) => {
     const hasError =
         form.errors &&
         Boolean(get(form.errors, field.name) && get(form.touched, field.name));
@@ -44,15 +37,9 @@ export const SelectInput = <T,>({
         <InputComponent
             keyValue={field.name}
             type="select"
-            withMarginTop={withMarginTop}
             value={field.value}
             options={options}
-            disabled={disabled}
-            clearable={clearable}
-            required={required}
             labelString={label}
-            loading={loading}
-            renderTags={renderTags}
             onChange={(keyValue, value) => {
                 if (onChange) {
                     onChange(keyValue, value);
@@ -61,7 +48,7 @@ export const SelectInput = <T,>({
                 form.setFieldValue(field.name, value);
             }}
             errors={hasError ? errors : []}
-            freeSolo={freeSolo}
+            {...props}
         />
     );
 };

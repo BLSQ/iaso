@@ -4,9 +4,9 @@ import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { ColumnCell } from 'Iaso/types/general';
 import { PLANNING_WRITE } from 'Iaso/utils/permissions';
-import { CreateEditMissionDialog } from './CreateEditMissionDialog';
 import MESSAGES from '../messages';
 import { Mission } from '../types';
+import { CreateEditMissionDialog } from './CreateEditMissionDialog';
 
 interface MissionActionsCellProps extends ColumnCell<Mission> {
     deleteMission: (id: number) => void;

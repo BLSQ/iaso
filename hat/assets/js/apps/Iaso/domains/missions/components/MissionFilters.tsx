@@ -7,9 +7,9 @@ import { PLANNING_WRITE } from 'Iaso/utils/permissions';
 import InputComponent from '../../../components/forms/InputComponent';
 import { baseUrls } from '../../../constants/urls';
 import { useFilterState } from '../../../hooks/useFilterState';
-import { CreateEditMissionDialog } from './CreateEditMissionDialog';
 import MESSAGES from '../messages';
 import { MissionParams } from '../types';
+import { CreateEditMissionDialog } from './CreateEditMissionDialog';
 
 type Props = {
     params: MissionParams;
@@ -41,7 +41,6 @@ export const MissionFilters: FunctionComponent<Props> = ({ params }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
-    const { formatMessage } = useSafeIntl();
     const missionTypeOptions = useMissionTypeOptions();
     return (
         <Grid container spacing={0}>

@@ -81,12 +81,12 @@ from .api.mapping_versions import MappingVersionsViewSet
 from .api.metrics.views import MetricOrgUnitsViewSet, MetricTypeViewSet, MetricValueViewSet
 from .api.microplanning.views import (
     AssignmentViewSet,
-    MissionViewSet,
     PlanningOrgunitsViewSet,
     PlanningSamplingResultViewSet,
     PlanningViewSet,
 )
 from .api.microplanning.views_mobile import MobilePlanningV2ViewSet, MobilePlanningViewSet
+from .api.missions.views import MissionViewSet
 from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
 from .api.mobile.entity import MobileEntityDeletedViewSet, MobileEntityViewSet
 from .api.mobile.entity_type import MobileEntityTypesViewSet

@@ -4,7 +4,7 @@ import { DateTimeCellRfc } from 'Iaso/components/Cells/DateTimeCell';
 import { MissionActionsCell } from './components/MissionActionsCell';
 import { useDeleteMission } from './hooks/requests/useDeleteMission';
 import MESSAGES from './messages';
-import { Mission, MissionFormEntry } from './types';
+import { MissionFormEntry } from './types';
 
 const formatMissionForms = (missionForms: MissionFormEntry[]): string => {
     if (!missionForms || missionForms.length === 0) return '-';

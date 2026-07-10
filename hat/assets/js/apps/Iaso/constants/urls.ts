@@ -809,6 +809,7 @@ type IasoBaseUrls = {
     validationWorkflowsConfiguration: string;
     validationWorkflowsConfigurationDetail: string;
     validationWorkflowInstances: string;
+    missions: string;
 };
 
 export const baseUrls = extractUrls(baseRouteConfigs) as IasoBaseUrls;

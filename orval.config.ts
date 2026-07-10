@@ -127,11 +127,11 @@ module.exports = {
     ]),
     apiImports: createConfig('apiImports', ['API import']),
     instanceDiff: createConfig('instanceDiff', ['Submission diff']),
+    missions: createConfig("missions", ['Missions']),
     modules: createConfig('modules', ['Modules']),
     validationWorkflows: createConfig(
         'validationWorkflows',
         ['Validation workflows'],
         validationWorkflowsMutationInvalidates,
     ),
-    // profiles: createConfig('profiles', ['Profiles'])
 };

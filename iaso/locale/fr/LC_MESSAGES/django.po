@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-23 07:27+0000\n"
+"POT-Creation-Date: 2026-07-07 12:43+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -217,6 +217,24 @@ msgstr "Aucune assignation à effacer"
 msgid "Successfully deleted %(count)s assignments"
 msgstr "%(count)s assignations ont été supprimées avec succès"
 
+#: iaso/api/missions/serializers/create/mission_entity_type.py
+#: iaso/api/missions/serializers/create/mission_form.py
+#: iaso/api/missions/serializers/create/mission_org_unit_type.py
+#: iaso/api/missions/serializers/update/mission_entity_type.py
+#: iaso/api/missions/serializers/update/mission_form.py
+#: iaso/api/missions/serializers/update/mission_org_unit_type.py
+msgid "Minimum cardinality must be inferior than the maximum cardinality"
+msgstr "La cardinalité minimale doit être inférieure à la cardinalité maximale"
+
+#: iaso/api/missions/serializers/create/mission_entity_type.py
+#: iaso/api/missions/serializers/create/mission_form.py
+#: iaso/api/missions/serializers/create/mission_org_unit_type.py
+#: iaso/api/missions/serializers/update/mission_entity_type.py
+#: iaso/api/missions/serializers/update/mission_form.py
+#: iaso/api/missions/serializers/update/mission_org_unit_type.py
+msgid "Each form may only be specified once."
+msgstr "Chaque formulaire ne peut être spécifié qu'une seule fois."
+
 #: iaso/api/notifications/views.py
 #, python-format
 msgid "There is %(count)d failing import needing your attention."
@@ -387,12 +405,10 @@ msgid "Group must be in the same source version"
 msgstr "Le groupe doit être dans la même version source"
 
 #: iaso/api/org_units.py
-#, python-brace-format
 msgid "InstanceFile with id {} does not exist"
 msgstr "Le fichier d'instance avec l'id {} n'existe pas"
 
 #: iaso/api/org_units.py
-#, python-brace-format
 msgid "Another valid OrgUnit already exists with the code '{}' in this version"
 msgstr ""
 "Une autre unité d'organisation valide existe déjà avec le code '{}' dans "
@@ -880,6 +896,18 @@ msgstr "Population"
 msgid "Any"
 msgstr "Quelconque"
 
+#: iaso/models/missions.py
+msgid "Form Filling"
+msgstr "Remplissage de formulaires"
+
+#: iaso/models/missions.py
+msgid "Org Unit and Form"
+msgstr "Unité organisationnelle et formulaire"
+
+#: iaso/models/missions.py
+msgid "Entity and Form"
+msgstr "Entité et formulaire"
+
 #: iaso/models/org_unit.py
 msgid "Country"
 msgstr "Pays"
@@ -1227,6 +1255,14 @@ msgstr "Gestion du compte"
 #: iaso/permissions/core_permissions.py
 msgid "Pipeline management"
 msgstr "Gestion des pipelines"
+
+#: iaso/permissions/core_permissions.py
+msgid "Edit mission"
+msgstr "Editer la mission"
+
+#: iaso/permissions/core_permissions.py
+msgid "Read mission"
+msgstr "Lire la mission"
 
 #: iaso/tasks/copy_version.py iaso/tasks/export_mobile_app_setup_for_user.py
 #: iaso/tasks/process_mobile_bulk_upload.py

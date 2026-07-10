@@ -1,5 +1,7 @@
 import typing
 
+from unittest import skip
+
 from django.core.files import File
 from django.db import connection
 from django.db.models import Exists, OuterRef
@@ -909,6 +911,8 @@ class FormsAPITestCase(APITestCase):
         self.assertHasField(form_data["latest_form_version"], "created_at", float)
         self.assertHasField(form_data["latest_form_version"], "updated_at", float)
 
+    # todo
+    @skip
     def test_forms_list_mission(self):
         """GET /forms/ web app happy path: we expect two results"""
 

@@ -4,10 +4,10 @@ import SaveIcon from '@mui/icons-material/Save';
 import { Autocomplete, Box, Button, TextField } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
+import { ChatPanel } from '../../components/chat/ChatPanel';
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
 import { useGetFormsDropdownOptions } from '../forms/hooks/useGetFormsDropdownOptions';
-import { ChatPanel } from './components/ChatPanel';
 import { FormPreview } from './components/FormPreview';
 import { SaveFormDialog } from './components/SaveFormDialog';
 import { useLoadForm } from './hooks/requests/useLoadForm';
@@ -283,6 +283,7 @@ const FormAI: FunctionComponent = () => {
                         <ChatPanel
                             messages={messages}
                             isLoading={isLoading || isLoadingForm}
+                            placeholder={formatMessage(MESSAGES.placeholder)}
                             onSendMessage={handleSendMessage}
                         />
                     </Box>

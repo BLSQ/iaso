@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-23 07:27+0000\n"
+"POT-Creation-Date: 2026-07-10 07:42+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -17,6 +17,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.5\n"
+
+#: dynamic_fields/filter_backends.py
+#, python-brace-format
+msgid "Dynamic fields cannot contain both {all_fields} and {default_fields}"
+msgstr "Les champs dynamiques ne peuvent pas contenir à la fois {all_fields} et {default_fields}"
+
+#: dynamic_fields/filter_backends.py
+#, python-brace-format
+msgid "Invalid dynamic fields: {fields}"
+msgstr "Champs dynamiques invalides : {fields}"
 
 #: iaso/api/api_import/filters.py iaso/api/pages.py iaso/api/payments/views.py
 msgid "User ID"
@@ -387,12 +397,10 @@ msgid "Group must be in the same source version"
 msgstr "Le groupe doit être dans la même version source"
 
 #: iaso/api/org_units.py
-#, python-brace-format
 msgid "InstanceFile with id {} does not exist"
 msgstr "Le fichier d'instance avec l'id {} n'existe pas"
 
 #: iaso/api/org_units.py
-#, python-brace-format
 msgid "Another valid OrgUnit already exists with the code '{}' in this version"
 msgstr ""
 "Une autre unité d'organisation valide existe déjà avec le code '{}' dans "
@@ -1374,6 +1382,51 @@ msgstr "Erreur lors de l'analyse"
 
 #~ msgid "Account id is required."
 #~ msgstr "L'identifiant du compte est requis."
+
+#, fuzzy
+#~| msgid "Exported"
+#~ msgid "Aborted!"
+#~ msgstr "Exporté"
+
+#, fuzzy, python-brace-format
+#~| msgid "Invalid value."
+#~ msgid "Invalid value: {message}"
+#~ msgstr "Valeur invalide"
+
+#, fuzzy
+#~| msgid "Fixing parents"
+#~ msgid "Missing argument"
+#~ msgstr "Correction des parents"
+
+#, fuzzy
+#~| msgid "Specific options"
+#~ msgid "Missing option"
+#~ msgstr "Options spécifiques"
+
+#, fuzzy
+#~| msgid "Fixing parents"
+#~ msgid "Missing parameter"
+#~ msgstr "Correction des parents"
+
+#, fuzzy
+#~| msgid "Unknown"
+#~ msgid "unknown error"
+#~ msgstr "Inconnu"
+
+#, fuzzy
+#~| msgid "Data source synchronization"
+#~ msgid "Repeat for confirmation"
+#~ msgstr "Synchronisation de source de données"
+
+#, fuzzy, python-brace-format
+#~| msgid "Parent is not in the same version"
+#~ msgid "{value} is not in the range {range}."
+#~ msgstr "Le parent n'est pas dans la même version"
+
+#, fuzzy
+#~| msgid "Model {value} does not exist."
+#~ msgid "{name} {filename!r} does not exist."
+#~ msgstr "Le modèle {value} n'existe pas."
 
 #~ msgid "Planning id is required in the URL path."
 #~ msgstr "L'ID du planning est requis dans le chemin de l'URL."

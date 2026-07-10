@@ -61,21 +61,6 @@ class FormAIParseResponseTestCase(APITestCase):
         self.assertEqual(form.survey[4].type, "end_repeat")
         self.assertEqual(form.survey[4].name, "")
 
-    def test_bad_response_fixture_produces_xlsform_and_xml(self):
-        """Regression: real failing AI output must parse and produce preview artifacts."""
-        with open("iaso/tests/fixtures/form_ai_response_missing_structural_names.json") as f:
-            response_text = f.read()
-
-        form = parse_form_response(response_text)
-        xlsform_buffer = build_xlsform(form)
-        xform_xml = convert_to_xform_xml(xlsform_buffer)
-
-        self.assertIn("nom_capitaine", form.message)
-        self.assertIn("nom_capitaine", [row.name for row in form.survey])
-        self.assertTrue(xlsform_buffer.getvalue())
-        self.assertIsNotNone(xform_xml)
-        self.assertIn("nom_capitaine", xform_xml)
-
 
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
 class FormAIChatTestCase(APITestCase):

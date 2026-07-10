@@ -5,7 +5,7 @@ import tempfile
 
 from copy import copy
 from time import gmtime, strftime
-from typing import Any, Dict, Optional, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 import pandas as pd
 
@@ -942,6 +942,15 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response(log_dict)
 
 
+def cached(cache: dict, key: Any, fetch: Callable[[], Any]) -> Any:
+    """Return `cache[key]`, computing it via `fetch()` and storing it the first time it's missing."""
+    value = cache.get(key)
+    if value is None:
+        value = fetch()
+        cache[key] = value
+    return value
+
+
 def find_entity(account: Account, entity_uuid: str, entity_type_id: Optional[int] = None) -> Entity:
     # In case of duplicate UUIDs in the database, only allow 1 non-deleted one.
     # If a non-deleted entity was found, ignore potential duplicates.
@@ -987,6 +996,29 @@ def import_data(instances, user, app_id):
     project = Project.objects.get_for_user_and_app_id(user, app_id)
     rtn_instances = []
 
+    # A batch commonly has several instances (e.g. a registration + follow-up forms) pointing at
+    # the same org unit / form - bulk-prefetch those up front instead of hitting the DB once per
+    # instance. `cached()` still backs each lookup below as a safety net for any gap (e.g. an
+    # orgUnitId/formId that slipped through the prefetch for some reason).
+    org_unit_uuids = {
+        instance_data.get("orgUnitId")
+        for instance_data in instances
+        if not str(instance_data.get("orgUnitId")).isdigit()
+    }
+    org_unit_cache = {
+        org_unit.uuid: org_unit
+        for org_unit in OrgUnit.objects.filter(uuid__in=org_unit_uuids, version_id=project.account.default_version_id)
+    }
+
+    form_ids = {int(instance_data["formId"]) for instance_data in instances if instance_data.get("formId") is not None}
+    form_cache = {form.id: form for form in Form.objects.filter(id__in=form_ids)}
+
+    # Entities can't be bulk-prefetched the same way: resolving one may create it or pick the
+    # "best" one among duplicates (see `find_entity`), so each lookup still goes through `cached()`
+    # lazily, one query per distinct (uuid, entity_type_id) / entity_type_id encountered.
+    entity_cache = {}
+    entity_type_cache = {}
+
     for instance_data in instances:
         uuid = instance_data.get("id", None)
 
@@ -1021,17 +1053,30 @@ def import_data(instances, user, app_id):
         if str(tentative_org_unit_id).isdigit():
             instance.org_unit_id = tentative_org_unit_id
         else:
-            org_unit = OrgUnit.objects.get(uuid=tentative_org_unit_id, version_id=project.account.default_version_id)
-            instance.org_unit = org_unit
+            instance.org_unit = cached(
+                org_unit_cache,
+                tentative_org_unit_id,
+                lambda org_unit_uuid=tentative_org_unit_id: OrgUnit.objects.get(
+                    uuid=org_unit_uuid, version_id=project.account.default_version_id
+                ),
+            )
 
-        instance.form_id = instance_data.get("formId")
+        raw_form_id = instance_data.get("formId")
+        # Normalize to int: the mobile app sends this as a JSON string (e.g. "1"), and leaving it
+        # as-is would make later id comparisons (e.g. against `entity_type.reference_form_id`)
+        # silently fail ("1" != 1) and would fragment `form_cache` across differently-typed keys.
+        instance.form_id = int(raw_form_id) if raw_form_id is not None else None
 
         # TODO: check that planning_id is valid
         instance.planning_id = instance_data.get("planningId", None)
         entity_uuid = instance_data.get("entityUuid", None)
         entity_type_id = instance_data.get("entityTypeId", None)
         if entity_uuid and entity_type_id:
-            entity = find_entity(project.account, entity_uuid, entity_type_id)
+            entity = cached(
+                entity_cache,
+                (entity_uuid, entity_type_id),
+                lambda uuid=entity_uuid, type_id=entity_type_id: find_entity(project.account, uuid, type_id),
+            )
 
             if entity.deleted_at:
                 logger.info(
@@ -1056,8 +1101,10 @@ def import_data(instances, user, app_id):
 
             instance.entity = entity
 
+            entity_type = cached(entity_type_cache, entity.entity_type_id, lambda entity=entity: entity.entity_type)
+
             # If instance's form is the same as the type reference form, set the instance as reference_instance
-            if entity.entity_type.reference_form == instance.form:
+            if entity_type.reference_form_id == instance.form_id:
                 entity.attributes = instance
                 entity.save()
 
@@ -1076,8 +1123,13 @@ def import_data(instances, user, app_id):
             instance.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
         instance.save()
 
-        if instance.form.change_request_mode == CR_MODE_IF_REFERENCE_FORM:
-            if instance.form in instance.org_unit.org_unit_type.reference_forms.all():
+        form = cached(form_cache, instance.form_id, lambda instance=instance: instance.form)
+        # Also warm this instance's own FK cache (not just our local `form_cache`), since
+        # `instance.form` is accessed again later, in the loop over `rtn_instances` below.
+        instance.form = form
+
+        if form.change_request_mode == CR_MODE_IF_REFERENCE_FORM:
+            if form in instance.org_unit.org_unit_type.reference_forms.all():
                 oucr = OrgUnitChangeRequest()
                 oucr.org_unit = instance.org_unit
                 if user and not user.is_anonymous:

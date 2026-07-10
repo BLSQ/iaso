@@ -85,11 +85,13 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                     new_instance_files = []
                     dirs = get_directory_handlers(zip_ref)
 
-                    for instance_data in instances_data:
+                    total_instances = len(instances_data)
+                    for index, instance_data in enumerate(instances_data, start=1):
                         uuid = instance_data["id"]
                         instance = Instance.objects.get(uuid=uuid)
                         original = copy(instance)
-                        instance = process_instance_xml(instance, instance_data, zip_ref, user)
+                        prefix = f"({index}/{total_instances})"
+                        instance = process_instance_xml(instance, instance_data, zip_ref, user, prefix)
                         stats["new_instances"] += 1
                         new_instance_files += process_instance_attachments(dirs[uuid], instance)
                         log_modification(v1=original, v2=instance, source=BULK_UPLOAD, user=user)
@@ -163,10 +165,10 @@ def get_directory_handlers(zip_ref):
     return result
 
 
-def process_instance_xml(instance: Instance, instance_data, zip_ref, user):
+def process_instance_xml(instance: Instance, instance_data, zip_ref, user, prefix=""):
     uuid = instance.uuid
     filename = ntpath.basename(instance_data.get("file", None))
-    logger.info(f"Processing instance {instance.uuid}")
+    logger.info(f"{prefix} Processing instance {instance.uuid}")
     with zip_ref.open(os.path.join(uuid, filename), "r") as f:
         if not instance.file or not instance.json:  # new instance
             instance = process_instance_file(instance, File(f), user)

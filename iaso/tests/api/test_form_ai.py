@@ -54,6 +54,7 @@ class FormAIParseResponseTestCase(APITestCase):
         self.assertEqual(form.survey[4].type, "end_repeat")
         self.assertEqual(form.survey[4].name, "")
 
+
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
 class FormAIChatTestCase(APITestCase):
     url = "/api/form_ai/"

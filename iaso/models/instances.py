@@ -659,13 +659,16 @@ class Instance(ValidationWorkflowArtefact):
             return flat_parse_xml_soup(soup, [], None)["flat_json"]
         return flat_parse_xml_soup(soup, [], None)["flat_json"]
 
-    def get_and_save_json_of_xml(self, force=False, tries=3):
+    def get_and_save_json_of_xml(self, force=False, tries=3, save=True):
         """
         Convert the xml file to json and save it to the instance.
         If the instance already has a json, don't do anything unless `force=True`.
 
         When downloading from S3, attempt `tries` times (3 by default) with
         exponential backoff.
+
+        `save=False` skips the save, for callers that will save `self` themselves right after
+        (e.g. together with other in-memory changes, to avoid a separate round-trip).
 
         :return: in all cases, return the JSON representation of the instance
         """
@@ -689,7 +692,8 @@ class Instance(ValidationWorkflowArtefact):
                 file = self.file
 
             self.json = self.xml_file_to_json(file)
-            self.save()
+            if save:
+                self.save()
             return self.json
         # no file, no json, when/why does this happen?
         return {}

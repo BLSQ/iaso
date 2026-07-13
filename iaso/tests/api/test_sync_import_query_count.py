@@ -68,9 +68,12 @@ class SyncImportQueryCountTest(APITestCase):
         # No entityUuid/entityTypeId in this payload, and orgUnitId is given as a numeric id
         # (skipping the org_unit_cache lookup entirely) - so those tables get 0 hits. 1 form
         # lookup from import_data()'s batch prefetch + 1 from xml_file_to_json while processing
-        # the attached XML file. `iaso_formversion` is a single lookup, also from
-        # xml_file_to_json - get_and_save_json_of_xml reuses the FormVersion it already found
-        # there instead of looking it up again separately.
+        # the attached XML file - unlike the bulk-upload path, this stays at 2: POST
+        # /api/instances/ and POST /sync/form_upload/ are two separate HTTP requests, so there's
+        # no in-memory Instance to reuse across them (the object-reuse fix that drops this to a
+        # single batch query in process_mobile_bulk_upload() doesn't apply here). `iaso_formversion`
+        # is a single lookup, also from xml_file_to_json - get_and_save_json_of_xml reuses the
+        # FormVersion it already found there instead of looking it up again separately.
         profiler.assertLessEqualQueryCount(
             {
                 "iaso_orgunit": 0,
@@ -78,7 +81,7 @@ class SyncImportQueryCountTest(APITestCase):
                 "iaso_entitytype": 0,
                 "iaso_form": 2,
                 "iaso_formversion": 1,
-                "iaso_instance": 9,
+                "iaso_instance": 8,
                 "iaso_project": 2,
                 "vector_control_apiimport": 1,
                 "iaso_featureflag": 1,
@@ -86,9 +89,9 @@ class SyncImportQueryCountTest(APITestCase):
             },
             exclude=["django_content_type"],
         )
-        # 21 observed as part of the full suite, 22 in isolation - `iaso_content_type`'s one-time
+        # 20 observed as part of the full suite, 21 in isolation - `iaso_content_type`'s one-time
         # cache warm depends on test run order; +1 of headroom for that only.
-        self.assertLessEqual(profiler.total_queries(), 22)
+        self.assertLessEqual(profiler.total_queries(), 21)
 
         profiler.print_report()
         path = profiler.write_markdown_report(

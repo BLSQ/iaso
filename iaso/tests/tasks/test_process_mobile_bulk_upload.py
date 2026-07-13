@@ -510,23 +510,33 @@ class ProcessMobileBulkUploadTest(TestCase):
         # `iaso_entity`: 2 distinct entities -> O(2) via find_entity's exists-check + create, not
         # O(4 instances). `iaso_formversion`: 1 query/instance, from `xml_file_to_json` -
         # `get_and_save_json_of_xml` reuses the FormVersion it already found there instead of
-        # looking it up again via `resolve_form_version()`. `iaso_instance`/`audit_modification`
-        # scale 1:1 with the batch (8 and 1 per instance) - a regression would push these to a
-        # multiple of the bounds below, not a small overshoot. The rest (`iaso_task`/
-        # `iaso_tasklog`/`iaso_project`/`vector_control_apiimport`/`auth_user`/`iaso_profile`/
-        # `iaso_account`/`iaso_datasource`/`iaso_instancefile`) are fixed per-run bookkeeping
-        # overhead, unrelated to instance count - bounded at their exact observed value so a new
-        # query pattern on any of them still gets caught. `django_content_type` is excluded
-        # rather than bounded: it's a one-time framework cache warm that only fires the very
-        # first time `ContentType` is touched in the whole test process, so it's 0 here but can
-        # be 1 if this test runs in isolation instead of as part of the full suite.
+        # looking it up again via `resolve_form_version()`. `iaso_form`: down to the single batch
+        # prefetch - `process_mobile_bulk_upload()` now reuses the exact Instance objects
+        # `import_data()` already built (see `iaso_instance` below) instead of re-fetching each by
+        # uuid, which also means `xml_file_to_json`'s `self.form` access hits the FK cache
+        # `import_data()` already warmed instead of re-querying. `iaso_instance`: 6/instance -
+        # `import_data()`'s dedup filter (1) + get_or_create (2) + final save (1), then
+        # `process_instance_file()`'s file-persisting save (1, required before
+        # `get_and_save_json_of_xml()` can fetch the file back on S3 storage) + one merged save (1,
+        # covers json/form_version and the location/device/correlation conversions together) -
+        # down from 8/instance, since the previous separate uuid re-fetch and the previous 3rd
+        # save are both gone. `iaso_instance`/`audit_modification` scale 1:1 with the batch (6 and
+        # 1 per instance) - a regression would push these to a multiple of the bounds below, not a
+        # small overshoot. The rest (`iaso_task`/`iaso_tasklog`/`iaso_project`/
+        # `vector_control_apiimport`/`auth_user`/`iaso_profile`/`iaso_account`/`iaso_datasource`/
+        # `iaso_instancefile`) are fixed per-run bookkeeping overhead, unrelated to instance count -
+        # bounded at their exact observed value so a new query pattern on any of them still gets
+        # caught. `django_content_type` is excluded rather than bounded: it's a one-time framework
+        # cache warm that only fires the very first time `ContentType` is touched in the whole test
+        # process, so it's 0 here but can be 1 if this test runs in isolation instead of as part of
+        # the full suite.
         profiler.assertLessEqualQueryCount(
             {
                 "iaso_orgunit": 6,
-                "iaso_form": 5,
+                "iaso_form": 1,
                 "iaso_entity": 6,
                 "iaso_formversion": 4,
-                "iaso_instance": 33,
+                "iaso_instance": 25,
                 "audit_modification": 4,
                 "iaso_entitytype": 1,
                 "iaso_task": 7,
@@ -541,8 +551,8 @@ class ProcessMobileBulkUploadTest(TestCase):
             },
             exclude=["django_content_type"],
         )
-        # 104 observed, stable whether run alone or as part of the full suite.
-        self.assertLessEqual(profiler.total_queries(), 104)
+        # 92 observed, stable whether run alone or as part of the full suite.
+        self.assertLessEqual(profiler.total_queries(), 92)
 
         profiler.print_report()
         path = profiler.write_markdown_report(
@@ -589,22 +599,23 @@ class ProcessMobileBulkUploadTest(TestCase):
         # Same batch lookups as the baseline test, still O(1)/O(distinct) at 12.5x the instance
         # count (50 vs 4) - proves import_data()'s caching doesn't regress to O(instances). A
         # regression back to per-instance lookups would push iaso_orgunit well past its bound
-        # (e.g. ~50-55 instead of ~6), and iaso_form/iaso_entity roughly double (the "+1 form per
-        # instance" from xml_file_to_json is unrelated to import_data and already included in the
-        # bound below). `iaso_entity`: 25 distinct entities -> O(25) via find_entity's exists-check
-        # + create + the reference-form save, not O(50 instances). `iaso_formversion`: same
-        # 1 query/instance as the baseline test (see comment there), at scale: 50.
-        # `iaso_instance`/`audit_modification` scale 1:1 with the batch, at scale: 400 and 50. The
-        # rest is the same fixed per-run bookkeeping overhead as the baseline test (see comment
-        # there), still O(1) rather than scaling with the 12.5x larger batch - this zip has no
-        # attachments so `iaso_instancefile` never fires, unlike the baseline test.
+        # (e.g. ~50-55 instead of ~6). `iaso_form`: down to the single batch prefetch, same as the
+        # baseline test (see comment there) - `xml_file_to_json` hits `import_data()`'s already-
+        # warmed FK cache instead of re-querying. `iaso_entity`: 25 distinct entities -> O(25) via
+        # find_entity's exists-check + create + the reference-form save, not O(50 instances).
+        # `iaso_formversion`: same 1 query/instance as the baseline test, at scale: 50.
+        # `iaso_instance`: 6/instance as the baseline test (see comment there), at scale: 300.
+        # `audit_modification` scales 1:1 with the batch, at scale: 50. The rest is the same fixed
+        # per-run bookkeeping overhead as the baseline test (see comment there), still O(1) rather
+        # than scaling with the 12.5x larger batch - this zip has no attachments so
+        # `iaso_instancefile` never fires, unlike the baseline test.
         profiler.assertLessEqualQueryCount(
             {
                 "iaso_orgunit": 6,
-                "iaso_form": 52,
+                "iaso_form": 1,
                 "iaso_entity": 80,
                 "iaso_formversion": 50,
-                "iaso_instance": 400,
+                "iaso_instance": 300,
                 "audit_modification": 50,
                 "iaso_entitytype": 1,
                 "iaso_task": 7,
@@ -618,10 +629,10 @@ class ProcessMobileBulkUploadTest(TestCase):
             },
             exclude=["django_content_type"],
         )
-        # 765 observed as part of the full suite, 766 in isolation - `iaso_content_type`'s
+        # 615 observed as part of the full suite, 616 in isolation - `iaso_content_type`'s
         # one-time cache warm depends on test run order (see the `exclude` note above); +1 of
         # headroom for that only.
-        self.assertLessEqual(profiler.total_queries(), 766)
+        self.assertLessEqual(profiler.total_queries(), 616)
 
         profiler.print_report()
         path = profiler.write_markdown_report(

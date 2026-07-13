@@ -156,15 +156,14 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
                                 {nextSteps.regular &&
                                     nextSteps.regular
                                         .filter(step => step.allowed)
-                                        .map((step, index) => {
+                                        .map(step => {
                                             const isQuickTransition =
                                                 step.key === quickTransition;
 
                                             return (
                                                 <Grid
                                                     item
-                                                    // eslint-disable-next-line react/no-array-index-key
-                                                    key={`${step.key}-${index}`}
+                                                    key={`${step.key}-${budgetProcess.id}`}
                                                 >
                                                     <CreateBudgetStep
                                                         isMobileLayout={

@@ -3,14 +3,12 @@ import { Box, Divider, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { LoadingSpinner, commonStyles } from 'bluesquare-components';
 
+import { useGetInstance } from 'Iaso/domains/instances/hooks/requests/useGetInstance';
 import InstanceFileContent from '../../../instances/components/InstanceFileContent';
 
 import { OrgUnit } from '../../../orgUnits/types/orgUnit';
 import { HEIGHT } from '../../config';
-import {
-    useGetInstance,
-    useGetOrgUnitInstances,
-} from '../../hooks/useGetInstances';
+import { useGetOrgUnitInstances } from '../../hooks/useGetInstances';
 
 import { RegistryParams } from '../../types';
 import { EmptyInstances } from './EmptyInstances';
@@ -53,7 +51,7 @@ export const SelectedOrgUnit: FunctionComponent<Props> = ({
     }, [params.submissionId, orgUnit, instances]);
 
     const { data: currentInstance, isFetching: isFetchingCurrentInstance } =
-        useGetInstance(currentInstanceId, false);
+        useGetInstance(currentInstanceId, { keepPreviousData: true });
 
     if (!orgUnit) {
         return null;

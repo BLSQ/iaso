@@ -63,11 +63,9 @@ class ProfilesViewSet(ModelViewSet):
     f"""Profiles API
 
     This API is restricted to authenticated users having the "{CORE_USERS_ADMIN_PERMISSION}" or "{CORE_USERS_MANAGED_PERMISSION}"
-    permission for write core_permissions.
-    Read access is accessible to any authenticated users as it necessary to list profile or display a particular one in
-    the interface.
-
-    Any logged user can also edit his profile to set his language.
+    permission for write operations and for listing, retrieving, or exporting other users.
+    Users without those permissions can only read and update their own profile via `/me`, and use the dropdown endpoint
+    which returns limited information.
 
     GET /api/profiles/
     GET /api/profiles/me => current user
@@ -124,7 +122,14 @@ class ProfilesViewSet(ModelViewSet):
 
     def get_queryset(self):
         account = self.request.user.iaso_profile.account
-        qs = Profile.objects.filter(account=account).with_editable_org_unit_types()
+        qs = Profile.objects.filter(account=account)
+
+        if self.action == "dropdown":
+            # ProfileDropdownSerializer only reads obj.user_id and obj.user.username/first_name/last_name,
+            # so skip the editable_org_unit_types annotation (extra joins + GROUP BY) it never uses.
+            return qs.select_related("user")
+
+        qs = qs.with_editable_org_unit_types()
 
         if self.action == "list":
             if self.request.query_params.get("managedUsersOnly", "").lower() in ["true", "1"]:

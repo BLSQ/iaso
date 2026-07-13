@@ -1,8 +1,7 @@
-/* eslint-disable react/no-array-index-key */
 import React, { FunctionComponent } from 'react';
 import { Grid, Paper, Box, Typography } from '@mui/material';
-import { convertWidth } from '../../../utils/index';
-import { LqasImLegendItem } from '../../LQAS-IM/LQAS/utils';
+import { convertWidth } from '../../../utils';
+import { LqasImLegendItem } from '../../LQAS-IM/types';
 import { useStyles } from './styles';
 
 type Props = {
@@ -28,11 +27,11 @@ export const MapLegend: FunctionComponent<Props> = ({
                 >
                     {title}
                 </Typography>
-                {legendItems.map((legendItem, i) => {
+                {legendItems.map(legendItem => {
                     return (
                         <Box
                             py={1}
-                            key={`${title}${i}${legendItem.label}${legendItem.value}-${name}`}
+                            key={`${title}${legendItem.label}${legendItem.value}-${name}`}
                         >
                             <Grid container spacing={1}>
                                 <Grid

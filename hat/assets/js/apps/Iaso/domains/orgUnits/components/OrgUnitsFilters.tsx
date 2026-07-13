@@ -230,8 +230,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
             setDataSourceId(id);
             setSourceVersionId(parseInt(filters?.version, 10));
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dataSourceId, dataSources, filters?.version]);
+    }, [dataSourceId, dataSources, filters?.group, filters?.version]);
 
     const versionsDropDown = useMemo(() => {
         if (!dataSources || !dataSourceId) return [];

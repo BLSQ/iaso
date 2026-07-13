@@ -164,7 +164,7 @@ class ImportMetricValuesSerializer(serializers.Serializer):
         user = self.context.get("request").user
         account = user.iaso_profile.account
         existing_metric_types = MetricType.objects.filter(account=account, code__in=metric_type_codes).values_list(
-            "code", "id", "metric_kind"
+            "code", "id"
         )
         missing_metric_types = metric_type_codes - set(mt[0] for mt in existing_metric_types)
         if missing_metric_types:
@@ -185,9 +185,7 @@ class ImportMetricValuesSerializer(serializers.Serializer):
                 _("The following org unit IDs do not exist: ") + ", ".join(str(ou_id) for ou_id in missing_org_unit_ids)
             )
 
-        self.context["existing_metric_types_map"] = {
-            mt[0]: {"id": mt[1], "metric_kind": mt[2]} for mt in existing_metric_types
-        }
+        self.context["existing_metric_types_map"] = {mt[0]: mt[1] for mt in existing_metric_types}
 
         return value
 
@@ -207,8 +205,7 @@ class ImportMetricValuesSerializer(serializers.Serializer):
                 value = row.get(code)
                 if pd.isna(value):
                     continue
-                metric_type_info = existing_metric_types_map[code]
-                mv = MetricValue(org_unit_id=org_unit_id, metric_type_id=metric_type_info["id"])
+                mv = MetricValue(org_unit_id=org_unit_id, metric_type_id=existing_metric_types_map[code])
                 try:
                     # Parse the value as a float
                     mv.value = float(value)
@@ -216,8 +213,7 @@ class ImportMetricValuesSerializer(serializers.Serializer):
                     mv.value = None
                     mv.string_value = value
 
-                if metric_type_info["metric_kind"] == MetricType.MetricKind.POPULATION:
-                    mv.year = year
+                mv.year = year
                 metric_values.append(mv)
 
         with transaction.atomic():

@@ -1,7 +1,6 @@
 {% extends 'iaso/base_auth.html' %}
 {% load i18n %}
 {% load static %}
-{% load socialaccount %}
 {% block body %}
 <div class="auth__container iasologin">
   {% include "./language_picker.html" %}
@@ -15,11 +14,8 @@
       </h1>
     </header>
     <div>
-      {% get_providers as socialaccount_providers %}
-      {% for provider in socialaccount_providers %}
-        {% if  provider.id == 'wfp' %}
-          {% include "wfp_auth/login_subtemplate.html" %}
-        {% endif %}
+      {% for provider in sso_providers_for_login %}
+        {% include "sso/login_subtemplate.html" %}
         <div class="auth__separator"></div>
       {% endfor %}
       <form method="post" data-qa="login-form" class="auth__form" action="{% url 'login' %}">

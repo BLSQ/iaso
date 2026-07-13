@@ -1,10 +1,13 @@
 import React, { useMemo } from 'react';
 import { Done } from '@mui/icons-material';
 import CloseIcon from '@mui/icons-material/Close';
-import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import { Column, useSafeIntl } from 'bluesquare-components';
 import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
 
 import { baseUrls } from 'Iaso/constants/urls';
+import { APIImportModal } from 'Iaso/domains/apiimports/components/APIImportModal';
+import { textOrPlaceholder } from 'Iaso/domains/apiimports/utils';
+import getDisplayName from 'Iaso/utils/usersUtils';
 import MESSAGES from './messages';
 
 export const baseUrl = baseUrls.adminApiImport;
@@ -37,17 +40,7 @@ export const useColumns = (): Array<Column> => {
                 accessor: 'user',
                 Cell: settings => {
                     const { user } = settings.row.original;
-                    if (user.first_name && user.last_name) {
-                        return (
-                            user.first_name +
-                            ' ' +
-                            user.last_name +
-                            ' (' +
-                            user.username +
-                            ')'
-                        );
-                    }
-                    return user.username;
+                    return getDisplayName(user);
                 },
             },
             {
@@ -59,39 +52,25 @@ export const useColumns = (): Array<Column> => {
                 Header: formatMessage(MESSAGES.app_id),
                 id: 'app_id',
                 accessor: 'app_id',
+                Cell: settings => {
+                    const { app_id } = settings.row.original;
+                    return textOrPlaceholder(app_id);
+                },
             },
             {
                 Header: formatMessage(MESSAGES.app_version),
                 id: 'app_version',
                 accessor: 'app_version',
-            },
-            {
-                Header: formatMessage(MESSAGES.json_body),
-                id: 'json_body',
-                accessor: 'json_body',
                 Cell: settings => {
-                    const { json_body } = settings.row.original;
-                    return (
-                        <pre style={{ textAlign: 'start' }}>
-                            {JSON.stringify(json_body, null, 2)}
-                        </pre>
-                    );
+                    const { app_version } = settings.row.original;
+                    return textOrPlaceholder(app_version);
                 },
             },
             {
-                Header: formatMessage(MESSAGES.headers),
-                id: 'headers',
-                accessor: 'headers',
+                id: 'actions',
                 Cell: settings => {
-                    const { headers } = settings.row.original;
-                    if (headers == null) {
-                        return textPlaceholder;
-                    }
-                    return (
-                        <pre style={{ textAlign: 'start' }}>
-                            {JSON.stringify(headers, null, 2)}
-                        </pre>
-                    );
+                    const apiImport = settings.row.original;
+                    return <APIImportModal apiImport={apiImport} />;
                 },
             },
         ],

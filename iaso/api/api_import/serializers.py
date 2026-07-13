@@ -14,7 +14,7 @@ class UserNestedSerializer(serializers.ModelSerializer):
 
 
 class APIImportSerializer(serializers.ModelSerializer):
-    user = UserNestedSerializer(read_only=True)
+    user = UserNestedSerializer(read_only=True, allow_null=True)
     headers = serializers.SerializerMethodField(method_name="get_headers")
     created_at = TimestampField(read_only=True)
 
@@ -30,6 +30,7 @@ class APIImportSerializer(serializers.ModelSerializer):
             "file",
             "app_id",
             "app_version",
+            "exception",
         ]
 
     @staticmethod
@@ -41,3 +42,9 @@ class APIImportSerializer(serializers.ModelSerializer):
         if obj.headers:
             obj.headers.pop("HTTP_AUTHORIZATION", None)
         return obj.headers
+
+
+class APIImportFilterSerializer(serializers.Serializer):
+    users = UserNestedSerializer(read_only=True, many=True)
+    app_ids = serializers.ListSerializer(read_only=True, child=serializers.CharField())
+    app_versions = serializers.ListSerializer(read_only=True, child=serializers.CharField())

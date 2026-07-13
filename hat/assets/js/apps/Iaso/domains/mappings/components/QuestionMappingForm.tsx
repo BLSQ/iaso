@@ -387,6 +387,7 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
 
                     {questionMapping.map &&
                         questionMapping.map((q, index) => (
+                            // considering questionMapping is a random json, using index here is acceptable
                             // eslint-disable-next-line react/no-array-index-key
                             <ObjectDumper key={index} object={q} />
                         ))}

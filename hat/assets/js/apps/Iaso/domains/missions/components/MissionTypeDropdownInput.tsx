@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { useApiMicroplanningMissionsMissionTypesDropdownList } from 'Iaso/api/missions';
 import {
@@ -9,14 +9,15 @@ import { userHasPermission } from 'Iaso/domains/users/utils';
 import { MISSION_READ } from 'Iaso/utils/permissions';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import MESSAGES from '../messages';
-export type ModulesDropdownProps<T> = Omit<
-    SelectInputProps<T>,
+export type ModulesDropdownProps<TSchema, TValues> = Omit<
+    SelectInputProps<string, TSchema, TValues>,
     'options' | 'loading'
 >;
 
-export const MissionTypeDropdownInput: FunctionComponent<
-    ModulesDropdownProps<string>
-> = ({ label, ...props }) => {
+export const MissionTypeDropdownInput = <TSchema, TValues>({
+    label,
+    ...props
+}: ModulesDropdownProps<TSchema, TValues>) => {
     const currentUser = useCurrentUser();
     const hasPermission = userHasPermission(MISSION_READ, currentUser);
     const { formatMessage } = useSafeIntl();

@@ -14,7 +14,6 @@ export type ModulesDropdownProps = {
     field?: FieldInputProps<any>;
     form?: FormikProps<any>;
     value?: MissionTypeDropdownValueEnum;
-    keyValue?: string;
 } & Omit<
     React.ComponentProps<typeof InputComponent>,
     'loading' | 'options' | 'type' | 'value' | 'string'
@@ -24,7 +23,6 @@ export const MissionTypeDropdown: FunctionComponent<ModulesDropdownProps> = ({
     handleChange,
     label,
     value,
-    keyValue,
     ...props
 }) => {
     const currentUser = useCurrentUser();
@@ -39,7 +37,6 @@ export const MissionTypeDropdown: FunctionComponent<ModulesDropdownProps> = ({
 
     return hasPermission ? (
         <InputComponent
-            keyValue={keyValue}
             type="select"
             value={value}
             options={data ?? []}

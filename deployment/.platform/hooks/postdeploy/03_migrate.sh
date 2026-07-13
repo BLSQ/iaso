@@ -4,6 +4,9 @@ set -e
 echo "Compiling translations..."
 docker compose exec -T iaso python manage.py compilemessages
 
+echo "Compiling Django template SCSS to CSS..."
+docker compose exec -T iaso python manage.py compile_index_scss
+
 echo "Collecting static files..."
 docker compose exec -T iaso python manage.py collectstatic --noinput
 

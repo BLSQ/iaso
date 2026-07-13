@@ -1803,7 +1803,7 @@ wheels = [
 
 [[package]]
 name = "iaso"
-version = "1.3"
+version = "2026.7.14.dev0"
 source = { virtual = "." }
 dependencies = [
     { name = "anthropic" },
@@ -1883,6 +1883,7 @@ dependencies = [
     { name = "redis" },
     { name = "requests" },
     { name = "requests-toolbelt" },
+    { name = "rtoml" },
     { name = "sentry-sdk", extra = ["django"] },
     { name = "shapely" },
     { name = "snaql" },
@@ -2012,6 +2013,7 @@ requires-dist = [
     { name = "redis", specifier = "==4.6.0" },
     { name = "requests", specifier = "==2.31.0" },
     { name = "requests-toolbelt", specifier = "==0.9.1" },
+    { name = "rtoml", specifier = "==0.12" },
     { name = "sentry-sdk", extras = ["django"], specifier = "==1.38.0" },
     { name = "shapely", specifier = "==2.0.2" },
     { name = "snaql", specifier = "==0.4.2" },
@@ -3536,6 +3538,26 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/da/8a/22b7beea3ee0d44b1916c0c1cb0ee3af23b700b6da9f04991899d0c555d4/rsa-4.9.1.tar.gz", hash = "sha256:e7bdbfdb5497da4c07dfd35530e1a902659db6ff241e39d9953cad06ebd0ae75", size = 29034, upload-time = "2025-04-16T09:51:18.218Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/64/8d/0133e4eb4beed9e425d9a98ed6e081a55d195481b7632472be1af08d2f6b/rsa-4.9.1-py3-none-any.whl", hash = "sha256:68635866661c6836b8d39430f97a996acbd61bfa49406748ea243539fe239762", size = 34696, upload-time = "2025-04-16T09:51:17.142Z" },
+]
+
+[[package]]
+name = "rtoml"
+version = "0.12.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/87/93/59e1dc9829eafbfb349b1ff2dcfca647d7f7e7d87788de54ab0e402c7036/rtoml-0.12.0.tar.gz", hash = "sha256:662e56bd5953ee7ebcc5798507ae90daa329940a5d5157a48f3d477ebf99c55b", size = 43127, upload-time = "2024-12-09T17:02:24.657Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a1/bc/a87c6c4ffeb629460c7c4c4e03d824c5752a65f6a5b5e99cccbd7c103c61/rtoml-0.12.0-cp39-cp39-macosx_10_12_x86_64.whl", hash = "sha256:9d3d266cbb0d42cf83658eb0ecc40288036fe986b200cefd2c6ad8e3c714b4cf", size = 325737, upload-time = "2024-12-09T17:02:01.384Z" },
+    { url = "https://files.pythonhosted.org/packages/d2/fa/9f9ff455a2d49ef269b9c4bb54ace30e7262d8184257cd61ac83b65cb218/rtoml-0.12.0-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:4e919d19518a8f3c769601105677c2c2c73c1a7a1ac4306830f570801abf3299", size = 314776, upload-time = "2024-12-09T17:02:03.009Z" },
+    { url = "https://files.pythonhosted.org/packages/36/f3/201f189b5d868da51a306cddc6ce5f74560ff0e9238405c666de374c212c/rtoml-0.12.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:48f6ca7405f3bb45307029156b2f69c7048cc8c0cd840356f81f64091030adeb", size = 342129, upload-time = "2024-12-09T17:02:04.589Z" },
+    { url = "https://files.pythonhosted.org/packages/35/06/7fd09e8f84d5768d61f7878fd3684547c51a0c711acfaf3e7de4f854c18e/rtoml-0.12.0-cp39-cp39-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:8c7865af375c8f40e75bcf82cbb10e20d662f239a9f49e5597e28742c938f4e5", size = 362070, upload-time = "2024-12-09T17:02:06.238Z" },
+    { url = "https://files.pythonhosted.org/packages/7d/1b/e3128ea66d5e5c77f1f3e4c42f0423833d3ef93ddfb433a342e332a727ee/rtoml-0.12.0-cp39-cp39-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:67e7c7c61224d2b31aa2d6f9bbdd81011a505cb0388f2e9e6d815a840dd6c39a", size = 385087, upload-time = "2024-12-09T17:02:07.988Z" },
+    { url = "https://files.pythonhosted.org/packages/77/37/8f5d06b58121764563061f59258d6b23aba46ce33e40df875f323ccc09b4/rtoml-0.12.0-cp39-cp39-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:206c7ba5ab2a4b5f452565b1751430cc14d7b1423045370e5968a0e5a15846a7", size = 486316, upload-time = "2024-12-09T17:02:10.268Z" },
+    { url = "https://files.pythonhosted.org/packages/bf/35/a95e2d373f48cb8b51e3b10ae3d266b04c206c1cae48f85f28acbdbff27a/rtoml-0.12.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b8f4ae09e9ca8de5bd874b661302f8083dc1a47b0865f99f7becf24903f76736", size = 350093, upload-time = "2024-12-09T17:02:11.991Z" },
+    { url = "https://files.pythonhosted.org/packages/2f/7c/e3653dbe929e6723512beabc4229b443d5d0051a4c64b1e821693a3c67dc/rtoml-0.12.0-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:3c7b633b74f7590f4c1e1fe36c1e6a26ca6dfa6491b9d91530d6e907b29d296b", size = 369261, upload-time = "2024-12-09T17:02:14.549Z" },
+    { url = "https://files.pythonhosted.org/packages/3c/67/1f2fdd00697f89ec9045eefcf41f7d28b7a05f73e9593d3667c76a42857e/rtoml-0.12.0-cp39-cp39-musllinux_1_1_aarch64.whl", hash = "sha256:63f6742f3e0dd076309c195af422447513ccace978023784607ee22302f4a900", size = 521115, upload-time = "2024-12-09T17:02:16.793Z" },
+    { url = "https://files.pythonhosted.org/packages/67/6e/e9f3f60adf30c5f30554609f62bd31914fa3089e8c6c19f2ce8d83f91ee5/rtoml-0.12.0-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:9d5564dcc5ca1755f5bae59e036fb4e255ed59a9f8af836eb2d9765d125b11bb", size = 521075, upload-time = "2024-12-09T17:02:18.564Z" },
+    { url = "https://files.pythonhosted.org/packages/c9/97/aaf3386a8b2c0763f1e1fa8e5a302611289399f8ecb2a67beef9ff09ae64/rtoml-0.12.0-cp39-cp39-win32.whl", hash = "sha256:fe180b78d026499ee3b42c368a6c060a3d5b23838f17dde42d099839a8f8a2c6", size = 220215, upload-time = "2024-12-09T17:02:20.971Z" },
+    { url = "https://files.pythonhosted.org/packages/29/ce/e4f54612e662c4803816ea65cee8eacd13f2919be068b65ef7f459d772d7/rtoml-0.12.0-cp39-cp39-win_amd64.whl", hash = "sha256:b7c6bdc9128c0a4ebf45e6720ae03c99ed7443a7135e494d93d3c30c14769eb3", size = 225518, upload-time = "2024-12-09T17:02:23.189Z" },
 ]
 
 [[package]]

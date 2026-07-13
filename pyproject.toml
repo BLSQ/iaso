@@ -2,7 +2,7 @@
 name = "Iaso"
 readme = "README.md"
 requires-python = ">=3.9,<3.10"
-version = "v1.3"
+version = "2026.7.14.dev0"
 dependencies = [
     "anthropic==0.52.0", # https://github.com/anthropics/anthropic-sdk-python/tags
     "azure-storage-blob==12.19.0",
@@ -81,6 +81,7 @@ dependencies = [
     "redis==4.6.0", # https://github.com/redis/redis/tags
     "requests==2.31.0", # https://github.com/psf/requests/tags
     "requests-toolbelt==0.9.1",
+    "rtoml==0.12", # https://github.com/samuelcolvin/rtoml/releases
     "sentry-sdk[django]==1.38.0", # https://github.com/getsentry/sentry-python/tags
     "shapely==2.0.2", # https://github.com/shapely/shapely/tags
     "snaql==0.4.2", # trypelim - https://github.com/zaiev/snaql/tags

@@ -20,7 +20,6 @@ import { Field, FieldArray } from 'formik';
 import { FormikContextType, FormikProps } from 'formik/dist/types';
 import { NumberInput } from 'Iaso/components/forms/NumberInput';
 import {
-    FormsDropdownOptions,
     useGetFormsDropdownOptions,
     UseGetFormsDropdownParams,
 } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
@@ -63,16 +62,14 @@ export const MissionFormsBaseInput = <TSchema extends BaseUpdateCreateRequest>({
         useGetFormsDropdownOptions(params);
     const { formatMessage } = useSafeIntl();
     const [formOptionValue, setFormOptionValue] = React.useState<number>();
-    const [availableFormOptions, setAvailableFormOptions] =
-        React.useState<FormsDropdownOptions>([]);
 
-    React.useEffect(() => {
-        setAvailableFormOptions(
+    const availableFormOptions = React.useMemo(
+        () =>
             formsOptions?.filter(
-                e => !values?.forms?.map(f => f.form).includes(e.value),
+                e => !values.forms.map(f => f.form).includes(e.value),
             ) ?? [],
-        );
-    }, [formsOptions, values]);
+        [formsOptions, values.forms],
+    );
 
     const findFormOptionFromValue = React.useCallback(
         (value: number) => {

@@ -28,11 +28,15 @@ export const MissionActionsCell: FunctionComponent<MissionActionsCellProps> = ({
                     url={`/${baseUrls.missionsDetails}/id/${mission.id}/`}
                 />
             </DisplayIfUserHasPerm>
-            <DisplayIfUserHasPerm permissions={[MISSION_READ, MISSION_WRITE]}>
+            <DisplayIfUserHasPerm
+                permissions={[MISSION_READ, MISSION_WRITE]}
+                strict
+            >
                 <IconButton
                     tooltipMessage={MESSAGES.edit}
                     icon="edit"
                     url={`/${baseUrls.missionsEdit}/id/${mission.id}/`}
+                    aria-label={MESSAGES.edit}
                 />
                 <DeleteDialog
                     titleMessage={{

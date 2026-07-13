@@ -799,6 +799,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#automatically-open-the-first-follow-up-form-auto_first_step" class="md-nav__link">
+    Automatically open the first follow-up form (auto_first_step)
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -865,6 +872,23 @@ you wish.</p>
 overridden. You can enter as many changes as you want per form.</p>
 <p>In the example above, the question <code>value</code>'s content, from the form <code>Test new value</code>, will be written into the question
 <code>previous_value</code> in the profile.</p>
+<h2 id="automatically-open-the-first-follow-up-form-auto_first_step">Automatically open the first follow-up form (<code>auto_first_step</code>)<a class="headerlink" href="#automatically-open-the-first-follow-up-form-auto_first_step" title="Permanent link">#</a></h2>
+<p>A workflow version has an <code>auto_first_step</code> flag. When it is enabled, the mobile application streamlines
+data collection: right after the user submits a <em>new</em> entity's reference (profile) form, the app jumps
+straight into the workflow's first step instead of returning to the entity details screen.</p>
+<ul>
+<li>If the workflow's first step resolves to a single form the user is allowed to fill, that form is opened directly.</li>
+<li>If several follow-up forms match, the usual form-choice dialog is shown so the user can pick which one to fill.</li>
+<li>If no form is available (none authorized, or no matching follow-up condition), nothing happens.</li>
+</ul>
+<p>The follow-up form is linked to the freshly created entity, exactly as when filling it manually from the
+entity details screen. When <code>auto_first_step</code> is disabled (the default), the behaviour is unchanged: the user
+fills follow-up forms manually.</p>
+<blockquote>
+<p><strong>Note:</strong> there is currently no dedicated control for this flag in the IASO web interface. It is set through
+the Django <strong>Admin</strong> interface, on the relevant workflow version (<code>Iaso › Workflow versions</code>), by ticking the
+<code>Auto first step</code> checkbox.</p>
+</blockquote>
 
 
 

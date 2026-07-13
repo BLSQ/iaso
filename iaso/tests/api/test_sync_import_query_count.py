@@ -12,8 +12,9 @@ class SyncImportQueryCountTest(APITestCase):
     Unlike the bulk zip fixture (4 instances, 2 shared (form, version) pairs), this is a
     single instance - so the per-batch org_unit/entity caching added to import_data() has
     nothing to cache across and shouldn't move the numbers here. The per-instance fixes
-    (Instance.save() FormVersion memoization, id-vs-object comparison in import_data())
-    should still show up, since they apply per instance regardless of batch size.
+    (xml_file_to_json setting form_version directly instead of a separate resolve_form_version()
+    lookup, id-vs-object comparison in import_data()) should still show up, since they apply per
+    instance regardless of batch size.
     """
 
     @classmethod
@@ -67,15 +68,16 @@ class SyncImportQueryCountTest(APITestCase):
         # No entityUuid/entityTypeId in this payload, and orgUnitId is given as a numeric id
         # (skipping the org_unit_cache lookup entirely) - so those tables get 0 hits. 1 form
         # lookup from import_data()'s batch prefetch + 1 from xml_file_to_json while processing
-        # the attached XML file; same breakdown for iaso_formversion (the memoized
-        # Instance.save() lookup + xml_file_to_json's own lookup).
+        # the attached XML file. `iaso_formversion` is a single lookup, also from
+        # xml_file_to_json - get_and_save_json_of_xml reuses the FormVersion it already found
+        # there instead of looking it up again separately.
         profiler.assertLessEqualQueryCount(
             {
                 "iaso_orgunit": 0,
                 "iaso_entity": 0,
                 "iaso_entitytype": 0,
                 "iaso_form": 2,
-                "iaso_formversion": 2,
+                "iaso_formversion": 1,
                 "iaso_instance": 9,
                 "iaso_project": 2,
                 "vector_control_apiimport": 1,
@@ -84,9 +86,9 @@ class SyncImportQueryCountTest(APITestCase):
             },
             exclude=["django_content_type"],
         )
-        # 22 observed as part of the full suite, 23 in isolation - `iaso_content_type`'s one-time
+        # 21 observed as part of the full suite, 22 in isolation - `iaso_content_type`'s one-time
         # cache warm depends on test run order; +1 of headroom for that only.
-        self.assertLessEqual(profiler.total_queries(), 23)
+        self.assertLessEqual(profiler.total_queries(), 22)
 
         profiler.print_report()
         path = profiler.write_markdown_report(

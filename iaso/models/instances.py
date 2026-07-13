@@ -639,6 +639,10 @@ class Instance(ValidationWorkflowArtefact):
             form_versions = self.form.form_versions.filter(version_id=form_version_id)  # type: ignore
             form_version = form_versions.first()
             if form_version:
+                # Same (version_id, form) pair `resolve_form_version()` would otherwise look up
+                # again right after this method returns (see `get_and_save_json_of_xml`) - set
+                # it here directly instead of re-querying FormVersion for the same instance.
+                self.form_version = form_version
                 questions_by_path = form_version.questions_by_path()
                 allowed_paths = set(questions_by_path.keys())
                 allowed_paths.update(self.ALWAYS_ALLOWED_PATHS_XML)
@@ -685,7 +689,6 @@ class Instance(ValidationWorkflowArtefact):
                 file = self.file
 
             self.json = self.xml_file_to_json(file)
-            self.resolve_form_version()
             self.save()
             return self.json
         # no file, no json, when/why does this happen?

@@ -88,6 +88,14 @@ class StorageAPITestCase(APITestCase):
             entity=cls.entity,
         )
 
+        cls.existing_storage_device_4 = StorageDevice.objects.create(
+            customer_chosen_id="BFZ6yhYYkA==",
+            account=cls.star_wars,
+            type="NFC",
+            status="OK",
+            entity=cls.entity,
+        )
+
         # This one should be invisible to the "yoda" user
         cls.existing_storage_device_another_account = StorageDevice.objects.create(
             customer_chosen_id="EXISTING_STORAGE_ANOTHER_ACCOUNT",
@@ -583,6 +591,16 @@ class StorageAPITestCase(APITestCase):
                     "org_unit": None,
                     "entity": {"id": self.entity.id, "name": "New Client 3"},
                 },
+                {
+                    "updated_at": 1580608922.0,
+                    "created_at": 1580608922.0,
+                    "id": self.existing_storage_device_4.id,
+                    "storage_id": "04 56 7A CA 16 18 90 (BFZ6yhYYkA==)",
+                    "storage_type": "NFC",
+                    "storage_status": {"status": "OK", "updated_at": "2020-02-02T02:02:02Z"},
+                    "org_unit": None,
+                    "entity": {"id": mock.ANY, "name": "New Client 3"},
+                },
             ],
         )
 
@@ -688,6 +706,16 @@ class StorageAPITestCase(APITestCase):
                     "org_unit": None,
                     "entity": None,
                 },
+                {
+                    "updated_at": 1580608922.0,
+                    "created_at": 1580608922.0,
+                    "id": self.existing_storage_device_4.id,
+                    "storage_id": "04 56 7A CA 16 18 90 (BFZ6yhYYkA==)",
+                    "storage_type": "NFC",
+                    "storage_status": {"status": "OK", "updated_at": "2020-02-02T02:02:02Z"},
+                    "org_unit": None,
+                    "entity": {"id": mock.ANY, "name": "New Client 3"},
+                },
             ],
         )
 
@@ -703,6 +731,19 @@ class StorageAPITestCase(APITestCase):
         # We double-check that the results are the ones we expect
         for entry in received_json:
             self.assertIn("ANOTHER", entry["storage_id"])
+
+    def test_list_filter_by_storage_id_hex(self):
+        """The 'search' filter can be used to filter per (customer-chosen) storage ID"""
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/storages/?search=56")
+        received_json = response.json()
+
+        # If the filter was not operational we would get 3 results.
+        # If the filter was not case-insensitive we would get 0 results.
+        self.assertEqual(len(received_json), 1)
+        # We double-check that the results are the ones we expect
+        for entry in received_json:
+            self.assertIn("04 56 7A CA 16 18 90", entry["storage_id"])
 
     def test_list_filter_by_entity_id(self):
         """The 'search' filter can be also be used to search per entity ID"""
@@ -739,6 +780,16 @@ class StorageAPITestCase(APITestCase):
                     "org_unit": None,
                     "entity": {"id": self.entity.id, "name": "New Client 3"},
                 },
+                {
+                    "updated_at": 1580608922.0,
+                    "created_at": 1580608922.0,
+                    "id": self.existing_storage_device_4.id,
+                    "storage_id": "04 56 7A CA 16 18 90 (BFZ6yhYYkA==)",
+                    "storage_type": "NFC",
+                    "storage_status": {"status": "OK", "updated_at": "2020-02-02T02:02:02Z"},
+                    "org_unit": None,
+                    "entity": {"id": mock.ANY, "name": "New Client 3"},
+                },
             ],
         )
 
@@ -756,9 +807,9 @@ class StorageAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/storages/?limit=1")
         received_json = response.json()
-        self.assertEqual(received_json["count"], 3)  # 3 devices in total
+        self.assertEqual(received_json["count"], 4)  # 3 devices in total
         self.assertEqual(len(received_json["results"]), 1)  # 1 result on this page
-        self.assertEqual(received_json["pages"], 3)  # 3 pages of results
+        self.assertEqual(received_json["pages"], 4)  # 3 pages of results
         self.assertTrue(received_json["has_next"])
         self.assertFalse(received_json["has_previous"])
         self.assertEqual(received_json["limit"], 1)
@@ -1573,7 +1624,7 @@ class StorageAPITestCase(APITestCase):
             ],
         )
 
-        self.assertEqual(len(data), 4)  # 3 rows + header
+        self.assertEqual(len(data), 5)  # 4 rows + header
         self.assertListEqual(
             data[1],
             [
@@ -1664,17 +1715,33 @@ class StorageAPITestCase(APITestCase):
                     0: "EXISTING_STORAGE",
                     1: "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
                     2: "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
+                    3: "BFZ6yhYYkA==",
                 },
-                "Storage Type": {0: "NFC", 1: "NFC", 2: "SD"},
-                "Created at": {0: "2020-02-02 02:02:02", 1: "2020-02-02 02:02:02", 2: "2020-02-02 02:02:02"},
-                "Updated at": {0: "2020-02-02 02:02:02", 1: "2020-02-02 02:02:02", 2: "2020-02-02 02:02:02"},
-                "Status": {0: "OK", 1: "BLACKLISTED", 2: "BLACKLISTED"},
-                "Status reason": {0: None, 1: "STOLEN", 2: "ABUSE"},
-                "Status comment": {0: None, 1: None, 2: None},
-                "Status updated at": {0: 43863.08474537037, 1: 43863.08474537037, 2: 43863.08474537037},
-                "Org unit id": {0: None, 1: None, 2: None},
+                "Storage Type": {0: "NFC", 1: "NFC", 2: "SD", 3: "NFC"},
+                "Created at": {
+                    0: "2020-02-02 02:02:02",
+                    1: "2020-02-02 02:02:02",
+                    2: "2020-02-02 02:02:02",
+                    3: "2020-02-02 02:02:02",
+                },
+                "Updated at": {
+                    0: "2020-02-02 02:02:02",
+                    1: "2020-02-02 02:02:02",
+                    2: "2020-02-02 02:02:02",
+                    3: "2020-02-02 02:02:02",
+                },
+                "Status": {0: "OK", 1: "BLACKLISTED", 2: "BLACKLISTED", 3: "OK"},
+                "Status reason": {0: None, 1: "STOLEN", 2: "ABUSE", 3: None},
+                "Status comment": {0: None, 1: None, 2: None, 3: None},
+                "Status updated at": {
+                    0: 43863.08474537037,
+                    1: 43863.08474537037,
+                    2: 43863.08474537037,
+                    3: 43863.08474537037,
+                },
+                "Org unit id": {0: None, 1: None, 2: None, 3: None},
                 # FIXME this is a float for a pk?
-                "Entity id": {0: self.entity.id * 1.0, 1: None, 2: self.entity.id * 1.0},
+                "Entity id": {0: self.entity.id * 1.0, 1: None, 2: self.entity.id * 1.0, 3: self.entity.id * 1.0},
             },
         )
 
@@ -1723,7 +1790,7 @@ class StorageAPITestCase(APITestCase):
         response = self.client.get("/api/storages/?csv=true&order=-type")
         data = self._csv_response_to_list(response)
         data_without_header = data[1:]
-        self.assertListEqual([e[1] for e in data_without_header], ["SD", "NFC", "NFC"])
+        self.assertListEqual([e[1] for e in data_without_header], ["SD", "NFC", "NFC", "NFC"])
 
     def test_export_logs_per_device_csv(self):
         """A CSV download with decent content is returned"""

@@ -12,8 +12,9 @@ class SyncImportQueryCountTest(APITestCase):
     Unlike the bulk zip fixture (4 instances, 2 shared (form, version) pairs), this is a
     single instance - so the per-batch org_unit/entity caching added to import_data() has
     nothing to cache across and shouldn't move the numbers here. The per-instance fixes
-    (Instance.save() FormVersion memoization, id-vs-object comparison in import_data())
-    should still show up, since they apply per instance regardless of batch size.
+    (xml_file_to_json setting form_version directly instead of a separate resolve_form_version()
+    lookup, id-vs-object comparison in import_data()) should still show up, since they apply per
+    instance regardless of batch size.
     """
 
     @classmethod
@@ -64,18 +65,33 @@ class SyncImportQueryCountTest(APITestCase):
         self.assertIsNotNone(instance.form_version)
         self.assertEqual(instance.form_version.version_id, "201911280919")
 
-        counts = profiler.table_counts()
         # No entityUuid/entityTypeId in this payload, and orgUnitId is given as a numeric id
-        # (skipping the org_unit_cache lookup entirely) - so none of those tables are touched.
-        self.assertEqual(counts.get("iaso_orgunit", 0), 0)
-        self.assertEqual(counts.get("iaso_entity", 0), 0)
-        self.assertEqual(counts.get("iaso_entitytype", 0), 0)
-        # 1 form lookup from import_data()'s batch prefetch + 1 from xml_file_to_json while
-        # processing the attached XML file; same breakdown for iaso_formversion (the memoized
-        # Instance.save() lookup + xml_file_to_json's own lookup).
-        self.assertLessEqual(counts["iaso_form"], 2)
-        self.assertLessEqual(counts["iaso_formversion"], 2)
-        self.assertLessEqual(profiler.total_queries(), 30)
+        # (skipping the org_unit_cache lookup entirely) - so those tables get 0 hits. 1 form
+        # lookup from import_data()'s batch prefetch + 1 from xml_file_to_json while processing
+        # the attached XML file - unlike the bulk-upload path, this stays at 2: POST
+        # /api/instances/ and POST /sync/form_upload/ are two separate HTTP requests, so there's
+        # no in-memory Instance to reuse across them (the object-reuse fix that drops this to a
+        # single batch query in process_mobile_bulk_upload() doesn't apply here). `iaso_formversion`
+        # is a single lookup, also from xml_file_to_json - get_and_save_json_of_xml reuses the
+        # FormVersion it already found there instead of looking it up again separately.
+        profiler.assertLessEqualQueryCount(
+            {
+                "iaso_orgunit": 0,
+                "iaso_entity": 0,
+                "iaso_entitytype": 0,
+                "iaso_form": 2,
+                "iaso_formversion": 1,
+                "iaso_instance": 8,
+                "iaso_project": 2,
+                "vector_control_apiimport": 1,
+                "iaso_featureflag": 1,
+                "audit_modification": 1,
+            },
+            exclude=["django_content_type"],
+        )
+        # 20 observed as part of the full suite, 21 in isolation - `iaso_content_type`'s one-time
+        # cache warm depends on test run order; +1 of headroom for that only.
+        self.assertLessEqual(profiler.total_queries(), 21)
 
         profiler.print_report()
         path = profiler.write_markdown_report(

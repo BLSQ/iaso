@@ -97,6 +97,30 @@ class QueryProfiler:
     def call_sites_for_table(self, table: str) -> Counter:
         return Counter((f.filename, f.lineno, f.name) for f in self._stacks_by_table.get(table, []) if f)
 
+    def assertLessEqualQueryCount(self, expected: typing.Dict[str, int], exclude: typing.Sequence[str] = ()) -> None:
+        """
+        Assert that every table in `expected` was queried at most the given number of times, AND
+        that every *other* table hit (not listed in `expected`) is in `exclude`. The latter is
+        what catches a regression an allow-list alone would miss: a brand new query pattern
+        landing on a table nobody thought to bound. `exclude` is for tables whose query count is
+        real but not worth pinning down (e.g. framework/fixture overhead unrelated to what the
+        test investigates) - listing a table there means "I know about it, don't assert on it",
+        as opposed to just not showing up in `expected` by oversight.
+
+        Checks everything before failing, so the failure message lists every violation at once -
+        both bounds exceeded and unaccounted-for tables - rather than just the first hit.
+        """
+        counts = self.table_counts()
+        violations = [
+            f"{table}: expected <= {max_count}, got {counts[table]}"
+            for table, max_count in expected.items()
+            if counts[table] > max_count
+        ]
+        unaccounted = sorted(set(counts) - set(expected) - set(exclude))
+        violations += [f"{table}: not in `expected` or `exclude`, got {counts[table]}" for table in unaccounted]
+        if violations:
+            raise AssertionError("Query count(s) exceeded expected bound:\n" + "\n".join(violations))
+
     def _relpath(self, filename: str) -> typing.Optional[str]:
         relpath = os.path.relpath(filename, settings.BASE_DIR)
         return None if relpath.startswith("..") else relpath

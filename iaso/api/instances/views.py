@@ -1156,6 +1156,8 @@ def import_data(instances, user, app_id):
                 # so we avoid the whole instance creation crashing
                 logger.error(e)
 
+    return rtn_instances
+
 
 def _entity_correctness_score(entity):
     """

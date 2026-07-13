@@ -19,6 +19,8 @@ from hat.api_import.models import APIImport
 from hat.audit.models import BULK_UPLOAD, Modification
 from iaso import models as m
 from iaso.api.deduplication.entity_duplicate import merge_entities
+from iaso.models.common import ValidationWorkflowArtefactStatus
+from iaso.models.forms import CR_MODE_IF_REFERENCE_FORM
 from iaso.models.instances import instance_file_upload_to, instance_upload_to
 from iaso.tasks.process_mobile_bulk_upload import process_mobile_bulk_upload
 from iaso.tests.utils.query_profiler import QueryProfiler
@@ -139,6 +141,16 @@ class ProcessMobileBulkUploadTest(TestCase):
 
         # Removing all InMemoryFileNodes inside the storage to avoid name conflicts - some can be kept by previous test classes
         default_storage._root._children.clear()  # see InMemoryFileStorage in django/core/files/storage/memory.py
+
+    def assertCorrelationIdFormat(self, instance):
+        """`convert_correlation()` always sets a correlation_id (str(id) + random digit + mod-97
+        checksum), regardless of whether the form configures a `correlation_field` -- assert on
+        the deterministic parts only, since one digit is random.
+        """
+        self.assertTrue(str(instance.correlation_id).startswith(str(instance.id)))
+        modulo = int(str(instance.correlation_id)[-2:])
+        base = int(str(instance.correlation_id)[0:-2])
+        self.assertEqual(base % 97, modulo)
 
     def _create_zip_file(self):
         # Create the zip file: we create it on the fly to be able to clearly
@@ -281,6 +293,18 @@ class ProcessMobileBulkUploadTest(TestCase):
         # `attributes` should point back to this instance.
         self.assertEqual(ent_disasi.attributes, reg_instance)
         self.assertEqual(reg_instance.instancefile_set.count(), 0)
+        # `location`/`accuracy` here come from the direct payload assignment in `import_data()`
+        # (latitude/longitude/altitude/accuracy in instances.json) -- form_registration has no
+        # `location_field` configured, so `convert_location_from_field()` is a no-op for it.
+        self.assertAlmostEqual(reg_instance.location.y, 50.6429429)  # latitude
+        self.assertAlmostEqual(reg_instance.location.x, 4.6004524)  # longitude
+        self.assertAlmostEqual(float(reg_instance.accuracy), 14.929, places=2)
+        # `convert_correlation()` (called via `process_instance_file()` for new instances) always
+        # assigns a correlation_id, even though neither form configures a `correlation_field`.
+        self.assertCorrelationIdFormat(reg_instance)
+        # No `deviceid`-like field in this fixture's XML, so `convert_device()` has nothing to
+        # convert and leaves this unset.
+        self.assertIsNone(reg_instance.device)
 
         catt_instance = m.Instance.objects.get(uuid=DISASI_MAKULO_CATT)
         self.assertEqual(catt_instance.json.get("result"), "positive")
@@ -288,6 +312,11 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(catt_instance.instancefile_set.count(), 1)
         image = catt_instance.instancefile_set.first()
         self.assertEqual(image.name, "1712326156339.webp")
+        self.assertAlmostEqual(catt_instance.location.y, 50.6429501)  # latitude
+        self.assertAlmostEqual(catt_instance.location.x, 4.6004282)  # longitude
+        self.assertAlmostEqual(float(catt_instance.accuracy), 12.74, places=2)
+        self.assertCorrelationIdFormat(catt_instance)
+        self.assertIsNone(catt_instance.device)
 
         # Checking if files are uploaded to the correct location
         generated_file_name = instance_upload_to(catt_instance, DISASI_MAKULO_INSTANCE_FILE_NAME)
@@ -306,6 +335,11 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(reg_instance.entity, entity_patrice)
         self.assertEqual(entity_patrice.attributes, reg_instance)
         self.assertEqual(reg_instance.instancefile_set.count(), 0)
+        self.assertAlmostEqual(reg_instance.location.y, 50.6429429)  # latitude
+        self.assertAlmostEqual(reg_instance.location.x, 4.6004524)  # longitude
+        self.assertAlmostEqual(float(reg_instance.accuracy), 14.929, places=2)
+        self.assertCorrelationIdFormat(reg_instance)
+        self.assertIsNone(reg_instance.device)
 
         catt_instance = m.Instance.objects.get(uuid=PATRICE_AKAMBU_CATT)
         self.assertEqual(catt_instance.json.get("result"), "positive")
@@ -314,6 +348,115 @@ class ProcessMobileBulkUploadTest(TestCase):
         # image from Disasi's CATT was duplicated to this test
         image = catt_instance.instancefile_set.first()
         self.assertEqual(image.name, "1712326156339.webp")
+        self.assertAlmostEqual(catt_instance.location.y, 50.6429501)  # latitude
+        self.assertAlmostEqual(catt_instance.location.x, 4.6004282)  # longitude
+        self.assertAlmostEqual(float(catt_instance.accuracy), 12.74, places=2)
+        self.assertCorrelationIdFormat(catt_instance)
+        self.assertIsNone(catt_instance.device)
+
+        # `duplicate_instance_files()`: both CATT instances share the same json["serie_id"]
+        # in their submitted XML, so the single uploaded attachment gets duplicated onto
+        # the other instance rather than each instance only keeping its own file (or none).
+        self.assertEqual(m.InstanceFile.objects.filter(name="1712326156339.webp").count(), 2)
+
+    def test_device_converted_from_configured_device_field_during_bulk_upload(self):
+        """`convert_device()` should actually assign a Device when the form's device_field
+        (or the default "deviceid") matches a field present in the submitted XML.
+
+        None of the CATT/registration fixture XMLs have a `deviceid` field, so `test_success`
+        only characterizes the no-op case. Point `form_catt.device_field` at `serie_id` (a field
+        both CATT instances' XML already carries, with the same shared value) to exercise the
+        actual assignment branch without needing a new fixture.
+        """
+        self.form_catt.device_field = "serie_id"
+        self.form_catt.save()
+
+        self._create_zip_file()
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+
+        serie_id = "ad893d6d-355f-4ffe-a575-cea6bbe5914f"
+        self.assertEqual(m.Device.objects.count(), 1)
+        device = m.Device.objects.get(imei=serie_id)
+
+        for instance_uuid in (DISASI_MAKULO_CATT, PATRICE_AKAMBU_CATT):
+            catt_instance = m.Instance.objects.get(uuid=instance_uuid)
+            self.assertEqual(catt_instance.device, device)
+
+        # form_registration still has no device_field override: untouched.
+        for instance_uuid in (DISASI_MAKULO_REGISTRATION, PATRICE_AKAMBU_REGISTRATION):
+            reg_instance = m.Instance.objects.get(uuid=instance_uuid)
+            self.assertIsNone(reg_instance.device)
+
+    def test_change_request_created_via_bulk_upload(self):
+        """CR_MODE_IF_REFERENCE_FORM should create an OrgUnitChangeRequest per instance,
+        mirroring test_change_request_on_new_reference_form.py::test_instance_insertion
+        but driven through the mobile bulk-upload Celery task rather than POST /api/instances/.
+        """
+        self.form_registration.change_request_mode = CR_MODE_IF_REFERENCE_FORM
+        self.form_registration.save()
+        # The org unit created by the zip (org_unit_type_id=5) must recognize form_registration
+        # as one of its reference forms for the change-request branch to fire.
+        m.OrgUnitType.objects.filter(id=5).first().reference_forms.add(self.form_registration)
+
+        self._create_zip_file()
+
+        self.assertEqual(m.OrgUnitChangeRequest.objects.count(), 0)
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+
+        # One change request per registration-form instance (Disasi Makulo + Patrice Akambu).
+        self.assertEqual(m.OrgUnitChangeRequest.objects.count(), 2)
+        reg_instance = m.Instance.objects.get(uuid=DISASI_MAKULO_REGISTRATION)
+        change_request = m.OrgUnitChangeRequest.objects.get(new_reference_instances=reg_instance)
+        self.assertEqual(change_request.org_unit, reg_instance.org_unit)
+        self.assertEqual(change_request.requested_fields, ["new_reference_instances"])
+        self.assertEqual(list(change_request.new_reference_instances.all()), [reg_instance])
+
+    def test_validation_workflow_triggered_via_bulk_upload(self):
+        """A form with a validation_workflow should trigger ValidationWorkflowEngine.start()
+        for instances created through the mobile bulk-upload Celery task, mirroring
+        test_validation_workflow.py::test_trigger_validation_workflow.
+        """
+        validation_workflow = m.ValidationWorkflow.objects.create(name="validation-workflow", account=self.account)
+        validation_workflow.form_set.add(self.form_registration)
+        m.ValidationNodeTemplate.objects.create(name="First node", workflow=validation_workflow)
+
+        self._create_zip_file()
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+
+        for reg_uuid in (DISASI_MAKULO_REGISTRATION, PATRICE_AKAMBU_REGISTRATION):
+            reg_instance = m.Instance.objects.get(uuid=reg_uuid)
+            self.assertEqual(reg_instance.general_validation_status, ValidationWorkflowArtefactStatus.PENDING)
+
+        # The CATT form has no validation_workflow: its instances should be untouched.
+        for catt_uuid in (DISASI_MAKULO_CATT, PATRICE_AKAMBU_CATT):
+            catt_instance = m.Instance.objects.get(uuid=catt_uuid)
+            self.assertEqual(catt_instance.validationnode_set.count(), 0)
 
     def test_form_version_query_count_baseline(self):
         """
@@ -331,7 +474,15 @@ class ProcessMobileBulkUploadTest(TestCase):
         self._create_zip_file()
 
         with QueryProfiler(
-            trace_tables=["iaso_formversion", "iaso_form", "iaso_orgunit", "iaso_entity", "iaso_entitytype"]
+            trace_tables=[
+                "iaso_formversion",
+                "iaso_form",
+                "iaso_orgunit",
+                "iaso_entity",
+                "iaso_entitytype",
+                "iaso_instance",
+                "audit_modification",
+            ]
         ) as profiler:
             process_mobile_bulk_upload(
                 api_import_id=self.api_import.id,
@@ -351,18 +502,57 @@ class ProcessMobileBulkUploadTest(TestCase):
         # (keyed on a "serie_id" json field) fires - hence 1 here instead of test_success's 2.
         self.assertEqual(m.InstanceFile.objects.count(), 1)
 
-        counts = profiler.table_counts()
         # import_data()'s own org-unit/form/entity-type lookups are each a single batch query
         # (1 org unit, 2 forms sharing 1 lookup, 1 entity type shared by both entities) - the
-        # small headroom below absorbs the org unit's own creation/path-calculation queries
+        # small headroom on iaso_orgunit absorbs its own creation/path-calculation queries
         # (unrelated to import_data's caching), while still catching a regression back to
         # O(instances) (which would push these well past the bounds below at this batch size).
-        self.assertLessEqual(counts["iaso_orgunit"], 6)
-        self.assertLessEqual(counts["iaso_form"], 5)
-        self.assertEqual(counts["iaso_entitytype"], 1)
-        # 2 distinct entities -> O(2) via find_entity's exists-check + create, not O(4 instances).
-        self.assertLessEqual(counts["iaso_entity"], 6)
-        self.assertLessEqual(profiler.total_queries(), 130)
+        # `iaso_entity`: 2 distinct entities -> O(2) via find_entity's exists-check + create, not
+        # O(4 instances). `iaso_formversion`: 1 query/instance, from `xml_file_to_json` -
+        # `get_and_save_json_of_xml` reuses the FormVersion it already found there instead of
+        # looking it up again via `resolve_form_version()`. `iaso_form`: down to the single batch
+        # prefetch - `process_mobile_bulk_upload()` now reuses the exact Instance objects
+        # `import_data()` already built (see `iaso_instance` below) instead of re-fetching each by
+        # uuid, which also means `xml_file_to_json`'s `self.form` access hits the FK cache
+        # `import_data()` already warmed instead of re-querying. `iaso_instance`: 6/instance -
+        # `import_data()`'s dedup filter (1) + get_or_create (2) + final save (1), then
+        # `process_instance_file()`'s file-persisting save (1, required before
+        # `get_and_save_json_of_xml()` can fetch the file back on S3 storage) + one merged save (1,
+        # covers json/form_version and the location/device/correlation conversions together) -
+        # down from 8/instance, since the previous separate uuid re-fetch and the previous 3rd
+        # save are both gone. `iaso_instance`/`audit_modification` scale 1:1 with the batch (6 and
+        # 1 per instance) - a regression would push these to a multiple of the bounds below, not a
+        # small overshoot. The rest (`iaso_task`/`iaso_tasklog`/`iaso_project`/
+        # `vector_control_apiimport`/`auth_user`/`iaso_profile`/`iaso_account`/`iaso_datasource`/
+        # `iaso_instancefile`) are fixed per-run bookkeeping overhead, unrelated to instance count -
+        # bounded at their exact observed value so a new query pattern on any of them still gets
+        # caught. `django_content_type` is excluded rather than bounded: it's a one-time framework
+        # cache warm that only fires the very first time `ContentType` is touched in the whole test
+        # process, so it's 0 here but can be 1 if this test runs in isolation instead of as part of
+        # the full suite.
+        profiler.assertLessEqualQueryCount(
+            {
+                "iaso_orgunit": 6,
+                "iaso_form": 1,
+                "iaso_entity": 6,
+                "iaso_formversion": 4,
+                "iaso_instance": 25,
+                "audit_modification": 4,
+                "iaso_entitytype": 1,
+                "iaso_task": 7,
+                "iaso_tasklog": 4,
+                "iaso_project": 3,
+                "vector_control_apiimport": 2,
+                "auth_user": 2,
+                "iaso_profile": 2,
+                "iaso_account": 2,
+                "iaso_datasource": 1,
+                "iaso_instancefile": 1,
+            },
+            exclude=["django_content_type"],
+        )
+        # 92 observed, stable whether run alone or as part of the full suite.
+        self.assertLessEqual(profiler.total_queries(), 92)
 
         profiler.print_report()
         path = profiler.write_markdown_report(
@@ -385,7 +575,15 @@ class ProcessMobileBulkUploadTest(TestCase):
         self._create_zip_file_at_scale(num_patients=25)
 
         with QueryProfiler(
-            trace_tables=["iaso_formversion", "iaso_form", "iaso_orgunit", "iaso_entity", "iaso_entitytype"]
+            trace_tables=[
+                "iaso_formversion",
+                "iaso_form",
+                "iaso_orgunit",
+                "iaso_entity",
+                "iaso_entitytype",
+                "iaso_instance",
+                "audit_modification",
+            ]
         ) as profiler:
             process_mobile_bulk_upload(
                 api_import_id=self.api_import.id,
@@ -398,20 +596,43 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(m.Instance.objects.count(), 50)
         self.assertEqual(m.Entity.objects.count(), 25)
 
-        counts = profiler.table_counts()
         # Same batch lookups as the baseline test, still O(1)/O(distinct) at 12.5x the instance
         # count (50 vs 4) - proves import_data()'s caching doesn't regress to O(instances). A
-        # regression back to per-instance lookups would push iaso_orgunit/iaso_entitytype well
-        # past these bounds (e.g. ~50-55 instead of ~6/1), and iaso_form/iaso_entity roughly
-        # double (the "+1 form per instance" from xml_file_to_json is unrelated to import_data
-        # and already included in the bound below).
-        self.assertLessEqual(counts["iaso_orgunit"], 6)
-        self.assertLessEqual(counts["iaso_form"], 52)
-        self.assertEqual(counts["iaso_entitytype"], 1)
-        # 25 distinct entities -> O(25) via find_entity's exists-check + create + the reference-
-        # form save, not O(50 instances).
-        self.assertLessEqual(counts["iaso_entity"], 80)
-        self.assertLessEqual(profiler.total_queries(), 1000)
+        # regression back to per-instance lookups would push iaso_orgunit well past its bound
+        # (e.g. ~50-55 instead of ~6). `iaso_form`: down to the single batch prefetch, same as the
+        # baseline test (see comment there) - `xml_file_to_json` hits `import_data()`'s already-
+        # warmed FK cache instead of re-querying. `iaso_entity`: 25 distinct entities -> O(25) via
+        # find_entity's exists-check + create + the reference-form save, not O(50 instances).
+        # `iaso_formversion`: same 1 query/instance as the baseline test, at scale: 50.
+        # `iaso_instance`: 6/instance as the baseline test (see comment there), at scale: 300.
+        # `audit_modification` scales 1:1 with the batch, at scale: 50. The rest is the same fixed
+        # per-run bookkeeping overhead as the baseline test (see comment there), still O(1) rather
+        # than scaling with the 12.5x larger batch - this zip has no attachments so
+        # `iaso_instancefile` never fires, unlike the baseline test.
+        profiler.assertLessEqualQueryCount(
+            {
+                "iaso_orgunit": 6,
+                "iaso_form": 1,
+                "iaso_entity": 80,
+                "iaso_formversion": 50,
+                "iaso_instance": 300,
+                "audit_modification": 50,
+                "iaso_entitytype": 1,
+                "iaso_task": 7,
+                "iaso_tasklog": 4,
+                "iaso_project": 3,
+                "vector_control_apiimport": 2,
+                "auth_user": 1,
+                "iaso_profile": 1,
+                "iaso_account": 1,
+                "iaso_datasource": 1,
+            },
+            exclude=["django_content_type"],
+        )
+        # 615 observed as part of the full suite, 616 in isolation - `iaso_content_type`'s
+        # one-time cache warm depends on test run order (see the `exclude` note above); +1 of
+        # headroom for that only.
+        self.assertLessEqual(profiler.total_queries(), 616)
 
         profiler.print_report()
         path = profiler.write_markdown_report(

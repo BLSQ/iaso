@@ -568,6 +568,7 @@ class Command(BaseCommand):
             if with_location:
                 instance.location = Point(-11.7868289 + (2 * random()), 8.4494988 + (2 * random()), 0)
             instance.entity = entity
+            instance.resolve_form_version()
             instance.save()
             entity.attributes = instance
             entity.name = " ".join([str(instance.json[k]) for k in form.label_keys])

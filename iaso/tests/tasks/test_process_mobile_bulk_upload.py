@@ -541,7 +541,8 @@ class ProcessMobileBulkUploadTest(TestCase):
             },
             exclude=["django_content_type"],
         )
-        self.assertLessEqual(profiler.total_queries(), 112)
+        # 108 observed, stable whether run alone or as part of the full suite.
+        self.assertLessEqual(profiler.total_queries(), 108)
 
         profiler.print_report()
         path = profiler.write_markdown_report(
@@ -617,7 +618,10 @@ class ProcessMobileBulkUploadTest(TestCase):
             },
             exclude=["django_content_type"],
         )
-        self.assertLessEqual(profiler.total_queries(), 820)
+        # 815 observed as part of the full suite, 816 in isolation - `iaso_content_type`'s
+        # one-time cache warm depends on test run order (see the `exclude` note above); +1 of
+        # headroom for that only.
+        self.assertLessEqual(profiler.total_queries(), 816)
 
         profiler.print_report()
         path = profiler.write_markdown_report(

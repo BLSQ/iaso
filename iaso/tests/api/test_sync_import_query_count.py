@@ -64,18 +64,29 @@ class SyncImportQueryCountTest(APITestCase):
         self.assertIsNotNone(instance.form_version)
         self.assertEqual(instance.form_version.version_id, "201911280919")
 
-        counts = profiler.table_counts()
         # No entityUuid/entityTypeId in this payload, and orgUnitId is given as a numeric id
-        # (skipping the org_unit_cache lookup entirely) - so none of those tables are touched.
-        self.assertEqual(counts.get("iaso_orgunit", 0), 0)
-        self.assertEqual(counts.get("iaso_entity", 0), 0)
-        self.assertEqual(counts.get("iaso_entitytype", 0), 0)
-        # 1 form lookup from import_data()'s batch prefetch + 1 from xml_file_to_json while
-        # processing the attached XML file; same breakdown for iaso_formversion (the memoized
+        # (skipping the org_unit_cache lookup entirely) - so those tables get 0 hits. 1 form
+        # lookup from import_data()'s batch prefetch + 1 from xml_file_to_json while processing
+        # the attached XML file; same breakdown for iaso_formversion (the memoized
         # Instance.save() lookup + xml_file_to_json's own lookup).
-        self.assertLessEqual(counts["iaso_form"], 2)
-        self.assertLessEqual(counts["iaso_formversion"], 2)
-        self.assertLessEqual(profiler.total_queries(), 30)
+        profiler.assertLessEqualQueryCount(
+            {
+                "iaso_orgunit": 0,
+                "iaso_entity": 0,
+                "iaso_entitytype": 0,
+                "iaso_form": 2,
+                "iaso_formversion": 2,
+                "iaso_instance": 9,
+                "iaso_project": 2,
+                "vector_control_apiimport": 1,
+                "iaso_featureflag": 1,
+                "audit_modification": 1,
+            },
+            exclude=["django_content_type"],
+        )
+        # 22 observed as part of the full suite, 23 in isolation - `iaso_content_type`'s one-time
+        # cache warm depends on test run order; +1 of headroom for that only.
+        self.assertLessEqual(profiler.total_queries(), 23)
 
         profiler.print_report()
         path = profiler.write_markdown_report(

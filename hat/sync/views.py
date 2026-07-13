@@ -36,11 +36,15 @@ def process_instance_file(instance, file, user):
 
     instance.get_and_save_json_of_xml()
     try:
-        instance.convert_location_from_field()
-        instance.convert_device()
-        instance.convert_correlation()
+        instance.convert_location_from_field(save=False)
+        instance.convert_device(save=False)
+        instance.convert_correlation(save=False)
     except ValueError as error:
         logger.exception(error)
+    finally:
+        # Whatever succeeded before a conversion raised should still be persisted, exactly
+        # like when each convert_* method saved itself individually.
+        instance.save()
 
     return instance
 

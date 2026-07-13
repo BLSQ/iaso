@@ -49,14 +49,14 @@ export const GeneralInfoWidgetPaper: React.FunctionComponent<
                     <Row
                         field={{
                             label: formatMessage(MESSAGES.minCardinality),
-                            value: mission.min_cardinality,
+                            value: mission.min_cardinality.toLocaleString(),
                         }}
                     />
 
                     <Row
                         field={{
                             label: formatMessage(MESSAGES.maxCardinality),
-                            value: mission.max_cardinality ?? (
+                            value: mission?.max_cardinality?.toLocaleString() ?? (
                                 <AllInclusiveIcon
                                     fontSize="small"
                                     color="primary"

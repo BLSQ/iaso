@@ -1,6 +1,6 @@
 import React from 'react';
 import { faker } from '@faker-js/faker';
-import { act, screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event/dist/cjs/index.js';
 import { delay, http, HttpResponse, type RequestHandlerOptions } from 'msw';
 import { setupServer } from 'msw/node';
@@ -12,6 +12,7 @@ import {
     MissionTypeValueEnum,
 } from 'Iaso/api/missions';
 import {
+    getApiMicroplanningMissionsDestroyMockHandler,
     getApiMicroplanningMissionsListMockHandler,
     getApiMicroplanningMissionsListResponseMock,
     getApiMicroplanningMissionsMissionTypesDropdownListMockHandler,
@@ -214,7 +215,7 @@ describe('Mission list integration test', () => {
             },
         );
     });
-    it('displays view details link and icon', async () => {
+    it('displays view details link and icons', async () => {
         const data = getApiMicroplanningMissionsListResponseMock({
             count: 1,
             page: 1,
@@ -235,6 +236,7 @@ describe('Mission list integration test', () => {
 
         expect(screen.queryAllByTestId('SettingsIcon')).toHaveLength(1);
         expect(screen.queryAllByTestId('RemoveRedEyeIcon')).toHaveLength(1);
+        expect(screen.queryAllByTestId('DeleteIcon')).toHaveLength(1);
 
         const editLink = screen.getByTestId('SettingsIcon').closest('a');
         expect(editLink).toHaveAttribute(
@@ -249,7 +251,7 @@ describe('Mission list integration test', () => {
         );
     });
 
-    it('does not display edit / create button if the user does not have permission', async () => {
+    it('does not display edit / create / delete button if the user does not have permission', async () => {
         const data = getApiMicroplanningMissionsListResponseMock({
             count: 9,
             page: 1,
@@ -273,6 +275,7 @@ describe('Mission list integration test', () => {
         ).toBeNull();
 
         expect(screen.queryByTestId('EditIcon')).toBeNull();
+        expect(screen.queryByTestId('DeleteIcon')).toBeNull();
     });
 
     it('searches with the right parameters', async () => {
@@ -379,5 +382,64 @@ describe('Mission list integration test', () => {
         expect(
             screen.getByRole('link', { name: MESSAGES.create.defaultMessage }),
         ).toHaveAttribute('href', `/${baseUrls.missionsCreate}`);
+    });
+
+    it('calls delete and refreshes the query', async () => {
+        // todo
+        const mockList = vi.fn();
+        const mockDelete = vi.fn();
+        const data = getApiMicroplanningMissionsListResponseMock({
+            count: 1,
+            page: 1,
+            pages: 1,
+        });
+
+        server.use(
+            getApiMicroplanningMissionsListMockHandler(async _info => {
+                mockList(_info);
+                return getApiMicroplanningMissionsListResponseMock({
+                    ...data,
+                    results: data?.results?.slice(0, 1),
+                });
+            }),
+            getApiMicroplanningMissionsDestroyMockHandler(async _info => {
+                mockDelete(_info.params.id);
+                throw new HttpResponse(null, { status: 204 });
+            }),
+        );
+
+        renderList();
+
+        await waitFor(() => {
+            expect(mockList).toHaveBeenCalledTimes(1);
+        });
+
+        await waitFor(() => {
+            expect(screen.queryByRole('progressbar')).toBeNull();
+        });
+
+        const userEventStp = userEvent.setup();
+
+        await act(async () => {
+            await userEventStp.click(screen.getByTestId('DeleteIcon'));
+        });
+
+        await waitFor(() => {
+            expect(screen.getByRole('dialog')).toBeVisible();
+        });
+
+        const modal = screen.getByRole('dialog');
+        const saveButton = within(modal).getByRole('button', { name: /yes/i });
+        await act(async () => {
+            await userEventStp.click(saveButton);
+        });
+
+        await waitFor(() => {
+            expect(mockDelete).toHaveBeenCalledWith(
+                data?.results?.[0]?.id.toString(),
+            );
+            expect(mockList).toHaveBeenCalledTimes(2);
+            expect(screen.queryByRole('dialog')).toBeNull();
+        });
     });
 });

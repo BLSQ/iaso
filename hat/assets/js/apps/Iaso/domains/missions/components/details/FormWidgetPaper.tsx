@@ -81,10 +81,10 @@ export const FormWidgetPaper: React.FunctionComponent<FormWidgetPaperProps> = ({
                                         <TableRow key={form} sx={styles.row}>
                                             <TableCell>{form_name}</TableCell>
                                             <TableCell>
-                                                {min_cardinality}
+                                                {min_cardinality.toLocaleString()}
                                             </TableCell>
                                             <TableCell>
-                                                {max_cardinality ?? (
+                                                {max_cardinality?.toLocaleString() ?? (
                                                     <AllInclusiveIcon
                                                         fontSize="small"
                                                         color="primary"

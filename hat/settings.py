@@ -162,6 +162,7 @@ SITE_ID = 1
 # Logging
 
 LOGGING_LEVEL = env.str("DJANGO_LOGGING_LEVEL", default="INFO")
+HAT_LOGGING_LEVEL = env.str("HAT_LOGGING_LEVEL", default="DEBUG")
 if TESTING:
     # We don't want to see log output when running tests
     LOGGING_LEVEL = "CRITICAL"
@@ -193,7 +194,7 @@ LOGGING: Dict[str, Any] = {
     "loggers": {
         "django": {"level": LOGGING_LEVEL},
         "rq": {"level": LOGGING_LEVEL},
-        "hat": {"level": LOGGING_LEVEL},
+        "hat": {"level": HAT_LOGGING_LEVEL},
         "iaso": {"level": LOGGING_LEVEL},
         "plugins": {"level": LOGGING_LEVEL},
         "beanstalk_worker": {"level": LOGGING_LEVEL},

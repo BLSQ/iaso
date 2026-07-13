@@ -2,7 +2,7 @@ name: Iaso main branch
 on:
   push:
     tags:
-      - v*
+      - 20*
 
 permissions:
   contents: read

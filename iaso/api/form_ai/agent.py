@@ -85,7 +85,7 @@ When the user asks you to create or modify a form, you MUST respond with valid J
 
 class SurveyRow(BaseModel, extra="allow"):
     type: str
-    name: str
+    name: str = ""
     label: str = ""
 
 
@@ -316,8 +316,15 @@ def generate_form(
             "conversation_history": new_history,
         }
 
-    except (json.JSONDecodeError, Exception) as e:
-        logger.info("Response was not a form (might be conversational): %s", e)
+    except json.JSONDecodeError as e:
+        logger.info("Response was not valid JSON (might be conversational): %s", e)
+        return {
+            "assistant_message": response_text,
+            "form": None,
+            "conversation_history": new_history,
+        }
+    except Exception as e:
+        logger.warning("Failed to parse AI form response: %s", e)
         return {
             "assistant_message": response_text,
             "form": None,

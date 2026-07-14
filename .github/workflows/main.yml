@@ -2,7 +2,7 @@ name: Iaso main branch
 on:
   push:
     tags:
-      - v*
+      - 20*
 
 permissions:
   contents: read
@@ -37,6 +37,6 @@ jobs:
     needs: [ check_on_main, tests ]
     uses: BLSQ/iaso-ci/.github/workflows/docker_build.yml@main
     with:
-      iaso_branch: main-test
+      iaso_branch: main
       image_tags: ${{ github.ref_name }},main
     secrets: inherit

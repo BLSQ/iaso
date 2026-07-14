@@ -181,7 +181,7 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
         self.assertEqual(
             self.not_linked_org_unit.reference_instances.filter(id=self.reference_instance_not_linked.id).count(), 0
         )
-        logs = m.TaskLog.objects.filter(task=task).all()
+        logs = m.TaskLog.objects.filter(task=task).order_by("created_at")
         self.assertEqual(len(logs), 2)
         self.assertEqual(logs[0].message, "Searching for Instances for link or unlink to/from Org unit")
         self.assertEqual(logs[1].message, "No matching instances found")

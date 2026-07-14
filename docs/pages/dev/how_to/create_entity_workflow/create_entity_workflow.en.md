@@ -64,3 +64,21 @@ overridden. You can enter as many changes as you want per form.
 
 In the example above, the question `value`'s content, from the form `Test new value`, will be written into the question
 `previous_value` in the profile.
+
+## Automatically open the first follow-up form (`auto_first_step`)
+
+A workflow version has an `auto_first_step` flag. When it is enabled, the mobile application streamlines
+data collection: right after the user submits a *new* entity's reference (profile) form, the app jumps
+straight into the workflow's first step instead of returning to the entity details screen.
+
+- If the workflow's first step resolves to a single form the user is allowed to fill, that form is opened directly.
+- If several follow-up forms match, the usual form-choice dialog is shown so the user can pick which one to fill.
+- If no form is available (none authorized, or no matching follow-up condition), nothing happens.
+
+The follow-up form is linked to the freshly created entity, exactly as when filling it manually from the
+entity details screen. When `auto_first_step` is disabled (the default), the behaviour is unchanged: the user
+fills follow-up forms manually.
+
+> **Note:** there is currently no dedicated control for this flag in the IASO web interface. It is set through
+> the Django **Admin** interface, on the relevant workflow version (`Iaso › Workflow versions`), by ticking the
+> `Auto first step` checkbox.

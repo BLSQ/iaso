@@ -28,7 +28,7 @@ import {
     TestingQueryClient,
 } from '../../../tests/helpers';
 
-// todo : remove this once modules api and user api is switched to orval
+// todo : remove this once user api is switched to orval
 
 const { mockUserHasAccessToModule } = vi.hoisted(() => {
     return { mockUserHasAccessToModule: vi.fn() };

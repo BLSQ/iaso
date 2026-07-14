@@ -14,9 +14,9 @@ index f674b64..6a0380f 100644
 @@ -1844,7 +1844,7 @@ ${hasInvalidation ? adapter.generateMutationOnSuccess({
  		uniqueInvalidates
  	}) : ""}
-
+ 
 -        ${mutationOptionsMutator ? `const customOptions = ${mutationOptionsMutator.name}({...mutationOptions, mutationFn}${mutationOptionsMutator.hasSecondArg ? `, { url: \`${getMutationOptionsUrl(route, getMutationOptionsPathParamNames(props), pathRoute)}\` }` : ""}${mutationOptionsMutator.hasThirdArg ? `, { operationId: '${operationId}', operationName: '${operationName}' }` : ""});` : ""}
 +        ${mutationOptionsMutator ? `const customOptions = ${mutationOptionsMutator.name}({...mutationOptions, mutationFn${hasInvalidation ? ', onSuccess' : ''}}${mutationOptionsMutator.hasSecondArg ? `, { url: \`${getMutationOptionsUrl(route, getMutationOptionsPathParamNames(props), pathRoute)}\` }` : ""}${mutationOptionsMutator.hasThirdArg ? `, { operationId: '${operationId}', operationName: '${operationName}' }` : ""});` : ""}
  
-
+ 
    return  ${mutationOptionsMutator ? "customOptions" : hasInvalidation ? "{ ...mutationOptions, mutationFn, onSuccess }" : "{ mutationFn, ...mutationOptions }"}}`;

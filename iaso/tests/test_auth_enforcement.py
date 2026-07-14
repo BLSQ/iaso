@@ -1,5 +1,6 @@
 import re
 
+from django.conf import settings
 from django.test import Client, TestCase, override_settings
 from django.urls import URLPattern, URLResolver, get_resolver
 from rest_framework import status
@@ -164,10 +165,32 @@ def supports_method(path, method):
     return resp.status_code != 404
 
 
+def _sso_paths():
+    """Paths registered by the SSO plugin (login / callback / token) for each configured provider.
+
+    These are third-party authentication endpoints (analogous to /wfp_auth/...) and are
+    legitimately reachable without authentication, so they're out of scope for this check.
+    The paths are configurable per provider, so we derive them from settings rather than hardcode.
+    """
+    paths = set()
+    for provider_id, config in getattr(settings, "SSO_PROVIDERS", {}).items():
+        paths.add("/" + config.get("login_path", f"{provider_id}/login/"))
+        paths.add("/" + config.get("callback_path", f"{provider_id}/login/callback/"))
+        paths.add("/" + config.get("token_path", f"{provider_id}/token/"))
+    return paths
+
+
+SSO_PATHS = _sso_paths()
+
+
 # polio endpoints are out of scope
-# and wfp auth urls
+# and wfp auth / SSO auth urls
 def should_skip(path):
-    return path.startswith(("/api/polio", "/wfp_auth", "/dashboard/polio/")) or path == "/dashboard/home/"
+    return (
+        path.startswith(("/api/polio", "/wfp_auth", "/dashboard/polio/"))
+        or path == "/dashboard/home/"
+        or path in SSO_PATHS
+    )
 
 
 class TestAuthEnforcement(TestCase):

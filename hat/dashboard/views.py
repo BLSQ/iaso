@@ -6,8 +6,6 @@ from django.http.request import HttpRequest
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 
-from hat.__version__ import VERSION
-
 
 def _should_enable_analytics(request: HttpRequest) -> bool:
     """Check if analytics should be enabled based on environment variable"""
@@ -27,7 +25,7 @@ def _base_iaso(request: HttpRequest, analytics_data: dict = None) -> HttpRespons
         "PLUGINS_ENABLED": settings.PLUGINS,
         "STATIC_URL": settings.STATIC_URL,
         "USER_HOME_PAGE": USER_HOME_PAGE,
-        "VERSION": VERSION,
+        "VERSION": settings.IASO_VERSION,
     }
 
     if analytics_data:

@@ -98,9 +98,6 @@ jobs:
           npm run webpack-prod
           git add -f hat/assets/webpack/
 
-          # add version in python
-          scripts/set_version.sh
-          git add -f hat/__version__.py
         env:
           VERSION_NAME: ${{ steps.version.outputs.VERSION_NAME }}
           CI: false

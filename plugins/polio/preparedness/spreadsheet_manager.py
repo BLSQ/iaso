@@ -14,12 +14,12 @@ from typing import Optional
 
 import gspread  # type: ignore
 
+from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.translation import gettext_lazy as _
 from gspread.utils import Dimension, a1_range_to_grid_range, rowcol_to_a1  # type: ignore
 from rest_framework import exceptions
 
-from hat.__version__ import VERSION
 from iaso.models import OrgUnit
 from plugins.polio.models import Campaign, CountryUsersGroup
 from plugins.polio.preparedness.client import get_client, get_google_config
@@ -216,7 +216,7 @@ def generate_spreadsheet_for_campaign(campaign: Campaign, round_number: Optional
     spreadsheet.sheet1.batch_update(
         [
             {"range": "A28", "values": [[domain]]},
-            {"range": "B28", "values": [[VERSION]]},
+            {"range": "B28", "values": [[settings.IASO_VERSION]]},
             {"range": "B29", "values": [[template_version]]},
         ]
     )

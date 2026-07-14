@@ -1,5 +1,6 @@
 import csv
 
+from django.db.models import Q
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
@@ -92,7 +93,14 @@ class MetricValueViewSet(viewsets.ModelViewSet):
     permission_classes = [MetricsPermissions]
 
     def get_queryset(self):
-        return MetricValue.objects.filter(metric_type__account=self.request.user.iaso_profile.account)
+        qs = MetricValue.objects.filter(metric_type__account=self.request.user.iaso_profile.account)
+        reference_year = self.request.query_params.get("reference_year")
+        if reference_year is not None:
+            try:
+                qs = qs.filter(Q(year=int(reference_year)) | Q(year__isnull=True))
+            except ValueError:
+                pass
+        return qs
 
     @action(detail=False, methods=["get"])
     def csv_template(self, request):

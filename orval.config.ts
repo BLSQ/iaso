@@ -66,11 +66,11 @@ const createConfig = (
                     useInvalidate: true,
                     mutationInvalidates: mutationInvalidates ?? [],
                     queryOptions: {
-                        path: './hat/assets/js/orval/mutator/custom-query-options.ts',
+                        path: '../../../../orval/mutator/custom-query-options.ts',
                         name: 'getCustomQueryOptions',
                     },
                     mutationOptions: {
-                        path: './hat/assets/js/orval/mutator/custom-mutation-options.ts',
+                        path: '../../../../orval/mutator/custom-mutation-options.ts',
                         name: 'useCustomMutationOptions',
                         optionalQueryClient: true,
                     },
@@ -93,7 +93,7 @@ const createConfig = (
                     },
                 },
             },
-            mock: {
+            mock: {generators: [{
                 type: 'msw',
                 preferredContentType: 'application/json',
                 delay: () =>
@@ -102,7 +102,7 @@ const createConfig = (
                         : 0,
                 delayFunctionLazyExecute: true,
                 arrayMin: 1,
-            },
+            }]},
             target: './endpoints',
             schemas: {
                 type: 'zod',

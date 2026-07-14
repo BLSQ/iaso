@@ -9,7 +9,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.test import override_settings
 
 from iaso import models as m
-from iaso.api.form_ai.agent import FormSettings, GeneratedForm, SurveyRow
+from iaso.api.form_ai.agent import FormSettings, GeneratedForm, SurveyRow, parse_form_response
 from iaso.models.form_ai import TemporaryForm
 from iaso.modules import MODULE_FORM_AI
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
@@ -29,6 +29,30 @@ def _make_generated_form() -> GeneratedForm:
         settings=FormSettings(form_title="Test Form", form_id="test_form"),
         message="Here is your form.",
     )
+
+
+class FormAIParseResponseTestCase(APITestCase):
+    def test_parses_response_with_missing_names_on_structural_rows(self):
+        """end group/end repeat rows often omit name; parsing must still succeed."""
+        response_text = """{
+  "survey": [
+    {"type": "text", "name": "q1", "label": "Question 1"},
+    {"type": "begin group", "name": "grp", "label": "Group"},
+    {"type": "end group "},
+    {"type": "begin_repeat", "name": "rep", "label": "Repeat"},
+    {"type": "end_repeat"}
+  ],
+  "choices": [],
+  "settings": {"form_title": "Test", "form_id": "test", "version": "1"},
+  "message": "Added a question."
+}"""
+        form = parse_form_response(response_text)
+
+        self.assertEqual(form.message, "Added a question.")
+        self.assertEqual(form.survey[2].type, "end group ")
+        self.assertEqual(form.survey[2].name, "")
+        self.assertEqual(form.survey[4].type, "end_repeat")
+        self.assertEqual(form.survey[4].name, "")
 
 
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp())

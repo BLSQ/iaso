@@ -97,30 +97,40 @@ def get_filename(response, default="download.bin"):
     return default
 
 
+def save_streaming_content_to_file(response, output_dir):
+    filename = get_filename(response)
+    fullpath_name = output_dir + "/" + filename
+    print(f"saving response in {fullpath_name}")
+    size_bytes = 0
+    with open(fullpath_name, "wb") as f:
+        for chunk in response.streaming_content:
+            if isinstance(chunk, str):
+                chunk = chunk.encode()
+            f.write(chunk)
+            size_bytes += len(chunk)
+    if fullpath_name.endswith(".parquet"):
+        print("to visualize the content :")
+        print(f"    duckdb -c 'select * from \"{fullpath_name}\"'")
+    return f"binary in {filename}", size_bytes / 1024 / 1024
+
+
 def consume_response(response, output_dir):
     content_type = response.get("Content-Type", "")
     is_textual = is_content_type_textual(content_type)
     size_mb = -1
     # ensure we use the response or stream all the response to get the correct sql, duration and content
     if isinstance(response, FileResponse):
-        filename = get_filename(response)
-        fullpath_name = output_dir + "/" + filename
-        print(f"saving response in {fullpath_name}")
-        with open(fullpath_name, "wb") as f:
-            for chunk in response.streaming_content:
-                f.write(chunk)
-            f.flush()
-            f.seek(0)
-            body = f"binary in {filename}"
-        if fullpath_name.endswith(".parquet"):
-            print("to visualize the content :")
-            print(f"    duckdb -c 'select * from \"{fullpath_name}\"'")
+        body, _ = save_streaming_content_to_file(response, output_dir)
         size_mb = float(response.get("Content-Length")) / 1024 / 1024
     elif isinstance(response, StreamingHttpResponse):
-        body = "".join(
-            chunk.decode() if isinstance(chunk, bytes) else str(chunk) for chunk in response.streaming_content
-        )
-        size_mb = len(body) / 1024 / 1024
+        if is_textual:
+            body = "".join(
+                chunk.decode() if isinstance(chunk, bytes) else str(chunk) for chunk in response.streaming_content
+            )
+            size_mb = len(body) / 1024 / 1024
+        else:
+            # e.g. xlsx exports: binary content, can't be decoded/joined as text.
+            body, size_mb = save_streaming_content_to_file(response, output_dir)
 
     else:
         size_mb = len(response.content) / 1024 / 1024

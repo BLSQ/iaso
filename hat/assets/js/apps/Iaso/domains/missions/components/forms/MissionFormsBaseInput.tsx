@@ -94,7 +94,7 @@ export const MissionFormsBaseInput = <TSchema extends BaseUpdateCreateRequest>({
                                 label={formatMessage(MESSAGES.addForm)}
                                 clearable
                                 value={formOptionValue}
-                                keyValue={''}
+                                keyValue={'add_form'}
                                 onChange={value => setFormOptionValue(value)}
                                 {...formSelectProps}
                             />
@@ -113,7 +113,7 @@ export const MissionFormsBaseInput = <TSchema extends BaseUpdateCreateRequest>({
                                 setFormOptionValue(undefined);
                                 formik.setFieldTouched('forms', true);
                             }}
-                            aria-label={formatMessage(MESSAGES.addForm)}
+                            aria-label={formatMessage(MESSAGES.addFormClick)}
                         >
                             <AddIcon />
                         </Button>

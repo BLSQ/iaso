@@ -1097,6 +1097,7 @@
     "iaso.missions.delete": "Delete",
     "iaso.missions.infinity": "Infinity",
     "iaso.missions.label.addForm": "Add a form",
+    "iaso.missions.label.addFormClick": "Click to add a form",
     "iaso.missions.label.createMission": "Create mission",
     "iaso.missions.label.deleteMission": "Delete mission: {missionName}",
     "iaso.missions.label.detailMissionLabel": "Mission details",

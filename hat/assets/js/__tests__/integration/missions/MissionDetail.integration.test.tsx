@@ -2,7 +2,7 @@ import React from 'react';
 import { faker } from '@faker-js/faker';
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event/dist/cjs/index.js';
-import { delay, http, HttpResponse, type RequestHandlerOptions } from 'msw';
+import { HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { Route, Routes } from 'react-router';
 import { MemoryRouter } from 'react-router-dom';
@@ -22,25 +22,7 @@ import {
     renderWithThemeAndIntlProvider,
     TestingQueryClient,
 } from '../../../tests/helpers';
-
-export const getApiNotificationMockHandler = (
-    options?: RequestHandlerOptions,
-) => {
-    return http.get(
-        '*/api/notifications/',
-        async (_info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
-            await delay(
-                (() =>
-                    process.env?.MSW_DELAY
-                        ? parseInt(process.env.MSW_DELAY)
-                        : 0)(),
-            );
-
-            return HttpResponse.json([], { status: 200 });
-        },
-        options,
-    );
-};
+import { getApiNotificationMockHandler } from './mocksAndHandlers';
 
 const server = setupServer(
     getApiMicroplanningMissionsRetrieveMockHandler(),
@@ -80,6 +62,20 @@ vi.mock('Iaso/domains/users/utils', async () => {
         userHasOneOfPermissions: mockUserHasOneOfPermission,
         userHasAllPermissions: mockUserHasAllPermissions,
         userHasPermission: mockUserHasPermission,
+    };
+});
+
+const { mockRedirectTo } = vi.hoisted(() => {
+    return { mockRedirectTo: vi.fn() };
+});
+
+vi.mock('bluesquare-components', async importOriginal => {
+    const actual =
+        await importOriginal<typeof import('bluesquare-components')>();
+    return {
+        ...actual,
+        useRedirectTo: () => mockRedirectTo,
+        useRedirectToReplace: () => vi.fn(),
     };
 });
 
@@ -406,6 +402,7 @@ describe('Mission detail integration test', () => {
         await waitFor(() => {
             expect(mockDelete).toHaveBeenCalledWith('1');
             expect(screen.queryByRole('dialog')).toBeNull();
+            expect(mockRedirectTo).toHaveBeenCalledWith(baseUrls.missions);
         });
     });
 });

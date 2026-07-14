@@ -1098,6 +1098,7 @@
     "iaso.missions.delete": "Supprimer",
     "iaso.missions.infinity": "Infini",
     "iaso.missions.label.addForm": "Ajouter un formulaire",
+    "iaso.missions.label.addFormClick": "Cliquer pour ajouter un formulaire",
     "iaso.missions.label.createMission": "Créer une mission",
     "iaso.missions.label.deleteMission": "Supprimer la mission : {missionName}",
     "iaso.missions.label.detailMissionLabel": "Détails de mission",

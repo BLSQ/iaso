@@ -2,7 +2,7 @@ import React from 'react';
 import { faker } from '@faker-js/faker';
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event/dist/cjs/index.js';
-import { delay, http, HttpResponse, type RequestHandlerOptions } from 'msw';
+import { HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { Route, Routes } from 'react-router';
 import { MemoryRouter } from 'react-router-dom';
@@ -25,44 +25,7 @@ import {
     selectFromComboBoxWithAsync,
     TestingQueryClient,
 } from '../../../tests/helpers';
-
-export const getApiNotificationMockHandler = (
-    options?: RequestHandlerOptions,
-) => {
-    return http.get(
-        '*/api/notifications/',
-        async (_info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
-            await delay(
-                (() =>
-                    process.env?.MSW_DELAY
-                        ? parseInt(process.env.MSW_DELAY)
-                        : 0)(),
-            );
-
-            return HttpResponse.json([], { status: 200 });
-        },
-        options,
-    );
-};
-
-const server = setupServer(
-    getApiMicroplanningMissionsMissionTypesDropdownListMockHandler(),
-    getApiMicroplanningMissionsListMockHandler(),
-    getApiNotificationMockHandler(),
-);
-
-const renderList = () => {
-    return renderWithThemeAndIntlProvider(
-        <MemoryRouter initialEntries={[`/${baseUrls.missions}/accountId/1/`]}>
-            <Routes>
-                <Route
-                    path={`/${baseUrls.missions}/*`}
-                    element={<Missions />}
-                ></Route>
-            </Routes>
-        </MemoryRouter>,
-    );
-};
+import { getApiNotificationMockHandler } from './mocksAndHandlers';
 
 const { mockUserHasOneOfPermission } = vi.hoisted(() => ({
     mockUserHasOneOfPermission: vi.fn(),
@@ -97,6 +60,25 @@ vi.mock('Iaso/domains/users/utils', async () => {
         userHasPermission: mockUserHasPermission,
     };
 });
+
+const server = setupServer(
+    getApiMicroplanningMissionsMissionTypesDropdownListMockHandler(),
+    getApiMicroplanningMissionsListMockHandler(),
+    getApiNotificationMockHandler(),
+);
+
+const renderList = () => {
+    return renderWithThemeAndIntlProvider(
+        <MemoryRouter initialEntries={[`/${baseUrls.missions}/accountId/1/`]}>
+            <Routes>
+                <Route
+                    path={`/${baseUrls.missions}/*`}
+                    element={<Missions />}
+                ></Route>
+            </Routes>
+        </MemoryRouter>,
+    );
+};
 
 const previousDefaults = TestingQueryClient.getDefaultOptions();
 

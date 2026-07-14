@@ -198,14 +198,7 @@ export const getApiMicroplanningMissionsCreateResponseMissionOrgUnitTypeCreateTy
                         length: { min: 10, max: 20 },
                     }),
                 },
-                ...{
-                    id: faker.number.int(),
-                    name: faker.string.alpha({ length: { min: 10, max: 200 } }),
-                    description: faker.helpers.arrayElement([
-                        faker.string.alpha({ length: { min: 10, max: 500 } }),
-                        undefined,
-                    ]),
-                },
+                ...{ id: faker.number.int() },
             },
             mission_type: faker.helpers.arrayElement([
                 'ORG_UNIT_AND_FORM',
@@ -225,14 +218,7 @@ export const getApiMicroplanningMissionsCreateResponseMissionEntityTypeCreateTyp
                         length: { min: 10, max: 20 },
                     }),
                 },
-                ...{
-                    id: faker.number.int(),
-                    name: faker.string.alpha({ length: { min: 10, max: 200 } }),
-                    description: faker.helpers.arrayElement([
-                        faker.string.alpha({ length: { min: 10, max: 500 } }),
-                        undefined,
-                    ]),
-                },
+                ...{ id: faker.number.int() },
             },
             mission_type: faker.helpers.arrayElement([
                 'ENTITY_AND_FORM',

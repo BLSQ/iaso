@@ -7,18 +7,9 @@
  */
 import { z as zod } from 'zod';
 
-export const missionOrgUnitTypeCreateTypedTwoNameMax = 200;
-
-export const missionOrgUnitTypeCreateTypedTwoDescriptionMax = 500;
-
 export const MissionOrgUnitTypeCreateTyped = zod.strictObject({
     mission_type: zod.enum(['ORG_UNIT_AND_FORM']),
     id: zod.number(),
-    name: zod.string().max(missionOrgUnitTypeCreateTypedTwoNameMax),
-    description: zod
-        .string()
-        .max(missionOrgUnitTypeCreateTypedTwoDescriptionMax)
-        .optional(),
 });
 
 export type MissionOrgUnitTypeCreateTyped = zod.input<

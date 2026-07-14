@@ -105,6 +105,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.missions.label.addForm',
         defaultMessage: 'Add a form',
     },
+    addFormClick: {
+        id: 'iaso.missions.label.addFormClick',
+        defaultMessage: 'Click to add a form',
+    },
     min: {
         id: 'iaso.missions.label.min',
         defaultMessage: 'Min',

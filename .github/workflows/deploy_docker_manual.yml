@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       image_tag:
-        description: Tag to deploy (without the "blsq/iaso:" prefix, e.g. "develop", "IA-4856", or "v2026.06.01")
+        description: Tag to deploy (without the "blsq/iaso:" prefix, e.g. "develop", "IA-4856", or "2026.6.1")
         required: true
         type: string
       branch:

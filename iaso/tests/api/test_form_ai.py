@@ -9,12 +9,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.test import override_settings
 
 from iaso import models as m
-from iaso.api.form_ai.agent import (
-    FormSettings,
-    GeneratedForm,
-    SurveyRow,
-    parse_form_response,
-)
+from iaso.api.form_ai.agent import FormSettings, GeneratedForm, SurveyRow, parse_form_response
 from iaso.models.form_ai import TemporaryForm
 from iaso.modules import MODULE_FORM_AI
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION

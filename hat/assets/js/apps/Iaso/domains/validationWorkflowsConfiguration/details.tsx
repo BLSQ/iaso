@@ -54,9 +54,7 @@ export const ValidationWorkflowConfigurationDetail = () => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const { data: workflow, isFetching: isLoading } =
-        useApiValidationWorkflowsRetrieve(params.slug, {
-            query: { enabled: Boolean(params?.slug) },
-        });
+        useApiValidationWorkflowsRetrieve(params.slug);
 
     const {
         items,

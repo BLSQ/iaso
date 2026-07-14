@@ -72,6 +72,7 @@ services:
         - FAVICON_PATH
         - FORM_AI_MODEL
         - FORUM_PATH
+        - HAT_LOGGING_LEVEL
         - HIDE_BASIC_NAV_ITEMS
         - LEARN_MORE_URL
         - LIVE_COMPONENTS
@@ -117,10 +118,6 @@ services:
         - WFP_AUTH_CLIENT_ID
         - WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT
         - WORKER
-      logging: &iaso_logging
-        driver: json-file
-        options:
-          max-size: 5k
       stdin_open: true
       tty: true
     nginx:

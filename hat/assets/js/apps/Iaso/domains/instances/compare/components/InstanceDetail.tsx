@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { TypographyVariant } from '@mui/material';
+import { useGetInstance } from '../../hooks/requests/useGetInstance';
 import { Instance } from '../../types/instance';
-import { useGetInstance } from '../hooks/useGetInstance';
 import { InstanceDetailRaw } from './InstanceDetailRaw';
 
 type Props = {

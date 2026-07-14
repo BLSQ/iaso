@@ -8,8 +8,6 @@ import { Box, FormControlLabel, FormGroup, Grid, Switch } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { FieldProps, useField } from 'formik';
 import cloneDeep from 'lodash/cloneDeep';
-
-// @ts-ignore
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { OrgUnit } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 import MESSAGES from '../../../constants/messages';

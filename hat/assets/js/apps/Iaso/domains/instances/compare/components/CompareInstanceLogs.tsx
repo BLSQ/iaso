@@ -18,13 +18,42 @@ import {
     useGetInstanceLogDetail,
 } from '../hooks/useGetInstanceLogs';
 import MESSAGES from '../messages';
+import { FormattedInstanceLog } from '../utils/formattedInstanceLog';
 import { InstanceLogDetail } from './InstanceLogDetail';
 import { InstanceLogInfos } from './InstanceLogInfos';
+
+export type { FormattedInstanceLog } from '../utils/formattedInstanceLog';
+export {
+    EMPTY_FORMATTED_INSTANCE_LOG,
+    hasInstanceLogContent,
+} from '../utils/formattedInstanceLog';
 
 type Params = {
     instanceIds: string;
     logA: string;
     logB: string;
+};
+
+export type LogContentSource = {
+    new_value?: Array<{ fields: Record<string, any> }>;
+    files?: Record<string, string> | string[];
+    form_descriptor?: Record<string, any>[] | Record<string, any> | null;
+    possible_fields?: Record<string, any>[];
+};
+
+export const formatLogContent = (
+    instanceLogA: Partial<LogContentSource> | undefined,
+    instanceLogB: Partial<LogContentSource> | undefined,
+): FormattedInstanceLog => {
+    return {
+        logA: instanceLogA?.new_value?.[0]?.fields,
+        logB: instanceLogB?.new_value?.[0]?.fields,
+        logAFiles: instanceLogA?.files,
+        logBFiles: instanceLogB?.files,
+        formDescriptorA: instanceLogA?.form_descriptor,
+        formDescriptorB: instanceLogB?.form_descriptor,
+        fields: instanceLogB?.possible_fields,
+    };
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -59,15 +88,7 @@ export const CompareInstanceLogs: FunctionComponent = () => {
     ] = useGetInstanceLogDetail(instanceId, [params.logA, params.logB]);
 
     const instanceLogContent = useMemo(
-        () => ({
-            logA: instanceLogA?.new_value[0]?.fields,
-            logB: instanceLogB?.new_value[0]?.fields,
-            logAFiles: instanceLogA?.files,
-            logBFiles: instanceLogB?.files,
-            formDescriptorA: instanceLogA?.form_descriptor,
-            formDescriptorB: instanceLogB?.form_descriptor,
-            fields: instanceLogA?.possible_fields,
-        }),
+        () => formatLogContent(instanceLogA, instanceLogB),
         [instanceLogA, instanceLogB],
     );
     const isLogDetailLoading = isInstanceLogAFetching || isInstanceLogBFetching;

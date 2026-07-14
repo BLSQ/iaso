@@ -1,4 +1,5 @@
 import base64
+import copy
 import json
 
 from unittest.mock import patch
@@ -31,6 +32,8 @@ def make_test_token(app_id="test-client-id", tenant_id="test-tenant"):
 # Self-contained SSO config for the tests. It is injected via ``override_settings``
 # together with a dedicated ``ROOT_URLCONF`` (see ``plugins/sso/tests/urls.py``) so the
 # provider URLs are registered even when SSO is not configured in the environment (e.g. CI).
+# ``account_id`` is set dynamically in ``setUp`` from the account created in
+# ``setUpTestData``, since its real pk isn't stable across ``--keepdb`` runs.
 SSO_TEST_CONFIG = {
     "who": {
         "name": "WHO",
@@ -43,19 +46,26 @@ SSO_TEST_CONFIG = {
         "login_path": "polio/login/",
         "callback_path": "polio/login/callback/",
         "token_path": "polio/token/",
-        "account_id": 1,
         "email_recipients_new_account": [],
     },
 }
 
 
-@override_settings(SSO_PROVIDERS=SSO_TEST_CONFIG, ROOT_URLCONF="hat.tests.urls")
+@override_settings(ROOT_URLCONF="hat.tests.urls")
 class SSOAuthTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.account, cls.data_source, cls.version, cls.project = cls.create_account_datasource_version_project(
             source_name="Data source", account_name="Account", project_name="Project", app_id="test_app_id"
         )
+
+    def setUp(self):
+        super().setUp()
+        config = copy.deepcopy(SSO_TEST_CONFIG)
+        config["who"]["account_id"] = self.account.id
+        override = override_settings(SSO_PROVIDERS=config)
+        override.enable()
+        self.addCleanup(override.disable)
 
     @patch("requests.get")
     def test_complete_login_ok(self, mock_get):

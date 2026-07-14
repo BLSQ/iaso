@@ -24,7 +24,12 @@ export const useMissionColumns = (): Column[] => {
                 Header: formatMessage(MESSAGES.formsNumber),
                 accessor: 'forms_count',
                 sortable: false,
-                Cell: (s: any) => <NumberCell {...s} />,
+                Cell: ({ value, ...s }: any) => {
+                    if (!value) {
+                        return 0;
+                    }
+                    return <NumberCell value={value} {...s} />;
+                },
             },
             {
                 Header: formatMessage(MESSAGES.orgUnitType),

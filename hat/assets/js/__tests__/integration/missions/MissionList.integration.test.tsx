@@ -367,7 +367,6 @@ describe('Mission list integration test', () => {
     });
 
     it('calls delete and refreshes the query', async () => {
-        // todo
         const mockList = vi.fn();
         const mockDelete = vi.fn();
         const data = getApiMicroplanningMissionsListResponseMock({

@@ -1,5 +1,3 @@
-// handlers
-
 import React from 'react';
 import { faker } from '@faker-js/faker';
 import { act, screen, waitFor } from '@testing-library/react';

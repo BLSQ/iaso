@@ -50,11 +50,7 @@ const AccountsDetails: FunctionComponent = () => {
 
     const accountId = parseInt(params.id);
 
-    const { data: account, isLoading } = useApiAccountsRetrieve(
-        accountId,
-        undefined,
-        { query: { enabled: Boolean(accountId) } },
-    );
+    const { data: account, isLoading } = useApiAccountsRetrieve(accountId);
 
     const user = useCurrentUser();
 

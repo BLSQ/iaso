@@ -452,20 +452,6 @@ export const getApiMicroplanningMissionsUpdateResponseMissionOrgUnitTypeUpdateTy
         overrideResponse: Partial<MissionOrgUnitTypeUpdateTyped> = {},
     ): MissionOrgUnitTypeUpdateTyped => ({
         ...{
-            ...{
-                ...{
-                    mission_type: faker.string.alpha({
-                        length: { min: 10, max: 20 },
-                    }),
-                },
-                ...{
-                    name: faker.string.alpha({ length: { min: 10, max: 200 } }),
-                    description: faker.helpers.arrayElement([
-                        faker.string.alpha({ length: { min: 10, max: 500 } }),
-                        undefined,
-                    ]),
-                },
-            },
             mission_type: faker.helpers.arrayElement([
                 'ORG_UNIT_AND_FORM',
             ] as const),
@@ -478,20 +464,6 @@ export const getApiMicroplanningMissionsUpdateResponseMissionEntityTypeUpdateTyp
         overrideResponse: Partial<MissionEntityTypeUpdateTyped> = {},
     ): MissionEntityTypeUpdateTyped => ({
         ...{
-            ...{
-                ...{
-                    mission_type: faker.string.alpha({
-                        length: { min: 10, max: 20 },
-                    }),
-                },
-                ...{
-                    name: faker.string.alpha({ length: { min: 10, max: 200 } }),
-                    description: faker.helpers.arrayElement([
-                        faker.string.alpha({ length: { min: 10, max: 500 } }),
-                        undefined,
-                    ]),
-                },
-            },
             mission_type: faker.helpers.arrayElement([
                 'ENTITY_AND_FORM',
             ] as const),
@@ -536,20 +508,6 @@ export const getApiMicroplanningMissionsPartialUpdateResponseMissionOrgUnitTypeU
         overrideResponse: Partial<MissionOrgUnitTypeUpdateTyped> = {},
     ): MissionOrgUnitTypeUpdateTyped => ({
         ...{
-            ...{
-                ...{
-                    mission_type: faker.string.alpha({
-                        length: { min: 10, max: 20 },
-                    }),
-                },
-                ...{
-                    name: faker.string.alpha({ length: { min: 10, max: 200 } }),
-                    description: faker.helpers.arrayElement([
-                        faker.string.alpha({ length: { min: 10, max: 500 } }),
-                        undefined,
-                    ]),
-                },
-            },
             mission_type: faker.helpers.arrayElement([
                 'ORG_UNIT_AND_FORM',
             ] as const),
@@ -562,20 +520,6 @@ export const getApiMicroplanningMissionsPartialUpdateResponseMissionEntityTypeUp
         overrideResponse: Partial<MissionEntityTypeUpdateTyped> = {},
     ): MissionEntityTypeUpdateTyped => ({
         ...{
-            ...{
-                ...{
-                    mission_type: faker.string.alpha({
-                        length: { min: 10, max: 20 },
-                    }),
-                },
-                ...{
-                    name: faker.string.alpha({ length: { min: 10, max: 200 } }),
-                    description: faker.helpers.arrayElement([
-                        faker.string.alpha({ length: { min: 10, max: 500 } }),
-                        undefined,
-                    ]),
-                },
-            },
             mission_type: faker.helpers.arrayElement([
                 'ENTITY_AND_FORM',
             ] as const),

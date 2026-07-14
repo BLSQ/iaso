@@ -28,9 +28,10 @@ export const EditBaseMissionEntityType: React.FunctionComponent<
             MissionEntityTypeUpdateRequest,
         ),
         initialValues: {
-            ...data,
             name: data.name,
+            description: data?.description,
             min_cardinality: data.min_cardinality,
+            max_cardinality: data?.max_cardinality,
             entity_type: data.entity_type.id,
             forms:
                 data?.forms?.map(f => ({

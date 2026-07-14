@@ -7,14 +7,6 @@
  */
 import { z as zod } from 'zod';
 
-export const missionPolymorphicUpdateTwoTwoNameMax = 200;
-
-export const missionPolymorphicUpdateTwoTwoDescriptionMax = 500;
-
-export const missionPolymorphicUpdateThreeTwoNameMax = 200;
-
-export const missionPolymorphicUpdateThreeTwoDescriptionMax = 500;
-
 export const MissionPolymorphicUpdate = zod.union([
     zod.strictObject({
         mission_type: zod.enum(['FORM_FILLING']),
@@ -22,19 +14,9 @@ export const MissionPolymorphicUpdate = zod.union([
     }),
     zod.strictObject({
         mission_type: zod.enum(['ORG_UNIT_AND_FORM']),
-        name: zod.string().max(missionPolymorphicUpdateTwoTwoNameMax),
-        description: zod
-            .string()
-            .max(missionPolymorphicUpdateTwoTwoDescriptionMax)
-            .optional(),
     }),
     zod.strictObject({
         mission_type: zod.enum(['ENTITY_AND_FORM']),
-        name: zod.string().max(missionPolymorphicUpdateThreeTwoNameMax),
-        description: zod
-            .string()
-            .max(missionPolymorphicUpdateThreeTwoDescriptionMax)
-            .optional(),
     }),
 ]);
 

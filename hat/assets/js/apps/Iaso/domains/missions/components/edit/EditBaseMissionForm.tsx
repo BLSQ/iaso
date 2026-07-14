@@ -26,8 +26,8 @@ export const EditBaseMissionForm: React.FunctionComponent<
     const formik = useFormik<MissionFormUpdateRequest>({
         validationSchema: toFormikValidationSchema(MissionFormUpdateRequest),
         initialValues: {
-            ...data,
             name: data.name,
+            description: data?.description,
             forms:
                 data?.forms?.map(f => ({
                     form: f.form,

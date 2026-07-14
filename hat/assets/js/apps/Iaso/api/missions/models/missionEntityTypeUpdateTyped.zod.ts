@@ -7,17 +7,8 @@
  */
 import { z as zod } from 'zod';
 
-export const missionEntityTypeUpdateTypedTwoNameMax = 200;
-
-export const missionEntityTypeUpdateTypedTwoDescriptionMax = 500;
-
 export const MissionEntityTypeUpdateTyped = zod.strictObject({
     mission_type: zod.enum(['ENTITY_AND_FORM']),
-    name: zod.string().max(missionEntityTypeUpdateTypedTwoNameMax),
-    description: zod
-        .string()
-        .max(missionEntityTypeUpdateTypedTwoDescriptionMax)
-        .optional(),
 });
 
 export type MissionEntityTypeUpdateTyped = zod.input<

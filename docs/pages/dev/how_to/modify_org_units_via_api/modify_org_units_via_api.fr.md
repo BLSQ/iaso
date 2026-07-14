@@ -224,6 +224,13 @@ propres identifiants en identifiants IASO sans correspondance approximative :
 
 Pour une seule unité d'organisation : `GET /api/orgunits/<id>/`.
 
+!!! tip "Si votre système parle FHIR"
+    IASO expose également les unités d'organisation sous forme de ressources FHIR R4 `Location`, en
+    lecture seule. Si vous intégrez un système qui consomme déjà du FHIR, voyez [lire les unités
+    d'organisation via l'API FHIR](../read_org_units_via_fhir/read_org_units_via_fhir.md). C'est une
+    voie de lecture uniquement — toutes les écritures passent par les points d'entrée décrits
+    ci-dessous.
+
 ## Voie A — modifier directement les unités d'organisation
 
 Exige la permission `iaso_org_units`.

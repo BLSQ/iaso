@@ -217,6 +217,12 @@ IASO ids without fuzzy matching:
 
 Fetching a single org unit is `GET /api/orgunits/<id>/`.
 
+!!! tip "If your system speaks FHIR"
+    IASO also exposes org units as read-only FHIR R4 `Location` resources. If you are integrating a
+    system that already consumes FHIR, see [reading org units through the FHIR
+    API](../read_org_units_via_fhir/read_org_units_via_fhir.md). It is a read path only — all writes
+    go through the endpoints described below.
+
 ## Path A — modifying org units directly
 
 Requires the `iaso_org_units` permission.

@@ -1086,4 +1086,18 @@ describe('Mission create integration test', () => {
             screen.getByRole('link', { name: MESSAGES.cancel.defaultMessage }),
         ).toHaveAttribute('href', `/${baseUrls.missions}/`);
     });
+
+    it('goes back to mission list when top bar back button is clicked', async () => {
+        act(() => {
+            renderCreate();
+        });
+
+        await act(async () => {
+            await userEvent.click(screen.getByTestId('ArrowBackIcon'));
+        });
+
+        await waitFor(() => {
+            expect(mockRedirectTo).toHaveBeenCalledWith(baseUrls.missions);
+        });
+    });
 });

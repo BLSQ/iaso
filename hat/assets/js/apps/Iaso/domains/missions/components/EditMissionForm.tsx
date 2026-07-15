@@ -15,28 +15,23 @@ import { MissionOrgUnitTypeInput } from 'Iaso/domains/missions/components/forms/
 import TextInput from 'Iaso/domains/pages/components/TextInput';
 import MESSAGES from '../messages';
 
+type Base<T> = {
+    formik: FormikProps<T>;
+    cancelUrl?: string;
+    allowConfirm: boolean;
+    successButtonMessage: string;
+};
+
 type EditMissionFormProps =
-    | {
+    | (Base<MissionOrgUnitTypeUpdateRequest> & {
           missionType: typeof MissionTypeDropdownValueEnum.enum.ORG_UNIT_AND_FORM;
-          formik: FormikProps<MissionOrgUnitTypeUpdateRequest>;
-          cancelUrl?: string;
-          allowConfirm: boolean;
-          successButtonMessage: string;
-      }
-    | {
+      })
+    | (Base<MissionFormUpdateRequest> & {
           missionType: typeof MissionTypeDropdownValueEnum.enum.FORM_FILLING;
-          formik: FormikProps<MissionFormUpdateRequest>;
-          cancelUrl?: string;
-          allowConfirm: boolean;
-          successButtonMessage: string;
-      }
-    | {
+      })
+    | (Base<MissionEntityTypeUpdateRequest> & {
           missionType: typeof MissionTypeDropdownValueEnum.enum.ENTITY_AND_FORM;
-          formik: FormikProps<MissionEntityTypeUpdateRequest>;
-          cancelUrl?: string;
-          allowConfirm: boolean;
-          successButtonMessage: string;
-      };
+      });
 
 export const EditMissionForm = ({
     cancelUrl,

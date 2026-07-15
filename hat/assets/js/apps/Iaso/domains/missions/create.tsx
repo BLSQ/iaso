@@ -20,7 +20,7 @@ export const MissionCreate: FunctionComponent = () => {
 
     const redirectTo = useRedirectTo();
 
-    const redirectBackUrl: string = `${baseUrls.missionsDetails}/id/`;
+    const redirectBackUrl: string = `${baseUrls.missions}`;
 
     const { mutateAsync: create } = useApiMicroplanningMissionsCreate({
         mutation: {

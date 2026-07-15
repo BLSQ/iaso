@@ -1,8 +1,12 @@
 import React, { FunctionComponent, useState } from 'react';
 import Add from '@mui/icons-material/Add';
 import { Box, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import { commonStyles, LinkButton, useSafeIntl } from 'bluesquare-components';
+import {
+    commonStyles,
+    LinkButton,
+    theme,
+    useSafeIntl,
+} from 'bluesquare-components';
 import type { ApiMicroplanningMissionsListParams } from 'Iaso/api/missions';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { SearchButton } from 'Iaso/components/SearchButton';
@@ -17,19 +21,12 @@ type Props = {
     params: ApiMicroplanningMissionsListParams;
 };
 
-const useStyles = makeStyles((theme: any) => {
-    return {
-        ...commonStyles(theme),
-    };
-});
-
 const baseUrl = baseUrls.missions;
 export const MissionFilters: FunctionComponent<Props> = ({ params }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
     const { formatMessage } = useSafeIntl();
-    const classes: Record<string, string> = useStyles();
 
     return (
         <Grid container spacing={0}>
@@ -72,7 +69,7 @@ export const MissionFilters: FunctionComponent<Props> = ({ params }) => {
                         />
                         <DisplayIfUserHasPerm permissions={[MISSION_WRITE]}>
                             <LinkButton to={`/${baseUrls.missionsCreate}`}>
-                                <Add className={classes.buttonIcon} />
+                                <Add sx={commonStyles(theme).buttonIcon} />
                                 {formatMessage(MESSAGES.create)}
                             </LinkButton>
                         </DisplayIfUserHasPerm>

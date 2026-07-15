@@ -5,23 +5,25 @@ import {
     MissionTypeValueEnum,
 } from 'Iaso/api/missions';
 
-export function isMissionFormRetrieve(data: any): data is MissionFormRetrieve {
-    return data?.mission_type?.value === MissionTypeValueEnum.enum.FORM_FILLING;
-}
-
-export function isMissionEntityTypeRetrieve(
+export const isMissionFormRetrieve = (
     data: any,
-): data is MissionEntityTypeRetrieve {
+): data is MissionFormRetrieve => {
+    return data?.mission_type?.value === MissionTypeValueEnum.enum.FORM_FILLING;
+};
+
+export const isMissionEntityTypeRetrieve = (
+    data: any,
+): data is MissionEntityTypeRetrieve => {
     return (
         data?.mission_type?.value === MissionTypeValueEnum.enum.ENTITY_AND_FORM
     );
-}
+};
 
-export function isMissionOrgUnitTypeRetrieve(
+export const isMissionOrgUnitTypeRetrieve = (
     data: any,
-): data is MissionOrgUnitTypeRetrieve {
+): data is MissionOrgUnitTypeRetrieve => {
     return (
         data?.mission_type?.value ===
         MissionTypeValueEnum.enum.ORG_UNIT_AND_FORM
     );
-}
+};

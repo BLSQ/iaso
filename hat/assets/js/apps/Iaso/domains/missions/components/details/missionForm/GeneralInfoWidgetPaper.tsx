@@ -19,7 +19,7 @@ export const GeneralInfoWidgetPaper: React.FunctionComponent<
             title={formatMessage(MESSAGES.generalInfoTitle)}
             sx={{ mb: 2 }}
         >
-            <Table size={'small'}>
+            <Table size="small">
                 <TableBody>
                     <Row
                         field={{

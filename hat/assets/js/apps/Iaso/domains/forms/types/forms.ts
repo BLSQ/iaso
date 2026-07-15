@@ -69,6 +69,11 @@ export type ChildrenDescriptor = {
     children: ChildrenDescriptor[];
 };
 
+export type FormDropdown = {
+    value: number;
+    label: string;
+};
+
 export type Form = {
     id: number;
     name: string;

@@ -219,3 +219,12 @@ class FormSerializer(DynamicFieldsModelSerializerBackwardCompatible):
         form = super(FormSerializer, self).create(validated_data)
         log_modification(None, form, FORM_API, user=self.context["request"].user)
         return form
+
+
+class FormDropdownSerializer(ModelSerializer):
+    value = serializers.IntegerField(source="id", read_only=True)
+    label = serializers.CharField(source="name", read_only=True)
+
+    class Meta:
+        model = Form
+        fields = ["value", "label"]

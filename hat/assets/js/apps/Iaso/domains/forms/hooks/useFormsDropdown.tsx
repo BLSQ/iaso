@@ -38,7 +38,6 @@ export const useFormsDropdown = (
             staleTime: 1000 * 60 * 15,
             cacheTime: 1000 * 60 * 5,
             keepPreviousData: true,
-            select: (data: FormDropdown[]): FormDropdown[] => data ?? [],
         },
     });
 };

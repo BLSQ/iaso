@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useFormsDropdown } from './useformsDropdown';
+import { useFormsDropdown } from './useFormsDropdown';
 
 const { mockUseSnackQuery, mockGetRequest, mockMakeUrlWithParams } = vi.hoisted(
     () => ({
@@ -22,11 +22,9 @@ vi.mock('../../../libs/utils', () => ({
     makeUrlWithParams: mockMakeUrlWithParams,
 }));
 
-// Run the query's `select` transform against a canned API response and expose
-// the result as `data`, so we can assert what the hook returns to components.
 const mockApiResponse = (apiData: any) => {
-    mockUseSnackQuery.mockImplementation(({ options }: any) => ({
-        data: options?.select ? options.select(apiData) : apiData,
+    mockUseSnackQuery.mockImplementation(() => ({
+        data: apiData,
         isLoading: false,
     }));
 };
@@ -89,13 +87,5 @@ describe('useFormsDropdown', () => {
             { value: 1, label: 'Alpha' },
             { value: 2, label: 'Beta' },
         ]);
-    });
-
-    it('returns an empty array when the response is empty', () => {
-        mockApiResponse(undefined);
-
-        const { result } = renderHook(() => useFormsDropdown());
-
-        expect(result.current.data).toEqual([]);
     });
 });

@@ -10,7 +10,7 @@ from unittest import mock
 import requests
 
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import TestCase, tag
 
 from iaso.models import SUCCESS, Account, Form, Project, Task
 from iaso.plugins import is_trypelim_plugin_active
@@ -261,6 +261,7 @@ class DownloadFormAttachmentsTest(TestCase):
         self.assertEqual(result["results"][0]["file"], "formattachments/16/1.png")
 
 
+@tag("trypelim")
 class ExportMobileAppSetupTrypelimFeatures(TestCase):
     """Test trypelim-specific features for the export mobile setup task."""
 
@@ -559,9 +560,9 @@ class RetryMechanismTest(TestCase):
     def test_call_endpoint_total_failure(self, mock_sleep):
         from iaso.tasks.export_mobile_app_setup_for_user import _call_endpoint
 
-        self.iaso_client.get.side_effect = Exception("Failure")
+        self.iaso_client.get.side_effect = ValueError("Failure")
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(ValueError):
             _call_endpoint(self.iaso_client, self.url, self.filename, max_retries=3, delay=1)
 
         self.assertEqual(self.iaso_client.get.call_count, 3)

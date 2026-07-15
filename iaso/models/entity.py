@@ -23,7 +23,7 @@ from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Exists, OuterRef, Prefetch, Subquery
+from django.db.models import Exists, OuterRef, Prefetch
 
 from iaso.models import Account, Instance, OrgUnit, Project
 from iaso.models.deduplication import ValidationStatus

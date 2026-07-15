@@ -82,9 +82,7 @@ export const useRedirections: RedirectionsMethod = ({
             },
             {
                 path: `/${baseUrls.entities}`,
-                to: `/${baseUrls.entities}${getPaginationParams(
-                    '-id',
-                )}`,
+                to: `/${baseUrls.entities}${getPaginationParams('-id')}`,
             },
             {
                 path: `/${baseUrls.entityTypes}`,

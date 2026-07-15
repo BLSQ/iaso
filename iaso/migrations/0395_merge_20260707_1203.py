@@ -4,11 +4,9 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0392_merge_20260617_1114'),
-        ('iaso', '0394_remove_show_pages_feature_flag'),
+        ("iaso", "0392_merge_20260617_1114"),
+        ("iaso", "0394_remove_show_pages_feature_flag"),
     ]
 
-    operations = [
-    ]
+    operations = []

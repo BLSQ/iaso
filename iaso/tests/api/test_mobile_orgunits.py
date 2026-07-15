@@ -4,6 +4,7 @@ import time_machine
 
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.core.cache import cache
+from django.test import tag
 
 from iaso.api.mobile.org_units import SHAPE_RESULTS_MAX
 from iaso.api.query_params import APP_ID, IDS, LIMIT, PAGE
@@ -145,6 +146,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         response = self.client.get(BASE_URL, {APP_ID: self.project.app_id})
         self.assertJSONResponse(response, 401)
 
+    @tag("trypelim")
     def test_orgunits_list_with_auth_for_project_requiring_auth(self):
         """GET /mobile/orgunits/ with auth for project which requires it: 200"""
 
@@ -152,6 +154,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         response = self.client.get(BASE_URL, {APP_ID: self.project.app_id})
         self.assertJSONResponse(response, 200)
 
+    @tag("trypelim")
     def test_org_unit_with_shapes_limited(self):
         self.client.force_authenticate(self.user)
 
@@ -162,6 +165,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
 
         self.assertEqual(response.json()["limit"], 25000)
 
+    @tag("trypelim")
     def test_org_unit_have_correct_parent_id_without_limit(self):
         self.client.force_authenticate(self.user)
         with self.assertNumQueries(14):
@@ -201,6 +205,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.json()["orgUnits"][3]["parent_id"], None)
         self.assertEqual(0, len(response.json()["orgUnits"][3]["groups"]))
 
+    @tag("trypelim")
     def test_org_unit_have_correct_parent_id_when_everything_is_fine_without_limit(self):
         self.goku.validation_status = OrgUnit.VALIDATION_VALID
         self.goku.save()
@@ -245,6 +250,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.json()["orgUnits"][4]["parent_id"], self.goku.id)
         self.assertEqual(0, len(response.json()["orgUnits"][4]["groups"]))
 
+    @tag("trypelim")
     def test_org_unit_have_correct_parent_id_when_parent_wrong_type_without_limit(self):
         self.goku.validation_status = OrgUnit.VALIDATION_VALID
         self.goku.org_unit_type = self.nameks
@@ -287,6 +293,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.json()["orgUnits"][3]["parent_id"], None)
         self.assertEqual(0, len(response.json()["orgUnits"][3]["groups"]))
 
+    @tag("trypelim")
     def test_org_unit_have_correct_parent_id_with_limit(self):
         self.client.force_authenticate(self.user)
 
@@ -325,6 +332,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.assertEqual(json["has_next"], has_next)
         self.assertEqual(json["has_previous"], has_previous)
 
+    @tag("trypelim")
     def test_org_unit_have_correct_parent_id_without_limit_with_shape(self):
         self.client.force_authenticate(self.user)
 
@@ -345,6 +353,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.json()["orgUnits"][1]["parent_id"], self.bardock.id)
         self.assertEqual(response.json()["orgUnits"][1]["geo_json"], None)
 
+    @tag("trypelim")
     def test_LIMIT_OU_DOWNLOAD_TO_ROOTS(self):
         self.user.iaso_profile.org_units.set([self.goku])
         self.goku.validation_status = OrgUnit.VALIDATION_VALID

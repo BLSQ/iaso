@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-23 07:27+0000\n"
+"POT-Creation-Date: 2026-07-08 09:42+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -71,10 +71,6 @@ msgid ""
 msgstr ""
 "Il y a plusieurs soumissions pour cette période et cette unité "
 "organisationnelle, veuillez vous connecter au tableau de bord pour corriger."
-
-#: iaso/enketo/enketo_xml.py:68
-msgid "<No need to edit this field>"
-msgstr "<Il n'est pas nécessaire de remplir ce champ>"
 
 #: iaso/api/group_sets/filters.py
 msgid "Search by groupset's name"
@@ -391,12 +387,10 @@ msgid "Group must be in the same source version"
 msgstr "Le groupe doit être dans la même version source"
 
 #: iaso/api/org_units.py
-#, python-brace-format
 msgid "InstanceFile with id {} does not exist"
 msgstr "Le fichier d'instance avec l'id {} n'existe pas"
 
 #: iaso/api/org_units.py
-#, python-brace-format
 msgid "Another valid OrgUnit already exists with the code '{}' in this version"
 msgstr ""
 "Une autre unité d'organisation valide existe déjà avec le code '{}' dans "
@@ -572,6 +566,10 @@ msgstr "ID de Version de Formulaire"
 #: iaso/auth/forms.py
 msgid "Too many login attempts. Please try again later."
 msgstr "Trop de tentatives de connexion. Veuillez réessayer plus tard."
+
+#: iaso/enketo/enketo_xml.py
+msgid "<Il n'est pas nécessaire de remplir ce champ>"
+msgstr "<Il n'est pas nécessaire de remplir ce champ>"
 
 #: iaso/models/base.py
 msgid "Aggregate"
@@ -1375,6 +1373,9 @@ msgstr "Virus détecté"
 #: iaso/utils/virus_scan/model.py
 msgid "Error"
 msgstr "Erreur lors de l'analyse"
+
+#~ msgid "<No need to edit this field>"
+#~ msgstr "<Il n'est pas nécessaire de remplir ce champ>"
 
 #~ msgid "Account id is required."
 #~ msgstr "L'identifiant du compte est requis."

@@ -1,14 +1,11 @@
-import React, { FunctionComponent, useCallback } from 'react';
-import Autorenew from '@mui/icons-material/Autorenew';
+import React, { FunctionComponent } from 'react';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { Button, Box, Tooltip, Grid } from '@mui/material';
+import { Box, Tooltip, Grid } from '@mui/material';
 
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
-import { useStartAnalyse } from '../hooks/api/analyzes';
 import MESSAGES from '../messages';
-import { Analysis, Parameters } from '../types';
-import { AnalysisModal } from './AnalysisModal';
+import { Analysis } from '../types';
 import { AnalysisTooltipTitle } from './AnalysisTooltipTitle';
 
 type Props = {
@@ -24,18 +21,18 @@ export const AnalyseAction: FunctionComponent<Props> = ({
     // const { data: latestAnalysis, isFetching: isFetchingLatestAnalysis } =
     //     useGetLatestAnalysis();
 
-    const { mutateAsync: startAnalyse, isLoading: isSaving } =
-        useStartAnalyse();
-    const handleClick = useCallback(() => {
-        startAnalyse({
-            algorithm: latestAnalysis?.algorithm,
-            entity_type_id: latestAnalysis?.entity_type_id,
-            fields: latestAnalysis?.fields,
-            parameters: Object.entries(
-                latestAnalysis?.parameters as unknown as Parameters,
-            ).map(([name, value]) => ({ name, value })),
-        });
-    }, [latestAnalysis, startAnalyse]);
+    // const { mutateAsync: startAnalyse, isLoading: isSaving } =
+    //     useStartAnalyse();
+    // const handleClick = useCallback(() => {
+    //     startAnalyse({
+    //         algorithm: latestAnalysis?.algorithm,
+    //         entity_type_id: latestAnalysis?.entity_type_id,
+    //         fields: latestAnalysis?.fields,
+    //         parameters: Object.entries(
+    //             latestAnalysis?.parameters as unknown as Parameters,
+    //         ).map(([name, value]) => ({ name, value })),
+    //     });
+    // }, [latestAnalysis, startAnalyse]);
     return (
         <Box minHeight={36} display="flex" width="100%">
             {!latestAnalysis &&

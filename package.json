@@ -89,7 +89,6 @@
         "leaflet.markercluster": "^1.4.1",
         "lodash": "^4.17.15",
         "moment": "^2.29.4",
-        "node-fetch": "^2.6.7",
         "notistack": "^3.0.1",
         "npm": "11.13.0",
         "pdfjs-dist": "^4.8.69",

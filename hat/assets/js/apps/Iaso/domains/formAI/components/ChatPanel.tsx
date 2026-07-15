@@ -189,13 +189,47 @@ const styles: SxStyles = {
     },
     inputArea: {
         p: 2,
-        borderTop: '1px solid #e0e0e0',
+        borderTop: theme => `1px solid ${theme.palette.divider}`,
+    },
+    inputContainer: {
         display: 'flex',
+        alignItems: 'center',
         gap: 1,
+        px: 2,
+        py: 0.75,
+        borderRadius: 999,
+        border: theme => `1px solid ${theme.palette.divider}`,
+        bgcolor: 'common.white',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+    },
+    inputField: {
+        flex: 1,
+        '& .MuiInputBase-root': {
+            fontSize: '0.875rem',
+            alignItems: 'center',
+        },
+        '& .MuiOutlinedInput-root': {
+            p: 0,
+        },
+        '& .MuiInputBase-input': {
+            py: 1,
+            px: 0,
+        },
+        '& fieldset': {
+            border: 'none',
+        },
+        '& .MuiOutlinedInput-notchedOutline': {
+            border: 'none',
+        },
     },
     sendButton: {
-        minWidth: 'auto',
-        px: 2,
+        minWidth: 40,
+        width: 40,
+        height: 40,
+        borderRadius: '50%',
+        p: 0,
+        flexShrink: 0,
+        boxShadow: '0 2px 6px rgba(0, 0, 0, 0.12)',
     },
 };
 
@@ -305,25 +339,29 @@ export const ChatPanel: FunctionComponent<Props> = ({
             </Box>
 
             <Box sx={styles.inputArea}>
-                <TextField
-                    fullWidth
-                    multiline
-                    maxRows={4}
-                    size="small"
-                    placeholder={formatMessage(MESSAGES.placeholder)}
-                    value={inputValue}
-                    onChange={e => setInputValue(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    disabled={isLoading}
-                />
-                <Button
-                    variant="contained"
-                    onClick={handleSend}
-                    disabled={isLoading || !inputValue.trim()}
-                    sx={styles.sendButton}
-                >
-                    <SendIcon />
-                </Button>
+                <Box sx={styles.inputContainer}>
+                    <TextField
+                        fullWidth
+                        multiline
+                        maxRows={4}
+                        variant="outlined"
+                        placeholder={formatMessage(MESSAGES.placeholder)}
+                        value={inputValue}
+                        onChange={e => setInputValue(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        disabled={isLoading}
+                        sx={styles.inputField}
+                    />
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleSend}
+                        disabled={isLoading || !inputValue.trim()}
+                        sx={styles.sendButton}
+                    >
+                        <SendIcon sx={{ fontSize: 18 }} />
+                    </Button>
+                </Box>
             </Box>
         </Box>
     );

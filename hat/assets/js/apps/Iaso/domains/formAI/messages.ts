@@ -51,6 +51,35 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Form preview will appear here once generated',
         id: 'iaso.formAI.previewPlaceholder',
     },
+    previewWelcomeTitle: {
+        defaultMessage: 'Create a form from scratch',
+        id: 'iaso.formAI.previewWelcomeTitle',
+    },
+    previewWelcomeDescription: {
+        defaultMessage:
+            'No existing form required. Describe what you want to collect in natural language — FormAI generates it for you, ready to preview and save.',
+        id: 'iaso.formAI.previewWelcomeDescription',
+    },
+    previewWelcomeStep1: {
+        defaultMessage:
+            'Describe your form in the field on the left — the questions and response types you need.',
+        id: 'iaso.formAI.previewWelcomeStep1',
+    },
+    previewWelcomeStep2: {
+        defaultMessage:
+            'FormAI generates it instantly and shows a live preview right here.',
+        id: 'iaso.formAI.previewWelcomeStep2',
+    },
+    previewWelcomeStep3: {
+        defaultMessage:
+            'Refine with follow-up messages, then save it to your IASO account.',
+        id: 'iaso.formAI.previewWelcomeStep3',
+    },
+    previewWelcomeFooter: {
+        defaultMessage:
+            'Or select an existing form from the menu above to edit it.',
+        id: 'iaso.formAI.previewWelcomeFooter',
+    },
     previewSubmitUnavailable: {
         defaultMessage:
             'Form submission from the preview is not available yet. This feature is under development.',

@@ -72,6 +72,8 @@ class MissionEntityTypeCreateSerializer(ModelSerializer):
         extra_kwargs = {
             "min_cardinality": {"write_only": True, "required": True},
             "max_cardinality": {"write_only": True},
+            "name": {"write_only": True},
+            "description": {"write_only": True},
         }
 
     def __init__(self, *args, **kwargs):

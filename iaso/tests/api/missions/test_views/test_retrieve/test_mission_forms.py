@@ -24,6 +24,7 @@ class MissionAPIRetrieveMissionFormTestCase(MissionAPIRetrieveBaseTestCase):
 
         self.assertEqual(res_data["id"], self.mission_form_1.pk)
         self.assertEqual(res_data["name"], "mission_form_1")
+        self.assertEqual(res_data["description"], "")
         self.assertEqual(
             res_data["mission_type"], {"value": MissionType.FORM_FILLING.value, "label": MissionType.FORM_FILLING.label}
         )

@@ -43,6 +43,7 @@ class MissionOrgUnitTypeRetrieveSerializer(ModelSerializer):
         fields = [
             "id",
             "name",
+            "description",
             "mission_type",
             "created_at",
             "org_unit_type",
@@ -53,6 +54,9 @@ class MissionOrgUnitTypeRetrieveSerializer(ModelSerializer):
 
         extra_kwargs = {
             "id": {"read_only": True},
+            "description": {"read_only": True},
             "created_at": {"read_only": True},
             "name": {"read_only": True},
+            "min_cardinality": {"read_only": True},
+            "max_cardinality": {"read_only": True},
         }

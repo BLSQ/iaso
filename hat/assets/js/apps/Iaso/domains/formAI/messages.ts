@@ -1,9 +1,39 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
+    aiBadge: {
+        defaultMessage: 'AI',
+        id: 'iaso.formAI.aiBadge',
+    },
+    brandName: {
+        defaultMessage: 'FormAI',
+        id: 'iaso.formAI.brandName',
+    },
     title: {
         defaultMessage: 'Form AI',
         id: 'iaso.formAI.title',
+    },
+    panelSubtitle: {
+        defaultMessage: 'Describe your changes',
+        id: 'iaso.formAI.panelSubtitle',
+    },
+    emptyStateTitle: {
+        defaultMessage: 'Describe your form',
+        id: 'iaso.formAI.emptyStateTitle',
+    },
+    emptyStateDescription: {
+        defaultMessage:
+            'Write the fields and questions to collect below — FormAI builds it for you.',
+        id: 'iaso.formAI.emptyStateDescription',
+    },
+    exampleStock: {
+        defaultMessage:
+            'A stock tracking form with date, product and quantity',
+        id: 'iaso.formAI.exampleStock',
+    },
+    exampleSurvey: {
+        defaultMessage: 'A household survey with GPS and photo',
+        id: 'iaso.formAI.exampleSurvey',
     },
     placeholder: {
         defaultMessage: 'Describe the form you want to create...',

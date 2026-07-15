@@ -26,6 +26,9 @@ const styles: SxStyles = {
         height: ACTIONS_HEIGHT,
         borderBottom: theme => `1px solid ${theme.palette.divider}`,
         display: 'flex',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+        position: 'relative',
+        zIndex: 1,
     },
     item: {
         padding: theme => theme.spacing(2),

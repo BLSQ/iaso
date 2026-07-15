@@ -7,14 +7,14 @@ import { setupServer } from 'msw/node';
 import { vi } from 'vitest';
 import { MissionTypeValueEnum } from 'Iaso/api/missions';
 import {
-    getApiMicroplanningMissionsMissionTypesDropdownListMockHandler,
-    getApiMicroplanningMissionsMissionTypesDropdownListResponseMock,
+    getApiMicroplanningMissionsDropdownListMockHandler,
+    getApiMicroplanningMissionsDropdownListResponseMock,
 } from 'Iaso/api/missions/endpoints/missions/missions.msw';
 import {
     renderWithThemeAndIntlProvider,
     TestingQueryClient,
 } from '../../../../../tests/helpers';
-import { MissionTypeDropdownInput } from './MissionTypeDropdownInput';
+import { MissionDropdownInput } from './MissionDropdownInput';
 
 const { mockCurrentUser } = vi.hoisted(() => {
     return { mockCurrentUser: vi.fn() };
@@ -34,23 +34,23 @@ vi.mock('Iaso/domains/users/utils', () => ({
 
 const mockCallApi = vi.fn();
 
-const getCustomApiMicroplanningMissionsMissionTypesDropdownListMockHandler = (
+const getCustomApiMicroplanningMissionsDropdownListMockHandler = (
     overrideResponse?: Parameters<
-        typeof getApiMicroplanningMissionsMissionTypesDropdownListMockHandler
+        typeof getApiMicroplanningMissionsDropdownListMockHandler
     >[0],
     options?: Parameters<
-        typeof getApiMicroplanningMissionsMissionTypesDropdownListMockHandler
+        typeof getApiMicroplanningMissionsDropdownListMockHandler
     >[1],
 ) => {
     mockCallApi();
-    return getApiMicroplanningMissionsMissionTypesDropdownListMockHandler(
+    return getApiMicroplanningMissionsDropdownListMockHandler(
         overrideResponse,
         options,
     );
 };
 
 const server = setupServer(
-    getCustomApiMicroplanningMissionsMissionTypesDropdownListMockHandler(),
+    getCustomApiMicroplanningMissionsDropdownListMockHandler(),
 );
 const previousDefaults = TestingQueryClient.getDefaultOptions();
 
@@ -73,7 +73,7 @@ const createProps = (overrides = {}) => ({
     ...overrides,
 });
 
-describe('MissionTypeDropdownInput test', () => {
+describe('MissionDropdownInput test', () => {
     beforeAll(() => {
         TestingQueryClient.setDefaultOptions({
             queries: {
@@ -109,7 +109,7 @@ describe('MissionTypeDropdownInput test', () => {
         mockUserHasPermission.mockReturnValue(false);
 
         renderWithThemeAndIntlProvider(
-            <MissionTypeDropdownInput {...createProps()} />,
+            <MissionDropdownInput {...createProps()} />,
         );
 
         expect(screen.queryByRole('combobox')).toBeNull();
@@ -118,7 +118,7 @@ describe('MissionTypeDropdownInput test', () => {
     it('does not call API if user does not have permissions', async () => {
         mockUserHasPermission.mockReturnValue(false);
         renderWithThemeAndIntlProvider(
-            <MissionTypeDropdownInput {...createProps()} />,
+            <MissionDropdownInput {...createProps()} />,
         );
         await waitFor(() => {
             expect(screen.queryByRole('progressbar')).toBeNull();
@@ -128,18 +128,15 @@ describe('MissionTypeDropdownInput test', () => {
     });
 
     it('renders input with correct options', async () => {
-        const data =
-            getApiMicroplanningMissionsMissionTypesDropdownListResponseMock();
+        const data = getApiMicroplanningMissionsDropdownListResponseMock();
         expect(data?.length).toBeGreaterThan(0);
 
         server.use(
-            getCustomApiMicroplanningMissionsMissionTypesDropdownListMockHandler(
-                data,
-            ),
+            getCustomApiMicroplanningMissionsDropdownListMockHandler(data),
         );
 
         renderWithThemeAndIntlProvider(
-            <MissionTypeDropdownInput {...createProps()} />,
+            <MissionDropdownInput {...createProps()} />,
         );
 
         await waitFor(() => {
@@ -164,7 +161,7 @@ describe('MissionTypeDropdownInput test', () => {
     it('renders loading state', () => {
         vi.stubEnv('MSW_DELAY', '1_000_000');
         renderWithThemeAndIntlProvider(
-            <MissionTypeDropdownInput {...createProps()} />,
+            <MissionDropdownInput {...createProps()} />,
         );
 
         expect(screen.getByRole('progressbar')).toBeInTheDocument();

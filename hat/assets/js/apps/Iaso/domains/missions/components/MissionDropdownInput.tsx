@@ -1,6 +1,9 @@
 import React from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { useApiMicroplanningMissionsMissionTypesDropdownList } from 'Iaso/api/missions';
+import {
+    type ApiMicroplanningMissionsDropdownListParams,
+    useApiMicroplanningMissionsDropdownList,
+} from 'Iaso/api/missions';
 import {
     SelectInput,
     SelectInputProps,
@@ -9,25 +12,30 @@ import { userHasPermission } from 'Iaso/domains/users/utils';
 import { MISSION_READ } from 'Iaso/utils/permissions';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import MESSAGES from '../messages';
-export type MissionTypeDropdownInputProps<TSchema, TValues> = Omit<
+export type MissionDropdownInputProps<TSchema, TValues> = Omit<
     SelectInputProps<string, TSchema, TValues>,
     'options' | 'loading'
->;
+> & {
+    params?: ApiMicroplanningMissionsDropdownListParams;
+};
 
-export const MissionTypeDropdownInput = <TSchema, TValues>({
+export const MissionDropdownInput = <TSchema, TValues>({
     label,
+    params,
     ...props
-}: MissionTypeDropdownInputProps<TSchema, TValues>) => {
+}: MissionDropdownInputProps<TSchema, TValues>) => {
     const currentUser = useCurrentUser();
     const hasPermission = userHasPermission(MISSION_READ, currentUser);
     const { formatMessage } = useSafeIntl();
 
-    const { data, isLoading } =
-        useApiMicroplanningMissionsMissionTypesDropdownList({
+    const { data, isLoading } = useApiMicroplanningMissionsDropdownList(
+        params,
+        {
             query: {
                 enabled: hasPermission,
             },
-        });
+        },
+    );
 
     label = label ?? formatMessage(MESSAGES.missionType);
     return hasPermission ? (

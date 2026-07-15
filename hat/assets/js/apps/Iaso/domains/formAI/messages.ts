@@ -106,9 +106,27 @@ const MESSAGES = defineMessages({
             'Form "{formName}" (v{versionId}) loaded. You can now ask me to modify it.',
         id: 'iaso.formAI.formLoaded',
     },
+    formCreated: {
+        defaultMessage: 'Created form "{formName}"',
+        id: 'iaso.formAI.formCreated',
+    },
+    loadFormUserContext: {
+        defaultMessage:
+            'I\'m loading an existing form called "{formName}" (ODK form_id: "{formOdkId}", version: "{versionId}"). Here is its current XLSForm structure in JSON:\n\n{formJson}\n\nPlease remember this form structure. When I ask you to modify it, return the COMPLETE updated form in the standard JSON format.',
+        id: 'iaso.formAI.loadFormUserContext',
+    },
+    loadFormAssistantContext: {
+        defaultMessage:
+            'I\'ve loaded the form "{formName}" (version {versionId}). I can see its complete structure with all questions, choices, and settings. What changes would you like me to make?',
+        id: 'iaso.formAI.loadFormAssistantContext',
+    },
     versionSaved: {
         defaultMessage: 'Saved as new version!',
         id: 'iaso.formAI.versionSaved',
+    },
+    versionSavedAs: {
+        defaultMessage: 'Saved as version {versionId}',
+        id: 'iaso.formAI.versionSavedAs',
     },
     newForm: {
         defaultMessage: 'New form',

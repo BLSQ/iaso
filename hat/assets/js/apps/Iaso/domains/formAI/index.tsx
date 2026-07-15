@@ -71,10 +71,10 @@ const FormAI: FunctionComponent = () => {
                         setXformXml(data.xform_xml);
                     }
                     const formJson = JSON.stringify(data.xlsform_data, null, 2);
-                    const displayMsg =
-                        `Form "${data.form_name}"` +
-                        ` (version ${data.version_id})` +
-                        ` loaded. You can now ask me to modify it.`;
+                    const displayMsg = formatMessage(MESSAGES.formLoaded, {
+                        formName: data.form_name,
+                        versionId: data.version_id,
+                    });
 
                     setMessages(prev => [
                         ...prev,
@@ -85,22 +85,22 @@ const FormAI: FunctionComponent = () => {
                         },
                     ]);
 
-                    const userCtx =
-                        `I'm loading an existing form` +
-                        ` called "${data.form_name}"` +
-                        ` (ODK form_id: "${data.form_odk_id}",` +
-                        ` version: "${data.version_id}").` +
-                        ` Here is its current XLSForm structure in JSON:` +
-                        `\n\n${formJson}\n\n` +
-                        `Please remember this form structure. When I ask you to` +
-                        ` modify it, return the COMPLETE updated form in the` +
-                        ` standard JSON format.`;
-                    const assistantCtx =
-                        `I've loaded the form "${data.form_name}"` +
-                        ` (version ${data.version_id}).` +
-                        ` I can see its complete structure with all questions,` +
-                        ` choices, and settings. What changes would you like me` +
-                        ` to make?`;
+                    const userCtx = formatMessage(
+                        MESSAGES.loadFormUserContext,
+                        {
+                            formName: data.form_name,
+                            formOdkId: data.form_odk_id,
+                            versionId: data.version_id,
+                            formJson,
+                        },
+                    );
+                    const assistantCtx = formatMessage(
+                        MESSAGES.loadFormAssistantContext,
+                        {
+                            formName: data.form_name,
+                            versionId: data.version_id,
+                        },
+                    );
                     setConversationHistory(prev => [
                         ...prev,
                         { role: 'user', content: userCtx },
@@ -109,17 +109,22 @@ const FormAI: FunctionComponent = () => {
                 },
             });
         },
-        [loadForm],
+        [loadForm, formatMessage],
     );
 
-    const handleSaveNewVersion = useCallback((result: SaveVersionResponse) => {
-        setHasUnsavedChanges(false);
-        const msg = `Saved as version ${result.version_id}`;
-        setMessages(prev => [
-            ...prev,
-            { role: 'assistant', content: msg, id: crypto.randomUUID() },
-        ]);
-    }, []);
+    const handleSaveNewVersion = useCallback(
+        (result: SaveVersionResponse) => {
+            setHasUnsavedChanges(false);
+            const msg = formatMessage(MESSAGES.versionSavedAs, {
+                versionId: result.version_id,
+            });
+            setMessages(prev => [
+                ...prev,
+                { role: 'assistant', content: msg, id: crypto.randomUUID() },
+            ]);
+        },
+        [formatMessage],
+    );
 
     const handleSaveNewForm = useCallback(
         (formId: number, formName: string, formOdkId: string) => {
@@ -128,13 +133,13 @@ const FormAI: FunctionComponent = () => {
             setSelectedFormOdkId(formOdkId || undefined);
             setSelectedFormOption({ id: formId, label: formName });
             setHasUnsavedChanges(false);
-            const msg = `Created form "${formName}"`;
+            const msg = formatMessage(MESSAGES.formCreated, { formName });
             setMessages(prev => [
                 ...prev,
                 { role: 'assistant', content: msg, id: crypto.randomUUID() },
             ]);
         },
-        [],
+        [formatMessage],
     );
 
     const handleSendMessage = useCallback(

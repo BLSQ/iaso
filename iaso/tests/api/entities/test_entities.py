@@ -913,23 +913,43 @@ class WebEntityAPITestCase(EntityAPITestCase):
     def test_list_entities_filter_by_date_soft_deleted_instances(self):
         self.client.force_authenticate(self.yoda)
 
-        source_date = datetime.datetime(2024, 9, 12, 0, 0, 5, tzinfo=pytz.UTC)
+        source_date_attr = datetime.datetime(2024, 9, 12, 0, 0, 5, tzinfo=pytz.UTC)
+        source_date_attr_str = source_date_attr.strftime("%Y-%m-%d")
+
+        source_date = datetime.datetime(2024, 10, 15, 0, 0, 5, tzinfo=pytz.UTC)
         source_date_str = source_date.strftime("%Y-%m-%d")
 
         entity_type = EntityType.objects.create(name="ET", reference_form=self.form_1)
 
-        instance = Instance.objects.create(form=self.form_1, source_created_at=source_date)
-        instance.entity = Entity.objects.create(entity_type=entity_type, attributes=instance, account=self.account)
-        instance.save()
+        # initialize both an attribute and non-attribute Instance
+        inst_attr = Instance.objects.create(form=self.form_1, source_created_at=source_date_attr)
+        entity = Entity.objects.create(entity_type=entity_type, attributes=inst_attr, account=self.account)
+        inst_attr.entity = entity
+        inst_attr.save()
 
+        inst = Instance.objects.create(form=self.form_1, source_created_at=source_date, entity=entity)
+
+        # test regular instance
         response = self.client.get(f"/api/entities/?dateFrom={source_date_str}&dateTo={source_date_str}")
         resp = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(resp["result"]), 1)
 
-        instance.deleted = True
-        instance.save()
+        inst.deleted = True
+        inst.save()
 
         response = self.client.get(f"/api/entities/?dateFrom={source_date_str}&dateTo={source_date_str}")
+        res = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(res["result"]), 0)
+
+        # test attribute instance
+        response = self.client.get(f"/api/entities/?dateFrom={source_date_attr_str}&dateTo={source_date_attr_str}")
+        resp = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(resp["result"]), 1)
+
+        inst_attr.deleted = True
+        inst_attr.save()
+
+        response = self.client.get(f"/api/entities/?dateFrom={source_date_attr_str}&dateTo={source_date_attr_str}")
         res = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(res["result"]), 0)
 

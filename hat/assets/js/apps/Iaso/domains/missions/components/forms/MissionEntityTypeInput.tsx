@@ -60,7 +60,7 @@ export const MissionEntityTypeInput = <
                 loading={isLoadingEntityTypeOptions}
                 onChange={handleEntityTypeChange}
             />
-            <Grid container spacing={2} sx={{ mt: 2 }}>
+            <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
                     <Field
                         label={formatMessage(MESSAGES.minCardinality)}

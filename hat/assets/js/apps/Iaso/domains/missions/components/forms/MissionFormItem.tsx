@@ -1,0 +1,114 @@
+import React from 'react';
+import DeleteIcon from '@mui/icons-material/Delete';
+import DescriptionIcon from '@mui/icons-material/Description';
+import {
+    Box,
+    IconButton,
+    TableCell,
+    TableRow,
+    Typography,
+} from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
+import { Field, FieldArrayRenderProps } from 'formik';
+import { FormikProps } from 'formik/dist/types';
+import { NumberInput } from 'Iaso/components/forms/NumberInput';
+import { FormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
+import { BaseUpdateCreateRequest } from 'Iaso/domains/missions/types';
+import { SxStyles } from 'Iaso/types/general';
+import MESSAGES from '../../messages';
+
+const styles: SxStyles = {
+    formCell: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1,
+    },
+    formIcon: {
+        fontSize: '18px',
+        color: 'primary.main',
+    },
+    formName: {
+        fontWeight: 600,
+    },
+    numberCell: {
+        width: 120,
+        maxWidth: 140,
+        verticalAlign: 'middle',
+    },
+    actionsCell: {
+        width: 56,
+        verticalAlign: 'middle',
+    },
+};
+
+type Props<TSchema extends BaseUpdateCreateRequest> = {
+    form: TSchema['forms'][number];
+    findFormOptionFromValue: (
+        formId: number,
+    ) => FormsDropdownOptions[number] | undefined;
+    index: number;
+    arrayHelpers: FieldArrayRenderProps;
+    formik: FormikProps<TSchema>;
+};
+
+export const MissionFormItem = <TSchema extends BaseUpdateCreateRequest>({
+    form,
+    findFormOptionFromValue,
+    index,
+    arrayHelpers,
+    formik,
+}: Props<TSchema>) => {
+    const { formatMessage } = useSafeIntl();
+    const formLabel =
+        findFormOptionFromValue(form.form)?.label ?? String(form.form);
+
+    return (
+        <TableRow>
+            <TableCell>
+                <Box sx={styles.formCell}>
+                    <DescriptionIcon sx={styles.formIcon} />
+                    <Typography sx={styles.formName} variant="body2">
+                        {formLabel}
+                    </Typography>
+                </Box>
+            </TableCell>
+            <TableCell sx={styles.numberCell}>
+                <Field
+                    label=""
+                    name={`forms.${index}.min_cardinality`}
+                    initialValue={1}
+                    min={1}
+                    component={NumberInput}
+                    required
+                    withMarginTop={false}
+                    aria-label={formatMessage(MESSAGES.minCardinality)}
+                />
+            </TableCell>
+            <TableCell sx={styles.numberCell}>
+                <Field
+                    label=""
+                    name={`forms.${index}.max_cardinality`}
+                    initialValue={1}
+                    min={0}
+                    component={NumberInput}
+                    withMarginTop={false}
+                    aria-label={formatMessage(MESSAGES.maxCardinality)}
+                />
+            </TableCell>
+            <TableCell align="right" sx={styles.actionsCell}>
+                <IconButton
+                    edge="end"
+                    aria-label={formatMessage(MESSAGES.delete)}
+                    color="error"
+                    size="small"
+                    onClick={() => {
+                        arrayHelpers.remove(index);
+                        formik.setFieldTouched('forms', true);
+                    }}
+                >
+                    <DeleteIcon fontSize="small" />
+                </IconButton>
+            </TableCell>
+        </TableRow>
+    );
+};

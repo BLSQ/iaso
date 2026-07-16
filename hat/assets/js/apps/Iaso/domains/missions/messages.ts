@@ -38,7 +38,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.formsNumber.title',
     },
     generalInfoTitle: {
-        defaultMessage: 'Information',
+        defaultMessage: 'Informations',
         id: 'iaso.missions.title.generalInfoTitle',
     },
     alertSelectMissionType: {

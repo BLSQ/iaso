@@ -1,30 +1,59 @@
 import React from 'react';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
+import DescriptionIcon from '@mui/icons-material/Description';
 import {
     Alert,
     Box,
-    Button,
-    Grid,
-    IconButton,
-    List,
-    ListItem,
-    ListItemText,
     Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
     Typography,
 } from '@mui/material';
 import { AlertProps } from '@mui/material/Alert/Alert';
 import Divider from '@mui/material/Divider';
 import { Select, useSafeIntl } from 'bluesquare-components';
-import { Field, FieldArray } from 'formik';
+import { FieldArray } from 'formik';
 import { FormikContextType, FormikProps } from 'formik/dist/types';
-import { NumberInput } from 'Iaso/components/forms/NumberInput';
 import {
     useGetFormsDropdownOptions,
     UseGetFormsDropdownParams,
 } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { BaseUpdateCreateRequest } from 'Iaso/domains/missions/types';
+import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';
+import { MissionFormItem } from './MissionFormItem';
+
+const styles: SxStyles = {
+    tableContainer: {
+        border: theme =>
+            // @ts-ignore — ligthGray typo is in the theme
+            `1px solid ${theme.palette.ligthGray.border}`,
+        borderRadius: 1,
+    },
+    headerCell: {
+        color: 'text.secondary',
+        fontSize: '12px',
+        fontWeight: 700,
+        textTransform: 'uppercase',
+        py: 1.5,
+    },
+    numberHeaderCell: {
+        color: 'text.secondary',
+        fontSize: '12px',
+        fontWeight: 700,
+        textTransform: 'uppercase',
+        py: 1.5,
+        width: 120,
+        maxWidth: 140,
+    },
+    actionsHeaderCell: {
+        width: 56,
+        py: 1.5,
+    },
+};
 
 type MissionFormsInput<TSchema> = {
     params?: UseGetFormsDropdownParams;
@@ -61,7 +90,7 @@ export const MissionFormsBaseInput = <TSchema extends BaseUpdateCreateRequest>({
     const { data: formsOptions, isLoading } =
         useGetFormsDropdownOptions(params);
     const { formatMessage } = useSafeIntl();
-    const [formOptionValue, setFormOptionValue] = React.useState<number>();
+    const [selectKey, setSelectKey] = React.useState(0);
 
     const availableFormOptions = React.useMemo(
         () =>
@@ -78,137 +107,139 @@ export const MissionFormsBaseInput = <TSchema extends BaseUpdateCreateRequest>({
         [formsOptions],
     );
 
+    const hasForms = Boolean(values.forms?.length);
+
     return (
-        <FieldArray
-            name="forms"
-            render={arrayHelpers => (
-                <Box sx={{ mt: 2 }}>
-                    <Typography sx={{ mb: 2 }}>
-                        {formatMessage(MESSAGES.forms)} *
-                    </Typography>
-                    <Stack direction={'row'}>
-                        <Box sx={{ width: '100%' }}>
-                            <Select
-                                loading={isLoading}
-                                options={availableFormOptions}
-                                label={formatMessage(MESSAGES.addForm)}
-                                clearable
-                                value={formOptionValue}
-                                keyValue={'add_form'}
-                                onChange={value => setFormOptionValue(value)}
-                                {...formSelectProps}
-                            />
-                        </Box>
-                        <Button
-                            size={'small'}
-                            color={'success'}
-                            variant={'text'}
-                            disabled={!formOptionValue}
-                            onClick={() => {
-                                arrayHelpers.push({
-                                    form: formOptionValue,
-                                    min_cardinality: 1,
-                                    max_cardinality: undefined,
-                                });
-                                setFormOptionValue(undefined);
-                                formik.setFieldTouched('forms', true);
-                            }}
-                            aria-label={formatMessage(MESSAGES.addFormClick)}
-                        >
-                            <AddIcon />
-                        </Button>
-                    </Stack>
-
-                    <FormArrayErrors
-                        errors={errors}
-                        sx={{ mt: 2 }}
-                        touched={!!arrayHelpers.form.touched.forms}
-                    />
-
-                    <Divider sx={{ my: 2 }} />
-
-                    <List>
-                        {values.forms &&
-                            values.forms.length > 0 &&
-                            values.forms.map((form, index) => (
-                                <ListItem
-                                    // as we cannot be sure that form.form will be unique, it's ok to silence it there
-                                    // eslint-disable-next-line react/no-array-index-key
-                                    key={`forms-${form.form}-${index}`}
-                                >
-                                    <ListItemText
-                                        primary={
-                                            findFormOptionFromValue(form.form)
-                                                ?.label
-                                        }
-                                        secondary={
-                                            <Box
-                                                sx={{
-                                                    display: 'flex',
-                                                    flexDirection: 'row',
-                                                    alignItems: 'end',
-                                                }}
-                                            >
-                                                <Grid
-                                                    container
-                                                    spacing={2}
-                                                    sx={{ mt: 2, mr: 2 }}
-                                                >
-                                                    <Grid item xs={12} sm={6}>
-                                                        <Field
-                                                            label={formatMessage(
-                                                                MESSAGES.minCardinality,
-                                                            )}
-                                                            name={`forms.${index}.min_cardinality`}
-                                                            initialValue={1}
-                                                            min={1}
-                                                            component={
-                                                                NumberInput
-                                                            }
-                                                            required
-                                                        />
-                                                    </Grid>
-                                                    <Grid item xs={12} sm={6}>
-                                                        <Field
-                                                            label={formatMessage(
-                                                                MESSAGES.maxCardinality,
-                                                            )}
-                                                            name={`forms.${index}.max_cardinality`}
-                                                            initialValue={1}
-                                                            min={0}
-                                                            component={
-                                                                NumberInput
-                                                            }
-                                                        />
-                                                    </Grid>
-                                                </Grid>
-                                                <IconButton
-                                                    edge="end"
-                                                    aria-label={formatMessage(
-                                                        MESSAGES.delete,
-                                                    )}
-                                                    sx={{ mb: 1 }}
-                                                    color={'error'}
-                                                    onClick={() => {
-                                                        arrayHelpers.remove(
-                                                            index,
-                                                        );
-                                                        formik.setFieldTouched(
-                                                            'forms',
-                                                            true,
-                                                        );
-                                                    }}
-                                                >
-                                                    <DeleteIcon />
-                                                </IconButton>
-                                            </Box>
-                                        }
+        <>
+            <Typography
+                variant="body1"
+                sx={{
+                    textTransform: 'uppercase',
+                    mb: 2,
+                    fontSize: '15px',
+                    mt: 4,
+                }}
+            >
+                <DescriptionIcon
+                    color="primary"
+                    sx={{
+                        mr: 1,
+                        fontSize: '15px',
+                        position: 'relative',
+                        top: '2px',
+                    }}
+                />
+                {formatMessage(MESSAGES.forms)}
+            </Typography>
+            <FieldArray
+                name="forms"
+                render={arrayHelpers => {
+                    const handleAddForm = (formOptionValue: number | null) => {
+                        console.log('formOptionValue', formOptionValue);
+                        if (formOptionValue == null) {
+                            return;
+                        }
+                        arrayHelpers.push({
+                            form: formOptionValue,
+                            min_cardinality: 1,
+                            max_cardinality: null,
+                        });
+                        formik.setFieldTouched('forms', true);
+                        // Remount Select so Autocomplete clears its input immediately
+                        // (value={null} alone keeps the label until blur)
+                        setSelectKey(key => key + 1);
+                    };
+                    return (
+                        <Box sx={{ mt: 2 }}>
+                            <Stack direction={'row'}>
+                                <Box sx={{ width: '100%' }}>
+                                    <Select
+                                        key={selectKey}
+                                        loading={isLoading}
+                                        options={availableFormOptions}
+                                        label={formatMessage(MESSAGES.addForm)}
+                                        clearable
+                                        value={null}
+                                        keyValue={'add_form'}
+                                        onChange={handleAddForm}
+                                        {...formSelectProps}
                                     />
-                                </ListItem>
-                            ))}
-                    </List>
-                </Box>
-            )}
-        />
+                                </Box>
+                            </Stack>
+
+                            <FormArrayErrors
+                                errors={errors}
+                                sx={{ mt: 2 }}
+                                touched={!!arrayHelpers.form.touched.forms}
+                            />
+
+                            {hasForms && (
+                                <>
+                                    <Divider sx={{ my: 2 }} />
+                                    <TableContainer sx={styles.tableContainer}>
+                                        <Table size="small">
+                                            <TableHead>
+                                                <TableRow>
+                                                    <TableCell
+                                                        sx={styles.headerCell}
+                                                    >
+                                                        {formatMessage(
+                                                            MESSAGES.form,
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell
+                                                        sx={
+                                                            styles.numberHeaderCell
+                                                        }
+                                                    >
+                                                        {formatMessage(
+                                                            MESSAGES.min,
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell
+                                                        sx={
+                                                            styles.numberHeaderCell
+                                                        }
+                                                    >
+                                                        {formatMessage(
+                                                            MESSAGES.max,
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell
+                                                        sx={
+                                                            styles.actionsHeaderCell
+                                                        }
+                                                    />
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {values.forms?.map(
+                                                    (form, index) => (
+                                                        <MissionFormItem
+                                                            // as we cannot be sure that form.form will be unique, it's ok to silence it there
+                                                            // eslint-disable-next-line react/no-array-index-key
+                                                            key={`forms-${form.form}-${index}`}
+                                                            form={form}
+                                                            findFormOptionFromValue={
+                                                                findFormOptionFromValue
+                                                            }
+                                                            index={index}
+                                                            arrayHelpers={
+                                                                arrayHelpers
+                                                            }
+                                                            formik={formik}
+                                                        />
+                                                    ),
+                                                )}
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
+                                </>
+                            )}
+                        </Box>
+                    );
+                }}
+            />
+        </>
     );
 };

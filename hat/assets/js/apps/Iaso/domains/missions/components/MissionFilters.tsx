@@ -1,39 +1,24 @@
-import React, { FunctionComponent, useState, useMemo } from 'react';
+import React, { FunctionComponent, useState } from 'react';
+import Add from '@mui/icons-material/Add';
 import { Box, Grid } from '@mui/material';
-import { AddButton, useSafeIntl } from 'bluesquare-components';
+import {
+    commonStyles,
+    LinkButton,
+    theme,
+    useSafeIntl,
+} from 'bluesquare-components';
+import type { ApiMicroplanningMissionsListParams } from 'Iaso/api/missions';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { SearchButton } from 'Iaso/components/SearchButton';
-import { PLANNING_WRITE } from 'Iaso/utils/permissions';
+import { baseUrls } from 'Iaso/constants/urls';
+import { MissionTypeDropdown } from 'Iaso/domains/missions/components/MissionTypeDropdown';
+import { useFilterState } from 'Iaso/hooks/useFilterState';
+import { MISSION_WRITE } from 'Iaso/utils/permissions';
 import InputComponent from '../../../components/forms/InputComponent';
-import { baseUrls } from '../../../constants/urls';
-import { useFilterState } from '../../../hooks/useFilterState';
 import MESSAGES from '../messages';
-import { MissionParams } from '../types';
-import { CreateEditMissionDialog } from './CreateEditMissionDialog';
 
 type Props = {
-    params: MissionParams;
-};
-
-const useMissionTypeOptions = () => {
-    const { formatMessage } = useSafeIntl();
-    return useMemo(
-        () => [
-            {
-                value: 'FORM_FILLING',
-                label: formatMessage(MESSAGES.FORM_FILLING),
-            },
-            {
-                value: 'ORG_UNIT_AND_FORM',
-                label: formatMessage(MESSAGES.ORG_UNIT_AND_FORM),
-            },
-            {
-                value: 'ENTITY_AND_FORM',
-                label: formatMessage(MESSAGES.ENTITY_AND_FORM),
-            },
-        ],
-        [formatMessage],
-    );
+    params: ApiMicroplanningMissionsListParams;
 };
 
 const baseUrl = baseUrls.missions;
@@ -41,7 +26,8 @@ export const MissionFilters: FunctionComponent<Props> = ({ params }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
-    const missionTypeOptions = useMissionTypeOptions();
+    const { formatMessage } = useSafeIntl();
+
     return (
         <Grid container spacing={0}>
             <Grid container spacing={2}>
@@ -58,15 +44,12 @@ export const MissionFilters: FunctionComponent<Props> = ({ params }) => {
                     />
                 </Grid>
                 <Grid item xs={12} md={4}>
-                    <InputComponent
-                        type="select"
+                    <MissionTypeDropdown
                         multi={false}
-                        keyValue="missionType"
-                        onChange={handleChange}
-                        value={filters.missionType}
-                        options={missionTypeOptions}
-                        label={MESSAGES.missionType}
                         clearable
+                        keyValue={'mission_type'}
+                        handleChange={handleChange}
+                        value={filters.mission_type}
                     />
                 </Grid>
                 <Grid item xs={12} md={4} justifyContent="flex-end">
@@ -84,15 +67,11 @@ export const MissionFilters: FunctionComponent<Props> = ({ params }) => {
                             disabled={textSearchError || !filtersUpdated}
                             onSearch={handleSearch}
                         />
-                        <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>
-                            <CreateEditMissionDialog
-                                renderTrigger={({ openDialog }) => (
-                                    <AddButton
-                                        onClick={openDialog}
-                                        id="create-mission"
-                                    />
-                                )}
-                            />
+                        <DisplayIfUserHasPerm permissions={[MISSION_WRITE]}>
+                            <LinkButton to={`/${baseUrls.missionsCreate}`}>
+                                <Add sx={commonStyles(theme).buttonIcon} />
+                                {formatMessage(MESSAGES.create)}
+                            </LinkButton>
                         </DisplayIfUserHasPerm>
                     </Box>
                 </Grid>

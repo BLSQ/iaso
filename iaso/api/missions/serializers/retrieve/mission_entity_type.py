@@ -43,16 +43,20 @@ class MissionEntityTypeRetrieveSerializer(ModelSerializer):
         fields = [
             "id",
             "name",
-            "mission_type",
+            "description",
             "created_at",
             "entity_type",
             "forms",
             "min_cardinality",
             "max_cardinality",
+            "mission_type",
         ]
 
         extra_kwargs = {
             "id": {"read_only": True},
+            "description": {"read_only": True},
             "created_at": {"read_only": True},
             "name": {"read_only": True},
+            "min_cardinality": {"read_only": True},
+            "max_cardinality": {"read_only": True},
         }

@@ -24,7 +24,7 @@ import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useBulkDeleteAssignments } from 'Iaso/domains/assignments/hooks/requests/useBulkDeleteAssignments';
-import { useGetMissionsDropdownOptions } from 'Iaso/domains/missions/hooks/requests/useGetMissionsDropdownOptions';
+import { MissionDropdown } from 'Iaso/domains/missions/components/MissionDropdown';
 import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
 import { useGetOrgUnit } from 'Iaso/domains/orgUnits/components/TreeView/requests';
 import {
@@ -235,8 +235,6 @@ export const PlanningForm: FunctionComponent<Props> = ({
     }, [handleSubmit, shouldDisplayWarning]);
     const allowConfirm =
         isValid && (!isEqual(values, initialValues) || mode === 'copy');
-    const { data: missionsDropdown, isFetching: isFetchingMissions } =
-        useGetMissionsDropdownOptions();
 
     const { data: rootorgunit, isFetching: isFetchingRootOrgUnit } =
         useGetOrgUnit(values.selectedOrgUnit?.toString());
@@ -262,9 +260,9 @@ export const PlanningForm: FunctionComponent<Props> = ({
     const onChange = (keyValue: string, value: any) => {
         if (keyValue === 'project') {
             setFieldTouched('selectedTeam', false);
-            setFieldTouched('forms', false);
+            setFieldTouched('missions', false);
             setFieldValue('selectedTeam', null);
-            setFieldValue('forms', null);
+            setFieldValue('missions', null);
         }
         if (keyValue === 'selectedOrgUnit') {
             setFieldTouched('targetOrgUnitTypes', false);
@@ -402,8 +400,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                         />
                                     </Grid>
                                 </Grid>
-                                <InputComponent
-                                    type="select"
+                                <MissionDropdown
                                     keyValue="missions"
                                     onChange={(keyValue, value) =>
                                         onChange(
@@ -416,8 +413,6 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                     label={MESSAGES.missions}
                                     required
                                     multi
-                                    options={missionsDropdown || []}
-                                    loading={isFetchingMissions}
                                 />
                             </Box>
                         </InputWithInfos>

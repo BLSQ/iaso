@@ -25,6 +25,7 @@ from iaso.models.missions import (
 
 from .filters import MissionFilter
 from .permissions import MissionPermission
+from .serializers.dropdown import MissionDropdownSerializer
 from .serializers.mission_types import MissionTypeDropdownSerializer
 
 
@@ -51,6 +52,8 @@ class MissionViewSet(AuditMixin, ModelViewSet):
             return MissionPolymorphicUpdateSerializer
         if self.action == "mission_types_dropdown":
             return MissionTypeDropdownSerializer
+        if self.action == "dropdown":
+            return MissionDropdownSerializer
         raise NotImplementedError(f"Serializer for {self.action} not implemented")
 
     def get_queryset(self):
@@ -88,6 +91,8 @@ class MissionViewSet(AuditMixin, ModelViewSet):
                 .select_polymorphic_related(MissionOrgUnitType, "org_unit_type")
                 .select_polymorphic_related(MissionEntityType, "entity_type")
             )
+        if self.action == "dropdown":
+            return queryset.only("id", "name", "polymorphic_ctype_id")
 
         return queryset
 
@@ -106,3 +111,10 @@ class MissionViewSet(AuditMixin, ModelViewSet):
     )
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
+
+    @extend_schema(responses={200: MissionDropdownSerializer(many=True)})
+    @action(detail=False, pagination_class=None)
+    def dropdown(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

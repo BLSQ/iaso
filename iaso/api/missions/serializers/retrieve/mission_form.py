@@ -28,14 +28,17 @@ class NestedMissionFormThroughFormSerializer(ModelSerializer):
 class MissionFormRetrieveSerializer(ModelSerializer):
     mission_type = MissionTypeSerializer(source="*")
 
-    forms = NestedMissionFormThroughFormSerializer(many=True, read_only=True, source="missionformthroughform_set")
+    forms = NestedMissionFormThroughFormSerializer(
+        many=True, read_only=True, source="missionformthroughform_set", allow_empty=False, allow_null=False
+    )
 
     class Meta:
         model = MissionForm
-        fields = ["id", "name", "mission_type", "created_at", "forms"]
+        fields = ["id", "name", "description", "mission_type", "created_at", "forms"]
 
         extra_kwargs = {
             "id": {"read_only": True},
             "created_at": {"read_only": True},
             "name": {"read_only": True},
+            "description": {"read_only": True},
         }

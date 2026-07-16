@@ -1,6 +1,6 @@
 import React from 'react';
-import { Box, Button, Grid } from '@mui/material';
-import { LinkButton, useSafeIntl } from 'bluesquare-components';
+import { Box, Grid } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
 import { Field, FormikProps } from 'formik';
 import {
     MissionEntityTypeUpdateRequest,
@@ -17,9 +17,6 @@ import MESSAGES from '../messages';
 
 type Base<T> = {
     formik: FormikProps<T>;
-    cancelUrl?: string;
-    allowConfirm: boolean;
-    successButtonMessage: string;
 };
 
 type EditMissionFormProps =
@@ -34,10 +31,7 @@ type EditMissionFormProps =
       });
 
 export const EditMissionForm = ({
-    cancelUrl,
-    allowConfirm,
     formik,
-    successButtonMessage,
     missionType,
 }: EditMissionFormProps) => {
     const { formatMessage } = useSafeIntl();
@@ -96,28 +90,6 @@ export const EditMissionForm = ({
                         )}
                     </Box>
                 </WidgetPaper>
-                <Box
-                    sx={{
-                        justifyContent: 'flex-end',
-                        display: 'flex',
-                    }}
-                >
-                    {cancelUrl && (
-                        <LinkButton to={cancelUrl} color={'error'}>
-                            {formatMessage(MESSAGES.cancel)}
-                        </LinkButton>
-                    )}
-                    <Button
-                        variant="contained"
-                        type={'submit'}
-                        color={'success'}
-                        disabled={!allowConfirm}
-                        sx={{ ml: 2 }}
-                        onClick={() => allowConfirm && formik.handleSubmit()}
-                    >
-                        {successButtonMessage}
-                    </Button>
-                </Box>
             </Grid>
         </Grid>
     );

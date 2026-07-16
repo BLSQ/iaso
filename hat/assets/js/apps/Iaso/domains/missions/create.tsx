@@ -56,7 +56,6 @@ export const MissionCreate: FunctionComponent = () => {
                 displayBackButton
             />
             <DetailsWrapper
-                showHeader
                 title={formatMessage(MESSAGES.newMission)}
                 allowConfirm={allowConfirm}
                 cancelUrl={`/${baseUrls.missions}/`}

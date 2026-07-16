@@ -1,6 +1,5 @@
 import React from 'react';
 import { Alert } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
 import { FormikProvider, useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import {
@@ -9,8 +8,8 @@ import {
     MissionTypeDropdownValueEnum,
     useApiMicroplanningMissionsUpdate,
 } from 'Iaso/api/missions';
+import { DetailsWrapper } from 'Iaso/domains/missions/components/DetailsWrapper';
 import { EditMissionForm } from 'Iaso/domains/missions/components/EditMissionForm';
-import MESSAGES from 'Iaso/domains/missions/messages';
 import { withFormikSubmitAsync } from 'Iaso/utils/forms';
 
 type EditBaseMissionFormProps = {
@@ -22,7 +21,6 @@ type EditBaseMissionFormProps = {
 export const EditBaseMissionForm: React.FunctionComponent<
     EditBaseMissionFormProps
 > = ({ data, missionId, save, redirectBackUrl }) => {
-    const { formatMessage } = useSafeIntl();
     const formik = useFormik<MissionFormUpdateRequest>({
         validationSchema: toFormikValidationSchema(MissionFormUpdateRequest),
         initialValues: {
@@ -46,19 +44,23 @@ export const EditBaseMissionForm: React.FunctionComponent<
     const allowConfirm = formik.isValid && formik.dirty && !formik.isSubmitting;
 
     return (
-        <FormikProvider value={formik}>
-            {formik.status && (
-                <Alert severity={'error'} sx={{ mb: 2 }}>
-                    {formik.status}
-                </Alert>
-            )}
-            <EditMissionForm
-                formik={formik}
-                allowConfirm={allowConfirm}
-                cancelUrl={redirectBackUrl}
-                successButtonMessage={formatMessage(MESSAGES.save)}
-                missionType={MissionTypeDropdownValueEnum.enum.FORM_FILLING}
-            />
-        </FormikProvider>
+        <DetailsWrapper
+            cancelUrl={redirectBackUrl}
+            allowConfirm={allowConfirm}
+            title={data.name}
+            handleSubmit={() => formik.handleSubmit()}
+        >
+            <FormikProvider value={formik}>
+                {formik.status && (
+                    <Alert severity={'error'} sx={{ mb: 2 }}>
+                        {formik.status}
+                    </Alert>
+                )}
+                <EditMissionForm
+                    formik={formik}
+                    missionType={MissionTypeDropdownValueEnum.enum.FORM_FILLING}
+                />
+            </FormikProvider>
+        </DetailsWrapper>
     );
 };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Grid, Stack } from '@mui/material';
+import { Grid, Stack } from '@mui/material';
 import {
     LoadingSpinner,
     useRedirectTo,
@@ -59,20 +59,13 @@ export const MissionDetail = () => {
                 goBack={() => redirectTo(baseRedirectUrl)}
                 displayBackButton
             />
-            <DetailsWrapper>
+            <DetailsWrapper
+                title={data.name}
+                extraActions={
+                    <TopActions missionId={missionId} missionName={data.name} />
+                }
+            >
                 <Stack spacing={2}>
-                    <Box pt={4} px={2}>
-                        <Stack
-                            direction="row"
-                            spacing={2}
-                            justifyContent="flex-end"
-                        >
-                            <TopActions
-                                missionId={missionId}
-                                missionName={data.name}
-                            />
-                        </Stack>
-                    </Box>
                     <Grid container spacing={2} sx={{ width: '100%' }}>
                         <Grid item xs={12} sm={6}>
                             {isMissionFormRetrieve(data) && (

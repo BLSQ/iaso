@@ -32,53 +32,54 @@ const styles: SxStyles = {
 };
 type Props = {
     children: React.ReactNode;
-    showHeader?: boolean;
     cancelUrl?: string;
     allowConfirm?: boolean;
     handleSubmit?: () => void;
     title?: string;
+    extraActions?: React.ReactNode;
 };
 
 export const DetailsWrapper: React.FC<Props> = ({
     children,
-    showHeader = false,
     cancelUrl,
     title,
     allowConfirm,
     handleSubmit,
+    extraActions,
 }) => {
     const { formatMessage } = useSafeIntl();
     return (
         <MainWrapper sx={styles.root}>
-            {showHeader && (
-                <Box sx={styles.headerContainer}>
-                    <Box sx={styles.header}>
-                        {title && <Typography variant="h6">{title}</Typography>}
-                        <Box>
-                            {cancelUrl && (
-                                <LinkButton
-                                    to={cancelUrl}
-                                    color="primary"
-                                    variant="outlined"
-                                >
-                                    {formatMessage(MESSAGES.cancel)}
-                                </LinkButton>
-                            )}
+            <Box sx={styles.headerContainer}>
+                <Box sx={styles.header}>
+                    {title && <Typography variant="h6">{title}</Typography>}
+                    <Box>
+                        {cancelUrl && (
+                            <LinkButton
+                                to={cancelUrl}
+                                color="primary"
+                                variant="outlined"
+                            >
+                                {formatMessage(MESSAGES.cancel)}
+                            </LinkButton>
+                        )}
+                        {handleSubmit && (
                             <Button
                                 variant="contained"
                                 type="submit"
                                 color="primary"
                                 disabled={!allowConfirm}
                                 sx={{ ml: 2 }}
-                                onClick={() => allowConfirm && handleSubmit?.()}
+                                onClick={() => allowConfirm && handleSubmit()}
                             >
                                 <SaveOutlined sx={{ mr: 1 }} />
                                 {formatMessage(MESSAGES.save)}
                             </Button>
-                        </Box>
+                        )}
+                        {extraActions}
                     </Box>
                 </Box>
-            )}
+            </Box>
             <Paper sx={styles.paper}>{children}</Paper>
         </MainWrapper>
     );

@@ -1,5 +1,6 @@
 import React from 'react';
-import { useRedirectTo } from 'bluesquare-components';
+import { Box } from '@mui/material';
+import { useRedirectTo, useRedirectToReplace } from 'bluesquare-components';
 import { useApiMicroplanningMissionsDestroy } from 'Iaso/api/missions';
 import { DeleteButton } from 'Iaso/components/Buttons/DeleteButton';
 import { EditButton } from 'Iaso/components/Buttons/EditButton';
@@ -27,6 +28,7 @@ export const TopActions: React.FunctionComponent<TopActionsProps> = ({
             },
         },
     });
+    const redirectToReplace = useRedirectToReplace();
 
     return (
         <>
@@ -36,11 +38,6 @@ export const TopActions: React.FunctionComponent<TopActionsProps> = ({
                     Permissions.MISSION_WRITE,
                 ]}
             >
-                <EditButton
-                    component={'a'}
-                    href={`/dashboard/${baseUrls.missionsEdit}/id/${missionId}/`}
-                />
-
                 <DeleteDialog
                     titleMessage={{
                         ...MESSAGES.deleteMission,
@@ -56,7 +53,19 @@ export const TopActions: React.FunctionComponent<TopActionsProps> = ({
                     }}
                     onConfirm={() => deleteMission({ id: missionId })}
                     Trigger={DeleteButton}
+                    triggerProps={{
+                        variant: 'outlined',
+                    }}
                 />
+                <Box sx={{ ml: 2, display: 'inline-block' }}>
+                    <EditButton
+                        onClick={() =>
+                            redirectToReplace(baseUrls.missionsEdit, {
+                                id: missionId.toString(),
+                            })
+                        }
+                    />
+                </Box>
             </DisplayIfUserHasPerm>
         </>
     );

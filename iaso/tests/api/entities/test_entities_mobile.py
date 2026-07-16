@@ -1,7 +1,10 @@
+import datetime
+import json
 import uuid
 
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
+from django.utils import timezone
 from rest_framework import status
 
 from iaso import models as m
@@ -108,3 +111,157 @@ class MobileEntityAPITestCase(EntityAPITestCase):
 
         # Verify no duplicate entity IDs
         self.assertEqual(len(entity_ids), len(set(entity_ids)), "Found duplicate entities in response")
+
+    def test_list_entities_filter_by_limit_date_ignores_soft_deleted_instances(self):
+        self.client.force_authenticate(self.yoda)
+
+        # context for the serializer
+        m.FormVersion.objects.create(form=self.form_1, version_id="1")
+
+        now = timezone.now()
+        older_date = now - datetime.timedelta(days=10)
+        newer_date = now - datetime.timedelta(days=2)
+        limit_date_str = (now - datetime.timedelta(days=5)).strftime("%Y-%m-%d")
+
+        inst_older_1 = self.create_form_instance(
+            project=self.project,
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"_version": "1"},
+        )
+        entity_1 = m.Entity.objects.create(
+            name="entity_1",
+            entity_type=self.entity_type,
+            attributes=inst_older_1,
+            account=self.account,
+        )
+        inst_older_1.entity = entity_1
+        inst_older_1.save()
+        m.Instance.objects.filter(pk=inst_older_1.pk).update(updated_at=older_date)
+
+        inst_newer_deleted = self.create_form_instance(
+            project=self.project,
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"_version": "1"},
+            deleted=True,
+            entity=entity_1,
+        )
+        m.Instance.objects.filter(pk=inst_newer_deleted.pk).update(updated_at=newer_date)
+
+        response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id, "limit_date": limit_date_str})
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response_json["count"], 0)
+
+        inst_newer_deleted.deleted = False
+        inst_newer_deleted.save()
+
+        response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id, "limit_date": limit_date_str})
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response_json["count"], 1)
+
+    def test_get_entities_by_type_ignores_soft_deleted_instances(self):
+        self.client.force_authenticate(self.yoda)
+
+        # context for the serializer
+        m.FormVersion.objects.create(form=self.form_1, version_id="1")
+
+        now = timezone.now()
+        older_date = now - datetime.timedelta(days=10)
+        newer_date = now - datetime.timedelta(days=2)
+        limit_date_str = (now - datetime.timedelta(days=5)).strftime("%Y-%m-%d")
+
+        inst_older = self.create_form_instance(
+            project=self.project,
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"_version": "1"},
+        )
+        entity = m.Entity.objects.create(
+            name="type_entity",
+            entity_type=self.entity_type,
+            attributes=inst_older,
+            account=self.account,
+        )
+        inst_older.entity = entity
+        inst_older.save()
+        m.Instance.objects.filter(pk=inst_older.pk).update(updated_at=older_date)
+
+        inst_newer_deleted = self.create_form_instance(
+            project=self.project,
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"_version": "1"},
+            deleted=True,
+            entity=entity,
+        )
+        m.Instance.objects.filter(pk=inst_newer_deleted.pk).update(updated_at=newer_date)
+
+        url = f"/api/mobile/entitytypes/{self.entity_type.pk}/entities/"
+        response = self.client.get(url, {"app_id": self.project.app_id, "limit_date": limit_date_str})
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response_json["count"], 0)
+
+        inst_newer_deleted.deleted = False
+        inst_newer_deleted.save()
+
+        response = self.client.get(url, {"app_id": self.project.app_id, "limit_date": limit_date_str})
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response_json["count"], 1)
+
+    def test_get_entities_by_type_filtered_by_json_content(self):
+        self.client.force_authenticate(self.yoda)
+
+        # context for the serializer
+        m.FormVersion.objects.create(form=self.form_1, version_id="1")
+
+        inst_a = self.create_form_instance(
+            project=self.project,
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"_version": "1", "name": "Robert", "age__int__": 25},
+        )
+        entity_a = m.Entity.objects.create(
+            name="entity_a",
+            entity_type=self.entity_type,
+            attributes=inst_a,
+            account=self.account,
+        )
+        inst_a.entity = entity_a
+        inst_a.save()
+
+        inst_b = self.create_form_instance(
+            project=self.project,
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"_version": "1", "name": "Luke", "age__int__": 19},
+        )
+        entity_b = m.Entity.objects.create(
+            name="entity_b",
+            entity_type=self.entity_type,
+            attributes=inst_b,
+            account=self.account,
+        )
+        inst_b.entity = entity_b
+        inst_b.save()
+
+        url = f"/api/mobile/entitytypes/{self.entity_type.pk}/entities/"
+
+        json_content_filter_1 = json.dumps({"==": [{"var": "age__int__"}, 25]})
+        response = self.client.get(url, {"app_id": self.project.app_id, "json_content": json_content_filter_1})
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response_json["count"], 1)
+        self.assertEqual(response_json["results"][0]["id"], str(entity_a.uuid))
+
+        json_content_filter_2 = json.dumps({"==": [{"var": "name"}, "Luke"]})
+        response = self.client.get(url, {"app_id": self.project.app_id, "json_content": json_content_filter_2})
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response_json["count"], 1)
+        self.assertEqual(response_json["results"][0]["id"], str(entity_b.uuid))
+
+        inst_a.deleted = True
+        inst_a.save()
+
+        response = self.client.get(url, {"app_id": self.project.app_id, "json_content": json_content_filter_1})
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response_json["count"], 0)

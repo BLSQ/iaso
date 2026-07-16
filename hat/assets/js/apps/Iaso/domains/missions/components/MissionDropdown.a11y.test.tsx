@@ -1,20 +1,18 @@
 import React from 'react';
 import { faker } from '@faker-js/faker';
 import { screen, waitFor } from '@testing-library/react';
-import { FormikProps } from 'formik';
 import { axe } from 'jest-axe';
 import { setupServer } from 'msw/node';
 import { vi } from 'vitest';
-import { MissionTypeValueEnum } from 'Iaso/api/missions';
 import {
-    getApiMicroplanningMissionsMissionTypesDropdownListMockHandler,
-    getApiMicroplanningMissionsMissionTypesDropdownListResponseMock,
+    getApiMicroplanningMissionsDropdownListMockHandler,
+    getApiMicroplanningMissionsDropdownListResponseMock,
 } from 'Iaso/api/missions/endpoints/missions/missions.msw';
 import {
     renderWithThemeAndIntlProvider,
     TestingQueryClient,
 } from '../../../../../tests/helpers';
-import { MissionTypeDropdownInput } from './MissionTypeDropdownInput';
+import { MissionDropdown } from './MissionDropdown';
 
 const { mockCurrentUser } = vi.hoisted(() => {
     return { mockCurrentUser: vi.fn() };
@@ -34,46 +32,27 @@ vi.mock('Iaso/domains/users/utils', () => ({
 
 const mockCallApi = vi.fn();
 
-const getCustomApiMicroplanningMissionsMissionTypesDropdownListMockHandler = (
+const getCustomApiMicroplanningMissionsDropdownListMockHandler = (
     overrideResponse?: Parameters<
-        typeof getApiMicroplanningMissionsMissionTypesDropdownListMockHandler
+        typeof getApiMicroplanningMissionsDropdownListMockHandler
     >[0],
     options?: Parameters<
-        typeof getApiMicroplanningMissionsMissionTypesDropdownListMockHandler
+        typeof getApiMicroplanningMissionsDropdownListMockHandler
     >[1],
 ) => {
     mockCallApi();
-    return getApiMicroplanningMissionsMissionTypesDropdownListMockHandler(
+    return getApiMicroplanningMissionsDropdownListMockHandler(
         overrideResponse,
         options,
     );
 };
 
 const server = setupServer(
-    getCustomApiMicroplanningMissionsMissionTypesDropdownListMockHandler(),
+    getCustomApiMicroplanningMissionsDropdownListMockHandler(),
 );
 const previousDefaults = TestingQueryClient.getDefaultOptions();
 
-const createProps = (overrides = {}) => ({
-    label: 'Mission type',
-    field: {
-        name: 'mission_type',
-        value: MissionTypeValueEnum.enum.FORM_FILLING,
-        onBlur: vi.fn(),
-        onChange: vi.fn(),
-    },
-    form: {
-        errors: {},
-        touched: {},
-        setFieldTouched: vi.fn(),
-        setFieldValue: vi.fn(),
-    } as Partial<FormikProps<{ mission_type: string }>> as FormikProps<{
-        mission_type: string;
-    }>,
-    ...overrides,
-});
-
-describe('MissionTypeDropdownInput a11y test', () => {
+describe('MissionDropdown a11y test', () => {
     beforeAll(() => {
         TestingQueryClient.setDefaultOptions({
             queries: {
@@ -109,41 +88,38 @@ describe('MissionTypeDropdownInput a11y test', () => {
         mockUserHasPermission.mockReturnValue(false);
 
         const { container } = renderWithThemeAndIntlProvider(
-            <MissionTypeDropdownInput {...createProps()} />,
+            <MissionDropdown keyValue={'mission_type'} />,
         );
-
+        await waitFor(() => {
+            expect(screen.queryByRole('progressbar')).toBeNull();
+        });
         expect(screen.queryByRole('combobox')).toBeNull();
         expect(await axe(container)).toHaveNoViolations();
     });
 
-    it('does not have a11y violation if it renders input with correct options', async () => {
-        const data =
-            getApiMicroplanningMissionsMissionTypesDropdownListResponseMock();
+    it('does not have a11y violation when normal rendering', async () => {
+        const data = getApiMicroplanningMissionsDropdownListResponseMock();
         expect(data?.length).toBeGreaterThan(0);
 
         server.use(
-            getCustomApiMicroplanningMissionsMissionTypesDropdownListMockHandler(
-                data,
-            ),
+            getCustomApiMicroplanningMissionsDropdownListMockHandler(data),
         );
 
         const { container } = renderWithThemeAndIntlProvider(
-            <MissionTypeDropdownInput {...createProps()} />,
+            <MissionDropdown keyValue={'mission_type'} />,
         );
 
         await waitFor(() => {
             expect(screen.queryByRole('progressbar')).toBeNull();
         });
-        expect(screen.getByRole('combobox')).toBeInTheDocument();
-
         expect(await axe(container)).toHaveNoViolations();
     });
 
-    // loading spinner not a11y
-    it.skip('renders loading state', async () => {
+    // loading spinner is not a11y compliant
+    it.skip('does not have a11y violation when loading', async () => {
         vi.stubEnv('MSW_DELAY', '1_000_000');
         const { container } = renderWithThemeAndIntlProvider(
-            <MissionTypeDropdownInput {...createProps()} />,
+            <MissionDropdown keyValue={'mission_type'} />,
         );
 
         expect(screen.getByRole('progressbar')).toBeInTheDocument();

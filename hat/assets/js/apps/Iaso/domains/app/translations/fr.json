@@ -1117,6 +1117,8 @@
     "iaso.missions.title": "Missions",
     "iaso.missions.title.generalInfoTitle": "Information",
     "iaso.missions.title.missionDetail": "Détails de la mission",
+    "iaso.missions.chip.entityAndForm": "Entité + Formulaire",
+    "iaso.missions.chip.orgUnitAndForm": "Unité org. + Formulaire",
     "iaso.missions.type.entityAndForm": "Entité et formulaire",
     "iaso.missions.type.formFilling": "Remplissage de formulaire",
     "iaso.missions.type.orgUnitAndForm": "Unité org. et formulaire",

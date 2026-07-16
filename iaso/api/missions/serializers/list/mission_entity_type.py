@@ -15,7 +15,7 @@ class NestedEntityTypeSerializer(ModelSerializer):
 
 
 class MissionEntityTypeListSerializer(ModelSerializer):
-    mission_type = serializers.CharField(read_only=True, source="get_mission_type_display")
+    # mission_type = serializers.CharField(read_only=True, source="get_mission_type_display")
     entity_type = NestedEntityTypeSerializer(read_only=True)
     forms_count = serializers.IntegerField(read_only=True)
 

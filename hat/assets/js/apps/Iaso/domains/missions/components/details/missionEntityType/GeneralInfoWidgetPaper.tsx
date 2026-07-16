@@ -20,14 +20,8 @@ export const GeneralInfoWidgetPaper: React.FunctionComponent<
             title={formatMessage(MESSAGES.generalInfoTitle)}
             sx={{ mb: 2 }}
         >
-            <Table size={'small'}>
+            <Table size="small">
                 <TableBody>
-                    <Row
-                        field={{
-                            label: formatMessage(MESSAGES.name),
-                            value: mission.name,
-                        }}
-                    />
                     <Row
                         field={{
                             label: formatMessage(MESSAGES.description),

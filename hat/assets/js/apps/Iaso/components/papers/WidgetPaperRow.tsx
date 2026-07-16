@@ -1,30 +1,38 @@
 import React, { FunctionComponent } from 'react';
 import { TableRow, TableCell } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import { textPlaceholder } from 'Iaso/constants/uiConstants';
+import { SxStyles } from 'Iaso/types/general';
 
-const useStyles = makeStyles(theme => ({
+const styles: SxStyles = {
     leftCell: {
         // @ts-ignore
-        borderRight: `1px solid ${theme.palette.ligthGray.border}`,
+        borderRight: theme => `1px solid ${theme.palette.ligthGray.border}`,
         fontWeight: 'bold',
     },
-}));
+    leftCellNoDivider: {
+        fontWeight: 'bold',
+    },
+};
 
 type RowProps = {
     field: { label: string; value: any };
     placeholder?: string;
+    showDivider?: boolean;
 };
 
 export const WidgetPaperRow: FunctionComponent<RowProps> = ({
     field,
     placeholder = textPlaceholder,
+    showDivider = true,
 }) => {
     const { label, value } = field;
-    const classes = useStyles();
     return (
         <TableRow>
-            <TableCell className={classes.leftCell}>{label}</TableCell>
+            <TableCell
+                sx={showDivider ? styles.leftCell : styles.leftCellNoDivider}
+            >
+                {label}
+            </TableCell>
             <TableCell>{value || placeholder}</TableCell>
         </TableRow>
     );

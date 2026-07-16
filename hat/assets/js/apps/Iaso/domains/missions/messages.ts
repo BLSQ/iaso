@@ -149,6 +149,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.missions.label.newMission',
         defaultMessage: 'New mission',
     },
+    orgUnitAndFormChip: {
+        id: 'iaso.missions.chip.orgUnitAndForm',
+        defaultMessage: 'Org unit + Form',
+    },
+    entityAndFormChip: {
+        id: 'iaso.missions.chip.entityAndForm',
+        defaultMessage: 'Entity + Form',
+    },
 });
 
 export default MESSAGES;

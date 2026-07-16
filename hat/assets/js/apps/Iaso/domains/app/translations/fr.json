@@ -1110,6 +1110,7 @@
     "iaso.missions.label.min": "Min",
     "iaso.missions.label.minCardinality": "Cardinalité min",
     "iaso.missions.label.missionType": "Type de mission",
+    "iaso.missions.label.newMission": "Nouvelle mission",
     "iaso.missions.label.orgUnitType": "Type d'unité org.",
     "iaso.missions.noResultsFound": "Aucun résultat trouvé.",
     "iaso.missions.selectEntityType": "Veuillez sélectionner un type d'entité",

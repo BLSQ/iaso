@@ -9,13 +9,13 @@ import {
     useApiMicroplanningMissionsUpdate,
 } from 'Iaso/api/missions';
 import Page404 from 'Iaso/components/errors/Page404';
-import { MainWrapper } from 'Iaso/components/MainWrapper';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import { EditBaseMissionEntityType } from 'Iaso/domains/missions/components/edit/EditBaseMissionEntityType';
 import { EditBaseMissionForm } from 'Iaso/domains/missions/components/edit/EditBaseMissionForm';
 import { EditBaseMissionOrgUnitType } from 'Iaso/domains/missions/components/edit/EditBaseMissionOrgUnitType';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
+import { DetailsWrapper } from './components/DetailsWrapper';
 import MESSAGES from './messages';
 import {
     isMissionEntityTypeRetrieve,
@@ -69,7 +69,11 @@ export const MissionEdit: FunctionComponent = () => {
                 goBack={() => redirectTo(redirectBackUrl)}
                 displayBackButton
             />
-            <MainWrapper sx={{ p: 4 }}>
+            <DetailsWrapper
+                showHeader
+                cancelUrl={redirectBackUrl}
+                title={data.name}
+            >
                 {isMissionFormRetrieve(data) && (
                     <EditBaseMissionForm
                         data={data}
@@ -94,7 +98,7 @@ export const MissionEdit: FunctionComponent = () => {
                         redirectBackUrl={redirectBackUrl}
                     />
                 )}
-            </MainWrapper>
+            </DetailsWrapper>
         </>
     );
 };

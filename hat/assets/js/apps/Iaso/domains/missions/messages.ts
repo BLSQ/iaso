@@ -149,6 +149,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Please select an entity type',
         id: 'iaso.missions.selectEntityType',
     },
+    newMission: {
+        id: 'iaso.missions.label.newMission',
+        defaultMessage: 'New mission',
+    },
 });
 
 export default MESSAGES;

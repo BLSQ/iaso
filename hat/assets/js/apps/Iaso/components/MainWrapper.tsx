@@ -1,6 +1,5 @@
 import React, { FC, useMemo } from 'react';
-import { SxProps } from '@mui/material';
-import { Box, Theme } from '@mui/system';
+import { Box, SxProps, Theme } from '@mui/material';
 import {
     MENU_HEIGHT_WITH_TABS,
     MENU_HEIGHT_WITHOUT_TABS,

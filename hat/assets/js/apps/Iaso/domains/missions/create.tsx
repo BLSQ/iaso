@@ -7,12 +7,12 @@ import {
     MissionTypeDropdownValueEnum,
     useApiMicroplanningMissionsCreate,
 } from 'Iaso/api/missions';
-import { MainWrapper } from 'Iaso/components/MainWrapper';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import { MissionCreateBody } from 'Iaso/domains/missions/schemas/create';
 import { withFormikSubmitAsync } from 'Iaso/utils/forms';
 import { CreateMissionForm } from './components/CreateMissionForm';
+import { DetailsWrapper } from './components/DetailsWrapper';
 import MESSAGES from './messages';
 
 export const MissionCreate: FunctionComponent = () => {
@@ -55,21 +55,22 @@ export const MissionCreate: FunctionComponent = () => {
                 goBack={() => redirectTo(redirectBackUrl)}
                 displayBackButton
             />
-            <MainWrapper sx={{ p: 4 }}>
+            <DetailsWrapper
+                showHeader
+                title={formatMessage(MESSAGES.newMission)}
+                allowConfirm={allowConfirm}
+                cancelUrl={`/${baseUrls.missions}/`}
+                handleSubmit={() => formik.handleSubmit()}
+            >
                 <FormikProvider value={formik}>
                     {formik.status && (
                         <Alert severity={'error'} sx={{ mb: 2 }}>
                             {formik.status}
                         </Alert>
                     )}
-                    <CreateMissionForm
-                        formik={formik}
-                        allowConfirm={allowConfirm}
-                        cancelUrl={`/${baseUrls.missions}/`}
-                        successButtonMessage={formatMessage(MESSAGES.create)}
-                    />
+                    <CreateMissionForm formik={formik} />
                 </FormikProvider>
-            </MainWrapper>
+            </DetailsWrapper>
         </>
     );
 };

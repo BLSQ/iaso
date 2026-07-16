@@ -1,8 +1,6 @@
 import React from 'react';
-import { Box, Grid, Stack, Theme } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { Box, Grid, Stack } from '@mui/material';
 import {
-    commonStyles,
     LoadingSpinner,
     useRedirectTo,
     useSafeIntl,
@@ -17,6 +15,7 @@ import { GeneralInfoWidgetPaper as GeneralInfoWidgetPaperMissionOrgUnitType } fr
 import { TopActions } from 'Iaso/domains/missions/components/details/TopActions';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { FormWidgetPaper } from './components/details/FormWidgetPaper';
+import { DetailsWrapper } from './components/DetailsWrapper';
 import MESSAGES from './messages';
 import {
     isMissionEntityTypeRetrieve,
@@ -25,11 +24,9 @@ import {
 } from './utils';
 
 const baseRedirectUrl = `${baseUrls.missions}`;
-const useStyles = makeStyles((theme: Theme) => ({ ...commonStyles(theme) }));
 
 export const MissionDetail = () => {
     const params = useParamsObject(baseUrls.missionsDetails);
-    const classes = useStyles();
     const missionId = parseInt(params.id);
 
     const { data, isLoading } = useApiMicroplanningMissionsRetrieve(missionId);
@@ -62,7 +59,7 @@ export const MissionDetail = () => {
                 goBack={() => redirectTo(baseRedirectUrl)}
                 displayBackButton
             />
-            <Box className={`${classes.containerFullHeightNoTabPadded}`}>
+            <DetailsWrapper>
                 <Stack spacing={2}>
                     <Box pt={4} px={2}>
                         <Stack
@@ -101,7 +98,7 @@ export const MissionDetail = () => {
                         </Grid>
                     </Grid>
                 </Stack>
-            </Box>
+            </DetailsWrapper>
         </>
     );
 };

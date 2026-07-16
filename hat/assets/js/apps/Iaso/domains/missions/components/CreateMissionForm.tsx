@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Alert, Box, Button, Grid } from '@mui/material';
-import { LinkButton, useSafeIntl } from 'bluesquare-components';
+import { Alert, Box, Grid } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
 import { Field, FormikProps } from 'formik';
 import {
     MissionEntityTypeCreateRequest,
@@ -17,17 +17,11 @@ import TextInput from 'Iaso/domains/pages/components/TextInput';
 import MESSAGES from '../messages';
 
 type CreateMissionFormProps = {
-    cancelUrl?: string;
-    allowConfirm: boolean;
     formik: FormikProps<MissionCreateBody>;
-    successButtonMessage: string;
 };
 
 export const CreateMissionForm: FunctionComponent<CreateMissionFormProps> = ({
-    cancelUrl,
-    allowConfirm,
     formik,
-    successButtonMessage,
 }) => {
     const { formatMessage } = useSafeIntl();
 
@@ -113,28 +107,6 @@ export const CreateMissionForm: FunctionComponent<CreateMissionFormProps> = ({
                         )}
                     </Box>
                 </WidgetPaper>
-                <Box
-                    sx={{
-                        justifyContent: 'flex-end',
-                        display: 'flex',
-                    }}
-                >
-                    {cancelUrl && (
-                        <LinkButton to={cancelUrl} color={'error'}>
-                            {formatMessage(MESSAGES.cancel)}
-                        </LinkButton>
-                    )}
-                    <Button
-                        variant="contained"
-                        type={'submit'}
-                        color={'success'}
-                        disabled={!allowConfirm}
-                        sx={{ ml: 2 }}
-                        onClick={() => allowConfirm && formik.handleSubmit()}
-                    >
-                        {successButtonMessage}
-                    </Button>
-                </Box>
             </Grid>
         </Grid>
     );

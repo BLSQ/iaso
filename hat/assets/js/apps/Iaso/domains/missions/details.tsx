@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Stack } from '@mui/material';
+import { Stack } from '@mui/material';
 import {
     LoadingSpinner,
     useRedirectTo,
@@ -65,31 +65,21 @@ export const MissionDetail = () => {
                     <TopActions missionId={missionId} missionName={data.name} />
                 }
             >
-                <Stack spacing={2}>
-                    <Grid container spacing={2} sx={{ width: '100%' }}>
-                        <Grid item xs={12} sm={6}>
-                            {isMissionFormRetrieve(data) && (
-                                <GeneralInfoWidgetPaperMissionForm
-                                    mission={data}
-                                />
-                            )}
-                            {isMissionEntityTypeRetrieve(data) && (
-                                <GeneralInfoWidgetPaperMissionEntityType
-                                    mission={data}
-                                />
-                            )}
-                            {isMissionOrgUnitTypeRetrieve(data) && (
-                                <GeneralInfoWidgetPaperMissionOrgUnitType
-                                    mission={data}
-                                />
-                            )}
-                        </Grid>
-                    </Grid>
-                    <Grid container spacing={2} sx={{ mt: 2, width: '100%' }}>
-                        <Grid item xs={12} sm={9}>
-                            <FormWidgetPaper mission={data} />
-                        </Grid>
-                    </Grid>
+                <Stack spacing={2} sx={{ p: 2 }}>
+                    {isMissionFormRetrieve(data) && (
+                        <GeneralInfoWidgetPaperMissionForm mission={data} />
+                    )}
+                    {isMissionEntityTypeRetrieve(data) && (
+                        <GeneralInfoWidgetPaperMissionEntityType
+                            mission={data}
+                        />
+                    )}
+                    {isMissionOrgUnitTypeRetrieve(data) && (
+                        <GeneralInfoWidgetPaperMissionOrgUnitType
+                            mission={data}
+                        />
+                    )}
+                    <FormWidgetPaper mission={data} />
                 </Stack>
             </DetailsWrapper>
         </>

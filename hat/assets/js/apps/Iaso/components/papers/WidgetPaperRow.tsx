@@ -18,18 +18,24 @@ type RowProps = {
     field: { label: string; value: any };
     placeholder?: string;
     showDivider?: boolean;
+    leftCellWidth?: string;
 };
 
 export const WidgetPaperRow: FunctionComponent<RowProps> = ({
     field,
     placeholder = textPlaceholder,
     showDivider = true,
+    leftCellWidth = 'auto',
 }) => {
     const { label, value } = field;
+    const leftCellSx = showDivider ? styles.leftCell : styles.leftCellNoDivider;
     return (
         <TableRow>
             <TableCell
-                sx={showDivider ? styles.leftCell : styles.leftCellNoDivider}
+                sx={{
+                    ...leftCellSx,
+                    width: leftCellWidth,
+                }}
             >
                 {label}
             </TableCell>

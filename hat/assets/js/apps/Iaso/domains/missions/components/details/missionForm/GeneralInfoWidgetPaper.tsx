@@ -1,11 +1,12 @@
 import React from 'react';
-import { InfoOutlined } from '@mui/icons-material';
-import { Table, TableBody, Typography } from '@mui/material';
+import { Table, TableBody } from '@mui/material';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { MissionFormRetrieve } from 'Iaso/api/missions';
 import { WidgetPaperRow as Row } from 'Iaso/components/papers/WidgetPaperRow';
 import { FormsChip } from 'Iaso/domains/missions/components/chips/FormsChip';
 import MESSAGES from 'Iaso/domains/missions/messages';
+import { LEFT_CELL_WIDTH } from 'Iaso/domains/missions/utils';
+import { InfosTitle } from '../InfosTitle';
 
 type GeneralInfoWidgetPaperProps = {
     mission: MissionFormRetrieve;
@@ -17,24 +18,18 @@ export const GeneralInfoWidgetPaper: React.FunctionComponent<
     const { formatMessage } = useSafeIntl();
     return (
         <>
-            <Typography
-                variant="body1"
-                sx={{ textTransform: 'uppercase', mb: 2, fontSize: '15px' }}
+            <InfosTitle />
+            <Table
+                size="small"
+                sx={{
+                    border: theme =>
+                        // @ts-ignore
+                        `1px solid ${theme.palette.ligthGray.border}`,
+                }}
             >
-                <InfoOutlined
-                    color="primary"
-                    sx={{
-                        mr: 1,
-                        fontSize: '15px',
-                        position: 'relative',
-                        top: '2px',
-                    }}
-                />
-                {formatMessage(MESSAGES.generalInfoTitle)}
-            </Typography>
-            <Table size="small">
                 <TableBody>
                     <Row
+                        leftCellWidth={LEFT_CELL_WIDTH}
                         showDivider={false}
                         field={{
                             label: formatMessage(MESSAGES.description),
@@ -42,6 +37,7 @@ export const GeneralInfoWidgetPaper: React.FunctionComponent<
                         }}
                     />
                     <Row
+                        leftCellWidth={LEFT_CELL_WIDTH}
                         showDivider={false}
                         field={{
                             label: formatMessage(MESSAGES.missionType),

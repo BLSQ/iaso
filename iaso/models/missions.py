@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models import Case, Count, IntegerField, OuterRef, QuerySet, Subquery, Value, When
+from django.db.models import Case, Count, IntegerField, OuterRef, Subquery, Value, When
 from django.utils.translation import gettext_lazy as _
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
@@ -117,9 +117,10 @@ class MissionForm(Mission):
 
     forms = models.ManyToManyField("Form", related_name="mission_forms", through=MissionFormThroughForm)
 
-    def get_form_assignments(self, assignment: Assignment) -> QuerySet[MissionFormThroughForm]:
-        out_set = set(assignment.org_unit.org_unit_type.form_set.values_list("id", flat=True))
-        return self.missionformthroughform_set.filter(form_id__in=list(out_set))
+    def get_form_assignments(self, assignment: Assignment) -> list[MissionFormThroughForm]:
+        out_forms = {f.id for f in assignment.org_unit.org_unit_type.form_set.all()}
+
+        return [tf for tf in self.missionformthroughform_set.all() if tf.form_id in out_forms]
 
 
 class MissionOrgUnitTypeThroughForm(models.Model):

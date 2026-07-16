@@ -9,11 +9,8 @@ from iaso.api.microplanning.filters import (
 )
 from iaso.api.teams.serializers import NestedTeamSerializer
 from iaso.models import (
-    EntityType,
-    Form,
     Group,
     Mission,
-    MissionForm,
     OrgUnit,
     OrgUnitType,
     Planning,
@@ -49,58 +46,6 @@ class NestedOrgUnitTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrgUnitType
         fields = ["id", "name"]
-
-
-class NestedFormSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Form
-        fields = ["id", "name"]
-        ref_name = "MicroplanningNestedForm"
-
-
-class NestedEntityTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EntityType
-        fields = ["id", "name"]
-        ref_name = "MicroplanningNestedEntityType"
-
-
-class MissionFormSerializer(serializers.ModelSerializer):
-    form = NestedFormSerializer(read_only=True)
-
-    class Meta:
-        model = MissionForm
-        fields = ["id", "form", "min_cardinality", "max_cardinality"]
-        read_only_fields = ["id"]
-
-
-class NestedMissionSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for embedding in PlanningReadSerializer."""
-
-    mission_forms = MissionFormSerializer(many=True, read_only=True)
-    org_unit_type = NestedOrgUnitTypeSerializer(read_only=True, source="org_unit_type.org_unit_type")
-    org_unit_min_cardinality = serializers.IntegerField(read_only=True, source="org_unit_type.min_cardinality")
-    org_unit_max_cardinality = serializers.IntegerField(read_only=True, source="org_unit_type.max_cardinality")
-    entity_type = NestedEntityTypeSerializer(read_only=True, source="entity_type.entity_type")
-    entity_min_cardinality = serializers.IntegerField(read_only=True, source="entity_type.min_cardinality")
-    entity_max_cardinality = serializers.IntegerField(read_only=True, source="entity_type.max_cardinality")
-
-    class Meta:
-        model = Mission
-        fields = [
-            "id",
-            "name",
-            "description",
-            "mission_type",
-            "mission_forms",
-            "org_unit_type",
-            "org_unit_min_cardinality",
-            "org_unit_max_cardinality",
-            "entity_type",
-            "entity_min_cardinality",
-            "entity_max_cardinality",
-        ]
-        read_only_fields = fields
 
 
 class NestedPlanningSamplingResultSerializer(serializers.ModelSerializer):

@@ -6,6 +6,15 @@ from rest_framework.viewsets import GenericViewSet
 
 from iaso.models.microplanning import Assignment, Planning
 
+from ...models import (
+    Mission,
+    MissionEntityType,
+    MissionEntityTypeThroughForm,
+    MissionForm,
+    MissionFormThroughForm,
+    MissionOrgUnitType,
+    MissionOrgUnitTypeThroughForm,
+)
 from ..common.mixin import CustomPaginationListModelMixin
 from .pagination import MobilePagination
 from .serializers import MobilePlanningSerializer, MobilePlanningV2Serializer
@@ -42,12 +51,12 @@ class MobilePlanningViewSet(CustomPaginationListModelMixin, GenericViewSet):
                     .prefetch_related("org_unit__org_unit_type__form_set"),
                 ),
                 # We have to filter on FORM_FILLING only because this was the only type of missions before
-                # Prefetch(
-                #     lookup="missions",
-                #     queryset=Mission.objects.filter(mission_type=MissionType.FORM_FILLING).prefetch_related(
-                #         "mission_forms"
-                #     ),
-                # ),
+                Prefetch(
+                    lookup="missions",
+                    queryset=Mission.objects.instance_of(MissionForm).prefetch_polymorphic_related(
+                        MissionForm, "missionformthroughform_set"
+                    ),
+                ),
             )
             .distinct()
         )
@@ -84,14 +93,34 @@ class MobilePlanningV2ViewSet(CustomPaginationListModelMixin, GenericViewSet):
                     queryset=Assignment.objects.filter(deleted_at=None)
                     .filter(user=user)
                     .select_related("org_unit", "org_unit__org_unit_type")
-                    .prefetch_related("org_unit__org_unit_type__form_set"),
+                    .prefetch_related("org_unit__org_unit_type__form_set", "org_unit__org_unit_type__sub_unit_types"),
                 ),
-                # Prefetch(
-                #     "missions",
-                #     queryset=Mission.objects.all()
-                #     .select_related("org_unit_type", "entity_type")
-                #     .prefetch_related("mission_forms", "forms"),
-                # ),
+                Prefetch(
+                    "missions",
+                    queryset=Mission.objects.all()
+                    .select_polymorphic_related(MissionOrgUnitType, "org_unit_type")
+                    .select_polymorphic_related(MissionEntityType, "entity_type")
+                    .prefetch_polymorphic_related(
+                        MissionForm,
+                        Prefetch(
+                            "missionformthroughform_set", queryset=MissionFormThroughForm.objects.select_related("form")
+                        ),
+                    )
+                    .prefetch_polymorphic_related(
+                        MissionOrgUnitType,
+                        Prefetch(
+                            "missionorgunittypethroughform_set",
+                            queryset=MissionOrgUnitTypeThroughForm.objects.select_related("form"),
+                        ),
+                    )
+                    .prefetch_polymorphic_related(
+                        MissionEntityType,
+                        Prefetch(
+                            "missionentitytypethroughform_set",
+                            queryset=MissionEntityTypeThroughForm.objects.select_related("form"),
+                        ),
+                    ),
+                ),
             )
             .distinct()
         )

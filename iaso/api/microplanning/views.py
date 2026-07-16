@@ -1,5 +1,5 @@
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Count, Prefetch, Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -24,6 +24,15 @@ from iaso.models.microplanning import Assignment, Planning
 from iaso.models.org_unit import OrgUnit
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
 
+from ...models import (
+    Mission,
+    MissionEntityType,
+    MissionEntityTypeThroughForm,
+    MissionForm,
+    MissionFormThroughForm,
+    MissionOrgUnitType,
+    MissionOrgUnitTypeThroughForm,
+)
 from .filters import (
     PlanningOrgUnitChildrenFilter,
     PlanningOrgUnitChildrenFilterBackend,
@@ -168,10 +177,32 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             .select_related("project", "org_unit", "team", "selected_sampling_result")
             .prefetch_related(
                 "target_org_unit_types",
-                "missions",
-                "missions__mission_forms__form",
-                "missions__org_unit_type",
-                "missions__entity_type",
+                Prefetch(
+                    "missions",
+                    queryset=Mission.objects.all()
+                    .select_polymorphic_related(MissionOrgUnitType, "org_unit_type")
+                    .select_polymorphic_related(MissionEntityType, "entity_type")
+                    .prefetch_polymorphic_related(
+                        MissionForm,
+                        Prefetch(
+                            "missionformthroughform_set", queryset=MissionFormThroughForm.objects.select_related("form")
+                        ),
+                    )
+                    .prefetch_polymorphic_related(
+                        MissionOrgUnitType,
+                        Prefetch(
+                            "missionorgunittypethroughform_set",
+                            queryset=MissionOrgUnitTypeThroughForm.objects.select_related("form"),
+                        ),
+                    )
+                    .prefetch_polymorphic_related(
+                        MissionEntityType,
+                        Prefetch(
+                            "missionentitytypethroughform_set",
+                            queryset=MissionEntityTypeThroughForm.objects.select_related("form"),
+                        ),
+                    ),
+                ),
             )
             .annotate(assignments_count=Count("assignment", filter=Q(assignment__deleted_at__isnull=True)))
         )

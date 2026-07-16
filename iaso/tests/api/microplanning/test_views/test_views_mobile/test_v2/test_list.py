@@ -186,7 +186,7 @@ class V2MobilePlanningListAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
         ContentType.objects.clear_cache()
 
-        with self.assertNumQueries(11):
+        with self.assertNumQueries(14):
             res = self.client.get(reverse("v2_mobileplanning-list"))
             res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
 

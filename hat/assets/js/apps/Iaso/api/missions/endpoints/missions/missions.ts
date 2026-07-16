@@ -28,7 +28,9 @@ import {
     PaginatedMissionPolymorphicListList,
 } from '../../models';
 import type {
+    ApiMicroplanningMissionsDropdownListParams,
     ApiMicroplanningMissionsListParams,
+    MissionDropdown,
     MissionPolymorphicCreateRequest,
     MissionPolymorphicUpdateRequestRequest,
     MissionTypeDropdown,
@@ -782,6 +784,140 @@ export const useApiMicroplanningMissionsDestroy = <
         ),
     );
 };
+export const getApiMicroplanningMissionsDropdownListUrl = (
+    params?: ApiMicroplanningMissionsDropdownListParams,
+) => {
+    const normalizedParams = new URLSearchParams();
+
+    Object.entries(params || {}).forEach(([key, value]) => {
+        if (value !== undefined) {
+            normalizedParams.append(
+                key,
+                value === null ? 'null' : String(value),
+            );
+        }
+    });
+
+    const stringifiedParams = normalizedParams.toString();
+
+    return stringifiedParams.length > 0
+        ? `${process.env.ORVAL_API_BASE_URL}/api/microplanning/missions/dropdown/?${stringifiedParams}`
+        : `${process.env.ORVAL_API_BASE_URL}/api/microplanning/missions/dropdown/`;
+};
+
+export const apiMicroplanningMissionsDropdownList = async (
+    params?: ApiMicroplanningMissionsDropdownListParams,
+    options?: RequestInit,
+): Promise<MissionDropdown[]> => {
+    return customFetchInstance<MissionDropdown[]>(
+        getApiMicroplanningMissionsDropdownListUrl(params),
+        {
+            credentials: 'same-origin',
+            ...options,
+            method: 'GET',
+        },
+    );
+};
+
+export const getApiMicroplanningMissionsDropdownListQueryKey = (
+    params?: ApiMicroplanningMissionsDropdownListParams,
+) => {
+    return [
+        'apiMicroplanningMissionsDropdownList',
+        ...(params ? [params] : []),
+    ] as const;
+};
+
+export const useApiMicroplanningMissionsDropdownListQueryOptions = <
+    TData = Awaited<ReturnType<typeof apiMicroplanningMissionsDropdownList>>,
+    TError = unknown,
+>(
+    params?: ApiMicroplanningMissionsDropdownListParams,
+    options?: {
+        query?: UseQueryOptions<
+            Awaited<ReturnType<typeof apiMicroplanningMissionsDropdownList>>,
+            TError,
+            TData
+        >;
+        request?: SecondParameter<typeof customFetchInstance>;
+    },
+) => {
+    const { query: queryOptions, request: requestOptions } = options ?? {};
+
+    const queryKey =
+        queryOptions?.queryKey ??
+        getApiMicroplanningMissionsDropdownListQueryKey(params);
+
+    const queryFn: QueryFunction<
+        Awaited<ReturnType<typeof apiMicroplanningMissionsDropdownList>>
+    > = ({ signal }) =>
+        apiMicroplanningMissionsDropdownList(params, {
+            signal,
+            ...requestOptions,
+        });
+
+    const customOptions = getCustomQueryOptions({
+        queryKey,
+        queryFn,
+        ...queryOptions,
+    });
+
+    return customOptions as UseQueryOptions<
+        Awaited<ReturnType<typeof apiMicroplanningMissionsDropdownList>>,
+        TError,
+        TData
+    > & { queryKey: QueryKey };
+};
+
+export type ApiMicroplanningMissionsDropdownListQueryResult = NonNullable<
+    Awaited<ReturnType<typeof apiMicroplanningMissionsDropdownList>>
+>;
+export type ApiMicroplanningMissionsDropdownListQueryError = unknown;
+
+export function useApiMicroplanningMissionsDropdownList<
+    TData = Awaited<ReturnType<typeof apiMicroplanningMissionsDropdownList>>,
+    TError = unknown,
+>(
+    params?: ApiMicroplanningMissionsDropdownListParams,
+    options?: {
+        query?: UseQueryOptions<
+            Awaited<ReturnType<typeof apiMicroplanningMissionsDropdownList>>,
+            TError,
+            TData
+        >;
+        request?: SecondParameter<typeof customFetchInstance>;
+    },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+    const queryOptions = useApiMicroplanningMissionsDropdownListQueryOptions(
+        params,
+        options,
+    );
+
+    const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+        queryKey: QueryKey;
+    };
+
+    return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const invalidateApiMicroplanningMissionsDropdownList = async (
+    queryClient: QueryClient,
+    params?: ApiMicroplanningMissionsDropdownListParams,
+    options?: InvalidateOptions,
+): Promise<QueryClient> => {
+    await queryClient.invalidateQueries(
+        {
+            queryKey: getCustomQueryOptions({
+                queryKey:
+                    getApiMicroplanningMissionsDropdownListQueryKey(params),
+            }).queryKey,
+        },
+        options,
+    );
+
+    return queryClient;
+};
+
 export const getApiMicroplanningMissionsMissionTypesDropdownListUrl = () => {
     return `${process.env.ORVAL_API_BASE_URL}/api/microplanning/missions/mission-types-dropdown/`;
 };

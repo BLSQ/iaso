@@ -1107,6 +1107,7 @@
     "iaso.missions.label.maxCardinality": "Max cardinality",
     "iaso.missions.label.min": "Min",
     "iaso.missions.label.minCardinality": "Min cardinality",
+    "iaso.missions.label.missions": "Missions",
     "iaso.missions.label.missionType": "Mission type",
     "iaso.missions.label.newMission": "New mission",
     "iaso.missions.label.orgUnitType": "Org unit type",

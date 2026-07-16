@@ -15,6 +15,7 @@ import {
     MissionTypeValueEnum,
 } from '../../models';
 import type {
+    MissionDropdown,
     MissionEntityTypeCreateTyped,
     MissionEntityTypeListTyped,
     MissionEntityTypeRetrieveTyped,
@@ -541,6 +542,16 @@ export const getApiMicroplanningMissionsPartialUpdateResponseMock =
             },
         ]);
 
+export const getApiMicroplanningMissionsDropdownListResponseMock =
+    (): MissionDropdown[] =>
+        Array.from(
+            { length: faker.number.int({ min: 1, max: 10 }) },
+            (_, i) => i + 1,
+        ).map(() => ({
+            label: faker.string.alpha({ length: { min: 10, max: 20 } }),
+            value: faker.number.int(),
+        }));
+
 export const getApiMicroplanningMissionsMissionTypesDropdownListResponseMock =
     (): MissionTypeDropdown[] =>
         Array.from(
@@ -739,6 +750,37 @@ export const getApiMicroplanningMissionsDestroyMockHandler = (
     );
 };
 
+export const getApiMicroplanningMissionsDropdownListMockHandler = (
+    overrideResponse?:
+        | MissionDropdown[]
+        | ((
+              info: Parameters<Parameters<typeof http.get>[1]>[0],
+          ) => Promise<MissionDropdown[]> | MissionDropdown[]),
+    options?: RequestHandlerOptions,
+) => {
+    return http.get(
+        '*/api/microplanning/missions/dropdown/',
+        async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+            await delay(
+                (() =>
+                    process.env?.MSW_DELAY
+                        ? parseInt(process.env.MSW_DELAY)
+                        : 0)(),
+            );
+
+            return HttpResponse.json(
+                overrideResponse !== undefined
+                    ? typeof overrideResponse === 'function'
+                        ? await overrideResponse(info)
+                        : overrideResponse
+                    : getApiMicroplanningMissionsDropdownListResponseMock(),
+                { status: 200 },
+            );
+        },
+        options,
+    );
+};
+
 export const getApiMicroplanningMissionsMissionTypesDropdownListMockHandler = (
     overrideResponse?:
         | MissionTypeDropdown[]
@@ -776,5 +818,6 @@ export const getMissionsMock = () => [
     getApiMicroplanningMissionsUpdateMockHandler(),
     getApiMicroplanningMissionsPartialUpdateMockHandler(),
     getApiMicroplanningMissionsDestroyMockHandler(),
+    getApiMicroplanningMissionsDropdownListMockHandler(),
     getApiMicroplanningMissionsMissionTypesDropdownListMockHandler(),
 ];

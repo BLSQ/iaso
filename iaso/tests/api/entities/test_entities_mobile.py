@@ -1,4 +1,5 @@
 import datetime
+import json
 import uuid
 
 from django.db import connection
@@ -207,3 +208,64 @@ class MobileEntityAPITestCase(EntityAPITestCase):
         response = self.client.get(url, {"app_id": self.project.app_id, "limit_date": limit_date_str})
         response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response_json["count"], 1)
+
+    def test_list_entities_filter_by_json_content(self):
+        self.client.force_authenticate(self.yoda)
+
+        # context for the serializer
+        m.FormVersion.objects.create(form=self.form_1, version_id="1")
+
+        inst_a = self.create_form_instance(
+            project=self.project,
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"_version": "1", "name": "Robert", "age__int__": 25},
+        )
+        entity_a = m.Entity.objects.create(
+            name="entity_a",
+            entity_type=self.entity_type,
+            attributes=inst_a,
+            account=self.account,
+        )
+        inst_a.entity = entity_a
+        inst_a.save()
+
+        inst_b = self.create_form_instance(
+            project=self.project,
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"_version": "1", "name": "Luke", "age__int__": 19},
+        )
+        entity_b = m.Entity.objects.create(
+            name="entity_b",
+            entity_type=self.entity_type,
+            attributes=inst_b,
+            account=self.account,
+        )
+        inst_b.entity = entity_b
+        inst_b.save()
+
+        json_content_filter_1 = json.dumps({"==": [{"var": "age__int__"}, 25]})
+        response = self.client.get(
+            self.BASE_URL, {"app_id": self.project.app_id, "json_content": json_content_filter_1}
+        )
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response_json["count"], 1)
+        self.assertEqual(response_json["results"][0]["id"], str(entity_a.uuid))
+
+        json_content_filter_2 = json.dumps({"==": [{"var": "name"}, "Luke"]})
+        response = self.client.get(
+            self.BASE_URL, {"app_id": self.project.app_id, "json_content": json_content_filter_2}
+        )
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response_json["count"], 1)
+        self.assertEqual(response_json["results"][0]["id"], str(entity_b.uuid))
+
+        inst_a.deleted = True
+        inst_a.save()
+
+        response = self.client.get(
+            self.BASE_URL, {"app_id": self.project.app_id, "json_content": json_content_filter_1}
+        )
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response_json["count"], 0)

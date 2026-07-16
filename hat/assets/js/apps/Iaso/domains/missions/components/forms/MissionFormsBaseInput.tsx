@@ -134,8 +134,8 @@ export const MissionFormsBaseInput = <TSchema extends BaseUpdateCreateRequest>({
             <FieldArray
                 name="forms"
                 render={arrayHelpers => {
+                    // TODO: This should be part of another component
                     const handleAddForm = (formOptionValue: number | null) => {
-                        console.log('formOptionValue', formOptionValue);
                         if (formOptionValue == null) {
                             return;
                         }

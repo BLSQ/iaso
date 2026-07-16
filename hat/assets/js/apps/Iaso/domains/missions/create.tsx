@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { Alert } from '@mui/material';
-import { useSafeIntl, useRedirectTo } from 'bluesquare-components';
+import { SaveOutlined } from '@mui/icons-material';
+import { Alert, Button } from '@mui/material';
+import { useSafeIntl, useRedirectTo, LinkButton } from 'bluesquare-components';
 import { useFormik, FormikProvider } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import {
@@ -57,9 +58,30 @@ export const MissionCreate: FunctionComponent = () => {
             />
             <DetailsWrapper
                 title={formatMessage(MESSAGES.newMission)}
-                allowConfirm={allowConfirm}
-                cancelUrl={`/${baseUrls.missions}/`}
-                handleSubmit={() => formik.handleSubmit()}
+                actions={
+                    <>
+                        <LinkButton
+                            to={`/${baseUrls.missions}/`}
+                            color="primary"
+                            variant="outlined"
+                        >
+                            {formatMessage(MESSAGES.cancel)}
+                        </LinkButton>
+                        <Button
+                            variant="contained"
+                            type="submit"
+                            color="primary"
+                            disabled={!allowConfirm}
+                            sx={{ ml: 2 }}
+                            onClick={() =>
+                                allowConfirm && formik.handleSubmit()
+                            }
+                        >
+                            <SaveOutlined sx={{ mr: 1 }} />
+                            {formatMessage(MESSAGES.save)}
+                        </Button>
+                    </>
+                }
             >
                 <FormikProvider value={formik}>
                     {formik.status && (

@@ -61,7 +61,7 @@ export const MissionDetail = () => {
             />
             <DetailsWrapper
                 title={data.name}
-                extraActions={
+                actions={
                     <TopActions missionId={missionId} missionName={data.name} />
                 }
             >

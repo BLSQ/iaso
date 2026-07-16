@@ -78,10 +78,6 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Create mission',
     },
     editMission: {
-        id: 'iaso.missions.label.editMission',
-        defaultMessage: 'Edit mission {name}',
-    },
-    editMissionNoName: {
         id: 'iaso.missions.label.editMissionNoName',
         defaultMessage: 'Edit mission',
     },
@@ -130,7 +126,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.edit',
     },
     missionDetailTitle: {
-        defaultMessage: 'Mission {name}',
+        defaultMessage: 'Mission details',
         id: 'iaso.missions.title.missionDetail',
     },
     infinity: {

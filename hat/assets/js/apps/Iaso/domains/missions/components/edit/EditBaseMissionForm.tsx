@@ -1,5 +1,8 @@
 import React from 'react';
+import { SaveOutlined } from '@mui/icons-material';
 import { Alert } from '@mui/material';
+import { Button } from '@mui/material';
+import { LinkButton, useSafeIntl } from 'bluesquare-components';
 import { FormikProvider, useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import {
@@ -10,6 +13,7 @@ import {
 } from 'Iaso/api/missions';
 import { DetailsWrapper } from 'Iaso/domains/missions/components/DetailsWrapper';
 import { EditMissionForm } from 'Iaso/domains/missions/components/EditMissionForm';
+import MESSAGES from 'Iaso/domains/missions/messages';
 import { withFormikSubmitAsync } from 'Iaso/utils/forms';
 
 type EditBaseMissionFormProps = {
@@ -21,6 +25,7 @@ type EditBaseMissionFormProps = {
 export const EditBaseMissionForm: React.FunctionComponent<
     EditBaseMissionFormProps
 > = ({ data, missionId, save, redirectBackUrl }) => {
+    const { formatMessage } = useSafeIntl();
     const formik = useFormik<MissionFormUpdateRequest>({
         validationSchema: toFormikValidationSchema(MissionFormUpdateRequest),
         initialValues: {
@@ -45,10 +50,29 @@ export const EditBaseMissionForm: React.FunctionComponent<
 
     return (
         <DetailsWrapper
-            cancelUrl={redirectBackUrl}
-            allowConfirm={allowConfirm}
             title={data.name}
-            handleSubmit={() => formik.handleSubmit()}
+            actions={
+                <>
+                    <LinkButton
+                        to={redirectBackUrl}
+                        color="primary"
+                        variant="outlined"
+                    >
+                        {formatMessage(MESSAGES.cancel)}
+                    </LinkButton>
+                    <Button
+                        variant="contained"
+                        type="submit"
+                        color="primary"
+                        disabled={!allowConfirm}
+                        sx={{ ml: 2 }}
+                        onClick={() => allowConfirm && formik.handleSubmit()}
+                    >
+                        <SaveOutlined sx={{ mr: 1 }} />
+                        {formatMessage(MESSAGES.save)}
+                    </Button>
+                </>
+            }
         >
             <FormikProvider value={formik}>
                 {formik.status && (

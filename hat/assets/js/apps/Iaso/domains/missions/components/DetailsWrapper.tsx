@@ -1,17 +1,17 @@
 import React from 'react';
-import { SaveOutlined } from '@mui/icons-material';
-import { Box, Button, Paper } from '@mui/material';
+import { Box, Paper } from '@mui/material';
 import { Typography } from '@mui/material';
-import { LinkButton, useSafeIntl } from 'bluesquare-components';
+import { MENU_HEIGHT_WITHOUT_TABS } from 'bluesquare-components';
 import { MainWrapper } from 'Iaso/components/MainWrapper';
 import { SxStyles } from 'Iaso/types/general';
-import MESSAGES from '../messages';
 
 const MAX_WIDTH = '800px';
 
+const HEADER_HEIGHT = '80px';
 const styles: SxStyles = {
     root: {
         backgroundColor: theme => theme.palette.background.blueGrey,
+        padding: 0,
     },
     paper: {
         maxWidth: MAX_WIDTH,
@@ -19,68 +19,47 @@ const styles: SxStyles = {
     },
     headerContainer: {
         borderBottom: theme => `1px solid ${theme.palette.divider}`,
-        paddingBottom: theme => theme.spacing(2),
-        marginBottom: theme => theme.spacing(4),
+        height: HEADER_HEIGHT,
+        position: 'relative',
     },
     header: {
         width: '100%',
         display: 'flex',
         justifyContent: 'space-between',
         maxWidth: MAX_WIDTH,
-        margin: theme => `${theme.spacing(2)} auto 0 auto`,
+        margin: '0 auto',
+        alignItems: 'center',
+        height: '100%',
+    },
+    paperContainer: {
+        height: `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px - ${HEADER_HEIGHT})`,
+        overflow: 'auto',
+        paddingTop: theme => theme.spacing(4),
+        paddingBottom: theme => theme.spacing(4),
     },
 };
 type Props = {
     children: React.ReactNode;
-    cancelUrl?: string;
-    allowConfirm?: boolean;
-    handleSubmit?: () => void;
-    title?: string;
-    extraActions?: React.ReactNode;
+    title: string;
+    actions?: React.ReactNode;
 };
 
 export const DetailsWrapper: React.FC<Props> = ({
     children,
-    cancelUrl,
     title,
-    allowConfirm,
-    handleSubmit,
-    extraActions,
+    actions,
 }) => {
-    const { formatMessage } = useSafeIntl();
     return (
         <MainWrapper sx={styles.root}>
             <Box sx={styles.headerContainer}>
                 <Box sx={styles.header}>
-                    {title && <Typography variant="h6">{title}</Typography>}
-                    <Box>
-                        {cancelUrl && (
-                            <LinkButton
-                                to={cancelUrl}
-                                color="primary"
-                                variant="outlined"
-                            >
-                                {formatMessage(MESSAGES.cancel)}
-                            </LinkButton>
-                        )}
-                        {handleSubmit && (
-                            <Button
-                                variant="contained"
-                                type="submit"
-                                color="primary"
-                                disabled={!allowConfirm}
-                                sx={{ ml: 2 }}
-                                onClick={() => allowConfirm && handleSubmit()}
-                            >
-                                <SaveOutlined sx={{ mr: 1 }} />
-                                {formatMessage(MESSAGES.save)}
-                            </Button>
-                        )}
-                        {extraActions}
-                    </Box>
+                    <Typography variant="h6">{title}</Typography>
+                    <Box>{actions}</Box>
                 </Box>
             </Box>
-            <Paper sx={styles.paper}>{children}</Paper>
+            <Box sx={styles.paperContainer}>
+                <Paper sx={styles.paper}>{children}</Paper>
+            </Box>
         </MainWrapper>
     );
 };

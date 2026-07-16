@@ -48,7 +48,7 @@ export const MissionEdit: FunctionComponent = () => {
         return (
             <>
                 <TopBar
-                    title={formatMessage(MESSAGES.editMissionNoName)}
+                    title={formatMessage(MESSAGES.editMission)}
                     displayBackButton
                     goBack={() => redirectTo(redirectBackUrl)}
                 />
@@ -64,7 +64,7 @@ export const MissionEdit: FunctionComponent = () => {
     return (
         <>
             <TopBar
-                title={formatMessage(MESSAGES.editMission, { name: data.name })}
+                title={formatMessage(MESSAGES.editMission)}
                 goBack={() => redirectTo(redirectBackUrl)}
                 displayBackButton
             />

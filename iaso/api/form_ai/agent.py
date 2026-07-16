@@ -9,7 +9,7 @@ import anthropic
 import openpyxl
 
 from django.conf import settings
-from pydantic import BaseModel
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 from pyxform import create_survey_from_xls
 
 
@@ -90,7 +90,11 @@ class SurveyRow(BaseModel, extra="allow"):
 
 
 class ChoiceRow(BaseModel, extra="allow"):
-    list_name: str
+    model_config = ConfigDict(populate_by_name=True)
+
+    # Claude sometimes emits "list name" (XLSForm's actual column header) instead of the
+    # "list_name" key asked for in the prompt, so accept either.
+    list_name: str = Field(validation_alias=AliasChoices("list_name", "list name"))
     name: str
     label: str = ""
 

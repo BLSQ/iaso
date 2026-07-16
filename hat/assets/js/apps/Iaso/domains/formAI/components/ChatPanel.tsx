@@ -19,7 +19,7 @@ import {
     Theme,
     Typography,
 } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { MENU_HEIGHT_WITHOUT_TABS, useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../messages';
 
@@ -68,7 +68,7 @@ type Props = {
 
 const styles: SxStyles = {
     root: {
-        height: '100%',
+        height: `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px)`,
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
@@ -115,6 +115,7 @@ const styles: SxStyles = {
     },
     messagesArea: {
         flex: 1,
+        minHeight: 0,
         overflowY: 'auto',
         p: 2,
         display: 'flex',

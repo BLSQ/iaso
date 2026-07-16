@@ -886,8 +886,22 @@ class WebEntityAPITestCase(EntityAPITestCase):
         res = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(res["result"]), 1)
 
+        # Soft-delete non-attributes instance
         inst2.deleted = True
         inst2.save()
+
+        response = self.client.get(
+            "/api/entities/",
+            {"fields_search": self._generate_json_filter("and", "some", "F", "Bujumbura")},
+        )
+        res = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(res["result"]), 0)
+
+        # Restore non-attributes instance, and soft-delete attributes instance
+        inst2.deleted = False
+        inst2.save()
+        ent1_instance1.deleted = True
+        ent1_instance1.save()
 
         response = self.client.get(
             "/api/entities/",

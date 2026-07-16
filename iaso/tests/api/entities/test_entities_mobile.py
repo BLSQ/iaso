@@ -209,7 +209,7 @@ class MobileEntityAPITestCase(EntityAPITestCase):
         response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response_json["count"], 1)
 
-    def test_list_entities_filter_by_json_content(self):
+    def test_get_entities_by_type_filtered_by_json_content(self):
         self.client.force_authenticate(self.yoda)
 
         # context for the serializer
@@ -245,18 +245,16 @@ class MobileEntityAPITestCase(EntityAPITestCase):
         inst_b.entity = entity_b
         inst_b.save()
 
+        url = f"/api/mobile/entitytypes/{self.entity_type.pk}/entities/"
+
         json_content_filter_1 = json.dumps({"==": [{"var": "age__int__"}, 25]})
-        response = self.client.get(
-            self.BASE_URL, {"app_id": self.project.app_id, "json_content": json_content_filter_1}
-        )
+        response = self.client.get(url, {"app_id": self.project.app_id, "json_content": json_content_filter_1})
         response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response_json["count"], 1)
         self.assertEqual(response_json["results"][0]["id"], str(entity_a.uuid))
 
         json_content_filter_2 = json.dumps({"==": [{"var": "name"}, "Luke"]})
-        response = self.client.get(
-            self.BASE_URL, {"app_id": self.project.app_id, "json_content": json_content_filter_2}
-        )
+        response = self.client.get(url, {"app_id": self.project.app_id, "json_content": json_content_filter_2})
         response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response_json["count"], 1)
         self.assertEqual(response_json["results"][0]["id"], str(entity_b.uuid))
@@ -264,8 +262,6 @@ class MobileEntityAPITestCase(EntityAPITestCase):
         inst_a.deleted = True
         inst_a.save()
 
-        response = self.client.get(
-            self.BASE_URL, {"app_id": self.project.app_id, "json_content": json_content_filter_1}
-        )
+        response = self.client.get(url, {"app_id": self.project.app_id, "json_content": json_content_filter_1})
         response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response_json["count"], 0)

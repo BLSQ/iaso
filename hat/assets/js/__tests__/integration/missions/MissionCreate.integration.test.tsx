@@ -114,6 +114,21 @@ const server = setupServer(
 
 const previousDefaults = TestingQueryClient.getDefaultOptions();
 
+const getFormsCardinalityInput = (
+    formIndex: number,
+    field: 'min_cardinality' | 'max_cardinality',
+) => {
+    const input = document.getElementById(
+        `input-text-forms.${formIndex}.${field}`,
+    );
+    if (!input) {
+        throw new Error(
+            `Missing forms cardinality input: forms.${formIndex}.${field}`,
+        );
+    }
+    return input;
+};
+
 const switchMissionType = async (
     missionType: (typeof MissionTypeValueEnum.enum)[keyof typeof MissionTypeValueEnum.enum],
 ) => {
@@ -147,14 +162,6 @@ const addForm = async (formOption: string | RegExp) => {
         await userEvent.click(
             screen.getByRole('option', {
                 name: formOption,
-            }),
-        );
-    });
-
-    await act(async () => {
-        await userEvent.click(
-            screen.getByRole('button', {
-                name: /add a form/i,
             }),
         );
     });
@@ -212,10 +219,12 @@ describe('Mission create integration test', () => {
             screen.getByRole('combobox', { name: /mission type/i }),
         ).toHaveValue(MissionTypeValueEnum.enum.FORM_FILLING);
 
-        expect(screen.getByLabelText('Add a form')).toBeInTheDocument();
+        expect(
+            screen.getByRole('combobox', { name: /add a form/i }),
+        ).toBeInTheDocument();
         expect(
             screen.getByRole('button', {
-                name: MESSAGES.addFormClick.defaultMessage,
+                name: MESSAGES.save.defaultMessage,
             }),
         ).toBeInTheDocument();
     });
@@ -226,9 +235,8 @@ describe('Mission create integration test', () => {
         });
 
         // FORM_FILLING by default
-        expect(screen.getByLabelText('Add a form')).toBeInTheDocument();
         expect(
-            screen.getByRole('button', { name: /add a form/i }),
+            screen.getByRole('combobox', { name: /add a form/i }),
         ).toBeInTheDocument();
 
         expect(
@@ -288,28 +296,7 @@ describe('Mission create integration test', () => {
             expect(screen.queryByRole('progressbar')).toBeNull();
         });
 
-        await act(async () => {
-            await selectFromComboBoxWithAsync({
-                nameComboBox: /add a form/i,
-                nameOption: /form a/i,
-            });
-        });
-
-        await waitFor(() => {
-            expect(
-                screen.getByRole('button', {
-                    name: MESSAGES.addFormClick.defaultMessage,
-                }),
-            ).not.toBeDisabled();
-        });
-
-        await act(async () => {
-            await userEvent.click(
-                screen.getByRole('button', {
-                    name: MESSAGES.addFormClick.defaultMessage,
-                }),
-            );
-        });
+        await addForm(/form a/i);
 
         expect(screen.getByText('Form A')).toBeVisible();
 
@@ -462,7 +449,7 @@ describe('Mission create integration test', () => {
 
         expect(
             screen.getByRole('button', {
-                name: /create/i,
+                name: MESSAGES.save.defaultMessage,
             }),
         ).toBeDisabled();
 
@@ -486,7 +473,7 @@ describe('Mission create integration test', () => {
 
         expect(
             screen.getByRole('button', {
-                name: /create/i,
+                name: MESSAGES.save.defaultMessage,
             }),
         ).toBeDisabled();
 
@@ -510,7 +497,7 @@ describe('Mission create integration test', () => {
 
         expect(
             screen.getByRole('button', {
-                name: /create/i,
+                name: MESSAGES.save.defaultMessage,
             }),
         ).toBeDisabled();
 
@@ -562,7 +549,7 @@ describe('Mission create integration test', () => {
         await waitFor(() => {
             expect(
                 screen.getByRole('button', {
-                    name: MESSAGES.create.defaultMessage,
+                    name: MESSAGES.save.defaultMessage,
                 }),
             ).not.toBeDisabled();
         });
@@ -570,7 +557,7 @@ describe('Mission create integration test', () => {
         await act(async () => {
             await userEvent.click(
                 screen.getByRole('button', {
-                    name: MESSAGES.create.defaultMessage,
+                    name: MESSAGES.save.defaultMessage,
                 }),
             );
         });
@@ -638,7 +625,7 @@ describe('Mission create integration test', () => {
         await waitFor(() => {
             expect(
                 screen.getByRole('button', {
-                    name: MESSAGES.create.defaultMessage,
+                    name: MESSAGES.save.defaultMessage,
                 }),
             ).not.toBeDisabled();
         });
@@ -646,7 +633,7 @@ describe('Mission create integration test', () => {
         await act(async () => {
             await userEvent.click(
                 screen.getByRole('button', {
-                    name: MESSAGES.create.defaultMessage,
+                    name: MESSAGES.save.defaultMessage,
                 }),
             );
         });
@@ -717,7 +704,7 @@ describe('Mission create integration test', () => {
         await waitFor(() => {
             expect(
                 screen.getByRole('button', {
-                    name: MESSAGES.create.defaultMessage,
+                    name: MESSAGES.save.defaultMessage,
                 }),
             ).not.toBeDisabled();
         });
@@ -725,7 +712,7 @@ describe('Mission create integration test', () => {
         await act(async () => {
             await userEvent.click(
                 screen.getByRole('button', {
-                    name: MESSAGES.create.defaultMessage,
+                    name: MESSAGES.save.defaultMessage,
                 }),
             );
         });
@@ -793,7 +780,7 @@ describe('Mission create integration test', () => {
         await waitFor(() => {
             expect(
                 screen.getByRole('button', {
-                    name: MESSAGES.create.defaultMessage,
+                    name: MESSAGES.save.defaultMessage,
                 }),
             ).not.toBeDisabled();
         });
@@ -801,7 +788,7 @@ describe('Mission create integration test', () => {
         await act(async () => {
             await userEvent.click(
                 screen.getByRole('button', {
-                    name: MESSAGES.create.defaultMessage,
+                    name: MESSAGES.save.defaultMessage,
                 }),
             );
         });
@@ -844,16 +831,16 @@ describe('Mission create integration test', () => {
 
         await act(async () => {
             await userEvent.clear(
-                screen.getByRole('textbox', { name: /min cardinality/i }),
+                getFormsCardinalityInput(0, 'min_cardinality'),
             );
             await userEvent.type(
-                screen.getByRole('textbox', { name: /min cardinality/i }),
+                getFormsCardinalityInput(0, 'min_cardinality'),
                 '2',
             );
         });
         await act(async () => {
             await userEvent.type(
-                screen.getByRole('textbox', { name: /max cardinality/i }),
+                getFormsCardinalityInput(0, 'max_cardinality'),
                 '20',
             );
         });
@@ -863,7 +850,7 @@ describe('Mission create integration test', () => {
         await waitFor(() => {
             expect(
                 screen.getByRole('button', {
-                    name: MESSAGES.create.defaultMessage,
+                    name: MESSAGES.save.defaultMessage,
                 }),
             ).not.toBeDisabled();
         });
@@ -871,7 +858,7 @@ describe('Mission create integration test', () => {
         await act(async () => {
             await userEvent.click(
                 screen.getByRole('button', {
-                    name: MESSAGES.create.defaultMessage,
+                    name: MESSAGES.save.defaultMessage,
                 }),
             );
         });
@@ -889,6 +876,7 @@ describe('Mission create integration test', () => {
                     },
                     {
                         form: 2,
+                        max_cardinality: null,
                         min_cardinality: 1,
                     },
                 ],
@@ -950,7 +938,7 @@ describe('Mission create integration test', () => {
         await waitFor(() => {
             expect(
                 screen.getByRole('button', {
-                    name: MESSAGES.create.defaultMessage,
+                    name: MESSAGES.save.defaultMessage,
                 }),
             ).not.toBeDisabled();
         });
@@ -958,7 +946,7 @@ describe('Mission create integration test', () => {
         await act(async () => {
             await userEvent.click(
                 screen.getByRole('button', {
-                    name: MESSAGES.create.defaultMessage,
+                    name: MESSAGES.save.defaultMessage,
                 }),
             );
         });
@@ -974,10 +962,12 @@ describe('Mission create integration test', () => {
                 forms: [
                     {
                         form: 1,
+                        max_cardinality: null,
                         min_cardinality: 1,
                     },
                     {
                         form: 2,
+                        max_cardinality: null,
                         min_cardinality: 1,
                     },
                 ],
@@ -1039,7 +1029,7 @@ describe('Mission create integration test', () => {
         await waitFor(() => {
             expect(
                 screen.getByRole('button', {
-                    name: MESSAGES.create.defaultMessage,
+                    name: MESSAGES.save.defaultMessage,
                 }),
             ).not.toBeDisabled();
         });
@@ -1047,7 +1037,7 @@ describe('Mission create integration test', () => {
         await act(async () => {
             await userEvent.click(
                 screen.getByRole('button', {
-                    name: MESSAGES.create.defaultMessage,
+                    name: MESSAGES.save.defaultMessage,
                 }),
             );
         });
@@ -1063,10 +1053,12 @@ describe('Mission create integration test', () => {
                 forms: [
                     {
                         form: 1,
+                        max_cardinality: null,
                         min_cardinality: 1,
                     },
                     {
                         form: 2,
+                        max_cardinality: null,
                         min_cardinality: 1,
                     },
                 ],

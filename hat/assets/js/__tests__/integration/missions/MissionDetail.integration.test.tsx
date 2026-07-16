@@ -69,13 +69,17 @@ const { mockRedirectTo } = vi.hoisted(() => {
     return { mockRedirectTo: vi.fn() };
 });
 
+const { mockRedirectToReplace } = vi.hoisted(() => {
+    return { mockRedirectToReplace: vi.fn() };
+});
+
 vi.mock('bluesquare-components', async importOriginal => {
     const actual =
         await importOriginal<typeof import('bluesquare-components')>();
     return {
         ...actual,
         useRedirectTo: () => mockRedirectTo,
-        useRedirectToReplace: () => vi.fn(),
+        useRedirectToReplace: () => mockRedirectToReplace,
     };
 });
 
@@ -179,7 +183,9 @@ describe('Mission detail integration test', () => {
 
         expect(screen.getByText(data.name)).toBeInTheDocument();
         expect(screen.getByText(data.description)).toBeInTheDocument();
-        expect(screen.getByText('Form filling')).toBeInTheDocument();
+        expect(
+            screen.getByText('Form', { selector: '.MuiChip-label' }),
+        ).toBeInTheDocument();
 
         data?.forms?.forEach(
             ({ form_name, min_cardinality, max_cardinality }) => {
@@ -231,7 +237,7 @@ describe('Mission detail integration test', () => {
 
         expect(screen.getByText(data.name)).toBeInTheDocument();
         expect(screen.getByText(data.description)).toBeInTheDocument();
-        expect(screen.getByText('Org unit')).toBeInTheDocument();
+        expect(screen.getByText('Org unit + Form')).toBeInTheDocument();
         expect(screen.getByText(data.org_unit_type.name)).toBeInTheDocument();
         expect(
             screen.getByText(data.min_cardinality.toLocaleString()),
@@ -293,7 +299,7 @@ describe('Mission detail integration test', () => {
 
         expect(screen.getByText(data.name)).toBeInTheDocument();
         expect(screen.getByText(data.description)).toBeInTheDocument();
-        expect(screen.getByText('Entity type mission')).toBeInTheDocument();
+        expect(screen.getByText('Entity + Form')).toBeInTheDocument();
         expect(screen.getByText(data.entity_type.name)).toBeInTheDocument();
         expect(
             screen.getByText(data.min_cardinality.toLocaleString()),
@@ -333,12 +339,21 @@ describe('Mission detail integration test', () => {
             expect(screen.queryByRole('progressbar')).toBeNull();
         });
         expect(
-            screen.getByRole('link', { name: MESSAGES.edit.defaultMessage }),
+            screen.getByRole('button', { name: MESSAGES.edit.defaultMessage }),
         ).toBeInTheDocument();
 
-        expect(
-            screen.getByRole('link', { name: MESSAGES.edit.defaultMessage }),
-        ).toHaveAttribute('href', `/dashboard/${baseUrls.missionsEdit}/id/1/`);
+        await act(async () => {
+            await userEvent.click(
+                screen.getByRole('button', {
+                    name: MESSAGES.edit.defaultMessage,
+                }),
+            );
+        });
+
+        expect(mockRedirectToReplace).toHaveBeenCalledWith(
+            baseUrls.missionsEdit,
+            { id: '1' },
+        );
 
         expect(
             screen.getByRole('button', {
@@ -356,7 +371,9 @@ describe('Mission detail integration test', () => {
             expect(screen.queryByRole('progressbar')).toBeNull();
         });
         expect(
-            screen.queryByRole('link', { name: MESSAGES.edit.defaultMessage }),
+            screen.queryByRole('button', {
+                name: MESSAGES.edit.defaultMessage,
+            }),
         ).toBeNull();
 
         expect(

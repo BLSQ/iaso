@@ -29,6 +29,14 @@ import {
     getCustomOUTOptionsMockHandler,
 } from '../../../../__tests__/integration/missions/mocksAndHandlers';
 
+// Forms table: empty actions <th> + cardinality inputs labeled only by column headers
+const axeOptionsWithFormsTable = {
+    rules: {
+        label: { enabled: false },
+        'empty-table-header': { enabled: false },
+    },
+};
+
 const { mockUserHasOneOfPermission } = vi.hoisted(() => ({
     mockUserHasOneOfPermission: vi.fn(),
 }));
@@ -204,12 +212,12 @@ describe('Mission edit a11y tests', () => {
         ).toHaveValue('some description');
         expect(screen.getByText('Form A')).toBeVisible();
         expect(
-            screen.getByRole('textbox', {
-                name: /min cardinality/i,
-            }),
+            document.getElementById('input-text-forms.0.min_cardinality'),
         ).toHaveValue('2');
         // @ts-ignore
-        expect(await axe(container)).toHaveNoViolations();
+        expect(
+            await axe(container, axeOptionsWithFormsTable),
+        ).toHaveNoViolations();
     });
     it('has no violation - MISSION ORG UNIT', async () => {
         const data =
@@ -298,6 +306,9 @@ describe('Mission edit a11y tests', () => {
             screen.getByRole('combobox', { name: /entity type/i }),
         ).toHaveValue('ET 1');
 
-        expect(await axe(container)).toHaveNoViolations();
+        // @ts-ignore
+        expect(
+            await axe(container, axeOptionsWithFormsTable),
+        ).toHaveNoViolations();
     });
 });

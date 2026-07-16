@@ -159,10 +159,17 @@ describe('Mission list integration test', () => {
                 return acc;
             }, {});
 
+        const missionTypeChipLabels: Record<string, string> = {
+            [MissionTypeValueEnum.enum.FORM_FILLING]: 'Form',
+            [MissionTypeValueEnum.enum.ORG_UNIT_AND_FORM]: 'Org unit + Form',
+            [MissionTypeValueEnum.enum.ENTITY_AND_FORM]: 'Entity + Form',
+        };
+
         Object.entries(uniqueMissionTypes ?? {})?.forEach(([item, count]) => {
-            expect(screen.queryAllByRole('cell', { name: item })).toHaveLength(
-                count,
-            );
+            const label = missionTypeChipLabels[item] ?? item;
+            expect(
+                screen.queryAllByText(label, { selector: '.MuiChip-label' }),
+            ).toHaveLength(count);
         });
 
         data?.results?.forEach(

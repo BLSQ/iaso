@@ -15,7 +15,6 @@ class NestedOrgUnitTypeSerializer(ModelSerializer):
 
 
 class MissionOrgUnitTypeListSerializer(ModelSerializer):
-    # mission_type = serializers.CharField(read_only=True, source="get_mission_type_display")
     org_unit_type = NestedOrgUnitTypeSerializer(read_only=True)
     forms_count = serializers.IntegerField(read_only=True)
 

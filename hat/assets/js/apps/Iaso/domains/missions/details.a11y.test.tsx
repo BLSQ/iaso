@@ -183,7 +183,7 @@ describe('Mission detail a11y test', () => {
 
         expect(screen.getByText(data.name)).toBeInTheDocument();
         expect(screen.getByText(data.description)).toBeInTheDocument();
-        expect(screen.getByText('Form filling')).toBeInTheDocument();
+        expect(screen.getByText('Form')).toBeInTheDocument();
         expect(screen.getByText('No results found.')).toBeInTheDocument();
         expect(await axe(container)).toHaveNoViolations();
     });
@@ -220,7 +220,10 @@ describe('Mission detail a11y test', () => {
 
         expect(screen.getByText(data.name)).toBeInTheDocument();
         expect(screen.getByText(data.description)).toBeInTheDocument();
-        expect(screen.getByText('Form filling')).toBeInTheDocument();
+        // Chip label; forms table header also says "Form"
+        expect(
+            screen.getByText('Form', { selector: '.MuiChip-label' }),
+        ).toBeInTheDocument();
 
         expect(await axe(container)).toHaveNoViolations();
     });
@@ -260,7 +263,7 @@ describe('Mission detail a11y test', () => {
 
         expect(screen.getByText(data.name)).toBeInTheDocument();
         expect(screen.getByText(data.description)).toBeInTheDocument();
-        expect(screen.getByText('Org unit')).toBeInTheDocument();
+        expect(screen.getByText('Org unit + Form')).toBeInTheDocument();
         expect(screen.getByText(data.org_unit_type.name)).toBeInTheDocument();
 
         expect(await axe(container)).toHaveNoViolations();
@@ -303,7 +306,7 @@ describe('Mission detail a11y test', () => {
 
         expect(screen.getByText(data.name)).toBeInTheDocument();
         expect(screen.getByText(data.description)).toBeInTheDocument();
-        expect(screen.getByText('Entity type mission')).toBeInTheDocument();
+        expect(screen.getByText('Entity + Form')).toBeInTheDocument();
         expect(screen.getByText(data.entity_type.name)).toBeInTheDocument();
 
         expect(await axe(container)).toHaveNoViolations();

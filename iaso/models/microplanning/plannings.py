@@ -51,7 +51,11 @@ class Planning(SoftDeletableModel):
     ended_at = models.DateField(null=True, blank=True)
     missions = models.ManyToManyField("Mission", blank=True, related_name="plannings")
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
-    org_unit = models.ForeignKey(OrgUnit, on_delete=models.PROTECT)
+    org_unit = models.ForeignKey(
+        OrgUnit,
+        on_delete=models.PROTECT,
+        help_text="The root org unit of the planning used to scope the assignments org units",
+    )
     target_org_unit_types = models.ManyToManyField(
         OrgUnitType,
         related_name="target_plannings",
@@ -98,3 +102,6 @@ class Planning(SoftDeletableModel):
     def get_pipeline_uuids(self) -> list:
         """Get the list of pipeline UUIDs for this planning."""
         return self.pipeline_uuids or []
+
+    def get_possible_org_units(self):
+        pass

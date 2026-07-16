@@ -6,6 +6,9 @@ from .misc import (
     BulkDeleteAssignmentResponseSerializer,
     BulkDeleteAssignmentSerializer,
     PlanningOrgUnitSerializer,
+    PlanningOrgUnitTableAssignmentSerializer,
+    PlanningOrgUnitTableAssignmentTeamSerializer,
+    PlanningOrgUnitTableAssignmentUserSerializer,
     PlanningOrgUnitTableSerializer,
     PlanningReadSerializer,
     PlanningSamplingResult,
@@ -34,4 +37,7 @@ __all__ = [
     "PlanningSamplingResultReadSerializer",
     "PlanningSamplingResultWriteSerializer",
     "PlanningWriteSerializer",
+    "PlanningOrgUnitTableAssignmentSerializer",
+    "PlanningOrgUnitTableAssignmentTeamSerializer",
+    "PlanningOrgUnitTableAssignmentUserSerializer",
 ]

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from iaso.api.common import DateTimestampField, ModelSerializer, TimestampField
-from iaso.models import Planning
+from iaso.models import MissionForm, Planning
 
 
 # noinspection PyMethodMayBeStatic
@@ -32,8 +32,8 @@ class MobilePlanningSerializer(ModelSerializer):
         assignments = []
         # Derive form_ids from missions for backward compatibility
         planning_form_ids = set()
-        for mission in planning.missions.all():
-            planning_form_ids.update(mission.mission_forms.values_list("form_id", flat=True))
+        for mission in planning.missions.instance_of(MissionForm).all():
+            planning_form_ids.update(mission.forms.values_list("form_id", flat=True))
 
         for a in planning.assignment_set.all():
             out_set = set(a.org_unit.org_unit_type.form_set.values_list("id", flat=True))

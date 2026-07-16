@@ -1,6 +1,6 @@
 import uuid
 
-from unittest import mock, skip
+from unittest import mock
 
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import MultiPolygon, Polygon
@@ -20,7 +20,6 @@ from iaso.models import (
     DataSource,
     Form,
     Group,
-    Mission,
     MissionForm,
     OrgUnit,
     OrgUnitType,
@@ -32,13 +31,12 @@ from iaso.models.microplanning import (
     Planning,
     PlanningSamplingResult,
 )
-from iaso.models.missions import MissionOrgUnitType, MissionType
+from iaso.models.missions import MissionFormThroughForm, MissionOrgUnitType
 from iaso.models.team import Team
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
-@skip
 class PlanningTestCase(APITestCase):
     # TODO: refactor this test case and move the serializer tests to the test_serializers.py file
     fixtures = ["user.yaml"]
@@ -63,19 +61,21 @@ class PlanningTestCase(APITestCase):
         cls.form2 = Form.objects.create(name="form2")
         cls.form1.projects.add(project1)
         cls.form2.projects.add(project1)
-        cls.mission1 = Mission.objects.create(
+        cls.mission1 = MissionForm.objects.create(
             name="mission1",
             account=account,
-            mission_type=MissionType.FORM_FILLING,
         )
-        MissionForm.objects.create(mission=cls.mission1, form=cls.form1, min_cardinality=1, max_cardinality=1)
-        cls.mission2 = Mission.objects.create(
+        MissionFormThroughForm.objects.create(
+            mission_form=cls.mission1, form=cls.form1, min_cardinality=1, max_cardinality=1
+        )
+        cls.mission2 = MissionForm.objects.create(
             name="mission2",
             description="description2",
             account=account,
-            mission_type=MissionType.FORM_FILLING,
         )
-        MissionForm.objects.create(mission=cls.mission2, form=cls.form2, min_cardinality=1, max_cardinality=1)
+        MissionFormThroughForm.objects.create(
+            mission_form=cls.mission2, form=cls.form2, min_cardinality=1, max_cardinality=1
+        )
         cls.planning = Planning.objects.create(
             project=project1,
             name="planning1",
@@ -1595,7 +1595,6 @@ class PlanningTestCase(APITestCase):
         self.assertTrue(r["has_geo_json"])
 
 
-@skip
 class AssignmentAPITestCase(APITestCase):
     fixtures = ["user.yaml"]
 
@@ -1666,18 +1665,20 @@ class AssignmentAPITestCase(APITestCase):
         cls.form1.org_unit_types.add(org_unit_type)
         cls.form2.projects.add(project1)
         cls.form2.org_unit_types.add(org_unit_type)
-        cls.mission1 = Mission.objects.create(
+        cls.mission1 = MissionForm.objects.create(
             name="mission1",
             account=account,
-            mission_type=MissionType.FORM_FILLING,
         )
-        MissionForm.objects.create(mission=cls.mission1, form=cls.form1, min_cardinality=1, max_cardinality=1)
-        cls.mission2 = Mission.objects.create(
+        MissionFormThroughForm.objects.create(
+            mission_form=cls.mission1, form=cls.form1, min_cardinality=1, max_cardinality=1
+        )
+        cls.mission2 = MissionForm.objects.create(
             name="mission2",
             account=account,
-            mission_type=MissionType.FORM_FILLING,
         )
-        MissionForm.objects.create(mission=cls.mission2, form=cls.form2, min_cardinality=1, max_cardinality=1)
+        MissionFormThroughForm.objects.create(
+            mission_form=cls.mission2, form=cls.form2, min_cardinality=1, max_cardinality=1
+        )
 
         cls.planning = Planning.objects.create(
             project=project1,
@@ -2378,16 +2379,13 @@ class AssignmentAPITestCase(APITestCase):
             ended_at="2025-01-10",
         )
         p6.assignment_set.create(org_unit=self.child1, user=self.user)
-        mission = Mission.objects.create(
+        mission = MissionOrgUnitType.objects.create(
             name="mission3",
             description="description3",
             account=self.account,
-            mission_type=MissionType.ORG_UNIT_AND_FORM,
-            org_unit_type=MissionOrgUnitType.objects.create(
-                org_unit_type=self.org_unit_type,
-                min_cardinality=2,
-                max_cardinality=4,
-            ),
+            org_unit_type=self.org_unit_type,
+            min_cardinality=2,
+            max_cardinality=4,
         )
         p6.missions.set([mission])
 
@@ -2515,42 +2513,6 @@ class AssignmentAPITestCase(APITestCase):
         response = self.client.get("/api/v2/mobile/plannings/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r["plannings"]), 0)
-
-    def test_query_mobile_get(self):
-        self.client.force_authenticate(self.user)
-        Planning.objects.update(published_at=now())
-        response = self.client.get(f"/api/mobile/plannings/{self.planning.id}/", format="json")
-        self.assertEqual(response.status_code, 200)
-
-    def test_query_mobile_get_v2(self):
-        self.client.force_authenticate(self.user)
-        Planning.objects.update(published_at=now())
-        response = self.client.get(f"/api/v2/mobile/plannings/{self.planning.id}/", format="json")
-        self.assertEqual(response.status_code, 200)
-
-    def test_query_mobile_no_modification(self):
-        self.user.is_superuser = True
-        self.user.save()
-        Planning.objects.update(published_at=now())
-
-        self.client.force_authenticate(self.user)
-        response = self.client.delete(f"/api/mobile/plannings/{self.planning.id}/", format="json")
-        self.assertEqual(response.status_code, 403)
-
-        response = self.client.patch(f"/api/mobile/plannings/{self.planning.id}/", format="json")
-        self.assertEqual(response.status_code, 403)
-
-        response = self.client.post("/api/mobile/plannings/", data={}, format="json")
-        self.assertEqual(response.status_code, 403)
-
-        response = self.client.delete(f"/api/v2/mobile/plannings/{self.planning.id}/", format="json")
-        self.assertEqual(response.status_code, 403)
-
-        response = self.client.patch(f"/api/v2/mobile/plannings/{self.planning.id}/", format="json")
-        self.assertEqual(response.status_code, 403)
-
-        response = self.client.post("/api/v2/mobile/plannings/", data={}, format="json")
-        self.assertEqual(response.status_code, 403)
 
 
 class MicroplanningSwaggerTestCase(SwaggerTestCaseMixin, APITestCase):

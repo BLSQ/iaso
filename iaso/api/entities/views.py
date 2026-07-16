@@ -197,9 +197,7 @@ class EntityViewSet(ModelViewSet):
             queryset = queryset.prefetch_related(
                 Prefetch(
                     "instances",
-                    queryset=Instance.objects.filter(deleted=False).only(
-                        "id", "entity_id", "source_created_at", "created_at"
-                    ),
+                    queryset=Instance.non_deleted_objects.only("id", "entity_id", "source_created_at", "created_at"),
                 ),
             )
 

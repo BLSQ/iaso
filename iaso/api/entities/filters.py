@@ -87,7 +87,7 @@ class EntityDateFilterBackend(filters.BaseFilterBackend):
             except ValueError:
                 end = timezone.make_aware(datetime.max, timezone.get_default_timezone())
 
-            instance_qs = Instance.objects.filter(entity=OuterRef("pk"), deleted=False)
+            instance_qs = Instance.non_deleted_objects.filter(entity=OuterRef("pk"))
             queryset = queryset.filter(
                 Exists(
                     instance_qs.filter(

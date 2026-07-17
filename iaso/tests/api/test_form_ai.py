@@ -54,6 +54,25 @@ class FormAIParseResponseTestCase(APITestCase):
         self.assertEqual(form.survey[4].type, "end_repeat")
         self.assertEqual(form.survey[4].name, "")
 
+    def test_parses_choices_with_list_name_containing_a_space(self):
+        """Claude sometimes emits XLSForm's actual "list name" header (with a space)
+        instead of the "list_name" key requested in the prompt; both must parse."""
+        response_text = """{
+  "survey": [{"type": "select_one yes_no", "name": "q1", "label": "Question 1"}],
+  "choices": [
+    {"list name": "yes_no", "name": "1", "label": "Yes"},
+    {"list_name": "yes_no", "name": "0", "label": "No"}
+  ],
+  "settings": {"form_title": "Test", "form_id": "test", "version": "1"},
+  "message": "Added a question."
+}"""
+        form = parse_form_response(response_text)
+
+        self.assertEqual(form.choices[0].list_name, "yes_no")
+        self.assertEqual(form.choices[0].model_dump()["list_name"], "yes_no")
+        self.assertNotIn("list name", form.choices[0].model_dump())
+        self.assertEqual(form.choices[1].list_name, "yes_no")
+
 
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
 class FormAIChatTestCase(APITestCase):

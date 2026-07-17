@@ -1,5 +1,6 @@
 import React from 'react';
 import { fireEvent, screen } from '@testing-library/react';
+import { Formik } from 'formik';
 import type { FormikProps } from 'formik';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers';
@@ -38,29 +39,26 @@ const createFormik = (): FormikProps<any> =>
         setFieldTouched: vi.fn(),
     }) as unknown as FormikProps<any>;
 
-describe('MissionFormItem', () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
-    });
-
-    it('renders the form label and cardinality fields', () => {
-        const formik = createFormik();
-
-        renderWithThemeAndIntlProvider(
+const renderMissionFormItem = (
+    formik: FormikProps<any>,
+    index: number,
+    form: { form: number; min_cardinality: number; max_cardinality?: null },
+) =>
+    renderWithThemeAndIntlProvider(
+        <Formik
+            initialValues={{ forms: [form] }}
+            onSubmit={() => undefined}
+        >
             <table>
                 <tbody>
                     <MissionFormItem
-                        form={{
-                            form: 1,
-                            min_cardinality: 1,
-                            max_cardinality: null,
-                        }}
+                        form={form}
                         findFormOptionFromValue={() => ({
                             value: 1,
                             label: 'Form A',
                             original: {},
                         })}
-                        index={0}
+                        index={index}
                         arrayHelpers={
                             {
                                 remove,
@@ -69,8 +67,23 @@ describe('MissionFormItem', () => {
                         formik={formik}
                     />
                 </tbody>
-            </table>,
-        );
+            </table>
+        </Formik>,
+    );
+
+describe('MissionFormItem', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it('renders the form label and cardinality fields', () => {
+        const formik = createFormik();
+
+        renderMissionFormItem(formik, 0, {
+            form: 1,
+            min_cardinality: 1,
+            max_cardinality: null,
+        });
 
         expect(screen.getByText('Form A')).toBeInTheDocument();
         expect(
@@ -84,30 +97,10 @@ describe('MissionFormItem', () => {
     it('removes the form and marks forms as touched', () => {
         const formik = createFormik();
 
-        renderWithThemeAndIntlProvider(
-            <table>
-                <tbody>
-                    <MissionFormItem
-                        form={{
-                            form: 1,
-                            min_cardinality: 1,
-                        }}
-                        findFormOptionFromValue={() => ({
-                            value: 1,
-                            label: 'Form A',
-                            original: {},
-                        })}
-                        index={2}
-                        arrayHelpers={
-                            {
-                                remove,
-                            } as any
-                        }
-                        formik={formik}
-                    />
-                </tbody>
-            </table>,
-        );
+        renderMissionFormItem(formik, 2, {
+            form: 1,
+            min_cardinality: 1,
+        });
 
         fireEvent.click(screen.getByRole('button', { name: /delete/i }));
 

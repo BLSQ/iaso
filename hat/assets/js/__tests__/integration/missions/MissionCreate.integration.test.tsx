@@ -600,6 +600,7 @@ describe('Mission create integration test', () => {
                                     'Invalid first min cardinality',
                             },
                             {
+                                form: 'Invalid second form',
                                 max_cardinality:
                                     'Invalid second max cardinality',
                             },
@@ -658,6 +659,7 @@ describe('Mission create integration test', () => {
         expect(screen.getByText('Invalid name')).toBeVisible();
         expect(screen.getByText('Invalid description')).toBeVisible();
         expect(screen.getByText('Invalid mission_type')).toBeVisible();
+        expect(screen.getByText('Invalid second form')).toBeVisible();
         expect(screen.getByText('Invalid first min cardinality')).toBeVisible();
         expect(
             screen.getByText('Invalid second max cardinality'),

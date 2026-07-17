@@ -42,13 +42,18 @@ export const MissionOrgUnitTypeInput = <
     const { values } = formik;
 
     React.useEffect(() => {
+        if (values?.org_unit_type) {
+            setParams({ params: { orgUnitTypeIds: values?.org_unit_type } });
+        } else {
+            setParams({});
+        }
+    }, [values?.org_unit_type]);
+
+    React.useEffect(() => {
         setFormInputDisabled(!values?.org_unit_type);
     }, [values]);
 
-    const handleOrgUnitTypeChange = (_keyValue: string, value: number) => {
-        if (value) {
-            setParams({ params: { orgUnitTypeIds: value } });
-        }
+    const handleOrgUnitTypeChange = (_keyValue: string, _value: number) => {
         formik.setFieldValue('forms', []);
         formik.setFieldTouched('forms', false);
     };

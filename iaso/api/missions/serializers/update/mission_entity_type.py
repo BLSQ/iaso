@@ -120,7 +120,7 @@ class MissionEntityTypeUpdateSerializer(ModelSerializer):
             data = incoming[form_id]
 
             obj.min_cardinality = data["min_cardinality"]
-            obj.max_cardinality = data["max_cardinality"]
+            obj.max_cardinality = data.get("max_cardinality", None)
 
             bulk_updates.append(obj)
 

@@ -184,6 +184,13 @@ export const MissionFormsBaseInput = <TSchema extends BaseUpdateCreateRequest>({
                                 touched={!!arrayHelpers.form.touched.forms}
                             />
 
+                            <FormArrayErrors
+                                errors={errors}
+                                sx={{ mt: 2 }}
+                                touched={!!arrayHelpers.form.touched.forms}
+                            />
+
+                            <Divider sx={{ my: 2 }} />
                             {hasForms && (
                                 <>
                                     <Divider sx={{ my: 2 }} />

@@ -15,6 +15,7 @@ vi.mock('formik', async () => {
     return {
         ...actual,
         Field: () => <div data-testid="field" />,
+        ErrorMessage: () => null,
         FieldArray: ({ render }: any) =>
             render({
                 push,

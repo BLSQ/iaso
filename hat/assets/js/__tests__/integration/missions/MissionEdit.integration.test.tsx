@@ -605,6 +605,7 @@ describe('Mission edit integration test', () => {
                         description: ['Invalid description'],
                         forms: [
                             {
+                                form: 'Invalid first form',
                                 min_cardinality:
                                     'Invalid first min cardinality',
                             },
@@ -664,6 +665,7 @@ describe('Mission edit integration test', () => {
 
         expect(screen.getByText('Invalid name')).toBeVisible();
         expect(screen.getByText('Invalid description')).toBeVisible();
+        expect(screen.getByText('Invalid first form')).toBeVisible();
         expect(screen.getByText('Invalid first min cardinality')).toBeVisible();
         expect(
             screen.getByText('Invalid second max cardinality'),

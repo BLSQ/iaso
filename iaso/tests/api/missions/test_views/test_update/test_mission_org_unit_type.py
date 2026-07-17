@@ -339,7 +339,7 @@ class MissionOrgUnitTypeAPIUpdateTestCase(SwaggerTestCaseMixin, APITestCase):
             "max_cardinality": 8,
             "forms": [
                 {"form": self.form_1.pk, "min_cardinality": 4, "max_cardinality": 9},
-                {"form": self.form_3.pk, "min_cardinality": 2, "max_cardinality": 4},
+                {"form": self.form_3.pk, "min_cardinality": 2},
             ],
         }
 
@@ -364,5 +364,5 @@ class MissionOrgUnitTypeAPIUpdateTestCase(SwaggerTestCaseMixin, APITestCase):
                     "form_id", "min_cardinality", "max_cardinality"
                 )
             ),
-            [(self.form_1.pk, 4, 9), (self.form_3.pk, 2, 4)],
+            [(self.form_1.pk, 4, 9), (self.form_3.pk, 2, None)],
         )

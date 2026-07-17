@@ -8,8 +8,9 @@ import {
     TableRow,
     Typography,
 } from '@mui/material';
+import { Alert } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { Field, FieldArrayRenderProps } from 'formik';
+import { Field, FieldArrayRenderProps, ErrorMessage } from 'formik';
 import { FormikProps } from 'formik/dist/types';
 import { NumberInput } from 'Iaso/components/forms/NumberInput';
 import { FormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
@@ -70,6 +71,14 @@ export const MissionFormItem = <TSchema extends BaseUpdateCreateRequest>({
                     <Typography sx={styles.formName} variant="body2">
                         {formLabel}
                     </Typography>
+
+                    <ErrorMessage name={`forms.[${index}].form`}>
+                        {msg => (
+                            <Alert severity={'error'} sx={{ mt: 1 }}>
+                                {msg}
+                            </Alert>
+                        )}
+                    </ErrorMessage>
                 </Box>
             </TableCell>
             <TableCell sx={styles.numberCell}>

@@ -10,12 +10,11 @@ import {
 import { MissionEntityTypeInput } from 'Iaso/domains/missions/components/forms/MissionEntityTypeInput';
 import { MissionFormsBaseInput } from 'Iaso/domains/missions/components/forms/MissionFormsBaseInput';
 import { MissionOrgUnitTypeInput } from 'Iaso/domains/missions/components/forms/MissionOrgUnitTypeInput';
-import { MissionTypeDropdownInput } from 'Iaso/domains/missions/components/MissionTypeDropdownInput';
+import { MissionTypeCardsInput } from 'Iaso/domains/missions/components/MissionTypeCardsInput';
 import { MissionCreateBody } from 'Iaso/domains/missions/schemas/create';
 import TextInput from 'Iaso/domains/pages/components/TextInput';
 import MESSAGES from '../messages';
 import { InfosTitle } from './details/InfosTitle';
-import { MissionsTitle } from './details/MissionsTitle';
 
 type CreateMissionFormProps = {
     formik: FormikProps<MissionCreateBody>;
@@ -27,7 +26,7 @@ export const CreateMissionForm: FunctionComponent<CreateMissionFormProps> = ({
     const { formatMessage } = useSafeIntl();
 
     const handleChangeMissionType = useCallback(
-        (_keyValue: string, _value: number) => {
+        (_keyValue: string, _value: string) => {
             formik.setFieldValue('forms', []);
             formik.setFieldTouched('forms', false);
 
@@ -58,16 +57,12 @@ export const CreateMissionForm: FunctionComponent<CreateMissionFormProps> = ({
                 component={TextInput}
                 sx={{ mx: 0, my: 1 }}
             />
-            <MissionsTitle />
             <Field
                 label={formatMessage(MESSAGES.missionType)}
                 name={'mission_type'}
-                component={MissionTypeDropdownInput}
+                component={MissionTypeCardsInput}
                 onChange={handleChangeMissionType}
                 required
-                clearable={false}
-                withMarginTop
-                sx={{ mx: 0, my: 1 }}
             />
             {!formik.values?.mission_type && (
                 <Alert severity={'info'}>

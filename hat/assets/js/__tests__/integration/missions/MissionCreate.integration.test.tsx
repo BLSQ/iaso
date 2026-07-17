@@ -132,18 +132,16 @@ const getFormsCardinalityInput = (
 const switchMissionType = async (
     missionType: (typeof MissionTypeValueEnum.enum)[keyof typeof MissionTypeValueEnum.enum],
 ) => {
-    await act(async () => {
-        await userEvent.click(
-            screen.getByRole('combobox', {
-                name: /mission type/i,
-            }),
-        );
-    });
+    const labels: Record<string, RegExp> = {
+        [MissionTypeValueEnum.enum.FORM_FILLING]: /^form$/i,
+        [MissionTypeValueEnum.enum.ORG_UNIT_AND_FORM]: /org unit \+ form/i,
+        [MissionTypeValueEnum.enum.ENTITY_AND_FORM]: /entity \+ form/i,
+    };
 
     await act(async () => {
         await userEvent.click(
-            screen.getByRole('option', {
-                name: missionType,
+            screen.getByRole('radio', {
+                name: labels[missionType],
             }),
         );
     });
@@ -212,12 +210,14 @@ describe('Mission create integration test', () => {
             screen.getByRole('textbox', { name: /description/i }),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole('combobox', { name: /mission type/i }),
-        ).toBeInTheDocument();
-
+            screen.getByRole('radio', { name: /^form$/i }),
+        ).toBeChecked();
         expect(
-            screen.getByRole('combobox', { name: /mission type/i }),
-        ).toHaveValue(MissionTypeValueEnum.enum.FORM_FILLING);
+            screen.getByRole('radio', { name: /org unit \+ form/i }),
+        ).not.toBeChecked();
+        expect(
+            screen.getByRole('radio', { name: /entity \+ form/i }),
+        ).not.toBeChecked();
 
         expect(
             screen.getByRole('combobox', { name: /add a form/i }),

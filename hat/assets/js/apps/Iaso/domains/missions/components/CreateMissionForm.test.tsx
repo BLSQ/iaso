@@ -43,13 +43,13 @@ vi.mock('Iaso/domains/pages/components/TextInput', () => ({
 
 const missionTypeDropdownSpy = vi.fn();
 
-vi.mock('Iaso/domains/missions/components/MissionTypeDropdownInput', () => ({
-    MissionTypeDropdownInput: (props: any) => {
+vi.mock('Iaso/domains/missions/components/MissionTypeCardsInput', () => ({
+    MissionTypeCardsInput: (props: any) => {
         missionTypeDropdownSpy(props);
 
         return (
             <button
-                data-testid="mission-type-dropdown"
+                data-testid="mission-type-cards"
                 onClick={() =>
                     props.onChange(
                         'mission_type',
@@ -114,7 +114,7 @@ describe('CreateMissionForm', () => {
         expect(screen.getByTestId('field-name')).toBeInTheDocument();
         expect(screen.getByTestId('field-description')).toBeInTheDocument();
 
-        expect(screen.getByTestId('mission-type-dropdown')).toBeInTheDocument();
+        expect(screen.getByTestId('mission-type-cards')).toBeInTheDocument();
     });
 
     it('shows the info alert when no mission type is selected', () => {
@@ -166,7 +166,7 @@ describe('CreateMissionForm', () => {
     it('resets dependent fields when mission type changes', () => {
         const { formik } = renderComponent();
 
-        fireEvent.click(screen.getByTestId('mission-type-dropdown'));
+        fireEvent.click(screen.getByTestId('mission-type-cards'));
 
         expect(formik.setFieldValue).toHaveBeenCalledWith('forms', []);
         expect(formik.setFieldTouched).toHaveBeenCalledWith('forms', false);

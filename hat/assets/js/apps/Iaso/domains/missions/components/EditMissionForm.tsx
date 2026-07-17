@@ -1,7 +1,5 @@
 import React from 'react';
-import CrisisAlertIcon from '@mui/icons-material/CrisisAlert';
 import { Box } from '@mui/material';
-import { Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { Field, FormikProps } from 'formik';
 import {
@@ -19,6 +17,7 @@ import { EntityAndFormChip } from './chips/EntityAndFormChip';
 import { FormsChip } from './chips/FormsChip';
 import { OrgUnitAndFormChip } from './chips/OrgUnitAndFormChip';
 import { InfosTitle } from './details/InfosTitle';
+import { MissionsTitle } from './details/MissionsTitle';
 
 type Base<T> = {
     formik: FormikProps<T>;
@@ -59,26 +58,7 @@ export const EditMissionForm = ({
                     sx={{ mx: 0, my: 1 }}
                 />
 
-                <Typography
-                    variant="body1"
-                    sx={{
-                        textTransform: 'uppercase',
-                        mb: 2,
-                        fontSize: '15px',
-                        mt: 4,
-                    }}
-                >
-                    <CrisisAlertIcon
-                        color="primary"
-                        sx={{
-                            mr: 1,
-                            fontSize: '15px',
-                            position: 'relative',
-                            top: '2px',
-                        }}
-                    />
-                    {formatMessage(MESSAGES.missionType)}
-                </Typography>
+                <MissionsTitle />
                 {missionType ===
                     MissionTypeDropdownValueEnum.enum.FORM_FILLING && (
                     <FormsChip />

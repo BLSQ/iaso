@@ -78,7 +78,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Create mission',
     },
     editMission: {
-        id: 'iaso.missions.label.editMissionNoName',
+        id: 'iaso.missions.label.editMission',
         defaultMessage: 'Edit mission',
     },
     cancel: {

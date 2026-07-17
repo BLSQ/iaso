@@ -151,6 +151,17 @@ export const MissionFormsBaseInput = <TSchema extends BaseUpdateCreateRequest>({
                     };
                     return (
                         <Box sx={{ mt: 2 }}>
+                            <Typography
+                                component="p"
+                                sx={{
+                                    fontSize: '12px',
+                                    pl: 1,
+                                    pr: 2,
+                                    mb: 1,
+                                }}
+                            >
+                                {formatMessage(MESSAGES.formInfo)}
+                            </Typography>
                             <Stack direction={'row'}>
                                 <Box sx={{ width: '100%' }}>
                                     <Select

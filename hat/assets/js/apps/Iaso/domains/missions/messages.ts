@@ -99,11 +99,7 @@ const MESSAGES = defineMessages({
     },
     addForm: {
         id: 'iaso.missions.label.addForm',
-        defaultMessage: 'Add a form',
-    },
-    addFormClick: {
-        id: 'iaso.missions.label.addFormClick',
-        defaultMessage: 'Click to add a form',
+        defaultMessage: 'Select a form to add...',
     },
     min: {
         id: 'iaso.missions.label.min',
@@ -160,6 +156,11 @@ const MESSAGES = defineMessages({
     entityAndFormChip: {
         id: 'iaso.missions.chip.entityAndForm',
         defaultMessage: 'Entity + Form',
+    },
+    formInfo: {
+        id: 'iaso.missions.label.formInfo',
+        defaultMessage:
+            'Add one or more forms. Per form, set how many submissions each assigned unit must collect — min required, max allowed (leave max empty for no limit / ∞).',
     },
 });
 

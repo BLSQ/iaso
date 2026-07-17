@@ -148,7 +148,7 @@ const addForm = async (formOption: string | RegExp) => {
     await act(async () => {
         await userEvent.click(
             screen.getByRole('combobox', {
-                name: /add a form/i,
+                name: /select a form to add/i,
             }),
         );
     });
@@ -380,7 +380,7 @@ describe('Mission edit integration test', () => {
         await act(async () => {
             await userEvent.click(
                 screen.getByRole('combobox', {
-                    name: /add a form/i,
+                    name: /select a form to add/i,
                 }),
             );
         });
@@ -418,7 +418,7 @@ describe('Mission edit integration test', () => {
         await act(async () => {
             await userEvent.click(
                 screen.getByRole('combobox', {
-                    name: /add a form/i,
+                    name: /select a form to add/i,
                 }),
             );
         });

@@ -151,7 +151,7 @@ const addForm = async (formOption: string | RegExp) => {
     await act(async () => {
         await userEvent.click(
             screen.getByRole('combobox', {
-                name: /add a form/i,
+                name: /select a form to add/i,
             }),
         );
     });
@@ -220,7 +220,7 @@ describe('Mission create integration test', () => {
         ).not.toBeChecked();
 
         expect(
-            screen.getByRole('combobox', { name: /add a form/i }),
+            screen.getByRole('combobox', { name: /select a form to add/i }),
         ).toBeInTheDocument();
         expect(
             screen.getByRole('button', {
@@ -236,7 +236,7 @@ describe('Mission create integration test', () => {
 
         // FORM_FILLING by default
         expect(
-            screen.getByRole('combobox', { name: /add a form/i }),
+            screen.getByRole('combobox', { name: /select a form to add/i }),
         ).toBeInTheDocument();
 
         expect(
@@ -369,7 +369,7 @@ describe('Mission create integration test', () => {
         await act(async () => {
             await userEvent.click(
                 screen.getByRole('combobox', {
-                    name: /add a form/i,
+                    name: /select a form to add/i,
                 }),
             );
         });
@@ -407,7 +407,7 @@ describe('Mission create integration test', () => {
         await act(async () => {
             await userEvent.click(
                 screen.getByRole('combobox', {
-                    name: /add a form/i,
+                    name: /select a form to add/i,
                 }),
             );
         });

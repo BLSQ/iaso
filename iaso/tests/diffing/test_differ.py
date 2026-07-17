@@ -90,15 +90,15 @@ class DifferTestCase(PyramidBaseTest):
                 "distance": 0,
             },
         )
-        self.assertDictEqual(
-            country_diff_comparisons[2],
-            {
-                "field": "geometry",
-                "before": self.multi_polygon,
-                "after": new_multi_polygon,
-                "status": Differ.STATUS_MODIFIED,
-                "distance": None,
-            },
+        country_geom_diff = country_diff_comparisons[2]
+        self.assertEqual(country_geom_diff["field"], "geometry")
+        self.assertEqual(country_geom_diff["before"], self.multi_polygon)
+        self.assertEqual(country_geom_diff["after"], new_multi_polygon)
+        self.assertEqual(country_geom_diff["status"], Differ.STATUS_MODIFIED)
+        self.assertAlmostEqual(
+            country_geom_diff["distance"],
+            self.multi_polygon.centroid.distance(new_multi_polygon.centroid) * 111,
+            places=6,
         )
         self.assertDictEqual(
             country_diff_comparisons[3],
@@ -185,15 +185,15 @@ class DifferTestCase(PyramidBaseTest):
                 "distance": 0,
             },
         )
-        self.assertDictEqual(
-            region_diff_comparisons[2],
-            {
-                "field": "geometry",
-                "before": self.multi_polygon,
-                "after": new_multi_polygon,
-                "status": Differ.STATUS_MODIFIED,
-                "distance": None,
-            },
+        region_geom_diff = region_diff_comparisons[2]
+        self.assertEqual(region_geom_diff["field"], "geometry")
+        self.assertEqual(region_geom_diff["before"], self.multi_polygon)
+        self.assertEqual(region_geom_diff["after"], new_multi_polygon)
+        self.assertEqual(region_geom_diff["status"], Differ.STATUS_MODIFIED)
+        self.assertAlmostEqual(
+            region_geom_diff["distance"],
+            self.multi_polygon.centroid.distance(new_multi_polygon.centroid) * 111,
+            places=6,
         )
         self.assertDictEqual(
             region_diff_comparisons[3],
@@ -282,15 +282,15 @@ class DifferTestCase(PyramidBaseTest):
                 "distance": None,
             },
         )
-        self.assertDictEqual(
-            district_diff_comparisons[2],
-            {
-                "field": "geometry",
-                "before": self.multi_polygon,
-                "after": new_multi_polygon,
-                "status": Differ.STATUS_MODIFIED,
-                "distance": None,
-            },
+        district_geom_diff = district_diff_comparisons[2]
+        self.assertEqual(district_geom_diff["field"], "geometry")
+        self.assertEqual(district_geom_diff["before"], self.multi_polygon)
+        self.assertEqual(district_geom_diff["after"], new_multi_polygon)
+        self.assertEqual(district_geom_diff["status"], Differ.STATUS_MODIFIED)
+        self.assertAlmostEqual(
+            district_geom_diff["distance"],
+            self.multi_polygon.centroid.distance(new_multi_polygon.centroid) * 111,
+            places=6,
         )
         self.assertDictEqual(
             district_diff_comparisons[3],

@@ -39,6 +39,8 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
         )
 
         cls.data_source = m.DataSource.objects.create(name="Data source")
+        cls.project = m.Project.objects.create(name="Project1", account=cls.account)
+        cls.project.data_sources.add(cls.data_source)
         cls.source_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
         cls.source_2 = m.SourceVersion.objects.create(data_source=cls.data_source, number=2)
         cls.source_3 = m.SourceVersion.objects.create(data_source=cls.data_source, number=3)
@@ -133,7 +135,7 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
             "source_version_to_compare_with": self.source_3.pk,
         }
         response = self.client.post("/api/datasources/sync/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 201, response.data)
 
         data_source_sync = m.DataSourceVersionsSynchronization.objects.get(id=response.data["id"])
         self.assertEqual(data_source_sync.name, "Foo synchronization")
@@ -201,13 +203,13 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
             "source_version_to_compare_with_org_unit_group": self.group_2.id,
             "ignore_groups": True,
             "show_deleted_org_units": False,
-            "field_names": ["name", "code"],
+            "field_names": ["name", "not_a_valid_field"],
         }
         response = self.client.patch(
             f"/api/datasources/sync/{self.data_source_sync_1.id}/create_json_diff/", data=json_diff_params
         )
         json_response = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('"code" is not a valid choice', json_response["field_names"][0])
+        self.assertIn('"not_a_valid_field" is not a valid choice', json_response["field_names"][0])
 
         self.data_source_sync_1.refresh_from_db()
         self.assertIsNone(self.data_source_sync_1.json_diff)

@@ -195,6 +195,8 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         self.assertEqual(data_source_sync.updated_at, self.DT)
 
     def test_clean_data_source_versions(self):
+        # Cross-datasource comparison is allowed when both datasources are linked to
+        # the sync's account (or have no projects, i.e. are shared/admin resources).
         other_data_source = m.DataSource.objects.create(name="Other data source")
         other_source_version = m.SourceVersion.objects.create(
             data_source=other_data_source, number=1, description="Other data source version"
@@ -207,23 +209,59 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
             "created_by": self.user,
         }
         data_source_sync = m.DataSourceVersionsSynchronization(**kwargs)
+        # Both datasources have no projects → treated as shared resources, must not raise.
+        data_source_sync.clean_data_source_versions()
 
-        with self.assertRaises(ValidationError) as error:
-            data_source_sync.clean_data_source_versions()
-        self.assertIn("The two versions to compare must be linked to the same data source.", error.exception.messages)
-
-        kwargs = {
-            "name": "Foo",
-            "source_version_to_update": self.source_version_to_update,
-            "source_version_to_compare_with": self.source_version_to_update,
-            "account": self.account,
-            "created_by": self.user,
-        }
+        # The two versions must not be the same object.
+        kwargs["source_version_to_compare_with"] = self.source_version_to_update
         data_source_sync = m.DataSourceVersionsSynchronization(**kwargs)
-
         with self.assertRaises(ValidationError) as error:
             data_source_sync.clean_data_source_versions()
         self.assertIn("The two versions to compare must be different.", error.exception.messages)
+
+    def test_clean_data_source_versions_account_isolation(self):
+        """Data sources linked to a different account must be rejected."""
+        other_account = m.Account.objects.create(name="Other account")
+        other_project = m.Project.objects.create(name="Other project", account=other_account, app_id="other.app")
+        foreign_datasource = m.DataSource.objects.create(name="Foreign data source")
+        foreign_datasource.projects.add(other_project)
+        foreign_version = m.SourceVersion.objects.create(data_source=foreign_datasource, number=1)
+
+        # source_version_to_compare_with from a foreign account → must raise.
+        data_source_sync = m.DataSourceVersionsSynchronization(
+            name="Bad sync",
+            source_version_to_update=self.source_version_to_update,
+            source_version_to_compare_with=foreign_version,
+            account=self.account,
+            created_by=self.user,
+        )
+        with self.assertRaises(ValidationError) as error:
+            data_source_sync.clean_data_source_versions()
+        self.assertIn("Foreign data source", error.exception.messages[0])
+
+        # source_version_to_update from a foreign account → must raise.
+        data_source_sync = m.DataSourceVersionsSynchronization(
+            name="Bad sync 2",
+            source_version_to_update=foreign_version,
+            source_version_to_compare_with=self.source_version_to_compare_with,
+            account=self.account,
+            created_by=self.user,
+        )
+        with self.assertRaises(ValidationError) as error:
+            data_source_sync.clean_data_source_versions()
+        self.assertIn("Foreign data source", error.exception.messages[0])
+
+        # A datasource with a project from self.account → must not raise.
+        own_project = m.Project.objects.create(name="Own project", account=self.account, app_id="own.app")
+        foreign_datasource.projects.add(own_project)
+        data_source_sync = m.DataSourceVersionsSynchronization(
+            name="Ok sync",
+            source_version_to_update=self.source_version_to_update,
+            source_version_to_compare_with=foreign_version,
+            account=self.account,
+            created_by=self.user,
+        )
+        data_source_sync.clean_data_source_versions()  # must not raise
 
     def test_create_json_diff(self):
         """

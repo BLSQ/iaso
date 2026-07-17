@@ -10,7 +10,10 @@ import { Box } from '@mui/material';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import orderBy from 'lodash/orderBy';
 import moment from 'moment';
+import { CompareGeoJsonMap } from '../../../../components/maps/CompareGeoJsonMapComponent';
+import { GeoJsonMap } from '../../../../components/maps/GeoJsonMapComponent';
 import { MarkerMap } from '../../../../components/maps/MarkerMapComponent';
+import { GeoJson } from '../../../../components/maps/types';
 import { BooleanValue, PlaceholderValue } from '../../../../libs/utils';
 import { Nullable, Optional } from '../../../../types/utils';
 import InstanceDetail from '../../../instances/compare/components/InstanceDetail';
@@ -106,7 +109,7 @@ const getLocationValue = (
 };
 
 const getPlaceholderValue = (key: string) => {
-    if (key === 'location') {
+    if (key === 'location' || key === 'geom') {
         return <></>;
     }
     return PlaceholderValue;
@@ -168,9 +171,35 @@ export const useNewFields = (
                     <span>{getGroupsValue(val as NestedGroup[])}</span>
                 ),
             },
+            new_code: {
+                label: formatMessage(MESSAGES.code),
+                order: 5,
+                fieldType: '',
+                formatValue: val => <span>{val.toString()}</span>,
+            },
+            new_geom: {
+                label: formatMessage(MESSAGES.geom),
+                order: 6,
+                fieldType: '',
+                formatValue: (val, isOld) => {
+                    if (isOld) return <></>;
+                    const oldGeom = changeRequest?.old_geom;
+                    if (oldGeom) {
+                        return (
+                            <CompareGeoJsonMap
+                                newGeoJson={val as GeoJson}
+                                oldGeoJson={oldGeom}
+                                newLabel={formatMessage(MESSAGES.newValue)}
+                                oldLabel={formatMessage(MESSAGES.oldValue)}
+                            />
+                        );
+                    }
+                    return <GeoJsonMap geoJson={val as GeoJson} />;
+                },
+            },
             new_location: {
                 label: formatMessage(MESSAGES.location),
-                order: 5,
+                order: 7,
                 fieldType: '',
                 formatValue: (val, isOld) =>
                     changeRequest ? (
@@ -185,25 +214,25 @@ export const useNewFields = (
             },
             new_location_accuracy: {
                 label: formatMessage(MESSAGES.accuracy),
-                order: 6,
+                order: 8,
                 fieldType: '',
                 formatValue: val => <span>{val.toString()}</span>,
             },
             new_opening_date: {
                 label: formatMessage(MESSAGES.openingDate),
-                order: 7,
+                order: 9,
                 fieldType: '',
                 formatValue: val => <span>{moment(val).format('L')}</span>,
             },
             new_closed_date: {
                 label: formatMessage(MESSAGES.closingDate),
-                order: 8,
+                order: 10,
                 fieldType: '',
                 formatValue: val => <span>{moment(val).format('L')}</span>,
             },
             new_reference_instances: {
                 label: formatMessage(MESSAGES.multiReferenceInstancesLabel),
-                order: 9,
+                order: 11,
                 fieldType: '',
                 formatValue: val => (
                     <ReferenceInstances

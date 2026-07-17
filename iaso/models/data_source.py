@@ -182,15 +182,12 @@ class DataSourceVersionsSynchronization(models.Model):
 
     Fields that can be synchronized:
 
-        ["name", "parent", "opening_date", "closed_date", "groups"]
+        ["name", "parent", "opening_date", "closed_date", "groups","geometry", "code"]
 
-    Basic business use case:
-
-    - often, a pyramid of org units is created in DHIS2 and imported in IASO
-    - IASO is then used to update the pyramid
-    - but meanwhile, people may continue to make changes in DHIS2
-    - as a consequence, the two pyramids diverge
-    - so we need to synchronize the changes in the two pyramids
+    The two versions may belong to the same data source (e.g. comparing two
+    successive imports of the same DHIS2 instance) or two different data sources
+    (e.g. merging data from multiple authoritative sources into a single reference
+    pyramid). Org units are matched across versions by their `source_ref` value.
 
     The synchronization is done in two steps:
 
@@ -203,7 +200,7 @@ class DataSourceVersionsSynchronization(models.Model):
 
     """
 
-    SYNCHRONIZABLE_FIELDS = ["name", "parent", "opening_date", "closed_date"]
+    SYNCHRONIZABLE_FIELDS = ["name", "parent", "opening_date", "closed_date", "groups", "geometry", "code"]
     # `groups` are synchronizable, but are handled via the `ignore_groups` param of the `Differ`.
 
     name = models.CharField(
@@ -267,10 +264,19 @@ class DataSourceVersionsSynchronization(models.Model):
         self.clean_data_source_versions()
 
     def clean_data_source_versions(self) -> None:
-        if self.source_version_to_update.data_source_id != self.source_version_to_compare_with.data_source_id:
-            raise ValidationError("The two versions to compare must be linked to the same data source.")
         if self.source_version_to_update.pk == self.source_version_to_compare_with.pk:
             raise ValidationError("The two versions to compare must be different.")
+
+        # Guard against cross-account data leakage: if a data source has projects,
+        # at least one must belong to this sync's account.  Data sources with no
+        # projects are considered shared/admin resources and are exempt.
+        if self.account_id:
+            for version in (self.source_version_to_update, self.source_version_to_compare_with):
+                ds = version.data_source
+                if ds.projects.exists() and not ds.projects.filter(account_id=self.account_id).exists():
+                    raise ValidationError(
+                        f"Data source '{ds.name}' is not linked to the account of this synchronization."
+                    )
 
     def create_json_diff(
         self,

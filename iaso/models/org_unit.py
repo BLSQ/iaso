@@ -23,6 +23,7 @@ from django_ltree.models import TreeModel  # type: ignore
 from iaso.models.data_source import SourceVersion
 
 from ..utils.expressions import ArraySubquery
+from ..utils.gis import simplify_geom
 from ..utils.models.common import get_creator_name
 from ..utils.models.soft_deletable import SoftDeletableModel
 from .project import Project
@@ -760,6 +761,8 @@ class OrgUnitChangeRequest(SoftDeletableModel):
     # `new_location_accuracy` is only used to help decision-making during validation: is the accuracy
     # good enough to change the location? The field doesn't exist on `OrgUnit`.
     new_location_accuracy = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True)
+    new_geom = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
+    new_code = models.TextField(blank=True, default="")
     new_opening_date = models.DateField(blank=True, null=True)
     new_closed_date = models.DateField(blank=True, null=True)
     new_reference_instances = models.ManyToManyField("Instance", blank=True)
@@ -786,6 +789,8 @@ class OrgUnitChangeRequest(SoftDeletableModel):
     )
     old_groups = models.ManyToManyField("Group", blank=True, related_name="+")
     old_location = PointField(null=True, blank=True, geography=True, dim=3, srid=4326)
+    old_geom = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
+    old_code = models.TextField(blank=True, default="")
     old_opening_date = models.DateField(blank=True, null=True)
     old_closed_date = models.DateField(blank=True, null=True)
     old_reference_instances = models.ManyToManyField("Instance", blank=True, related_name="+")
@@ -831,6 +836,8 @@ class OrgUnitChangeRequest(SoftDeletableModel):
             self.old_name = self.org_unit.name
             self.old_org_unit_type_id = self.org_unit.org_unit_type_id
             self.old_location = self.org_unit.location
+            self.old_geom = self.org_unit.geom
+            self.old_code = self.org_unit.code
             self.old_opening_date = self.org_unit.opening_date
             self.old_closed_date = self.org_unit.closed_date
         super().save(*args, **kwargs)
@@ -887,6 +894,9 @@ class OrgUnitChangeRequest(SoftDeletableModel):
             if field_name == "new_groups":
                 self.org_unit.groups.clear()
                 self.org_unit.groups.add(*self.new_groups.all())
+            elif field_name == "new_geom":
+                self.org_unit.geom = self.new_geom
+                self.org_unit.simplified_geom = simplify_geom(self.new_geom) if self.new_geom is not None else None
             elif field_name == "new_reference_instances":
                 current_reference_instances = list(self.org_unit.reference_instances.all())
 

@@ -22,6 +22,13 @@ from lxml import etree
 
 from iaso.dhis2.datavalue_exporter import DataValueExporter
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
+from iaso.management.commands.seed_geom_code_demo import (
+    apply_demo_mutations,
+    copy_orgunits_to_demo_version,
+    create_demo_version,
+    print_mutation_summary,
+    run_demo_sync_and_report,
+)
 from iaso.models import (
     Account,
     DataSource,
@@ -369,6 +376,8 @@ class Command(BaseCommand):
                 validate=True,
             )
 
+            self.seed_geom_code_demo_change_requests(datasource, source_version)
+
             self.seed_entities(source_version, entity_form, entity_form_version, account, project, entity_type, user)
 
             print("********* generating instances")
@@ -454,7 +463,7 @@ class Command(BaseCommand):
         print("        https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso")
         print("     in the menu ")
         print("        Change the App ID : ", project.app_id)
-        print("        Change URL server : with the ngrok one (good luck, try to send it by email)")
+        print("        Change URL server : with the ngrok one (use the qr code scanning in the app)")
         print("     then in the Connection section")
         print("        user and password : ", "testemail" + dhis2_version)
 
@@ -488,6 +497,20 @@ class Command(BaseCommand):
                         )
                     except Exception as e:
                         print("Failed to fix ", category_option["name"], e)
+
+    @transaction.atomic
+    def seed_geom_code_demo_change_requests(self, datasource, source_version):
+        """See seed_geom_code_demo module docstring for the full scenario matrix."""
+        print("********* seeding geom/code demo version")
+
+        demo_datasource, demo_version = create_demo_version(datasource)
+        copied = copy_orgunits_to_demo_version(source_version, demo_version)
+        print(f"  Copied {len(copied)} org units to demo version")
+
+        stats, swapped_pair = apply_demo_mutations(demo_version)
+        print_mutation_summary(demo_datasource, demo_version, stats)
+
+        run_demo_sync_and_report(datasource, source_version, demo_version, swapped_pair, self.user, self.stdout)
 
     def seed_form(
         self,

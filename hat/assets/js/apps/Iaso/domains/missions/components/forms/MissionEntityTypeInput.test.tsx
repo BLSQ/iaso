@@ -121,9 +121,11 @@ describe('MissionEntityTypeInput', () => {
     });
 
     it('resets forms and updates params when entity type changes', async () => {
-        const formik = createFormik();
+        const formik = createFormik({
+            entity_type: undefined,
+        });
 
-        renderWithThemeAndIntlProvider(
+        const { rerender } = renderWithThemeAndIntlProvider(
             // @ts-ignore
             <MissionEntityTypeInput formik={formik} />,
         );
@@ -132,11 +134,19 @@ describe('MissionEntityTypeInput', () => {
             screen.getByTestId('select-input').click();
         });
 
+        expect(formik.setFieldValue).toHaveBeenCalledWith('forms', []);
+        expect(formik.setFieldTouched).toHaveBeenCalledWith('forms', false);
+
+        rerender(
+            <MissionEntityTypeInput
+                // @ts-ignore
+                formik={createFormik({
+                    entity_type: 12,
+                })}
+            />,
+        );
+
         await waitFor(() => {
-            expect(formik.setFieldValue).toHaveBeenCalledWith('forms', []);
-
-            expect(formik.setFieldTouched).toHaveBeenCalledWith('forms', false);
-
             expect(missionFormsBaseInputMock).toHaveBeenCalledWith(
                 expect.objectContaining({
                     params: {
@@ -144,6 +154,48 @@ describe('MissionEntityTypeInput', () => {
                             entity_type_ids: 12,
                         },
                     },
+                }),
+            );
+        });
+    });
+
+    it('passes params based on the selected entity type', async () => {
+        renderWithThemeAndIntlProvider(
+            <MissionEntityTypeInput
+                // @ts-ignore
+                formik={createFormik({
+                    entity_type: 12,
+                })}
+            />,
+        );
+
+        await waitFor(() => {
+            expect(missionFormsBaseInputMock).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    params: {
+                        params: {
+                            entity_type_ids: 12,
+                        },
+                    },
+                }),
+            );
+        });
+    });
+
+    it('passes empty params when no entity type is selected', async () => {
+        renderWithThemeAndIntlProvider(
+            <MissionEntityTypeInput
+                // @ts-ignore
+                formik={createFormik({
+                    entity_type: undefined,
+                })}
+            />,
+        );
+
+        await waitFor(() => {
+            expect(missionFormsBaseInputMock).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    params: {},
                 }),
             );
         });

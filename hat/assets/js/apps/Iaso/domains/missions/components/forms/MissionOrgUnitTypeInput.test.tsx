@@ -126,9 +126,11 @@ describe('MissionOrgUnitTypeInput', () => {
     });
 
     it('resets forms and updates params when org unit type changes', async () => {
-        const formik = createFormik();
+        const formik = createFormik({
+            org_unit_type: undefined,
+        });
 
-        renderWithThemeAndIntlProvider(
+        const { rerender } = renderWithThemeAndIntlProvider(
             // @ts-ignore
             <MissionOrgUnitTypeInput formik={formik} />,
         );
@@ -137,11 +139,19 @@ describe('MissionOrgUnitTypeInput', () => {
             screen.getByTestId('select-input').click();
         });
 
+        expect(formik.setFieldValue).toHaveBeenCalledWith('forms', []);
+        expect(formik.setFieldTouched).toHaveBeenCalledWith('forms', false);
+
+        rerender(
+            <MissionOrgUnitTypeInput
+                // @ts-ignore
+                formik={createFormik({
+                    org_unit_type: 12,
+                })}
+            />,
+        );
+
         await waitFor(() => {
-            expect(formik.setFieldValue).toHaveBeenCalledWith('forms', []);
-
-            expect(formik.setFieldTouched).toHaveBeenCalledWith('forms', false);
-
             expect(missionFormsBaseInputMock).toHaveBeenCalledWith(
                 expect.objectContaining({
                     params: {
@@ -149,6 +159,48 @@ describe('MissionOrgUnitTypeInput', () => {
                             orgUnitTypeIds: 12,
                         },
                     },
+                }),
+            );
+        });
+    });
+
+    it('passes params based on the selected org unit type', async () => {
+        renderWithThemeAndIntlProvider(
+            <MissionOrgUnitTypeInput
+                // @ts-ignore
+                formik={createFormik({
+                    org_unit_type: 12,
+                })}
+            />,
+        );
+
+        await waitFor(() => {
+            expect(missionFormsBaseInputMock).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    params: {
+                        params: {
+                            orgUnitTypeIds: 12,
+                        },
+                    },
+                }),
+            );
+        });
+    });
+
+    it('passes empty params when no org unit type is selected', async () => {
+        renderWithThemeAndIntlProvider(
+            <MissionOrgUnitTypeInput
+                // @ts-ignore
+                formik={createFormik({
+                    org_unit_type: undefined,
+                })}
+            />,
+        );
+
+        await waitFor(() => {
+            expect(missionFormsBaseInputMock).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    params: {},
                 }),
             );
         });

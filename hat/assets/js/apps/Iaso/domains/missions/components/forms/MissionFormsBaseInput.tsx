@@ -16,7 +16,7 @@ import {
 import { AlertProps } from '@mui/material/Alert/Alert';
 import Divider from '@mui/material/Divider';
 import { Select, useSafeIntl } from 'bluesquare-components';
-import { Field, FieldArray } from 'formik';
+import { ErrorMessage, Field, FieldArray } from 'formik';
 import { FormikContextType, FormikProps } from 'formik/dist/types';
 import { NumberInput } from 'Iaso/components/forms/NumberInput';
 import {
@@ -138,8 +138,32 @@ export const MissionFormsBaseInput = <TSchema extends BaseUpdateCreateRequest>({
                                 >
                                     <ListItemText
                                         primary={
-                                            findFormOptionFromValue(form.form)
-                                                ?.label
+                                            <Box
+                                                sx={{
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                }}
+                                            >
+                                                <span>
+                                                    {
+                                                        findFormOptionFromValue(
+                                                            form.form,
+                                                        )?.label
+                                                    }
+                                                </span>
+                                                <ErrorMessage
+                                                    name={`forms.[${index}].form`}
+                                                >
+                                                    {msg => (
+                                                        <Alert
+                                                            severity={'error'}
+                                                            sx={{ mt: 1 }}
+                                                        >
+                                                            {msg}
+                                                        </Alert>
+                                                    )}
+                                                </ErrorMessage>
+                                            </Box>
                                         }
                                         secondary={
                                             <Box

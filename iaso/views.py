@@ -111,7 +111,6 @@ def page(request, page_slug):
     return response
 
 
-
 def user_can_access_page(user, page):
     """Check if user has access to view this page."""
 

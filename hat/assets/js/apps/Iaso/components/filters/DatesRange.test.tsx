@@ -19,8 +19,8 @@ vi.mock('../../utils/dates', () => ({
     getUrlParamDateObject: (value: string) => `parsed:${value}`,
 }));
 
-vi.mock('@mui/x-date-pickers/DesktopDatePicker', () => ({
-    DesktopDatePicker: (props: Record<string, any>) => {
+vi.mock('@mui/x-date-pickers/DatePicker', () => ({
+    DatePicker: (props: Record<string, any>) => {
         const testId =
             props?.slotProps?.textField?.InputProps?.['data-test'] ??
             'date-picker';

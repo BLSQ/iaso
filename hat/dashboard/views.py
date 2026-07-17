@@ -4,7 +4,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.http.request import HttpRequest
 from django.shortcuts import render
-from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.http import require_http_methods
 
 
@@ -62,10 +61,9 @@ def iaso(request: HttpRequest) -> HttpResponse:
     return _base_iaso(request, analytics_data=analytics_data)
 
 
-@xframe_options_exempt
 @require_http_methods(["GET"])
 def embeddable_iaso(request: HttpRequest) -> HttpResponse:
-    """Embeddable iaso page without login requirement and without X-Frame-Options."""
+    """Embeddable iaso page without login requirement and with correct header"""
     analytics_data = None
 
     if _should_enable_analytics(request):
@@ -74,7 +72,9 @@ def embeddable_iaso(request: HttpRequest) -> HttpResponse:
             "domain": domain,
         }
 
-    return _base_iaso(request, analytics_data=analytics_data)
+    response = _base_iaso(request, analytics_data=analytics_data)
+    response["X-Frame-Options"] = "ALLOW"
+    return response
 
 
 @require_http_methods(["GET"])

@@ -137,7 +137,7 @@ class ProjectNotFoundError(ValidationError):
 
 class EntityQuerySet(models.QuerySet):
     def _filter_entities_with_instances(self, *, limit_date=None, org_units_qs=None):
-        instances = Instance.objects.all()
+        instances = Instance.non_deleted_objects.all()
 
         if org_units_qs is not None:
             instances = instances.filter(org_unit__in=org_units_qs)

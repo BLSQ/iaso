@@ -1,3 +1,7 @@
+from unittest import mock
+
+from django.http import HttpResponse
+
 from iaso import models as m
 from iaso.models import Page
 from iaso.test import TestCase
@@ -20,18 +24,31 @@ class XFrameOptionsTestCase(TestCase):
         )
 
     def test_regular_dashboard_home_sets_deny(self):
-        response = self.client.get("/dashboard/home/")
+        # Avoid rendering iaso/index.html (needs webpack-stats.json in CI).
+        with mock.patch(
+            "hat.dashboard.views._base_iaso",
+            return_value=HttpResponse("ok"),
+        ):
+            response = self.client.get("/dashboard/home/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get("X-Frame-Options"), "DENY")
 
     def test_authenticated_dashboard_sets_deny(self):
         self.client.force_login(self.user)
-        response = self.client.get("/dashboard/")
+        with mock.patch(
+            "hat.dashboard.views._base_iaso",
+            return_value=HttpResponse("ok"),
+        ):
+            response = self.client.get("/dashboard/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get("X-Frame-Options"), "DENY")
 
     def test_embeddable_dashboard_is_exempt(self):
-        response = self.client.get("/dashboard/polio/embeddedCalendar/")
+        with mock.patch(
+            "hat.dashboard.views._base_iaso",
+            return_value=HttpResponse("ok"),
+        ):
+            response = self.client.get("/dashboard/polio/embeddedCalendar/")
         self.assertEqual(response.status_code, 200)
         self.assertIsNone(response.get("X-Frame-Options"))
 

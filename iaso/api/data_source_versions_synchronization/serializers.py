@@ -99,7 +99,6 @@ class DataSourceVersionsSynchronizationSerializer(DynamicFieldsModelSerializerBa
             raise serializers.ValidationError(f"Data source '{ds.name}' is linked to more than one account.")
         return list(account_ids)[0] if account_ids else None
 
-
     def validate(self, validated_data):
         source_version_to_update = validated_data["source_version_to_update"]
         source_version_to_compare_with = validated_data["source_version_to_compare_with"]

@@ -14,10 +14,7 @@ vi.mock('formik', async () => {
     return {
         ...actual,
         Field: (props: any) => (
-            <input
-                aria-label={props['aria-label']}
-                data-testid={props.name}
-            />
+            <input aria-label={props.label} data-testid={props.name} />
         ),
     };
 });
@@ -45,10 +42,7 @@ const renderMissionFormItem = (
     form: { form: number; min_cardinality: number; max_cardinality?: null },
 ) =>
     renderWithThemeAndIntlProvider(
-        <Formik
-            initialValues={{ forms: [form] }}
-            onSubmit={() => undefined}
-        >
+        <Formik initialValues={{ forms: [form] }} onSubmit={() => undefined}>
             <table>
                 <tbody>
                     <MissionFormItem

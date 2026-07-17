@@ -1,7 +1,6 @@
 import React from 'react';
 import { SaveOutlined } from '@mui/icons-material';
-import { Alert } from '@mui/material';
-import { Button } from '@mui/material';
+import { Alert, Button, useMediaQuery, useTheme } from '@mui/material';
 import { LinkButton, useSafeIntl } from 'bluesquare-components';
 import { FormikProvider, useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -26,6 +25,8 @@ export const EditBaseMissionEntityType: React.FunctionComponent<
     EditBaseMissionFormProps
 > = ({ data, missionId, save, redirectBackUrl }) => {
     const { formatMessage } = useSafeIntl();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const formik = useFormik<MissionEntityTypeUpdateRequest>({
         validationSchema: toFormikValidationSchema(
             MissionEntityTypeUpdateRequest,
@@ -52,7 +53,6 @@ export const EditBaseMissionEntityType: React.FunctionComponent<
     });
 
     const allowConfirm = formik.isValid && formik.dirty && !formik.isSubmitting;
-
     return (
         <DetailsWrapper
             title={data.name}
@@ -60,6 +60,7 @@ export const EditBaseMissionEntityType: React.FunctionComponent<
                 <>
                     <LinkButton
                         to={redirectBackUrl}
+                        size={isMobile ? 'small' : 'medium'}
                         color="primary"
                         variant="outlined"
                     >
@@ -67,6 +68,7 @@ export const EditBaseMissionEntityType: React.FunctionComponent<
                     </LinkButton>
                     <Button
                         variant="contained"
+                        size={isMobile ? 'small' : 'medium'}
                         type="submit"
                         color="primary"
                         disabled={!allowConfirm}

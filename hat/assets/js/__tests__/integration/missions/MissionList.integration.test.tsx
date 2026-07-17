@@ -168,7 +168,7 @@ describe('Mission list integration test', () => {
         Object.entries(uniqueMissionTypes ?? {})?.forEach(([item, count]) => {
             const label = missionTypeChipLabels[item] ?? item;
             expect(
-                screen.queryAllByText(label, { selector: '.MuiChip-label' }),
+                screen.getAllByRole('cell', { name: label }),
             ).toHaveLength(count);
         });
 

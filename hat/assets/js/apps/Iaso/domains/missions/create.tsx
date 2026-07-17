@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { SaveOutlined } from '@mui/icons-material';
-import { Alert, Button } from '@mui/material';
+import { Alert, Button, useMediaQuery, useTheme } from '@mui/material';
 import { useSafeIntl, useRedirectTo, LinkButton } from 'bluesquare-components';
 import { useFormik, FormikProvider } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -18,7 +18,8 @@ import MESSAGES from './messages';
 
 export const MissionCreate: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
-
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const redirectTo = useRedirectTo();
 
     const redirectBackUrl: string = `${baseUrls.missions}`;
@@ -64,6 +65,7 @@ export const MissionCreate: FunctionComponent = () => {
                             to={`/${baseUrls.missions}/`}
                             color="primary"
                             variant="outlined"
+                            size={isMobile ? 'small' : 'medium'}
                         >
                             {formatMessage(MESSAGES.cancel)}
                         </LinkButton>
@@ -76,9 +78,10 @@ export const MissionCreate: FunctionComponent = () => {
                             onClick={() =>
                                 allowConfirm && formik.handleSubmit()
                             }
+                            size={isMobile ? 'small' : 'medium'}
                         >
                             <SaveOutlined sx={{ mr: 1 }} />
-                            {formatMessage(MESSAGES.save)}
+                            {formatMessage(MESSAGES.create)}
                         </Button>
                     </>
                 }

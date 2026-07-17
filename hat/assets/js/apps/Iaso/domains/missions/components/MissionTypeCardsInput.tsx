@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React from 'react';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import DescriptionIcon from '@mui/icons-material/Description';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -11,9 +11,6 @@ import { get } from 'lodash';
 import { MissionTypeDropdownValueEnum } from 'Iaso/api/missions';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../messages';
-
-type MissionTypeValue =
-    (typeof MissionTypeDropdownValueEnum.enum)[keyof typeof MissionTypeDropdownValueEnum.enum];
 
 const styles: SxStyles = {
     root: {
@@ -103,21 +100,23 @@ const MISSION_TYPE_OPTIONS = [
     },
 ] as const;
 
-type Props = {
-    field: FieldInputProps<MissionTypeValue>;
-    form: FormikProps<unknown>;
+type MissionTypeOptionValue = (typeof MISSION_TYPE_OPTIONS)[number]['value'];
+
+export type MissionTypeCardsInputProps<TFieldValue, TValues> = {
+    field: FieldInputProps<TFieldValue>;
+    form: FormikProps<TValues>;
     label?: string;
     required?: boolean;
-    onChange?: (keyValue: string, value: MissionTypeValue) => void;
+    onChange?: (keyValue: string, value: TFieldValue) => void;
 };
 
-export const MissionTypeCardsInput: FunctionComponent<Props> = ({
+export const MissionTypeCardsInput = <TFieldValue, TValues>({
     field,
     form,
     label,
     required = false,
     onChange,
-}) => {
+}: MissionTypeCardsInputProps<TFieldValue, TValues>) => {
     const { formatMessage } = useSafeIntl();
     const labelText = label ?? formatMessage(MESSAGES.missionType);
     const hasError = Boolean(
@@ -125,12 +124,13 @@ export const MissionTypeCardsInput: FunctionComponent<Props> = ({
     );
     const error = get(form.errors, field.name);
 
-    const handleSelect = (value: MissionTypeValue) => {
+    const handleSelect = (value: MissionTypeOptionValue) => {
+        const nextValue = value as TFieldValue;
         if (onChange) {
-            onChange(field.name, value);
+            onChange(field.name, nextValue);
         }
         form.setFieldTouched(field.name, true);
-        form.setFieldValue(field.name, value);
+        form.setFieldValue(field.name, nextValue);
     };
 
     return (

@@ -2,19 +2,21 @@ import React from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DescriptionIcon from '@mui/icons-material/Description';
 import {
+    Alert,
     Box,
     IconButton,
     TableCell,
     TableRow,
     Typography,
 } from '@mui/material';
-import { Alert } from '@mui/material';
+import { visuallyHidden } from '@mui/utils';
 import { useSafeIntl } from 'bluesquare-components';
-import { Field, FieldArrayRenderProps, ErrorMessage } from 'formik';
+import { ErrorMessage, Field, FieldArrayRenderProps } from 'formik';
 import { FormikProps } from 'formik/dist/types';
 import { NumberInput } from 'Iaso/components/forms/NumberInput';
 import { FormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
-import { BaseUpdateCreateRequest } from 'Iaso/domains/missions/types';
+import { MissionCreateBody } from 'Iaso/domains/missions/schemas/create';
+import { MissionUpdateBody } from 'Iaso/domains/missions/types';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';
 
@@ -35,6 +37,9 @@ const styles: SxStyles = {
         width: 120,
         maxWidth: 140,
         verticalAlign: 'middle',
+        position: 'relative',
+        // Keep accessible names without showing labels (table headers cover that)
+        '& label': visuallyHidden,
     },
     actionsCell: {
         width: 56,
@@ -42,7 +47,7 @@ const styles: SxStyles = {
     },
 };
 
-type Props<TSchema extends BaseUpdateCreateRequest> = {
+type Props<TSchema extends MissionCreateBody | MissionUpdateBody> = {
     form: TSchema['forms'][number];
     findFormOptionFromValue: (
         formId: number,
@@ -52,7 +57,9 @@ type Props<TSchema extends BaseUpdateCreateRequest> = {
     formik: FormikProps<TSchema>;
 };
 
-export const MissionFormItem = <TSchema extends BaseUpdateCreateRequest>({
+export const MissionFormItem = <
+    TSchema extends MissionCreateBody | MissionUpdateBody,
+>({
     form,
     findFormOptionFromValue,
     index,
@@ -62,6 +69,8 @@ export const MissionFormItem = <TSchema extends BaseUpdateCreateRequest>({
     const { formatMessage } = useSafeIntl();
     const formLabel =
         findFormOptionFromValue(form.form)?.label ?? String(form.form);
+    const minLabel = formatMessage(MESSAGES.minCardinality);
+    const maxLabel = formatMessage(MESSAGES.maxCardinality);
 
     return (
         <TableRow>
@@ -83,25 +92,23 @@ export const MissionFormItem = <TSchema extends BaseUpdateCreateRequest>({
             </TableCell>
             <TableCell sx={styles.numberCell}>
                 <Field
-                    label=""
+                    label={minLabel}
                     name={`forms.${index}.min_cardinality`}
                     initialValue={1}
                     min={1}
                     component={NumberInput}
                     required
                     withMarginTop={false}
-                    aria-label={formatMessage(MESSAGES.minCardinality)}
                 />
             </TableCell>
             <TableCell sx={styles.numberCell}>
                 <Field
-                    label=""
+                    label={maxLabel}
                     name={`forms.${index}.max_cardinality`}
                     initialValue={1}
                     min={0}
                     component={NumberInput}
                     withMarginTop={false}
-                    aria-label={formatMessage(MESSAGES.maxCardinality)}
                 />
             </TableCell>
             <TableCell align="right" sx={styles.actionsCell}>

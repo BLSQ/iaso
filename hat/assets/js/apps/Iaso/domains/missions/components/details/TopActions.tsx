@@ -1,9 +1,9 @@
 import React from 'react';
-import { Box } from '@mui/material';
-import { useRedirectTo, useRedirectToReplace } from 'bluesquare-components';
+import { Box, useTheme, useMediaQuery } from '@mui/material';
+import { LinkButton, useRedirectTo } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import { useApiMicroplanningMissionsDestroy } from 'Iaso/api/missions';
 import { DeleteButton } from 'Iaso/components/Buttons/DeleteButton';
-import { EditButton } from 'Iaso/components/Buttons/EditButton';
 import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { baseUrls } from 'Iaso/constants/urls';
@@ -20,7 +20,8 @@ export const TopActions: React.FunctionComponent<TopActionsProps> = ({
     missionName,
 }) => {
     const redirectTo = useRedirectTo();
-
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const { mutateAsync: deleteMission } = useApiMicroplanningMissionsDestroy({
         mutation: {
             onSuccess: () => {
@@ -28,7 +29,8 @@ export const TopActions: React.FunctionComponent<TopActionsProps> = ({
             },
         },
     });
-    const redirectToReplace = useRedirectToReplace();
+
+    const { formatMessage } = useSafeIntl();
 
     return (
         <>
@@ -55,16 +57,18 @@ export const TopActions: React.FunctionComponent<TopActionsProps> = ({
                     Trigger={DeleteButton}
                     triggerProps={{
                         variant: 'outlined',
+                        size: isMobile ? 'small' : 'medium',
                     }}
                 />
                 <Box sx={{ ml: 2, display: 'inline-block' }}>
-                    <EditButton
-                        onClick={() =>
-                            redirectToReplace(baseUrls.missionsEdit, {
-                                id: missionId.toString(),
-                            })
-                        }
-                    />
+                    <LinkButton
+                        to={`/${baseUrls.missionsEdit}/id/${missionId}/`}
+                        variant="outlined"
+                        color="primary"
+                        size={isMobile ? 'small' : 'medium'}
+                    >
+                        {formatMessage(MESSAGES.edit)}
+                    </LinkButton>
                 </Box>
             </DisplayIfUserHasPerm>
         </>

@@ -5,8 +5,6 @@ import { MENU_HEIGHT_WITHOUT_TABS } from 'bluesquare-components';
 import { MainWrapper } from 'Iaso/components/MainWrapper';
 import { SxStyles } from 'Iaso/types/general';
 
-const MAX_WIDTH = '800px';
-
 const HEADER_HEIGHT = '80px';
 const styles: SxStyles = {
     root: {
@@ -14,7 +12,7 @@ const styles: SxStyles = {
         padding: 0,
     },
     paper: {
-        maxWidth: MAX_WIDTH,
+        maxWidth: theme => theme.breakpoints.values.md,
         margin: '0 auto',
     },
     headerContainer: {
@@ -26,10 +24,12 @@ const styles: SxStyles = {
         width: '100%',
         display: 'flex',
         justifyContent: 'space-between',
-        maxWidth: MAX_WIDTH,
+        maxWidth: theme => theme.breakpoints.values.md,
         margin: '0 auto',
         alignItems: 'center',
         height: '100%',
+        boxSizing: 'border-box',
+        px: { xs: 2, md: 0 },
     },
     paperContainer: {
         height: `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px - ${HEADER_HEIGHT})`,

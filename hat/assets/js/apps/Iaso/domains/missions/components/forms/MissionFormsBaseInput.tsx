@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import { AlertProps } from '@mui/material/Alert/Alert';
 import Divider from '@mui/material/Divider';
+import { visuallyHidden } from '@mui/utils';
 import { Select, useSafeIntl } from 'bluesquare-components';
 import { FieldArray } from 'formik';
 import { FormikContextType, FormikProps } from 'formik/dist/types';
@@ -21,7 +22,8 @@ import {
     useGetFormsDropdownOptions,
     UseGetFormsDropdownParams,
 } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
-import { BaseUpdateCreateRequest } from 'Iaso/domains/missions/types';
+import { MissionCreateBody } from 'Iaso/domains/missions/schemas/create';
+import { MissionUpdateBody } from 'Iaso/domains/missions/types';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';
 import { MissionFormItem } from './MissionFormItem';
@@ -69,7 +71,9 @@ type FormArrayErrorsProps<TSchema> = {
     touched: boolean;
 } & Omit<AlertProps, 'severity'>;
 
-const FormArrayErrors = <TSchema extends BaseUpdateCreateRequest>({
+const FormArrayErrors = <
+    TSchema extends MissionCreateBody | MissionUpdateBody,
+>({
     errors,
     touched,
     ...props
@@ -81,7 +85,9 @@ const FormArrayErrors = <TSchema extends BaseUpdateCreateRequest>({
     ) : null;
 };
 
-export const MissionFormsBaseInput = <TSchema extends BaseUpdateCreateRequest>({
+export const MissionFormsBaseInput = <
+    TSchema extends MissionCreateBody | MissionUpdateBody,
+>({
     params,
     formik,
     formSelectProps,
@@ -220,7 +226,16 @@ export const MissionFormsBaseInput = <TSchema extends BaseUpdateCreateRequest>({
                                                         sx={
                                                             styles.actionsHeaderCell
                                                         }
-                                                    />
+                                                    >
+                                                        <Box
+                                                            component="span"
+                                                            sx={visuallyHidden}
+                                                        >
+                                                            {formatMessage(
+                                                                MESSAGES.actions,
+                                                            )}
+                                                        </Box>
+                                                    </TableCell>
                                                 </TableRow>
                                             </TableHead>
                                             <TableBody>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { SaveOutlined } from '@mui/icons-material';
-import { Alert, Button } from '@mui/material';
+import { Alert, Button, useMediaQuery, useTheme } from '@mui/material';
 import { LinkButton, useSafeIntl } from 'bluesquare-components';
 import { FormikProvider, useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -24,6 +24,8 @@ type EditBaseMissionFormProps = {
 export const EditBaseMissionOrgUnitType: React.FunctionComponent<
     EditBaseMissionFormProps
 > = ({ data, missionId, save, redirectBackUrl }) => {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const { formatMessage } = useSafeIntl();
     const formik = useFormik<MissionOrgUnitTypeUpdateRequest>({
         validationSchema: toFormikValidationSchema(
@@ -61,6 +63,7 @@ export const EditBaseMissionOrgUnitType: React.FunctionComponent<
                         to={redirectBackUrl}
                         color="primary"
                         variant="outlined"
+                        size={isMobile ? 'small' : 'medium'}
                     >
                         {formatMessage(MESSAGES.cancel)}
                     </LinkButton>
@@ -71,6 +74,7 @@ export const EditBaseMissionOrgUnitType: React.FunctionComponent<
                         disabled={!allowConfirm}
                         sx={{ ml: 2 }}
                         onClick={() => allowConfirm && formik.handleSubmit()}
+                        size={isMobile ? 'small' : 'medium'}
                     >
                         <SaveOutlined sx={{ mr: 1 }} />
                         {formatMessage(MESSAGES.save)}

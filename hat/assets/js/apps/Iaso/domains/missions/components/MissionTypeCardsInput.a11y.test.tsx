@@ -1,31 +1,43 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
 import type { FormikProps } from 'formik';
+import type { FieldInputProps } from 'formik/dist/types';
 import { axe } from 'jest-axe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MissionTypeDropdownValueEnum } from 'Iaso/api/missions';
 import { renderWithThemeAndIntlProvider } from '../../../../../tests/helpers';
-import { MissionTypeCardsInput } from './MissionTypeCardsInput';
+import {
+    MissionTypeCardsInput,
+    MissionTypeCardsInputProps,
+} from './MissionTypeCardsInput';
 
-const createProps = (overrides: Record<string, unknown> = {}) => ({
-    label: 'Mission type',
-    required: true,
-    field: {
-        name: 'mission_type',
-        value: MissionTypeDropdownValueEnum.enum.FORM_FILLING,
-        onBlur: vi.fn(),
-        onChange: vi.fn(),
-    },
-    form: {
-        errors: {},
-        touched: {},
-        setFieldTouched: vi.fn(),
-        setFieldValue: vi.fn(),
-    } as Partial<FormikProps<{ mission_type: string }>> as FormikProps<{
-        mission_type: string;
-    }>,
-    ...overrides,
-});
+type MissionTypeValue =
+    (typeof MissionTypeDropdownValueEnum.enum)[keyof typeof MissionTypeDropdownValueEnum.enum];
+
+type FormValues = {
+    mission_type: MissionTypeValue;
+};
+
+type Props = MissionTypeCardsInputProps<MissionTypeValue, FormValues>;
+
+const createProps = (overrides: Record<string, unknown> = {}): Props =>
+    ({
+        label: 'Mission type',
+        required: true,
+        field: {
+            name: 'mission_type',
+            value: MissionTypeDropdownValueEnum.enum.FORM_FILLING,
+            onBlur: vi.fn(),
+            onChange: vi.fn(),
+        } as FieldInputProps<MissionTypeValue>,
+        form: {
+            errors: {},
+            touched: {},
+            setFieldTouched: vi.fn(),
+            setFieldValue: vi.fn(),
+        } as Partial<FormikProps<FormValues>> as FormikProps<FormValues>,
+        ...overrides,
+    }) as Props;
 
 describe('MissionTypeCardsInput a11y', () => {
     beforeEach(() => {

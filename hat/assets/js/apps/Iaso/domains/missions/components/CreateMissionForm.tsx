@@ -26,7 +26,7 @@ export const CreateMissionForm: FunctionComponent<CreateMissionFormProps> = ({
     const { formatMessage } = useSafeIntl();
 
     const handleChangeMissionType = useCallback(
-        (_keyValue: string, _value: string) => {
+        (_keyValue: string, _value: MissionCreateBody['mission_type']) => {
             formik.setFieldValue('forms', []);
             formik.setFieldTouched('forms', false);
 

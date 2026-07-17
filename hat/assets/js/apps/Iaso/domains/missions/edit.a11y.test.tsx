@@ -1,6 +1,6 @@
 import React from 'react';
 import { faker } from '@faker-js/faker';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { setupServer } from 'msw/node';
 import { Route, Routes } from 'react-router';
@@ -28,14 +28,6 @@ import {
     getCustomFormOptionsMockHandler,
     getCustomOUTOptionsMockHandler,
 } from '../../../../__tests__/integration/missions/mocksAndHandlers';
-
-// Forms table: empty actions <th> + cardinality inputs labeled only by column headers
-const axeOptionsWithFormsTable = {
-    rules: {
-        label: { enabled: false },
-        'empty-table-header': { enabled: false },
-    },
-};
 
 const { mockUserHasOneOfPermission } = vi.hoisted(() => ({
     mockUserHasOneOfPermission: vi.fn(),
@@ -212,12 +204,13 @@ describe('Mission edit a11y tests', () => {
         ).toHaveValue('some description');
         expect(screen.getByText('Form A')).toBeVisible();
         expect(
-            document.getElementById('input-text-forms.0.min_cardinality'),
+            within(screen.getByRole('row', { name: /form a/i })).getByRole(
+                'textbox',
+                { name: /min cardinality/i },
+            ),
         ).toHaveValue('2');
         // @ts-ignore
-        expect(
-            await axe(container, axeOptionsWithFormsTable),
-        ).toHaveNoViolations();
+        expect(await axe(container)).toHaveNoViolations();
     });
     it('has no violation - MISSION ORG UNIT', async () => {
         const data =
@@ -307,8 +300,6 @@ describe('Mission edit a11y tests', () => {
         ).toHaveValue('ET 1');
 
         // @ts-ignore
-        expect(
-            await axe(container, axeOptionsWithFormsTable),
-        ).toHaveNoViolations();
+        expect(await axe(container)).toHaveNoViolations();
     });
 });

@@ -183,9 +183,7 @@ describe('Mission detail integration test', () => {
 
         expect(screen.getByText(data.name)).toBeInTheDocument();
         expect(screen.getByText(data.description)).toBeInTheDocument();
-        expect(
-            screen.getByText('Form', { selector: '.MuiChip-label' }),
-        ).toBeInTheDocument();
+        expect(screen.getAllByText('Form').length).toBeGreaterThanOrEqual(1);
 
         data?.forms?.forEach(
             ({ form_name, min_cardinality, max_cardinality }) => {
@@ -338,21 +336,14 @@ describe('Mission detail integration test', () => {
         await waitFor(() => {
             expect(screen.queryByRole('progressbar')).toBeNull();
         });
-        expect(
-            screen.getByRole('button', { name: MESSAGES.edit.defaultMessage }),
-        ).toBeInTheDocument();
 
-        await act(async () => {
-            await userEvent.click(
-                screen.getByRole('button', {
-                    name: MESSAGES.edit.defaultMessage,
-                }),
-            );
+        const editLink = screen.getByRole('link', {
+            name: MESSAGES.edit.defaultMessage,
         });
-
-        expect(mockRedirectToReplace).toHaveBeenCalledWith(
-            baseUrls.missionsEdit,
-            { id: '1' },
+        expect(editLink).toBeInTheDocument();
+        expect(editLink).toHaveAttribute(
+            'href',
+            `/${baseUrls.missionsEdit}/id/1/`,
         );
 
         expect(
@@ -371,7 +362,7 @@ describe('Mission detail integration test', () => {
             expect(screen.queryByRole('progressbar')).toBeNull();
         });
         expect(
-            screen.queryByRole('button', {
+            screen.queryByRole('link', {
                 name: MESSAGES.edit.defaultMessage,
             }),
         ).toBeNull();

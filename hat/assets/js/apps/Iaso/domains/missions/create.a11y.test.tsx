@@ -1,6 +1,6 @@
 import React from 'react';
 import { faker } from '@faker-js/faker';
-import { act, screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { HttpResponse } from 'msw';
@@ -115,28 +115,17 @@ const server = setupServer(
 
 const previousDefaults = TestingQueryClient.getDefaultOptions();
 
-// Forms table: empty actions <th> + cardinality inputs labeled only by column headers
-// (aria-label on Field is not forwarded by NumberInput). Skip those axe rules for now.
-const axeOptionsWithFormsTable = {
-    rules: {
-        label: { enabled: false },
-        'empty-table-header': { enabled: false },
-    },
-};
-
 const getFormsCardinalityInput = (
-    formIndex: number,
+    formName: string | RegExp,
     field: 'min_cardinality' | 'max_cardinality',
 ) => {
-    const input = document.getElementById(
-        `input-text-forms.${formIndex}.${field}`,
-    );
-    if (!input) {
-        throw new Error(
-            `Missing forms cardinality input: forms.${formIndex}.${field}`,
-        );
-    }
-    return input;
+    const row = screen.getByRole('row', { name: formName });
+    return within(row).getByRole('textbox', {
+        name:
+            field === 'min_cardinality'
+                ? /min cardinality/i
+                : /max cardinality/i,
+    });
 };
 
 const switchMissionType = async (
@@ -210,7 +199,7 @@ describe('Mission create a11y tests', () => {
     });
 
     it('has no violation - MISSION FORM', async () => {
-        let container: HTMLElement;
+        let container!: HTMLElement;
 
         act(() => {
             ({ container } = renderCreate());
@@ -238,16 +227,16 @@ describe('Mission create a11y tests', () => {
 
         await act(async () => {
             await userEvent.clear(
-                getFormsCardinalityInput(0, 'min_cardinality'),
+                getFormsCardinalityInput(/form a/i, 'min_cardinality'),
             );
             await userEvent.type(
-                getFormsCardinalityInput(0, 'min_cardinality'),
+                getFormsCardinalityInput(/form a/i, 'min_cardinality'),
                 '2',
             );
         });
         await act(async () => {
             await userEvent.type(
-                getFormsCardinalityInput(0, 'max_cardinality'),
+                getFormsCardinalityInput(/form a/i, 'max_cardinality'),
                 '20',
             );
         });
@@ -255,12 +244,10 @@ describe('Mission create a11y tests', () => {
         await addForm(/form b/i);
 
         // @ts-ignore
-        expect(
-            await axe(container, axeOptionsWithFormsTable),
-        ).toHaveNoViolations();
+        expect(await axe(container)).toHaveNoViolations();
     });
     it('has no violation - MISSION ORG UNIT', async () => {
-        let container: HTMLElement;
+        let container!: HTMLElement;
 
         act(() => {
             ({ container } = renderCreate());
@@ -311,12 +298,10 @@ describe('Mission create a11y tests', () => {
         await addForm(/form b/i);
 
         // @ts-ignore
-        expect(
-            await axe(container, axeOptionsWithFormsTable),
-        ).toHaveNoViolations();
+        expect(await axe(container)).toHaveNoViolations();
     });
     it('has no violation - MISSION ENTITY TYPE', async () => {
-        let container: HTMLElement;
+        let container!: HTMLElement;
 
         act(() => {
             ({ container } = renderCreate());
@@ -366,9 +351,7 @@ describe('Mission create a11y tests', () => {
 
         await addForm(/form b/i);
         // @ts-ignore
-        expect(
-            await axe(container, axeOptionsWithFormsTable),
-        ).toHaveNoViolations();
+        expect(await axe(container)).toHaveNoViolations();
     });
     it('has no violation - form general errors', async () => {
         server.use(
@@ -388,7 +371,7 @@ describe('Mission create a11y tests', () => {
             }),
         );
 
-        let container: HTMLElement;
+        let container!: HTMLElement;
 
         act(() => {
             ({ container } = renderCreate());
@@ -417,7 +400,7 @@ describe('Mission create a11y tests', () => {
         await waitFor(() => {
             expect(
                 screen.getByRole('button', {
-                    name: MESSAGES.save.defaultMessage,
+                    name: MESSAGES.create.defaultMessage,
                 }),
             ).not.toBeDisabled();
         });
@@ -425,7 +408,7 @@ describe('Mission create a11y tests', () => {
         await act(async () => {
             await userEvent.click(
                 screen.getByRole('button', {
-                    name: MESSAGES.save.defaultMessage,
+                    name: MESSAGES.create.defaultMessage,
                 }),
             );
         });
@@ -440,8 +423,6 @@ describe('Mission create a11y tests', () => {
         expect(screen.getByText('Generic forms error')).toBeVisible();
 
         // @ts-ignore
-        expect(
-            await axe(container, axeOptionsWithFormsTable),
-        ).toHaveNoViolations();
+        expect(await axe(container)).toHaveNoViolations();
     });
 });

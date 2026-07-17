@@ -1,6 +1,6 @@
 import React from 'react';
 import { faker } from '@faker-js/faker';
-import { act, screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event/dist/cjs/index.js';
 import { HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
@@ -130,18 +130,16 @@ const server = setupServer(
 const previousDefaults = TestingQueryClient.getDefaultOptions();
 
 const getFormsCardinalityInput = (
-    formIndex: number,
+    formName: string | RegExp,
     field: 'min_cardinality' | 'max_cardinality',
 ) => {
-    const input = document.getElementById(
-        `input-text-forms.${formIndex}.${field}`,
-    );
-    if (!input) {
-        throw new Error(
-            `Missing forms cardinality input: forms.${formIndex}.${field}`,
-        );
-    }
-    return input;
+    const row = screen.getByRole('row', { name: formName });
+    return within(row).getByRole('textbox', {
+        name:
+            field === 'min_cardinality'
+                ? /min cardinality/i
+                : /max cardinality/i,
+    });
 };
 
 const addForm = async (formOption: string | RegExp) => {
@@ -252,7 +250,7 @@ describe('Mission edit integration test', () => {
         ).toHaveValue('some description');
         expect(screen.getByText('Form A')).toBeVisible();
         expect(
-            getFormsCardinalityInput(0, 'min_cardinality'),
+            getFormsCardinalityInput(/form a/i, 'min_cardinality'),
         ).toHaveValue('2');
     });
     it('renders initial data - MISSION_ENTITY_TYPE', async () => {
@@ -873,16 +871,16 @@ describe('Mission edit integration test', () => {
 
         await act(async () => {
             await userEvent.clear(
-                getFormsCardinalityInput(0, 'min_cardinality'),
+                getFormsCardinalityInput(/form a/i, 'min_cardinality'),
             );
             await userEvent.type(
-                getFormsCardinalityInput(0, 'min_cardinality'),
+                getFormsCardinalityInput(/form a/i, 'min_cardinality'),
                 '2',
             );
         });
         await act(async () => {
             await userEvent.type(
-                getFormsCardinalityInput(0, 'max_cardinality'),
+                getFormsCardinalityInput(/form a/i, 'max_cardinality'),
                 '20',
             );
         });

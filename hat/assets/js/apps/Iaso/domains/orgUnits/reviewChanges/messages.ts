@@ -109,6 +109,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.location',
         defaultMessage: 'Location',
     },
+    geom: {
+        id: 'iaso.label.geom',
+        defaultMessage: 'Shape',
+    },
+    code: {
+        id: 'iaso.label.code',
+        defaultMessage: 'Code',
+    },
     openingDate: {
         id: 'iaso.changeRequest.openingDate',
         defaultMessage: 'Opening Date',

@@ -80,7 +80,7 @@ class Dumper:
 
         writer = csv.writer(csv_file)
 
-        header = ["externalId", "diff status", "type"]
+        header = ["externalId", "diff status", "modified fields", "type"]
         sorted_fields = sorted(fields)
 
         diffable_fields = []
@@ -99,9 +99,11 @@ class Dumper:
         writer.writerow(header)
 
         for diff in diffs:
+            modified = ", ".join(c.field for c in diff.comparisons if c.status != Differ.STATUS_SAME)
             results = [
                 diff.org_unit.source_ref,
                 diff.status,
+                modified,
                 diff.org_unit.org_unit_type.name if diff.org_unit and diff.org_unit.org_unit_type else "",
             ]
             for field in sorted_fields:

@@ -1,4 +1,18 @@
+import re
+
 from django.contrib.gis.geos import Point
+
+
+_COORD_RE = re.compile(r"(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)")
+# 6 decimal places ≈ 0.11 m — tight enough to catch real edits, loose enough to absorb:
+#   - floating-point drift introduced by WKT serialization round-trips, and
+#   - precision differences between source systems (DHIS2, EF, INS) that store the
+#     same boundary with a different number of decimal places.
+_COORD_DECIMALS = 6
+
+
+def _round_coord(m):
+    return f"{round(float(m.group(1)), _COORD_DECIMALS)} {round(float(m.group(2)), _COORD_DECIMALS)}"
 
 
 class Dictable:
@@ -56,12 +70,32 @@ class GeometryFieldType(FieldType):
             return org_unit.simplified_geom
         return None
 
+    def is_same(self, value, other_value):
+        if value is None and other_value is None:
+            return True
+        if value is None or other_value is None:
+            return False
+        if value.geom_type != other_value.geom_type:
+            return False
+        if isinstance(value, Point):
+            return round(value.x, _COORD_DECIMALS) == round(other_value.x, _COORD_DECIMALS) and round(
+                value.y, _COORD_DECIMALS
+            ) == round(other_value.y, _COORD_DECIMALS)
+        # Polygons: normalise ring orientation then round coordinates before comparing.
+        # normalize() mutates in place and returns None in Django 3.x, so call it
+        # on clones to avoid mutating the original geometry objects.
+        v, ov = value.clone(), other_value.clone()
+        v.normalize()
+        ov.normalize()
+        return _COORD_RE.sub(_round_coord, v.wkt) == _COORD_RE.sub(_round_coord, ov.wkt)
+
     def distance(self, dhis2_value, ref_value):
-        if isinstance(dhis2_value, Point) and isinstance(ref_value, Point):
-            # TODO  is this the good way to calculate the distances ?
-            # https://docs.djangoproject.com/en/2.2/ref/contrib/gis/geos/#django.contrib.gis.geos.GEOSGeometry.distance
-            return dhis2_value.distance(ref_value) * 100  # approx km ?
-        return None
+        if dhis2_value is None or ref_value is None:
+            return None
+        # Centroid distance: how far the geometric centres have moved.
+        # Works for Point (centroid == self) and Polygon/MultiPolygon alike.
+        # × 111 converts degrees → km (equatorial approximation, consistent with the point case).
+        return dhis2_value.centroid.distance(ref_value.centroid) * 111
 
 
 class ParentFieldType(FieldType):

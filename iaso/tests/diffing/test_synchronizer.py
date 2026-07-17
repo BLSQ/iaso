@@ -169,6 +169,7 @@ class DiffsToJsonTestCase(PyramidBaseTest):
 
         json_diffs = diffs_to_json(diffs)
 
+        _geom_wkt = "SRID=4326;MULTIPOLYGON (((0 0, 0 1, 1 1, 0 0)))"
         expected_json_diffs = [
             {
                 "org_unit": {
@@ -176,6 +177,8 @@ class DiffsToJsonTestCase(PyramidBaseTest):
                     "version": self.source_version_to_compare_with.pk,
                     "source_ref": "id-1",
                     "location": None,
+                    "geom": _geom_wkt,
+                    "code": self.code_angola_to_compare_with,
                     "org_unit_type": self.org_unit_type_country.pk,
                     "path": str(self.angola_country_to_compare_with.path),
                     "name": "Angola new",
@@ -189,6 +192,8 @@ class DiffsToJsonTestCase(PyramidBaseTest):
                     "version": self.source_version_to_compare_with.pk,
                     "source_ref": "id-1",
                     "location": None,
+                    "geom": _geom_wkt,
+                    "code": self.code_angola_to_compare_with,
                     "org_unit_type": self.org_unit_type_country.pk,
                     "path": str(self.angola_country_to_compare_with.path),
                     "name": "Angola new",
@@ -202,6 +207,8 @@ class DiffsToJsonTestCase(PyramidBaseTest):
                     "version": self.source_version_to_update.pk,
                     "source_ref": "id-1",
                     "location": None,
+                    "geom": _geom_wkt,
+                    "code": self.code_angola_to_update,
                     "org_unit_type": self.org_unit_type_country.pk,
                     "path": str(self.angola_country_to_update.path),
                     "name": "Angola",
@@ -390,6 +397,7 @@ class PrepareModifiedChangeRequestsTestCase(PyramidBaseTest):
 
         json_diffs = diffs_to_json(diffs)
 
+        _geom_wkt = "SRID=4326;MULTIPOLYGON (((0 0, 0 1, 1 1, 0 0)))"
         expected_json_diffs = [
             {
                 "org_unit": {
@@ -398,6 +406,8 @@ class PrepareModifiedChangeRequestsTestCase(PyramidBaseTest):
                     "source_ref": "id-1",
                     "path": str(self.angola_country_to_compare_with.path),
                     "location": None,
+                    "geom": _geom_wkt,
+                    "code": self.code_angola_to_compare_with,
                     "org_unit_type": self.org_unit_type_country.pk,
                     "name": "Angola",
                     "parent": None,
@@ -411,6 +421,8 @@ class PrepareModifiedChangeRequestsTestCase(PyramidBaseTest):
                     "source_ref": "id-1",
                     "path": str(self.angola_country_to_compare_with.path),
                     "location": None,
+                    "geom": _geom_wkt,
+                    "code": self.code_angola_to_compare_with,
                     "org_unit_type": self.org_unit_type_country.pk,
                     "name": "Angola",
                     "parent": None,
@@ -433,3 +445,181 @@ class PrepareModifiedChangeRequestsTestCase(PyramidBaseTest):
         ]
 
         self.assertJSONEqual(json_diffs, expected_json_diffs)
+
+    def _make_base_diff(self, extra_comparisons=None):
+        """Return a minimal modified diff dict for angola_country_to_update."""
+        return {
+            "status": "modified",
+            "orgunit_dhis2": {
+                "id": self.angola_country_to_update.pk,
+                "name": "Angola",
+                "parent": None,
+                "opening_date": None,
+                "closed_date": None,
+                "org_unit_type": self.org_unit_type_country.pk,
+                "location": None,
+                "geom": None,
+                "code": self.code_angola_to_update,
+            },
+            "comparisons": extra_comparisons or [],
+        }
+
+    def test_prepare_modified_change_request_point_geometry(self):
+        """A Point geometry change creates a new_location change request."""
+        synchronizer = self._make_synchronizer()
+        diff = self._make_base_diff(
+            extra_comparisons=[
+                {
+                    "field": "geometry",
+                    "before": None,
+                    "after": "POINT Z (9.6412 13.5784 0)",
+                    "status": "new",
+                    "distance": None,
+                }
+            ]
+        )
+
+        change_request, _ = synchronizer._prepare_modified_change_requests(diff)
+
+        self.assertIn("new_location", change_request.requested_fields)
+        self.assertNotIn("new_geom", change_request.requested_fields)
+        self.assertIsNotNone(change_request.new_location)
+        self.assertAlmostEqual(change_request.new_location.x, 9.6412, places=4)
+        self.assertAlmostEqual(change_request.new_location.y, 13.5784, places=4)
+        self.assertTrue(change_request.new_location.hasz)
+
+    def test_prepare_modified_change_request_2d_point_gets_altitude(self):
+        """A 2D Point is promoted to 3D with altitude=0."""
+        synchronizer = self._make_synchronizer()
+        diff = self._make_base_diff(
+            extra_comparisons=[
+                {
+                    "field": "geometry",
+                    "before": None,
+                    "after": "POINT (9.6412 13.5784)",
+                    "status": "new",
+                    "distance": None,
+                }
+            ]
+        )
+
+        change_request, _ = synchronizer._prepare_modified_change_requests(diff)
+
+        self.assertIn("new_location", change_request.requested_fields)
+        self.assertTrue(change_request.new_location.hasz)
+        self.assertEqual(change_request.new_location.z, 0)
+
+    def test_prepare_modified_change_request_polygon_geometry(self):
+        """A Polygon geometry change creates a new_geom change request."""
+        synchronizer = self._make_synchronizer()
+        diff = self._make_base_diff(
+            extra_comparisons=[
+                {
+                    "field": "geometry",
+                    "before": None,
+                    "after": "MULTIPOLYGON (((0 0, 0 1, 1 1, 0 0)))",
+                    "status": "new",
+                    "distance": None,
+                }
+            ]
+        )
+
+        change_request, _ = synchronizer._prepare_modified_change_requests(diff)
+
+        self.assertIn("new_geom", change_request.requested_fields)
+        self.assertNotIn("new_location", change_request.requested_fields)
+        self.assertIsNotNone(change_request.new_geom)
+        self.assertEqual(change_request.new_geom.geom_type, "MultiPolygon")
+
+    def test_prepare_modified_change_request_plain_polygon_becomes_multipolygon(self):
+        """A plain Polygon WKT is promoted to MultiPolygon on the change request."""
+        synchronizer = self._make_synchronizer()
+        diff = self._make_base_diff(
+            extra_comparisons=[
+                {
+                    "field": "geometry",
+                    "before": None,
+                    "after": "POLYGON ((0 0, 0 1, 1 1, 0 0))",
+                    "status": "new",
+                    "distance": None,
+                }
+            ]
+        )
+
+        change_request, _ = synchronizer._prepare_modified_change_requests(diff)
+
+        self.assertIn("new_geom", change_request.requested_fields)
+        self.assertEqual(change_request.new_geom.geom_type, "MultiPolygon")
+
+    def test_prepare_modified_change_request_geom_cleared(self):
+        """Clearing a polygon geometry (after=None) adds new_geom=None to the request."""
+        synchronizer = self._make_synchronizer()
+        diff = {
+            "status": "modified",
+            "orgunit_dhis2": {
+                "id": self.angola_country_to_update.pk,
+                "name": "Angola",
+                "parent": None,
+                "opening_date": None,
+                "closed_date": None,
+                "org_unit_type": self.org_unit_type_country.pk,
+                "location": None,
+                "geom": "SRID=4326;MULTIPOLYGON (((0 0, 0 1, 1 1, 0 0)))",
+                "code": "",
+            },
+            "comparisons": [
+                {
+                    "field": "geometry",
+                    "before": "SRID=4326;MULTIPOLYGON (((0 0, 0 1, 1 1, 0 0)))",
+                    "after": None,
+                    "status": Differ.STATUS_NOT_IN_ORIGIN,
+                    "distance": None,
+                }
+            ],
+        }
+
+        change_request, _ = synchronizer._prepare_modified_change_requests(diff)
+
+        self.assertIn("new_geom", change_request.requested_fields)
+        self.assertIsNone(change_request.new_geom)
+
+    def test_prepare_modified_change_request_code_change(self):
+        """A code change is captured in new_code and requested_fields."""
+        synchronizer = self._make_synchronizer()
+        diff = self._make_base_diff(
+            extra_comparisons=[
+                {
+                    "field": "code",
+                    "before": self.code_angola_to_update,
+                    "after": "new-code-123",
+                    "status": "modified",
+                    "distance": None,
+                }
+            ]
+        )
+
+        change_request, _ = synchronizer._prepare_modified_change_requests(diff)
+
+        self.assertIn("new_code", change_request.requested_fields)
+        self.assertEqual(change_request.new_code, "new-code-123")
+        self.assertEqual(change_request.old_code, self.code_angola_to_update)
+
+    def test_prepare_modified_change_request_code_cleared(self):
+        """Clearing a code sets new_code to empty string."""
+        synchronizer = self._make_synchronizer()
+        diff = self._make_base_diff(
+            extra_comparisons=[
+                {
+                    "field": "code",
+                    "before": self.code_angola_to_update,
+                    "after": None,
+                    "status": Differ.STATUS_NOT_IN_ORIGIN,
+                    "distance": None,
+                }
+            ]
+        )
+
+        change_request, _ = synchronizer._prepare_modified_change_requests(diff)
+
+        self.assertIn("new_code", change_request.requested_fields)
+        self.assertEqual(change_request.new_code, "")

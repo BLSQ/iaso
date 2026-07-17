@@ -138,16 +138,10 @@ describe('MissionFormsBaseInput', () => {
 
         fireEvent.click(screen.getByTestId('select'));
 
-        fireEvent.click(
-            screen.getByRole('button', {
-                name: /add/i,
-            }),
-        );
-
         expect(push).toHaveBeenCalledWith({
             form: 2,
             min_cardinality: 1,
-            max_cardinality: undefined,
+            max_cardinality: null,
         });
 
         expect(formik.setFieldTouched).toHaveBeenCalledWith('forms', true);

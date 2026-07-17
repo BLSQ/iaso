@@ -1,8 +1,12 @@
 import React, { useMemo } from 'react';
 import { Column, useSafeIntl } from 'bluesquare-components';
+import { MissionTypeValueEnum } from 'Iaso/api/missions';
 import { DateTimeCellRfc } from 'Iaso/components/Cells/DateTimeCell';
 import { NumberCell } from 'Iaso/components/Cells/NumberCell';
 import { textPlaceholder } from 'Iaso/constants/uiConstants';
+import { EntityAndFormChip } from './components/chips/EntityAndFormChip';
+import { FormsChip } from './components/chips/FormsChip';
+import { OrgUnitAndFormChip } from './components/chips/OrgUnitAndFormChip';
 import { MissionActionsCell } from './components/MissionActionsCell';
 import MESSAGES from './messages';
 
@@ -19,6 +23,20 @@ export const useMissionColumns = (): Column[] => {
                 Header: formatMessage(MESSAGES.missionType),
                 accessor: 'mission_type',
                 id: 'mission_type',
+                Cell: ({ value }: any) => {
+                    if (value === MissionTypeValueEnum.enum.FORM_FILLING) {
+                        return <FormsChip />;
+                    } else if (
+                        value === MissionTypeValueEnum.enum.ENTITY_AND_FORM
+                    ) {
+                        return <EntityAndFormChip />;
+                    } else if (
+                        value === MissionTypeValueEnum.enum.ORG_UNIT_AND_FORM
+                    ) {
+                        return <OrgUnitAndFormChip />;
+                    }
+                    return value;
+                },
             },
             {
                 Header: formatMessage(MESSAGES.formsNumber),

@@ -1,5 +1,6 @@
 import React from 'react';
 import AllInclusiveIcon from '@mui/icons-material/AllInclusive';
+import DescriptionIcon from '@mui/icons-material/Description';
 import {
     Alert,
     Table,
@@ -8,10 +9,11 @@ import {
     TableContainer,
     TableHead,
     TableRow,
+    Typography,
+    Box,
 } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { MissionPolymorphicRetrieve } from 'Iaso/api/missions';
-import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import MESSAGES from 'Iaso/domains/missions/messages';
 import { getOverriddenTheme } from 'Iaso/styles';
 import { SxStyles } from 'Iaso/types/general';
@@ -46,26 +48,49 @@ export const FormWidgetPaper: React.FunctionComponent<FormWidgetPaperProps> = ({
     const { formatMessage } = useSafeIntl();
 
     return (
-        <WidgetPaper
+        <Box
             title={formatMessage(MESSAGES.forms)}
             id={`mission-${mission.id}-forms`}
             data-testid={'missions-forms'}
             sx={styles.root}
         >
+            <Typography
+                variant="body1"
+                sx={{ textTransform: 'uppercase', mb: 2, fontSize: '15px' }}
+            >
+                <DescriptionIcon
+                    color="primary"
+                    sx={{
+                        mr: 1,
+                        fontSize: '15px',
+                        position: 'relative',
+                        top: '2px',
+                    }}
+                />
+                {formatMessage(MESSAGES.forms)}
+            </Typography>
             {mission?.forms?.length ? (
                 <TableContainer sx={styles.tableContainer}>
-                    <Table size={'small'} stickyHeader>
+                    <Table
+                        size={'small'}
+                        stickyHeader
+                        sx={{
+                            border: theme =>
+                                // @ts-ignore
+                                `1px solid ${theme.palette.ligthGray.border}`,
+                        }}
+                    >
                         <TableHead>
                             <TableRow>
                                 <TableCell>
                                     {formatMessage(MESSAGES.form)}
                                 </TableCell>
                                 <TableCell>
-                                    {formatMessage(MESSAGES.minCardinality)}
+                                    {formatMessage(MESSAGES.min)}
                                 </TableCell>
 
                                 <TableCell>
-                                    {formatMessage(MESSAGES.maxCardinality)}
+                                    {formatMessage(MESSAGES.max)}
                                 </TableCell>
                             </TableRow>
                         </TableHead>
@@ -106,6 +131,6 @@ export const FormWidgetPaper: React.FunctionComponent<FormWidgetPaperProps> = ({
                     {formatMessage(MESSAGES.noResultsFound)}
                 </Alert>
             )}
-        </WidgetPaper>
+        </Box>
     );
 };

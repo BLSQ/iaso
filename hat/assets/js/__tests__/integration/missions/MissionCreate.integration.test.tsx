@@ -114,21 +114,32 @@ const server = setupServer(
 
 const previousDefaults = TestingQueryClient.getDefaultOptions();
 
+const getFormsCardinalityInput = (
+    formName: string | RegExp,
+    field: 'min_cardinality' | 'max_cardinality',
+) => {
+    const row = screen.getByRole('row', { name: formName });
+    return within(row).getByRole('textbox', {
+        name:
+            field === 'min_cardinality'
+                ? /min cardinality/i
+                : /max cardinality/i,
+    });
+};
+
 const switchMissionType = async (
     missionType: (typeof MissionTypeValueEnum.enum)[keyof typeof MissionTypeValueEnum.enum],
 ) => {
-    await act(async () => {
-        await userEvent.click(
-            screen.getByRole('combobox', {
-                name: /mission type/i,
-            }),
-        );
-    });
+    const labels: Record<string, RegExp> = {
+        [MissionTypeValueEnum.enum.FORM_FILLING]: /^form$/i,
+        [MissionTypeValueEnum.enum.ORG_UNIT_AND_FORM]: /org unit \+ form/i,
+        [MissionTypeValueEnum.enum.ENTITY_AND_FORM]: /entity \+ form/i,
+    };
 
     await act(async () => {
         await userEvent.click(
-            screen.getByRole('option', {
-                name: missionType,
+            screen.getByRole('radio', {
+                name: labels[missionType],
             }),
         );
     });
@@ -138,7 +149,7 @@ const addForm = async (formOption: string | RegExp) => {
     await act(async () => {
         await userEvent.click(
             screen.getByRole('combobox', {
-                name: /add a form/i,
+                name: /select a form to add/i,
             }),
         );
     });
@@ -147,14 +158,6 @@ const addForm = async (formOption: string | RegExp) => {
         await userEvent.click(
             screen.getByRole('option', {
                 name: formOption,
-            }),
-        );
-    });
-
-    await act(async () => {
-        await userEvent.click(
-            screen.getByRole('button', {
-                name: /add a form/i,
             }),
         );
     });
@@ -205,17 +208,21 @@ describe('Mission create integration test', () => {
             screen.getByRole('textbox', { name: /description/i }),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole('combobox', { name: /mission type/i }),
-        ).toBeInTheDocument();
+            screen.getByRole('radio', { name: /^form$/i }),
+        ).toBeChecked();
+        expect(
+            screen.getByRole('radio', { name: /org unit \+ form/i }),
+        ).not.toBeChecked();
+        expect(
+            screen.getByRole('radio', { name: /entity \+ form/i }),
+        ).not.toBeChecked();
 
         expect(
-            screen.getByRole('combobox', { name: /mission type/i }),
-        ).toHaveValue(MissionTypeValueEnum.enum.FORM_FILLING);
-
-        expect(screen.getByLabelText('Add a form')).toBeInTheDocument();
+            screen.getByRole('combobox', { name: /select a form to add/i }),
+        ).toBeInTheDocument();
         expect(
             screen.getByRole('button', {
-                name: MESSAGES.addFormClick.defaultMessage,
+                name: MESSAGES.create.defaultMessage,
             }),
         ).toBeInTheDocument();
     });
@@ -226,9 +233,8 @@ describe('Mission create integration test', () => {
         });
 
         // FORM_FILLING by default
-        expect(screen.getByLabelText('Add a form')).toBeInTheDocument();
         expect(
-            screen.getByRole('button', { name: /add a form/i }),
+            screen.getByRole('combobox', { name: /select a form to add/i }),
         ).toBeInTheDocument();
 
         expect(
@@ -288,28 +294,7 @@ describe('Mission create integration test', () => {
             expect(screen.queryByRole('progressbar')).toBeNull();
         });
 
-        await act(async () => {
-            await selectFromComboBoxWithAsync({
-                nameComboBox: /add a form/i,
-                nameOption: /form a/i,
-            });
-        });
-
-        await waitFor(() => {
-            expect(
-                screen.getByRole('button', {
-                    name: MESSAGES.addFormClick.defaultMessage,
-                }),
-            ).not.toBeDisabled();
-        });
-
-        await act(async () => {
-            await userEvent.click(
-                screen.getByRole('button', {
-                    name: MESSAGES.addFormClick.defaultMessage,
-                }),
-            );
-        });
+        await addForm(/form a/i);
 
         expect(screen.getByText('Form A')).toBeVisible();
 
@@ -382,7 +367,7 @@ describe('Mission create integration test', () => {
         await act(async () => {
             await userEvent.click(
                 screen.getByRole('combobox', {
-                    name: /add a form/i,
+                    name: /select a form to add/i,
                 }),
             );
         });
@@ -420,7 +405,7 @@ describe('Mission create integration test', () => {
         await act(async () => {
             await userEvent.click(
                 screen.getByRole('combobox', {
-                    name: /add a form/i,
+                    name: /select a form to add/i,
                 }),
             );
         });
@@ -462,7 +447,7 @@ describe('Mission create integration test', () => {
 
         expect(
             screen.getByRole('button', {
-                name: /create/i,
+                name: MESSAGES.create.defaultMessage,
             }),
         ).toBeDisabled();
 
@@ -486,7 +471,7 @@ describe('Mission create integration test', () => {
 
         expect(
             screen.getByRole('button', {
-                name: /create/i,
+                name: MESSAGES.create.defaultMessage,
             }),
         ).toBeDisabled();
 
@@ -510,7 +495,7 @@ describe('Mission create integration test', () => {
 
         expect(
             screen.getByRole('button', {
-                name: /create/i,
+                name: MESSAGES.create.defaultMessage,
             }),
         ).toBeDisabled();
 
@@ -846,16 +831,16 @@ describe('Mission create integration test', () => {
 
         await act(async () => {
             await userEvent.clear(
-                screen.getByRole('textbox', { name: /min cardinality/i }),
+                getFormsCardinalityInput(/form a/i, 'min_cardinality'),
             );
             await userEvent.type(
-                screen.getByRole('textbox', { name: /min cardinality/i }),
+                getFormsCardinalityInput(/form a/i, 'min_cardinality'),
                 '2',
             );
         });
         await act(async () => {
             await userEvent.type(
-                screen.getByRole('textbox', { name: /max cardinality/i }),
+                getFormsCardinalityInput(/form a/i, 'max_cardinality'),
                 '20',
             );
         });
@@ -891,6 +876,7 @@ describe('Mission create integration test', () => {
                     },
                     {
                         form: 2,
+                        max_cardinality: null,
                         min_cardinality: 1,
                     },
                 ],
@@ -976,10 +962,12 @@ describe('Mission create integration test', () => {
                 forms: [
                     {
                         form: 1,
+                        max_cardinality: null,
                         min_cardinality: 1,
                     },
                     {
                         form: 2,
+                        max_cardinality: null,
                         min_cardinality: 1,
                     },
                 ],
@@ -1065,10 +1053,12 @@ describe('Mission create integration test', () => {
                 forms: [
                     {
                         form: 1,
+                        max_cardinality: null,
                         min_cardinality: 1,
                     },
                     {
                         form: 2,
+                        max_cardinality: null,
                         min_cardinality: 1,
                     },
                 ],

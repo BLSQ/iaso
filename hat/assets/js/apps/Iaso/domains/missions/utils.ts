@@ -5,6 +5,8 @@ import {
     MissionTypeValueEnum,
 } from 'Iaso/api/missions';
 
+export const LEFT_CELL_WIDTH = '200px';
+
 export const isMissionFormRetrieve = (
     data: any,
 ): data is MissionFormRetrieve => {

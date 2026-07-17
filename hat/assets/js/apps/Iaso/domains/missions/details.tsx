@@ -1,8 +1,6 @@
 import React from 'react';
-import { Box, Grid, Stack, Theme } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { Stack } from '@mui/material';
 import {
-    commonStyles,
     LoadingSpinner,
     useRedirectTo,
     useSafeIntl,
@@ -17,6 +15,7 @@ import { GeneralInfoWidgetPaper as GeneralInfoWidgetPaperMissionOrgUnitType } fr
 import { TopActions } from 'Iaso/domains/missions/components/details/TopActions';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { FormWidgetPaper } from './components/details/FormWidgetPaper';
+import { DetailsWrapper } from './components/DetailsWrapper';
 import MESSAGES from './messages';
 import {
     isMissionEntityTypeRetrieve,
@@ -25,11 +24,9 @@ import {
 } from './utils';
 
 const baseRedirectUrl = `${baseUrls.missions}`;
-const useStyles = makeStyles((theme: Theme) => ({ ...commonStyles(theme) }));
 
 export const MissionDetail = () => {
     const params = useParamsObject(baseUrls.missionsDetails);
-    const classes = useStyles();
     const missionId = parseInt(params.id);
 
     const { data, isLoading } = useApiMicroplanningMissionsRetrieve(missionId);
@@ -62,46 +59,29 @@ export const MissionDetail = () => {
                 goBack={() => redirectTo(baseRedirectUrl)}
                 displayBackButton
             />
-            <Box className={`${classes.containerFullHeightNoTabPadded}`}>
-                <Stack spacing={2}>
-                    <Box pt={4} px={2}>
-                        <Stack
-                            direction="row"
-                            spacing={2}
-                            justifyContent="flex-end"
-                        >
-                            <TopActions
-                                missionId={missionId}
-                                missionName={data.name}
-                            />
-                        </Stack>
-                    </Box>
-                    <Grid container spacing={2} sx={{ width: '100%' }}>
-                        <Grid item xs={12} sm={6}>
-                            {isMissionFormRetrieve(data) && (
-                                <GeneralInfoWidgetPaperMissionForm
-                                    mission={data}
-                                />
-                            )}
-                            {isMissionEntityTypeRetrieve(data) && (
-                                <GeneralInfoWidgetPaperMissionEntityType
-                                    mission={data}
-                                />
-                            )}
-                            {isMissionOrgUnitTypeRetrieve(data) && (
-                                <GeneralInfoWidgetPaperMissionOrgUnitType
-                                    mission={data}
-                                />
-                            )}
-                        </Grid>
-                    </Grid>
-                    <Grid container spacing={2} sx={{ mt: 2, width: '100%' }}>
-                        <Grid item xs={12} sm={9}>
-                            <FormWidgetPaper mission={data} />
-                        </Grid>
-                    </Grid>
+            <DetailsWrapper
+                title={data.name}
+                actions={
+                    <TopActions missionId={missionId} missionName={data.name} />
+                }
+            >
+                <Stack spacing={2} sx={{ p: 2 }}>
+                    {isMissionFormRetrieve(data) && (
+                        <GeneralInfoWidgetPaperMissionForm mission={data} />
+                    )}
+                    {isMissionEntityTypeRetrieve(data) && (
+                        <GeneralInfoWidgetPaperMissionEntityType
+                            mission={data}
+                        />
+                    )}
+                    {isMissionOrgUnitTypeRetrieve(data) && (
+                        <GeneralInfoWidgetPaperMissionOrgUnitType
+                            mission={data}
+                        />
+                    )}
+                    <FormWidgetPaper mission={data} />
                 </Stack>
-            </Box>
+            </DetailsWrapper>
         </>
     );
 };

@@ -5,7 +5,6 @@ from iaso.models import MissionForm
 
 
 class MissionFormListSerializer(ModelSerializer):
-    mission_type = serializers.CharField(read_only=True, source="get_mission_type_display")
     forms_count = serializers.IntegerField(read_only=True)
 
     class Meta:

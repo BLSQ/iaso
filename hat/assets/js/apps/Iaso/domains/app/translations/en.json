@@ -376,7 +376,6 @@
     "iaso.formAI.newForm": "New form",
     "iaso.formAI.panelSubtitle": "Describe your changes",
     "iaso.formAI.placeholder": "Describe the form you want to create...",
-    "iaso.formAI.previewPlaceholder": "Form preview will appear here once generated",
     "iaso.formAI.previewSubmitUnavailable": "Form submission from the preview is not available yet. This feature is under development.",
     "iaso.formAI.previewWelcomeDescription": "No existing form required. Describe what you want to collect in natural language — FormAI generates it for you, ready to preview and save.",
     "iaso.formAI.previewWelcomeFooter": "Or select an existing form from the menu above to edit it.",

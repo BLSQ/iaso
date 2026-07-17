@@ -32,7 +32,6 @@ const styles: SxStyles = {
     },
     item: {
         padding: theme => theme.spacing(2),
-        aligContent: 'center',
     },
     buttonsContainer: {
         display: 'flex',
@@ -157,7 +156,6 @@ export const Actions: FunctionComponent<Props> = ({
                             size="small"
                             startIcon={<SaveIcon />}
                             onClick={() => setSaveDialogOpen(true)}
-                            sx={styles.saveButton}
                         >
                             {formatMessage(MESSAGES.saveForm)}
                         </Button>

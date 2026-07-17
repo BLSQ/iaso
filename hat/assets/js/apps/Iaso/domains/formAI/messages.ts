@@ -27,8 +27,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.formAI.emptyStateDescription',
     },
     exampleStock: {
-        defaultMessage:
-            'A stock tracking form with date, product and quantity',
+        defaultMessage: 'A stock tracking form with date, product and quantity',
         id: 'iaso.formAI.exampleStock',
     },
     exampleSurvey: {
@@ -46,10 +45,6 @@ const MESSAGES = defineMessages({
     downloadXlsForm: {
         defaultMessage: 'XLSForm',
         id: 'iaso.formAI.downloadXlsForm',
-    },
-    previewPlaceholder: {
-        defaultMessage: 'Form preview will appear here once generated',
-        id: 'iaso.formAI.previewPlaceholder',
     },
     previewWelcomeTitle: {
         defaultMessage: 'Create a form from scratch',

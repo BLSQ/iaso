@@ -378,7 +378,6 @@
     "iaso.formAI.newForm": "Nouveau formulaire",
     "iaso.formAI.panelSubtitle": "Décrivez vos modifications",
     "iaso.formAI.placeholder": "Décrivez le formulaire que vous souhaitez créer...",
-    "iaso.formAI.previewPlaceholder": "L'aperçu du formulaire apparaîtra ici une fois généré",
     "iaso.formAI.previewSubmitUnavailable": "L'envoi de formulaire à partir de l'aperçu n'est pas disponible pour le moment. Cette fonctionnalité est en cours de développement.",
     "iaso.formAI.previewWelcomeDescription": "Aucun formulaire existant requis. Décrivez ce que vous souhaitez collecter en langage naturel — FormAI le génère pour vous, prêt à prévisualiser et enregistrer.",
     "iaso.formAI.previewWelcomeFooter": "Ou choisissez un formulaire existant dans le menu ci-dessus pour l'éditer.",

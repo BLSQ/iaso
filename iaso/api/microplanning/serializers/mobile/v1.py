@@ -33,10 +33,10 @@ class MobilePlanningSerializer(ModelSerializer):
         # Derive form_ids from missions for backward compatibility
         planning_form_ids = set()
         for mission in planning.missions.all():
-            planning_form_ids.update(mission.forms.values_list("id", flat=True))
+            planning_form_ids.update(tf.form_id for tf in mission.missionformthroughform_set.all())
 
         for a in planning.assignment_set.all():
-            out_set = set(a.org_unit.org_unit_type.form_set.values_list("id", flat=True))
+            out_set = {f.id for f in a.org_unit.org_unit_type.form_set.all()}
             intersection = out_set.intersection(planning_form_ids)
             assignments.append({"org_unit_id": a.org_unit_id, "form_ids": intersection})
         return assignments

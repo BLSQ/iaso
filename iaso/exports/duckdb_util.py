@@ -54,7 +54,7 @@ def export_django_query_to_parquet_via_duckdb(
                 # call per question -- calling it once per question would re-parse the same JSON
                 # text for every single question, which is slower *and* far more memory-hungry.
                 select_parts = plain_cols + [
-                    f'__json_extracted[{i + 1}] as "{orig}"' for i, orig in enumerate(json_cols)
+                    f'__json_extracted[{i + 1}] as "{escaped_name}"' for i, escaped_name in enumerate(json_cols)
                 ]
                 alias_stmt = ",\n    ".join(select_parts)
                 source_sql = f"""(

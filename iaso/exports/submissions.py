@@ -1,4 +1,5 @@
 from logging import getLogger
+from typing import Dict, Set, Tuple
 
 from django.db import models
 from django.db.models import Exists, F, Func, OuterRef, QuerySet
@@ -19,7 +20,9 @@ logger = getLogger(__name__)
 RAW_ANSWERS_JSON_COLUMN = "iaso_subm_raw_answers_json"
 
 
-def build_submissions_queryset(qs: QuerySet[m.Instance], form_id: str) -> QuerySet[m.Instance]:
+def build_submissions_queryset(
+    qs: QuerySet[m.Instance], form_id: str
+) -> Tuple[QuerySet, Dict[str, str], Set[str], str]:
     form = m.Form.objects.get(pk=form_id)
     if form.possible_fields == None or len(form.possible_fields) == 0:
         form.update_possible_fields()

@@ -41,7 +41,7 @@ class MobilePlanningV2Serializer(ModelSerializer):
         for a in planning.assignment_set.all():
             missions = []
             for m in planning.missions.all():
-                form_assignments = m.get_form_assignments(a)
+                form_assignments = m.get_form_assignments(a.org_unit)
 
                 if form_assignments:
                     missions.append(

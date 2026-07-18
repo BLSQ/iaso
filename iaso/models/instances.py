@@ -518,6 +518,14 @@ class Instance(ValidationWorkflowArtefact):
     period = models.TextField(null=True, blank=True, db_index=True)
     entity = models.ForeignKey("Entity", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="instances")
     planning = models.ForeignKey("Planning", null=True, blank=True, on_delete=models.SET_NULL, related_name="instances")
+    mission = models.ForeignKey(
+        "Mission",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="instances",
+        help_text="The mission this submission fulfills, within Instance.planning",
+    )
     form_version = models.ForeignKey(
         "FormVersion", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="form_version"
     )

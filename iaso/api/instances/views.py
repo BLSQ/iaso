@@ -37,6 +37,7 @@ from iaso.api.common import (
 )
 from iaso.api.instances.filters import get_form_from_instance_filters, parse_instance_filters
 from iaso.api.instances.json import JsonbPathQueryFirst, JsonPathField, RegexpReplace
+from iaso.api.instances.mission_resolution import resolve_mission, resolve_planning
 from iaso.api.instances.permissions import PERMISSION_CLASSES_RW, HasInstanceBulkPermission, HasInstancePermission
 from iaso.api.instances.serializers import (
     FileTypeSerializer,
@@ -1026,8 +1027,14 @@ def import_data(instances, user, app_id):
 
         instance.form_id = instance_data.get("formId")
 
-        # TODO: check that planning_id is valid
-        instance.planning_id = instance_data.get("planningId", None)
+        instance.planning = resolve_planning(instance_data.get("planningId", None), project)
+        instance.mission = resolve_mission(
+            mission_id=instance_data.get("missionId", None),
+            planning=instance.planning,
+            org_unit=instance.org_unit,
+            form_id=instance.form_id,
+            project=project,
+        )
         entity_uuid = instance_data.get("entityUuid", None)
         entity_type_id = instance_data.get("entityTypeId", None)
         if entity_uuid and entity_type_id:

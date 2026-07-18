@@ -42,13 +42,18 @@ export const MissionOrgUnitTypeInput = <
     const { values } = formik;
 
     React.useEffect(() => {
+        if (values?.org_unit_type) {
+            setParams({ params: { orgUnitTypeIds: values?.org_unit_type } });
+        } else {
+            setParams({});
+        }
+    }, [values?.org_unit_type]);
+
+    React.useEffect(() => {
         setFormInputDisabled(!values?.org_unit_type);
     }, [values]);
 
-    const handleOrgUnitTypeChange = (_keyValue: string, value: number) => {
-        if (value) {
-            setParams({ params: { orgUnitTypeIds: value } });
-        }
+    const handleOrgUnitTypeChange = (_keyValue: string, _value: number) => {
         formik.setFieldValue('forms', []);
         formik.setFieldTouched('forms', false);
     };
@@ -65,7 +70,7 @@ export const MissionOrgUnitTypeInput = <
                 loading={isLoadingOrgUnitTypeOptions}
                 onChange={handleOrgUnitTypeChange}
             />
-            <Grid container spacing={2} sx={{ mt: 2 }}>
+            <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
                     <Field
                         label={formatMessage(MESSAGES.minCardinality)}

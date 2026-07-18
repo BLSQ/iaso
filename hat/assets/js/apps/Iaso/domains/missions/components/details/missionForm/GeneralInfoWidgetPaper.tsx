@@ -1,10 +1,12 @@
 import React from 'react';
 import { Table, TableBody } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { MissionFormRetrieve } from 'Iaso/api/missions';
-import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { WidgetPaperRow as Row } from 'Iaso/components/papers/WidgetPaperRow';
+import { FormsChip } from 'Iaso/domains/missions/components/chips/FormsChip';
 import MESSAGES from 'Iaso/domains/missions/messages';
+import { LEFT_CELL_WIDTH } from 'Iaso/domains/missions/utils';
+import { InfosTitle } from '../InfosTitle';
 
 type GeneralInfoWidgetPaperProps = {
     mission: MissionFormRetrieve;
@@ -15,32 +17,35 @@ export const GeneralInfoWidgetPaper: React.FunctionComponent<
 > = ({ mission }) => {
     const { formatMessage } = useSafeIntl();
     return (
-        <WidgetPaper
-            title={formatMessage(MESSAGES.generalInfoTitle)}
-            sx={{ mb: 2 }}
-        >
-            <Table size="small">
+        <>
+            <InfosTitle />
+            <Table
+                size="small"
+                sx={{
+                    border: theme =>
+                        // @ts-ignore
+                        `1px solid ${theme.palette.ligthGray.border}`,
+                }}
+            >
                 <TableBody>
                     <Row
-                        field={{
-                            label: formatMessage(MESSAGES.name),
-                            value: mission.name,
-                        }}
-                    />
-                    <Row
+                        leftCellWidth={LEFT_CELL_WIDTH}
+                        showDivider={false}
                         field={{
                             label: formatMessage(MESSAGES.description),
-                            value: mission.description,
+                            value: mission.description || textPlaceholder,
                         }}
                     />
                     <Row
+                        leftCellWidth={LEFT_CELL_WIDTH}
+                        showDivider={false}
                         field={{
                             label: formatMessage(MESSAGES.missionType),
-                            value: mission.mission_type.label,
+                            value: <FormsChip />,
                         }}
                     />
                 </TableBody>
             </Table>
-        </WidgetPaper>
+        </>
     );
 };

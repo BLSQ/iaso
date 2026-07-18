@@ -39,11 +39,15 @@ export const MissionEntityTypeInput = <
         setFormInputDisabled(!values?.entity_type);
     }, [values]);
 
-    const handleEntityTypeChange = (_keyValue: string, value: number) => {
-        if (value) {
-            setParams({ params: { entity_type_ids: value } });
+    React.useEffect(() => {
+        if (values?.entity_type) {
+            setParams({ params: { entity_type_ids: values?.entity_type } });
+        } else {
+            setParams({});
         }
+    }, [values?.entity_type]);
 
+    const handleEntityTypeChange = (_keyValue: string, _value: number) => {
         formik.setFieldValue('forms', []);
         formik.setFieldTouched('forms', false);
     };
@@ -60,7 +64,7 @@ export const MissionEntityTypeInput = <
                 loading={isLoadingEntityTypeOptions}
                 onChange={handleEntityTypeChange}
             />
-            <Grid container spacing={2} sx={{ mt: 2 }}>
+            <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
                     <Field
                         label={formatMessage(MESSAGES.minCardinality)}

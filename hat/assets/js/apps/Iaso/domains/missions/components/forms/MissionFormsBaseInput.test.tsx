@@ -15,6 +15,7 @@ vi.mock('formik', async () => {
     return {
         ...actual,
         Field: () => <div data-testid="field" />,
+        ErrorMessage: () => null,
         FieldArray: ({ render }: any) =>
             render({
                 push,
@@ -137,16 +138,10 @@ describe('MissionFormsBaseInput', () => {
 
         fireEvent.click(screen.getByTestId('select'));
 
-        fireEvent.click(
-            screen.getByRole('button', {
-                name: /add/i,
-            }),
-        );
-
         expect(push).toHaveBeenCalledWith({
             form: 2,
             min_cardinality: 1,
-            max_cardinality: undefined,
+            max_cardinality: null,
         });
 
         expect(formik.setFieldTouched).toHaveBeenCalledWith('forms', true);

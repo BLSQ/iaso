@@ -79,10 +79,6 @@ const MESSAGES = defineMessages({
     },
     editMission: {
         id: 'iaso.missions.label.editMission',
-        defaultMessage: 'Edit mission {name}',
-    },
-    editMissionNoName: {
-        id: 'iaso.missions.label.editMissionNoName',
         defaultMessage: 'Edit mission',
     },
     cancel: {
@@ -103,11 +99,7 @@ const MESSAGES = defineMessages({
     },
     addForm: {
         id: 'iaso.missions.label.addForm',
-        defaultMessage: 'Add a form',
-    },
-    addFormClick: {
-        id: 'iaso.missions.label.addFormClick',
-        defaultMessage: 'Click to add a form',
+        defaultMessage: 'Select a form to add...',
     },
     min: {
         id: 'iaso.missions.label.min',
@@ -130,7 +122,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.edit',
     },
     missionDetailTitle: {
-        defaultMessage: 'Mission {name}',
+        defaultMessage: 'Mission details',
         id: 'iaso.missions.title.missionDetail',
     },
     infinity: {
@@ -152,6 +144,23 @@ const MESSAGES = defineMessages({
     missions: {
         defaultMessage: 'Missions',
         id: 'iaso.missions.label.missions',
+    },
+    newMission: {
+        id: 'iaso.missions.label.newMission',
+        defaultMessage: 'New mission',
+    },
+    orgUnitAndFormChip: {
+        id: 'iaso.missions.chip.orgUnitAndForm',
+        defaultMessage: 'Org unit + Form',
+    },
+    entityAndFormChip: {
+        id: 'iaso.missions.chip.entityAndForm',
+        defaultMessage: 'Entity + Form',
+    },
+    formInfo: {
+        id: 'iaso.missions.label.formInfo',
+        defaultMessage:
+            'Add one or more forms. Per form, set how many submissions each assigned unit must collect — min required, max allowed (leave max empty for no limit / ∞).',
     },
 });
 

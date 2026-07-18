@@ -1,6 +1,6 @@
 import React from 'react';
 import { faker } from '@faker-js/faker';
-import { act, screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { HttpResponse } from 'msw';
@@ -115,21 +115,32 @@ const server = setupServer(
 
 const previousDefaults = TestingQueryClient.getDefaultOptions();
 
+const getFormsCardinalityInput = (
+    formName: string | RegExp,
+    field: 'min_cardinality' | 'max_cardinality',
+) => {
+    const row = screen.getByRole('row', { name: formName });
+    return within(row).getByRole('textbox', {
+        name:
+            field === 'min_cardinality'
+                ? /min cardinality/i
+                : /max cardinality/i,
+    });
+};
+
 const switchMissionType = async (
     missionType: (typeof MissionTypeValueEnum.enum)[keyof typeof MissionTypeValueEnum.enum],
 ) => {
-    await act(async () => {
-        await userEvent.click(
-            screen.getByRole('combobox', {
-                name: /mission type/i,
-            }),
-        );
-    });
+    const labels: Record<string, RegExp> = {
+        [MissionTypeValueEnum.enum.FORM_FILLING]: /^form$/i,
+        [MissionTypeValueEnum.enum.ORG_UNIT_AND_FORM]: /org unit \+ form/i,
+        [MissionTypeValueEnum.enum.ENTITY_AND_FORM]: /entity \+ form/i,
+    };
 
     await act(async () => {
         await userEvent.click(
-            screen.getByRole('option', {
-                name: missionType,
+            screen.getByRole('radio', {
+                name: labels[missionType],
             }),
         );
     });
@@ -139,7 +150,7 @@ const addForm = async (formOption: string | RegExp) => {
     await act(async () => {
         await userEvent.click(
             screen.getByRole('combobox', {
-                name: /add a form/i,
+                name: /select a form to add/i,
             }),
         );
     });
@@ -148,14 +159,6 @@ const addForm = async (formOption: string | RegExp) => {
         await userEvent.click(
             screen.getByRole('option', {
                 name: formOption,
-            }),
-        );
-    });
-
-    await act(async () => {
-        await userEvent.click(
-            screen.getByRole('button', {
-                name: /add a form/i,
             }),
         );
     });
@@ -196,7 +199,7 @@ describe('Mission create a11y tests', () => {
     });
 
     it('has no violation - MISSION FORM', async () => {
-        let container: HTMLElement;
+        let container!: HTMLElement;
 
         act(() => {
             ({ container } = renderCreate());
@@ -224,16 +227,16 @@ describe('Mission create a11y tests', () => {
 
         await act(async () => {
             await userEvent.clear(
-                screen.getByRole('textbox', { name: /min cardinality/i }),
+                getFormsCardinalityInput(/form a/i, 'min_cardinality'),
             );
             await userEvent.type(
-                screen.getByRole('textbox', { name: /min cardinality/i }),
+                getFormsCardinalityInput(/form a/i, 'min_cardinality'),
                 '2',
             );
         });
         await act(async () => {
             await userEvent.type(
-                screen.getByRole('textbox', { name: /max cardinality/i }),
+                getFormsCardinalityInput(/form a/i, 'max_cardinality'),
                 '20',
             );
         });
@@ -244,7 +247,7 @@ describe('Mission create a11y tests', () => {
         expect(await axe(container)).toHaveNoViolations();
     });
     it('has no violation - MISSION ORG UNIT', async () => {
-        let container: HTMLElement;
+        let container!: HTMLElement;
 
         act(() => {
             ({ container } = renderCreate());
@@ -298,7 +301,7 @@ describe('Mission create a11y tests', () => {
         expect(await axe(container)).toHaveNoViolations();
     });
     it('has no violation - MISSION ENTITY TYPE', async () => {
-        let container: HTMLElement;
+        let container!: HTMLElement;
 
         act(() => {
             ({ container } = renderCreate());
@@ -368,7 +371,7 @@ describe('Mission create a11y tests', () => {
             }),
         );
 
-        let container: HTMLElement;
+        let container!: HTMLElement;
 
         act(() => {
             ({ container } = renderCreate());

@@ -229,7 +229,7 @@ class MissionFormAPIUpdateTestCase(SwaggerTestCaseMixin, APITestCase):
             "description": "",
             "forms": [
                 {"form": self.form_1.pk, "min_cardinality": 12, "max_cardinality": 15},
-                {"form": self.form_4.pk, "min_cardinality": 1, "max_cardinality": 5},
+                {"form": self.form_4.pk, "min_cardinality": 1},
             ],
         }
         self.assertValidBodyData(body)
@@ -247,5 +247,5 @@ class MissionFormAPIUpdateTestCase(SwaggerTestCaseMixin, APITestCase):
                     "form_id", "min_cardinality", "max_cardinality"
                 )
             ),
-            [(self.form_1.pk, 12, 15), (self.form_4.pk, 1, 5)],
+            [(self.form_1.pk, 12, 15), (self.form_4.pk, 1, None)],
         )

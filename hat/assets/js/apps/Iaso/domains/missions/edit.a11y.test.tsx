@@ -1,6 +1,6 @@
 import React from 'react';
 import { faker } from '@faker-js/faker';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { setupServer } from 'msw/node';
 import { Route, Routes } from 'react-router';
@@ -204,9 +204,10 @@ describe('Mission edit a11y tests', () => {
         ).toHaveValue('some description');
         expect(screen.getByText('Form A')).toBeVisible();
         expect(
-            screen.getByRole('textbox', {
-                name: /min cardinality/i,
-            }),
+            within(screen.getByRole('row', { name: /form a/i })).getByRole(
+                'textbox',
+                { name: /min cardinality/i },
+            ),
         ).toHaveValue('2');
         // @ts-ignore
         expect(await axe(container)).toHaveNoViolations();
@@ -298,6 +299,7 @@ describe('Mission edit a11y tests', () => {
             screen.getByRole('combobox', { name: /entity type/i }),
         ).toHaveValue('ET 1');
 
+        // @ts-ignore
         expect(await axe(container)).toHaveNoViolations();
     });
 });

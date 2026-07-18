@@ -288,41 +288,41 @@ class MissionAPIListTestCase(SwaggerTestCaseMixin, APITestCase):
         first_result = results[0]
 
         self.assertEqual(first_result["id"], self.mission_form_1.pk)
-        self.assertEqual(first_result["mission_type"], MissionType.FORM_FILLING.label)
+        self.assertEqual(first_result["mission_type"], MissionType.FORM_FILLING.value)
         self.assertEqual(first_result["forms_count"], 3)
         self.assertIsNotNone(first_result["created_at"])
 
         second_result = results[1]
 
         self.assertEqual(second_result["id"], self.mission_form_2.pk)
-        self.assertEqual(second_result["mission_type"], MissionType.FORM_FILLING.label)
+        self.assertEqual(second_result["mission_type"], MissionType.FORM_FILLING.value)
         self.assertEqual(second_result["forms_count"], 2)
         self.assertIsNotNone(second_result["created_at"])
 
         third_result = results[2]
         self.assertEqual(third_result["id"], self.mission_out_1.pk)
-        self.assertEqual(third_result["mission_type"], MissionType.ORG_UNIT_AND_FORM.label)
+        self.assertEqual(third_result["mission_type"], MissionType.ORG_UNIT_AND_FORM.value)
         self.assertEqual(third_result["forms_count"], 2)
         self.assertEqual(third_result["org_unit_type"], {"id": self.out.pk, "name": self.out.name})
         self.assertIsNotNone(third_result["created_at"])
 
         fourth_result = results[3]
         self.assertEqual(fourth_result["id"], self.mission_out_2.pk)
-        self.assertEqual(fourth_result["mission_type"], MissionType.ORG_UNIT_AND_FORM.label)
+        self.assertEqual(fourth_result["mission_type"], MissionType.ORG_UNIT_AND_FORM.value)
         self.assertEqual(fourth_result["forms_count"], 1)
         self.assertEqual(fourth_result["org_unit_type"], {"id": self.out_2.pk, "name": self.out_2.name})
         self.assertIsNotNone(fourth_result["created_at"])
 
         fifth_result = results[4]
         self.assertEqual(fifth_result["id"], self.mission_et_1.pk)
-        self.assertEqual(fifth_result["mission_type"], MissionType.ENTITY_AND_FORM.label)
+        self.assertEqual(fifth_result["mission_type"], MissionType.ENTITY_AND_FORM.value)
         self.assertEqual(fifth_result["forms_count"], 2)
         self.assertEqual(fifth_result["entity_type"], {"id": self.et.pk, "name": self.et.name})
         self.assertIsNotNone(fifth_result["created_at"])
 
         sixth_result = results[5]
         self.assertEqual(sixth_result["id"], self.mission_et_2.pk)
-        self.assertEqual(sixth_result["mission_type"], MissionType.ENTITY_AND_FORM.label)
+        self.assertEqual(sixth_result["mission_type"], MissionType.ENTITY_AND_FORM.value)
         self.assertEqual(sixth_result["forms_count"], 1)
         self.assertEqual(sixth_result["entity_type"], {"id": self.et_2.pk, "name": self.et_2.name})
         self.assertIsNotNone(sixth_result["created_at"])

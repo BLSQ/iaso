@@ -1,23 +1,25 @@
 import React, { FunctionComponent } from 'react';
-import { Alert } from '@mui/material';
-import { useSafeIntl, useRedirectTo } from 'bluesquare-components';
+import { SaveOutlined } from '@mui/icons-material';
+import { Alert, Button, useMediaQuery, useTheme } from '@mui/material';
+import { useSafeIntl, useRedirectTo, LinkButton } from 'bluesquare-components';
 import { useFormik, FormikProvider } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import {
     MissionTypeDropdownValueEnum,
     useApiMicroplanningMissionsCreate,
 } from 'Iaso/api/missions';
-import { MainWrapper } from 'Iaso/components/MainWrapper';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import { MissionCreateBody } from 'Iaso/domains/missions/schemas/create';
 import { withFormikSubmitAsync } from 'Iaso/utils/forms';
 import { CreateMissionForm } from './components/CreateMissionForm';
+import { DetailsWrapper } from './components/DetailsWrapper';
 import MESSAGES from './messages';
 
 export const MissionCreate: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
-
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const redirectTo = useRedirectTo();
 
     const redirectBackUrl: string = `${baseUrls.missions}`;
@@ -55,21 +57,44 @@ export const MissionCreate: FunctionComponent = () => {
                 goBack={() => redirectTo(redirectBackUrl)}
                 displayBackButton
             />
-            <MainWrapper sx={{ p: 4 }}>
+            <DetailsWrapper
+                title={formatMessage(MESSAGES.newMission)}
+                actions={
+                    <>
+                        <LinkButton
+                            to={`/${baseUrls.missions}/`}
+                            color="primary"
+                            variant="outlined"
+                            size={isMobile ? 'small' : 'medium'}
+                        >
+                            {formatMessage(MESSAGES.cancel)}
+                        </LinkButton>
+                        <Button
+                            variant="contained"
+                            type="submit"
+                            color="primary"
+                            disabled={!allowConfirm}
+                            sx={{ ml: 2 }}
+                            onClick={() =>
+                                allowConfirm && formik.handleSubmit()
+                            }
+                            size={isMobile ? 'small' : 'medium'}
+                        >
+                            <SaveOutlined sx={{ mr: 1 }} />
+                            {formatMessage(MESSAGES.create)}
+                        </Button>
+                    </>
+                }
+            >
                 <FormikProvider value={formik}>
                     {formik.status && (
                         <Alert severity={'error'} sx={{ mb: 2 }}>
                             {formik.status}
                         </Alert>
                     )}
-                    <CreateMissionForm
-                        formik={formik}
-                        allowConfirm={allowConfirm}
-                        cancelUrl={`/${baseUrls.missions}/`}
-                        successButtonMessage={formatMessage(MESSAGES.create)}
-                    />
+                    <CreateMissionForm formik={formik} />
                 </FormikProvider>
-            </MainWrapper>
+            </DetailsWrapper>
         </>
     );
 };

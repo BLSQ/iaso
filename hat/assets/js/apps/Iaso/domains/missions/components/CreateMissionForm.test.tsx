@@ -6,8 +6,6 @@ import { MissionTypeDropdownValueEnum } from 'Iaso/api/missions';
 
 import { CreateMissionForm } from './CreateMissionForm';
 
-const linkButtonSpy = vi.fn();
-
 vi.mock('bluesquare-components', async () => {
     const actual = await vi.importActual<any>('bluesquare-components');
 
@@ -17,10 +15,6 @@ vi.mock('bluesquare-components', async () => {
             formatMessage: (message: any) =>
                 message.defaultMessage ?? message.id ?? '',
         }),
-        LinkButton: (props: any) => {
-            linkButtonSpy(props);
-            return <a href={props.to}>{props.children}</a>;
-        },
     };
 });
 
@@ -49,13 +43,13 @@ vi.mock('Iaso/domains/pages/components/TextInput', () => ({
 
 const missionTypeDropdownSpy = vi.fn();
 
-vi.mock('Iaso/domains/missions/components/MissionTypeDropdownInput', () => ({
-    MissionTypeDropdownInput: (props: any) => {
+vi.mock('Iaso/domains/missions/components/MissionTypeCardsInput', () => ({
+    MissionTypeCardsInput: (props: any) => {
         missionTypeDropdownSpy(props);
 
         return (
             <button
-                data-testid="mission-type-dropdown"
+                data-testid="mission-type-cards"
                 onClick={() =>
                     props.onChange(
                         'mission_type',
@@ -99,25 +93,12 @@ const createFormik = (missionType?: any): FormikProps<any> =>
 
 type RenderProps = {
     missionType?: any;
-    cancelUrl?: string;
-    allowConfirm?: boolean;
 };
 
-const renderComponent = ({
-    missionType,
-    cancelUrl,
-    allowConfirm = true,
-}: RenderProps = {}) => {
+const renderComponent = ({ missionType }: RenderProps = {}) => {
     const formik = createFormik(missionType);
 
-    render(
-        <CreateMissionForm
-            formik={formik}
-            cancelUrl={cancelUrl}
-            allowConfirm={allowConfirm}
-            successButtonMessage="Save"
-        />,
-    );
+    render(<CreateMissionForm formik={formik} />);
 
     return { formik };
 };
@@ -133,7 +114,7 @@ describe('CreateMissionForm', () => {
         expect(screen.getByTestId('field-name')).toBeInTheDocument();
         expect(screen.getByTestId('field-description')).toBeInTheDocument();
 
-        expect(screen.getByTestId('mission-type-dropdown')).toBeInTheDocument();
+        expect(screen.getByTestId('mission-type-cards')).toBeInTheDocument();
     });
 
     it('shows the info alert when no mission type is selected', () => {
@@ -185,7 +166,7 @@ describe('CreateMissionForm', () => {
     it('resets dependent fields when mission type changes', () => {
         const { formik } = renderComponent();
 
-        fireEvent.click(screen.getByTestId('mission-type-dropdown'));
+        fireEvent.click(screen.getByTestId('mission-type-cards'));
 
         expect(formik.setFieldValue).toHaveBeenCalledWith('forms', []);
         expect(formik.setFieldTouched).toHaveBeenCalledWith('forms', false);
@@ -222,42 +203,5 @@ describe('CreateMissionForm', () => {
             'min_cardinality',
             false,
         );
-    });
-
-    it('renders the cancel button when cancelUrl is provided', () => {
-        renderComponent({
-            cancelUrl: '/missions',
-        });
-
-        expect(screen.getByRole('link')).toHaveAttribute('href', '/missions');
-    });
-
-    it('does not render cancel button if cancelUrl is not provided', () => {
-        renderComponent();
-        expect(screen.queryByRole('link')).not.toBeInTheDocument();
-    });
-
-    it('disables submit when allowConfirm is false', () => {
-        renderComponent({
-            allowConfirm: false,
-        });
-
-        expect(
-            screen.getByRole('button', {
-                name: 'Save',
-            }),
-        ).toBeDisabled();
-    });
-
-    it('calls handleSubmit when submit is clicked', () => {
-        const { formik } = renderComponent();
-
-        fireEvent.click(
-            screen.getByRole('button', {
-                name: 'Save',
-            }),
-        );
-
-        expect(formik.handleSubmit).toHaveBeenCalledTimes(1);
     });
 });

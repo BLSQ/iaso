@@ -1,6 +1,6 @@
 import React from 'react';
 import { faker } from '@faker-js/faker';
-import { act, screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event/dist/cjs/index.js';
 import { HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
@@ -129,11 +129,24 @@ const server = setupServer(
 
 const previousDefaults = TestingQueryClient.getDefaultOptions();
 
+const getFormsCardinalityInput = (
+    formName: string | RegExp,
+    field: 'min_cardinality' | 'max_cardinality',
+) => {
+    const row = screen.getByRole('row', { name: formName });
+    return within(row).getByRole('textbox', {
+        name:
+            field === 'min_cardinality'
+                ? /min cardinality/i
+                : /max cardinality/i,
+    });
+};
+
 const addForm = async (formOption: string | RegExp) => {
     await act(async () => {
         await userEvent.click(
             screen.getByRole('combobox', {
-                name: /add a form/i,
+                name: /select a form to add/i,
             }),
         );
     });
@@ -142,14 +155,6 @@ const addForm = async (formOption: string | RegExp) => {
         await userEvent.click(
             screen.getByRole('option', {
                 name: formOption,
-            }),
-        );
-    });
-
-    await act(async () => {
-        await userEvent.click(
-            screen.getByRole('button', {
-                name: /add a form/i,
             }),
         );
     });
@@ -245,9 +250,7 @@ describe('Mission edit integration test', () => {
         ).toHaveValue('some description');
         expect(screen.getByText('Form A')).toBeVisible();
         expect(
-            screen.getByRole('textbox', {
-                name: /min cardinality/i,
-            }),
+            getFormsCardinalityInput(/form a/i, 'min_cardinality'),
         ).toHaveValue('2');
     });
     it('renders initial data - MISSION_ENTITY_TYPE', async () => {
@@ -375,7 +378,7 @@ describe('Mission edit integration test', () => {
         await act(async () => {
             await userEvent.click(
                 screen.getByRole('combobox', {
-                    name: /add a form/i,
+                    name: /select a form to add/i,
                 }),
             );
         });
@@ -413,7 +416,7 @@ describe('Mission edit integration test', () => {
         await act(async () => {
             await userEvent.click(
                 screen.getByRole('combobox', {
-                    name: /add a form/i,
+                    name: /select a form to add/i,
                 }),
             );
         });
@@ -600,6 +603,7 @@ describe('Mission edit integration test', () => {
                         description: ['Invalid description'],
                         forms: [
                             {
+                                form: 'Invalid first form',
                                 min_cardinality:
                                     'Invalid first min cardinality',
                             },
@@ -659,6 +663,7 @@ describe('Mission edit integration test', () => {
 
         expect(screen.getByText('Invalid name')).toBeVisible();
         expect(screen.getByText('Invalid description')).toBeVisible();
+        expect(screen.getByText('Invalid first form')).toBeVisible();
         expect(screen.getByText('Invalid first min cardinality')).toBeVisible();
         expect(
             screen.getByText('Invalid second max cardinality'),
@@ -866,16 +871,16 @@ describe('Mission edit integration test', () => {
 
         await act(async () => {
             await userEvent.clear(
-                screen.getByRole('textbox', { name: /min cardinality/i }),
+                getFormsCardinalityInput(/form a/i, 'min_cardinality'),
             );
             await userEvent.type(
-                screen.getByRole('textbox', { name: /min cardinality/i }),
+                getFormsCardinalityInput(/form a/i, 'min_cardinality'),
                 '2',
             );
         });
         await act(async () => {
             await userEvent.type(
-                screen.getByRole('textbox', { name: /max cardinality/i }),
+                getFormsCardinalityInput(/form a/i, 'max_cardinality'),
                 '20',
             );
         });
@@ -910,6 +915,7 @@ describe('Mission edit integration test', () => {
                     },
                     {
                         form: 2,
+                        max_cardinality: null,
                         min_cardinality: 1,
                     },
                 ],
@@ -1013,10 +1019,12 @@ describe('Mission edit integration test', () => {
                 forms: [
                     {
                         form: 1,
+                        max_cardinality: null,
                         min_cardinality: 1,
                     },
                     {
                         form: 2,
+                        max_cardinality: null,
                         min_cardinality: 1,
                     },
                 ],
@@ -1119,10 +1127,12 @@ describe('Mission edit integration test', () => {
                 forms: [
                     {
                         form: 1,
+                        max_cardinality: null,
                         min_cardinality: 1,
                     },
                     {
                         form: 2,
+                        max_cardinality: null,
                         min_cardinality: 1,
                     },
                 ],

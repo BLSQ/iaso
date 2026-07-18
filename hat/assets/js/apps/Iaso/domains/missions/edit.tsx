@@ -9,7 +9,6 @@ import {
     useApiMicroplanningMissionsUpdate,
 } from 'Iaso/api/missions';
 import Page404 from 'Iaso/components/errors/Page404';
-import { MainWrapper } from 'Iaso/components/MainWrapper';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import { EditBaseMissionEntityType } from 'Iaso/domains/missions/components/edit/EditBaseMissionEntityType';
@@ -49,7 +48,7 @@ export const MissionEdit: FunctionComponent = () => {
         return (
             <>
                 <TopBar
-                    title={formatMessage(MESSAGES.editMissionNoName)}
+                    title={formatMessage(MESSAGES.editMission)}
                     displayBackButton
                     goBack={() => redirectTo(redirectBackUrl)}
                 />
@@ -65,36 +64,34 @@ export const MissionEdit: FunctionComponent = () => {
     return (
         <>
             <TopBar
-                title={formatMessage(MESSAGES.editMission, { name: data.name })}
+                title={formatMessage(MESSAGES.editMission)}
                 goBack={() => redirectTo(redirectBackUrl)}
                 displayBackButton
             />
-            <MainWrapper sx={{ p: 4 }}>
-                {isMissionFormRetrieve(data) && (
-                    <EditBaseMissionForm
-                        data={data}
-                        missionId={missionId}
-                        save={save}
-                        redirectBackUrl={redirectBackUrl}
-                    />
-                )}
-                {isMissionOrgUnitTypeRetrieve(data) && (
-                    <EditBaseMissionOrgUnitType
-                        data={data}
-                        missionId={missionId}
-                        save={save}
-                        redirectBackUrl={redirectBackUrl}
-                    />
-                )}
-                {isMissionEntityTypeRetrieve(data) && (
-                    <EditBaseMissionEntityType
-                        data={data}
-                        missionId={missionId}
-                        save={save}
-                        redirectBackUrl={redirectBackUrl}
-                    />
-                )}
-            </MainWrapper>
+            {isMissionFormRetrieve(data) && (
+                <EditBaseMissionForm
+                    data={data}
+                    missionId={missionId}
+                    save={save}
+                    redirectBackUrl={redirectBackUrl}
+                />
+            )}
+            {isMissionOrgUnitTypeRetrieve(data) && (
+                <EditBaseMissionOrgUnitType
+                    data={data}
+                    missionId={missionId}
+                    save={save}
+                    redirectBackUrl={redirectBackUrl}
+                />
+            )}
+            {isMissionEntityTypeRetrieve(data) && (
+                <EditBaseMissionEntityType
+                    data={data}
+                    missionId={missionId}
+                    save={save}
+                    redirectBackUrl={redirectBackUrl}
+                />
+            )}
         </>
     );
 };

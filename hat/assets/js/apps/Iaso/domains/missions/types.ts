@@ -1,8 +1,11 @@
 import {
-    MissionFormCreateRequest,
+    MissionEntityTypeUpdateRequest,
     MissionFormUpdateRequest,
+    MissionOrgUnitTypeUpdateRequest,
 } from 'Iaso/api/missions';
 
-export type BaseUpdateCreateRequest =
+/** All update payloads that include a `forms` array. */
+export type MissionUpdateBody =
     | MissionFormUpdateRequest
-    | MissionFormCreateRequest;
+    | MissionOrgUnitTypeUpdateRequest
+    | MissionEntityTypeUpdateRequest;

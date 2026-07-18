@@ -3,6 +3,7 @@ from uuid import uuid4
 from iaso import models as m
 from iaso.models.microplanning import Planning
 from iaso.models.team import Team
+from iaso.permissions.core_permissions import CORE_SUBMISSIONS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -247,3 +248,74 @@ class InstanceImportMissionTestCase(APITestCase):
         response, instance_uuid = self.post_instance(planningId=self.planning.id, missionId=self.mission_entity_type.id)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.get_instance(instance_uuid).mission_id, self.mission_entity_type.id)
+
+
+class InstanceMissionReadTestCase(APITestCase):
+    """Read-side exposure of Instance.mission: as_full_model and the missionIds filter."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.account = m.Account.objects.create(name="Account")
+        cls.project = m.Project.objects.create(name="Project", app_id=APP_ID, account=cls.account)
+        source = m.DataSource.objects.create(name="Source")
+        source.projects.add(cls.project)
+        cls.version = m.SourceVersion.objects.create(data_source=source, number=1)
+        cls.account.default_version = cls.version
+        cls.account.save()
+
+        cls.user = cls.create_user_with_profile(
+            username="user", account=cls.account, permissions=[CORE_SUBMISSIONS_PERMISSION]
+        )
+
+        org_unit_type = m.OrgUnitType.objects.create(name="Health facility")
+        org_unit_type.projects.add(cls.project)
+        cls.org_unit = m.OrgUnit.objects.create(
+            name="OU",
+            org_unit_type=org_unit_type,
+            version=cls.version,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+
+        cls.form = m.Form.objects.create(name="form")
+        cls.form.projects.add(cls.project)
+
+        cls.mission_1 = m.MissionForm.objects.create(name="mission 1", account=cls.account)
+        cls.mission_2 = m.MissionForm.objects.create(name="mission 2", account=cls.account)
+
+        cls.instance_with_mission_1 = cls.create_form_instance(
+            form=cls.form, org_unit=cls.org_unit, project=cls.project, mission=cls.mission_1
+        )
+        cls.instance_with_mission_2 = cls.create_form_instance(
+            form=cls.form, org_unit=cls.org_unit, project=cls.project, mission=cls.mission_2
+        )
+        cls.instance_without_mission = cls.create_form_instance(
+            form=cls.form, org_unit=cls.org_unit, project=cls.project
+        )
+
+    def get_instance_ids(self, response):
+        data = self.assertJSONResponse(response, 200)
+        return {i["id"] for i in data["instances"]}
+
+    def test_as_full_model_contains_mission_id(self):
+        self.assertEqual(self.instance_with_mission_1.as_full_model()["mission_id"], self.mission_1.id)
+        self.assertIsNone(self.instance_without_mission.as_full_model()["mission_id"])
+
+    def test_filter_by_mission_ids(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get("/api/instances/", {"missionIds": self.mission_1.id})
+        self.assertEqual(self.get_instance_ids(response), {self.instance_with_mission_1.id})
+
+        response = self.client.get("/api/instances/", {"missionIds": f"{self.mission_1.id},{self.mission_2.id}"})
+        self.assertEqual(
+            self.get_instance_ids(response), {self.instance_with_mission_1.id, self.instance_with_mission_2.id}
+        )
+
+    def test_no_mission_ids_filter_returns_everything(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get("/api/instances/")
+        self.assertEqual(
+            self.get_instance_ids(response),
+            {self.instance_with_mission_1.id, self.instance_with_mission_2.id, self.instance_without_mission.id},
+        )

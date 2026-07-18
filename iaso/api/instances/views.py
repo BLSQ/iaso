@@ -535,6 +535,7 @@ class InstancesViewSet(viewsets.ViewSet):
             "sentDateTo",
             "withLocation",  # true => only submissions with location, false only the one without location
             "jsonContent",  # unsure if fully supported by export_django_query_to_parquet_via_duckdb function question names with __ doesn't seem to be supported but the problem seem the jsonlogic
+            "missionIds",
             "planningIds",
             "userIds",
             "referenceInstances",

@@ -48,10 +48,14 @@ class SubmissionsExportTest(TestCase):
         cls.maxDiff = None
 
     def test_expected_columns_all_fields_even_if_no_records(self):
-        qs, mapping = parquet.build_submissions_queryset(Instance.objects, self.form_to_export.id)
+        qs, mapping, json_fields, json_column = parquet.build_submissions_queryset(
+            Instance.objects, self.form_to_export.id
+        )
 
         with tempfile.NamedTemporaryFile(suffix=".parquet") as tmpfile:
-            parquet.export_django_query_to_parquet_via_duckdb(qs, tmpfile.name, mapping)
+            parquet.export_django_query_to_parquet_via_duckdb(
+                qs, tmpfile.name, mapping, json_fields=json_fields, json_column=json_column
+            )
             actual_columns = get_columns_from_parquet(tmpfile)
 
         expected = [
@@ -67,10 +71,14 @@ class SubmissionsExportTest(TestCase):
         ]
         self.form_to_export.save()
 
-        qs, mapping = parquet.build_submissions_queryset(Instance.objects, self.form_to_export.id)
+        qs, mapping, json_fields, json_column = parquet.build_submissions_queryset(
+            Instance.objects, self.form_to_export.id
+        )
 
         with tempfile.NamedTemporaryFile(suffix=".parquet") as tmpfile:
-            parquet.export_django_query_to_parquet_via_duckdb(qs, tmpfile.name, mapping)
+            parquet.export_django_query_to_parquet_via_duckdb(
+                qs, tmpfile.name, mapping, json_fields=json_fields, json_column=json_column
+            )
             actual_columns = get_columns_from_parquet(tmpfile)
 
         expected = [
@@ -89,10 +97,14 @@ class SubmissionsExportTest(TestCase):
         ]
         self.form_to_export.save()
 
-        qs, mapping = parquet.build_submissions_queryset(Instance.objects, self.form_to_export.id)
+        qs, mapping, json_fields, json_column = parquet.build_submissions_queryset(
+            Instance.objects, self.form_to_export.id
+        )
 
         with tempfile.NamedTemporaryFile(suffix=".parquet") as tmpfile:
-            parquet.export_django_query_to_parquet_via_duckdb(qs, tmpfile.name, mapping)
+            parquet.export_django_query_to_parquet_via_duckdb(
+                qs, tmpfile.name, mapping, json_fields=json_fields, json_column=json_column
+            )
             actual_columns = get_columns_from_parquet(tmpfile)
 
         expected = [
@@ -121,10 +133,14 @@ class SubmissionsExportTest(TestCase):
 
         self.form_to_export.save()
 
-        qs, mapping = parquet.build_submissions_queryset(Instance.objects, self.form_to_export.id)
+        qs, mapping, json_fields, json_column = parquet.build_submissions_queryset(
+            Instance.objects, self.form_to_export.id
+        )
 
         with tempfile.NamedTemporaryFile(suffix=".parquet") as tmpfile:
-            parquet.export_django_query_to_parquet_via_duckdb(qs, tmpfile.name, mapping)
+            parquet.export_django_query_to_parquet_via_duckdb(
+                qs, tmpfile.name, mapping, json_fields=json_fields, json_column=json_column
+            )
             actual_columns = get_columns_from_parquet(tmpfile)
 
         expected = [

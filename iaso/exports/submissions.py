@@ -3,6 +3,7 @@ from logging import getLogger
 from django.db import models
 from django.db.models import Exists, F, Func, OuterRef, QuerySet
 from django.db.models.fields.json import KeyTextTransform
+from django.db.models.functions import Cast
 
 import iaso.models as m
 
@@ -11,6 +12,11 @@ from .utils import normalize_field_name
 
 
 logger = getLogger(__name__)
+
+# Holds the submission's raw json answers, passed through as a single column so DuckDB can
+# splat it into per-question columns instead of Postgres doing one "json ->> 'field'" per
+# question (that scales badly with the number of questions in the form).
+RAW_ANSWERS_JSON_COLUMN = "iaso_subm_raw_answers_json"
 
 
 def build_submissions_queryset(qs: QuerySet[m.Instance], form_id: str) -> QuerySet[m.Instance]:
@@ -23,22 +29,18 @@ def build_submissions_queryset(qs: QuerySet[m.Instance], form_id: str) -> QueryS
     prefixed_fields = build_submission_annotations()
 
     possible_fields = form.possible_fields
+    answer_field_names = [f["name"] for f in possible_fields]
 
-    answer_mappings = generate_safe_mapping(list(prefixed_fields.keys()) + [f["name"] for f in possible_fields])
-
-    json_annotations = {}
-    for field in possible_fields:
-        field_name = field["name"]
-        json_annotations[answer_mappings[field_name]] = KeyTextTransform(field_name, "json")
+    answer_mappings = generate_safe_mapping(list(prefixed_fields.keys()) + answer_field_names)
 
     qs = (
         qs.values("id")
         .annotate(**prefixed_fields)
-        .annotate(**json_annotations)
-        .values(*prefixed_fields.keys(), *json_annotations.keys())
+        .annotate(**{RAW_ANSWERS_JSON_COLUMN: Cast(F("json"), output_field=models.TextField())})
+        .values(*prefixed_fields.keys(), RAW_ANSWERS_JSON_COLUMN)
     )
 
-    return qs, answer_mappings
+    return qs, answer_mappings, set(answer_field_names), RAW_ANSWERS_JSON_COLUMN
 
 
 class ST_X(Func):

@@ -12,7 +12,10 @@ from django.db.models import QuerySet
 logger = getLogger(__name__)
 
 
-def export_django_query_to_parquet_via_duckdb(qs: QuerySet, output_file_path: str, mapping=None):
+def export_django_query_to_parquet_via_duckdb(
+    qs: QuerySet, output_file_path: str, mapping=None, json_fields=None, json_column=None
+):
+    # json_fields/json_column: mapping entries whose value actually lives inside a single raw json column, extracted via DuckDB instead of being a plain rename.
     start = time.perf_counter()
 
     sql, params = qs.query.sql_with_params()
@@ -40,17 +43,35 @@ def export_django_query_to_parquet_via_duckdb(qs: QuerySet, output_file_path: st
 
         logger.info(f"exporting parquet : {output_file_path} \n\n {full_sql}")
         # had to specify ROW_GROUP_SIZE when exporting large rows like several geojson on the same row
+        source_sql = f"postgres_query('pg', $$ {full_sql} $$)"
         alias_stmt = " * "
+        query_params = []
         if mapping:
-            alias_stmt = dict_to_projection(mapping)
+            plain_cols, json_cols, json_pointers = build_projection_parts(mapping, json_fields, json_column)
+            if json_pointers:
+                # Extract every question in one shot per row (single JSON parse via a bound array
+                # of paths, materialized once through the CTE) instead of one json_extract_string()
+                # call per question -- calling it once per question would re-parse the same JSON
+                # text for every single question, which is slower *and* far more memory-hungry.
+                select_parts = plain_cols + [
+                    f'__json_extracted[{i + 1}] as "{orig}"' for i, orig in enumerate(json_cols)
+                ]
+                alias_stmt = ",\n    ".join(select_parts)
+                source_sql = f"""(
+                    SELECT *, json_extract_string("{json_column}", ?) AS __json_extracted
+                    FROM {source_sql}
+                ) AS src_with_json"""
+                query_params = [json_pointers]
+            else:
+                alias_stmt = ",\n    ".join(plain_cols)
 
         parquet_export_sql = f"""
             COPY (
-                SELECT {alias_stmt} FROM postgres_query('pg', $$ {full_sql} $$)
+                SELECT {alias_stmt} FROM {source_sql}
             ) TO '{output_file_path}' (FORMAT PARQUET, COMPRESSION 'ZSTD', ROW_GROUP_SIZE 10000)
         """
 
-        duckdb_connection.execute(parquet_export_sql)
+        duckdb_connection.execute(parquet_export_sql, query_params)
 
         row_count = duckdb_connection.execute(f"SELECT COUNT(*) FROM '{output_file_path}'").fetchone()[0]
         col_count = len(duckdb_connection.execute(f"DESCRIBE SELECT * FROM '{output_file_path}'").fetchall())
@@ -62,5 +83,17 @@ def export_django_query_to_parquet_via_duckdb(qs: QuerySet, output_file_path: st
     )
 
 
-def dict_to_projection(mapping):
-    return ",\n    ".join(f'"{safe}" as "{orig}"' for orig, safe in mapping.items())
+def build_projection_parts(mapping, json_fields=None, json_column=None):
+    json_fields = json_fields or set()
+    plain_cols = []
+    json_cols = []
+    json_pointers = []
+    for orig, safe in mapping.items():
+        escaped_orig = orig.replace('"', '""')
+        if orig in json_fields:
+            json_cols.append(escaped_orig)
+            # JSON Pointer (RFC 6901) syntax: only "~" and "/" need escaping, unlike JSONPath's quoting rules.
+            json_pointers.append("/" + orig.replace("~", "~0").replace("/", "~1"))
+        else:
+            plain_cols.append(f'"{safe}" as "{escaped_orig}"')
+    return plain_cols, json_cols, json_pointers

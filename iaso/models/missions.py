@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.db import models
@@ -9,6 +11,10 @@ from polymorphic.models import PolymorphicModel
 from iaso.models.common import CreatedAndUpdatedModel
 from iaso.models.querysets import RelatedPolymorphicQuerySet
 from iaso.utils.models.soft_deletable import SoftDeletableModel
+
+
+if TYPE_CHECKING:
+    from iaso.models.org_unit import OrgUnit
 
 
 class MissionType(models.TextChoices):
@@ -81,7 +87,7 @@ class Mission(SoftDeletableModel, CreatedAndUpdatedModel, PolymorphicModel):
 
     created_by = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
 
-    def get_assignments(self):
+    def get_form_assignments(self, org_unit: "OrgUnit"):
         raise NotImplementedError
 
     def save(self, *args, **kwargs):
@@ -116,8 +122,10 @@ class MissionForm(Mission):
 
     forms = models.ManyToManyField("Form", related_name="mission_forms", through=MissionFormThroughForm)
 
-    def get_assignments(self):
-        raise NotImplementedError
+    def get_form_assignments(self, org_unit: "OrgUnit") -> list[MissionFormThroughForm]:
+        out_forms = {f.id for f in org_unit.org_unit_type.form_set.all()}
+
+        return [tf for tf in self.missionformthroughform_set.all() if tf.form_id in out_forms]
 
 
 class MissionOrgUnitTypeThroughForm(models.Model):
@@ -151,8 +159,14 @@ class MissionOrgUnitType(Mission):
         null=True, blank=True, help_text="Maximum number of times this form can be filled (null = unlimited)"
     )
 
-    def get_assignments(self):
-        raise NotImplementedError
+    def get_form_assignments(self, org_unit: "OrgUnit") -> bool:
+        # We need to filter on OrgUnit which are parent of the type
+        related_out = self.org_unit_type_id
+        assignment_out = org_unit.org_unit_type_id
+
+        sub_unit_type_ids = {t.id for t in org_unit.org_unit_type.sub_unit_types.all()}
+
+        return related_out == assignment_out or related_out in sub_unit_type_ids
 
 
 class MissionEntityTypeThroughForm(models.Model):
@@ -186,5 +200,6 @@ class MissionEntityType(Mission):
         null=True, blank=True, help_text="Maximum number of times this form can be filled (null = unlimited)"
     )
 
-    def get_assignments(self):
-        raise NotImplementedError
+    def get_form_assignments(self, org_unit: "OrgUnit") -> bool:
+        # We always assign entities as there are no enforcement on entities and OrgUnit types.
+        return True

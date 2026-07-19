@@ -31,9 +31,9 @@ type Props = {
 };
 
 /**
- * Left rail of the submission detail page. Everything but the general card is
- * collapsed by default, each row showing enough of a summary that the user can
- * tell whether it is worth opening.
+ * Left rail of the submission detail page. Every row is collapsed by default,
+ * each showing enough of a summary that the user can tell whether it is worth
+ * opening.
  */
 export const SubmissionRail: FunctionComponent<Props> = ({
     currentInstance,
@@ -69,7 +69,6 @@ export const SubmissionRail: FunctionComponent<Props> = ({
                     tone="info"
                     label={formatMessage(MESSAGES.location)}
                     state={currentInstance.org_unit?.name}
-                    defaultExpanded
                 >
                     <InstanceDetailsLocation
                         currentInstance={currentInstance}

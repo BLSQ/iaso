@@ -906,7 +906,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.clearSearch',
     },
     searchResultsCount: {
-        defaultMessage: '{count} results for "{query}"',
+        defaultMessage:
+            '{count, plural, one {# result} other {# results}} for "{query}"',
         id: 'iaso.instance.searchResultsCount',
     },
     noQuestionsMatch: {
@@ -914,7 +915,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.noQuestionsMatch',
     },
     fieldsCount: {
-        defaultMessage: '{count} fields',
+        defaultMessage: '{count, plural, one {# field} other {# fields}}',
         id: 'iaso.instance.fieldsCount',
     },
     matchingFieldsCount: {
@@ -966,7 +967,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.none',
     },
     filesCount: {
-        defaultMessage: '{count} files',
+        defaultMessage: '{count, plural, one {# file} other {# files}}',
         id: 'iaso.instance.filesCount',
     },
     referenceSubmission: {

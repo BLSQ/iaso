@@ -1,5 +1,5 @@
-import React, { FunctionComponent, useMemo, useState } from 'react';
-import DescriptionIcon from '@mui/icons-material/Description';
+import React, { FunctionComponent, ReactNode, useState } from 'react';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
     Box,
@@ -11,7 +11,13 @@ import {
     Paper,
     Typography,
 } from '@mui/material';
-import { LinkWithLocation, useSafeIntl } from 'bluesquare-components';
+import {
+    LinkWithLocation,
+    displayDateFromTimestamp,
+    textPlaceholder,
+    useSafeIntl,
+} from 'bluesquare-components';
+import get from 'lodash/get';
 import { baseUrls } from '../../../../constants/urls';
 import {
     INSTANCE_METAS_FIELDS,
@@ -20,44 +26,46 @@ import {
 } from '../../constants';
 import MESSAGES from '../../messages';
 import { Instance } from '../../types/instance';
-import InstanceDetailsInfos from '../InstanceDetailsInfos';
-
-/**
- * Fields that stay visible, versus the identifiers and provenance data folded
- * away behind the "technical details" disclosure. Keys refer to
- * INSTANCE_METAS_FIELDS so the existing renderers (links, pretty periods,
- * formatted dates) are reused as is.
- */
-const PRIMARY_KEYS = ['form_name', 'period'];
-const ACTIVITY_KEYS = ['last_modified_by', 'updated_at'];
-const TECHNICAL_KEYS = [
-    'created_by__username',
-    'created_at',
-    'source_created_at',
-    'uuid',
-    'version',
-    'device_id',
-    'project_name',
-    'planning',
-];
-
-const fieldsFor = (keys: string[]) =>
-    keys
-        .map(key => INSTANCE_METAS_FIELDS.find(field => field.key === key))
-        .filter(Boolean);
+import { ActivityRow, InfoRow } from './InfoRow';
 
 type Props = {
     currentInstance: Instance;
     showHistoryLink: boolean;
 };
 
-const statusColor = (
-    status: string,
-): 'success' | 'error' | 'default' | 'warning' => {
+const statusColor = (status: string): 'success' | 'error' | 'default' => {
     if (status === INSTANCE_STATUS_READY) return 'success';
     if (status === INSTANCE_STATUS_ERROR) return 'error';
     return 'default';
 };
+
+/**
+ * Render one INSTANCE_METAS_FIELDS entry. The field descriptors carry the
+ * renderers we want to keep (form and planning links, pretty periods, formatted
+ * dates); only their layout is replaced here.
+ */
+const useFieldValue = (): ((key: string, instance: Instance) => ReactNode) => {
+    return (key, instance) => {
+        const field = INSTANCE_METAS_FIELDS.find(f => f.key === key);
+        if (!field) return textPlaceholder;
+        if (field.renderValue) return field.renderValue(instance);
+        const value = get(instance, field.key);
+        if (value === undefined || value === null || value === '') {
+            return textPlaceholder;
+        }
+        return field.render ? field.render(value) : value;
+    };
+};
+
+const countBadgeSx = {
+    height: 20,
+    fontSize: 11,
+    fontWeight: 500,
+    color: 'text.secondary',
+    backgroundColor: 'grey.100',
+    border: 'none',
+    '& .MuiChip-label': { px: 0.9 },
+} as const;
 
 export const GeneralCard: FunctionComponent<Props> = ({
     currentInstance,
@@ -65,10 +73,7 @@ export const GeneralCard: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const [showTechnical, setShowTechnical] = useState(false);
-
-    const primaryFields = useMemo(() => fieldsFor(PRIMARY_KEYS), []);
-    const activityFields = useMemo(() => fieldsFor(ACTIVITY_KEYS), []);
-    const technicalFields = useMemo(() => fieldsFor(TECHNICAL_KEYS), []);
+    const fieldValue = useFieldValue();
 
     const statusMessages = MESSAGES as Record<
         string,
@@ -77,6 +82,52 @@ export const GeneralCard: FunctionComponent<Props> = ({
     const statusLabel = currentInstance.status
         ? (statusMessages[currentInstance.status.toLowerCase()] ?? null)
         : null;
+
+    // identifiers and provenance, folded away by default
+    const technicalRows: ReactNode[] = [
+        <ActivityRow
+            key="created"
+            dense
+            label={formatMessage(MESSAGES.created_at)}
+            who={fieldValue('created_by__username', currentInstance)}
+            when={displayDateFromTimestamp(currentInstance.created_at)}
+        />,
+        <ActivityRow
+            key="source_created_at"
+            dense
+            label={formatMessage(MESSAGES.source_created_at)}
+            when={displayDateFromTimestamp(currentInstance.source_created_at)}
+        />,
+        <InfoRow key="uuid" dense mono label={formatMessage(MESSAGES.uuid)}>
+            {currentInstance.uuid || textPlaceholder}
+        </InfoRow>,
+        <InfoRow
+            key="version"
+            dense
+            mono
+            label={formatMessage(MESSAGES.version)}
+        >
+            {fieldValue('version', currentInstance)}
+        </InfoRow>,
+        <InfoRow
+            key="device_id"
+            dense
+            mono
+            label={formatMessage(MESSAGES.device_id)}
+        >
+            {currentInstance.device_id || textPlaceholder}
+        </InfoRow>,
+        <InfoRow
+            key="project_name"
+            dense
+            label={formatMessage(MESSAGES.project_name)}
+        >
+            {fieldValue('project_name', currentInstance)}
+        </InfoRow>,
+        <InfoRow key="planning" dense label={formatMessage(MESSAGES.planning)}>
+            {fieldValue('planning', currentInstance)}
+        </InfoRow>,
+    ];
 
     return (
         <Paper elevation={0} variant="outlined" sx={{ mb: 2 }}>
@@ -89,7 +140,7 @@ export const GeneralCard: FunctionComponent<Props> = ({
                     flexWrap: 'wrap',
                     px: 2.25,
                     pt: 1.75,
-                    pb: 1.25,
+                    pb: 1,
                 }}
             >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
@@ -99,6 +150,7 @@ export const GeneralCard: FunctionComponent<Props> = ({
                     <Chip
                         size="small"
                         variant="outlined"
+                        sx={{ height: 22, fontSize: 11.5 }}
                         label={formatMessage(
                             currentInstance.is_reference_instance
                                 ? MESSAGES.referenceSubmission
@@ -110,24 +162,32 @@ export const GeneralCard: FunctionComponent<Props> = ({
                     <Chip
                         size="small"
                         color={statusColor(currentInstance.status)}
+                        sx={{ height: 22, fontSize: 11.5 }}
                         label={formatMessage(statusLabel)}
                     />
                 )}
             </Box>
 
-            <Box sx={{ px: 2.25, pb: 1.75 }}>
-                <InstanceDetailsInfos
-                    instance_metas_fields={primaryFields}
-                    currentInstance={currentInstance}
-                />
+            <Box sx={{ px: 2.25, pb: 1.5 }}>
+                <InfoRow label={formatMessage(MESSAGES.form)}>
+                    {fieldValue('form_name', currentInstance)}
+                </InfoRow>
+                <InfoRow label={formatMessage(MESSAGES.period)}>
+                    {fieldValue('period', currentInstance)}
+                </InfoRow>
 
                 <Divider sx={{ my: 1.25 }} />
-                <InstanceDetailsInfos
-                    instance_metas_fields={activityFields}
-                    currentInstance={currentInstance}
+                <ActivityRow
+                    label={formatMessage(
+                        currentInstance.deleted
+                            ? MESSAGES.deleted_at
+                            : MESSAGES.updated_at,
+                    )}
+                    who={fieldValue('last_modified_by', currentInstance)}
+                    when={displayDateFromTimestamp(currentInstance.updated_at)}
                 />
                 {showHistoryLink && (
-                    <Box sx={{ mt: 0.5, textAlign: 'right' }}>
+                    <Box sx={{ pl: `${118 + 14}px`, pb: 0.5 }}>
                         <LinkWithLocation
                             to={`/${baseUrls.compareInstanceLogs}/instanceIds/${currentInstance.id}`}
                         >
@@ -136,37 +196,43 @@ export const GeneralCard: FunctionComponent<Props> = ({
                     </Box>
                 )}
 
-                <Divider sx={{ mt: 1.25 }} />
+                <Divider sx={{ mt: 1 }} />
                 <Button
                     fullWidth
                     size="small"
                     color="inherit"
                     onClick={() => setShowTechnical(current => !current)}
-                    endIcon={
+                    startIcon={
                         <ExpandMoreIcon
                             sx={{
                                 transition: 'transform .2s',
                                 transform: showTechnical
                                     ? 'rotate(180deg)'
                                     : 'none',
+                                color: 'text.disabled',
                             }}
                         />
                     }
                     sx={{
-                        justifyContent: 'space-between',
+                        justifyContent: 'flex-start',
+                        gap: 0.75,
                         color: 'text.secondary',
+                        fontSize: 12.5,
+                        fontWeight: 600,
                         textTransform: 'none',
-                        mt: 0.5,
+                        mt: 0.75,
                     }}
                 >
                     {formatMessage(MESSAGES.technicalDetails)}
+                    <Chip
+                        size="small"
+                        label={`${technicalRows.length}`}
+                        sx={{ ...countBadgeSx, ml: 0.9 }}
+                    />
                 </Button>
                 <Collapse in={showTechnical} unmountOnExit>
                     <Box sx={{ pt: 0.5 }}>
-                        <InstanceDetailsInfos
-                            instance_metas_fields={technicalFields}
-                            currentInstance={currentInstance}
-                        />
+                        {technicalRows}
                         <Link
                             component="button"
                             underline="hover"
@@ -178,11 +244,11 @@ export const GeneralCard: FunctionComponent<Props> = ({
                                 alignItems: 'center',
                                 gap: 0.75,
                                 mt: 1.25,
-                                fontSize: 13,
-                                fontWeight: 500,
+                                fontSize: 12.5,
+                                fontWeight: 600,
                             }}
                         >
-                            <DescriptionIcon sx={{ fontSize: 16 }} />
+                            <DescriptionOutlinedIcon sx={{ fontSize: 16 }} />
                             {formatMessage(MESSAGES.downloadXml)}
                         </Link>
                     </Box>

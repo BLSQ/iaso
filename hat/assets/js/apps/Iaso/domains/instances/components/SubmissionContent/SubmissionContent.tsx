@@ -20,6 +20,7 @@ import {
 } from '@mui/material';
 import { ErrorBoundary, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../messages';
+import { numericValues } from '../../utils/intl';
 import InstanceFileContentBasic from '../InstanceFileContentBasic';
 import { Descriptor } from '../InstanceFileContentRich';
 import { SubmissionFieldRow } from './SubmissionFieldRow';
@@ -81,16 +82,26 @@ const SectionHeader: FunctionComponent<{
             </Typography>
             <Chip
                 size="small"
-                variant="outlined"
+                sx={{
+                    height: 20,
+                    fontSize: 11.5,
+                    fontWeight: 500,
+                    color: 'text.secondary',
+                    backgroundColor: 'background.paper',
+                    border: 1,
+                    borderColor: 'divider',
+                    '& .MuiChip-label': { px: 1 },
+                }}
                 label={
                     isSearching
                         ? formatMessage(MESSAGES.matchingFieldsCount, {
                               count: `${section.fields.length}`,
                               total: `${section.totalFields}`,
                           })
-                        : formatMessage(MESSAGES.fieldsCount, {
-                              count: `${section.fields.length}`,
-                          })
+                        : formatMessage(
+                              MESSAGES.fieldsCount,
+                              numericValues({ count: section.fields.length }),
+                          )
                 }
             />
             {showQuestionIds && section.id && (
@@ -283,7 +294,7 @@ export const SubmissionContent: FunctionComponent<Props> = ({
                     <Typography variant="body2" color="primary">
                         {matchCount > 0
                             ? formatMessage(MESSAGES.searchResultsCount, {
-                                  count: `${matchCount}`,
+                                  ...numericValues({ count: matchCount }),
                                   query: query.trim(),
                               })
                             : formatMessage(MESSAGES.noQuestionsMatch, {

@@ -1,16 +1,17 @@
 import React, { FunctionComponent } from 'react';
-import EditIcon from '@mui/icons-material/Edit';
-import ImageIcon from '@mui/icons-material/Image';
-import LockIcon from '@mui/icons-material/Lock';
-import LockOpenIcon from '@mui/icons-material/LockOpen';
-import PlaceIcon from '@mui/icons-material/Place';
-import ShieldIcon from '@mui/icons-material/Shield';
-import UploadFileIcon from '@mui/icons-material/UploadFile';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
+import LockOpenOutlinedIcon from '@mui/icons-material/LockOpenOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
+import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import { Paper } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../messages';
 import { Instance } from '../../types/instance';
 import { getInstancesFilesList } from '../../utils';
+import { numericValues } from '../../utils/intl';
 import InstanceDetailsChangeRequests from '../InstanceDetailsChangeRequests';
 import { InstanceDetailsExportRequestsContent } from '../InstanceDetailsExportRequests';
 import InstanceDetailsLocation from '../InstanceDetailsLocation';
@@ -64,7 +65,7 @@ export const SubmissionRail: FunctionComponent<Props> = ({
 
             <Paper elevation={0} variant="outlined">
                 <RailRow
-                    icon={<PlaceIcon fontSize="small" />}
+                    icon={<PlaceOutlinedIcon fontSize="small" />}
                     tone="info"
                     label={formatMessage(MESSAGES.location)}
                     state={currentInstance.org_unit?.name}
@@ -77,12 +78,13 @@ export const SubmissionRail: FunctionComponent<Props> = ({
 
                 {fileCount > 0 && (
                     <RailRow
-                        icon={<ImageIcon fontSize="small" />}
+                        icon={<ImageOutlinedIcon fontSize="small" />}
                         tone="info"
                         label={formatMessage(MESSAGES.files)}
-                        state={formatMessage(MESSAGES.filesCount, {
-                            count: `${fileCount}`,
-                        })}
+                        state={formatMessage(
+                            MESSAGES.filesCount,
+                            numericValues({ count: fileCount }),
+                        )}
                     >
                         <InstancesFilesList
                             fetchDetails={false}
@@ -94,7 +96,7 @@ export const SubmissionRail: FunctionComponent<Props> = ({
                 )}
 
                 <RailRow
-                    icon={<ShieldIcon fontSize="small" />}
+                    icon={<ShieldOutlinedIcon fontSize="small" />}
                     tone={
                         validationAvailability === 'available'
                             ? 'info'
@@ -110,7 +112,7 @@ export const SubmissionRail: FunctionComponent<Props> = ({
 
                 {changeRequestCount > 0 && (
                     <RailRow
-                        icon={<EditIcon fontSize="small" />}
+                        icon={<EditOutlinedIcon fontSize="small" />}
                         tone="warning"
                         label={formatMessage(MESSAGES.changeRequests)}
                         state={`${changeRequestCount}`}
@@ -123,7 +125,7 @@ export const SubmissionRail: FunctionComponent<Props> = ({
                 )}
 
                 <RailRow
-                    icon={<UploadFileIcon fontSize="small" />}
+                    icon={<FileDownloadOutlinedIcon fontSize="small" />}
                     label={formatMessage(MESSAGES.exportRequests)}
                     state={
                         exportStatusCount > 0
@@ -139,9 +141,9 @@ export const SubmissionRail: FunctionComponent<Props> = ({
                 <RailRow
                     icon={
                         isLocked ? (
-                            <LockIcon fontSize="small" />
+                            <LockOutlinedIcon fontSize="small" />
                         ) : (
-                            <LockOpenIcon fontSize="small" />
+                            <LockOpenOutlinedIcon fontSize="small" />
                         )
                     }
                     tone={isLocked ? 'warning' : 'success'}

@@ -893,6 +893,82 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Review',
         id: 'iaso.label.review',
     },
+    searchQuestions: {
+        defaultMessage: 'Search questions or IDs',
+        id: 'iaso.instance.searchQuestions',
+    },
+    showQuestionIds: {
+        defaultMessage: 'Show question IDs',
+        id: 'iaso.instance.showQuestionIds',
+    },
+    clearSearch: {
+        defaultMessage: 'Clear search',
+        id: 'iaso.instance.clearSearch',
+    },
+    searchResultsCount: {
+        defaultMessage: '{count} results for "{query}"',
+        id: 'iaso.instance.searchResultsCount',
+    },
+    noQuestionsMatch: {
+        defaultMessage: 'No question name or ID matches "{query}"',
+        id: 'iaso.instance.noQuestionsMatch',
+    },
+    fieldsCount: {
+        defaultMessage: '{count} fields',
+        id: 'iaso.instance.fieldsCount',
+    },
+    matchingFieldsCount: {
+        defaultMessage: '{count} of {total}',
+        id: 'iaso.instance.matchingFieldsCount',
+    },
+    layoutDensity: {
+        defaultMessage: 'Layout density',
+        id: 'iaso.instance.layoutDensity',
+    },
+    oneColumn: {
+        defaultMessage: 'One column',
+        id: 'iaso.instance.oneColumn',
+    },
+    twoColumns: {
+        defaultMessage: 'Two columns',
+        id: 'iaso.instance.twoColumns',
+    },
+    technicalDetails: {
+        defaultMessage: 'Technical details',
+        id: 'iaso.instance.technicalDetails',
+    },
+    general: {
+        defaultMessage: 'General',
+        id: 'iaso.instance.general',
+    },
+    locks: {
+        defaultMessage: 'Locks',
+        id: 'iaso.instance.locks',
+    },
+    lockedState: {
+        defaultMessage: 'Locked',
+        id: 'iaso.instance.lockedState',
+    },
+    unlockedState: {
+        defaultMessage: 'Unlocked',
+        id: 'iaso.instance.unlockedState',
+    },
+    none: {
+        defaultMessage: 'None',
+        id: 'iaso.instance.none',
+    },
+    filesCount: {
+        defaultMessage: '{count} files',
+        id: 'iaso.instance.filesCount',
+    },
+    referenceSubmission: {
+        defaultMessage: 'Reference',
+        id: 'iaso.instance.referenceSubmission',
+    },
+    notReferenceSubmission: {
+        defaultMessage: 'Not a reference',
+        id: 'iaso.instance.notReferenceSubmission',
+    },
 });
 
 export default MESSAGES;

@@ -146,7 +146,7 @@ const getRawValue = (descriptor: Descriptor, data: Data): string => {
  * (handles the different scenarios, such as select fields)
  */
 
-const getDisplayedValue = (
+export const getDisplayedValue = (
     descriptor: Descriptor,
     data: Data,
     activeLocale: string,

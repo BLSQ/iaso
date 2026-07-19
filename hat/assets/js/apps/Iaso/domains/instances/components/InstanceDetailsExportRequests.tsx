@@ -17,23 +17,16 @@ type Props = {
     currentInstance: any;
 };
 
-const InstanceDetailsExportRequests: FunctionComponent<Props> = ({
+/**
+ * Body of the export requests panel, without any surrounding paper, so it can
+ * be dropped either in a WidgetPaper or in an accordion row of the detail rail.
+ */
+export const InstanceDetailsExportRequestsContent: FunctionComponent<Props> = ({
     currentInstance,
 }) => {
     const { formatMessage } = useSafeIntl();
     return (
-        <WidgetPaper
-            id="export-requests"
-            padded
-            title={formatMessage(MESSAGES.exportRequests)}
-            IconButton={IconButtonComponent}
-            iconButtonProps={{
-                url: `/forms/mappings/formId/${currentInstance.form_id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`,
-                color: 'secondary',
-                icon: 'dhis',
-                tooltipMessage: MESSAGES.dhis2Mappings,
-            }}
-        >
+        <>
             <InstanceDetailsField
                 label={formatMessage(MESSAGES.lastExportSuccessAt)}
                 valueTitle={null}
@@ -78,6 +71,30 @@ const InstanceDetailsExportRequests: FunctionComponent<Props> = ({
                     )}
                 </React.Fragment>
             ))}
+        </>
+    );
+};
+
+const InstanceDetailsExportRequests: FunctionComponent<Props> = ({
+    currentInstance,
+}) => {
+    const { formatMessage } = useSafeIntl();
+    return (
+        <WidgetPaper
+            id="export-requests"
+            padded
+            title={formatMessage(MESSAGES.exportRequests)}
+            IconButton={IconButtonComponent}
+            iconButtonProps={{
+                url: `/forms/mappings/formId/${currentInstance.form_id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`,
+                color: 'secondary',
+                icon: 'dhis',
+                tooltipMessage: MESSAGES.dhis2Mappings,
+            }}
+        >
+            <InstanceDetailsExportRequestsContent
+                currentInstance={currentInstance}
+            />
         </WidgetPaper>
     );
 };

@@ -12,14 +12,19 @@ APP_ID = "mission.import.test"
 
 class InstanceImportMissionTestCase(APITestCase):
     """
-    POST /api/instances/ : storage and validation of `missionId` and `planningId`.
+    POST /api/instances/ : storage of `missionId` and `planningId`.
 
-    This endpoint is wrapped in @safe_api_import: it always returns a 200 and must
-    never strand a batch of submissions. Validation therefore never raises; invalid
-    references (another account, unknown id, mission not in planning, form not part
-    of the mission...) null the FK, keep the submission and log. Tenancy breaches
-    log at ERROR level, business-rule races (a planner editing a planning after a
-    device has queued submissions) at WARNING level.
+    Tenancy is the only thing enforced: a planning or mission belonging to another
+    account, or an id that does not exist, nulls the FK and logs. Everything else is
+    stored as sent.
+
+    In particular a soft-deleted planning or mission is still linked. Deletion is
+    reversible, and dropping the link on the way in would silently lose the
+    association — undeleting has to bring the submissions back with it. The
+    dashboard is responsible for hiding data behind deleted objects, not the import.
+
+    The endpoint is wrapped in @safe_api_import: it always returns 200 and must never
+    strand a batch, so resolution never raises.
     """
 
     @classmethod
@@ -128,7 +133,8 @@ class InstanceImportMissionTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIsNone(self.get_instance(instance_uuid).planning)
 
-    def test_soft_deleted_planning_is_refused(self):
+    def test_soft_deleted_planning_is_still_linked(self):
+        """Undeleting the planning has to bring its submissions back with it."""
         deleted_planning = Planning.objects.create(
             project=self.project,
             name="deleted planning",
@@ -139,7 +145,16 @@ class InstanceImportMissionTestCase(APITestCase):
 
         response, instance_uuid = self.post_instance(planningId=deleted_planning.id)
         self.assertEqual(response.status_code, 200)
-        self.assertIsNone(self.get_instance(instance_uuid).planning)
+        self.assertEqual(self.get_instance(instance_uuid).planning_id, deleted_planning.id)
+
+    def test_soft_deleted_mission_is_still_linked(self):
+        deleted_mission = m.MissionForm.objects.create(name="deleted mission", account=self.account)
+        self.planning.missions.add(deleted_mission)
+        deleted_mission.delete()
+
+        response, instance_uuid = self.post_instance(planningId=self.planning.id, missionId=deleted_mission.id)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.get_instance(instance_uuid).mission_id, deleted_mission.id)
 
     def test_mission_from_another_account_is_refused(self):
         """The submission is saved but never linked to another account's mission."""
@@ -157,14 +172,21 @@ class InstanceImportMissionTestCase(APITestCase):
         self.assertEqual(instance.planning, self.planning)
         self.assertEqual(instance.mission_id, self.mission_form.id)
 
-    def test_mission_without_planning_is_nulled(self):
+    def test_unknown_mission_is_refused(self):
+        response, instance_uuid = self.post_instance(planningId=self.planning.id, missionId=987654)
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(self.get_instance(instance_uuid).mission)
+
+    def test_mission_without_planning_is_still_linked(self):
+        """A mission does not have to arrive with its planning to be stored."""
         response, instance_uuid = self.post_instance(missionId=self.mission_form.id)
         self.assertEqual(response.status_code, 200)
         instance = self.get_instance(instance_uuid)
         self.assertIsNone(instance.planning)
-        self.assertIsNone(instance.mission)
+        self.assertEqual(instance.mission_id, self.mission_form.id)
 
-    def test_mission_not_in_planning_is_nulled(self):
+    def test_mission_not_in_planning_is_still_linked(self):
+        """Whether the mission belongs to the planning is not checked on import."""
         lone_mission = m.MissionForm.objects.create(name="lone mission", account=self.account)
         m.MissionFormThroughForm.objects.create(mission_form=lone_mission, form=self.form)
 
@@ -172,15 +194,15 @@ class InstanceImportMissionTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         instance = self.get_instance(instance_uuid)
         self.assertEqual(instance.planning, self.planning)
-        self.assertIsNone(instance.mission)
+        self.assertEqual(instance.mission_id, lone_mission.id)
 
-    def test_form_filling_mission_with_unrelated_form_is_nulled(self):
-        """The submitted form is not one the FORM_FILLING mission asks for."""
+    def test_form_filling_mission_with_unrelated_form_is_still_linked(self):
+        """The submitted form is not one the FORM_FILLING mission asks for, and that is fine."""
         response, instance_uuid = self.post_instance(
             planningId=self.planning.id, missionId=self.mission_form.id, formId=self.other_form.id
         )
         self.assertEqual(response.status_code, 200)
-        self.assertIsNone(self.get_instance(instance_uuid).mission)
+        self.assertEqual(self.get_instance(instance_uuid).mission_id, self.mission_form.id)
 
     def test_org_unit_type_mission_happy_path(self):
         response, instance_uuid = self.post_instance(
@@ -189,19 +211,8 @@ class InstanceImportMissionTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.get_instance(instance_uuid).mission_id, self.mission_org_unit_type.id)
 
-    def test_org_unit_type_mission_sub_type_match(self):
-        """The mission targets a sub unit type of the submission's org unit type."""
-        sub_mission = m.MissionOrgUnitType.objects.create(
-            name="sub mission", account=self.account, org_unit_type=self.sub_org_unit_type
-        )
-        self.planning.missions.add(sub_mission)
-
-        response, instance_uuid = self.post_instance(planningId=self.planning.id, missionId=sub_mission.id)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(self.get_instance(instance_uuid).mission_id, sub_mission.id)
-
-    def test_org_unit_type_mission_mismatch_is_nulled(self):
-        """The mission targets an org unit type unrelated to the submission's."""
+    def test_org_unit_type_mission_unrelated_type_is_still_linked(self):
+        """The mission targets an org unit type unrelated to the submission's, and that is fine."""
         unrelated_type = m.OrgUnitType.objects.create(name="Unrelated type")
         unrelated_mission = m.MissionOrgUnitType.objects.create(
             name="unrelated mission", account=self.account, org_unit_type=unrelated_type
@@ -210,7 +221,7 @@ class InstanceImportMissionTestCase(APITestCase):
 
         response, instance_uuid = self.post_instance(planningId=self.planning.id, missionId=unrelated_mission.id)
         self.assertEqual(response.status_code, 200)
-        self.assertIsNone(self.get_instance(instance_uuid).mission)
+        self.assertEqual(self.get_instance(instance_uuid).mission_id, unrelated_mission.id)
 
     def test_invalid_reference_does_not_strand_the_batch(self):
         """One submission with a cross-account planning must not prevent the others from being saved."""
@@ -244,7 +255,7 @@ class InstanceImportMissionTestCase(APITestCase):
         self.assertEqual(good.planning, self.planning)
         self.assertEqual(good.mission_id, self.mission_form.id)
 
-    def test_entity_type_mission_is_always_assigned(self):
+    def test_entity_type_mission_happy_path(self):
         response, instance_uuid = self.post_instance(planningId=self.planning.id, missionId=self.mission_entity_type.id)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.get_instance(instance_uuid).mission_id, self.mission_entity_type.id)

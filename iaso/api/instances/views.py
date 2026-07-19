@@ -1029,13 +1029,7 @@ def import_data(instances, user, app_id):
         instance.form_id = instance_data.get("formId")
 
         instance.planning = resolve_planning(instance_data.get("planningId", None), project)
-        instance.mission = resolve_mission(
-            mission_id=instance_data.get("missionId", None),
-            planning=instance.planning,
-            org_unit=instance.org_unit,
-            form_id=instance.form_id,
-            project=project,
-        )
+        instance.mission = resolve_mission(instance_data.get("missionId", None), project)
         entity_uuid = instance_data.get("entityUuid", None)
         entity_type_id = instance_data.get("entityTypeId", None)
         if entity_uuid and entity_type_id:

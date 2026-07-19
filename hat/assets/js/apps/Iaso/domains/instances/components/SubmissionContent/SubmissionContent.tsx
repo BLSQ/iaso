@@ -29,11 +29,7 @@ import {
     useSubmissionSections,
 } from './useSubmissionSections';
 
-/**
- * Height of the panel toolbar. The detail page scrolls inside its own
- * container, so section headers stick just below the toolbar rather than below
- * the application top bar.
- */
+/** Minimum height of the panel toolbar. */
 const TOOLBAR_HEIGHT = 57;
 
 type Props = {
@@ -52,9 +48,6 @@ const SectionHeader: FunctionComponent<{
     return (
         <Box
             sx={{
-                position: 'sticky',
-                top: TOOLBAR_HEIGHT,
-                zIndex: 2,
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1.4,
@@ -166,12 +159,9 @@ export const SubmissionContent: FunctionComponent<Props> = ({
     }
 
     return (
-        <Paper elevation={0} variant="outlined" sx={{ overflow: 'visible' }}>
+        <Paper elevation={0} variant="outlined">
             <Box
                 sx={{
-                    position: 'sticky',
-                    top: 0,
-                    zIndex: 3,
                     minHeight: TOOLBAR_HEIGHT,
                     display: 'flex',
                     alignItems: 'center',

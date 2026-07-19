@@ -945,6 +945,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Locks',
         id: 'iaso.instance.locks',
     },
+    notActivated: {
+        defaultMessage: 'Not activated',
+        id: 'iaso.instance.notActivated',
+    },
+    restricted: {
+        defaultMessage: 'Restricted',
+        id: 'iaso.instance.restricted',
+    },
     lockedState: {
         defaultMessage: 'Locked',
         id: 'iaso.instance.lockedState',

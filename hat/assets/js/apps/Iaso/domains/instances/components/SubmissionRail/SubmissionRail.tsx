@@ -47,11 +47,11 @@ export const SubmissionRail: FunctionComponent<Props> = ({
     const exportStatusCount = currentInstance.export_statuses?.length ?? 0;
     const isLocked = currentInstance.is_locked;
 
+    // the collapsed row only has room for a couple of words; the full
+    // explanation lives in the body of the row
     const validationState = {
-        moduleDisabled: formatMessage(MESSAGES.moduleDisabled),
-        missingPermissions: formatMessage(MESSAGES.missingPermissions, {
-            permissions: '',
-        }),
+        moduleDisabled: formatMessage(MESSAGES.notActivated),
+        missingPermissions: formatMessage(MESSAGES.restricted),
         available: undefined,
     }[validationAvailability];
 

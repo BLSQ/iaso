@@ -84,7 +84,7 @@ export const RailRow: FunctionComponent<Props> = ({
                     </Box>
                     <Typography
                         sx={{
-                            flex: 1,
+                            flex: '1 1 auto',
                             minWidth: 0,
                             fontWeight: 500,
                             overflow: 'hidden',
@@ -97,10 +97,16 @@ export const RailRow: FunctionComponent<Props> = ({
                     {state && (
                         <Typography
                             variant="body2"
+                            title={state}
                             sx={{
                                 color: tones.color,
                                 fontWeight: 500,
-                                flex: '0 0 auto',
+                                // shrink before the label does, and truncate
+                                // rather than push the row past the card
+                                flex: '0 1 auto',
+                                minWidth: 0,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
                                 whiteSpace: 'nowrap',
                             }}
                         >

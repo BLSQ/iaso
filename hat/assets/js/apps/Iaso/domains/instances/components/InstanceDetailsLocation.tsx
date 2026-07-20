@@ -27,11 +27,14 @@ type Props = {
      * submission rail passes a design-matching row instead.
      */
     FieldComponent?: React.ComponentType<FieldComponentProps>;
+    /** Height of the map. The narrow rail passes a shorter, landscape height. */
+    mapHeight?: number;
 };
 
 const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
     currentInstance,
     FieldComponent = InstanceDetailsField,
+    mapHeight,
 }) => {
     const { formatMessage } = useSafeIntl();
     const orgUnitTree: OrgUnit[] = currentInstance.org_unit
@@ -152,6 +155,7 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                 <MarkerMap
                     latitude={currentInstance.latitude}
                     longitude={currentInstance.longitude}
+                    mapHeight={mapHeight}
                 />
             )}
 
@@ -161,6 +165,7 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                     <MarkerMap
                         latitude={orgUnit.latitude}
                         longitude={orgUnit.longitude}
+                        mapHeight={mapHeight}
                     />
                 )}
         </>

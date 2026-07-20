@@ -74,6 +74,7 @@ export const SubmissionRail: FunctionComponent<Props> = ({
                     <InstanceDetailsLocation
                         currentInstance={currentInstance}
                         FieldComponent={KvRow}
+                        mapHeight={190}
                     />
                 </RailRow>
 

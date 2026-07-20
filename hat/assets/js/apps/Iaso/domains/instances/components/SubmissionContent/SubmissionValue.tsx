@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Box, Chip, Typography } from '@mui/material';
+import { Box, Chip, Typography, alpha } from '@mui/material';
+import { Theme } from '@mui/material/styles';
 import { textPlaceholder } from 'bluesquare-components';
 import DocumentsItemComponent from 'Iaso/components/files/DocumentsItemComponent';
 import VideoItemComponent from 'Iaso/components/files/VideoItemComponent';
@@ -13,6 +14,21 @@ type Props = {
     field: SubmissionField;
     files: string[];
 };
+
+/**
+ * Soft tinted pill matching the design's `.val-choice` / `.pill`: a light fill
+ * of the primary colour with a subtle border, rather than MUI's harder
+ * outlined chip. Alphas mirror the design tokens (--tint 6%, --tint-line 18%).
+ */
+const tintedChipSx = (fontSize: number) => (theme: Theme) => ({
+    height: 24,
+    fontSize,
+    fontWeight: 500,
+    color: theme.palette.primary.main,
+    backgroundColor: alpha(theme.palette.primary.main, 0.06),
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.18)}`,
+    '& .MuiChip-label': { px: 1.25 },
+});
 
 /**
  * Resolve the uploaded file matching a question's value. Mirrors the matching
@@ -128,21 +144,13 @@ export const SubmissionValue: FunctionComponent<Props> = ({ field, files }) => {
                                 key={part}
                                 label={part}
                                 size="small"
-                                variant="outlined"
-                                color="primary"
+                                sx={tintedChipSx(12.5)}
                             />
                         ))}
                 </Box>
             );
         case 'choice':
-            return (
-                <Chip
-                    label={value}
-                    size="small"
-                    variant="outlined"
-                    color="primary"
-                />
-            );
+            return <Chip label={value} size="small" sx={tintedChipSx(13)} />;
         case 'date':
             return (
                 <Typography

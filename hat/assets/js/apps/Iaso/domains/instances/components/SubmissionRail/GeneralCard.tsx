@@ -143,10 +143,18 @@ export const GeneralCard: FunctionComponent<Props> = ({
                     pb: 1,
                 }}
             >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                    <Typography variant="h6" color="primary">
-                        {formatMessage(MESSAGES.general)}
-                    </Typography>
+                <Typography variant="h6" color="primary">
+                    {formatMessage(MESSAGES.general)}
+                </Typography>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'flex-end',
+                        flexWrap: 'wrap',
+                        gap: 0.75,
+                    }}
+                >
                     <Chip
                         size="small"
                         variant="outlined"
@@ -157,15 +165,15 @@ export const GeneralCard: FunctionComponent<Props> = ({
                                 : MESSAGES.notReferenceSubmission,
                         )}
                     />
+                    {statusLabel && (
+                        <Chip
+                            size="small"
+                            color={statusColor(currentInstance.status)}
+                            sx={{ height: 22, fontSize: 11.5 }}
+                            label={formatMessage(statusLabel)}
+                        />
+                    )}
                 </Box>
-                {statusLabel && (
-                    <Chip
-                        size="small"
-                        color={statusColor(currentInstance.status)}
-                        sx={{ height: 22, fontSize: 11.5 }}
-                        label={formatMessage(statusLabel)}
-                    />
-                )}
             </Box>
 
             <Box sx={{ px: 2.25, pb: 1.5 }}>

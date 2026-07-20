@@ -950,6 +950,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Not activated',
         id: 'iaso.instance.notActivated',
     },
+    showExactValues: {
+        defaultMessage: 'Show exact values',
+        id: 'iaso.instance.showExactValues',
+    },
+    hideExactValues: {
+        defaultMessage: 'Hide exact values',
+        id: 'iaso.instance.hideExactValues',
+    },
     restricted: {
         defaultMessage: 'Restricted',
         id: 'iaso.instance.restricted',

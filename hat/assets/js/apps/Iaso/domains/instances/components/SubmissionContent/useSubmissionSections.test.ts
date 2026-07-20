@@ -109,6 +109,26 @@ describe('buildSubmissionSections', () => {
         ]);
     });
 
+    it('strips the ODK interpolation placeholder from metadata labels', () => {
+        const withMeta = buildSubmissionSections(
+            {
+                name: 'survey',
+                type: 'survey',
+                children: [
+                    {
+                        name: 'start',
+                        type: 'start',
+                        label: 'Survey start time: ${start}',
+                    },
+                ],
+            },
+            { start: '2026-07-18T16:18:40.530+02:00' },
+            'en',
+        );
+        expect(withMeta[0].fields[0].label).to.equal('Survey start time');
+        expect(withMeta[0].fields[0].kind).to.equal('date');
+    });
+
     it('resolves select_one values to their translated choice label', () => {
         const sexe = sections[1].fields[1];
         expect(sexe.kind).to.equal('choice');

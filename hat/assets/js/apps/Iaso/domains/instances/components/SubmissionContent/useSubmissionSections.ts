@@ -65,13 +65,18 @@ const isEmptyValue = (raw: unknown, displayed: string): boolean =>
     raw === '' ||
     displayed === textPlaceholder;
 
-const labelOf = (descriptor: Descriptor, activeLocale: string): string =>
-    'label' in descriptor && descriptor.label
-        ? translateLabel(descriptor.label, activeLocale).replace(
-              /(<([^>]+)>)/gi,
-              '',
-          )
-        : descriptor.name;
+const labelOf = (descriptor: Descriptor, activeLocale: string): string => {
+    if (!('label' in descriptor) || !descriptor.label) return descriptor.name;
+    const cleaned = translateLabel(descriptor.label, activeLocale)
+        .replace(/(<([^>]+)>)/gi, '') // strip html tags
+        // ODK metadata labels interpolate the value, e.g.
+        // "Survey start time: ${start}"; drop the placeholder and any now
+        // dangling separator so the label reads cleanly
+        .replace(/\$\{[^}]*\}/g, '')
+        .replace(/[\s:–-]+$/, '')
+        .trim();
+    return cleaned || descriptor.name;
+};
 
 const buildField = (
     descriptor: Descriptor,

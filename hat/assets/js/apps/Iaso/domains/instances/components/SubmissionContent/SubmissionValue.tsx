@@ -1,11 +1,13 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Box, Chip, Typography, alpha } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { Box, Button, Chip, Collapse, Typography, alpha } from '@mui/material';
 import { Theme } from '@mui/material/styles';
-import { textPlaceholder } from 'bluesquare-components';
+import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import DocumentsItemComponent from 'Iaso/components/files/DocumentsItemComponent';
 import VideoItemComponent from 'Iaso/components/files/VideoItemComponent';
 import { getFileName, getFileType } from 'Iaso/utils/filesUtils';
 import { MarkerMap } from '../../../../components/maps/MarkerMapComponent';
+import MESSAGES from '../../messages';
 import { formatFieldDate } from '../../utils/formatDate';
 import { slugifyValue } from '../../utils/questions';
 import { InstanceImagePreview } from '../InstanceImagePreview';
@@ -50,14 +52,149 @@ const useFileUrl = (value: unknown, files: string[]): string | undefined =>
         );
     }, [value, files]);
 
+type GeoPoint = {
+    latitude: number;
+    longitude: number;
+    altitude?: number;
+    accuracy?: number;
+};
+
 /** ODK stores a geopoint as "latitude longitude altitude accuracy". */
-const parseGeoPoint = (
-    value: unknown,
-): { latitude: number; longitude: number } | undefined => {
+const parseGeoPoint = (value: unknown): GeoPoint | undefined => {
     if (typeof value !== 'string') return undefined;
-    const [latitude, longitude] = value.trim().split(/\s+/).map(Number);
+    const [latitude, longitude, altitude, accuracy] = value
+        .trim()
+        .split(/\s+/)
+        .map(Number);
     if (Number.isNaN(latitude) || Number.isNaN(longitude)) return undefined;
-    return { latitude, longitude };
+    return {
+        latitude,
+        longitude,
+        altitude: Number.isNaN(altitude) ? undefined : altitude,
+        accuracy: Number.isNaN(accuracy) ? undefined : accuracy,
+    };
+};
+
+const GpsStat: FunctionComponent<{ label: string; value: string }> = ({
+    label,
+    value,
+}) => (
+    <Box
+        sx={{
+            backgroundColor: 'grey.100',
+            border: 1,
+            borderColor: 'divider',
+            borderRadius: 1,
+            px: 1.4,
+            py: 0.9,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1px',
+            minWidth: 0,
+        }}
+    >
+        <Typography
+            component="span"
+            sx={{
+                fontSize: 10.5,
+                fontWeight: 500,
+                color: 'text.disabled',
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+            }}
+        >
+            {label}
+        </Typography>
+        <Typography
+            component="span"
+            sx={{
+                fontFamily: 'monospace',
+                fontSize: 13,
+                fontWeight: 500,
+                color: 'text.primary',
+                wordBreak: 'break-all',
+            }}
+        >
+            {value}
+        </Typography>
+    </Box>
+);
+
+/**
+ * A geopoint answer: the map, plus a disclosure that reveals the exact
+ * latitude / longitude / altitude / accuracy, matching the design's GpsField.
+ */
+const GpsField: FunctionComponent<{ point: GeoPoint }> = ({ point }) => {
+    const { formatMessage } = useSafeIntl();
+    const [showValues, setShowValues] = React.useState(false);
+    return (
+        <Box sx={{ maxWidth: 520, width: '100%' }}>
+            <MarkerMap
+                latitude={point.latitude}
+                longitude={point.longitude}
+                mapHeight={190}
+            />
+            <Button
+                size="small"
+                onClick={() => setShowValues(current => !current)}
+                startIcon={
+                    <ExpandMoreIcon
+                        sx={{
+                            transition: 'transform .2s',
+                            transform: showValues ? 'rotate(180deg)' : 'none',
+                        }}
+                    />
+                }
+                sx={{
+                    mt: 1,
+                    px: 0,
+                    fontSize: 12.5,
+                    fontWeight: 500,
+                    textTransform: 'none',
+                }}
+            >
+                {formatMessage(
+                    showValues
+                        ? MESSAGES.hideExactValues
+                        : MESSAGES.showExactValues,
+                )}
+            </Button>
+            <Collapse in={showValues} unmountOnExit>
+                <Box
+                    sx={{
+                        display: 'grid',
+                        gridTemplateColumns: {
+                            xs: '1fr 1fr',
+                            sm: 'repeat(4, minmax(0, 1fr))',
+                        },
+                        gap: 1,
+                        mt: 1,
+                    }}
+                >
+                    <GpsStat
+                        label={formatMessage(MESSAGES.latitude)}
+                        value={String(point.latitude)}
+                    />
+                    <GpsStat
+                        label={formatMessage(MESSAGES.longitude)}
+                        value={String(point.longitude)}
+                    />
+                    {point.altitude != null && (
+                        <GpsStat
+                            label={formatMessage(MESSAGES.altitude)}
+                            value={`${point.altitude} m`}
+                        />
+                    )}
+                    {point.accuracy != null && (
+                        <GpsStat
+                            label={formatMessage(MESSAGES.accuracy)}
+                            value={`±${point.accuracy} m`}
+                        />
+                    )}
+                </Box>
+            </Collapse>
+        </Box>
+    );
 };
 
 const EmptyValue: FunctionComponent = () => (
@@ -113,15 +250,7 @@ export const SubmissionValue: FunctionComponent<Props> = ({ field, files }) => {
         case 'gps': {
             const point = parseGeoPoint(field.rawValue);
             if (!point) return <EmptyValue />;
-            return (
-                <Box sx={{ maxWidth: 520, width: '100%' }}>
-                    <MarkerMap
-                        latitude={point.latitude}
-                        longitude={point.longitude}
-                        mapHeight={190}
-                    />
-                </Box>
-            );
+            return <GpsField point={point} />;
         }
         case 'photo':
             return <PhotoValue field={field} files={files} />;

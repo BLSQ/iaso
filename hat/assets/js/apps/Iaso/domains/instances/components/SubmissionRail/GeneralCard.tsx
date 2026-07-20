@@ -157,8 +157,16 @@ export const GeneralCard: FunctionComponent<Props> = ({
                 >
                     <Chip
                         size="small"
-                        variant="outlined"
-                        sx={{ height: 22, fontSize: 11.5 }}
+                        sx={{
+                            height: 22,
+                            fontSize: 11,
+                            fontWeight: 500,
+                            color: 'text.secondary',
+                            backgroundColor: 'grey.100',
+                            border: 1,
+                            borderColor: 'divider',
+                            '& .MuiChip-label': { px: 1.25 },
+                        }}
                         label={formatMessage(
                             currentInstance.is_reference_instance
                                 ? MESSAGES.referenceSubmission

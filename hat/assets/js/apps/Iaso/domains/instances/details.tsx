@@ -20,11 +20,11 @@ import {
     useParamsObject,
 } from '../../routing/hooks/useParamsObject';
 import { ClassNames } from '../../types/utils';
-import { EntityBaseInfo } from '../entities/components/EntityBaseInfo';
 import { useGetEntityFields } from '../entities/hooks/useGetEntityFields';
 import { Descriptor } from './components/InstanceFileContentRich';
 import SpeedDialInstance from './components/SpeedDialInstance';
 import { SubmissionContent } from './components/SubmissionContent/SubmissionContent';
+import { EntityCard } from './components/SubmissionRail/EntityCard';
 import { SubmissionRail } from './components/SubmissionRail/SubmissionRail';
 import { useGetInstance } from './hooks/requests/useGetInstance';
 import {
@@ -135,7 +135,7 @@ const InstanceDetails: FunctionComponent = () => {
                                 </Alert>
                             )}
                             {currentInstance && currentInstance.entity && (
-                                <EntityBaseInfo
+                                <EntityCard
                                     entity={currentInstance.entity}
                                     fields={entityFields}
                                     withLinkToEntity

@@ -34,6 +34,29 @@ import {
 /** Minimum height of the panel toolbar. */
 const TOOLBAR_HEIGHT = 57;
 
+/** gps / photo / file values span the full width of the panel. */
+const isBlockKind = (kind: string): boolean =>
+    kind === 'gps' || kind === 'photo' || kind === 'file';
+
+/**
+ * Whether the field at `index` has no field rendered directly below it, so its
+ * bottom divider would dangle at the edge of the section. In one column that is
+ * only the last field; in two columns it is the last field of each column —
+ * i.e. the last two, unless a full-width block field sits between them.
+ */
+const hasNothingBelow = (
+    fields: { kind: string }[],
+    index: number,
+    twoColumns: boolean,
+): boolean => {
+    const last = fields.length - 1;
+    if (index === last) return true;
+    if (!twoColumns || index !== last - 1) return false;
+    // the second-to-last only dangles when it shares the bottom row with the
+    // last field; a block field on either side takes its own full-width row
+    return !isBlockKind(fields[last].kind) && !isBlockKind(fields[index].kind);
+};
+
 type Props = {
     formDescriptor?: Descriptor;
     instanceData?: Record<string, any>;
@@ -349,7 +372,7 @@ export const SubmissionContent: FunctionComponent<Props> = ({
                                 py: twoColumns ? 0.5 : 0,
                             }}
                         >
-                            {section.fields.map(field => (
+                            {section.fields.map((field, index) => (
                                 <SubmissionFieldRow
                                     key={`${section.id ?? 'lead'}-${field.id}`}
                                     field={field}
@@ -357,6 +380,11 @@ export const SubmissionContent: FunctionComponent<Props> = ({
                                     showQuestionIds={showQuestionIds}
                                     query={query}
                                     twoColumns={twoColumns}
+                                    hideBorder={hasNothingBelow(
+                                        section.fields,
+                                        index,
+                                        twoColumns,
+                                    )}
                                 />
                             ))}
                         </Box>

@@ -95,13 +95,7 @@ const InstanceDetails: FunctionComponent = () => {
     return (
         <section className={classes.relativeContainer}>
             <TopBar
-                title={
-                    currentInstance
-                        ? `${
-                              currentInstance.form_name
-                          }: ${currentInstance.file_name.replace('.xml', '')}`
-                        : ''
-                }
+                title={currentInstance ? currentInstance.form_name : ''}
                 displayBackButton
                 goBack={() => goBack()}
             />

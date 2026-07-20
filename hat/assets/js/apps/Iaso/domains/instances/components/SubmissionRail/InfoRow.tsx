@@ -5,11 +5,36 @@ import { textPlaceholder } from 'bluesquare-components';
 /** Width of the label column, matching the design's 118px key column. */
 const LABEL_WIDTH = 118;
 
+/**
+ * Shared rail type scale, kept deliberately small: 14px for values, 13px for
+ * labels, 12px for meta (dates). Weights are limited to 500 (labels) and 600
+ * (emphasised values); de-emphasis is done with colour, not extra weights.
+ */
+const LABEL_SX = {
+    fontSize: 13,
+    fontWeight: 500,
+    lineHeight: 1.35,
+    color: 'text.secondary',
+} as const;
+const VALUE_SX = {
+    fontSize: 14,
+    fontWeight: 600,
+    color: 'text.primary',
+    wordBreak: 'break-word',
+    minWidth: 0,
+} as const;
+
+const rowSx = {
+    display: 'grid',
+    gridTemplateColumns: `${LABEL_WIDTH}px minmax(0, 1fr)`,
+    gap: 1.75,
+    alignItems: 'baseline',
+    py: 0.9,
+} as const;
+
 type Props = {
     label: string;
     children: ReactNode;
-    /** Slightly smaller label, used inside the technical details disclosure */
-    dense?: boolean;
     /** Render the value in a monospace face, for identifiers */
     mono?: boolean;
 };
@@ -22,39 +47,25 @@ type Props = {
 export const InfoRow: FunctionComponent<Props> = ({
     label,
     children,
-    dense = false,
     mono = false,
 }) => (
-    <Box
-        sx={{
-            display: 'grid',
-            gridTemplateColumns: `${LABEL_WIDTH}px minmax(0, 1fr)`,
-            gap: 1.75,
-            alignItems: 'baseline',
-            py: 0.9,
-        }}
-    >
-        <Typography
-            component="span"
-            sx={{
-                fontSize: dense ? 12.5 : 13,
-                fontWeight: 500,
-                lineHeight: 1.35,
-                color: 'text.secondary',
-            }}
-        >
+    <Box sx={rowSx}>
+        <Typography component="span" sx={LABEL_SX}>
             {label}
         </Typography>
         <Typography
             component="span"
-            sx={{
-                fontSize: mono ? 13 : 13.5,
-                fontWeight: mono ? 500 : 600,
-                fontFamily: mono ? 'monospace' : undefined,
-                color: mono ? 'text.secondary' : 'text.primary',
-                wordBreak: 'break-word',
-                minWidth: 0,
-            }}
+            sx={
+                mono
+                    ? {
+                          ...VALUE_SX,
+                          fontWeight: 500,
+                          fontFamily: 'monospace',
+                          fontSize: 13,
+                          color: 'text.secondary',
+                      }
+                    : VALUE_SX
+            }
         >
             {children}
         </Typography>
@@ -69,38 +80,14 @@ export const ActivityRow: FunctionComponent<{
     label: string;
     who?: ReactNode;
     when?: ReactNode;
-    dense?: boolean;
-}> = ({ label, who, when, dense = false }) => (
-    <Box
-        sx={{
-            display: 'grid',
-            gridTemplateColumns: `${LABEL_WIDTH}px minmax(0, 1fr)`,
-            gap: 1.75,
-            alignItems: 'baseline',
-            py: 0.9,
-        }}
-    >
-        <Typography
-            component="span"
-            sx={{
-                fontSize: dense ? 12.5 : 13,
-                fontWeight: 500,
-                lineHeight: 1.35,
-                color: 'text.secondary',
-            }}
-        >
+}> = ({ label, who, when }) => (
+    <Box sx={rowSx}>
+        <Typography component="span" sx={LABEL_SX}>
             {label}
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
             {who && (
-                <Typography
-                    component="span"
-                    sx={{
-                        fontSize: 13.5,
-                        fontWeight: 600,
-                        wordBreak: 'break-word',
-                    }}
-                >
+                <Typography component="span" sx={VALUE_SX}>
                     {who}
                 </Typography>
             )}
@@ -135,11 +122,8 @@ export const KvRow: FunctionComponent<{
     return (
         <Box
             sx={{
-                display: 'grid',
+                ...rowSx,
                 gridTemplateColumns: 'minmax(96px, 42%) 1fr',
-                gap: 1.75,
-                alignItems: 'baseline',
-                py: 0.9,
                 borderBottom: 1,
                 borderColor: 'divider',
                 '&:last-of-type': { borderBottom: 0 },
@@ -149,10 +133,7 @@ export const KvRow: FunctionComponent<{
                 component="span"
                 title={label}
                 sx={{
-                    fontSize: 13,
-                    fontWeight: 500,
-                    lineHeight: 1.35,
-                    color: 'text.secondary',
+                    ...LABEL_SX,
                     textAlign: 'right',
                     wordBreak: 'break-word',
                 }}
@@ -162,10 +143,8 @@ export const KvRow: FunctionComponent<{
             <Box
                 component="span"
                 sx={{
-                    fontSize: 13.5,
-                    fontWeight: 500,
-                    minWidth: 0,
-                    wordBreak: 'break-word',
+                    ...VALUE_SX,
+                    fontWeight: isEmpty ? 500 : 600,
                     color: isEmpty ? 'text.disabled' : 'text.primary',
                 }}
             >

@@ -59,7 +59,7 @@ const useFieldValue = (): ((key: string, instance: Instance) => ReactNode) => {
 
 const countBadgeSx = {
     height: 20,
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: 500,
     color: 'text.secondary',
     backgroundColor: 'grey.100',
@@ -87,44 +87,31 @@ export const GeneralCard: FunctionComponent<Props> = ({
     const technicalRows: ReactNode[] = [
         <ActivityRow
             key="created"
-            dense
             label={formatMessage(MESSAGES.created_at)}
             who={fieldValue('created_by__username', currentInstance)}
             when={formatTimestamp(currentInstance.created_at)}
         />,
         <ActivityRow
             key="source_created_at"
-            dense
             label={formatMessage(MESSAGES.source_created_at)}
             when={formatTimestamp(currentInstance.source_created_at)}
         />,
-        <InfoRow key="uuid" dense mono label={formatMessage(MESSAGES.uuid)}>
+        <InfoRow key="uuid" mono label={formatMessage(MESSAGES.uuid)}>
             {currentInstance.uuid || textPlaceholder}
         </InfoRow>,
-        <InfoRow
-            key="version"
-            dense
-            mono
-            label={formatMessage(MESSAGES.version)}
-        >
+        <InfoRow key="version" mono label={formatMessage(MESSAGES.version)}>
             {fieldValue('version', currentInstance)}
         </InfoRow>,
-        <InfoRow
-            key="device_id"
-            dense
-            mono
-            label={formatMessage(MESSAGES.device_id)}
-        >
+        <InfoRow key="device_id" mono label={formatMessage(MESSAGES.device_id)}>
             {currentInstance.device_id || textPlaceholder}
         </InfoRow>,
         <InfoRow
             key="project_name"
-            dense
             label={formatMessage(MESSAGES.project_name)}
         >
             {fieldValue('project_name', currentInstance)}
         </InfoRow>,
-        <InfoRow key="planning" dense label={formatMessage(MESSAGES.planning)}>
+        <InfoRow key="planning" label={formatMessage(MESSAGES.planning)}>
             {fieldValue('planning', currentInstance)}
         </InfoRow>,
     ];
@@ -159,7 +146,7 @@ export const GeneralCard: FunctionComponent<Props> = ({
                         size="small"
                         sx={{
                             height: 22,
-                            fontSize: 11,
+                            fontSize: 12,
                             fontWeight: 500,
                             color: 'text.secondary',
                             backgroundColor: 'grey.100',
@@ -177,7 +164,7 @@ export const GeneralCard: FunctionComponent<Props> = ({
                         <Chip
                             size="small"
                             color={statusColor(currentInstance.status)}
-                            sx={{ height: 22, fontSize: 11.5 }}
+                            sx={{ height: 22, fontSize: 12 }}
                             label={formatMessage(statusLabel)}
                         />
                     )}
@@ -233,7 +220,7 @@ export const GeneralCard: FunctionComponent<Props> = ({
                         justifyContent: 'flex-start',
                         gap: 0.75,
                         color: 'text.secondary',
-                        fontSize: 12.5,
+                        fontSize: 12,
                         fontWeight: 600,
                         textTransform: 'none',
                         mt: 0.75,
@@ -260,7 +247,7 @@ export const GeneralCard: FunctionComponent<Props> = ({
                                 alignItems: 'center',
                                 gap: 0.75,
                                 mt: 1.25,
-                                fontSize: 12.5,
+                                fontSize: 12,
                                 fontWeight: 600,
                             }}
                         >

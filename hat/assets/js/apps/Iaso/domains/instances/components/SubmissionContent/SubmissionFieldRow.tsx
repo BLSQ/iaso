@@ -39,6 +39,8 @@ type Props = {
     query: string;
     /** Stack label above value and let the row span the full width */
     twoColumns: boolean;
+    /** Drop the bottom divider when nothing is rendered directly below */
+    hideBorder?: boolean;
 };
 
 const QuestionId: FunctionComponent<{ id: string; query: string }> = ({
@@ -70,6 +72,7 @@ export const SubmissionFieldRow: FunctionComponent<Props> = ({
     showQuestionIds,
     query,
     twoColumns,
+    hideBorder = false,
 }) => {
     // gps, photo and file values need the full width, so their label sits above
     const isBlock =
@@ -131,9 +134,8 @@ export const SubmissionFieldRow: FunctionComponent<Props> = ({
                 alignItems: stacked ? 'stretch' : 'start',
                 py: 1.6,
                 px: twoColumns ? 0 : 2.75,
-                borderBottom: 1,
+                borderBottom: hideBorder ? 0 : 1,
                 borderColor: 'divider',
-                '&:last-of-type': { borderBottom: 0 },
                 '&:hover': twoColumns
                     ? undefined
                     : { backgroundColor: 'action.hover' },

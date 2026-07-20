@@ -13,7 +13,6 @@ import {
 } from '@mui/material';
 import {
     LinkWithLocation,
-    displayDateFromTimestamp,
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
@@ -26,6 +25,7 @@ import {
 } from '../../constants';
 import MESSAGES from '../../messages';
 import { Instance } from '../../types/instance';
+import { formatTimestamp } from '../../utils/formatDate';
 import { ActivityRow, InfoRow } from './InfoRow';
 
 type Props = {
@@ -90,13 +90,13 @@ export const GeneralCard: FunctionComponent<Props> = ({
             dense
             label={formatMessage(MESSAGES.created_at)}
             who={fieldValue('created_by__username', currentInstance)}
-            when={displayDateFromTimestamp(currentInstance.created_at)}
+            when={formatTimestamp(currentInstance.created_at)}
         />,
         <ActivityRow
             key="source_created_at"
             dense
             label={formatMessage(MESSAGES.source_created_at)}
-            when={displayDateFromTimestamp(currentInstance.source_created_at)}
+            when={formatTimestamp(currentInstance.source_created_at)}
         />,
         <InfoRow key="uuid" dense mono label={formatMessage(MESSAGES.uuid)}>
             {currentInstance.uuid || textPlaceholder}
@@ -192,7 +192,7 @@ export const GeneralCard: FunctionComponent<Props> = ({
                             : MESSAGES.updated_at,
                     )}
                     who={fieldValue('last_modified_by', currentInstance)}
-                    when={displayDateFromTimestamp(currentInstance.updated_at)}
+                    when={formatTimestamp(currentInstance.updated_at)}
                 />
                 {showHistoryLink && (
                     <Box sx={{ pl: `${118 + 14}px`, pb: 0.5 }}>

@@ -6,6 +6,7 @@ import DocumentsItemComponent from 'Iaso/components/files/DocumentsItemComponent
 import VideoItemComponent from 'Iaso/components/files/VideoItemComponent';
 import { getFileName, getFileType } from 'Iaso/utils/filesUtils';
 import { MarkerMap } from '../../../../components/maps/MarkerMapComponent';
+import { formatFieldDate } from '../../utils/formatDate';
 import { slugifyValue } from '../../utils/questions';
 import { InstanceImagePreview } from '../InstanceImagePreview';
 import { SubmissionField } from './types';
@@ -166,7 +167,7 @@ export const SubmissionValue: FunctionComponent<Props> = ({ field, files }) => {
                         whiteSpace: 'nowrap',
                     }}
                 >
-                    {value}
+                    {formatFieldDate(field.rawValue)}
                 </Typography>
             );
         case 'number':

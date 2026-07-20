@@ -63,6 +63,9 @@ describe('getFieldKind', () => {
             'multi',
         );
         expect(getFieldKind({ name: 'a', type: 'geopoint' })).to.equal('gps');
+        // ODK metadata timestamps are dates too
+        expect(getFieldKind({ name: 'a', type: 'start' })).to.equal('date');
+        expect(getFieldKind({ name: 'a', type: 'end' })).to.equal('date');
         expect(getFieldKind({ name: 'a', type: 'image' })).to.equal('photo');
         expect(getFieldKind({ name: 'a', type: 'calculate' })).to.equal(
             'calculated',

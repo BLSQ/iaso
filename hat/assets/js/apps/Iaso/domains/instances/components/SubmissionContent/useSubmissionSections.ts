@@ -15,7 +15,11 @@ export const getFieldKind = (descriptor: Descriptor): FieldKind => {
         case 'date':
         case 'today':
         case 'datetime':
+        case 'dateTime':
         case 'time':
+        // ODK collection metadata timestamps (start/end of the submission)
+        case 'start':
+        case 'end':
             return 'date';
         case 'integer':
         case 'int':

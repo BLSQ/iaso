@@ -17,6 +17,7 @@ import {
     ToggleButtonGroup,
     Tooltip,
     Typography,
+    alpha,
 } from '@mui/material';
 import { ErrorBoundary, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../messages';
@@ -256,6 +257,26 @@ export const SubmissionContent: FunctionComponent<Props> = ({
                             if (value) setTwoColumns(value === 'two');
                         }}
                         aria-label={formatMessage(MESSAGES.layoutDensity)}
+                        sx={theme => ({
+                            // segmented control: blue icons, active filled blue
+                            '& .MuiToggleButton-root': {
+                                color: theme.palette.primary.main,
+                                '&:hover': {
+                                    backgroundColor: alpha(
+                                        theme.palette.primary.main,
+                                        0.08,
+                                    ),
+                                },
+                                '&.Mui-selected': {
+                                    color: theme.palette.primary.contrastText,
+                                    backgroundColor: theme.palette.primary.main,
+                                    '&:hover': {
+                                        backgroundColor:
+                                            theme.palette.primary.dark,
+                                    },
+                                },
+                            },
+                        })}
                     >
                         <ToggleButton
                             value="one"

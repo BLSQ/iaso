@@ -22,6 +22,7 @@ import {
     useValidationAvailability,
 } from '../ValidationWorkflow/InstanceValidationWidgetPaper';
 import { GeneralCard } from './GeneralCard';
+import { KvRow } from './InfoRow';
 import { RailRow } from './RailRow';
 
 type Props = {
@@ -72,6 +73,7 @@ export const SubmissionRail: FunctionComponent<Props> = ({
                 >
                     <InstanceDetailsLocation
                         currentInstance={currentInstance}
+                        FieldComponent={KvRow}
                     />
                 </RailRow>
 

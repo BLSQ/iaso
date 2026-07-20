@@ -156,7 +156,7 @@ export const SubmissionContent: FunctionComponent<Props> = ({
                         borderColor: 'divider',
                     }}
                 >
-                    <Typography variant="h5" color="primary">
+                    <Typography variant="h6" color="primary">
                         {formatMessage(MESSAGES.submission)}
                     </Typography>
                 </Box>
@@ -186,7 +186,7 @@ export const SubmissionContent: FunctionComponent<Props> = ({
                     borderColor: 'divider',
                 }}
             >
-                <Typography variant="h5" color="primary">
+                <Typography variant="h6" color="primary">
                     {formatMessage(MESSAGES.submission)}
                 </Typography>
                 <Box

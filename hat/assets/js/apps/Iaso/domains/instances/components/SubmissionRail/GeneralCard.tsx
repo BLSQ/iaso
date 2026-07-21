@@ -1,6 +1,7 @@
 import React, { FunctionComponent, ReactNode, useState } from 'react';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import {
     Box,
     Button,
@@ -9,7 +10,7 @@ import {
     Divider,
     Link,
     Paper,
-    Typography,
+    Tooltip,
 } from '@mui/material';
 import {
     LinkWithLocation,
@@ -130,9 +131,9 @@ export const GeneralCard: FunctionComponent<Props> = ({
                     pb: 1,
                 }}
             >
-                <Typography variant="h6" color="primary">
-                    {formatMessage(MESSAGES.general)}
-                </Typography>
+                <Tooltip title={formatMessage(MESSAGES.general)}>
+                    <InfoOutlinedIcon color="primary" />
+                </Tooltip>
                 <Box
                     sx={{
                         display: 'flex',

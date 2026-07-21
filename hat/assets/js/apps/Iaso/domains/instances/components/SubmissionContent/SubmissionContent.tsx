@@ -174,18 +174,6 @@ export const SubmissionContent: FunctionComponent<Props> = ({
     if (!formDescriptor) {
         return (
             <Paper elevation={0} variant="outlined">
-                <Box
-                    sx={{
-                        px: 2.75,
-                        py: 1.5,
-                        borderBottom: 1,
-                        borderColor: 'divider',
-                    }}
-                >
-                    <Typography variant="h6" color="primary">
-                        {formatMessage(MESSAGES.submission)}
-                    </Typography>
-                </Box>
                 <ErrorBoundary>
                     <InstanceFileContentBasic
                         fileContent={instanceData ?? {}}
@@ -212,9 +200,39 @@ export const SubmissionContent: FunctionComponent<Props> = ({
                     borderColor: 'divider',
                 }}
             >
-                <Typography variant="h6" color="primary">
-                    {formatMessage(MESSAGES.submission)}
-                </Typography>
+                <TextField
+                    size="small"
+                    value={query}
+                    onChange={event => setQuery(event.target.value)}
+                    onKeyDown={event => {
+                        if (event.key === 'Escape') setQuery('');
+                    }}
+                    placeholder={formatMessage(MESSAGES.searchQuestions)}
+                    sx={{ width: 230 }}
+                    InputProps={{
+                        startAdornment: (
+                            <InputAdornment position="start">
+                                <SearchIcon
+                                    fontSize="small"
+                                    color={isSearching ? 'primary' : 'disabled'}
+                                />
+                            </InputAdornment>
+                        ),
+                        endAdornment: isSearching ? (
+                            <InputAdornment position="end">
+                                <IconButton
+                                    size="small"
+                                    onClick={() => setQuery('')}
+                                    aria-label={formatMessage(
+                                        MESSAGES.clearSearch,
+                                    )}
+                                >
+                                    <ClearIcon fontSize="small" />
+                                </IconButton>
+                            </InputAdornment>
+                        ) : undefined,
+                    }}
+                />
                 <Box
                     sx={{
                         display: 'flex',
@@ -223,41 +241,6 @@ export const SubmissionContent: FunctionComponent<Props> = ({
                         flexWrap: 'wrap',
                     }}
                 >
-                    <TextField
-                        size="small"
-                        value={query}
-                        onChange={event => setQuery(event.target.value)}
-                        onKeyDown={event => {
-                            if (event.key === 'Escape') setQuery('');
-                        }}
-                        placeholder={formatMessage(MESSAGES.searchQuestions)}
-                        sx={{ width: 230 }}
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <SearchIcon
-                                        fontSize="small"
-                                        color={
-                                            isSearching ? 'primary' : 'disabled'
-                                        }
-                                    />
-                                </InputAdornment>
-                            ),
-                            endAdornment: isSearching ? (
-                                <InputAdornment position="end">
-                                    <IconButton
-                                        size="small"
-                                        onClick={() => setQuery('')}
-                                        aria-label={formatMessage(
-                                            MESSAGES.clearSearch,
-                                        )}
-                                    >
-                                        <ClearIcon fontSize="small" />
-                                    </IconButton>
-                                </InputAdornment>
-                            ) : undefined,
-                        }}
-                    />
                     <FormControlLabel
                         control={
                             <Switch

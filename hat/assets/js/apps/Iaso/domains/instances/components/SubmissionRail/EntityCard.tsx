@@ -41,7 +41,8 @@ export const EntityCard: FunctionComponent<Props> = ({
                 }}
             >
                 <Typography variant="h6" color="primary">
-                    {formatMessage(ENTITY_MESSAGES.entityInfo)}
+                    {entity.entity_type_name ||
+                        formatMessage(ENTITY_MESSAGES.entityInfo)}
                 </Typography>
                 {withLinkToEntity && (
                     <Tooltip title={formatMessage(ENTITY_MESSAGES.see)}>

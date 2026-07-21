@@ -74,9 +74,12 @@ export const SubmissionFieldRow: FunctionComponent<Props> = ({
     twoColumns,
     hideBorder = false,
 }) => {
-    // gps, photo and file values need the full width, so their label sits above
+    // gps, photo and file values are tall/wide, so their label sits above
     const isBlock =
         field.kind === 'gps' || field.kind === 'photo' || field.kind === 'file';
+    // only the map genuinely needs the full panel width; capped images and
+    // files flow within the two-column grid like any other field
+    const spanFull = field.kind === 'gps';
     const stacked = isBlock || twoColumns;
 
     // while searching, reveal the id whenever it is what matched
@@ -124,7 +127,7 @@ export const SubmissionFieldRow: FunctionComponent<Props> = ({
     return (
         <Box
             sx={theme => ({
-                gridColumn: isBlock ? '1 / -1' : undefined,
+                gridColumn: spanFull ? '1 / -1' : undefined,
                 display: stacked ? 'flex' : 'grid',
                 flexDirection: stacked ? 'column' : undefined,
                 gridTemplateColumns: stacked

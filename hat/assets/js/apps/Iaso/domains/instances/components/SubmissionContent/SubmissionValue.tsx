@@ -213,7 +213,7 @@ const FileValue: FunctionComponent<Props> = ({ field, files }) => {
 
     if (!fileUrl || !fileName) return <EmptyValue />;
     if (fileType === 'image') {
-        return <InstanceImagePreview imageUrl={fileUrl} altText={field.id} />;
+        return <PreviewImage url={fileUrl} alt={field.id} />;
     }
     if (fileType === 'video') {
         return (
@@ -232,10 +232,25 @@ const FileValue: FunctionComponent<Props> = ({ field, files }) => {
     );
 };
 
+/**
+ * Left-aligned, width-capped wrapper for the shared image preview. Caps the
+ * image at the design's 340px (InstanceImagePreview itself is 35vw, which is
+ * too wide on large screens and overflows a two-column cell) and pins it to the
+ * start of the value column so it lines up under its label.
+ */
+const PreviewImage: FunctionComponent<{ url: string; alt: string }> = ({
+    url,
+    alt,
+}) => (
+    <Box sx={{ width: '100%', maxWidth: 340, alignSelf: 'flex-start' }}>
+        <InstanceImagePreview imageUrl={url} altText={alt} />
+    </Box>
+);
+
 const PhotoValue: FunctionComponent<Props> = ({ field, files }) => {
     const fileUrl = useFileUrl(field.rawValue, files);
     if (!fileUrl) return <EmptyValue />;
-    return <InstanceImagePreview imageUrl={fileUrl} altText={field.id} />;
+    return <PreviewImage url={fileUrl} alt={field.id} />;
 };
 
 export const SubmissionValue: FunctionComponent<Props> = ({ field, files }) => {

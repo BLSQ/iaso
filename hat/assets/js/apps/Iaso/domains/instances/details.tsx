@@ -99,6 +99,10 @@ const InstanceDetails: FunctionComponent = () => {
                     currentInstance
                         ? `${formatMessage(MESSAGES.submission)}: ${
                               currentInstance.form_name
+                          }${
+                              currentInstance.org_unit?.name
+                                  ? ` · 📍 ${currentInstance.org_unit.name}`
+                                  : ''
                           }`
                         : ''
                 }

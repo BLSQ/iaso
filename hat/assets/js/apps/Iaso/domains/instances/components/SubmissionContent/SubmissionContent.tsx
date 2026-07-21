@@ -208,7 +208,7 @@ export const SubmissionContent: FunctionComponent<Props> = ({
                         if (event.key === 'Escape') setQuery('');
                     }}
                     placeholder={formatMessage(MESSAGES.searchQuestions)}
-                    sx={{ width: 230 }}
+                    sx={{ flexGrow: 1, minWidth: 240, maxWidth: 480 }}
                     InputProps={{
                         startAdornment: (
                             <InputAdornment position="start">

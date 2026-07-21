@@ -195,7 +195,9 @@ export const SubmissionContent: FunctionComponent<Props> = ({
                     gap: 1.5,
                     px: 2.75,
                     py: 1,
-                    backgroundColor: 'background.paper',
+                    // muted "chrome" strip so these display controls read as
+                    // distinct from the answers below, not as the first field
+                    backgroundColor: 'grey.100',
                     borderBottom: 1,
                     borderColor: 'divider',
                 }}
@@ -208,7 +210,12 @@ export const SubmissionContent: FunctionComponent<Props> = ({
                         if (event.key === 'Escape') setQuery('');
                     }}
                     placeholder={formatMessage(MESSAGES.searchQuestions)}
-                    sx={{ flexGrow: 1, minWidth: 240, maxWidth: 480 }}
+                    sx={{
+                        flexGrow: 1,
+                        minWidth: 240,
+                        maxWidth: 480,
+                        backgroundColor: 'background.paper',
+                    }}
                     InputProps={{
                         startAdornment: (
                             <InputAdornment position="start">
@@ -252,7 +259,10 @@ export const SubmissionContent: FunctionComponent<Props> = ({
                             />
                         }
                         label={
-                            <Typography variant="body2">
+                            <Typography
+                                variant="body2"
+                                sx={{ color: 'text.secondary' }}
+                            >
                                 {formatMessage(MESSAGES.showQuestionIds)}
                             </Typography>
                         }

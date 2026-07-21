@@ -22,12 +22,13 @@ import { baseUrls } from '../../../../constants/urls';
 import {
     INSTANCE_METAS_FIELDS,
     INSTANCE_STATUS_ERROR,
+    INSTANCE_STATUS_EXPORTED,
     INSTANCE_STATUS_READY,
 } from '../../constants';
 import MESSAGES from '../../messages';
 import { Instance } from '../../types/instance';
 import { formatTimestamp } from '../../utils/formatDate';
-import { ActivityRow, InfoRow } from './InfoRow';
+import { ActivityRow, InfoRow, LABEL_WIDTH } from './InfoRow';
 
 type Props = {
     currentInstance: Instance;
@@ -40,22 +41,27 @@ const statusColor = (status: string): 'success' | 'error' | 'default' => {
     return 'default';
 };
 
+/** Status value -> its label message, keyed on the INSTANCE_STATUS_* constants. */
+const STATUS_LABELS: Record<string, { id: string; defaultMessage: string }> = {
+    [INSTANCE_STATUS_READY]: MESSAGES.ready,
+    [INSTANCE_STATUS_ERROR]: MESSAGES.error,
+    [INSTANCE_STATUS_EXPORTED]: MESSAGES.exported,
+};
+
 /**
  * Render one INSTANCE_METAS_FIELDS entry. The field descriptors carry the
  * renderers we want to keep (form and planning links, pretty periods, formatted
  * dates); only their layout is replaced here.
  */
-const useFieldValue = (): ((key: string, instance: Instance) => ReactNode) => {
-    return (key, instance) => {
-        const field = INSTANCE_METAS_FIELDS.find(f => f.key === key);
-        if (!field) return textPlaceholder;
-        if (field.renderValue) return field.renderValue(instance);
-        const value = get(instance, field.key);
-        if (value === undefined || value === null || value === '') {
-            return textPlaceholder;
-        }
-        return field.render ? field.render(value) : value;
-    };
+const getFieldValue = (key: string, instance: Instance): ReactNode => {
+    const field = INSTANCE_METAS_FIELDS.find(f => f.key === key);
+    if (!field) return textPlaceholder;
+    if (field.renderValue) return field.renderValue(instance);
+    const value = get(instance, field.key);
+    if (value === undefined || value === null || value === '') {
+        return textPlaceholder;
+    }
+    return field.render ? field.render(value) : value;
 };
 
 const countBadgeSx = {
@@ -74,14 +80,11 @@ export const GeneralCard: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const [showTechnical, setShowTechnical] = useState(false);
-    const fieldValue = useFieldValue();
+    const fieldValue = (key: string): ReactNode =>
+        getFieldValue(key, currentInstance);
 
-    const statusMessages = MESSAGES as Record<
-        string,
-        { id: string; defaultMessage: string } | undefined
-    >;
     const statusLabel = currentInstance.status
-        ? (statusMessages[currentInstance.status.toLowerCase()] ?? null)
+        ? (STATUS_LABELS[currentInstance.status] ?? null)
         : null;
 
     // identifiers and provenance, folded away by default
@@ -89,7 +92,7 @@ export const GeneralCard: FunctionComponent<Props> = ({
         <ActivityRow
             key="created"
             label={formatMessage(MESSAGES.created_at)}
-            who={fieldValue('created_by__username', currentInstance)}
+            who={fieldValue('created_by__username')}
             when={formatTimestamp(currentInstance.created_at)}
         />,
         <ActivityRow
@@ -101,7 +104,7 @@ export const GeneralCard: FunctionComponent<Props> = ({
             {currentInstance.uuid || textPlaceholder}
         </InfoRow>,
         <InfoRow key="version" mono label={formatMessage(MESSAGES.version)}>
-            {fieldValue('version', currentInstance)}
+            {fieldValue('version')}
         </InfoRow>,
         <InfoRow key="device_id" mono label={formatMessage(MESSAGES.device_id)}>
             {currentInstance.device_id || textPlaceholder}
@@ -110,10 +113,10 @@ export const GeneralCard: FunctionComponent<Props> = ({
             key="project_name"
             label={formatMessage(MESSAGES.project_name)}
         >
-            {fieldValue('project_name', currentInstance)}
+            {fieldValue('project_name')}
         </InfoRow>,
         <InfoRow key="planning" label={formatMessage(MESSAGES.planning)}>
-            {fieldValue('planning', currentInstance)}
+            {fieldValue('planning')}
         </InfoRow>,
     ];
 
@@ -174,10 +177,10 @@ export const GeneralCard: FunctionComponent<Props> = ({
 
             <Box sx={{ px: 2.25, pb: 1.5 }}>
                 <InfoRow label={formatMessage(MESSAGES.form)}>
-                    {fieldValue('form_name', currentInstance)}
+                    {fieldValue('form_name')}
                 </InfoRow>
                 <InfoRow label={formatMessage(MESSAGES.period)}>
-                    {fieldValue('period', currentInstance)}
+                    {fieldValue('period')}
                 </InfoRow>
 
                 <Divider sx={{ my: 1.25 }} />
@@ -187,11 +190,11 @@ export const GeneralCard: FunctionComponent<Props> = ({
                             ? MESSAGES.deleted_at
                             : MESSAGES.updated_at,
                     )}
-                    who={fieldValue('last_modified_by', currentInstance)}
+                    who={fieldValue('last_modified_by')}
                     when={formatTimestamp(currentInstance.updated_at)}
                 />
                 {showHistoryLink && (
-                    <Box sx={{ pl: `${118 + 14}px`, pb: 0.5 }}>
+                    <Box sx={{ pl: `${LABEL_WIDTH + 14}px`, pb: 0.5 }}>
                         <LinkWithLocation
                             to={`/${baseUrls.compareInstanceLogs}/instanceIds/${currentInstance.id}`}
                         >

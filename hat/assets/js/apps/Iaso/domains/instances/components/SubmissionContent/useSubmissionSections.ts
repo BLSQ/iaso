@@ -59,6 +59,13 @@ export const getFieldKind = (descriptor: Descriptor): FieldKind => {
     }
 };
 
+/**
+ * gps / photo / file answers are laid out as blocks (label above value); of
+ * those only the gps map is wide enough to span the full panel width. Photos
+ * and files are capped and flow within the two-column grid.
+ */
+export const spansFullWidth = (kind: FieldKind): boolean => kind === 'gps';
+
 const isEmptyValue = (raw: unknown, displayed: string): boolean =>
     raw === undefined ||
     raw === null ||

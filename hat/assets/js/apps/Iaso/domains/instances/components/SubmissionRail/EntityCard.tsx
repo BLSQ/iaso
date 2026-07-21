@@ -1,8 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import { Box, IconButton, Paper, Tooltip, Typography } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
-import { LinkWithLocation } from 'bluesquare-components';
+import { LinkWithLocation, useSafeIntl } from 'bluesquare-components';
 import { baseUrls } from '../../../../constants/urls';
 import ENTITY_MESSAGES from '../../../entities/messages';
 import { Entity } from '../../../entities/types/entity';

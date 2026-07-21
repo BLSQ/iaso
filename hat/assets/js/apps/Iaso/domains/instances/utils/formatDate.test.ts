@@ -1,12 +1,19 @@
+import moment from 'moment';
 import { formatFieldDate, formatTimestamp } from './formatDate';
 
+// the language config maps L -> DD/MM/YYYY and LTS -> DD/MM/YYYY HH:mm
+const LOCALE_DATE = /^\d{2}\/\d{2}\/\d{4}$/;
+const LOCALE_DATE_TIME = /^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/;
+
 describe('formatFieldDate', () => {
-    it('keeps a date-only value as is', () => {
-        expect(formatFieldDate('2025-06-23')).to.equal('2025-06-23');
+    beforeAll(() => moment.locale('en'));
+
+    it('renders a date-only value in the locale date format', () => {
+        expect(formatFieldDate('2025-06-23')).to.equal('23/06/2025');
     });
-    it('drops the seconds and timezone from an ISO datetime', () => {
-        expect(formatFieldDate('2026-07-18T16:18:40.530+02:00')).to.equal(
-            '2026-07-18 16:18',
+    it('renders an ISO datetime in the locale date+time format, without seconds or timezone', () => {
+        expect(formatFieldDate('2026-07-18T16:18:40.530+02:00')).to.match(
+            LOCALE_DATE_TIME,
         );
     });
     it('returns an unparseable value untouched', () => {
@@ -20,13 +27,15 @@ describe('formatFieldDate', () => {
 });
 
 describe('formatTimestamp', () => {
-    it('formats a unix seconds timestamp as date and time', () => {
-        // 2026-07-18 16:18 UTC
-        expect(formatTimestamp(1784391480)).to.match(
-            /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/,
-        );
+    beforeAll(() => moment.locale('en'));
+
+    it('formats a unix seconds timestamp in the locale date+time format', () => {
+        expect(formatTimestamp(1784391480)).to.match(LOCALE_DATE_TIME);
     });
     it('shows a placeholder for a missing timestamp', () => {
         expect(formatTimestamp(undefined)).to.equal('--');
+    });
+    it('uses the locale date format tokens', () => {
+        expect(formatFieldDate('2025-01-02')).to.match(LOCALE_DATE);
     });
 });

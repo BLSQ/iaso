@@ -25,17 +25,16 @@ import { numericValues } from '../../utils/intl';
 import InstanceFileContentBasic from '../InstanceFileContentBasic';
 import { Descriptor } from '../InstanceFileContentRich';
 import { SubmissionFieldRow } from './SubmissionFieldRow';
+import { SubmissionField } from './types';
 import {
     FilteredSection,
+    spansFullWidth,
     useFilteredSubmission,
     useSubmissionSections,
 } from './useSubmissionSections';
 
 /** Minimum height of the panel toolbar. */
 const TOOLBAR_HEIGHT = 57;
-
-/** Only the gps map spans the full width of the panel. */
-const spansFullWidth = (kind: string): boolean => kind === 'gps';
 
 /**
  * Whether the field at `index` has no field rendered directly below it, so its
@@ -44,7 +43,7 @@ const spansFullWidth = (kind: string): boolean => kind === 'gps';
  * i.e. the last two, unless a full-width field sits between them.
  */
 const hasNothingBelow = (
-    fields: { kind: string }[],
+    fields: SubmissionField[],
     index: number,
     twoColumns: boolean,
 ): boolean => {

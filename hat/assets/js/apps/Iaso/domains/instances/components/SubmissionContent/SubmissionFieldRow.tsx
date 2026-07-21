@@ -3,8 +3,9 @@ import FunctionsIcon from '@mui/icons-material/Functions';
 import { Box, Tooltip, Typography } from '@mui/material';
 import { SubmissionValue } from './SubmissionValue';
 import { SubmissionField } from './types';
+import { spansFullWidth } from './useSubmissionSections';
 
-/** Wrap every occurrence of `query` in `text` with a <mark>. */
+/** Wrap the first occurrence of `query` in `text` with a <mark>. */
 export const HighlightedText: FunctionComponent<{
     text: string;
     query: string;
@@ -79,7 +80,7 @@ export const SubmissionFieldRow: FunctionComponent<Props> = ({
         field.kind === 'gps' || field.kind === 'photo' || field.kind === 'file';
     // only the map genuinely needs the full panel width; capped images and
     // files flow within the two-column grid like any other field
-    const spanFull = field.kind === 'gps';
+    const spanFull = spansFullWidth(field.kind);
     const stacked = isBlock || twoColumns;
 
     // while searching, reveal the id whenever it is what matched

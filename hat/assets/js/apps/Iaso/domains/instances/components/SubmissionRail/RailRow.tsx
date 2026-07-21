@@ -1,12 +1,12 @@
 import React, { FunctionComponent, ReactNode } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
-    Accordion,
     AccordionDetails,
     AccordionSummary,
     Box,
     Typography,
 } from '@mui/material';
+import { Accordion } from 'Iaso/components/Accordion/Accordion';
 
 export type RailRowTone = 'muted' | 'info' | 'success' | 'warning';
 
@@ -45,15 +45,15 @@ export const RailRow: FunctionComponent<Props> = ({
     const tones = toneStyles[tone];
     return (
         <Accordion
-            disableGutters
-            square
-            elevation={0}
             defaultExpanded={defaultExpanded}
+            // the shared Accordion draws a full border per row; inside the rail
+            // Paper we only want a divider between rows
             sx={{
-                '&::before': { display: 'none' },
-                borderBottom: 1,
-                borderColor: 'divider',
-                '&:last-of-type': { borderBottom: 0 },
+                border: 0,
+                '&:not(:last-of-type)': {
+                    borderBottom: 1,
+                    borderColor: 'divider',
+                },
             }}
         >
             <AccordionSummary

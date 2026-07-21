@@ -3,7 +3,7 @@ import { Box, Typography } from '@mui/material';
 import { textPlaceholder } from 'bluesquare-components';
 
 /** Width of the label column, matching the design's 118px key column. */
-const LABEL_WIDTH = 118;
+export const LABEL_WIDTH = 118;
 
 /**
  * Shared rail type scale, kept deliberately small: 14px for values, 13px for

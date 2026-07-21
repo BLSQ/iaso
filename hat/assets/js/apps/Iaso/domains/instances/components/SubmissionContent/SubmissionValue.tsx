@@ -1,12 +1,12 @@
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Box, Button, Chip, Collapse, Typography, alpha } from '@mui/material';
 import { Theme } from '@mui/material/styles';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import DocumentsItemComponent from 'Iaso/components/files/DocumentsItemComponent';
 import VideoItemComponent from 'Iaso/components/files/VideoItemComponent';
+import { MarkerMap } from 'Iaso/components/maps/MarkerMapComponent';
 import { getFileName, getFileType } from 'Iaso/utils/filesUtils';
-import { MarkerMap } from '../../../../components/maps/MarkerMapComponent';
 import MESSAGES from '../../messages';
 import { formatFieldDate } from '../../utils/formatDate';
 import { slugifyValue } from '../../utils/questions';
@@ -126,7 +126,7 @@ const GpsStat: FunctionComponent<{ label: string; value: string }> = ({
  */
 const GpsField: FunctionComponent<{ point: GeoPoint }> = ({ point }) => {
     const { formatMessage } = useSafeIntl();
-    const [showValues, setShowValues] = React.useState(false);
+    const [showValues, setShowValues] = useState(false);
     return (
         <Box sx={{ maxWidth: 520, width: '100%' }}>
             <MarkerMap

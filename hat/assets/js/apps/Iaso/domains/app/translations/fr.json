@@ -596,7 +596,7 @@
     "iaso.instance.referenceSubmission": "Référence",
     "iaso.instance.removeLockAction": "Déverrouiller la soumission",
     "iaso.instance.restricted": "Accès restreint",
-    "iaso.instance.searchQuestions": "Rechercher des questions ou des identifiants",
+    "iaso.instance.searchQuestions": "Rechercher",
     "iaso.instance.searchResultsCount": "{count, plural, one {# résultat} other {# résultats}} pour \"{query}\"",
     "iaso.instance.selectedOrgUnit": "Unité d'org. sélectionnée",
     "iaso.instance.selectVersionToCompare": "Veuillez sélectionner la version à comparer",

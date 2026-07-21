@@ -595,7 +595,7 @@
     "iaso.instance.referenceSubmission": "Reference",
     "iaso.instance.removeLockAction": "Unlock the submission",
     "iaso.instance.restricted": "Restricted",
-    "iaso.instance.searchQuestions": "Search questions or IDs",
+    "iaso.instance.searchQuestions": "Search",
     "iaso.instance.searchResultsCount": "{count, plural, one {# result} other {# results}} for \"{query}\"",
     "iaso.instance.selectedOrgUnit": "Selected Org unit",
     "iaso.instance.selectVersionToCompare": "Please select the version to compare",

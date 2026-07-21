@@ -894,7 +894,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.review',
     },
     searchQuestions: {
-        defaultMessage: 'Search questions or IDs',
+        defaultMessage: 'Search',
         id: 'iaso.instance.searchQuestions',
     },
     showQuestionIds: {

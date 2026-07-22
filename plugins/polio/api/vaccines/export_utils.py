@@ -134,7 +134,7 @@ def get_vaccine_country(vaccine_stock):
     return {"country": country, "vaccine": vaccine}
 
 
-def download_xlsx_stock_variants(request, filename, results, lambda_methods, vaccince_stock, tab):
+def download_xlsx_stock_variants(request, results, lambda_methods, vaccince_stock, tab):
     workbook = Workbook()
     sheet_configs = get_sheet_configs()
 

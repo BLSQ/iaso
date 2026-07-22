@@ -175,8 +175,11 @@ export const useSubmissionSections = (
     formDescriptor: Descriptor | undefined,
     instanceData: Data | undefined,
     showNote = true,
+    // the form language chosen in the toolbar; falls back to the UI locale
+    language?: string,
 ): SubmissionSection[] => {
-    const { locale: activeLocale } = useLocale();
+    const { locale: uiLocale } = useLocale();
+    const activeLocale = language ?? uiLocale;
     return useMemo(() => {
         if (!formDescriptor) return [];
         return buildSubmissionSections(

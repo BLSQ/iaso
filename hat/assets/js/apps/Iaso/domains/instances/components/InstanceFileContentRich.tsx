@@ -30,6 +30,9 @@ export type Descriptor = {
     bind?: {
         calculate?: string;
     };
+    // present only on the root survey descriptor
+    _translations?: Record<string, unknown>;
+    default_language?: string;
 };
 
 type Data = Record<string, any>;

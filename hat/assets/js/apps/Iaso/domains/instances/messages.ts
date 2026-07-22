@@ -938,6 +938,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Two columns',
         id: 'iaso.instance.twoColumns',
     },
+    questionLanguage: {
+        defaultMessage: 'Question language',
+        id: 'iaso.instance.questionLanguage',
+    },
+    defaultLanguage: {
+        defaultMessage: 'Default',
+        id: 'iaso.instance.defaultLanguage',
+    },
     technicalDetails: {
         defaultMessage: 'Technical details',
         id: 'iaso.instance.technicalDetails',

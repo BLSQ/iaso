@@ -608,6 +608,8 @@
     "iaso.instance.technicalDetails": "Technical details",
     "iaso.instance.title": "Submissions",
     "iaso.instance.titleSingle": "Submission",
+    "iaso.instance.questionLanguage": "Question language",
+    "iaso.instance.defaultLanguage": "Default",
     "iaso.instance.twoColumns": "Two columns",
     "iaso.instance.undelete": "Mark instance(s) as not deleted",
     "iaso.instance.unDeleteCount": "Mark {count} isntance(s) as not deleted",

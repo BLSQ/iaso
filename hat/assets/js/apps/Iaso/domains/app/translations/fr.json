@@ -609,6 +609,8 @@
     "iaso.instance.technicalDetails": "Détails techniques",
     "iaso.instance.title": "Soumissions",
     "iaso.instance.titleSingle": "Soumission",
+    "iaso.instance.questionLanguage": "Langue des questions",
+    "iaso.instance.defaultLanguage": "Défaut",
     "iaso.instance.twoColumns": "Deux colonnes",
     "iaso.instance.undelete": "Marquer une(des) soumission(s) comme non-effacée(s)",
     "iaso.instance.unDeleteCount": "Marquer {count} soumission(s) comme non-effacée(s)",

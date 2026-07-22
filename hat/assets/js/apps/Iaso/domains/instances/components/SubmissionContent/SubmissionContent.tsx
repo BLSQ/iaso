@@ -1,7 +1,8 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import ClearIcon from '@mui/icons-material/Clear';
 import SearchIcon from '@mui/icons-material/Search';
 import TableRowsIcon from '@mui/icons-material/TableRows';
+import TranslateIcon from '@mui/icons-material/Translate';
 import ViewColumnIcon from '@mui/icons-material/ViewColumn';
 import {
     Box,
@@ -10,6 +11,7 @@ import {
     FormControlLabel,
     IconButton,
     InputAdornment,
+    MenuItem,
     Paper,
     Switch,
     TextField,
@@ -20,8 +22,10 @@ import {
     alpha,
 } from '@mui/material';
 import { ErrorBoundary, useSafeIntl } from 'bluesquare-components';
+import { useLocale } from '../../../app/contexts/LocaleContext';
 import MESSAGES from '../../messages';
 import { numericValues } from '../../utils/intl';
+import { getFormLanguages, pickDefaultLanguage } from '../../utils/questions';
 import InstanceFileContentBasic from '../InstanceFileContentBasic';
 import { Descriptor } from '../InstanceFileContentRich';
 import { SubmissionFieldRow } from './SubmissionFieldRow';
@@ -153,14 +157,31 @@ export const SubmissionContent: FunctionComponent<Props> = ({
     showNote = true,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const { locale: uiLocale } = useLocale();
     const [query, setQuery] = useState('');
     const [showQuestionIds, setShowQuestionIds] = useState(false);
     const [twoColumns, setTwoColumns] = useState(false);
+
+    // the languages the form offers, and the one currently displayed. Defaults
+    // to the user's UI locale when the form provides it, else the form's own
+    // default language. Undefined leaves useSubmissionSections on the UI locale.
+    const languages = useMemo(
+        () => getFormLanguages(formDescriptor),
+        [formDescriptor],
+    );
+    const [language, setLanguage] = useState<string | undefined>(() =>
+        pickDefaultLanguage(
+            languages,
+            uiLocale,
+            formDescriptor?.default_language,
+        ),
+    );
 
     const sections = useSubmissionSections(
         formDescriptor,
         instanceData,
         showNote,
+        language,
     );
     const { sections: shownSections, matchCount } = useFilteredSubmission(
         sections,
@@ -247,6 +268,52 @@ export const SubmissionContent: FunctionComponent<Props> = ({
                         flexWrap: 'wrap',
                     }}
                 >
+                    {languages.length > 1 && (
+                        <TextField
+                            select
+                            size="small"
+                            value={language ?? ''}
+                            onChange={event => setLanguage(event.target.value)}
+                            aria-label={formatMessage(
+                                MESSAGES.questionLanguage,
+                            )}
+                            sx={{
+                                minWidth: 160,
+                                backgroundColor: 'background.paper',
+                                // subdued so this reads as a display control,
+                                // not something demanding attention
+                                '& .MuiInputBase-input': {
+                                    color: 'text.secondary',
+                                },
+                            }}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <Tooltip
+                                            title={formatMessage(
+                                                MESSAGES.questionLanguage,
+                                            )}
+                                        >
+                                            <TranslateIcon
+                                                fontSize="small"
+                                                sx={{ color: 'text.secondary' }}
+                                            />
+                                        </Tooltip>
+                                    </InputAdornment>
+                                ),
+                            }}
+                        >
+                            {languages.map(lang => (
+                                <MenuItem key={lang} value={lang}>
+                                    {lang === 'default'
+                                        ? formatMessage(
+                                              MESSAGES.defaultLanguage,
+                                          )
+                                        : lang}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                    )}
                     <FormControlLabel
                         control={
                             <Switch

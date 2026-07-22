@@ -169,7 +169,6 @@ def download_xlsx_stock_variants(request, filename, results, lambda_methods, vac
         write_vials_doses_stock_balance(sheet, config, sums, sum_columns_indices)
 
     workbook._sheets = [sheets[name] for name in sheets_order]
-    workbook.save(filename)
     return workbook
 
 

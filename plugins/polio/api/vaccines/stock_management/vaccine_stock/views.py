@@ -198,13 +198,10 @@ class VaccineStockManagementViewSet(ModelViewSet):
                 vaccine_stock,
                 "Usable",
             )
-            with NamedTemporaryFile() as tmp:
-                workbook.save(tmp.name)
-                tmp.seek(0)
-                stream = tmp.read()
 
-            response = HttpResponse(stream, content_type=CONTENT_TYPE_XLSX)
+            response = HttpResponse(content_type=CONTENT_TYPE_XLSX)
             response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
+            workbook.save(response)
             return response
 
         paginator = Paginator()

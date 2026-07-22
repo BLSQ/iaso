@@ -1,8 +1,8 @@
 diff --git a/node_modules/@orval/query/dist/index.mjs b/node_modules/@orval/query/dist/index.mjs
-index 6614c0a..345c24e 100644
+index f674b64..6a0380f 100644
 --- a/node_modules/@orval/query/dist/index.mjs
 +++ b/node_modules/@orval/query/dist/index.mjs
-@@ -1133,7 +1133,7 @@ const createReactAdapter = ({ hasQueryV5, hasQueryV5WithDataTagError, hasQueryV5
+@@ -1106,7 +1106,7 @@ const createReactAdapter = ({ hasQueryV5, hasQueryV5WithDataTagError, hasQueryV5
  		return hasQueryV5;
  	},
  	generateMutationImplementation({ mutationOptionsFnName, hasInvalidation, isRequestOptions }) {
@@ -11,7 +11,7 @@ index 6614c0a..345c24e 100644
  	},
  	supportsMutationInvalidation() {
  		return true;
-@@ -1804,7 +1804,7 @@ ${hasInvalidation ? adapter.generateMutationOnSuccess({
+@@ -1844,7 +1844,7 @@ ${hasInvalidation ? adapter.generateMutationOnSuccess({
  		uniqueInvalidates
  	}) : ""}
  

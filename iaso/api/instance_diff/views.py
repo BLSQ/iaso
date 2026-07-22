@@ -1,4 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
+from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
@@ -12,7 +13,7 @@ from iaso.api.common.mixin import CustomPaginationListModelMixin
 from iaso.api.instance_diff.filters import InstanceDiffFilter
 from iaso.api.instance_diff.pagination import InstanceDiffPaginator
 from iaso.api.instance_diff.serializers import InstanceModificationSerializer
-from iaso.models import Instance
+from iaso.models import Instance, InstanceFile
 from iaso.permissions.core_permissions import CORE_SUBMISSIONS_PERMISSION
 
 
@@ -27,7 +28,9 @@ class InstanceDiffViewSet(CustomPaginationListModelMixin, GenericViewSet):
     pagination_class = InstanceDiffPaginator
 
     def instance_queryset(self, queryset):
-        return queryset.select_related("form_version").prefetch_related("instancefile_set")
+        return queryset.select_related("form_version").prefetch_related(
+            Prefetch("instancefile_set", InstanceFile.objects.filter(deleted=False), to_attr="active_files")
+        )
 
     def get_instance(self):
         if not hasattr(self, "_instance"):
@@ -39,8 +42,12 @@ class InstanceDiffViewSet(CustomPaginationListModelMixin, GenericViewSet):
 
     def get_queryset(self):
         instance_content_type = ContentType.objects.get_for_model(Instance)
+
+        # so we trigger a 404 if not found
+        instance = self.get_instance()
+
         return Modification.objects.select_related("content_type").filter(
-            content_type=instance_content_type, object_id=str(self.get_instance().pk)
+            content_type=instance_content_type, object_id=str(instance.pk)
         )
 
     def get_serializer_context(self):

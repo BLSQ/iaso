@@ -72,6 +72,7 @@ services:
         - FAVICON_PATH
         - FORM_AI_MODEL
         - FORUM_PATH
+        - HAT_LOGGING_LEVEL
         - HIDE_BASIC_NAV_ITEMS
         - LEARN_MORE_URL
         - LIVE_COMPONENTS
@@ -88,6 +89,7 @@ services:
         - RDS_HOSTNAME
         - RDS_PASSWORD
         - RDS_USERNAME
+        - ROOT_REDIRECT_PATTERN_NAME
         - SECRET_KEY
         - SECRET_KEY_FALLBACKS
         - SENTRY_ENVIRONMENT
@@ -116,12 +118,6 @@ services:
         - WFP_AUTH_CLIENT_ID
         - WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT
         - WORKER
-      logging: &iaso_logging
-        driver: json-file
-        options:
-          max-size: 5k
-      volumes:
-        - "static-files:/opt/app/static"
       stdin_open: true
       tty: true
     nginx:
@@ -130,7 +126,6 @@ services:
         - '80:80'
       volumes:
         - ".platform/nginx/nginx.conf:/etc/nginx/nginx.conf"
-        - "static-files:/opt/app/static"
       depends_on:
         - iaso
 
@@ -151,6 +146,3 @@ services:
     #       POSTGRES_DB: ${RDS_DB_NAME}
     #       POSTGRES_USER: postgres
     #       POSTGRES_PASSWORD: postgres
-
-volumes:
-  static-files:

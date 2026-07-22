@@ -29,6 +29,17 @@ class InstanceModificationSerializer(ModelSerializer):
             "possible_fields",
             "form_descriptor",
         ]
+        read_only_fields = [
+            "created_at",
+            "content_type",
+            "object_id",
+            "diff",
+            "past_value",
+            "new_value",
+            "files",
+            "possible_fields",
+            "form_descriptor",
+        ]
 
     def _get_instance_data(self):
         # files, possible_fields and form_descriptor depend on the Instance, not on each
@@ -47,9 +58,7 @@ class InstanceModificationSerializer(ModelSerializer):
                 )
             form_version = instance.form_version
             self.context[cache_key] = {
-                "files": {
-                    instance_file.name: instance_file.file.url for instance_file in instance.instancefile_set.all()
-                },
+                "files": {instance_file.name: instance_file.file.url for instance_file in instance.active_files},
                 "possible_fields": (
                     form_version.possible_fields if form_version and form_version.possible_fields else []
                 ),
@@ -57,20 +66,20 @@ class InstanceModificationSerializer(ModelSerializer):
             }
         return self.context[cache_key]
 
-    @extend_schema_field(JsonPatchOperationSerializer(many=True, allow_empty=True))
+    @extend_schema_field(JsonPatchOperationSerializer(many=True, allow_empty=True, read_only=True))
     def get_diff(self, obj):
         past_value = obj.past_value[0].get("fields", None) if obj.past_value else None
         new_value = obj.new_value[0].get("fields", None) if obj.new_value else None
         return jsonpatch.JsonPatch.from_diff(past_value, new_value).patch
 
-    @extend_schema_field(serializers.DictField(child=serializers.URLField()))
+    @extend_schema_field(serializers.DictField(child=serializers.URLField(), allow_empty=True, read_only=True))
     def get_files(self, obj):
         return self._get_instance_data()["files"]
 
-    @extend_schema_field(serializers.ListField(child=serializers.JSONField()))
+    @extend_schema_field(serializers.ListField(child=serializers.JSONField(), allow_empty=True, read_only=True))
     def get_possible_fields(self, obj):
         return self._get_instance_data()["possible_fields"]
 
-    @extend_schema_field(serializers.JSONField())
+    @extend_schema_field(serializers.JSONField(allow_null=True, read_only=True))
     def get_form_descriptor(self, obj):
         return self._get_instance_data()["form_descriptor"]

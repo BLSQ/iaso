@@ -1,73 +1,35 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
-import EditIcon from '@mui/icons-material/Edit';
-import SaveIcon from '@mui/icons-material/Save';
-import { Autocomplete, Box, Button, TextField } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
-import { SxStyles } from 'Iaso/types/general';
+import { Grid } from '@mui/material';
+import {
+    LoadingSpinner,
+    useRedirectToReplace,
+    useSafeIntl,
+} from 'bluesquare-components';
+import { MainWrapper } from 'Iaso/components/MainWrapper';
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
-import { useGetFormsDropdownOptions } from '../forms/hooks/useGetFormsDropdownOptions';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { Actions } from './components/Actions';
 import { ChatPanel } from './components/ChatPanel';
 import { FormPreview } from './components/FormPreview';
-import { SaveFormDialog } from './components/SaveFormDialog';
 import { useLoadForm } from './hooks/requests/useLoadForm';
 import { useSendMessage } from './hooks/requests/useSendMessage';
 import MESSAGES from './messages';
 import { ConversationEntry, SaveVersionResponse } from './types';
 
-const styles: SxStyles = {
-    container: {
-        width: '100%',
-        height: 'calc(100vh - 65px)',
-        display: 'flex',
-        padding: 0,
-        overflow: 'hidden',
-    },
-    chatSide: {
-        width: '40%',
-        height: '100%',
-        padding: '8px',
-        boxSizing: 'border-box',
-        display: 'flex',
-        flexDirection: 'column',
-    },
-    previewSide: {
-        width: '60%',
-        height: '100%',
-        padding: '8px',
-        boxSizing: 'border-box',
-    },
-    toolbar: {
-        display: 'flex',
-        gap: '8px',
-        alignItems: 'center',
-        padding: '8px',
-        flexShrink: 0,
-    },
-    chatArea: {
-        flex: 1,
-        overflow: 'hidden',
-    },
-    saveButton: {
-        position: 'fixed',
-        bottom: 16,
-        right: 16,
-        zIndex: 1000,
-    },
-    formDropdown: { flex: 1 },
-};
-
 type Message = {
+    id: string;
     role: 'user' | 'assistant';
     content: string;
 };
 
-type FormOption = {
+export type FormOption = {
     id: number;
     label: string;
 };
 
 const FormAI: FunctionComponent = () => {
+    const params = useParamsObject(baseUrls.formAI);
     const { formatMessage } = useSafeIntl();
     const [messages, setMessages] = useState<Message[]>([]);
     const [conversationHistory, setConversationHistory] = useState<
@@ -89,22 +51,13 @@ const FormAI: FunctionComponent = () => {
     const [selectedFormOption, setSelectedFormOption] = useState<
         FormOption | undefined
     >(undefined);
-    const [saveDialogOpen, setSaveDialogOpen] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-    const { mutate: sendMessage, isLoading } = useSendMessage();
-    const { data: forms } = useGetFormsDropdownOptions({
-        extraFields: ['form_id', 'latest_form_version'],
-    });
-    const { mutate: loadForm, isLoading: isLoadingForm } = useLoadForm();
+    const { mutate: sendMessage, isLoading: isLoadingSendMessage } =
+        useSendMessage();
 
-    const formOptions: FormOption[] =
-        forms
-            ?.filter(f => (f.original?.latest_form_version as any)?.xls_file)
-            .map(f => ({
-                id: f.value,
-                label: `${f.label} (${(f.original?.form_id as string) || 'no id'})`,
-            })) ?? [];
+    const { mutate: loadForm, isLoading: isLoadingForm } = useLoadForm();
+    const redirectToReplace = useRedirectToReplace();
 
     const handleLoadForm = useCallback(
         (formId: number) => {
@@ -118,32 +71,36 @@ const FormAI: FunctionComponent = () => {
                         setXformXml(data.xform_xml);
                     }
                     const formJson = JSON.stringify(data.xlsform_data, null, 2);
-                    const displayMsg =
-                        `Form "${data.form_name}"` +
-                        ` (version ${data.version_id})` +
-                        ` loaded. You can now ask me to modify it.`;
+                    const displayMsg = formatMessage(MESSAGES.formLoaded, {
+                        formName: data.form_name,
+                        versionId: data.version_id,
+                    });
 
                     setMessages(prev => [
                         ...prev,
-                        { role: 'assistant', content: displayMsg },
+                        {
+                            role: 'assistant',
+                            content: displayMsg,
+                            id: crypto.randomUUID(),
+                        },
                     ]);
 
-                    const userCtx =
-                        `I'm loading an existing form` +
-                        ` called "${data.form_name}"` +
-                        ` (ODK form_id: "${data.form_odk_id}",` +
-                        ` version: "${data.version_id}").` +
-                        ` Here is its current XLSForm structure in JSON:` +
-                        `\n\n${formJson}\n\n` +
-                        `Please remember this form structure. When I ask you to` +
-                        ` modify it, return the COMPLETE updated form in the` +
-                        ` standard JSON format.`;
-                    const assistantCtx =
-                        `I've loaded the form "${data.form_name}"` +
-                        ` (version ${data.version_id}).` +
-                        ` I can see its complete structure with all questions,` +
-                        ` choices, and settings. What changes would you like me` +
-                        ` to make?`;
+                    const userCtx = formatMessage(
+                        MESSAGES.loadFormUserContext,
+                        {
+                            formName: data.form_name,
+                            formOdkId: data.form_odk_id,
+                            versionId: data.version_id,
+                            formJson,
+                        },
+                    );
+                    const assistantCtx = formatMessage(
+                        MESSAGES.loadFormAssistantContext,
+                        {
+                            formName: data.form_name,
+                            versionId: data.version_id,
+                        },
+                    );
                     setConversationHistory(prev => [
                         ...prev,
                         { role: 'user', content: userCtx },
@@ -152,14 +109,22 @@ const FormAI: FunctionComponent = () => {
                 },
             });
         },
-        [loadForm],
+        [loadForm, formatMessage],
     );
 
-    const handleSaveNewVersion = useCallback((result: SaveVersionResponse) => {
-        setHasUnsavedChanges(false);
-        const msg = `Saved as version ${result.version_id}`;
-        setMessages(prev => [...prev, { role: 'assistant', content: msg }]);
-    }, []);
+    const handleSaveNewVersion = useCallback(
+        (result: SaveVersionResponse) => {
+            setHasUnsavedChanges(false);
+            const msg = formatMessage(MESSAGES.versionSavedAs, {
+                versionId: result.version_id,
+            });
+            setMessages(prev => [
+                ...prev,
+                { role: 'assistant', content: msg, id: crypto.randomUUID() },
+            ]);
+        },
+        [formatMessage],
+    );
 
     const handleSaveNewForm = useCallback(
         (formId: number, formName: string, formOdkId: string) => {
@@ -168,16 +133,21 @@ const FormAI: FunctionComponent = () => {
             setSelectedFormOdkId(formOdkId || undefined);
             setSelectedFormOption({ id: formId, label: formName });
             setHasUnsavedChanges(false);
-            const msg = `Created form "${formName}"`;
-            setMessages(prev => [...prev, { role: 'assistant', content: msg }]);
+            const msg = formatMessage(MESSAGES.formCreated, { formName });
+            setMessages(prev => [
+                ...prev,
+                { role: 'assistant', content: msg, id: crypto.randomUUID() },
+            ]);
         },
-        [],
+        [formatMessage],
     );
 
     const handleSendMessage = useCallback(
         (message: string) => {
-            setMessages(prev => [...prev, { role: 'user', content: message }]);
-
+            setMessages(prev => [
+                ...prev,
+                { role: 'user', content: message, id: crypto.randomUUID() },
+            ]);
             sendMessage(
                 {
                     message,
@@ -191,6 +161,7 @@ const FormAI: FunctionComponent = () => {
                             {
                                 role: 'assistant',
                                 content: data.assistant_message,
+                                id: crypto.randomUUID(),
                             },
                         ]);
                         if (data.conversation_history) {
@@ -212,6 +183,7 @@ const FormAI: FunctionComponent = () => {
                                 content: formatMessage(
                                     MESSAGES.errorGenerating,
                                 ),
+                                id: crypto.randomUUID(),
                             },
                         ]);
                     },
@@ -221,85 +193,59 @@ const FormAI: FunctionComponent = () => {
         [conversationHistory, selectedFormOdkId, sendMessage, formatMessage],
     );
 
+    const handleFormChange = useCallback(
+        (_event: any, newValue: FormOption | null) => {
+            redirectToReplace(baseUrls.formAI, {
+                formId: newValue?.id?.toString() ?? '',
+            });
+            setSelectedFormOption(newValue ?? undefined);
+            if (newValue) {
+                handleLoadForm(newValue.id);
+            }
+        },
+        [handleLoadForm, redirectToReplace],
+    );
+
     return (
         <>
             <TopBar title={formatMessage(MESSAGES.title)} />
-            <Box sx={styles.container}>
-                <Box sx={styles.chatSide}>
-                    <Box sx={styles.toolbar}>
-                        <Autocomplete
-                            size="small"
-                            options={formOptions}
-                            getOptionLabel={option => option.label}
-                            value={selectedFormOption ?? null}
-                            onChange={(_event, newValue) => {
-                                setSelectedFormOption(newValue ?? undefined);
-                                if (newValue) {
-                                    handleLoadForm(newValue.id);
-                                }
-                            }}
-                            renderInput={params => (
-                                <TextField
-                                    {...params}
-                                    label={formatMessage(MESSAGES.selectForm)}
-                                    variant="outlined"
-                                />
-                            )}
-                            sx={styles.formDropdown}
-                            isOptionEqualToValue={(option, value) =>
-                                option.id === value.id
-                            }
-                            loading={isLoadingForm}
-                        />
-                        {selectedFormId && (
-                            <Button
-                                size="small"
-                                variant="outlined"
-                                startIcon={<EditIcon />}
-                                href={`/dashboard/${baseUrls.formDetail}/formId/${selectedFormId}`}
-                                target="_blank"
-                            >
-                                {formatMessage(MESSAGES.editProperties)}
-                            </Button>
-                        )}
-                    </Box>
-                    <Box sx={styles.chatArea}>
+            <MainWrapper
+                sx={{
+                    paddingBottom: 0,
+                }}
+            >
+                {isLoadingForm && <LoadingSpinner />}
+                <Grid
+                    container
+                    spacing={0}
+                    sx={{
+                        height: '100%',
+                    }}
+                >
+                    <Grid item xs={4}>
                         <ChatPanel
                             messages={messages}
-                            isLoading={isLoading || isLoadingForm}
+                            isLoading={isLoadingSendMessage || isLoadingForm}
                             onSendMessage={handleSendMessage}
                         />
-                    </Box>
-                </Box>
-                <Box sx={styles.previewSide}>
-                    <FormPreview
-                        xlsformUuid={xlsformUuid ?? null}
-                        xformXml={xformXml ?? null}
-                    />
-                </Box>
-            </Box>
-            {xlsformUuid && hasUnsavedChanges && (
-                <Button
-                    variant="contained"
-                    color="primary"
-                    startIcon={<SaveIcon />}
-                    onClick={() => setSaveDialogOpen(true)}
-                    sx={styles.saveButton}
-                >
-                    {formatMessage(MESSAGES.saveForm)}
-                </Button>
-            )}
-            {xlsformUuid && (
-                <SaveFormDialog
-                    open={saveDialogOpen}
-                    onClose={() => setSaveDialogOpen(false)}
-                    xlsformUuid={xlsformUuid}
-                    selectedFormId={selectedFormId}
-                    selectedFormName={selectedFormName}
-                    onSaveNewForm={handleSaveNewForm}
-                    onSaveNewVersion={handleSaveNewVersion}
-                />
-            )}
+                    </Grid>
+                    <Grid item xs={8}>
+                        <Actions
+                            formId={params.formId}
+                            selectedFormOption={selectedFormOption}
+                            handleFormChange={handleFormChange}
+                            isLoadingForm={isLoadingForm}
+                            xlsformUuid={xlsformUuid ?? null}
+                            hasUnsavedChanges={hasUnsavedChanges}
+                            selectedFormId={selectedFormId ?? 0}
+                            selectedFormName={selectedFormName ?? ''}
+                            handleSaveNewForm={handleSaveNewForm}
+                            handleSaveNewVersion={handleSaveNewVersion}
+                        />
+                        <FormPreview xformXml={xformXml ?? null} />
+                    </Grid>
+                </Grid>
+            </MainWrapper>
         </>
     );
 };

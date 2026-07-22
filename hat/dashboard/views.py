@@ -4,9 +4,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.http.request import HttpRequest
 from django.shortcuts import render
+from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.http import require_http_methods
-
-from hat.__version__ import VERSION
 
 
 def _should_enable_analytics(request: HttpRequest) -> bool:
@@ -27,7 +26,7 @@ def _base_iaso(request: HttpRequest, analytics_data: dict = None) -> HttpRespons
         "PLUGINS_ENABLED": settings.PLUGINS,
         "STATIC_URL": settings.STATIC_URL,
         "USER_HOME_PAGE": USER_HOME_PAGE,
-        "VERSION": VERSION,
+        "VERSION": settings.IASO_VERSION,
     }
 
     if analytics_data:
@@ -63,9 +62,10 @@ def iaso(request: HttpRequest) -> HttpResponse:
     return _base_iaso(request, analytics_data=analytics_data)
 
 
+@xframe_options_exempt
 @require_http_methods(["GET"])
 def embeddable_iaso(request: HttpRequest) -> HttpResponse:
-    """Embeddable iaso page without login requirement and with correct header"""
+    """Embeddable iaso page without login requirement and without X-Frame-Options."""
     analytics_data = None
 
     if _should_enable_analytics(request):
@@ -74,9 +74,7 @@ def embeddable_iaso(request: HttpRequest) -> HttpResponse:
             "domain": domain,
         }
 
-    response = _base_iaso(request, analytics_data=analytics_data)
-    response["X-Frame-Options"] = "ALLOW"
-    return response
+    return _base_iaso(request, analytics_data=analytics_data)
 
 
 @require_http_methods(["GET"])

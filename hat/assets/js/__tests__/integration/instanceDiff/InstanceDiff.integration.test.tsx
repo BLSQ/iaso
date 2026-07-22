@@ -39,6 +39,9 @@ const mockModifications = getApiDiffInstancesListResponseMock({
             diff: [{ op: 'replace', path: '/name', value: 'updated' }],
             past_value: { name: 'original' },
             new_value: { name: 'updated' },
+            possible_fields: [],
+            files: {},
+            form_descriptor: undefined,
         },
         {
             created_at: '2024-06-01T09:00:00Z',
@@ -47,6 +50,9 @@ const mockModifications = getApiDiffInstancesListResponseMock({
             diff: [{ op: 'add', path: '/field', value: 'new' }],
             past_value: {},
             new_value: { field: 'new' },
+            possible_fields: [],
+            files: {},
+            form_descriptor: undefined,
         },
     ],
 });

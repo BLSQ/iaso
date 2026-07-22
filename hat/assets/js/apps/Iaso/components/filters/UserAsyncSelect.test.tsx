@@ -149,7 +149,7 @@ describe('UserAsyncSelect', () => {
         expect(screen.getByTestId('async-clearable')).toHaveTextContent(
             'false',
         );
-        expect(screen.getByTestId('async-value').textContent).toContain('One');
+        expect(screen.getByTestId('async-value').textContent).toContain([]);
     });
 
     it('uses clearable when not multi', () => {

@@ -13,6 +13,7 @@ from django.core.files import File
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
+from rest_framework import status
 
 from iaso import models as m
 from iaso.api.common import EXPORTS_DATETIME_FORMAT
@@ -342,7 +343,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         m.EntityDuplicate.objects.create(
             entity1=entities[0], entity2=entities[1], validation_status=ValidationStatus.PENDING
         )
-        with self.assertNumQueries(10):
+        with self.assertNumQueries(9):
             response = self.client.get("/api/entities/", format="json")
         self.assertEqual(response.status_code, 200)
         result = response.json()["result"]
@@ -351,9 +352,12 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertTrue(target_result["has_duplicates"])
 
     def test_list_entities_annotate_last_saved_at(self):
-        """Test `last_saved_instance` is annotated correctly without n+1 queries"""
+        """Test `last_saved_instance` is annotated via a cheap correlated subquery, without n+1 queries"""
 
-        expensive_annotation = """MAX(COALESCE("iaso_instance"."source_created_at", "iaso_instance"."created_at"))"""
+        subquery_annotation = (
+            """(SELECT COALESCE(U0."source_created_at", U0."created_at") AS "saved_at" """
+            """FROM "iaso_instance" U0 WHERE U0."entity_id" = ("iaso_entity"."id") ORDER BY 1 DESC LIMIT 1)"""
+        )
 
         self.client.force_authenticate(self.yoda)
         source_created_at = timezone.make_aware(datetime.datetime(2025, 2, 3))
@@ -366,6 +370,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
                 source_created_at=source_created_at + timedelta(days=i),
             )
 
+        # The subquery annotation (no join fan-out, no GROUP BY) is used regardless of ordering.
         with CaptureQueriesContext(connection) as ctx:
             response = self.client.get("/api/entities/", data={"order": "id"}, format="json")
         data = self.assertJSONResponse(response, 200)
@@ -373,8 +378,8 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(len(result), 3)
         self.assertEqual(result[0]["last_saved_instance"], "2025-02-03T00:00:00Z")
 
-        self.assertEqual(len(ctx.captured_queries), 8)
-        self.assertNotIn(expensive_annotation, "".join(q["sql"] for q in ctx.captured_queries))
+        self.assertEqual(len(ctx.captured_queries), 7)
+        self.assertIn(subquery_annotation, "".join(q["sql"] for q in ctx.captured_queries))
 
         with CaptureQueriesContext(connection) as ctx:
             response = self.client.get("/api/entities/", data={"order": "-last_saved_instance"}, format="json")
@@ -383,8 +388,8 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(len(result), 3)
         self.assertEqual(result[0]["last_saved_instance"], "2025-02-05T00:00:00Z")
 
-        self.assertEqual(len(ctx.captured_queries), 6)
-        self.assertIn(expensive_annotation, "".join(q["sql"] for q in ctx.captured_queries))
+        self.assertEqual(len(ctx.captured_queries), 5)
+        self.assertIn(subquery_annotation, "".join(q["sql"] for q in ctx.captured_queries))
 
     @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1), tick=False)
     def test_list_entities_single_entity_type(self):
@@ -848,6 +853,124 @@ class WebEntityAPITestCase(EntityAPITestCase):
                 ]
             }
         )
+
+    def test_list_entities_fields_search_soft_deleted_instances(self):
+        self.client.force_authenticate(self.yoda)
+        self.form_2 = m.Form.objects.create(name="Form 2", form_id="form_2")
+
+        ent1_instance1 = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"gender": "F"},
+        )
+        ent1 = Entity.objects.create(
+            name="Ent 1",
+            entity_type=self.entity_type,
+            attributes=ent1_instance1,
+            account=self.account,
+        )
+        ent1_instance1.entity = ent1
+        ent1_instance1.save()
+
+        inst2 = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_2,
+            json={"residence": "Bujumbura"},
+            entity=ent1,
+        )
+
+        response = self.client.get(
+            "/api/entities/",
+            {"fields_search": self._generate_json_filter("and", "some", "F", "Bujumbura")},
+        )
+        res = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(res["result"]), 1)
+
+        # Soft-delete non-attributes instance
+        inst2.deleted = True
+        inst2.save()
+
+        response = self.client.get(
+            "/api/entities/",
+            {"fields_search": self._generate_json_filter("and", "some", "F", "Bujumbura")},
+        )
+        res = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(res["result"]), 0)
+
+        # Restore non-attributes instance, and soft-delete attributes instance
+        inst2.deleted = False
+        inst2.save()
+        ent1_instance1.deleted = True
+        ent1_instance1.save()
+
+        response = self.client.get(
+            "/api/entities/",
+            {"fields_search": self._generate_json_filter("and", "some", "F", "Bujumbura")},
+        )
+        res = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(res["result"]), 0)
+
+    def test_list_entities_filter_by_date_soft_deleted_instances(self):
+        self.client.force_authenticate(self.yoda)
+
+        source_date_attr = datetime.datetime(2024, 9, 12, 0, 0, 5, tzinfo=pytz.UTC)
+        source_date_attr_str = source_date_attr.strftime("%Y-%m-%d")
+
+        source_date = datetime.datetime(2024, 10, 15, 0, 0, 5, tzinfo=pytz.UTC)
+        source_date_str = source_date.strftime("%Y-%m-%d")
+
+        entity_type = EntityType.objects.create(name="ET", reference_form=self.form_1)
+
+        # initialize both an attribute and non-attribute Instance
+        inst_attr = Instance.objects.create(form=self.form_1, source_created_at=source_date_attr)
+        entity = Entity.objects.create(entity_type=entity_type, attributes=inst_attr, account=self.account)
+        inst_attr.entity = entity
+        inst_attr.save()
+
+        inst = Instance.objects.create(form=self.form_1, source_created_at=source_date, entity=entity)
+
+        # test regular instance
+        response = self.client.get(f"/api/entities/?dateFrom={source_date_str}&dateTo={source_date_str}")
+        resp = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(resp["result"]), 1)
+
+        inst.deleted = True
+        inst.save()
+
+        response = self.client.get(f"/api/entities/?dateFrom={source_date_str}&dateTo={source_date_str}")
+        res = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(res["result"]), 0)
+
+        # test attribute instance
+        response = self.client.get(f"/api/entities/?dateFrom={source_date_attr_str}&dateTo={source_date_attr_str}")
+        resp = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(resp["result"]), 1)
+
+        inst_attr.deleted = True
+        inst_attr.save()
+
+        response = self.client.get(f"/api/entities/?dateFrom={source_date_attr_str}&dateTo={source_date_attr_str}")
+        res = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(res["result"]), 0)
+
+    def test_list_entities_prefetch_soft_deleted_instances(self):
+        self.client.force_authenticate(self.yoda)
+
+        entity_type = EntityType.objects.create(name="ET2", reference_form=self.form_1)
+
+        # Entity with 1 active instance and 1 soft-deleted instance
+        instance_active = Instance.objects.create(form=self.form_1)
+        entity = Entity.objects.create(entity_type=entity_type, attributes=instance_active, account=self.account)
+        instance_active.entity = entity
+        instance_active.save()
+
+        Instance.objects.create(form=self.form_1, entity=entity, deleted=True)
+
+        response = self.client.get(f"/api/entities/{entity.id}/", format="json")
+        resp = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        self.assertEqual(len(resp["instances"]), 1)
+        self.assertEqual(resp["instances"][0], instance_active.id)
 
     def test_get_entity_by_id(self):
         self.client.force_authenticate(self.yoda)

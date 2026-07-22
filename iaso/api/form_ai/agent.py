@@ -9,7 +9,7 @@ import anthropic
 import openpyxl
 
 from django.conf import settings
-from pydantic import BaseModel
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 from pyxform import create_survey_from_xls
 
 
@@ -85,12 +85,16 @@ When the user asks you to create or modify a form, you MUST respond with valid J
 
 class SurveyRow(BaseModel, extra="allow"):
     type: str
-    name: str
+    name: str = ""
     label: str = ""
 
 
 class ChoiceRow(BaseModel, extra="allow"):
-    list_name: str
+    model_config = ConfigDict(populate_by_name=True)
+
+    # Claude sometimes emits "list name" (XLSForm's actual column header) instead of the
+    # "list_name" key asked for in the prompt, so accept either.
+    list_name: str = Field(validation_alias=AliasChoices("list_name", "list name"))
     name: str
     label: str = ""
 
@@ -316,8 +320,15 @@ def generate_form(
             "conversation_history": new_history,
         }
 
-    except (json.JSONDecodeError, Exception) as e:
-        logger.info("Response was not a form (might be conversational): %s", e)
+    except json.JSONDecodeError as e:
+        logger.info("Response was not valid JSON (might be conversational): %s", e)
+        return {
+            "assistant_message": response_text,
+            "form": None,
+            "conversation_history": new_history,
+        }
+    except Exception as e:
+        logger.warning("Failed to parse AI form response: %s", e)
         return {
             "assistant_message": response_text,
             "form": None,

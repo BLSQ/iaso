@@ -9,7 +9,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.test import override_settings
 
 from iaso import models as m
-from iaso.api.form_ai.agent import FormSettings, GeneratedForm, SurveyRow
+from iaso.api.form_ai.agent import FormSettings, GeneratedForm, SurveyRow, parse_form_response
 from iaso.models.form_ai import TemporaryForm
 from iaso.modules import MODULE_FORM_AI
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
@@ -29,6 +29,49 @@ def _make_generated_form() -> GeneratedForm:
         settings=FormSettings(form_title="Test Form", form_id="test_form"),
         message="Here is your form.",
     )
+
+
+class FormAIParseResponseTestCase(APITestCase):
+    def test_parses_response_with_missing_names_on_structural_rows(self):
+        """end group/end repeat rows often omit name; parsing must still succeed."""
+        response_text = """{
+  "survey": [
+    {"type": "text", "name": "q1", "label": "Question 1"},
+    {"type": "begin group", "name": "grp", "label": "Group"},
+    {"type": "end group "},
+    {"type": "begin_repeat", "name": "rep", "label": "Repeat"},
+    {"type": "end_repeat"}
+  ],
+  "choices": [],
+  "settings": {"form_title": "Test", "form_id": "test", "version": "1"},
+  "message": "Added a question."
+}"""
+        form = parse_form_response(response_text)
+
+        self.assertEqual(form.message, "Added a question.")
+        self.assertEqual(form.survey[2].type, "end group ")
+        self.assertEqual(form.survey[2].name, "")
+        self.assertEqual(form.survey[4].type, "end_repeat")
+        self.assertEqual(form.survey[4].name, "")
+
+    def test_parses_choices_with_list_name_containing_a_space(self):
+        """Claude sometimes emits XLSForm's actual "list name" header (with a space)
+        instead of the "list_name" key requested in the prompt; both must parse."""
+        response_text = """{
+  "survey": [{"type": "select_one yes_no", "name": "q1", "label": "Question 1"}],
+  "choices": [
+    {"list name": "yes_no", "name": "1", "label": "Yes"},
+    {"list_name": "yes_no", "name": "0", "label": "No"}
+  ],
+  "settings": {"form_title": "Test", "form_id": "test", "version": "1"},
+  "message": "Added a question."
+}"""
+        form = parse_form_response(response_text)
+
+        self.assertEqual(form.choices[0].list_name, "yes_no")
+        self.assertEqual(form.choices[0].model_dump()["list_name"], "yes_no")
+        self.assertNotIn("list name", form.choices[0].model_dump())
+        self.assertEqual(form.choices[1].list_name, "yes_no")
 
 
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp())

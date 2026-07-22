@@ -1,6 +1,6 @@
 from logging import getLogger
 
-from django.db.models import Max, Prefetch
+from django.db.models import F, OuterRef, Prefetch, Subquery
 from django.db.models.functions import Coalesce
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
@@ -128,15 +128,46 @@ class EntityViewSet(ModelViewSet):
         queryset = Entity.objects.filter_for_user(self.request.user)
         if self.action == "count":
             return queryset
-        if self.action == "list" and "last_saved_instance" in self._requested_ordering_fields:
+
+        is_export = self.action == "list" and self.request.accepted_renderer.format in ("csv", "xlsx")
+
+        if self.action == "list":
+            # Compute last_saved_instance via a correlated subquery (one indexed lookup per
+            # entity, no GROUP BY) instead of a Max()+GROUP BY aggregate, which would join every
+            # submitted instance to its entity before collapsing the rows back down, or a Python
+            # max() over a full instances prefetch (see Entity.get_latest_instance_created_at).
+            last_saved_instance_subquery = (
+                Instance.objects.filter(entity=OuterRef("pk"))
+                .annotate(saved_at=Coalesce("source_created_at", "created_at"))
+                .order_by("-saved_at")
+                .values("saved_at")[:1]
+            )
             queryset = queryset.annotate(
-                last_saved_instance=Max(Coalesce("instances__source_created_at", "instances__created_at"))
+                last_saved_instance=Coalesce(Subquery(last_saved_instance_subquery), F("created_at"))
             )
 
         queryset = queryset.select_related(
             "attributes__org_unit",
-            "attributes__created_by",
             "entity_type",
+        )
+
+        if is_export:
+            # EntityExportSerializer doesn't use instances, duplicates, or the extra
+            # org_unit/attributes relations below, so skip them on the export path.
+            # It also only reads org_unit.name/id and entity_type.name, so restrict the
+            # select_related columns to avoid loading the org_unit's geometry fields
+            # (geom, simplified_geom, catchment, location), which can be large.
+            queryset = queryset.only(
+                "uuid",
+                "created_at",
+                "entity_type__name",
+                "attributes__json",
+                "attributes__org_unit__name",
+            )
+            return queryset
+
+        queryset = queryset.select_related(
+            "attributes__created_by",
         ).prefetch_related(
             "attributes__created_by__teams",
             "attributes__form",
@@ -144,10 +175,6 @@ class EntityViewSet(ModelViewSet):
             "attributes__org_unit__org_unit_type",
             "attributes__org_unit__parent",
             "attributes__org_unit__version__data_source",
-            Prefetch(
-                "instances",
-                queryset=Instance.objects.only("id", "entity_id", "source_created_at", "created_at"),
-            ),
             Prefetch(
                 "duplicates1",
                 queryset=EntityDuplicate.objects.filter(
@@ -163,6 +190,17 @@ class EntityViewSet(ModelViewSet):
                 to_attr="pending_duplicates2",
             ),
         )
+
+        if self.action != "list":
+            # EntitySerializer (used outside the "list" action) serializes the full `instances`
+            # field; EntityListSerializer only needs last_saved_instance, already annotated above.
+            queryset = queryset.prefetch_related(
+                Prefetch(
+                    "instances",
+                    queryset=Instance.non_deleted_objects.only("id", "entity_id", "source_created_at", "created_at"),
+                ),
+            )
+
         return queryset
 
     @cached_property
@@ -234,7 +272,7 @@ class EntityViewSet(ModelViewSet):
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
-        queryset = Entity.objects.filter_for_user(self.request.user).distinct()
+        queryset = self.get_queryset().distinct()
         entity = get_object_or_404(queryset, pk=pk)
         serializer = self.get_serializer(entity, many=False)
         return Response(serializer.data)

@@ -97,7 +97,6 @@ export const useValidationWorkflowInstanceSearchColumns = (): Column[] => {
                 ),
             },
         ],
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [currentUser],
+        [currentUser.account?.id, formatMessage],
     );
 };

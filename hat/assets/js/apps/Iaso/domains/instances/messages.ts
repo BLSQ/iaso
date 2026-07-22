@@ -76,7 +76,11 @@ const MESSAGES = defineMessages({
     },
     dhis2Mappings: {
         id: 'iaso.label.dhis2Mappings',
-        defaultMessage: 'DHIS mappings',
+        defaultMessage: 'DHIS2 mappings',
+    },
+    link: {
+        id: 'iaso.label.link',
+        defaultMessage: 'Link',
     },
     field: {
         id: 'iaso.label.field',

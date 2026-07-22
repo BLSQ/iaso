@@ -340,8 +340,6 @@ class CampaignViewSet(ModelViewSet):
             else:
                 item["lqas_district_passing"] = round.lqas_district_passing
                 item["lqas_district_failing"] = round.lqas_district_failing
-            item["budget_approved_date"] = campaign.approved_at_WFEDITABLE
-            item["budget_submitted_date"] = campaign.submitted_to_rrt_at_WFEDITABLE
             item["preparedness_sync_status"] = (
                 round.preparedness_sync_status if round.preparedness_spreadsheet_url else ""
             )

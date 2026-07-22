@@ -489,39 +489,21 @@ export type DefaultCampaignValues = {
 };
 export type PolioCampaignValues = DefaultCampaignValues & {
     ag_nopv_group_met_at?: string | null;
-    approval_confirmed_at_WFEDITABLE?: string | null;
-    approved_at_WFEDITABLE?: string | null;
-    approved_by_unicef_at_WFEDITABLE?: string | null;
-    approved_by_who_at_WFEDITABLE?: string | null;
     cvdpv2_notified_at?: string | null;
     detection_first_draft_submitted_at?: string | null;
     dg_authorized_at?: string | null;
     district_count?: number;
     epid?: string;
-    feedback_sent_to_gpei_at_WFEDITABLE?: string | null;
-    feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE?: string | null;
-    feedback_sent_to_orpg_operations_who_at_WFEDITABLE?: string | null;
-    feedback_sent_to_rrt1_at_WFEDITABLE?: string | null;
-    feedback_sent_to_rrt2_at_WFEDITABLE?: string | null;
-    gpei_consolidated_budgets_at_WFEDITABLE?: string | null;
     grouped_campaigns?: number[];
     integrated_campaigns: IntegratedCampaign[];
     investigation_at?: string | null;
     no_regret_fund_amount?: number;
     onset_at?: string | null;
     outbreak_declaration_date?: string | null;
-    re_submitted_to_orpg_operations1_at_WFEDITABLE?: string | null;
-    re_submitted_to_orpg_operations2_at_WFEDITABLE?: string | null;
-    re_submitted_to_rrt_at_WFEDITABLE?: string | null;
     risk_assessment_first_draft_submitted_at?: string | null;
     risk_assessment_rrt_oprtt_approval_at?: string | null;
     spreadsheet_url?: string | null;
     subactivity?: SubActivityFormValues; // The subactivity is not part of the campaign API payload, but saved in formik and posted through the subactivities API
-    submitted_for_approval_at_WFEDITABLE?: string | null;
-    submitted_to_orpg_operations1_at_WFEDITABLE?: string | null;
-    submitted_to_orpg_wider_at_WFEDITABLE?: string | null;
-    submitted_to_rrt_at_WFEDITABLE?: string | null;
-    submission_to_orpg_operations_2_at_WFEDITABLE?: string | null;
     unicef_disbursed_to_co_at?: string | null;
     unicef_disbursed_to_moh_at?: string | null;
     verification_score?: number;
@@ -529,7 +511,6 @@ export type PolioCampaignValues = DefaultCampaignValues & {
     vaccines?: string;
     who_disbursed_to_co_at?: string | null;
     who_disbursed_to_moh_at?: string | null;
-    who_sent_budget_at_WFEDITABLE?: string | null;
 };
 
 export type CampaignFormValues = DefaultCampaignValues | PolioCampaignValues;

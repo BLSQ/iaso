@@ -798,30 +798,6 @@ class Campaign(SoftDeletableModel):
     budget_current_state_key = models.CharField(max_length=100, default="-")
     budget_current_state_label = models.CharField(max_length=100, null=True, blank=True)
 
-    # Budget tab
-    # These fields can be either filled manually or via the budget workflow when a step is done.
-    ra_completed_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    who_sent_budget_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    unicef_sent_budget_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    gpei_consolidated_budgets_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    submitted_to_rrt_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    feedback_sent_to_gpei_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    re_submitted_to_rrt_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    submitted_to_orpg_operations1_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    feedback_sent_to_rrt1_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    re_submitted_to_orpg_operations1_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    submitted_to_orpg_wider_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    submitted_to_orpg_operations2_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    feedback_sent_to_rrt2_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    re_submitted_to_orpg_operations2_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    submitted_for_approval_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    feedback_sent_to_orpg_operations_who_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    approved_by_who_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    approved_by_unicef_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    approved_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    approval_confirmed_at_WFEDITABLE = models.DateField(null=True, blank=True)
-
     # Fund release part of the budget form. Will be migrated to workflow fields later.
     who_disbursed_to_co_at = models.DateField(
         null=True,

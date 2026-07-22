@@ -55,7 +55,6 @@ def compute_values(campaign):
     cvdpv2_notified_at = campaign.cvdpv2_notified_at
     vaccines_extended = campaign.vaccines_extended
     risk_assessment_rrt_oprtt_approval_at = campaign.risk_assessment_rrt_oprtt_approval_at
-    submitted_to_rrt_at_WFEDITABLE = campaign.submitted_to_rrt_at_WFEDITABLE
     obr_name = campaign.obr_name
 
     return (

@@ -965,8 +965,6 @@ SETUPER_SANDBOX_PASSWORD = env.str("SETUPER_SANDBOX_PASSSWORD", default="distric
 # Form AI
 FORM_AI_MODEL = env.str("FORM_AI_MODEL", default="claude-opus-4-7")
 
-# Composite Layer AI (SNT Malaria plugin)
-COMPOSITE_LAYER_AI_MODEL = env.str("COMPOSITE_LAYER_AI_MODEL", default=FORM_AI_MODEL)
 
 # TEST MODE
 TEST_MODE = env.bool("TEST_MODE", default=False)

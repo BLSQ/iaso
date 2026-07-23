@@ -1,0 +1,400 @@
+import React, {
+    FC,
+    ReactNode,
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+} from 'react';
+import PersonIcon from '@mui/icons-material/Person';
+import SendIcon from '@mui/icons-material/Send';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
+import {
+    Box,
+    Button,
+    CircularProgress,
+    Paper,
+    SxProps,
+    TextField,
+    Theme,
+    Typography,
+} from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
+import { SxStyles } from 'Iaso/types/general';
+import MESSAGES from './messages';
+
+export type ChatMessageRole = 'user' | 'assistant';
+
+export type ChatMessage = {
+    role: ChatMessageRole;
+    content: string;
+    id: string;
+};
+
+const messageRow = (role: ChatMessageRole): SxProps<Theme> => ({
+    display: 'flex',
+    gap: 1,
+    alignItems: 'flex-start',
+    flexDirection: role === 'user' ? 'row-reverse' : 'row',
+});
+
+const avatar = (role: ChatMessageRole): SxProps<Theme> => ({
+    width: 32,
+    height: 32,
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    bgcolor: role === 'user' ? 'primary.main' : 'grey.300',
+    color: role === 'user' ? 'primary.contrastText' : 'text.primary',
+    flexShrink: 0,
+});
+
+const bubble = (role: ChatMessageRole): SxProps<Theme> => ({
+    p: 1.5,
+    maxWidth: '80%',
+    bgcolor: role === 'user' ? 'primary.light' : 'grey.100',
+    color: role === 'user' ? 'primary.contrastText' : 'text.primary',
+    borderRadius: 2,
+});
+
+type Props = {
+    messages: ChatMessage[];
+    isLoading: boolean;
+    onSendMessage: (message: string) => void;
+    // Content shown in place of the message list when there are no messages yet.
+    emptyState: ReactNode;
+    title: ReactNode;
+    subtitle?: ReactNode;
+    // Small pill shown next to the title, e.g. an "AI" badge. Omit to hide it.
+    badge?: ReactNode;
+    titleIcon?: ReactNode;
+    placeholder?: string;
+    // Reserved for future use: message content is always rendered as plain
+    // text today regardless of this flag, until a markdown renderer is chosen.
+    interpretMarkdown?: boolean;
+    sx?: SxStyles;
+};
+
+const defaultStyles: SxStyles = {
+    root: {
+        height: `100%`,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+    },
+    header: {
+        px: 2,
+        pt: 2,
+        pb: 1.5,
+        borderBottom: theme => `1px solid ${theme.palette.divider}`,
+    },
+    headerTitleRow: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 0.75,
+        mb: 0.5,
+    },
+    headerTitle: {
+        fontWeight: 700,
+        fontSize: '1.1rem',
+        color: 'text.primary',
+        lineHeight: 1.2,
+    },
+    aiBadge: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        px: 0.75,
+        py: 0.125,
+        borderRadius: 1,
+        bgcolor: 'primary.50',
+        color: 'primary.main',
+        fontSize: '0.7rem',
+        fontWeight: 700,
+        lineHeight: 1.4,
+    },
+    headerSubtitle: {
+        color: 'text.secondary',
+        fontSize: '0.875rem',
+    },
+    messagesArea: {
+        flex: 1,
+        minHeight: 0,
+        overflowY: 'auto',
+        p: 2,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+    },
+    emptyState: {
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+        px: 2,
+        gap: 1.5,
+    },
+    loadingAvatar: {
+        width: 32,
+        height: 32,
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: 'grey.300',
+        flexShrink: 0,
+    },
+    loadingRow: {
+        display: 'flex',
+        gap: 1,
+        alignItems: 'center',
+    },
+    inputArea: {
+        p: 2,
+        borderTop: theme => `1px solid ${theme.palette.divider}`,
+    },
+    inputContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1,
+        px: 2,
+        py: 0.75,
+        borderRadius: 2,
+        border: theme => `1px solid ${theme.palette.divider}`,
+        bgcolor: 'common.white',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+    },
+    inputField: {
+        flex: 1,
+        '& .MuiInputBase-root': {
+            fontSize: '0.875rem',
+            alignItems: 'center',
+        },
+        '& .MuiOutlinedInput-root': {
+            p: 0,
+        },
+        '& .MuiInputBase-input': {
+            py: 1,
+            px: 0,
+        },
+        '& fieldset': {
+            border: 'none',
+        },
+        '& .MuiOutlinedInput-notchedOutline': {
+            border: 'none',
+        },
+    },
+    sendButton: {
+        minWidth: 40,
+        width: 40,
+        height: 40,
+        borderRadius: '50%',
+        p: 0,
+        flexShrink: 0,
+        boxShadow: '0 2px 6px rgba(0, 0, 0, 0.12)',
+    },
+};
+
+export const ChatPanel: FC<Props> = ({
+    messages,
+    isLoading,
+    onSendMessage,
+    emptyState,
+    title,
+    subtitle,
+    badge,
+    titleIcon,
+    placeholder,
+    sx = {},
+}) => {
+    const { formatMessage } = useSafeIntl();
+    const [inputValue, setInputValue] = useState('');
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
+
+    const handleSend = useCallback(() => {
+        const trimmed = inputValue.trim();
+        if (trimmed && !isLoading) {
+            onSendMessage(trimmed);
+            setInputValue('');
+        }
+    }, [inputValue, isLoading, onSendMessage]);
+
+    const handleKeyDown = useCallback(
+        (e: React.KeyboardEvent) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+            }
+        },
+        [handleSend],
+    );
+
+    const showEmptyState = messages.length === 0;
+
+    return (
+        <Box sx={[defaultStyles.root, sx.root] as SxProps<Theme>}>
+            <Box sx={[defaultStyles.header, sx.header] as SxProps<Theme>}>
+                <Box
+                    sx={
+                        [
+                            defaultStyles.headerTitleRow,
+                            sx.headerTitleRow,
+                        ] as SxProps<Theme>
+                    }
+                >
+                    {titleIcon}
+                    <Typography
+                        sx={
+                            [
+                                defaultStyles.headerTitle,
+                                sx.headerTitle,
+                            ] as SxProps<Theme>
+                        }
+                    >
+                        {title}
+                    </Typography>
+                    {badge && (
+                        <Box
+                            component="span"
+                            sx={
+                                [
+                                    defaultStyles.aiBadge,
+                                    sx.aiBadge,
+                                ] as SxProps<Theme>
+                            }
+                        >
+                            {badge}
+                        </Box>
+                    )}
+                </Box>
+                {subtitle && (
+                    <Typography
+                        sx={
+                            [
+                                defaultStyles.headerSubtitle,
+                                sx.headerSubtitle,
+                            ] as SxProps<Theme>
+                        }
+                    >
+                        {subtitle}
+                    </Typography>
+                )}
+            </Box>
+
+            <Box
+                sx={
+                    [
+                        defaultStyles.messagesArea,
+                        sx.messagesArea,
+                    ] as SxProps<Theme>
+                }
+            >
+                {showEmptyState && (
+                    <Box
+                        sx={
+                            [
+                                defaultStyles.emptyState,
+                                sx.emptyState,
+                            ] as SxProps<Theme>
+                        }
+                    >
+                        {emptyState}
+                    </Box>
+                )}
+                {messages.map(msg => (
+                    <Box key={msg.id} sx={messageRow(msg.role)}>
+                        <Box sx={avatar(msg.role)}>
+                            {msg.role === 'user' ? (
+                                <PersonIcon sx={{ fontSize: 18 }} />
+                            ) : (
+                                <SmartToyIcon sx={{ fontSize: 18 }} />
+                            )}
+                        </Box>
+                        <Paper elevation={0} sx={bubble(msg.role)}>
+                            <Typography
+                                variant="body2"
+                                sx={{ whiteSpace: 'pre-wrap' }}
+                            >
+                                {msg.content}
+                            </Typography>
+                        </Paper>
+                    </Box>
+                ))}
+                {isLoading && (
+                    <Box
+                        sx={
+                            [
+                                defaultStyles.loadingRow,
+                                sx.loadingRow,
+                            ] as SxProps<Theme>
+                        }
+                    >
+                        <Box
+                            sx={
+                                [
+                                    defaultStyles.loadingAvatar,
+                                    sx.loadingAvatar,
+                                ] as SxProps<Theme>
+                            }
+                        >
+                            <SmartToyIcon sx={{ fontSize: 18 }} />
+                        </Box>
+                        <CircularProgress size={20} />
+                    </Box>
+                )}
+                <div ref={messagesEndRef} />
+            </Box>
+
+            <Box sx={[defaultStyles.inputArea, sx.inputArea] as SxProps<Theme>}>
+                <Box
+                    sx={
+                        [
+                            defaultStyles.inputContainer,
+                            sx.inputContainer,
+                        ] as SxProps<Theme>
+                    }
+                >
+                    <TextField
+                        fullWidth
+                        multiline
+                        maxRows={4}
+                        variant="outlined"
+                        placeholder={
+                            placeholder ?? formatMessage(MESSAGES.placeholder)
+                        }
+                        value={inputValue}
+                        onChange={e => setInputValue(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        disabled={isLoading}
+                        sx={
+                            [
+                                defaultStyles.inputField,
+                                sx.inputField,
+                            ] as SxProps<Theme>
+                        }
+                    />
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleSend}
+                        disabled={isLoading || !inputValue.trim()}
+                        sx={
+                            [
+                                defaultStyles.sendButton,
+                                sx.sendButton,
+                            ] as SxProps<Theme>
+                        }
+                    >
+                        <SendIcon sx={{ fontSize: 18 }} />
+                    </Button>
+                </Box>
+            </Box>
+        </Box>
+    );
+};

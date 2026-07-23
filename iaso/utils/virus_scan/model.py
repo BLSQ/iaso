@@ -27,6 +27,7 @@ class ModelWithFile(models.Model):
 
     This model provides the basic fields needed for virus scanning functionality:
     - file: The uploaded file
+    - md5: MD5 checksum of the file content (used for change detection)
     - file_scan_status: The result of the virus scan
     - file_last_scan: When the file was last scanned
 
@@ -35,6 +36,7 @@ class ModelWithFile(models.Model):
 
     Attributes:
         file (FileField): The uploaded file, can be null/blank
+        md5 (CharField): MD5 checksum of the file content
         file_last_scan (DateTimeField): When the file was last scanned
         file_scan_status (CharField): The result of the virus scan (CLEAN, INFECTED, etc.)
 
@@ -43,7 +45,7 @@ class ModelWithFile(models.Model):
             title = models.CharField(max_length=200)
             content = models.TextField()
 
-        # Now Document has file, file_scan_status, and file_last_scan fields
+        # Now Document has file, md5, file_scan_status, and file_last_scan fields
         doc = Document.objects.create(title="Test Doc")
         # doc.file_scan_status defaults to PENDING
     """
@@ -52,6 +54,7 @@ class ModelWithFile(models.Model):
         null=True,
         blank=True,
     )
+    md5 = models.CharField(blank=True, max_length=32)
     file_last_scan = models.DateTimeField(blank=True, null=True)
     file_scan_status = models.CharField(max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING)
 

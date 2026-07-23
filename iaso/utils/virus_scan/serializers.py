@@ -1,7 +1,6 @@
-import os
-
 from rest_framework import serializers
 
+from iaso.utils.encryption import calculate_md5, file_content_changed
 from iaso.utils.virus_scan.clamav import scan_uploaded_file_for_virus
 from iaso.utils.virus_scan.model import ModelWithFile
 
@@ -83,24 +82,30 @@ class ModelWithFileSerializer(serializers.ModelSerializer):
         Example:
             # In a DRF serializer's create method:
             def create(self, validated_data):
-                self.scan_file_if_exists(validated_data)  # Adds file_scan_status and file_last_scan
+                self.scan_file_if_exists(validated_data)  # Adds file_scan_status, file_last_scan, md5
                 return super().create(**validated_data)
 
             validated_data before: {'file': <UploadedFile>, 'name': 'test'}
             validated_data after: {'file': <UploadedFile>, 'name': 'test',
-                                   'file_scan_status': 'CLEAN', 'file_last_scan': datetime}
+                                   'file_scan_status': 'CLEAN', 'file_last_scan': datetime, 'md5': '...'}
         """
-        needs_scanning = self._check_if_file_exists_and_needs_scanning(validated_data, obj)
+        # Compute the new file's md5 once and reuse it for both the change check and
+        # persistence, so the file is not hashed twice on a single upload.
+        new_md5 = calculate_md5(validated_data["file"]) if validated_data.get("file") else ""
+        needs_scanning = self._check_if_file_exists_and_needs_scanning(validated_data, obj, new_md5)
         if needs_scanning:
             result, timestamp = scan_uploaded_file_for_virus(validated_data["file"])
             validated_data["file_scan_status"] = result
             validated_data["file_last_scan"] = timestamp
+            validated_data["md5"] = new_md5
         return needs_scanning
 
-    def _check_if_file_exists_and_needs_scanning(self, validated_data, obj):
+    def _check_if_file_exists_and_needs_scanning(self, validated_data, obj, new_md5=None):
         """
         Determines if a file exists in validated_data and if it needs scanning.
         Files are always scanned during creation. Files are scanned during update only if they have changed.
+
+        ``new_md5`` is the pre-computed md5 of the new file; when omitted it is computed on demand.
         """
         if "file" not in validated_data:
             return False
@@ -117,7 +122,7 @@ class ModelWithFileSerializer(serializers.ModelSerializer):
         if not old_file:
             return True  # no previous file, so we need to scan the new one
 
-        # Compare the new file with the existing one
-        needs_scanning = os.path.basename(old_file.name) != os.path.basename(file.name) or old_file.size != file.size
-        # we should compare file hashes instead - see POLIO-1959
-        return needs_scanning
+        if new_md5 is None:
+            return file_content_changed(obj.md5, file)
+        # Empty stored md5 means the previous content is unknown, so treat it as changed.
+        return not obj.md5 or obj.md5 != new_md5

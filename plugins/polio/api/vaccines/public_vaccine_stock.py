@@ -218,7 +218,6 @@ class PublicVaccineStockViewset(ViewSet):
         filename = f"{filename_details}-stock-card-export"
 
         workbook = download_xlsx_public_stock_variants(
-            filename=filename,
             usable_results=sorted_usable,
             unusable_results=sorted_unusable,
             usable_totals=usable_totals,

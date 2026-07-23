@@ -251,7 +251,6 @@ def write_vials_doses_total(
 
 
 def download_xlsx_public_stock_variants(
-    filename,
     usable_results,
     unusable_results,
     usable_totals,

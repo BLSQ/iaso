@@ -15,6 +15,7 @@ type Props = {
     iconSize?: 'small' | 'medium' | 'large' | 'default' | 'inherit';
     size?: 'small' | 'medium' | 'large' | 'default' | 'inherit';
     icon?: IconVariant;
+    target?: '_blank' | '_self' | '_parent' | '_top';
 };
 
 export const LinkToOrgUnit: FunctionComponent<Props> = ({
@@ -25,6 +26,7 @@ export const LinkToOrgUnit: FunctionComponent<Props> = ({
     iconSize,
     size,
     icon,
+    target,
 }) => {
     const user = useCurrentUser();
     const condition = userHasPermission(ORG_UNITS, user) && Boolean(orgUnit);
@@ -43,6 +45,7 @@ export const LinkToOrgUnit: FunctionComponent<Props> = ({
             text={text}
             tooltipMessage={MESSAGES.details}
             icon={icon}
+            target={target}
         />
     );
 };

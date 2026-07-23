@@ -117,6 +117,7 @@
     "iaso.changeRequest.seeApprovedChanges": "See approved change(s)",
     "iaso.changeRequest.seeRejectedChanges": "See rejected change(s)",
     "iaso.changeRequest.showValuesAtCreation": "Show values at creation",
+    "iaso.chatPanel.placeholder": "Type a message...",
     "iaso.completeness.chooseParent": "Select a form or a parent org unit to enable",
     "iaso.completeness.formsFilledDirect": "# Forms filled (direct)",
     "iaso.completeness.formsFilledWithDescendants": "# Forms filled (with descendants)",

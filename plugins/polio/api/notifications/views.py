@@ -91,7 +91,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
             md5=calculate_md5(uploaded_file),
         )
         # TODO: don't do the async if the file is positive?
-        create_polio_notifications_async(pk=notification_import.pk)
+        create_polio_notifications_async(pk=notification_import.pk, user=user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["get"])

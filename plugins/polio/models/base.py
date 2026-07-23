@@ -2033,7 +2033,7 @@ class NotificationImport(ModelWithFile):
 
 
 @task_decorator(task_name="create_polio_notifications_async")
-def create_polio_notifications_async(pk: int, task: Task = None) -> None:
+def create_polio_notifications_async(pk: int, user: User = None, task: Task = None) -> None:
     task.report_progress_and_stop_if_killed(progress_message="Importing polio notifications…")
     user = task.launcher
     notification_import = NotificationImport.objects.get(pk=pk)

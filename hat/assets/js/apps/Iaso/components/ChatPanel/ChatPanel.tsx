@@ -20,6 +20,7 @@ import {
     Typography,
 } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import ReactMarkdown from 'react-markdown';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from './messages';
 
@@ -70,8 +71,7 @@ type Props = {
     badge?: ReactNode;
     titleIcon?: ReactNode;
     placeholder?: string;
-    // Reserved for future use: message content is always rendered as plain
-    // text today regardless of this flag, until a markdown renderer is chosen.
+    // When true, message content is rendered as markdown instead of plain text.
     interpretMarkdown?: boolean;
     sx?: SxStyles;
 };
@@ -195,6 +195,26 @@ const defaultStyles: SxStyles = {
         flexShrink: 0,
         boxShadow: '0 2px 6px rgba(0, 0, 0, 0.12)',
     },
+    markdownContent: {
+        typography: 'body2',
+        '& > :first-of-type': { mt: 0 },
+        '& > :last-of-type': { mb: 0 },
+        '& p, & ul, & ol': { mt: 0, mb: 1 },
+        '& ul, & ol': { pl: 2.5 },
+        '& pre': {
+            overflowX: 'auto',
+            bgcolor: 'rgba(0, 0, 0, 0.06)',
+            p: 1,
+            borderRadius: 1,
+        },
+        '& code': {
+            fontFamily: 'monospace',
+            fontSize: '0.85em',
+        },
+        '& pre code': {
+            fontSize: 'inherit',
+        },
+    },
 };
 
 export const ChatPanel: FC<Props> = ({
@@ -207,6 +227,7 @@ export const ChatPanel: FC<Props> = ({
     badge,
     titleIcon,
     placeholder,
+    interpretMarkdown = false,
     sx = {},
 }) => {
     const { formatMessage } = useSafeIntl();
@@ -317,12 +338,22 @@ export const ChatPanel: FC<Props> = ({
                             )}
                         </Box>
                         <Paper elevation={0} sx={bubble(msg.role)}>
-                            <Typography
-                                variant="body2"
-                                sx={{ whiteSpace: 'pre-wrap' }}
-                            >
-                                {msg.content}
-                            </Typography>
+                            {interpretMarkdown && msg.role !== 'user' ? (
+                                <Box
+                                    sx={
+                                        defaultStyles.markdownContent as SxProps<Theme>
+                                    }
+                                >
+                                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                                </Box>
+                            ) : (
+                                <Typography
+                                    variant="body2"
+                                    sx={{ whiteSpace: 'pre-wrap' }}
+                                >
+                                    {msg.content}
+                                </Typography>
+                            )}
                         </Paper>
                     </Box>
                 ))}

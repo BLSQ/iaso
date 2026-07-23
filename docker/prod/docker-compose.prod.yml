@@ -46,6 +46,7 @@ services:
         - DB_READONLY_USERNAME
         - DEBUG
         - DEBUG_SQL
+        - DEFAULT_APP_ID
         - DEFAULT_FROM_EMAIL
         - DEPLOYED_BY
         - DEPLOYED_ON

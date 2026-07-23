@@ -1,5 +1,4 @@
 from datetime import datetime
-from tempfile import NamedTemporaryFile
 from time import gmtime, strftime
 from typing import Any, List, Union
 
@@ -179,13 +178,9 @@ class CampaignViewSet(ModelViewSet):
         filename = xlsx_file_name("calendar", params)
         xlsx_file = generate_xlsx_campaigns_calendar(filename, calendar_data)
 
-        with NamedTemporaryFile() as tmp:
-            xlsx_file.save(tmp.name)
-            tmp.seek(0)
-            stream = tmp.read()
-
-        response = HttpResponse(stream, content_type=CONTENT_TYPE_XLSX)
+        response = HttpResponse(content_type=CONTENT_TYPE_XLSX)
         response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
+        xlsx_file.save(response)
         return response
 
     @action(methods=["GET"], detail=False, serializer_class=None)

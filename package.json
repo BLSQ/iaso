@@ -101,6 +101,7 @@
         "react-intl": "^7.0.4",
         "react-leaflet": "^4.0.0",
         "react-leaflet-markercluster": "^4.2.1",
+        "react-markdown": "^10.1.0",
         "react-pdf": "^10.0.1",
         "react-product-fruits": "^2.2.61",
         "react-query": "^3.18.1",

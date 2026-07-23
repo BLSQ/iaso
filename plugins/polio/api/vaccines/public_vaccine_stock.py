@@ -1,7 +1,6 @@
 import math
 
 from datetime import date
-from tempfile import NamedTemporaryFile
 
 from django.db.models import Model
 from django.http import HttpResponse
@@ -235,11 +234,7 @@ class PublicVaccineStockViewset(ViewSet):
             unusable_doses_out=unusable_doses_out,
         )
 
-        with NamedTemporaryFile() as tmp:
-            workbook.save(tmp.name)
-            tmp.seek(0)
-            stream = tmp.read()
-
-        response = HttpResponse(stream, content_type=CONTENT_TYPE_XLSX)
+        response = HttpResponse(content_type=CONTENT_TYPE_XLSX)
         response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
+        workbook.save(response)
         return response

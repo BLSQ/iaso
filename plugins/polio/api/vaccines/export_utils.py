@@ -303,5 +303,4 @@ def download_xlsx_public_stock_variants(
             doses_out=doses_out,
         )
 
-    workbook.save(filename)
     return workbook

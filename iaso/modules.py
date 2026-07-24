@@ -36,7 +36,7 @@ MODULE_REGISTRY = IasoModule(name=_("Registry"), codename="REGISTRY", related_pl
 MODULE_PAYMENTS = IasoModule(name=_("Payments"), codename="PAYMENTS")
 MODULE_COMPLETENESS_PER_PERIOD = IasoModule(name=_("Completeness per Period"), codename="COMPLETENESS_PER_PERIOD")
 MODULE_TRYPELIM_PROJECT = IasoModule(name=_("Trypelim project"), codename="TRYPELIM_PROJECT", related_plugin="trypelim")
-MODULE_DATA_VALIDATION = IasoModule(name=_("Data validation"), codename="DATA_VALIDATION")
+MODULE_CHANGE_REQUESTS = IasoModule(name=_("Change requests"), codename="DATA_VALIDATION")
 MODULE_SAAS = IasoModule(name=_("SaaS"), codename="SAAS", related_plugin="saas")
 MODULE_STOCK = IasoModule(name=_("Stock management"), codename="STOCK_MANAGEMENT")
 MODULE_SNT_MALARIA = IasoModule(name=_("SNT Malaria"), codename="SNT_MALARIA", related_plugin="snt_malaria")

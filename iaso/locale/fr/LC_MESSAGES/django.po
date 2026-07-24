@@ -1370,16 +1370,6 @@ msgstr "Virus détecté"
 msgid "Error"
 msgstr "Erreur lors de l'analyse"
 
-#, python-brace-format
-#~ msgid "Dynamic fields cannot contain both {all_fields} and {default_fields}"
-#~ msgstr ""
-#~ "Les champs dynamiques ne peuvent pas contenir à la fois {all_fields} et "
-#~ "{default_fields}"
-
-#, python-brace-format
-#~ msgid "Invalid dynamic fields: {fields}"
-#~ msgstr "Champs dynamiques invalides : {fields}"
-
 #~ msgid "Data validation"
 #~ msgstr "Validation des données"
 

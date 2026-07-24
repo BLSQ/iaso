@@ -26,7 +26,7 @@ COPY ../../tsconfig.json ../../babel-register.js ./
 RUN npm run webpack-prod
 
 # install old FE trypelim dependencies and build it
-WORKDIR /opt/app/plugins/trypelim/
+WORKDIR /opt/app/plugins/trypelim/src-legacy/
 RUN npm ci --legacy-peer-deps
 RUN npm run webpack-prod
 

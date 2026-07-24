@@ -54,7 +54,9 @@ class Command(BaseCommand):
         client.force_authenticate(user=user)
         response = client.get(reverse("swagger-schema"), data={"format": "json"})
 
-        with open("openapi.json", "w") as f:
+        output_file = options["output_file"]
+
+        with open(output_file, "w") as f:
             json.dump(response.json(), f, indent=2)
 
         if created:

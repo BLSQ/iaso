@@ -571,6 +571,7 @@ SIMPLE_JWT = {
 AWS_S3_REGION_NAME = env.str("AWS_S3_REGION_NAME", default="eu-central-1")
 AWS_ACCESS_KEY_ID = env.str("AWS_ACCESS_KEY_ID", default=None)
 AWS_SECRET_ACCESS_KEY = env.str("AWS_SECRET_ACCESS_KEY", default=None)
+AWS_PUBLIC_STORAGE_BUCKET_NAME = env.str("AWS_PUBLIC_STORAGE_BUCKET_NAME", default=None)
 
 MEDIA_URL_PREFIX = "/media/"
 if USE_S3:

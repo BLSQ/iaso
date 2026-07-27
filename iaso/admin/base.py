@@ -475,14 +475,21 @@ class LinkAdmin(admin.GeoModelAdmin):
 @admin.register(Mapping)
 @admin_attr_decorator
 class MappingAdmin(admin.GeoModelAdmin):
-    list_filter = ("form_id",)
-    autocomplete_fields = ["data_source"]
+    list_filter = ("mapping_type",)
+    search_fields = ("name", "form__name", "form__form_id")
+    list_display = ("name", "form", "mapping_type", "data_source", "created_at")
+    list_select_related = ("form", "data_source")
+    autocomplete_fields = ["data_source", "form"]
 
 
 @admin.register(MappingVersion)
 @admin_attr_decorator
 class MappingVersionAdmin(admin.GeoModelAdmin):
-    list_filter = ("form_version_id",)
+    search_fields = ("name", "form_version__form__name", "form_version__form__form_id", "form_version__version_id")
+    list_display = ("name", "form_version", "mapping", "created_at", "updated_at")
+    list_select_related = ("form_version__form", "mapping__form")
+    autocomplete_fields = ["form_version", "mapping"]
+    ordering = ("-id",)
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 

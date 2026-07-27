@@ -2,7 +2,6 @@ import datetime
 import enum
 import json
 import math
-import os
 import typing
 
 from collections import defaultdict
@@ -1372,13 +1371,13 @@ class NotificationManager(models.Manager):
 
 
 class CustomPublicStorage(
-    S3Boto3Storage if os.environ.get("AWS_PUBLIC_STORAGE_BUCKET_NAME") else import_string(settings.DEFAULT_FILE_STORAGE)
+    S3Boto3Storage if settings.AWS_PUBLIC_STORAGE_BUCKET_NAME else import_string(settings.DEFAULT_FILE_STORAGE)
 ):
-    if os.environ.get("AWS_PUBLIC_STORAGE_BUCKET_NAME"):
+    if settings.AWS_PUBLIC_STORAGE_BUCKET_NAME:
         default_acl = "public-read"
         file_overwrite = False
         querystring_auth = False
-        bucket_name = os.environ.get("AWS_PUBLIC_STORAGE_BUCKET_NAME", "")
+        bucket_name = settings.AWS_PUBLIC_STORAGE_BUCKET_NAME
 
 
 ## Terminology

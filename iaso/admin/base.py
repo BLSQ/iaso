@@ -477,7 +477,8 @@ class LinkAdmin(admin.GeoModelAdmin):
 class MappingAdmin(admin.GeoModelAdmin):
     list_filter = ("mapping_type",)
     search_fields = ("name", "form__name", "form__form_id")
-    list_display = ("name", "form", "mapping_type", "data_source", "created_at")
+    list_display = ("id", "name", "form", "mapping_type", "data_source", "created_at")
+    list_display_links = ("id", "name")
     list_select_related = ("form", "data_source")
     autocomplete_fields = ["data_source", "form"]
 
@@ -486,7 +487,9 @@ class MappingAdmin(admin.GeoModelAdmin):
 @admin_attr_decorator
 class MappingVersionAdmin(admin.GeoModelAdmin):
     search_fields = ("name", "form_version__form__name", "form_version__form__form_id", "form_version__version_id")
-    list_display = ("name", "form_version", "mapping", "created_at", "updated_at")
+    # `name` is very often empty, so it can't be the only clickable column.
+    list_display = ("id", "name", "form_version", "mapping", "created_at", "updated_at")
+    list_display_links = ("id", "name")
     list_select_related = ("form_version__form", "mapping__form")
     autocomplete_fields = ["form_version", "mapping"]
     ordering = ("-id",)

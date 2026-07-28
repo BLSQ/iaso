@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.contrib.auth.models import User
 from rest_framework.exceptions import ValidationError
-from setup_account.serializers import SetupAccountSerializer
 
+from iaso.api.setup_account.serializers import SetupAccountSerializer
 from iaso.models import Account, DataSource, FeatureFlag, Project
 from iaso.modules import MODULES
 from iaso.test import TestCase

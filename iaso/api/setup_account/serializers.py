@@ -10,9 +10,9 @@ from django.core.files import File
 from django.db import transaction
 from django.utils.translation import gettext as _
 from rest_framework import serializers
-from setup_account.utils import DEFAULT_ACCOUNT_FEATURE_FLAGS, DEFAULT_PROJECT_FEATURE_FLAGS
 
 from iaso.api.profiles.views import ProfilesViewSet
+from iaso.api.setup_account.utils import DEFAULT_ACCOUNT_FEATURE_FLAGS, DEFAULT_PROJECT_FEATURE_FLAGS
 from iaso.models import (
     Account,
     AccountFeatureFlag,

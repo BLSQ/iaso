@@ -2,10 +2,10 @@ from unittest.mock import patch
 
 from django.contrib.auth.models import Permission, User
 from rest_framework import status
-from setup_account.utils import DEFAULT_ACCOUNT_FEATURE_FLAGS, DEFAULT_PROJECT_FEATURE_FLAGS
 
 from hat.audit.models import SETUP_ACCOUNT_API, Modification
 from iaso import models as m
+from iaso.api.setup_account.utils import DEFAULT_ACCOUNT_FEATURE_FLAGS, DEFAULT_PROJECT_FEATURE_FLAGS
 from iaso.modules import MODULES
 from iaso.test import APITestCase
 

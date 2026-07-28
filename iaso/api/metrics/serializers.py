@@ -144,8 +144,12 @@ class ImportMetricValuesSerializer(serializers.Serializer):
         if not value.name.endswith(".csv"):
             raise serializers.ValidationError(_("The file must be a CSV."))
 
-        dialect = csv.Sniffer().sniff(value.read(1024).decode("utf-8", errors="ignore"))
-        value.seek(0)  # Reset file pointer after reading for dialect inference
+        try:
+            header_line = value.readline().decode("utf-8", errors="ignore")
+            value.seek(0)  # Reset file pointer after reading for dialect inference
+            dialect = csv.Sniffer().sniff(header_line, delimiters=";,|\t")
+        except csv.Error:
+            raise serializers.ValidationError(_("Unable to determine the CSV delimiter."))
         df = pd.read_csv(value, sep=dialect.delimiter)
         self.context["metric_values_df"] = df  # Store the DataFrame for use in the save method
         header_errors = get_missing_headers(df, REQUIRED_METRIC_VALUES_HEADERS)

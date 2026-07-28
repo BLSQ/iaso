@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-24 13:01+0000\n"
+"POT-Creation-Date: 2026-07-27 11:25+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -17,6 +17,18 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.5\n"
+
+#: dynamic_fields/filter_backends.py
+#, python-brace-format
+msgid "Dynamic fields cannot contain both {all_fields} and {default_fields}"
+msgstr ""
+"Les champs dynamiques ne peuvent pas contenir à la fois {all_fields} et "
+"{default_fields}"
+
+#: dynamic_fields/filter_backends.py
+#, python-brace-format
+msgid "Invalid dynamic fields: {fields}"
+msgstr "Champs dynamiques invalides : {fields}"
 
 #: iaso/api/api_import/filters.py iaso/api/pages.py iaso/api/payments/views.py
 msgid "User ID"
@@ -162,6 +174,10 @@ msgstr ""
 #: iaso/api/metrics/serializers.py
 msgid "The file must be a CSV."
 msgstr "Le fichier doit être un CSV"
+
+#: iaso/api/metrics/serializers.py
+msgid "Unable to determine the CSV delimiter."
+msgstr "Impossible de déterminer le délimiteur du CSV"
 
 #: iaso/api/metrics/serializers.py
 #, python-brace-format

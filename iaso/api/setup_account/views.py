@@ -7,11 +7,11 @@ from rest_framework import permissions
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
-from setup_account.utils import DEFAULT_PROJECT_FEATURE_FLAGS
 
 from hat.audit.models import SETUP_ACCOUNT_API, Modification
 from iaso.api.common import IsAdminOrSuperUser
 from iaso.api.setup_account.serializers import SetupAccountSerializer
+from iaso.api.setup_account.utils import DEFAULT_PROJECT_FEATURE_FLAGS
 from iaso.models import Account
 
 

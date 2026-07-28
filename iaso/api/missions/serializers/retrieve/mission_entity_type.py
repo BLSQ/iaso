@@ -3,14 +3,14 @@ from rest_framework import serializers
 from iaso.api.common import ModelSerializer
 from iaso.api.missions.serializers.retrieve.common import MissionTypeSerializer
 from iaso.models import EntityType
-from iaso.models.missions import MissionEntityType, MissionEntityTypeThroughForm
+from iaso.models.missions import MissionEntityType, MissionFormThroughForm
 
 
-class NestedMissionEntityTypeThroughFormSerializer(ModelSerializer):
+class NestedMissionFormThroughFormSerializer(ModelSerializer):
     form_name = serializers.CharField(read_only=True, source="form.name")
 
     class Meta:
-        model = MissionEntityTypeThroughForm
+        model = MissionFormThroughForm
         fields = [
             "form",
             "form_name",
@@ -34,9 +34,7 @@ class NestedEntityTypeSerializer(ModelSerializer):
 class MissionEntityTypeRetrieveSerializer(ModelSerializer):
     mission_type = MissionTypeSerializer(source="*")
     entity_type = NestedEntityTypeSerializer(read_only=True)
-    forms = NestedMissionEntityTypeThroughFormSerializer(
-        many=True, read_only=True, source="missionentitytypethroughform_set"
-    )
+    forms = NestedMissionFormThroughFormSerializer(many=True, read_only=True, source="missionformthroughform_set")
 
     class Meta:
         model = MissionEntityType

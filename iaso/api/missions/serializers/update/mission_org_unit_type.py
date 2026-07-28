@@ -5,7 +5,7 @@ from rest_framework import serializers
 from iaso.api.common import ModelSerializer
 from iaso.api.common.serializer_fields import CurrentAccountDefault
 from iaso.models import Form, MissionOrgUnitType, OrgUnitType
-from iaso.models.missions import MissionOrgUnitTypeThroughForm
+from iaso.models.missions import MissionFormThroughForm
 
 
 class OrgUnitTypeScopedFormField(serializers.PrimaryKeyRelatedField):
@@ -23,11 +23,11 @@ class OrgUnitTypeScopedFormField(serializers.PrimaryKeyRelatedField):
         )
 
 
-class NestedMissionOrgUnitTypeThroughFormUpdateSerializer(ModelSerializer):
+class NestedMissionFormThroughFormUpdateSerializer(ModelSerializer):
     form = OrgUnitTypeScopedFormField(queryset=Form.objects.none(), write_only=True)
 
     class Meta:
-        model = MissionOrgUnitTypeThroughForm
+        model = MissionFormThroughForm
         fields = ["form", "min_cardinality", "max_cardinality"]
         extra_kwargs = {
             "min_cardinality": {"write_only": True, "required": True},
@@ -48,9 +48,7 @@ class MissionOrgUnitTypeUpdateSerializer(ModelSerializer):
     created_by = serializers.HiddenField(default=serializers.CurrentUserDefault(), write_only=True)
     account_id = serializers.HiddenField(default=CurrentAccountDefault(returns_id=True), write_only=True)
     org_unit_type = serializers.PrimaryKeyRelatedField(queryset=OrgUnitType.objects.none(), write_only=True)
-    forms = NestedMissionOrgUnitTypeThroughFormUpdateSerializer(
-        many=True, required=True, allow_empty=False, write_only=True
-    )
+    forms = NestedMissionFormThroughFormUpdateSerializer(many=True, required=True, allow_empty=False, write_only=True)
 
     class Meta:
         model = MissionOrgUnitType
@@ -105,12 +103,12 @@ class MissionOrgUnitTypeUpdateSerializer(ModelSerializer):
         instance = super().update(instance, validated_data)
 
         # get the current m2m fields
-        existing = {obj.form_id: obj for obj in instance.missionorgunittypethroughform_set.all()}
+        existing = {obj.form_id: obj for obj in instance.missionformthroughform_set.all()}
         incoming = {item["form"].id: item for item in through_data}
 
         # delete
-        MissionOrgUnitTypeThroughForm.objects.filter(
-            form_id__in=list(existing.keys() - incoming.keys()), mission_org_unit_type__id=instance.id
+        MissionFormThroughForm.objects.filter(
+            form_id__in=list(existing.keys() - incoming.keys()), mission_form__id=instance.id
         ).delete()
 
         # update existing
@@ -125,12 +123,12 @@ class MissionOrgUnitTypeUpdateSerializer(ModelSerializer):
 
             bulk_updates.append(obj)
 
-        MissionOrgUnitTypeThroughForm.objects.bulk_update(bulk_updates, fields=["min_cardinality", "max_cardinality"])
+        MissionFormThroughForm.objects.bulk_update(bulk_updates, fields=["min_cardinality", "max_cardinality"])
 
         # create new
-        MissionOrgUnitTypeThroughForm.objects.bulk_create(
+        MissionFormThroughForm.objects.bulk_create(
             [
-                MissionOrgUnitTypeThroughForm(**incoming[form_id], mission_org_unit_type_id=instance.id)
+                MissionFormThroughForm(**incoming[form_id], mission_form_id=instance.id)
                 for form_id in incoming.keys() - existing.keys()
             ]
         )

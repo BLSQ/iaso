@@ -24,15 +24,16 @@ class SetupAccountSerializerTestCase(TestCase):
         ]
 
         for email in valid_emails:
-            data = {
-                "account_name": f"unittest_account_{email.replace('@', '_').replace('.', '_')}",
-                "user_username": f"unittest_username_{email.replace('@', '_').replace('.', '_')}",
-                "user_email": email,
-                "password": self.password,
-                "modules": self.modules,
-            }
-            serializer = SetupAccountSerializer(data=data)
-            self.assertTrue(serializer.is_valid(), serializer.errors)
+            with self.subTest(email=email):
+                data = {
+                    "account_name": f"unittest_account_{email.replace('@', '_').replace('.', '_')}",
+                    "user_username": f"unittest_username_{email.replace('@', '_').replace('.', '_')}",
+                    "user_email": email,
+                    "password": self.password,
+                    "modules": self.modules,
+                }
+                serializer = SetupAccountSerializer(data=data)
+                self.assertTrue(serializer.is_valid(), serializer.errors)
 
     def test_invalid_email_formats(self):
         invalid_emails = [
@@ -42,19 +43,20 @@ class SetupAccountSerializerTestCase(TestCase):
         ]
 
         for invalid_email in invalid_emails:
-            data = {
-                "account_name": "account_name",
-                "user_username": "user_username",
-                "modules": self.modules,
-                "password": self.password,
-                "user_email": invalid_email,
-            }
+            with self.subTest(invalid_email=invalid_email):
+                data = {
+                    "account_name": "account_name",
+                    "user_username": "user_username",
+                    "modules": self.modules,
+                    "password": self.password,
+                    "user_email": invalid_email,
+                }
 
-            serializer = SetupAccountSerializer(data=data)
-            self.assertFalse(serializer.is_valid())
+                serializer = SetupAccountSerializer(data=data)
+                self.assertFalse(serializer.is_valid())
 
-            self.assertIn("user_email", serializer.errors)
-            self.assertEqual("Enter a valid email address.", serializer.errors["user_email"][0])
+                self.assertIn("user_email", serializer.errors)
+                self.assertEqual("Enter a valid email address.", serializer.errors["user_email"][0])
 
     def test_mandatory_fields(self):
         data = {}

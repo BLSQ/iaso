@@ -15,11 +15,9 @@ from iaso.api.missions.serializers.list import MissionPolymorphicListSerializer
 from iaso.api.missions.serializers.retrieve import MissionPolymorphicRetrieveSerializer
 from iaso.api.missions.serializers.update import MissionPolymorphicUpdateSerializer
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
-from iaso.models import Mission, MissionEntityType, MissionForm, MissionOrgUnitType
+from iaso.models import MissionEntityType, MissionForm, MissionOrgUnitType
 from iaso.models.missions import (
-    MissionEntityTypeThroughForm,
     MissionFormThroughForm,
-    MissionOrgUnitTypeThroughForm,
     MissionType,
 )
 
@@ -58,34 +56,15 @@ class MissionViewSet(AuditMixin, ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = Mission.objects.filter_for_user(user)
+        queryset = MissionForm.objects.filter_for_user(user)
         if self.action == "list":
-            return (
-                queryset.select_polymorphic_related(MissionOrgUnitType, "org_unit_type")
-                .select_polymorphic_related(MissionEntityType, "entity_type")
-                .annotate_with_form_count()
-            )
+            return queryset.annotate_with_form_count()
 
         if self.action == "retrieve":
             return (
-                queryset.prefetch_polymorphic_related(
-                    MissionForm,
+                queryset.prefetch_related(
                     Prefetch(
                         "missionformthroughform_set", queryset=MissionFormThroughForm.objects.select_related("form")
-                    ),
-                )
-                .prefetch_polymorphic_related(
-                    MissionOrgUnitType,
-                    Prefetch(
-                        "missionorgunittypethroughform_set",
-                        queryset=MissionOrgUnitTypeThroughForm.objects.select_related("form"),
-                    ),
-                )
-                .prefetch_polymorphic_related(
-                    MissionEntityType,
-                    Prefetch(
-                        "missionentitytypethroughform_set",
-                        queryset=MissionEntityTypeThroughForm.objects.select_related("form"),
                     ),
                 )
                 .select_polymorphic_related(MissionOrgUnitType, "org_unit_type")

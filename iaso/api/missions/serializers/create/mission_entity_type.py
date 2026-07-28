@@ -5,7 +5,7 @@ from rest_framework import serializers
 from iaso.api.common import ModelSerializer
 from iaso.api.common.serializer_fields import CurrentAccountDefault
 from iaso.models import EntityType, Form
-from iaso.models.missions import MissionEntityType, MissionEntityTypeThroughForm, MissionType
+from iaso.models.missions import MissionEntityType, MissionFormThroughForm, MissionType
 
 
 class EntityTypeScopedFormField(serializers.PrimaryKeyRelatedField):
@@ -23,11 +23,11 @@ class EntityTypeScopedFormField(serializers.PrimaryKeyRelatedField):
         )
 
 
-class NestedMissionEntityTypeThroughFormCreateSerializer(ModelSerializer):
+class NestedMissionFormThroughFormCreateSerializer(ModelSerializer):
     form = EntityTypeScopedFormField(queryset=Form.objects.none(), write_only=True)
 
     class Meta:
-        model = MissionEntityTypeThroughForm
+        model = MissionFormThroughForm
         fields = ["form", "min_cardinality", "max_cardinality"]
         extra_kwargs = {
             "min_cardinality": {"write_only": True, "required": True},
@@ -48,9 +48,7 @@ class MissionEntityTypeCreateSerializer(ModelSerializer):
     created_by = serializers.HiddenField(default=serializers.CurrentUserDefault(), write_only=True)
     account_id = serializers.HiddenField(default=CurrentAccountDefault(returns_id=True), write_only=True)
     entity_type = serializers.PrimaryKeyRelatedField(queryset=EntityType.objects.none(), write_only=True)
-    forms = NestedMissionEntityTypeThroughFormCreateSerializer(
-        many=True, required=True, allow_empty=False, write_only=True
-    )
+    forms = NestedMissionFormThroughFormCreateSerializer(many=True, required=True, allow_empty=False, write_only=True)
     mission_type = serializers.ChoiceField(choices=[MissionType.ENTITY_AND_FORM.value], write_only=True, required=True)
 
     class Meta:
@@ -110,9 +108,9 @@ class MissionEntityTypeCreateSerializer(ModelSerializer):
         through_instances = []
 
         for item_data in through_data:
-            instance = MissionEntityTypeThroughForm(mission_entity_type=mission, **item_data)
+            instance = MissionFormThroughForm(mission_form=mission, **item_data)
             through_instances.append(instance)
 
-        MissionEntityTypeThroughForm.objects.bulk_create(through_instances)
+        MissionFormThroughForm.objects.bulk_create(through_instances)
 
         return mission

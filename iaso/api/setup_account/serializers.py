@@ -10,8 +10,8 @@ from django.core.files import File
 from django.db import transaction
 from django.utils.translation import gettext as _
 from rest_framework import serializers
+from setup_account.utils import DEFAULT_ACCOUNT_FEATURE_FLAGS, DEFAULT_PROJECT_FEATURE_FLAGS
 
-from hat.menupermissions.constants import DEFAULT_ACCOUNT_FEATURE_FLAGS
 from iaso.api.profiles.views import ProfilesViewSet
 from iaso.models import (
     Account,
@@ -191,18 +191,7 @@ class SetupAccountSerializer(serializers.Serializer):
         initial_project = Project.objects.create(name="Main Project", account=account, app_id=app_id)
 
         # Add project feature flags
-        codes = [
-            FeatureFlag.REQUIRE_AUTHENTICATION,
-            FeatureFlag.MOBILE_SYNCHRONIZE_WITH_ZIP,
-            FeatureFlag.TAKE_GPS_ON_FORM,
-        ]
-        feature_flags = FeatureFlag.objects.filter(code__in=codes)
-
-        found_codes = [ff.code for ff in feature_flags]
-        missing_codes = [code for code in codes if code not in found_codes]
-        if missing_codes:
-            logger.warning(f"Could not find the following feature flags: {missing_codes}")
-
+        feature_flags = FeatureFlag.objects.filter(code__in=DEFAULT_PROJECT_FEATURE_FLAGS)
         project_feature_flags = [
             ProjectFeatureFlags(project=initial_project, featureflag=feature_flag, configuration=None)
             for feature_flag in feature_flags

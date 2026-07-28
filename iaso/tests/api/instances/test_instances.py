@@ -391,8 +391,6 @@ class InstancesAPITestCase(TaskAPITestCase):
 
     def test_instance_create_with_valid_accuracy(self):
         """POST /api/instances/ with a valid accuracy value"""
-        from decimal import Decimal
-
         instance_uuid = str(uuid4())
         body = [
             {
@@ -420,7 +418,6 @@ class InstancesAPITestCase(TaskAPITestCase):
 
     def test_instance_create_with_accuracy_rounded(self):
         """POST /api/instances/ with accuracy having more than 2 decimal places should be rounded"""
-
         instance_uuid = str(uuid4())
         body = [
             {

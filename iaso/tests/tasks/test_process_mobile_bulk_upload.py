@@ -21,6 +21,7 @@ from iaso import models as m
 from iaso.api.deduplication.entity_duplicate import merge_entities
 from iaso.models.instances import instance_file_upload_to, instance_upload_to
 from iaso.tasks.process_mobile_bulk_upload import process_mobile_bulk_upload
+from iaso.tests.utils.query_profiler import QueryProfiler
 
 
 CATT_TABLET_DIR = "catt_one_test_with_image"
@@ -148,6 +149,95 @@ class ProcessMobileBulkUploadTest(TestCase):
             add_to_zip(zipf, zip_fixture_dir(CATT_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
         save_file_to_api_import(self.api_import, zip_path)
 
+    def _create_zip_file_at_scale(self, num_patients=25):
+        """
+        `num_patients` distinct *new* patients, each with exactly one registration + one CATT
+        follow-up - the realistic shape of a large bulk sync from one facility: broad (many
+        distinct entities), not deep (a few entities repeated many times, which would be a
+        rarer "lots of follow-ups for the same patient" case). Same org unit and same 2 forms/
+        versions throughout, reusing the base fixture's registration/CATT xml content as
+        byte templates under fresh uuids.
+        """
+        base_dir = zip_fixture_dir(CATT_TABLET_DIR)
+        with open(
+            os.path.join(
+                base_dir,
+                DISASI_MAKULO_REGISTRATION,
+                "20_56_bd75c228-ee48-4df6-9226-d6360d0e6b6c_2024-04-05_16-08-56.xml",
+            ),
+            "rb",
+        ) as f:
+            registration_xml_bytes = f.read()
+        with open(
+            os.path.join(
+                base_dir, DISASI_MAKULO_CATT, "16_12_127775b2-06a2-4ae6-b2bd-cf64143a9dfe_2024-04-05_16-09-42.xml"
+            ),
+            "rb",
+        ) as f:
+            catt_xml_bytes = f.read()
+
+        with open(os.path.join(base_dir, "instances.json")) as f:
+            base_instances_data = json.load(f)
+        with open(os.path.join(base_dir, "orgUnits.json")) as f:
+            org_units_data = json.load(f)
+
+        org_unit_uuid = base_instances_data[0]["orgUnitId"]
+
+        zip_path = f"/tmp/{CATT_TABLET_DIR}_at_scale.zip"
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            zipf.writestr("orgUnits.json", json.dumps(org_units_data))
+
+            new_instances = []
+            for _ in range(num_patients):
+                # Matches the base fixture's convention: entityUuid == the registration
+                # instance's own uuid.
+                registration_uuid = str(uuid.uuid4())
+                catt_uuid = str(uuid.uuid4())
+
+                reg_file_name = f"registration_{registration_uuid}.xml"
+                catt_file_name = f"followup_{catt_uuid}.xml"
+                zipf.writestr(f"{registration_uuid}/{reg_file_name}", registration_xml_bytes)
+                zipf.writestr(f"{catt_uuid}/{catt_file_name}", catt_xml_bytes)
+
+                new_instances.append(
+                    {
+                        "id": registration_uuid,
+                        "created_at": 1.712326150005e9,
+                        "updated_at": 1.712326150005e9,
+                        "file": f"/storage/emulated/0/Android/data/org.bluesquare/files/Documents/instances/{registration_uuid}/{reg_file_name}",
+                        "name": "Enregistrement",
+                        "formId": "1",
+                        "orgUnitId": org_unit_uuid,
+                        "entityUuid": registration_uuid,
+                        "entityTypeId": "1",
+                        "latitude": 50.6429429,
+                        "longitude": 4.6004524,
+                        "altitude": 128.3,
+                        "accuracy": 14.929,
+                    }
+                )
+                new_instances.append(
+                    {
+                        "id": catt_uuid,
+                        "created_at": 1.71232618245e9,
+                        "updated_at": 1.71232618245e9,
+                        "file": f"/storage/emulated/0/Android/data/org.bluesquare/files/Documents/instances/{catt_uuid}/{catt_file_name}",
+                        "name": "CATT",
+                        "formId": "2",
+                        "orgUnitId": org_unit_uuid,
+                        "entityUuid": registration_uuid,
+                        "entityTypeId": "1",
+                        "latitude": 50.6429501,
+                        "longitude": 4.6004282,
+                        "altitude": 128.3,
+                        "accuracy": 12.74,
+                    }
+                )
+
+            zipf.writestr("instances.json", json.dumps(new_instances))
+
+        save_file_to_api_import(self.api_import, zip_path)
+
     def test_success(self):
         self._create_zip_file()
 
@@ -187,6 +277,9 @@ class ProcessMobileBulkUploadTest(TestCase):
         reg_instance = m.Instance.objects.get(uuid=DISASI_MAKULO_REGISTRATION)
         self.assertEqual(reg_instance.json.get("_full_name"), "Disasi Makulo")
         self.assertEqual(reg_instance.entity, ent_disasi)
+        # The registration form is the entity type's reference form, so the entity's
+        # `attributes` should point back to this instance.
+        self.assertEqual(ent_disasi.attributes, reg_instance)
         self.assertEqual(reg_instance.instancefile_set.count(), 0)
 
         catt_instance = m.Instance.objects.get(uuid=DISASI_MAKULO_CATT)
@@ -211,6 +304,7 @@ class ProcessMobileBulkUploadTest(TestCase):
         reg_instance = m.Instance.objects.get(uuid=PATRICE_AKAMBU_REGISTRATION)
         self.assertEqual(reg_instance.json.get("_full_name"), "Patrice Akambu")
         self.assertEqual(reg_instance.entity, entity_patrice)
+        self.assertEqual(entity_patrice.attributes, reg_instance)
         self.assertEqual(reg_instance.instancefile_set.count(), 0)
 
         catt_instance = m.Instance.objects.get(uuid=PATRICE_AKAMBU_CATT)
@@ -220,6 +314,110 @@ class ProcessMobileBulkUploadTest(TestCase):
         # image from Disasi's CATT was duplicated to this test
         image = catt_instance.instancefile_set.first()
         self.assertEqual(image.name, "1712326156339.webp")
+
+    def test_form_version_query_count_baseline(self):
+        """
+        Baseline for the FormVersion/Form N+1 investigation (see IA perf investigation notes):
+        the zip contains 4 instances for 2 distinct entities, sharing only 2 distinct (form,
+        version) pairs and 1 org unit - a well-optimized import should hit `iaso_orgunit`/
+        `iaso_form`/`iaso_entitytype` O(distinct org units/forms/entity types) via import_data()'s
+        batch caching, not O(instances). `iaso_formversion`/`iaso_form` also get one query per
+        instance from `xml_file_to_json` while processing each instance's attached XML file -
+        that part is unrelated to import_data() and expected to scale with instance count.
+        """
+        m.FormVersion.objects.create(form=self.form_registration, version_id="2024032701")
+        m.FormVersion.objects.create(form=self.form_catt, version_id="2024031801")
+
+        self._create_zip_file()
+
+        with QueryProfiler(
+            trace_tables=["iaso_formversion", "iaso_form", "iaso_orgunit", "iaso_entity", "iaso_entitytype"]
+        ) as profiler:
+            process_mobile_bulk_upload(
+                api_import_id=self.api_import.id,
+                project_id=self.project.id,
+                task=self.task,
+                _immediate=True,
+            )
+
+        # Org unit was created (from the zip's orgUnits.json, not pre-existing - see orgunit.yaml
+        # fixture in setUp, which seeds unrelated org units under different UUIDs).
+        self.assertIsNotNone(m.OrgUnit.objects.get(name="New Org Unit"))
+        self.assertEqual(m.Instance.objects.count(), 4)
+        self.assertEqual(m.Entity.objects.count(), 2)
+        # Unlike test_success, this test creates matching FormVersion rows above, which changes
+        # xml_file_to_json's json-field filtering (it restricts to the form version's declared
+        # fields) and in turn whether the attachment-duplication path in duplicate_instance_files
+        # (keyed on a "serie_id" json field) fires - hence 1 here instead of test_success's 2.
+        self.assertEqual(m.InstanceFile.objects.count(), 1)
+
+        counts = profiler.table_counts()
+        # import_data()'s own org-unit/form/entity-type lookups are each a single batch query
+        # (1 org unit, 2 forms sharing 1 lookup, 1 entity type shared by both entities) - the
+        # small headroom below absorbs the org unit's own creation/path-calculation queries
+        # (unrelated to import_data's caching), while still catching a regression back to
+        # O(instances) (which would push these well past the bounds below at this batch size).
+        self.assertLessEqual(counts["iaso_orgunit"], 6)
+        self.assertLessEqual(counts["iaso_form"], 5)
+        self.assertEqual(counts["iaso_entitytype"], 1)
+        # 2 distinct entities -> O(2) via find_entity's exists-check + create, not O(4 instances).
+        self.assertLessEqual(counts["iaso_entity"], 6)
+        self.assertLessEqual(profiler.total_queries(), 130)
+
+        profiler.print_report()
+        path = profiler.write_markdown_report(
+            "mobile_bulk_upload_form_version.md", title="Mobile bulk upload — FormVersion/Form query report"
+        )
+        print(f"Markdown report written to {path}")
+
+    def test_form_version_query_count_at_scale(self):
+        """
+        Same investigation as test_form_version_query_count_baseline, but with 25 distinct new
+        patients, each with one registration + one CATT follow-up (50 instances total) - broad
+        (many entities), not deep (a few entities repeated many times), which is the more
+        realistic shape of a large bulk sync. Same org unit and 2 forms/versions throughout.
+        Exaggerates the O(instances) vs O(distinct) gap that the caching fixes in
+        Instance.save()/import_data() target.
+        """
+        m.FormVersion.objects.create(form=self.form_registration, version_id="2024032701")
+        m.FormVersion.objects.create(form=self.form_catt, version_id="2024031801")
+
+        self._create_zip_file_at_scale(num_patients=25)
+
+        with QueryProfiler(
+            trace_tables=["iaso_formversion", "iaso_form", "iaso_orgunit", "iaso_entity", "iaso_entitytype"]
+        ) as profiler:
+            process_mobile_bulk_upload(
+                api_import_id=self.api_import.id,
+                project_id=self.project.id,
+                task=self.task,
+                _immediate=True,
+            )
+
+        self.assertIsNotNone(m.OrgUnit.objects.get(name="New Org Unit"))
+        self.assertEqual(m.Instance.objects.count(), 50)
+        self.assertEqual(m.Entity.objects.count(), 25)
+
+        counts = profiler.table_counts()
+        # Same batch lookups as the baseline test, still O(1)/O(distinct) at 12.5x the instance
+        # count (50 vs 4) - proves import_data()'s caching doesn't regress to O(instances). A
+        # regression back to per-instance lookups would push iaso_orgunit/iaso_entitytype well
+        # past these bounds (e.g. ~50-55 instead of ~6/1), and iaso_form/iaso_entity roughly
+        # double (the "+1 form per instance" from xml_file_to_json is unrelated to import_data
+        # and already included in the bound below).
+        self.assertLessEqual(counts["iaso_orgunit"], 6)
+        self.assertLessEqual(counts["iaso_form"], 52)
+        self.assertEqual(counts["iaso_entitytype"], 1)
+        # 25 distinct entities -> O(25) via find_entity's exists-check + create + the reference-
+        # form save, not O(50 instances).
+        self.assertLessEqual(counts["iaso_entity"], 80)
+        self.assertLessEqual(profiler.total_queries(), 1000)
+
+        profiler.print_report()
+        path = profiler.write_markdown_report(
+            "mobile_bulk_upload_at_scale.md", title="Mobile bulk upload at scale — FormVersion/Form query report"
+        )
+        print(f"Markdown report written to {path}")
 
     def test_org_unit_already_exists(self):
         self._create_zip_file()

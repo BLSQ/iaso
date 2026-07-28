@@ -28,6 +28,11 @@ BASE_URL = "/api/formattachments/"
 MANIFEST_MOBILE_URL = "/api/forms/{form_id}/manifest/"
 MANIFEST_ENKETO_URL = "/api/forms/{form_id}/manifest_enketo/"
 SAFE_FILE_PATH = "iaso/tests/fixtures/clamav/safe.jpg"
+
+# A pk that can't collide with any real row, regardless of how far the id sequence has advanced
+# elsewhere in the suite - unlike a small hardcoded id (e.g. 100), which a large enough test run
+# can legitimately reach.
+MISSING_FORM_PK = 999_999_999
 EICAR_FILE_PATH = "iaso/tests/fixtures/clamav/eicar.txt"
 
 
@@ -309,7 +314,7 @@ class FormAttachmentsAPITestCase(APITestCase):
     def test_manifest_form_not_found(self):
         f"""GET {MANIFEST_MOBILE_URL} with wrong id: 404"""
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(MANIFEST_MOBILE_URL.format(form_id=100))
+        response = self.client.get(MANIFEST_MOBILE_URL.format(form_id=MISSING_FORM_PK))
         self.assertJSONResponse(response, 404)
 
     def test_manifest_form_found_but_empty_attachments(self):
@@ -496,7 +501,7 @@ class FormAttachmentsAPITestCase(APITestCase):
 
     def test_enketo_manifest_anonymous_with_signed_url_error_unknown_form(self):
         """Test that a signed anonymous URL generates an error when querying an unknown form"""
-        path = MANIFEST_ENKETO_URL.format(form_id=123456789)
+        path = MANIFEST_ENKETO_URL.format(form_id=MISSING_FORM_PK)
         signed_url = generate_signed_url(
             path, settings.ENKETO.get("ENKETO_SIGNING_SECRET"), extra_params={APP_ID: self.project_1.app_id}
         )

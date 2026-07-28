@@ -17,7 +17,7 @@ from django.contrib.auth.models import User
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import models
 from django.db.models import Count, Exists, F, FilteredRelation, Func, OuterRef, Q
@@ -896,13 +896,22 @@ class Instance(ValidationWorkflowArtefact):
     def has_org_unit(self):
         return self.org_unit if self.org_unit else None
 
+    # Cache of the `_version` string last resolved to `form_version_id` in `save()`, to avoid
+    # re-querying FormVersion on every save() call within one instance's lifetime (e.g. when
+    # convert_location_from_field/convert_device/convert_correlation each save() in turn).
+    _form_version_lookup_key = None
+
     def save(self, *args, **kwargs):
-        if self.json is not None and self.json.get("_version"):
-            try:
-                form_version = FormVersion.objects.get(version_id=self.json.get("_version"), form_id=self.form.id)
-                self.form_version = form_version
-            except ObjectDoesNotExist:
-                pass
+        version_id = self.json.get("_version") if self.json else None
+        if version_id and self._form_version_lookup_key != version_id:
+            form_version_id = (
+                FormVersion.objects.filter(version_id=version_id, form_id=self.form_id)
+                .values_list("id", flat=True)
+                .first()
+            )
+            if form_version_id is not None:
+                self.form_version_id = form_version_id
+            self._form_version_lookup_key = version_id
         return super(Instance, self).save(*args, **kwargs)
 
 

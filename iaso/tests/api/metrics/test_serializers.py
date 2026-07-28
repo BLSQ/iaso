@@ -559,7 +559,7 @@ class ImportMetricValuesSerializerTestCase(TestCase):
         self.assertIn("The CSV must contain at least one metric type column.", serializer.errors["file"][0])
 
     def test_validate_missing_required_headers(self):
-        csv_content = "MT1\nCOMOE,738,1"
+        csv_content = "MT1,SMTH\nCOMOE,738,1"
         invalid_file = SimpleUploadedFile("test.csv", csv_content.encode(), content_type="text/csv")
         serializer = ImportMetricValuesSerializer(
             data={"file": invalid_file, "year": 2024}, context={"request": self.request}

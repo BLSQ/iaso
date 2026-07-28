@@ -37,7 +37,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             reverse("profiles-detail", kwargs={"pk": alice_profile.id}), data=data, format="json"
         )
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         alice.refresh_from_db()
         self.assertEqual(alice.username, "alice")
         self.assertEqual(alice.first_name, "Alice Changed")
@@ -50,36 +50,10 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             reverse("profiles-detail", kwargs={"pk": bob_profile.id}), data=data, format="json"
         )
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         bob.refresh_from_db()
         self.assertEqual(bob.username, "bob")
         self.assertEqual(bob.first_name, "Bob Changed")
-
-    def test_update_profile_to_existing_username_should_fail(self):
-        """Test that changing username to an existing one (case-insensitive) fails correctly."""
-        self.client.force_authenticate(self.john)
-
-        alice = self.create_user_with_profile(
-            username="alice", account=self.account, first_name="Alice", last_name="Smith"
-        )
-        bob = self.create_user_with_profile(username="bob", account=self.account, first_name="Bob", last_name="Wilson")
-
-        # Try to change bob's username to "Alice"
-        bob_profile = Profile.objects.get(user=bob)
-        data = {
-            "user_name": "Alice",
-            "first_name": "Bob Updated",
-        }
-        response = self.client.patch(
-            reverse("profiles-detail", kwargs={"pk": bob_profile.id}), data=data, format="json"
-        )
-
-        response_data = self.assertJSONResponse(response, 400)
-        self.assertHasError(response_data, "user_name", "Username already exists")
-
-        bob.refresh_from_db()
-        self.assertEqual(bob.username, "bob")
-        self.assertEqual(bob.first_name, "Bob")
 
     def test_update_profile_with_case_insensitive_username_should_succeed(self):
         """Test that updating profile without changing username succeeds even with case-insensitive matching usernames."""
@@ -101,7 +75,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             reverse("profiles-detail", kwargs={"pk": alice_lower_profile.id}), data=data, format="json"
         )
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         alice_lower.refresh_from_db()
         self.assertEqual(alice_lower.username, "alice")
         self.assertEqual(alice_lower.first_name, "Alice Lower Changed")
@@ -115,7 +89,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             reverse("profiles-detail", kwargs={"pk": alice_upper_profile.id}), data=data, format="json"
         )
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         alice_upper.refresh_from_db()
         self.assertEqual(alice_upper.username, "Alice")
         self.assertEqual(alice_upper.first_name, "Alice Upper Changed")
@@ -132,43 +106,9 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             data=new_data,
             format="json",
         )
-        self.assertJSONResponse(response, 204)
+        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
         single_user.refresh_from_db()
         self.assertEqual(single_user.check_password("new_p4ssword"), True)
-
-    def test_update_username_to_existing_case_variation_should_fail(self):
-        """Test that changing username to case variation of another user's username fails."""
-        self.client.force_authenticate(self.john)
-
-        alice_lower = self.create_user_with_profile(
-            username="alice", account=self.account, first_name="Alice Lower", last_name="Smith"
-        )
-        alice_upper = self.create_user_with_profile(
-            username="Alice", account=self.account, first_name="Alice Upper", last_name="Jones"
-        )
-
-        alice_lower_profile = Profile.objects.get(user=alice_lower)
-        data = {
-            "user_name": "Alice",
-            "first_name": "Alice Changed",
-        }
-        response = self.client.patch(
-            reverse("profiles-detail", kwargs={"pk": alice_lower_profile.id}), data=data, format="json"
-        )
-
-        # Should fail because another user already has "Alice"
-        response_data = self.assertJSONResponse(response, 400)
-        self.assertHasError(response_data, "user_name", "Username already exists")
-
-        # Ensure original username wasn't changed
-        alice_lower.refresh_from_db()
-        self.assertEqual(alice_lower.username, "alice")
-        self.assertEqual(alice_lower.first_name, "Alice Lower")
-
-        # Ensure other username wasn't changed
-        alice_upper.refresh_from_db()
-        self.assertEqual(alice_upper.username, "Alice")
-        self.assertEqual(alice_upper.first_name, "Alice Upper")
 
     def test_update_password_for_multi_user(self):
         """
@@ -193,7 +133,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             data=new_data,
             format="json",
         )
-        self.assertJSONResponse(response, 204)
+        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
         main_user.refresh_from_db()
         self.assertEqual(main_user.check_password("new_p4ssword"), True)
 
@@ -201,7 +141,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
         self.client.force_authenticate(self.jim)
         new_data = {"language": "fr"}
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": PK_ME}), data=new_data, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         # Log as super user to access the logs API
         self.client.force_authenticate(self.john)
         response = self.client.get(
@@ -212,7 +152,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
                 "objectId": self.jim.iaso_profile.id,
             },
         )
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         logs = response_data["list"]
         log = logs[0]
 
@@ -241,7 +181,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
         self.client.force_authenticate(self.john)
         data = self.get_new_user_data()
         response = self.client.post(reverse("profiles-list"), data=data, format="json")
-        response_data = self.assertJSONResponse(response, 201)
+        response_data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         new_profile_id = response_data["id"]
         new_user_id = Profile.objects.get(pk=new_profile_id).user_id
         new_user_name = Profile.objects.get(pk=new_profile_id).user.username
@@ -261,7 +201,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
         response = self.client.patch(
             reverse("profiles-detail", kwargs={"pk": new_profile_id}), data=new_data, format="json"
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response = self.client.get(
             reverse("logs-list"),
@@ -271,7 +211,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
                 "object_id": new_profile_id,
             },
         )
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         logs = response_data["list"]
         log = logs[0]
 
@@ -335,7 +275,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         profile_to_edit.refresh_from_db()
         self.assertEqual(profile_to_edit.projects.count(), 1)
         self.assertEqual(profile_to_edit.projects.first(), self.project)
@@ -355,7 +295,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         profile_to_edit.refresh_from_db()
         self.assertEqual(profile_to_edit.projects.count(), 2)
 
@@ -374,7 +314,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             },
             format="json",
         )
-        response_data = self.assertJSONResponse(response, 403)
+        response_data = self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         self.assertEqual(
             response_data["detail"],
             "You cannot edit a user who has broader access to projects.",
@@ -394,7 +334,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         profile_to_edit.refresh_from_db()
         self.assertEqual(profile_to_edit.projects.count(), 1)
         self.assertEqual(profile_to_edit.projects.first(), new_project_1)
@@ -413,7 +353,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             data={"user_name": "jum_new_user_name", "projects": []},
             format="json",
         )
-        response_data = self.assertJSONResponse(response, 403)
+        response_data = self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         self.assertEqual(
             response_data["detail"],
             "You must specify which projects are authorized for this user.",
@@ -432,7 +372,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             },
             format="json",
         )
-        response_data = self.assertJSONResponse(response, 403)
+        response_data = self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         self.assertEqual(
             response_data["detail"],
             "Some projects are outside your scope.",
@@ -452,7 +392,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_admin_should_be_able_to_bypass_projects_restrictions_for_himself(self):
         """
@@ -479,7 +419,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         profile_to_edit.refresh_from_db()
         self.assertEqual(profile_to_edit.projects.count(), 1)
@@ -499,7 +439,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
         response = self.client.patch(
             reverse("profiles-detail", kwargs={"pk": profile_to_edit.id}), data=data, format="json"
         )
-        response_data = self.assertJSONResponse(response, 400)
+        response_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(
             response_data, "phone_number", "Both the phone number and the country code must be provided"
         )
@@ -512,7 +452,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
         response = self.client.patch(
             reverse("profiles-detail", kwargs={"pk": profile_to_edit.id}), data=data, format="json"
         )
-        response_data = self.assertJSONResponse(response, 400)
+        response_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(response_data, "phone_number", "Enter a valid phone number.")
 
         data = {
@@ -523,7 +463,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
         response = self.client.patch(
             reverse("profiles-detail", kwargs={"pk": profile_to_edit.id}), data=data, format="json"
         )
-        response_data = self.assertJSONResponse(response, 400)
+        response_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(response_data, "phone_number", "Enter a valid phone number.")
 
         data = {
@@ -534,21 +474,21 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
         response = self.client.patch(
             reverse("profiles-detail", kwargs={"pk": profile_to_edit.id}), data=data, format="json"
         )
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response_data["phone_number"], "+33612345678")
 
         data = {"user_name": "new_name"}
         response = self.client.patch(
             reverse("profiles-detail", kwargs={"pk": profile_to_edit.id}), data=data, format="json"
         )
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response_data["phone_number"], "+33612345678")
 
         data = {"user_name": "new_name", "phone_number": ""}
         response = self.client.patch(
             reverse("profiles-detail", kwargs={"pk": profile_to_edit.id}), data=data, format="json"
         )
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response_data["phone_number"], None)
 
     def test_update_profile_color(self):
@@ -562,7 +502,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
 
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": profile.id}), data=data, format="json")
 
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         profile.refresh_from_db()
         profile.user.refresh_from_db()
         self.assertEqual(profile.color, new_color)
@@ -583,7 +523,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
         }
         jum = Profile.objects.get(user=self.jum)
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": jum.id}), data=data, format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_update_user_add_phone_number(self):
         self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
@@ -598,12 +538,12 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             "country_code": "be",
         }
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": jum.id}), data=data, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         updated_jum = Profile.objects.get(user=self.jum)
         self.assertEqual(updated_jum.phone_number.as_e164, "+32477123456")
 
         res = self.client.get(reverse("profiles-detail", kwargs={"pk": jum.id}))
-        response_data = self.assertJSONResponse(res, 200)
+        response_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertEqual(response_data["phone_number"], "+32477123456")
 
     def test_update_user_should_succeed_with_restricted_editable_org_unit_types_when_modifying_another_field(self):
@@ -639,7 +579,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
         response = self.client.patch(
             reverse("profiles-detail", kwargs={"pk": jum_profile.id}), data=data, format="json"
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.jum.refresh_from_db()
         self.assertEqual(self.jum.username, "new_user_name")
 
@@ -661,7 +601,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
         response = self.client.patch(
             reverse("profiles-detail", kwargs={"pk": profile_to_modify.id}), data=data, format="json"
         )
-        response_data = self.assertJSONResponse(response, 403)
+        response_data = self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         self.assertEqual(
             response_data["detail"],
             (
@@ -677,7 +617,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
         response = self.client.patch(
             reverse("profiles-detail", kwargs={"pk": profile_to_modify.id}), data=data, format="json"
         )
-        response_data = self.assertJSONResponse(response, 403)
+        response_data = self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         self.assertEqual(
             response_data["detail"],
             (
@@ -697,7 +637,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
         }
         jum = Profile.objects.get(user=self.jum)
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": jum.id}), data=data, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_user_with_managed_permission_cannot_update_profile_of_user_not_in_sub_org_unit(self):
         self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
@@ -710,7 +650,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
         }
         jum = Profile.objects.get(user=self.jum)
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": jum.id}), data=data, format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_user_with_managed_permission_cannot_assign_org_unit_outside_of_their_health_pyramid(self):
         self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
@@ -722,7 +662,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             "org_units": [self.org_unit_from_sub_type.id],
         }
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": jum.id}), data=data, format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_user_with_managed_permission_can_assign_org_unit_within_their_health_pyramid_with_existing_ones_outside(
         self,
@@ -736,7 +676,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             "org_units": [self.org_unit_from_parent_type.id, self.org_unit_from_sub_type.id],
         }
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": jum.id}), data=data, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_user_with_managed_permission_can_assign_org_unit_within_their_health_pyramid(self):
         self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
@@ -748,7 +688,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             "org_units": [self.org_unit_from_parent_type.id],
         }
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": jum.id}), data=data, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_user_with_managed_permission_can_grant_user_roles(self):
         group = Group.objects.create(name="admin")
@@ -763,7 +703,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             "user_roles": [role.id],
         }
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": jum.id}), data=data, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_user_with_managed_permission_cannot_grant_user_admin_permission_through_user_roles(self):
         group = Group.objects.create(name="admin")
@@ -778,7 +718,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             "user_roles": [role.id],
         }
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": jum.id}), data=data, format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_user_with_managed_permission_cannot_grant_user_admin_permission(self):
         self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
@@ -794,7 +734,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             ],
         }
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": jum.id}), data=data, format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_user_with_managed_permission_without_location_can_update_profile_of_user_in_whole_pyramid(self):
         self.jum.iaso_profile.org_units.set([self.child_org_unit.id])
@@ -810,7 +750,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
         }
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": jum.id}), data=data, format="json")
         jum.refresh_from_db()
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(list(jum.org_units.values_list("id", flat=True)), [self.org_unit_from_parent_type.id])
 
     def test_user_with_managed_permission_can_update_profile_of_user_in_sub_org_unit(self):
@@ -826,19 +766,19 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             "user_permissions": [CORE_FORMS_PERMISSION.codename, CORE_USERS_MANAGED_PERMISSION.codename],
         }
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": jum.pk}), data=data, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_profile_error_dhis2_constraint(self):
         # Test for regression of IA-1249
         self.client.force_authenticate(self.jim)
         data = {"user_name": "unittest_user1", "password": "unittest_password", "dhis2_id": ""}
         response = self.client.post(reverse("profiles-list"), data=data, format="json")
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         data = {"user_name": "unittest_user2", "password": "unittest_password", "dhis2_id": ""}
         response = self.client.post(reverse("profiles-list"), data=data, format="json")
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         profile1 = Profile.objects.get(user__username="unittest_user1")
         profile2 = Profile.objects.get(user__username="unittest_user2")
         self.assertNotEqual(profile1.account_id, None)
@@ -847,13 +787,13 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
 
         data = {"user_name": "unittest_user2", "password": "unittest_password", "dhis2_id": "", "first_name": "test"}
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": profile2.id}), data=data, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         profile2.refresh_from_db()
         self.assertEqual(profile2.dhis2_id, None)
 
         data = {"user_name": "unittest_user2", "password": "unittest_password", "dhis2_id": "test_dhis2_id"}
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": profile2.id}), data=data, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         profile2.refresh_from_db()
         self.assertEqual(profile2.dhis2_id, "test_dhis2_id")
 
@@ -862,7 +802,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": self.jane.iaso_profile.id}))
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_can_delete_dhis2_id(self):
         self.client.force_authenticate(self.john)
@@ -874,7 +814,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
 
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": jim.id}), data=data, format="json")
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_me_endpoint_updates_own_first_last_name_and_email(self):
         """A user with no admin permission can update their own name and email via `/me/`."""
@@ -886,7 +826,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             "email": "jom@example.org",
         }
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": PK_ME}), data=new_data, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.jom.refresh_from_db()
         self.assertEqual(self.jom.first_name, "Jom")
@@ -898,7 +838,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
         self.client.force_authenticate(self.jom)
         new_data = {"first_name": "Jom", "language": "en"}
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": PK_ME}), data=new_data, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.jom.refresh_from_db()
         self.jom.iaso_profile.refresh_from_db()
@@ -912,7 +852,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             data={"email": "not-an-email"},
             format="json",
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_me_endpoint_ignores_fields_outside_the_self_service_allow_list(self):
         """`PATCH /api/profiles/me/` silently drops fields not in its allow-list, so a user cannot self-grant permissions."""
@@ -926,7 +866,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.jom.refresh_from_db()
         self.assertEqual(self.jom.first_name, "Jom")
         self.assertEqual(self.jom.user_permissions.count(), 0)

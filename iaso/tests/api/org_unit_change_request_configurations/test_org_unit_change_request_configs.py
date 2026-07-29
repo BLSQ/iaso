@@ -228,6 +228,42 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         self.assertIn("project_id", result)
         self.assertIn("required", result["project_id"][0])
 
+    def test_create_wrong_project_pk(self):
+        # an OUCRC already exists with this combination of OUType & Project
+        self.client.force_authenticate(self.user_ash_ketchum)
+        data = {
+            "project_id": "test",
+            "type": m.OrgUnitChangeRequestConfiguration.Type.EDITION,
+            "org_unit_type_id": self.ou_type_water_pokemons.id,
+            "org_units_editable": False,
+            "editable_fields": m.OrgUnitChangeRequestConfiguration.LIST_OF_POSSIBLE_EDITABLE_FIELDS,
+            "possible_type_ids": [self.ou_type_rock_pokemons.id, self.ou_type_fire_pokemons.id],
+            "possible_parent_type_ids": [self.ou_type_rock_pokemons.id, self.ou_type_water_pokemons.id],
+            "group_set_ids": [self.group_set_brock_pokemons.id],
+            "editable_reference_form_ids": [self.form_rock_throw.id],
+            "other_group_ids": [self.other_group_film_1.id],
+        }
+        response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
+        self.assertContains(response, "Expected pk value, received str.", status_code=status.HTTP_400_BAD_REQUEST)
+
+    def test_create_unknown_project(self):
+        # an OUCRC already exists with this combination of OUType & Project
+        self.client.force_authenticate(self.user_ash_ketchum)
+        data = {
+            "project_id": "-1",
+            "type": m.OrgUnitChangeRequestConfiguration.Type.EDITION,
+            "org_unit_type_id": self.ou_type_water_pokemons.id,
+            "org_units_editable": False,
+            "editable_fields": m.OrgUnitChangeRequestConfiguration.LIST_OF_POSSIBLE_EDITABLE_FIELDS,
+            "possible_type_ids": [self.ou_type_rock_pokemons.id, self.ou_type_fire_pokemons.id],
+            "possible_parent_type_ids": [self.ou_type_rock_pokemons.id, self.ou_type_water_pokemons.id],
+            "group_set_ids": [self.group_set_brock_pokemons.id],
+            "editable_reference_form_ids": [self.form_rock_throw.id],
+            "other_group_ids": [self.other_group_film_1.id],
+        }
+        response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
+        self.assertContains(response, "Invalid pk", status_code=status.HTTP_400_BAD_REQUEST)
+
     def test_create_missing_org_unit_type_id(self):
         self.client.force_authenticate(self.user_brock)
         data = {

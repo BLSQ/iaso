@@ -76,17 +76,17 @@ class Exporter:
             task.report_progress_and_stop_if_killed(
                 progress_message="Creating new Org Units", progress_value=0, end_value=3
             )
-        self.iaso_logger.ok("   ------ New org units----")
+        self.iaso_logger.info("   ------ New org units----")
         self.create_missings(api, diffs)
         if task:
             task.report_progress_and_stop_if_killed(
                 progress_message="Modifying existing Org Units", progress_value=1, end_value=3
             )
-        self.iaso_logger.ok("   ------ Modified org units----")
+        self.iaso_logger.info("   ------ Modified org units----")
         self.update_orgunits(api, diffs)
         if task:
             task.report_progress_and_stop_if_killed(progress_message="Updating groups", progress_value=3, end_value=3)
-        self.iaso_logger.ok("   ------ Modified groups----")
+        self.iaso_logger.info("   ------ Modified groups----")
         self.update_groups_without_groupsets(api, diffs, fields)
 
     def create_missings(self, api, diffs: List[Diff], task=None):
@@ -288,7 +288,7 @@ class Exporter:
 
         self.iaso_logger.info("orgunits with groups to change ", len(to_update_diffs))
         if len(to_update_diffs) == 0:
-            self.iaso_logger.ok("nothing to update in the groups")
+            self.iaso_logger.info("nothing to update in the groups")
             return
 
         groupset_field_types = as_field_types(support_by_update_fields)
@@ -354,7 +354,7 @@ class Exporter:
 
         self.iaso_logger.info("orgunits with groups to change ", len(to_update_diffs))
         if len(to_update_diffs) == 0:
-            self.iaso_logger.ok("nothing to update in the groups")
+            self.iaso_logger.info("nothing to update in the groups")
             return
 
         group_field_types = as_field_types(support_by_update_fields)

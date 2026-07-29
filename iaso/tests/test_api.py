@@ -3,6 +3,7 @@ import typing
 
 from math import floor
 
+from rest_framework import status
 from rest_framework.test import APIClient
 
 from ..models import Account, DataSource, Form, Instance, OrgUnit, OrgUnitType, Project, SourceVersion
@@ -64,7 +65,7 @@ class BasicAPITestCase(APITestCase):
         ]
 
         response = c.post("/api/orgunits/?app_id=org.inconnus.spectacle", data=unit_body, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         velpo_model = OrgUnit.objects.get(uuid=uuid)
         self.assertEqual(velpo_model.name, name)
         # Location should be filled
@@ -135,7 +136,7 @@ class BasicAPITestCase(APITestCase):
         }
 
         response = c.post("/api/orgunits/?app_id=org.inconnus.spectacle", data=[unit_body_2], format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         fifre_model = OrgUnit.objects.get(uuid=uuid2)
         self.assertEqual(fifre_model.name, name2)
@@ -165,7 +166,7 @@ class BasicAPITestCase(APITestCase):
         ]
 
         response = c.post("/api/orgunits/?app_id=org.inconnus.spectacle", data=unit_body, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         velpo_model = OrgUnit.objects.get(uuid=uuid)
         self.assertEqual(velpo_model.name, name)
 
@@ -228,14 +229,14 @@ class BasicAPITestCase(APITestCase):
         ]
 
         response = c.post("/api/orgunits/?app_id=org.inconnus.spectacle", data=unit_body_2, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         fifre_model = OrgUnit.objects.get(uuid=uuid2)
         self.assertEqual(fifre_model.name, name2)
 
         # No app id - An APIImport record with has_problem set to True should be created
         response = c.post("/api/orgunits/", data=unit_body_2, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertAPIImport(
             "orgUnit",
             request_body=unit_body_2,
@@ -246,7 +247,7 @@ class BasicAPITestCase(APITestCase):
 
         # Wrong app id - An APIImport record with has_problem set to True should be created
         response = c.post("/api/orgunits/?app_id=1234", data=unit_body_2, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertAPIImport(
             "orgUnit",
             request_body=unit_body_2,
@@ -276,7 +277,7 @@ class BasicAPITestCase(APITestCase):
         }
 
         response = c.post("/api/orgunits/?app_id=org.inconnus.spectacle", data=[unit_body], format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         velpo_model = OrgUnit.objects.get(uuid=uuid)
         uuid = "4b7c3954-f69a-4b99-83b1-db73957b32b8"
         name = "Questionnaire CDS"
@@ -302,7 +303,7 @@ class BasicAPITestCase(APITestCase):
         ]
 
         response = c.post("/api/instances/?app_id=org.inconnus.spectacle", data=instance_body, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         instance = Instance.objects.get(uuid=uuid)
 
@@ -321,7 +322,7 @@ class BasicAPITestCase(APITestCase):
 
         # No app id - An APIImport record with has_problem set to True should be created
         response = c.post("/api/instances/", data=instance_body, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertAPIImport(
             "instance",
             request_body=instance_body,
@@ -331,7 +332,7 @@ class BasicAPITestCase(APITestCase):
 
         # Wrong app id - An APIImport record with has_problem set to True should be created
         response = c.post("/api/instances/?app_id=9876", data=instance_body, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertAPIImport(
             "instance",
             request_body=instance_body,
@@ -354,7 +355,7 @@ class BasicAPITestCase(APITestCase):
             "/api/orgunittypes/?app_id=com.pascallegitimus.iaso", accept="application/json"
         )  # this should have 0 result
         json_response = json.loads(response.content)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(json_response["orgUnitTypes"]), 0)
 
         with self.assertNumQueries(9):
@@ -397,7 +398,7 @@ class BasicAPITestCase(APITestCase):
             "/api/v2/orgunittypes/?app_id=com.pascallegitimus.iaso", accept="application/json"
         )  # this should have 0 result
         json_response = json.loads(response.content)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(json_response["orgUnitTypes"]), 0)
 
         response = c.get(
@@ -423,7 +424,7 @@ class BasicAPITestCase(APITestCase):
         """GET /forms/ mobile app happy path (no auth but with app id): 2 results"""
 
         response = self.client.get(f"/api/forms/?app_id={self.project.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertValidFormListData(response_data, 2)

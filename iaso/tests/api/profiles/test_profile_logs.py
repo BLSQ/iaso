@@ -7,6 +7,7 @@ import pytz
 
 from django.contrib import auth
 from django.contrib.contenttypes.models import ContentType
+from rest_framework import status
 
 from hat.audit.models import Modification
 from iaso import models as m
@@ -590,13 +591,13 @@ class ProfileLogsTestCase(APITestCase):
     def test_unauthenticated_user(self):
         """GET /api/userlogs/ anonymous user --> 401"""
         response = self.client.get("/api/userlogs/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_user_no_permission(self):
         """GET /api/userlogs/ without USERS_ADMIN permission --> 403"""
         self.client.force_authenticate(self.user_without_permission)
         response = self.client.get("/api/userlogs/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_results_filtered_by_account(self):
         pass
@@ -605,7 +606,7 @@ class ProfileLogsTestCase(APITestCase):
         """GET /api/userlogs/ with USERS_ADMIN permission - golden path"""
         self.client.force_authenticate(self.user_with_permission_1)
         response = self.client.get("/api/userlogs/")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(data["count"], 6)
         try:
             jsonschema.validate(instance=data, schema=PROFILE_LOG_LIST_SCHEMA)
@@ -619,7 +620,7 @@ class ProfileLogsTestCase(APITestCase):
         """
         self.client.force_authenticate(self.user_with_permission_1)
         response = self.client.get(f"/api/userlogs/?user_ids={self.edited_user_1.id}")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(data["count"], 4)
         try:
             jsonschema.validate(instance=data, schema=PROFILE_LOG_LIST_SCHEMA)
@@ -629,7 +630,7 @@ class ProfileLogsTestCase(APITestCase):
         response = self.client.get(
             f"/api/userlogs/?user_ids={self.edited_user_1.id}&modified_by={self.user_with_permission_1.id}"
         )
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(data["count"], 2)
         try:
             jsonschema.validate(instance=data, schema=PROFILE_LOG_LIST_SCHEMA)
@@ -637,7 +638,7 @@ class ProfileLogsTestCase(APITestCase):
             self.fail(msg=str(ex))
 
         response = self.client.get(f"/api/userlogs/?user_ids={self.edited_user_1.id}&org_unit_id={self.org_unit_2.id}")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(data["count"], 2)
         try:
             jsonschema.validate(instance=data, schema=PROFILE_LOG_LIST_SCHEMA)
@@ -647,7 +648,7 @@ class ProfileLogsTestCase(APITestCase):
         response = self.client.get(
             f"/api/userlogs/?user_ids={self.edited_user_1.id}&modified_by={self.user_with_permission_1.id}&created_at_before=2020-02-14"
         )
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(data["count"], 1)
         try:
             jsonschema.validate(instance=data, schema=PROFILE_LOG_LIST_SCHEMA)
@@ -657,7 +658,7 @@ class ProfileLogsTestCase(APITestCase):
         response = self.client.get(
             f"/api/userlogs/?user_ids={self.edited_user_1.id}&modified_by={self.user_with_permission_1.id}&created_at_after=2020-02-14"
         )
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(data["count"], 1)
         try:
             jsonschema.validate(instance=data, schema=PROFILE_LOG_LIST_SCHEMA)
@@ -690,7 +691,7 @@ class ProfileLogsTestCase(APITestCase):
         response = self.client.get(
             f"/api/userlogs/?user_ids={self.edited_user_1.id}&modified_by={self.user_with_permission_1.id}&created_at_after=2020-02-14&created_at_before=2020-02-09"
         )
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(data["count"], 0)
         try:
             jsonschema.validate(instance=data, schema=PROFILE_LOG_LIST_SCHEMA)
@@ -704,7 +705,7 @@ class ProfileLogsTestCase(APITestCase):
         """GET /api/userlogs/{id} with USERS_ADMIN permission - golden path"""
         self.client.force_authenticate(self.user_with_permission_1)
         response = self.client.get(f"/api/userlogs/{self.log_1.id}/")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         try:
             jsonschema.validate(instance=data, schema=PROFILE_LOG_DETAIL_SCHEMA)
         except jsonschema.exceptions.ValidationError as ex:
@@ -802,7 +803,7 @@ class ProfileLogsTestCase(APITestCase):
         )
 
         response = self.client.get(f"/api/userlogs/{log_without_update.id}/")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         try:
             jsonschema.validate(instance=data, schema=PROFILE_LOG_DETAIL_SCHEMA)
@@ -813,17 +814,17 @@ class ProfileLogsTestCase(APITestCase):
         """GET /api/userlogs/{id} without authentication should return 401"""
         self.client.force_authenticate(user=None)
         response = self.client.get(f"/api/userlogs/{self.log_1.id}/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_retrieve_without_permission(self):
         """GET /api/userlogs/{id} without USERS_ADMIN permission should return 403"""
         self.client.force_authenticate(self.user_without_permission)
         response = self.client.get(f"/api/userlogs/{self.log_1.id}/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_retrieve_unknown_log(self):
         """GET /api/userlogs/{id} with an unknown log ID should return 404"""
         self.client.force_authenticate(self.user_with_permission_1)
         unknown_id = max(Modification.objects.all().values_list("id", flat=True)) + 1
         response = self.client.get(f"/api/userlogs/{unknown_id}/")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)

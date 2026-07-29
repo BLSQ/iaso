@@ -4,6 +4,7 @@ import time_machine
 
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.core.cache import cache
+from rest_framework import status
 
 from iaso.api.mobile.org_units import SHAPE_RESULTS_MAX
 from iaso.api.query_params import APP_ID, IDS, LIMIT, PAGE
@@ -136,21 +137,21 @@ class MobileOrgUnitAPITestCase(APITestCase):
         """GET /mobile/orgunits/ without auth for project which requires it: 401"""
 
         response = self.client.get(BASE_URL, {APP_ID: self.project.app_id})
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_orgunits_list_with_wrong_auth_for_project_requiring_auth(self):
         """GET /mobile/orgunits/ with wrong auth for project which requires it: 401"""
 
         self.client.force_authenticate(user=self.user2)
         response = self.client.get(BASE_URL, {APP_ID: self.project.app_id})
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_orgunits_list_with_auth_for_project_requiring_auth(self):
         """GET /mobile/orgunits/ with auth for project which requires it: 200"""
 
         self.client.force_authenticate(user=self.user)
         response = self.client.get(BASE_URL, {APP_ID: self.project.app_id})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_org_unit_with_shapes_limited(self):
         self.client.force_authenticate(self.user)
@@ -181,7 +182,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
             # 13. INSERT "django_cache_table"
             # 14. RELEASE SAVEPOINT
             response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual([self.raditz.id, self.goku.id], response.json()["roots"])
         self.assertNotIn("count", response.json())
         self.assertNotIn("next", response.json())
@@ -222,7 +223,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
             # 13. INSERT "django_cache_table"
             # 14. RELEASE SAVEPOINT
             response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual([self.raditz.id, self.goku.id], response.json()["roots"])
         self.assertNotIn("count", response.json())
         self.assertNotIn("next", response.json())
@@ -267,7 +268,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
             # 13. INSERT "django_cache_table"
             # 14. RELEASE SAVEPOINT
             response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual([self.raditz.id, self.goku.id], response.json()["roots"])
         self.assertNotIn("count", response.json())
         self.assertNotIn("next", response.json())
@@ -291,7 +292,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, LIMIT: 1, PAGE: 1})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assert_page(response.json(), count=4, limit=1, page=1, pages=4, has_next=True, has_previous=False)
         self.assertEqual([self.raditz.id, self.goku.id], response.json()["roots"])
         self.assertEqual(len(response.json()["orgUnits"]), 1)
@@ -299,7 +300,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.json()["orgUnits"][0]["parent_id"], None)
 
         response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, LIMIT: 1, PAGE: 2})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assert_page(response.json(), count=4, limit=1, page=2, pages=4, has_next=True, has_previous=True)
         self.assertNotIn("roots", response.json())
         self.assertEqual(len(response.json()["orgUnits"]), 1)
@@ -307,7 +308,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.json()["orgUnits"][0]["parent_id"], self.bardock.id)
 
         response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, LIMIT: 2, PAGE: 2})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assert_page(response.json(), count=4, limit=2, page=2, pages=2, has_next=False, has_previous=True)
         self.assertNotIn("roots", response.json())
         self.assertEqual(len(response.json()["orgUnits"]), 2)
@@ -329,7 +330,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, "shapes": "true"}, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual([self.raditz.id, self.goku.id], response.json()["roots"])
         self.assertNotIn("count", response.json())
         self.assertNotIn("next", response.json())
@@ -351,7 +352,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.goku.save()
         self.client.force_authenticate(self.user)
         response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
         # set limit on user
 
         self.assertEqual([self.goku.id], j["roots"])
@@ -367,7 +368,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         cache.clear()  # to fix cache don't clear when the feature flags are modified
         self.client.force_authenticate(self.user)
         response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual([self.goku.id], j["roots"])
         self.assertNotIn("count", j)
         self.assertNotIn("next", j)
@@ -377,7 +378,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
     def test_boundingbox(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(BOUNDINGXBOX_URL, data={APP_ID: BASE_APP_ID})
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         bbox = j["results"][0]
         self.assertEqual(bbox, {"east": -5.024, "northern": 1.0, "south": -3.976, "west": 6.0})
@@ -391,7 +392,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.user.iaso_profile.org_units.set([self.goten])
         self.client.force_authenticate(self.user)
         response = self.client.get(BOUNDINGXBOX_URL, data={APP_ID: BASE_APP_ID})
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
         # set limit on user
         bbox = j["results"][0]
         self.assertEqual(bbox, {"east": -5.024, "northern": -4.024, "south": -3.976, "west": -4.976})
@@ -428,11 +429,11 @@ class MobileOrgUnitAPITestCase(APITestCase):
 
         # Fetch OrgUnit by ID.
         response1 = self.client.get(f"{BASE_URL}{self.raditz.pk}/reference_instances/", data=params)
-        self.assertJSONResponse(response1, 200)
+        self.assertJSONResponse(response1, status.HTTP_200_OK)
 
         # Fetch OrgUnit by UUID.
         response2 = self.client.get(f"{BASE_URL}{self.raditz.uuid}/reference_instances/", data=params)
-        self.assertJSONResponse(response2, 200)
+        self.assertJSONResponse(response2, status.HTTP_200_OK)
 
         self.assertEqual(response1.data, response2.data)
         self.assertEqual(
@@ -490,7 +491,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         instance2.save()
 
         response = self.client.get(f"{BASE_URL}{self.raditz.pk}/reference_instances/", data=params)
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(
             response.data,
             {
@@ -520,7 +521,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         response = self.client.get(
             BASE_URL, data={APP_ID: BASE_APP_ID, IDS: f"{self.goku.id},{self.gohan.id},{self.goten.id}"}
         )
-        org_units = self.assertJSONResponse(response, 200)
+        org_units = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(org_units["orgUnits"]), 3)
         self.assertEqual(org_units["orgUnits"][0]["id"], self.goku.id)
         self.assertEqual(org_units["orgUnits"][0]["validation_status"], OrgUnit.VALIDATION_REJECTED)
@@ -532,7 +533,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
     def test_post_to_retrieve_list_with_wrong_id(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, IDS: f"{self.goku.id},-1,{self.goten.id}"})
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_create_org_unit_not_authenticated_project_requires_authentication(self):
         count_before = OrgUnit.objects.count()
@@ -548,7 +549,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
                 }
             ],
         )
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(OrgUnit.objects.count(), count_before)
         self.assertFalse(OrgUnit.objects.filter(name="My OrgUnit").exists())
 
@@ -567,7 +568,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
                 }
             ],
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(OrgUnit.objects.count(), count_before + 1)
         self.assertTrue(OrgUnit.objects.filter(name="My OrgUnit").exists())
 
@@ -585,7 +586,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
                 }
             ],
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(OrgUnit.objects.count(), count_before + 1)
         self.assertTrue(OrgUnit.objects.filter(name="My OrgUnit").exists())
 
@@ -608,7 +609,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         ]
         # No app id - An APIImport record with has_problem set to True should be created
         response = self.client.post("/api/mobile/orgunits/", data=unit_body, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertAPIImport(
             "orgUnit",
             request_body=unit_body,
@@ -619,7 +620,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
 
         # Wrong app id - An APIImport record with has_problem set to True should be created
         response = self.client.post("/api/mobile/orgunits/?app_id=1234", data=unit_body, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertAPIImport(
             "orgUnit",
             request_body=unit_body,

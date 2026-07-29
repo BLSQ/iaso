@@ -1,4 +1,5 @@
 from django.core.files import File
+from rest_framework import status
 
 from iaso import models as m
 from iaso.models import Report, ReportVersion
@@ -34,7 +35,7 @@ class ReportsAPITestCase(APITestCase):
 
         response = self.client.get("/api/reports/")
 
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(response.json()[0]["name"], "TEST_REPORT_A")
 
     def test_must_have_report_permission(self):
@@ -52,7 +53,7 @@ class ReportsAPITestCase(APITestCase):
 
         response = self.client.get("/api/reports/")
 
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
 
     def test_get_reports_munlti_tenancy(self):
         self.client.force_authenticate(self.tao)
@@ -69,7 +70,7 @@ class ReportsAPITestCase(APITestCase):
 
         response = self.client.get("/api/reports/")
 
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(len(response.json()), 0)
 
     def test_get_reports_must_be_authenticated(self):
@@ -85,7 +86,7 @@ class ReportsAPITestCase(APITestCase):
 
         response = self.client.get("/api/reports/")
 
-        self.assertEqual(401, response.status_code)
+        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
 
     def test_get_reports_mobile(self):
         self.client.force_authenticate(self.kefla)
@@ -102,5 +103,5 @@ class ReportsAPITestCase(APITestCase):
 
         response = self.client.get("/api/mobile/reports/")
 
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(response.json()[0]["name"], "TEST_REPORT_A")

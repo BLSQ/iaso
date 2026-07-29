@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.utils.timezone import now
+from rest_framework import status
 
 from iaso import models as m
 from iaso.tests.api.entities.common_base_with_setup import EntityAPITestCase
@@ -47,7 +48,7 @@ class WebEntityOrderingAPITestCase(EntityAPITestCase):
 
     def test_ordering_default(self):
         response = self.client.get("/api/entities/", format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         result = response.json()["result"]
 

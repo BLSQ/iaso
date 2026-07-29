@@ -1,5 +1,7 @@
 import typing
 
+from rest_framework import status
+
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
@@ -20,28 +22,28 @@ class DevicesAPITestCase(APITestCase):
         """GET /devices/ without auth should result in a 401"""
 
         response = self.client.get("/api/devices/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_devices_list_no_permission(self):
         """GET /devices/ with auth but without the proper permission"""
 
         self.client.force_authenticate(self.jim)
         response = self.client.get("/api/devices/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_devices_list_with_permission(self):
         """GET /devices/ with auth and the proper permission"""
 
         self.client.force_authenticate(self.john)
         response = self.client.get("/api/devices/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_devices_list_paginated(self):
         """GET /devices/ paginated happy path"""
 
         self.client.force_authenticate(self.john)
         response = self.client.get("/api/devices/?limit=1&page=1", headers={"Content-Type": "application/json"})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertValidDeviceListData(response_data, 1, True)
@@ -55,7 +57,7 @@ class DevicesAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.john)
         response = self.client.get(f"/api/devices/{self.device_1.id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertValidDeviceData(response_data)

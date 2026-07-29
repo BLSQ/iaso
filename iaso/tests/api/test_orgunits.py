@@ -1161,7 +1161,7 @@ class OrgUnitAPITestCase(APITestCase):
             data={
                 "name": "Test ou",
                 "org_unit_type_id": self.jedi_council.pk,
-                "parent_id": 41867,
+                "parent_id": 3446456767657675756,
             },
         )
         self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
@@ -1177,7 +1177,7 @@ class OrgUnitAPITestCase(APITestCase):
             data={
                 "name": "Test ou",
                 "org_unit_type_id": self.jedi_council.pk,
-                "groups": [34],
+                "groups": [3446456767657675756],
             },
         )
         self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)

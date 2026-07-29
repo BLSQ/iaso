@@ -63,7 +63,6 @@ ENABLE_CORS = env.bool("ENABLE_CORS", default=True)
 # This should be the same as the one set on: `/admin/sites/site/1/change/`
 
 DNS_DOMAIN = env.str("DNS_DOMAIN", default="localhost:8081")
-TESTING = env.bool("TESTING", default=False)
 IN_TESTS = len(sys.argv) > 1 and sys.argv[1] == "test"
 PLUGINS = env.list("PLUGINS", default=[], delimiter=",")
 ROOT_REDIRECT_PATTERN_NAME = env.str("ROOT_REDIRECT_PATTERN_NAME", default="dashboard:home_iaso")
@@ -163,7 +162,7 @@ SITE_ID = 1
 
 LOGGING_LEVEL = env.str("DJANGO_LOGGING_LEVEL", default="INFO")
 HAT_LOGGING_LEVEL = env.str("HAT_LOGGING_LEVEL", default="DEBUG")
-if TESTING:
+if IN_TESTS:
     # We don't want to see log output when running tests
     LOGGING_LEVEL = "CRITICAL"
 

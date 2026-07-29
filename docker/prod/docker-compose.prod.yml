@@ -122,6 +122,8 @@ services:
         - WORKER
       stdin_open: true
       tty: true
+      cap_add:
+        - SYS_PTRACE
     nginx:
       image: nginx:stable-alpine
       ports:

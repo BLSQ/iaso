@@ -13,14 +13,15 @@ class SizedFieldFile(FieldFile):
     def size(self):
         """
         Return the file size from the cached database column if available.
-        Otherwise, fall back to default behavior (querying the storage backend).
         """
-        if self.field and self.instance:
+        if self._committed and self.field and self.instance:
             size_field_name = getattr(self.field, "size_field_name", None)
             if size_field_name:
                 val = getattr(self.instance, size_field_name, None)
                 if val is not None:
                     return val
+        # Fall back to default FieldFile behavior:
+        # Access the size of the file being uploaded or query the storage backend.
         return super().size
 
 
@@ -39,7 +40,6 @@ class SizedFileField(models.FileField):
         Initialize the field with an optional custom database size column name.
         """
         self._explicit_size_field_name = size_field_name
-        self.size_field_name = size_field_name
         super().__init__(*args, **kwargs)
 
     def contribute_to_class(self, cls, name, private_only=False, **kwargs):
@@ -49,10 +49,9 @@ class SizedFileField(models.FileField):
 
         This is a Django hook called during model class creation.
         """
-        super().contribute_to_class(cls, name, private_only=private_only, **kwargs)
+        self.size_field_name = self._explicit_size_field_name or f"{name}_size"
 
-        if not self.size_field_name:
-            self.size_field_name = f"{name}_size"
+        super().contribute_to_class(cls, name, private_only=private_only, **kwargs)
 
         try:
             cls._meta.get_field(self.size_field_name)

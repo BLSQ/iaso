@@ -120,3 +120,23 @@ class SizedFileFieldTest(TestCase):
         mock_storage.size.side_effect = Exception("Storage should NOT be called!")
         self.assertEqual(refreshed_obj.file.size, 19)
         mock_storage.size.assert_not_called()
+
+    def test_updating_existing_file_updates_size(self):
+        """Test that updating an existing file updates the size field correctly."""
+        mock_storage = mock.MagicMock()
+        mock_storage.save.side_effect = ["test_uploads/first.txt", "test_uploads/second.txt"]
+        SizedFileModel._meta.get_field("file").storage = mock_storage
+
+        uploaded_file_1 = SimpleUploadedFile("first.txt", b"hello world")
+        obj = SizedFileModel(file=uploaded_file_1)
+        obj.save()
+
+        refreshed_obj = SizedFileModel.objects.get(pk=obj.pk)
+        self.assertEqual(refreshed_obj.file_size, 11)
+
+        uploaded_file_2 = SimpleUploadedFile("second.txt", b"hello world 20 bytes")
+        refreshed_obj.file = uploaded_file_2
+        refreshed_obj.save()
+
+        refreshed_obj_2 = SizedFileModel.objects.get(pk=obj.pk)
+        self.assertEqual(refreshed_obj_2.file_size, 20)

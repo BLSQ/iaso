@@ -5,6 +5,7 @@ from django.db import connection
 from django.db.models import Exists, OuterRef
 from django.test.utils import CaptureQueriesContext
 from django.utils.timezone import now
+from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory
 
@@ -123,7 +124,7 @@ class FormsAPITestCase(APITestCase):
         """GET /forms/ without auth: 0 result"""
 
         response = self.client.get("/api/forms/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertValidFormListData(response.json(), 0)
 
@@ -131,28 +132,28 @@ class FormsAPITestCase(APITestCase):
         """GET /forms/ without auth for project which requires it: 401"""
 
         response = self.client.get("/api/forms/", {APP_ID: self.project_1.app_id})
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_forms_list_with_wrong_auth_for_project_requiring_auth(self):
         """GET /forms/ with wrong auth for project which requires it: 401"""
 
         self.client.force_authenticate(user=self.iron_man)
         response = self.client.get("/api/forms/", {APP_ID: self.project_1.app_id})
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_forms_list_with_auth_for_project_requiring_auth(self):
         """GET /forms/ with auth for project which requires it: 200"""
 
         self.client.force_authenticate(user=self.yoda)
         response = self.client.get("/api/forms/", {APP_ID: self.project_1.app_id})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_forms_list_empty_for_user(self):
         """GET /forms/ with a user that has no access to any form"""
 
         self.client.force_authenticate(self.raccoon)
         response = self.client.get("/api/forms/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertValidFormListData(response.json(), 0)
 
@@ -161,7 +162,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(response.json(), 2)
 
     def find_forms_data_for(self, response, form):
@@ -175,7 +176,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(response.json(), 2)
 
         self.assertTrue(self.find_forms_data_for(response, self.form_2)["has_mappings"])
@@ -188,25 +189,25 @@ class FormsAPITestCase(APITestCase):
             f"/api/forms/?orgUnitTypeIds={self.jedi_council.pk}&{self.jedi_academy.pk}",
             headers={"Content-Type": "application/json"},
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(response.json(), 1)
         # Filter by org_unit type `sith_guild`.
         response = self.client.get(
             f"/api/forms/?orgUnitTypeIds={self.sith_guild.pk}",
             headers={"Content-Type": "application/json"},
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(response.json(), 0)
 
     def test_forms_list_filtered_by_org_unit_group(self):
         self.client.force_authenticate(self.form_manager)
         # Filter by org unit group `health_facilities_group`: only form_2 is linked to it.
         response = self.client.get(f"/api/forms/?orgUnitGroupIds={self.health_facilities_group.pk}")
-        res_data = self.assertJSONResponse(response, 200)
+        res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(res_data, 1)
         # Filter by org unit group `empty_group`: no form is linked to it.
         response = self.client.get(f"/api/forms/?orgUnitGroupIds={self.empty_group.pk}")
-        res_data = self.assertJSONResponse(response, 200)
+        res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(res_data, 0)
 
     def test_forms_list_filtered_by_project(self):
@@ -217,13 +218,13 @@ class FormsAPITestCase(APITestCase):
             f"/api/forms/?projectsIds={self.project_1.pk}&{self.project_2.pk}",
             headers={"Content-Type": "application/json"},
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(response.json(), 2)
         # Filter by project 2 only.
         response = self.client.get(
             f"/api/forms/?projectsIds={self.project_2.pk}", headers={"Content-Type": "application/json"}
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(response.json(), 0)
 
     def test_form_return_only_deleted(self):
@@ -266,7 +267,7 @@ class FormsAPITestCase(APITestCase):
                 "undefined": "true",
             },
         )
-        res_json = self.assertJSONResponse(response, 200)
+        res_json = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(res_json["count"], 1)
 
     def test_forms_list_excludes_deleted_by_default(self):
@@ -280,7 +281,7 @@ class FormsAPITestCase(APITestCase):
             data={"limit": 50},
         )
 
-        resp_json = self.assertJSONResponse(response, 200)
+        resp_json = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(resp_json["count"], 1)
 
         self.assertEqual(resp_json["forms"][0]["id"], self.form_2.id)
@@ -296,7 +297,7 @@ class FormsAPITestCase(APITestCase):
             data={"only_deleted": "1", "limit": 50},
         )
 
-        resp_json = self.assertJSONResponse(response, 200)
+        resp_json = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(resp_json["count"], 1)
         self.assertEqual(resp_json["forms"][0]["id"], self.form_1.id)
 
@@ -311,7 +312,7 @@ class FormsAPITestCase(APITestCase):
             data={"show_deleted": "1", "limit": 50},
         )
 
-        resp_json = self.assertJSONResponse(response, 200)
+        resp_json = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(resp_json["count"], 2)
 
         returned_ids = {form["id"] for form in resp_json["forms"]}
@@ -321,14 +322,14 @@ class FormsAPITestCase(APITestCase):
         """GET /forms/ web app happy path: we expect 1 results if one of the form is marked as derived"""
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/forms/?app_id={self.project_1.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(response.json(), 2)
 
         self.form_2.derived = True
         self.form_2.save()
 
         response = self.client.get(f"/api/forms/?app_id={self.project_1.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(response.json(), 1)
 
     def test_forms_list_date_to_inclusive(self):
@@ -337,7 +338,7 @@ class FormsAPITestCase(APITestCase):
         date_to = self.now.strftime("%Y-%m-%d")
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/forms/?date_to={date_to}", headers={"Content-Type": "application/json"})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(response.json(), 2)
 
     def test_forms_list_paginated(self):
@@ -345,7 +346,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/forms/?limit=1&page=1", headers={"Content-Type": "application/json"})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertValidFormListData(response_data, 1, True)
@@ -384,28 +385,28 @@ class FormsAPITestCase(APITestCase):
         """GET /forms/<form_id> without auth should result in a 404"""
 
         response = self.client.get(f"/api/forms/{self.form_1.id}/")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_forms_retrieve_wrong_auth(self):
         """GET /forms/<form_id> with auth of unrelated user should result in a 404"""
 
         self.client.force_authenticate(self.raccoon)
         response = self.client.get(f"/api/forms/{self.form_1.id}/")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_forms_retrieve_not_found(self):
         """GET /forms/<form_id>: id does not exist"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/forms/292003030/")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_forms_retrieve_ok_1(self):
         """GET /forms/<form_id> happy path (simple form)"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/forms/{self.form_1.id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormData(response.json())
 
     def test_forms_retrieve_ok_2(self):
@@ -413,7 +414,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/forms/{self.form_2.id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         form_data = response.json()
         self.assertValidFullFormData(form_data)
@@ -435,7 +436,7 @@ class FormsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         response_data = response.json()
         self.assertValidFormData(response_data)
@@ -448,7 +449,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.form_manager)
         response = self.client.get(f"/api/forms/{self.form_2.id}/")
-        form_data = self.assertJSONResponse(response, 200)
+        form_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertHasField(form_data, "org_unit_groups", list)
         self.assertEqual(1, len(form_data["org_unit_groups"]))
         self.assertEqual(self.health_facilities_group.id, form_data["org_unit_groups"][0]["id"])
@@ -464,7 +465,7 @@ class FormsAPITestCase(APITestCase):
             "possible_fields,legend_threshold,change_request_mode,validation_workflow"
         )
         response = self.client.get(f"/api/forms/{self.form_2.id}/?fields={fields}")
-        form_data = self.assertJSONResponse(response, 200)
+        form_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertHasField(form_data, "org_unit_groups", list)
         self.assertEqual(1, len(form_data["org_unit_groups"]))
         self.assertEqual(self.health_facilities_group.id, form_data["org_unit_groups"][0]["id"])
@@ -486,7 +487,7 @@ class FormsAPITestCase(APITestCase):
             },
             format="json",
         )
-        response_data = self.assertJSONResponse(response, 201)
+        response_data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertValidFormData(response_data)
         form = m.Form.objects.get(pk=response_data["id"])
         self.assertEqual(1, form.org_unit_groups.count())
@@ -508,7 +509,7 @@ class FormsAPITestCase(APITestCase):
             },
             format="json",
         )
-        response_data = self.assertJSONResponse(response, 201)
+        response_data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         form = m.Form.objects.get(pk=response_data["id"])
         self.assertEqual(0, form.org_unit_groups.count())
 
@@ -529,7 +530,7 @@ class FormsAPITestCase(APITestCase):
             },
             format="json",
         )
-        res_data = self.assertJSONResponse(response, 400)
+        res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(
             res_data, "org_unit_group_ids", f'Invalid pk "{self.unrelated_group.id}" - object does not exist.'
         )
@@ -554,7 +555,7 @@ class FormsAPITestCase(APITestCase):
             },
             format="json",
         )
-        res_data = self.assertJSONResponse(response, 400)
+        res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(
             res_data, "org_unit_group_ids", f'Invalid pk "{group_on_other_version.id}" - object does not exist.'
         )
@@ -568,7 +569,7 @@ class FormsAPITestCase(APITestCase):
             data={"org_unit_group_ids": [self.unrelated_group.id]},
             format="json",
         )
-        res_data = self.assertJSONResponse(response, 400)
+        res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(res_data, "org_unit_group_ids")
         self.form_1.refresh_from_db()
         self.assertEqual(0, self.form_1.org_unit_groups.count())
@@ -587,13 +588,13 @@ class FormsAPITestCase(APITestCase):
             "org_unit_group_ids": [self.health_facilities_group.id, self.empty_group.id],
         }
         response = self.client.put(f"/api/forms/{self.form_1.id}/", data=data, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.form_1.refresh_from_db()
         self.assertEqual(2, self.form_1.org_unit_groups.count())
 
         data["org_unit_group_ids"] = []
         response = self.client.put(f"/api/forms/{self.form_1.id}/", data=data, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.form_1.refresh_from_db()
         self.assertEqual(0, self.form_1.org_unit_groups.count())
 
@@ -613,7 +614,7 @@ class FormsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         response_data = response.json()
         self.assertValidFormData(response_data)
@@ -637,7 +638,7 @@ class FormsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
         response_data = response.json()
         self.assertEqual(
@@ -664,7 +665,7 @@ class FormsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         response_data = response.json()
         self.assertValidFormData(response_data)
@@ -677,14 +678,14 @@ class FormsAPITestCase(APITestCase):
         """POST /forms/ without auth: 401"""
 
         response = self.client.post("/api/forms/", data={"name": "test form"}, format="json")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_forms_create_wrong_permission(self):
         """POST /forms/ with auth but not the proper permission: 403"""
 
         self.client.force_authenticate(self.iron_man)
         response = self.client.post("/api/forms/", data={"name": "test form"}, format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_forms_create_invalid_1(self):
         """POST /forms/ with a lot of missing/invalid data"""
@@ -693,7 +694,7 @@ class FormsAPITestCase(APITestCase):
         response = self.client.post(
             "/api/forms/", data={"period_type": "LOL", "single_per_period": "Oui"}, format="json"
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
         response_data = response.json()
         self.assertHasError(response.json(), "name")
@@ -707,7 +708,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post("/api/forms/", data={"project_ids": []}, format="json")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
         response_data = response.json()
         self.assertHasError(response_data, "project_ids")
@@ -729,7 +730,7 @@ class FormsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
         response_data = response.json()
         self.assertHasError(response_data, "periods_before_allowed")
@@ -751,7 +752,7 @@ class FormsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(response.json(), "project_ids", "Invalid project ids")
 
     def test_forms_create_wrong_org_unit_types(self):
@@ -770,7 +771,7 @@ class FormsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(response.json(), "org_unit_type_ids", "Invalid org unit type ids")
 
     def test_forms_update_ok(self):
@@ -794,7 +795,7 @@ class FormsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertValidFormData(response_data)
@@ -813,7 +814,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.delete(f"/api/forms/{self.form_1.id}/", format="json")
-        self.assertJSONResponse(response, 204)
+        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
 
         self.assertIsNotNone(Form.objects_only_deleted.get(pk=self.form_1.id))
         self.assertFalse(Form.objects.filter(pk=self.form_1.id).exists())
@@ -823,7 +824,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.delete(f"/api/forms/{self.form_2.id}/", format="json")
-        self.assertJSONResponse(response, 204)
+        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
 
     def test_forms_can_restore_deleted_form(self):
         """PATCH /forms/<form_id>/?only_deleted=1"""
@@ -842,7 +843,7 @@ class FormsAPITestCase(APITestCase):
             },
         )
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertIsNotNone(Form.objects.get(pk=self.form_1.id))
         self.assertFalse(Form.objects_only_deleted.filter(pk=self.form_1.id).exists())
@@ -852,13 +853,13 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.raccoon)
         response = self.client.delete(f"/api/forms/{self.form_1.id}/", format="json")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_forms_destroy_no_auth(self):
         """DELETE /forms/<form_id> without auth -> 401"""
 
         response = self.client.delete(f"/api/forms/{self.form_1.id}/", format="json")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     # noinspection DuplicatedCode
     def assertValidFormListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
@@ -914,7 +915,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(response.json(), 2)
 
         form_1 = self.form_1
@@ -935,14 +936,14 @@ class FormsAPITestCase(APITestCase):
         response = self.client.get(
             "/api/forms/", {"planning": planning_1.id}, headers={"Content-Type": "application/json"}
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(response.json(), 1)
         self.assertEqual(response.json()["forms"][0]["name"], form_1.name)
 
         # it should return form_1 and form_2
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(response.json(), 2)
         self.assertEqual(response.json()["forms"][0]["name"], form_2.name)
         self.assertEqual(response.json()["forms"][1]["name"], form_1.name)
@@ -952,7 +953,7 @@ class FormsAPITestCase(APITestCase):
         response = self.client.get(
             "/api/forms/", {"planning": planning_2.id}, headers={"Content-Type": "application/json"}
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(response.json(), 0)
 
     def test_instance_not_in_same_project_are_not_counted(self):
@@ -966,7 +967,7 @@ class FormsAPITestCase(APITestCase):
 
         response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(response.json(), 2)
         self.assertEqual(0, response.json()["forms"][1]["instances_count"])
 
@@ -988,7 +989,7 @@ class FormsAPITestCase(APITestCase):
 
         response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(response.json(), 2)
         self.assertEqual(response.json()["forms"][0]["instances_count"], 2)
 
@@ -1005,7 +1006,7 @@ class FormsAPITestCase(APITestCase):
             data={"fields": ",".join(["id", "name", "form_id"])},
             headers={"Content-Type": "application/json"},
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         # The response should not include instances_count field when not requested
         for form_data in response.json()["forms"]:
@@ -1017,14 +1018,14 @@ class FormsAPITestCase(APITestCase):
             data={"fields": ",".join(["id", "name", "instances_count"])},
             headers={"Content-Type": "application/json"},
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         for form_data in response.json()["forms"]:
             self.assertIn("instances_count", form_data)
 
         # Test that instances_count is included when no fields parameter is provided (default behavior)
         response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         for form_data in response.json()["forms"]:
             self.assertIn("instances_count", form_data)
@@ -1039,7 +1040,7 @@ class FormsAPITestCase(APITestCase):
         self.project_2.save()
 
         response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         form_ids = [form["id"] for form in response.json()["forms"]]
         # Assert that each form id appears only once
         self.assertEqual(len(form_ids), len(set(form_ids)), "Duplicate forms found in API response!")
@@ -1061,7 +1062,7 @@ class FormsAPITestCase(APITestCase):
         response = self.client.get(
             "/api/forms/", data={"fields": ",".join(["id", "name"])}, headers={"Content-Type": "application/json"}
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         for form_data in response.json()["forms"]:
             self.assertNotIn("has_attachments", form_data)
 
@@ -1070,7 +1071,7 @@ class FormsAPITestCase(APITestCase):
             data={"fields": ",".join(["id", "name", "has_attachments"])},
             headers={"Content-Type": "application/json"},
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertTrue(self.find_forms_data_for(response, self.form_1)["has_attachments"])
         self.assertFalse(self.find_forms_data_for(response, self.form_2)["has_attachments"])
 
@@ -1112,7 +1113,7 @@ class FormsAPITestCase(APITestCase):
             response = self.client.get(
                 f"/api/forms/{self.form_1.id}/?fields=possible_fields", headers={"Content-Type": "application/json"}
             )
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
 
         # Ensure none of the executed SQL queries contain the heavy computations
         for q in ctx.captured_queries:
@@ -1129,7 +1130,7 @@ class FormsAPITestCase(APITestCase):
 
         with CaptureQueriesContext(connection) as ctx:
             response = self.client.get(f"/api/forms/{self.form_1.id}/", headers={"Content-Type": "application/json"})
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
 
         at_least_one_query_with_max_and_count = False
         for q in ctx.captured_queries:

@@ -1,3 +1,5 @@
+from rest_framework import status
+
 from hat.audit import models as am
 from iaso import models as m
 from iaso.models.payments import PaymentStatuses
@@ -105,20 +107,20 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         # Invalid format for `potential_payments`.
         data = {"name": "New Payment Lot", "potential_payments": "foo"}
         response = self.client.post("/api/payments/lots/", data, format="json")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json(), ["Expecting `potential_payments` to be a list of IDs."])
 
         # No `potential_payments`.
         data = {"name": "New Payment Lot"}
         response = self.client.post("/api/payments/lots/", data, format="json")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json(), ["At least one potential payment required."])
 
         # `potential_payments` is a list of multiple IDs.
         potential_payment_ids = [self.potential_payment.pk, self.potential_payment_with_task.pk]
         data = {"name": "New Payment Lot", "potential_payments": potential_payment_ids}
         response = self.client.post("/api/payments/lots/", data, format="json")
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="create_payment_lot")
         self.assertEqual(task.launcher, self.user)
@@ -129,7 +131,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         potential_payment_ids = [self.potential_payment.pk]
         data = {"name": "New Payment Lot", "potential_payments": potential_payment_ids}
         response = self.client.post("/api/payments/lots/", data, format="json")
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="create_payment_lot")
         self.assertEqual(task.launcher, self.user)
@@ -167,7 +169,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         response = self.client.patch(
             f"/api/payments/lots/{self.payment_lot.id}/?mark_payments_as_sent=true", format="json"
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="mark_payments_as_read")
         self.assertEqual(task.launcher, self.user)
@@ -186,13 +188,13 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
     def test_retrieve_payment_lot(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(f"/api/payments/lots/{self.payment_lot.id}/", format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response.data["name"], self.payment_lot.name)
 
     def test_retrieve_payment_lot_to_csv(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(f"/api/payments/lots/{self.payment_lot.id}/?csv=true", format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response["Content-Type"], "text/csv")
         response_csv = response.getvalue().decode("utf-8")
         self.assertTrue(len(response_csv) > 0)
@@ -310,7 +312,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
             format="json",
         )
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="create_payment_lot")
         self.assertEqual(task.launcher, self.user)
@@ -331,7 +333,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
             format="json",
         )
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="create_payment_lot")
         self.assertEqual(task.launcher, self.user)
@@ -348,7 +350,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
 
         with self.assertNumQueries(6):
             response = self.client.get("/api/payments/lots/", format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 1)
 
         # Include a task on the extra lot — catches the task FK N+1 (null task skips the query).
@@ -372,13 +374,13 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         # Same count with 2 lots — proves O(1), not O(N)
         with self.assertNumQueries(6):
             response = self.client.get("/api/payments/lots/", format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 2)
 
     def test_list_payment_lots_response_structure(self):
         self.client.force_authenticate(self.user)
         response = self.client.get("/api/payments/lots/", format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertIn("count", response.data)
 
         results = response.data["results"]
@@ -425,7 +427,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
     def test_geo_limited_user_cannot_see_change_requests_not_in_org_units(self):
         self.client.force_authenticate(self.geo_limited_user)
         response = self.client.get("/api/payments/lots/", format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         data = response.json()
         results = data["results"]
         result = results[0]

@@ -1,5 +1,4 @@
 import datetime
-import logging
 
 import time_machine
 
@@ -8,9 +7,6 @@ from django.test import TestCase
 from iaso import models as m
 from iaso.diffing import DataSourceVersionsSynchronizer, Differ, diffs_to_json
 from iaso.tests.diffing.utils import PyramidBaseTest
-
-
-test_logger = logging.getLogger(__name__)
 
 
 DT = datetime.datetime(2024, 11, 30, 10, 0, 0, 0, tzinfo=datetime.timezone.utc)
@@ -148,7 +144,7 @@ class DiffsToJsonTestCase(PyramidBaseTest):
         self.angola_country_to_compare_with.save()
 
         # Limit the diff size with restrictions on `field_names` and `org_unit_types_ref`.
-        diffs, fields = Differ(test_logger).diff(
+        diffs, fields = Differ().diff(
             # Version to update.
             version=self.source_version_to_update,
             validation_status=None,
@@ -376,7 +372,7 @@ class PrepareModifiedChangeRequestsTestCase(PyramidBaseTest):
         self.angola_country_to_update.delete()
 
         # Limit the diff size with restrictions on `field_names` and `org_unit_types_ref`.
-        diffs, fields = Differ(test_logger).diff(
+        diffs, fields = Differ().diff(
             # Version to update.
             version=self.source_version_to_update,
             validation_status=None,

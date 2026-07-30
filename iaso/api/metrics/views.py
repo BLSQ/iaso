@@ -1,21 +1,25 @@
 import csv
 
+from datetime import datetime
+
 from django.db.models import Q
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
 from iaso.api.common import CONTENT_TYPE_CSV, DropdownOptionsWithRepresentationSerializer
 from iaso.api.metrics.filters import ValueAndTypeFilterBackend, ValueFilterBackend
-from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS
+from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS, get_org_unit_row
 from iaso.models import MetricType, MetricValue
 from iaso.utils.org_units import get_valid_org_units_with_geography
 
 from .permissions import MetricsPermissions
 from .serializers import (
+    ExportMetricValuesSerializer,
     ImportMetricValuesSerializer,
     MetricTypeCreateSerializer,
     MetricTypeSerializer,
@@ -108,7 +112,7 @@ class MetricValueViewSet(viewsets.ModelViewSet):
         # Get all custom metric types for the user's account
         metric_types = MetricType.objects.filter(account=account, origin=MetricType.MetricTypeOrigin.CUSTOM)
         # Get All org units for the user's account
-        org_units = get_valid_org_units_with_geography(account).order_by("name")
+        org_units = get_valid_org_units_with_geography(account).select_related("parent").order_by("name")
 
         # Prepare the CSV response
         headers = REQUIRED_METRIC_VALUES_HEADERS.copy()
@@ -118,12 +122,33 @@ class MetricValueViewSet(viewsets.ModelViewSet):
         writer = csv.writer(response, delimiter=",")
         writer.writerow(headers)
         for ou in org_units:
-            row = [ou.parent.name if ou.parent else "", ou.name, ou.id]
+            row = get_org_unit_row(ou)
             for mt in metric_types:
                 row.append("")  # Empty value for the metric
             writer.writerow(row)
 
         filename = "metric_import_template.csv"
+        response["Content-Disposition"] = f"attachment; filename={filename}"
+        return response
+
+    @action(
+        detail=False,
+        methods=["get"],
+        serializer_class=ExportMetricValuesSerializer,
+        renderer_classes=[JSONRenderer],
+    )
+    def export_csv(self, request):
+        serializer = self.get_serializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        headers, rows = serializer.get_csv_rows()
+
+        response = HttpResponse(content_type=CONTENT_TYPE_CSV)
+        writer = csv.writer(response, delimiter=",")
+        writer.writerow(headers)
+        writer.writerows(rows)
+
+        filename = f"metric_values_export_{datetime.now().strftime('%Y-%m-%d')}.csv"
+
         response["Content-Disposition"] = f"attachment; filename={filename}"
         return response
 

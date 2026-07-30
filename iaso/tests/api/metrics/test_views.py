@@ -720,6 +720,70 @@ class MetricValueAPITestCase(APITestCase):
         response = self.client.get(f"{self.BASE_URL}csv_template/")
         self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
+    def test_metric_value_export_csv(self):
+        """
+        This endpoint is available to all authenticated users, there's no specific permission for this
+        """
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"{self.BASE_URL}export_csv/?metric_type_ids={self.metric_type.id}&year=2020")
+        csv_list = self.assertCsvFileResponse(response, return_as_lists=True)
+
+        self.assertEqual(len(csv_list), 2)  # header + 1 valid org unit
+        expected_header = ["ADM1_NAME", "ADM2_NAME", "ADM2_ID", self.metric_type.code]
+        self.assertEqual(csv_list[0], expected_header)
+        expected_org_unit_values = ["", self.org_unit.name, str(self.org_unit.id), str(self.metric_value_1.value)]
+        self.assertEqual(csv_list[1], expected_org_unit_values)
+
+    def test_metric_value_export_csv_without_year_only_includes_timeless_values(self):
+        """Without a year, dated values (self.metric_value_1/2) are ignored; only timeless values are exported."""
+        timeless_value = MetricValue.objects.create(
+            metric_type=self.metric_type,
+            org_unit=self.org_unit,
+            year=None,
+            value=42.0,
+        )
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"{self.BASE_URL}export_csv/?metric_type_ids={self.metric_type.id}")
+        csv_list = self.assertCsvFileResponse(response, return_as_lists=True)
+
+        self.assertEqual(len(csv_list), 2)  # header + 1 valid org unit
+        expected_org_unit_values = ["", self.org_unit.name, str(self.org_unit.id), str(timeless_value.value)]
+        self.assertEqual(csv_list[1], expected_org_unit_values)
+
+    def test_metric_value_export_csv_ignores_metric_types_from_other_account(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(
+            f"{self.BASE_URL}export_csv/"
+            f"?metric_type_ids={self.metric_type.id},{self.metric_type_wrong_account.id}&year=2020"
+        )
+        csv_list = self.assertCsvFileResponse(response, return_as_lists=True)
+
+        expected_header = ["ADM1_NAME", "ADM2_NAME", "ADM2_ID", self.metric_type.code]
+        self.assertEqual(csv_list[0], expected_header)
+
+    def test_metric_value_export_csv_missing_metric_type_ids(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"{self.BASE_URL}export_csv/")
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+
+    def test_metric_value_export_csv_error_is_json_even_when_browser_requests_html(self):
+        """
+        A real browser navigation (used to trigger the file download) sends an `Accept: text/html, ...` header.
+        Without forcing the JSON renderer on this action, DRF's content negotiation would render validation
+        errors as an HTML page (DRF's browsable API) instead of JSON, which browsers then save as a bogus file
+        instead of surfacing the actual CSV.
+        """
+        self.client.force_authenticate(self.user)
+        response = self.client.get(
+            f"{self.BASE_URL}export_csv/",
+            HTTP_ACCEPT="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        )
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+
+    def test_metric_value_export_csv_unauthenticated(self):
+        response = self.client.get(f"{self.BASE_URL}export_csv/?metric_type_ids={self.metric_type.id}")
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
+
     def test_metric_value_import_from_csv_with_perm(self):
         # TODO: write this test
         pass

@@ -7,6 +7,7 @@ from decimal import Decimal
 import time_machine
 
 from django.contrib.gis.geos import MultiPolygon, Polygon
+from rest_framework import status
 
 from hat.audit import models as audit_models
 from iaso import models as m
@@ -106,21 +107,21 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             #  10. PREFETCH OrgUnitChangeRequest.old_reference_instances__form
             #  11. PREFETCH OrgUnitChangeRequest.org_unit_type.projects
             response = self.client.get("/api/orgunits/changes/")
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(2, len(response.data["results"]))
         self.assertEqual(2, response.data["count"])
 
     def test_list_without_auth(self):
         response = self.client.get("/api/orgunits/changes/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_retrieve_ok(self):
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
         self.client.force_authenticate(self.user)
         with self.assertNumQueries(10):
             response = self.client.get(f"/api/orgunits/changes/{change_request.pk}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response.data["id"], change_request.pk)
 
     def test_retrieve_should_not_include_soft_deleted_intances(self):
@@ -135,7 +136,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
 
         with self.assertNumQueries(10):
             response = self.client.get(f"/api/orgunits/changes/{change_request.pk}/")
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
             self.assertEqual(response.data["id"], change_request.pk)
             self.assertEqual(len(response.data["new_reference_instances"]), 1)
             self.assertEqual(response.data["new_reference_instances"][0]["id"], self.instance_1.pk)
@@ -154,7 +155,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
 
         with self.assertNumQueries(9):
             response = self.client.get(f"/api/orgunits/changes/{change_request.pk}/")
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
             self.assertEqual(response.data["id"], change_request.pk)
             self.assertEqual(len(response.data["new_reference_instances"]), 0)
             self.assertEqual(len(response.data["old_reference_instances"]), 0)
@@ -163,7 +164,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
     def test_retrieve_without_auth(self):
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
         response = self.client.get(f"/api/orgunits/changes/{change_request.pk}/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     @time_machine.travel(DT, tick=False)
     def test_create_ok(self):
@@ -174,7 +175,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "new_org_unit_type_id": self.org_unit_type.pk,
         }
         response = self.client.post("/api/orgunits/changes/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         change_request = m.OrgUnitChangeRequest.objects.get(new_name=data["new_name"])
         self.assertEqual(change_request.new_name, data["new_name"])
         self.assertEqual(change_request.new_org_unit_type, self.org_unit_type)
@@ -193,7 +194,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "new_org_unit_type_id": self.org_unit_type.pk,
         }
         response = self.client.post("/api/orgunits/changes/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         change_request = m.OrgUnitChangeRequest.objects.get(new_name=data["new_name"])
         self.assertEqual(change_request.uuid.__str__(), data["uuid"])
         self.assertEqual(change_request.new_name, data["new_name"])
@@ -211,7 +212,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "new_org_unit_type_id": data["new_org_unit_type_id"],
         }
         response = self.client.post("/api/orgunits/changes/", data=new_data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(m.OrgUnitChangeRequest.objects.count(), 1)
         change_request = m.OrgUnitChangeRequest.objects.get(uuid=data["uuid"])
         self.assertEqual(change_request.uuid.__str__(), data["uuid"])
@@ -238,7 +239,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "new_reference_instances": [],
         }
         response = self.client.post("/api/orgunits/changes/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         change_request = m.OrgUnitChangeRequest.objects.get(new_name=data["new_name"])
         self.assertEqual(change_request.new_name, "")
         self.assertEqual(change_request.new_groups.count(), 0)
@@ -276,7 +277,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         }
         with self.assertNumQueries(12):
             response = self.client.post("/api/orgunits/changes/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         change_request = m.OrgUnitChangeRequest.objects.get(new_name=data["new_name"])
         self.assertEqual(change_request.new_name, data["new_name"])
         self.assertEqual(change_request.new_org_unit_type, self.org_unit_type)
@@ -305,7 +306,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             # 7–8. Old groups: SELECT + M2M insert
             # 9–11. Old + new reference instances: SELECTs + M2M insert
             response = self.client.post("/api/orgunits/changes/?app_id=foo.bar.baz", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         change_request = m.OrgUnitChangeRequest.objects.get(uuid=data["uuid"])
         self.assertEqual(change_request.new_name, data["new_name"])
         self.assertEqual(change_request.created_at, self.DT)
@@ -327,7 +328,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
 
         with self.assertNumQueries(11):
             response = self.client.post("/api/orgunits/changes/?app_id=foo.bar.baz", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         change_request = m.OrgUnitChangeRequest.objects.get(uuid=data["uuid"])
         self.assertEqual(change_request.new_location_accuracy, Decimal("1.23"))
         self.assertEqual(change_request.created_at, self.DT)
@@ -342,7 +343,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "new_name": "Foo",
         }
         response = self.client.post("/api/orgunits/changes/", data=data, format="json")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_create_without_perm(self):
         self.client.force_authenticate(self.user)
@@ -353,7 +354,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "new_name": "I want this new name",
         }
         response = self.client.post("/api/orgunits/changes/", data=data, format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_partial_update_without_perm(self):
         self.client.force_authenticate(self.user)
@@ -370,7 +371,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "rejection_comment": "Not good enough.",
         }
         response = self.client.patch(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     @time_machine.travel(DT, tick=False)
     def test_partial_update_reject(self):
@@ -389,7 +390,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "rejection_comment": "Not good enough.",
         }
         response = self.client.patch(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         change_request.refresh_from_db()
         self.assertEqual(change_request.status, change_request.Statuses.REJECTED)
@@ -413,7 +414,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "approved_fields": ["new_name", "new_closed_date"],
         }
         response = self.client.patch(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         change_request.refresh_from_db()
         self.assertEqual(change_request.status, change_request.Statuses.APPROVED)
@@ -437,7 +438,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "approved_fields": ["new_name"],
         }
         response = self.client.patch(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("Status must be `new` but current status is `approved`.", response.content.decode())
 
     @time_machine.travel(DT, tick=False)
@@ -457,7 +458,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "approved_fields": ["new_geom"],
         }
         response = self.client.patch(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         change_request.refresh_from_db()
         self.assertEqual(change_request.status, change_request.Statuses.APPROVED)
@@ -483,7 +484,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "approved_fields": ["new_code"],
         }
         response = self.client.patch(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         change_request.refresh_from_db()
         self.assertEqual(change_request.status, change_request.Statuses.APPROVED)
@@ -495,18 +496,18 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
         data = {"new_name": "Baz"}
         response = self.client.put(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
-        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_delete_should_be_forbidden(self):
         self.client.force_authenticate(self.user_with_review_perm)
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
         response = self.client.delete(f"/api/orgunits/changes/{change_request.pk}/", format="json")
-        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_bulk_review_without_perm(self):
         self.client.force_authenticate(self.user)
         response = self.client.patch("/api/orgunits/changes/bulk_review/", data={}, format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     @time_machine.travel(DT, tick=False)
     def test_bulk_review_approve(self):
@@ -540,7 +541,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "status": m.OrgUnitChangeRequest.Statuses.APPROVED,
         }
         response = self.client.patch("/api/orgunits/changes/bulk_review/", data=data, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
 
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_change_requests_bulk_approve")
@@ -589,7 +590,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
 
         querystring = f"?users={user_2.id}"
         response = self.client.patch(f"/api/orgunits/changes/bulk_review/{querystring}", data=data, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
 
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_change_requests_bulk_approve")
@@ -630,7 +631,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "rejection_comment": "No way.",
         }
         response = self.client.patch("/api/orgunits/changes/bulk_review/", data=data, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
 
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_change_requests_bulk_reject")
@@ -662,7 +663,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "select_all": 1,
         }
         response = self.client.post("/api/orgunits/changes/bulk_delete/", data=data, format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     @time_machine.travel(DT, tick=False)
     def test_bulk_delete(self):
@@ -684,7 +685,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "unselected_ids": [change_request_3.pk],
         }
         response = self.client.post("/api/orgunits/changes/bulk_delete/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         data = response.json()
         self.assertEqual(data, {"result": "success"})
@@ -747,7 +748,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "restore": 1,
         }
         response = self.client.post("/api/orgunits/changes/bulk_delete/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         data = response.json()
         self.assertEqual(data, {"result": "success"})
@@ -827,7 +828,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get("/api/orgunits/changes/export_to_csv/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             response.get("Content-Disposition"),
             "attachment; filename=review-change-proposals--" + datetime.datetime.now().strftime("%Y-%m-%d") + ".csv",
@@ -872,7 +873,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get("/api/orgunits/changes/export_to_csv/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         first_data_row = parse_csv_rows(response)[0]
 
@@ -894,7 +895,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get("/api/orgunits/changes/export_to_csv/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         first_data_row = parse_csv_rows(response)[0]
 
@@ -919,7 +920,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get("/api/orgunits/changes/export_to_csv/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         first_data_row = parse_csv_rows(response)[0]
 
@@ -956,7 +957,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get("/api/orgunits/changes/export_to_csv/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         row = next(r for r in parse_csv_rows(response) if r["Id"] == str(change_request.id))
 

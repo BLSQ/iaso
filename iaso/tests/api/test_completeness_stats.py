@@ -9,6 +9,7 @@ from io import StringIO
 from typing import Any
 
 from django.contrib.auth.models import Permission, User
+from rest_framework import status
 
 from iaso.models import Account, Form, Instance, OrgUnit, OrgUnitType
 from iaso.models.base import Profile
@@ -178,14 +179,14 @@ class CompletenessStatsAPITestCase(APITestCase):
     def test_row_listing_anonymous(self):
         """An anonymous user should not be able to access the API"""
         response = self.client.get("/api/v2/completeness_stats/")
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_row_listing_insufficient_permissions(self):
         """A user without the permission should not be able to access the API"""
         self.client.force_authenticate(self.user_without_permission)
 
         response = self.client.get("/api/v2/completeness_stats/")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_base_map_results(self):
         self.client.force_authenticate(self.user)
@@ -193,7 +194,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         response = self.client.get(
             "/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW", "as_location": True}
         )
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
         expected_result = {
             "results": [
                 {
@@ -366,7 +367,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         response = self.client.get(
             "/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW", "limit": 10}
         )
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
         expected_result = {
             "forms": [
                 {"id": self.form_hs_1.id, "name": "Hydroponics study 1", "slug": f"form_{self.form_hs_1.id}"},
@@ -497,7 +498,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get("/api/v2/completeness_stats/?limit=10")
-        json = self.assertJSONResponse(response, 200)
+        json = self.assertJSONResponse(response, status.HTTP_200_OK)
         # Without filtering, we  also have results for form_hs_2 and form_hs_4 just like in test_base_row_listing()
         self.assertEqual(len(json["forms"]), 3)
         for form in json["forms"]:
@@ -505,7 +506,7 @@ class CompletenessStatsAPITestCase(APITestCase):
 
         # with filtering
         response = self.client.get(f"/api/v2/completeness_stats/?form_id={self.form_hs_1.id}&limit=10")
-        json = self.assertJSONResponse(response, 200)
+        json = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(json["forms"]), 1)
         for form in json["forms"]:
             self.assertEqual(form["id"], self.form_hs_1.id)
@@ -618,7 +619,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get(f"/api/v2/completeness_stats/?limit=10&form_id={self.form_hs_3.id}")
-        j = self.assertJSONResponse(response, 400)
+        j = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         # Error because the form is not in the user's account
         self.assertIn("form_id", j)
         self.assertEqual(j["form_id"], [f'Invalid pk "{self.form_hs_3.id}" - object does not exist.'])
@@ -665,7 +666,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get("/api/v2/completeness_stats/?org_unit_type_ids=100000")
-        j = self.assertJSONResponse(response, 400)
+        j = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("org_unit_type_ids", j)
 
     def test_filter_by_org_unit_type_with_results(self):
@@ -679,13 +680,13 @@ class CompletenessStatsAPITestCase(APITestCase):
             {"org_unit_validation_status": "VALID,NEW"},
         )
 
-        json = self.assertJSONResponse(response_with_filter, 200)
+        json = self.assertJSONResponse(response_with_filter, status.HTTP_200_OK)
         results_with_filter = json["results"]
         self.assertEqual(len(results_with_filter), 2)
         response_without_filter = self.client.get(
             "/api/v2/completeness_stats/?limit=10", {"org_unit_validation_status": "VALID,NEW"}
         )
-        results_without_filter = self.assertJSONResponse(response_without_filter, 200)["results"]
+        results_without_filter = self.assertJSONResponse(response_without_filter, status.HTTP_200_OK)["results"]
         self.assertListEqual(results_with_filter, results_without_filter)
 
     def test_filter_by_parent_org_unit(self):
@@ -708,7 +709,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get("/api/v2/completeness_stats/?page=1&limit=1&org_unit_validation_status=VALID,NEW")
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(j["count"], 2)
         self.assertEqual(j["page"], 1)
         self.assertEqual(j["pages"], 2)
@@ -728,7 +729,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                 "limit": 10,
             },
         )
-        json = self.assertJSONResponse(response, 200)
+        json = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(json["limit"], 10)
 
     def test_row_count(self):
@@ -774,7 +775,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         response = self.client.get(
             "/api/v2/completeness_stats/?parent_org_unit_id=4&limit=10", {"org_unit_validation_status": "VALID,NEW"}
         )
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(j["results"]), 2)
 
     def test_rejected_ous_not_counted(self):
@@ -794,7 +795,7 @@ class CompletenessStatsAPITestCase(APITestCase):
             },
         )
 
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(j["results"]), 4)
 
         # take the root (which will be District A.B).
@@ -830,7 +831,7 @@ class CompletenessStatsAPITestCase(APITestCase):
             },
         )
 
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(j["results"]), 3)  # Because AS A.B.B is not included since its status is rejected
 
         # take the root (which will be District A.B).
@@ -867,7 +868,7 @@ class CompletenessStatsAPITestCase(APITestCase):
             },
         )
 
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(j["results"]), 3)
 
         # should default to false so same number of result if par modiié leams is not present
@@ -880,7 +881,7 @@ class CompletenessStatsAPITestCase(APITestCase):
             },
         )
 
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(j["results"]), 3)
 
         # If we filter it should be two
@@ -894,7 +895,7 @@ class CompletenessStatsAPITestCase(APITestCase):
             },
         )
 
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(j["results"]), 1)
         for r in j["results"]:
             # check that the result have effectly zero submission
@@ -907,7 +908,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         form_ids = f"{self.form_hs_1.id},{self.form_hs_2.id},{self.form_hs_4.id}"
         response = self.client.get(f"/api/v2/completeness_stats.csv?form_id={form_ids}&limit=10")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         content = response.content.decode("utf-8")
         reader = csv.reader(StringIO(content))
         csv_data = list(reader)

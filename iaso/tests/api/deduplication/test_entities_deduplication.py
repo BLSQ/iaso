@@ -4,6 +4,7 @@ from uuid import uuid4
 
 from django.core.files import File
 from django.core.files.uploadedfile import UploadedFile
+from rest_framework import status
 
 import iaso.models.base as base
 
@@ -250,11 +251,11 @@ class EntitiesDuplicationAPITestCase(APITestCase):
     def test_analyze_user_without_orgunit(self):
         self.client.force_authenticate(self.user_without_ou)
         response = self.client.post("/api/entityduplicates_analyzes/", format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.user_with_default_ou_ro)
         response = self.client.post("/api/entityduplicates_analyzes/", format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_analyze_with_wrong_algorithm_name(self):
         self.client.force_authenticate(self.user_with_default_ou_rw)
@@ -270,7 +271,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             format="json",
         )
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_analyze_with_wrong_field_name(self):
         self.client.force_authenticate(self.user_with_default_ou_rw)
@@ -286,7 +287,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             format="json",
         )
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_analyze_without_auth_should_fail(self):
         response = self.client.post(
@@ -300,7 +301,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             format="json",
         )
 
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_analyzes_user_with_readonly_permissions(self):
         self.client.force_authenticate(self.user_with_default_ou_ro)
@@ -316,7 +317,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             format="json",
         )
 
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_analyzes_happy_path(self):
         self.client.force_authenticate(self.user_with_default_ou_rw)
@@ -332,7 +333,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             format="json",
         )
 
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         assert "analyze_id" in response.data
 
         analyze_id = response.data["analyze_id"]
@@ -342,7 +343,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         response_analyze = self.client.get(f"/api/entityduplicates_analyzes/{analyze_id}/")
 
-        self.assertEqual(response_analyze.status_code, 200)
+        self.assertEqual(response_analyze.status_code, status.HTTP_200_OK)
 
         response_data = response_analyze.data
 
@@ -355,7 +356,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         response_duplicate = self.client.get("/api/entityduplicates/")
 
-        self.assertEqual(response_duplicate.status_code, 200)
+        self.assertEqual(response_duplicate.status_code, status.HTTP_200_OK)
         assert len(response_duplicate.data["results"]) == 6
 
         datas = [
@@ -378,7 +379,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         self.client.force_authenticate(self.user_with_default_ou_rw)
 
         resp = self.client.get("/api/entityduplicates/detail/?entities=foo,bar")
-        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             resp.json(), ["Entities parameter is required and must be a comma separated list of 2 entities IDs."]
         )
@@ -402,7 +403,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         duplicate = m.EntityDuplicate.objects.first()
 
         resp = self.client.get(f"/api/entityduplicates/detail/?entities={duplicate.entity1.id},{duplicate.entity2.id}")
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
         resp_data = resp.json()
 
@@ -449,20 +450,20 @@ class EntitiesDuplicationAPITestCase(APITestCase):
     def test_delete_without_rights(self):
         self.client.force_authenticate(self.user_without_ou)
         response = self.client.delete("/api/entityduplicates_analyzes/1/", format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.user_with_default_ou_ro)
         response = self.client.delete("/api/entityduplicates_analyzes/1/", format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_partial_update_analyze_without_rights(self):
         self.client.force_authenticate(self.user_without_ou)
         response = self.client.patch("/api/entityduplicates_analyzes/1/", format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.user_with_default_ou_ro)
         response = self.client.patch("/api/entityduplicates_analyzes/1/", format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_partial_update_analyze(self):
         self.client.force_authenticate(self.user_with_default_ou_rw)
@@ -483,7 +484,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         # we didnt run task_service = TestTaskService() task_service.run_all() so it should still be queued
 
         response = self.client.patch(f"/api/entityduplicates_analyzes/{analyze_id}/", data={"status": base.KILLED})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         analyze = m.EntityDuplicateAnalyzis.objects.get(id=analyze_id)
         self.assertEqual(analyze.task.status, base.KILLED)
@@ -495,7 +496,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         self.assertEqual(analyze.task.status, base.KILLED)
 
         response = self.client.patch(f"/api/entityduplicates_analyzes/{analyze_id}/", data={"status": base.QUEUED})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         analyze = m.EntityDuplicateAnalyzis.objects.get(id=analyze_id)
         self.assertEqual(analyze.task.status, base.QUEUED)
@@ -508,7 +509,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         # this should fail because we cant change status to QUEUED after it was run
         response = self.client.patch(f"/api/entityduplicates_analyzes/{analyze_id}/", data={"status": "QUEUED"})
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
         analyze = m.EntityDuplicateAnalyzis.objects.get(id=analyze_id)
         self.assertEqual(analyze.task.status, base.SUCCESS)
@@ -544,7 +545,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_data = response.json()
         self.assertIn("entity1_id", response_data)
         self.assertIn("entity2_id", response_data)
@@ -601,7 +602,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         resp_json = resp.json()
 
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(len(resp_json["results"]), 6)
 
     def test_detail_empty_form_version_correct_error(self):
@@ -657,7 +658,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             format="json",
         )
 
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         assert "analyze_id" in response.data
 
         analyze_id = response.data["analyze_id"]
@@ -667,7 +668,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         response_analyze = self.client.get(f"/api/entityduplicates_analyzes/{analyze_id}/")
 
-        self.assertEqual(response_analyze.status_code, 200)
+        self.assertEqual(response_analyze.status_code, status.HTTP_200_OK)
 
         response = self.client.get("/api/entityduplicates/")
 
@@ -741,7 +742,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         analyze_id = response.data["analyze_id"]
 
         # Run the task service to process the analyze
@@ -749,7 +750,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         task_service.run_all()
 
         response_analyze = self.client.get(f"/api/entityduplicates_analyzes/{analyze_id}/")
-        self.assertEqual(response_analyze.status_code, 200)
+        self.assertEqual(response_analyze.status_code, status.HTTP_200_OK)
         self.assertEqual(response_analyze.data["status"], "SUCCESS")
         # Optionally: check that results exist
         # (You can add more detailed assertions if needed)
@@ -828,7 +829,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             format="json",
         )
 
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         analyze_id = response.data["analyze_id"]
 
         # Run the task service to process the analyze
@@ -837,12 +838,12 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         # Check that the analyze completed successfully without smallint overflow
         response_analyze = self.client.get(f"/api/entityduplicates_analyzes/{analyze_id}/")
-        self.assertEqual(response_analyze.status_code, 200)
+        self.assertEqual(response_analyze.status_code, status.HTTP_200_OK)
         self.assertEqual(response_analyze.data["status"], "SUCCESS")
 
         # Get the duplicates and verify scores are within valid range
         response_duplicates = self.client.get("/api/entityduplicates/")
-        self.assertEqual(response_duplicates.status_code, 200)
+        self.assertEqual(response_duplicates.status_code, status.HTTP_200_OK)
 
         # Verify that all similarity scores are within valid smallint range (0-100)
         for duplicate in response_duplicates.data["results"]:
@@ -913,19 +914,19 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             format="json",
         )
 
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         analyze_id = response.data["analyze_id"]
 
         task_service = TestTaskService()
         task_service.run_all()
 
         response_analyze = self.client.get(f"/api/entityduplicates_analyzes/{analyze_id}/")
-        self.assertEqual(response_analyze.status_code, 200)
+        self.assertEqual(response_analyze.status_code, status.HTTP_200_OK)
         self.assertEqual(response_analyze.data["status"], "SUCCESS")
 
         # Get the duplicates.
         response_duplicates = self.client.get("/api/entityduplicates/")
-        self.assertEqual(response_duplicates.status_code, 200)
+        self.assertEqual(response_duplicates.status_code, status.HTTP_200_OK)
 
         duplicates = response_duplicates.data["results"]
 

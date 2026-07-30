@@ -1,5 +1,4 @@
 import datetime
-import logging
 
 import time_machine
 
@@ -7,9 +6,6 @@ from django.contrib.gis.geos import MultiPolygon, Polygon
 
 from iaso.diffing import Differ
 from iaso.tests.diffing.utils import PyramidBaseTest
-
-
-test_logger = logging.getLogger(__name__)
 
 
 DT = datetime.datetime(2024, 11, 28, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
@@ -47,7 +43,7 @@ class DifferTestCase(PyramidBaseTest):
         self.angola_district_to_compare_with.closed_date = datetime.date(2025, 12, 28)
         self.angola_district_to_compare_with.save()
 
-        diffs, fields = Differ(test_logger).diff(
+        diffs, fields = Differ().diff(
             # Version to update.
             version=self.source_version_to_update,
             validation_status=None,
@@ -357,7 +353,7 @@ class DifferTestCase(PyramidBaseTest):
         """
         Test that we can compare `groups` and `groupsets` only.
         """
-        diffs, fields = Differ(test_logger).diff(
+        diffs, fields = Differ().diff(
             version=self.source_version_to_update,
             version_ref=self.source_version_to_compare_with,
             ignore_groups=False,
@@ -382,7 +378,7 @@ class DifferTestCase(PyramidBaseTest):
         self.angola_country_to_compare_with.name = "Angola new"
         self.angola_country_to_compare_with.save()
 
-        diffs, fields = Differ(test_logger).diff(
+        diffs, fields = Differ().diff(
             # Version to update.
             version=self.source_version_to_update,
             validation_status=None,

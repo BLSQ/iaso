@@ -64,7 +64,7 @@ class BulkCreateFromXlsxTestCase(BulkCreateAPITestCase, APITestCase):
 
         response = self.client.get(reverse("bulkcreateuser-download-sample-xlsx"))
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response["Content-Type"], "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
         file_content = b"".join(response.streaming_content)

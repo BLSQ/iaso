@@ -317,7 +317,7 @@ class DataSourceVersionsSynchronization(models.Model):
             "show_deleted_org_units": show_deleted_org_units,
             "field_names": field_names,
         }
-        diffs, _ = Differ(logger_to_use or logger).diff(**differ_params)
+        diffs, _ = Differ().diff(**differ_params)
 
         # Reduce the size of the diff that will be stored in the DB.
         diffs = [diff for diff in diffs if diff.status != Differ.STATUS_SAME]

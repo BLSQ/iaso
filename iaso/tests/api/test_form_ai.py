@@ -7,6 +7,7 @@ import anthropic
 from django.core.files import File
 from django.core.files.uploadedfile import UploadedFile
 from django.test import override_settings
+from rest_framework import status
 
 from iaso import models as m
 from iaso.api.form_ai.agent import FormSettings, GeneratedForm, SurveyRow, parse_form_response
@@ -114,22 +115,22 @@ class FormAIChatTestCase(APITestCase):
 
     def test_unauthenticated_returns_401(self):
         response = self.client.post(self.url, {"message": "hi"}, format="json")
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_no_permission_returns_403(self):
         self.client.force_authenticate(self.user_no_perm)
         response = self.client.post(self.url, {"message": "hi"}, format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_module_disabled_returns_403(self):
         self.client.force_authenticate(self.user_no_module)
         response = self.client.post(self.url, {"message": "hi"}, format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_missing_api_key_returns_400(self):
         self.client.force_authenticate(self.user_no_key)
         response = self.client.post(self.url, {"message": "Create a form"}, format="json")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("Form AI API key is not configured", response.data["error"])
 
     @patch("iaso.api.form_ai.views.generate_form")
@@ -139,12 +140,12 @@ class FormAIChatTestCase(APITestCase):
         mock_gen.side_effect = anthropic.APIStatusError("service unavailable", response=mock_response, body=None)
         self.client.force_authenticate(self.user)
         response = self.client.post(self.url, {"message": "Create a form"}, format="json")
-        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.status_code, status.HTTP_503_SERVICE_UNAVAILABLE)
 
     def test_missing_message_returns_400(self):
         self.client.force_authenticate(self.user)
         response = self.client.post(self.url, {}, format="json")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     @patch("iaso.api.form_ai.views.generate_form")
     def test_successful_form_generation(self, mock_gen):
@@ -153,7 +154,7 @@ class FormAIChatTestCase(APITestCase):
 
         response = self.client.post(self.url, {"message": "Create a simple form"}, format="json")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["assistant_message"], "Here is your form.")
         self.assertIsNotNone(response.data["xlsform_uuid"])
         self.assertEqual(len(response.data["conversation_history"]), 2)
@@ -170,7 +171,7 @@ class FormAIChatTestCase(APITestCase):
 
         response = self.client.post(self.url, {"message": "How are you?"}, format="json")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsNone(response.data["xlsform_uuid"])
 
     @patch("iaso.api.form_ai.views.generate_form")
@@ -236,23 +237,23 @@ class FormAILoadFormTestCase(APITestCase):
 
     def test_unauthenticated_returns_401(self):
         response = self.client.get(self._url(self.form.id))
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_no_permission_returns_403(self):
         self.client.force_authenticate(self.user_no_perm)
         response = self.client.get(self._url(self.form.id))
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_unknown_form_returns_404(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(self._url(99999))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_successful_load_returns_expected_fields(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(self._url(self.form.id))
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.data
         self.assertEqual(data["form_id"], self.form.id)
         self.assertEqual(data["form_name"], "Census Form")
@@ -269,7 +270,7 @@ class FormAILoadFormTestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
         response = self.client.get(self._url(empty_form.id))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
@@ -309,31 +310,31 @@ class FormAIDownloadTestCase(APITestCase):
     def test_unauthenticated_returns_401(self):
         tf = self._create_temporary_form()
         response = self.client.get(self._url(tf.uuid))
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_no_permission_returns_403(self):
         tf = self._create_temporary_form(user=self.user_no_perm)
         self.client.force_authenticate(self.user_no_perm)
         response = self.client.get(self._url(tf.uuid))
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_other_users_file_returns_404(self):
         tf = self._create_temporary_form(user=self.other_user, account=self.other_account)
         self.client.force_authenticate(self.user)
         response = self.client.get(self._url(tf.uuid))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_unknown_uuid_returns_404(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(self._url("00000000-0000-0000-0000-000000000000"))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_successful_download_returns_xlsx(self):
         tf = self._create_temporary_form()
         self.client.force_authenticate(self.user)
         response = self.client.get(self._url(tf.uuid))
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             response["Content-Type"],
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -388,17 +389,17 @@ class FormAISaveTestCase(APITestCase):
 
     def test_unauthenticated_returns_401(self):
         response = self.client.post(self.url, {}, format="json")
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_no_permission_returns_403(self):
         self.client.force_authenticate(self.user_no_perm)
         response = self.client.post(self.url, {}, format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_missing_fields_returns_400(self):
         self.client.force_authenticate(self.user)
         response = self.client.post(self.url, {}, format="json")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_unknown_uuid_returns_404(self):
         self.client.force_authenticate(self.user)
@@ -407,7 +408,7 @@ class FormAISaveTestCase(APITestCase):
             {"form_id": self.form.id, "xlsform_uuid": "00000000-0000-0000-0000-000000000000"},
             format="json",
         )
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_other_users_uuid_returns_404(self):
         tf = self._create_temporary_form(user=self.other_user, account=self.other_account)
@@ -417,7 +418,7 @@ class FormAISaveTestCase(APITestCase):
             {"form_id": self.form.id, "xlsform_uuid": str(tf.uuid)},
             format="json",
         )
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_successful_save_creates_form_version(self):
         tf = self._create_temporary_form()
@@ -429,7 +430,7 @@ class FormAISaveTestCase(APITestCase):
             format="json",
         )
 
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["form_id"], self.form.id)
         self.assertIn("version_id", response.data)
         self.assertIn("id", response.data)
@@ -457,7 +458,7 @@ class FormAISaveTestCase(APITestCase):
             format="json",
         )
 
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # Verify the form now has the patched ODK ID
         new_form.refresh_from_db()
         self.assertEqual(new_form.form_id, "patched_id")
@@ -477,7 +478,7 @@ class FormAISaveTestCase(APITestCase):
             {"form_id": other_form.id, "xlsform_uuid": str(tf.uuid)},
             format="json",
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         # No version should have been created
         self.assertEqual(other_form.form_versions.count(), 0)
 
@@ -492,5 +493,5 @@ class FormAISaveTestCase(APITestCase):
             {"form_id": orphan_form.id, "xlsform_uuid": str(tf.uuid)},
             format="json",
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(orphan_form.form_versions.count(), 0)

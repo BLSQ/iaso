@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from rest_framework import status
 
 from iaso.test import APITestCase
 
@@ -15,7 +16,7 @@ class ModelDataViewTestCase(APITestCase):
     def test_should_require_authentification(self):
         resp = self.client.get("/models/")
         self.assertEqual(resp.content.decode(), "authentication required")
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_should_work_when_authenticated(self):
         # force auth doesn't work it's a simple view

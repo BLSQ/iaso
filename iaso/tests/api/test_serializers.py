@@ -8,6 +8,7 @@ import pytz
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
+from rest_framework import status
 
 from iaso import models as m
 from iaso.api.query_params import APP_ID
@@ -337,7 +338,7 @@ class OrgUnitAPITestCase(APITestCase):
                 "opening_date": "01-01-2024",
             },
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(
             f"{self.yoda.username} ({self.yoda.first_name} {self.yoda.last_name})", response.json().get("creator")

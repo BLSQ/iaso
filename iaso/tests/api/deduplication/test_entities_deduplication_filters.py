@@ -1,6 +1,8 @@
 from http import HTTPStatus
 from uuid import uuid4
 
+from rest_framework import status
+
 from iaso import models as m
 from iaso.models.deduplication import ValidationStatus
 from iaso.permissions.core_permissions import (
@@ -90,7 +92,7 @@ class EntitiesDuplicationFiltersAPITestCase(APITestCase):
 
         # Test filtering by first analysis.
         response = self.client.get(f"/api/entityduplicates/?analyze_id={analysis_1.id}")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = response.data["results"]
         self.assertEqual(len(results), 2)
         for duplicate in results:
@@ -98,7 +100,7 @@ class EntitiesDuplicationFiltersAPITestCase(APITestCase):
 
         # Test filtering by second analysis.
         response = self.client.get(f"/api/entityduplicates/?analyze_id={analysis_2.id}")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = response.data["results"]
         self.assertEqual(len(results), 1)
         for duplicate in results:
@@ -106,18 +108,18 @@ class EntitiesDuplicationFiltersAPITestCase(APITestCase):
 
         # Get all duplicates without any filter (should include both analyses).
         response = self.client.get("/api/entityduplicates/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         total_duplicates = len(response.data["results"])
         self.assertEqual(total_duplicates, 3)
 
         # Filter by non-existent analyze ID (should return no results).
         response = self.client.get("/api/entityduplicates/?analyze_id=99999")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 0)
 
         # Filter by invalid ID.
         response = self.client.get("/api/entityduplicates/?analyze_id=FOO")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("The `analyze_id` parameter must be an integer.", response.content.decode())
 
 

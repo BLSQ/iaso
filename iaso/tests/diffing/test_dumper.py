@@ -1,13 +1,9 @@
 import datetime
-import logging
 
 import time_machine
 
 from iaso.diffing import Differ, Dumper
 from iaso.tests.diffing.utils import PyramidBaseTest
-
-
-test_logger = logging.getLogger(__name__)
 
 
 DT = datetime.datetime(2024, 11, 30, 10, 0, 0, 0, tzinfo=datetime.timezone.utc)
@@ -28,7 +24,7 @@ class DumperTestCase(PyramidBaseTest):
         self.angola_country_to_compare_with.save()
 
         # Limit the diff size with restrictions on `field_names` and `org_unit_types_ref`.
-        diffs, fields = Differ(test_logger).diff(
+        diffs, fields = Differ().diff(
             # Version to update.
             version=self.source_version_to_update,
             validation_status=None,
@@ -45,7 +41,7 @@ class DumperTestCase(PyramidBaseTest):
             field_names=["name", "code"],
         )
 
-        dumper = Dumper(test_logger)
+        dumper = Dumper()
         json_diffs = dumper.as_json(diffs)
 
         expected_json_diffs = [
@@ -165,7 +161,7 @@ class DumperTestCase(PyramidBaseTest):
         self.angola_country_to_update.delete()
 
         # Limit the diff size with restrictions on `field_names` and `org_unit_types_ref`.
-        diffs, fields = Differ(test_logger).diff(
+        diffs, fields = Differ().diff(
             # Version to update.
             version=self.source_version_to_update,
             validation_status=None,
@@ -182,7 +178,7 @@ class DumperTestCase(PyramidBaseTest):
             field_names=["name"],
         )
 
-        dumper = Dumper(test_logger)
+        dumper = Dumper()
         json_diffs = dumper.as_json(diffs)
 
         expected_json_diffs = [

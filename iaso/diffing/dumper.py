@@ -1,5 +1,6 @@
 import csv
 import json
+import logging
 
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.serializers.json import DjangoJSONEncoder
@@ -8,6 +9,9 @@ from django.forms import model_to_dict
 from iaso.diffing import Differ
 from iaso.management.commands.command_logger import CommandLogger
 from iaso.utils.memory import memory_mb
+
+
+logger = logging.getLogger(__name__)
 
 
 def color(status):
@@ -38,9 +42,6 @@ class DiffJSONEncoder(DjangoJSONEncoder):
 
 
 class Dumper:
-    def __init__(self, logger):
-        self.iaso_logger = logger
-
     def dump_stats(self, diffs):
         stats_ou = {}
 
@@ -66,17 +67,17 @@ class Dumper:
                 comp_stats[comp.status]["sample"] = diff.org_unit.source_ref
 
         stats = {"orgUnits": stats_ou, "orgUnitsByField": stats_comparison_by_field}
-        self.iaso_logger.info(json.dumps(stats, indent=4))
+        logger.info(json.dumps(stats, indent=4))
         return stats
 
     def as_json(self, diffs):
         return json.dumps(diffs, indent=4, cls=DiffJSONEncoder)
 
     def dump_as_json(self, diffs):
-        self.iaso_logger.info(self.as_json(diffs))
+        logger.info(self.as_json(diffs))
 
     def dump_as_csv(self, diffs, fields, csv_file, number_of_parents=5):
-        self.iaso_logger.info("Dumping as csv", memory_mb())
+        logger.info("Dumping as csv, %s", memory_mb())
 
         writer = csv.writer(csv_file)
 
@@ -145,7 +146,7 @@ class Dumper:
 
             writer.writerow(results)
 
-        self.iaso_logger.info("Dumped as csv", memory_mb())
+        logger.info("Dumped as csv, %s", memory_mb())
 
     def dump_as_table(self, diffs, fields, stats):
         display = []
@@ -173,20 +174,17 @@ class Dumper:
                         results.append(Differ.STATUS_SAME)
                     else:
                         results.append(
-                            self.iaso_logger.colorize(
-                                " vs ".join([str(comparison.before), str(comparison.after)])
-                                + ((" Dist : %.2f " % comparison.distance) if comparison.distance else ""),
-                                color(comparison.status),
-                            )
+                            " vs ".join([str(comparison.before), str(comparison.after)])
+                            + ((" Dist : %.2f " % comparison.distance) if comparison.distance else "")
                         )
 
                 display.append(results)
 
         for d in display:
-            message = "\t".join(map(lambda s: self.iaso_logger.colorize(str(s).ljust(20, " "), color(s)), d))
+            message = "\t".join(color(s) + str(s).ljust(20, " ") + CommandLogger.END for s in d)
             if d[2] == Differ.STATUS_NEW:
-                self.iaso_logger.info(self.iaso_logger.colorize(message, CommandLogger.GREEN))
+                logger.info(message)
             elif d[2] == Differ.STATUS_MODIFIED:
-                self.iaso_logger.info(self.iaso_logger.colorize(message, CommandLogger.RED))
+                logger.warning(message)
             else:
-                self.iaso_logger.info(message)
+                logger.info(message)

@@ -422,25 +422,23 @@ class GPKGImport(TestCase):
         # Test required columns (ref, name)
         required_columns = ["ref", "name"]
         for i, column in enumerate(required_columns):
-            try:
+            with self.subTest(missing_column=column):
                 # Ensure the DataSource is created with the project
                 source = DataSource.objects.create(name=f"test_column_validation_{i}")
                 source.projects.add(self.project)
-
-                import_gpkg_file(
-                    f"./iaso/tests/fixtures/gpkg/missing_column_{column}.gpkg",
-                    source_name=f"test_column_validation_{i}",
-                    version_number=1,
-                    validation_status="new",
-                    description="",
-                )
-            except ValueError as e:
-                print(f"Caught expected error: {str(e)}")
+                with self.assertRaisesMessage(ValueError, f"Missing required column: {column}"):
+                    import_gpkg_file(
+                        f"./iaso/tests/fixtures/gpkg/missing_column_{column}.gpkg",
+                        source_name=f"test_column_validation_{i}",
+                        version_number=1,
+                        validation_status="new",
+                        description="",
+                    )
 
     def test_import_without_projects_raises_error(self):
         """Test that importing a GPKG with a DataSource that has no projects raises an error"""
         # Create a DataSource without any projects
-        source = DataSource.objects.create(name="test_no_projects")
+        DataSource.objects.create(name="test_no_projects")
 
         # Try to import - this should raise a ValueError
         with self.assertRaises(ValueError) as context:

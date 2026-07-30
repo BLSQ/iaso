@@ -1,7 +1,10 @@
+from unittest import skip
+
 from iaso.modules import MODULE_VALIDATION_WORKFLOW
 from iaso.test import IasoMigratorTestCase
 
 
+@skip("skipping because this migration was successfully applied on prod - keeping it for future reference")
 class Test0388DirectMigration(IasoMigratorTestCase):
     migrate_from = ("iaso", "0388_project_description")
     migrate_to = ("iaso", "0389_alter_account_modules")
@@ -54,6 +57,7 @@ class Test0388DirectMigration(IasoMigratorTestCase):
         self.assertEqual(account_without_vf.feature_flags.all().count(), 1)
 
 
+@skip("skipping because this migration was successfully applied on prod - keeping it for future reference")
 class Test0388ReverseMigration(IasoMigratorTestCase):
     num_queries = 17
 

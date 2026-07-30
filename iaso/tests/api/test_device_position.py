@@ -2,6 +2,8 @@ import typing
 
 from uuid import uuid4
 
+from rest_framework import status
+
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
@@ -52,7 +54,7 @@ class DevicesPositionAPITestCase(APITestCase):
             f"/api/devicespositions/?app_id={self.project_1.app_id}", devices_position_body, format="json"
         )
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertValidDevicePositionListData(response.json(), 1, with_result_key=False)
         self.assertAPIImport("devicesposition", request_body=devices_position_body, has_problems=False)
 
@@ -75,7 +77,7 @@ class DevicesPositionAPITestCase(APITestCase):
         response = self.client.post(
             f"/api/devicespositions/?app_id={self.project_1.app_id}", devices_position_body, format="json"
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertValidDevicePositionListData(response.json(), 50, with_result_key=False)
         self.assertAPIImport("devicesposition", request_body=devices_position_body, has_problems=False)
 
@@ -97,7 +99,7 @@ class DevicesPositionAPITestCase(APITestCase):
         response = self.client.post(
             f"/api/devicespositions/?app_id={self.project_2.app_id}", devices_position_body, format="json"
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertDictEqual(response.json(), {"res": "a problem happened, but your data was saved"})
         self.assertAPIImport(
             "devicesposition",
@@ -123,7 +125,7 @@ class DevicesPositionAPITestCase(APITestCase):
         response = self.client.post(
             f"/api/devicespositions/?app_id={self.project_2.app_id}", devices_position_body, format="json"
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertValidDevicePositionListData(response.json(), 1, with_result_key=False)
 
     def test_post_ko_invalid_device_id(self):
@@ -142,7 +144,7 @@ class DevicesPositionAPITestCase(APITestCase):
         response = self.client.post(
             f"/api/devicespositions/?app_id={self.project_1.app_id}", devices_position_body, format="json"
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertDictEqual(response.json(), {"res": "a problem happened, but your data was saved"})
         self.assertAPIImport(
             "devicesposition",
@@ -153,11 +155,11 @@ class DevicesPositionAPITestCase(APITestCase):
 
     def test_get_details_requires_auth(self):
         response = self.client.get(f"/api/devicespositions/1/?app_id={self.project_1.app_id}")
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_get_list_requires_auth(self):
         response = self.client.get(f"/api/devicespositions/?app_id={self.project_1.app_id}")
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def assertValidDevicePositionListData(
         self, list_data: typing.Mapping, expected_length: int, with_result_key=True, paginated: bool = False

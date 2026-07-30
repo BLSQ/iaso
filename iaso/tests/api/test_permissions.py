@@ -1,4 +1,5 @@
 from django.contrib.auth.models import Permission
+from rest_framework import status
 
 from iaso import models as m
 from iaso.permissions.core_permissions import (
@@ -29,10 +30,10 @@ class PermissionsAPITestCase(APITestCase):
         """GET /permissions/ without auth should result in a 401"""
 
         response = self.client.get("/api/permissions/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
         response = self.client.get("/api/permissions/grouped_permissions/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_get_all_permissions_without_grouping(self):
         """Get /permissions all permissions without grouping them"""
@@ -40,7 +41,7 @@ class PermissionsAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         response = self.client.get("/api/permissions/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         account = self.yoda.iaso_profile.account
 
         # Get all permissions linked to the modules
@@ -55,7 +56,7 @@ class PermissionsAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         response = self.client.get("/api/permissions/grouped_permissions/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(list(response.json()["permissions"].keys()), ["org_units", "admin"])
 
         org_unit_perms = get_permissions_of_group(PERMISSION_GROUP_ORG_UNITS)

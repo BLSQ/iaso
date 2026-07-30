@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 from django.http import HttpResponse
 from django.test import RequestFactory, TestCase
+from rest_framework import status
 
 
 class GzipMiddlewareTestCase(TestCase):
@@ -50,5 +51,5 @@ class GzipMiddlewareTestCase(TestCase):
         response = mock_view(request)
 
         # Verify basic response properties
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("Hello World!", response.content.decode())

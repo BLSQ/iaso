@@ -19,42 +19,42 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="bulkcreateuserfile",
             name="file_size",
-            field=models.BigIntegerField(blank=True, editable=False, null=True),
+            field=models.PositiveBigIntegerField(blank=True, editable=False, null=True),
         ),
         migrations.AddField(
             model_name="formattachment",
             name="file_size",
-            field=models.BigIntegerField(blank=True, editable=False, null=True),
+            field=models.PositiveBigIntegerField(blank=True, editable=False, null=True),
         ),
         migrations.AddField(
             model_name="formversion",
             name="file_size",
-            field=models.BigIntegerField(blank=True, editable=False, null=True),
+            field=models.PositiveBigIntegerField(blank=True, editable=False, null=True),
         ),
         migrations.AddField(
             model_name="formversion",
             name="xls_file_size",
-            field=models.BigIntegerField(blank=True, editable=False, null=True),
+            field=models.PositiveBigIntegerField(blank=True, editable=False, null=True),
         ),
         migrations.AddField(
             model_name="importgpkg",
             name="file_size",
-            field=models.BigIntegerField(blank=True, editable=False, null=True),
+            field=models.PositiveBigIntegerField(blank=True, editable=False, null=True),
         ),
         migrations.AddField(
             model_name="instance",
             name="file_size",
-            field=models.BigIntegerField(blank=True, editable=False, null=True),
+            field=models.PositiveBigIntegerField(blank=True, editable=False, null=True),
         ),
         migrations.AddField(
             model_name="instancefile",
             name="file_size",
-            field=models.BigIntegerField(blank=True, editable=False, null=True),
+            field=models.PositiveBigIntegerField(blank=True, editable=False, null=True),
         ),
         migrations.AddField(
             model_name="reportversion",
             name="file_size",
-            field=models.BigIntegerField(blank=True, editable=False, null=True),
+            field=models.PositiveBigIntegerField(blank=True, editable=False, null=True),
         ),
         migrations.AlterField(
             model_name="bulkcreateuserfile",

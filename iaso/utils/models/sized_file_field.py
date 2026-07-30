@@ -56,7 +56,7 @@ class SizedFileField(models.FileField):
         try:
             cls._meta.get_field(self.size_field_name)
         except FieldDoesNotExist:
-            size_field = models.BigIntegerField(null=True, blank=True, editable=False)
+            size_field = models.PositiveBigIntegerField(null=True, blank=True, editable=False)
             size_field.contribute_to_class(cls, self.size_field_name, private_only=private_only, **kwargs)
 
     def pre_save(self, model_instance, add):

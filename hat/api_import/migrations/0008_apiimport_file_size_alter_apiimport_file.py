@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="apiimport",
             name="file_size",
-            field=models.BigIntegerField(blank=True, editable=False, null=True),
+            field=models.PositiveBigIntegerField(blank=True, editable=False, null=True),
         ),
         migrations.AlterField(
             model_name="apiimport",

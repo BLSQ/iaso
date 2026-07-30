@@ -1,12 +1,7 @@
-import logging
-
 from beanstalk_worker import task_decorator
 from iaso.diffing import Differ, Exporter
 from iaso.models import ExternalCredentials, SourceVersion, Task
 from iaso.tasks.dhis2_ou_importer import get_api
-
-
-logger = logging.getLogger(__name__)
 
 
 def get_api_from_credential(credentials: ExternalCredentials):
@@ -40,7 +35,7 @@ def dhis2_ou_exporter(
     task.report_progress_and_stop_if_killed(progress_message="Computing differences")
     source_version = SourceVersion.objects.get(pk=version_id)
     ref_source_version = SourceVersion.objects.get(pk=ref_version_id)
-    diffs, fields = Differ(logger).diff(
+    diffs, fields = Differ().diff(
         ref_source_version,
         source_version,
         ignore_groups,
@@ -62,5 +57,5 @@ def dhis2_ou_exporter(
     if not api:
         raise ValueError("No credentials exist for this source, please provide them")
 
-    Exporter(logger).export_to_dhis2(api, diffs, fields, task)
+    Exporter().export_to_dhis2(api, diffs, fields, task)
     task.report_success(message="Export Done")

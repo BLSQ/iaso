@@ -97,7 +97,7 @@ class DiffSerializer(serializers.Serializer):
         else:
             ignore_groups = True
 
-        diffs, fields = Differ(logger).diff(
+        diffs, fields = Differ().diff(
             data["ref_version_id"],
             data["source_version_id"],
             ignore_groups=ignore_groups,
@@ -113,7 +113,7 @@ class DiffSerializer(serializers.Serializer):
             field_names=data.get("fields_to_export"),
         )
         file = tempfile.NamedTemporaryFile(mode="w+t", encoding="utf-8", newline="", suffix=".csv", delete=False)
-        Dumper(logger).dump_as_csv(diffs, fields, file)
+        Dumper().dump_as_csv(diffs, fields, file)
         file.seek(0)
         return file
 

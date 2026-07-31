@@ -845,6 +845,10 @@ class Command(BaseCommand):
                             self.chunk_size,
                             f"{blocker_model.__name__}[unblock]",
                         )
+            else:
+                raise RuntimeError(
+                    f"Could not delete {label} after {_MAX_PROTECT_UNBLOCK_ATTEMPTS} attempts — PROTECT cycle not resolved"
+                )
 
             if deleted_count:
                 _log(f"  {label}: {deleted_count:,} deleted")

@@ -18,7 +18,8 @@ What still needs manual code (M2M gap):
     Project.data_sources M2M, not a direct FK; the BFS path via credentials
     is SET_NULL and therefore partial
   - Form — linked via projects M2M
-  - Orphan audit/export log cleanup (content-type based, not FK based)
+  - Orphan audit log cleanup (content-type based, not FK based)
+  - Orphan export log cleanup (no incoming M2M reference, not content-type or FK based)
 
 Usage:
   docker compose run --rm iaso manage delete_accounts --account-to-keep 1
@@ -440,6 +441,7 @@ class Command(BaseCommand):
     def _cascade_chunked_delete(self, queryset, label):
         """
         Drop-in replacement for queryset.delete() that:
+        - Is dry-run aware — logs an estimated row count and returns without touching the DB
         - Uses Django's Collector to discover the full cascade (respects model evolution)
         - Logs each model being deleted with its count
         - Deletes in chunks instead of one giant transaction
@@ -633,18 +635,6 @@ class Command(BaseCommand):
         forms = Form.objects_include_deleted.filter(projects__account=account)
         with self._doing(f"Form account={account.id}"):
             self._delete_qs(forms, label="Form")
-
-    # -----------------------------------------------------------------------
-    # Manual section: User / Profile
-    # Profile.user is a forward FK (Profile → User); User is upstream so not
-    # in the BFS reverse graph.  We collect user_ids from profiles and delete.
-    # -----------------------------------------------------------------------
-
-    def _delete_users(self, account, profiles):
-        user_ids = list(profiles.values_list("user_id", flat=True))
-        users = User.objects.filter(pk__in=user_ids)
-        with self._doing(f"User account={account.id}"):
-            self._delete_qs(users, label="User")
 
     # -----------------------------------------------------------------------
     # Pre/post-flight cleanup

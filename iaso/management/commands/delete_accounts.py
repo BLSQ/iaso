@@ -403,7 +403,7 @@ class Command(BaseCommand):
         n, _ = queryset.delete()
         _log(f"  {label}: {n} deleted")
 
-    def _delete_chunked(self, queryset, label=None):
+    def _delete_streaming(self, queryset, label=None):
         """Dry-run-aware wrapper around the module-level _chunked_delete streaming delete."""
         label = label or queryset.model.__name__
         if self.dry_run:
@@ -483,21 +483,17 @@ class Command(BaseCommand):
             if pks:
                 plan_items.append(DeletionPlanItem(model=model, queryset=None, pks=pks))
 
-        # Topo sort via Kahn's algorithm: if model A has a FK to model B, delete A first.
-        # Use _meta.local_fields (forward FK/O2O only) — _meta.get_fields() also returns
-        # reverse relations which would flip the dependency direction and break the sort.
-        # Kahn's algorithm handles cycles gracefully: cycle participants are appended at the
-        # end in plan_items insertion order (fast_deletes before data, so SourceVersion before
-        # DataSource). DataSource.default_version is already nulled, so either order is safe.
+        # Discover forward-FK edges among plan_items' models: if model A has a FK to
+        # model B, A must be deleted first. Use _meta.local_fields (forward FK/O2O
+        # only) — _meta.get_fields() also returns reverse relations which would flip
+        # the dependency direction and break the sort.
         # plan_models as dict preserves insertion order for cycle-node fallback.
         plan_models = {}
         fk_targets_by_holder = {}
-        blocking_holder_count = {}
         for plan_item in plan_items:
             model = plan_item.model
             plan_models[model] = None
             fk_targets_by_holder[model] = set()
-            blocking_holder_count[model] = 0  # Kahn's algorithm: remaining FK holders blocking each model
 
         for model in plan_models:
             for field in model._meta.local_fields:
@@ -511,18 +507,29 @@ class Command(BaseCommand):
                     target = field.related_model
                     if target and target in plan_models and target is not model:
                         # model holds FK → delete model first → target depends on model
-                        if target not in fk_targets_by_holder[model]:  # deduplicate before incrementing
-                            fk_targets_by_holder[model].add(target)
-                            blocking_holder_count[target] += 1
-        ready_models = [m for m in plan_models if blocking_holder_count[m] == 0]
+                        fk_targets_by_holder[model].add(target)
+
+        # Topo sort via graphlib.TopologicalSorter (same tool topo_sort_deletion_order
+        # uses). Drained incrementally via get_ready()/done() rather than static_order()
+        # so a cycle doesn't abort the whole sort: whatever's left stuck when get_ready()
+        # comes back empty is appended at the end in plan_items insertion order instead
+        # (fast_deletes before data, so SourceVersion before DataSource). DataSource.
+        # default_version is already nulled, so either order is safe.
+        ts = TopologicalSorter()
+        for model in plan_models:
+            ts.add(model)
+        for holder, targets in fk_targets_by_holder.items():
+            for target in targets:
+                ts.add(target, holder)
+        ts.prepare()
         ordered_models = []
-        while ready_models:
-            model = ready_models.pop(0)
-            ordered_models.append(model)
-            for unblocked_model in fk_targets_by_holder[model]:
-                blocking_holder_count[unblocked_model] -= 1
-                if blocking_holder_count[unblocked_model] == 0:
-                    ready_models.append(unblocked_model)
+        while ts.is_active():
+            ready = ts.get_ready()
+            if not ready:
+                break
+            ordered_models.extend(ready)
+            ts.done(*ready)
+
         # Append cycle participants at the end in their original insertion order
         cycle_models = [m for m in plan_models if m not in set(ordered_models)]
         if cycle_models:
@@ -583,7 +590,7 @@ class Command(BaseCommand):
                 )
 
             with self._doing(f"Instance {ds_label}"):
-                self._delete_chunked(instances_in_ds, label=f"Instance[{ds_label}]")
+                self._delete_streaming(instances_in_ds, label=f"Instance[{ds_label}]")
 
             # Planning.org_unit = PROTECT blocks OrgUnit deletion (hence DataSource cascade).
             # Cycle: Planning.selected_sampling_result = PROTECT(PSR) ↔ PSR.planning = CASCADE(Planning)
@@ -595,11 +602,11 @@ class Command(BaseCommand):
                     label=f"Planning.selected_sampling_result=NULL[{ds_label}]",
                     selected_sampling_result=None,
                 )
-                self._delete_chunked(
+                self._delete_streaming(
                     PlanningSamplingResult.objects.filter(planning__in=planning_qs),
                     label=f"PlanningSamplingResult[{ds_label}]",
                 )
-                self._delete_chunked(planning_qs, label=f"Planning[{ds_label}]")
+                self._delete_streaming(planning_qs, label=f"Planning[{ds_label}]")
 
             with self._doing(f"DataSource cascade {ds_label}"):
                 # DataSource.default_version → SourceVersion cycle: null first.
@@ -902,7 +909,7 @@ class Command(BaseCommand):
         # Django's Collector raises PROTECT on PSR even when Planning is also being
         # collected — delete PSR first so Planning has no blocker.
         with self._doing(f"account={account.id} PlanningSamplingResult"):
-            self._delete_chunked(
+            self._delete_streaming(
                 PlanningSamplingResult.objects.filter(planning__project__account=account),
                 label="PlanningSamplingResult",
             )

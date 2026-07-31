@@ -640,7 +640,7 @@ class Command(BaseCommand):
     # Pre/post-flight cleanup
     # -----------------------------------------------------------------------
 
-    def _pre_flight(self):
+    def _pre_flight(self, accounts_to_delete):
         try:
             self._sql("DELETE FROM users_profile", label="users_profile")
         except django.db.utils.ProgrammingError:
@@ -666,7 +666,11 @@ class Command(BaseCommand):
         self._delete_qs(InstanceFile.objects.filter(instance__in=orphans), label="InstanceFile[orphan]")
         self._delete_qs(orphans, label="Instance[orphan]")
 
-        self._update_qs(Task.objects.filter(status=QUEUED), label="Task[queued→killed]", status=KILLED)
+        self._update_qs(
+            Task.objects.filter(status=QUEUED, account__in=accounts_to_delete),
+            label="Task[queued→killed]",
+            status=KILLED,
+        )
 
     def _delete_form_without_project(self, form):
         """Clear a project-less Form's M2M/version data and hard-delete it."""
@@ -1003,7 +1007,7 @@ class Command(BaseCommand):
                 found_ids = {a.id for a in accounts_to_delete}
                 raise SystemExit(f"Accounts not found: {[id for id in ids if id not in found_ids]}")
 
-        self._pre_flight()
+        self._pre_flight(accounts_to_delete)
 
         for account in accounts_to_delete:
             _log(f"--- Deleting account={account.id} ({account.name!r}) ---")

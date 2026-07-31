@@ -92,8 +92,6 @@ except (ImportError, RuntimeError):
 # ---------------------------------------------------------------------------
 # Logging
 # ---------------------------------------------------------------------------
-
-
 def _log(msg):
     print(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] {msg}")
 
@@ -101,8 +99,6 @@ def _log(msg):
 # ---------------------------------------------------------------------------
 # Streaming chunked delete
 # ---------------------------------------------------------------------------
-
-
 def _chunked_delete(queryset, chunk_size=5000, label=None):
     """Delete in streaming chunks — never loads more than chunk_size PKs at once."""
     model = queryset.model
@@ -161,14 +157,6 @@ class FKEdge:
 
 
 @dataclass
-class ManualCleanupNote:
-    """A table that can't be reached by the FK-graph BFS and needs dedicated cleanup code."""
-
-    label: str  # e.g. "iaso.DataSource / SourceVersion / OrgUnit", or a bare table name
-    reason: str  # why this table needs manual/dedicated handling instead of the auto FK-graph
-
-
-@dataclass
 class DeletionPlanItem:
     """One model's rows to delete in _cascade_chunked_delete's plan — from either
     fast_deletes or data, never both."""
@@ -176,6 +164,14 @@ class DeletionPlanItem:
     model: type
     queryset: QuerySet  # set when this item came from collector.fast_deletes, else None
     pks: list  # set when this item came from collector.data (no bulk queryset available), else None
+
+
+@dataclass
+class ManualCleanupNote:
+    """A table that can't be reached by the FK-graph BFS and needs dedicated cleanup code."""
+
+    label: str  # e.g. "iaso.DataSource / SourceVersion / OrgUnit", or a bare table name
+    reason: str  # why this table needs manual/dedicated handling instead of the auto FK-graph
 
 
 # Tables not reachable via reverse FK from Account — require manual handling.
@@ -309,8 +305,6 @@ def topo_sort_deletion_order(discovered, graph_edges):
 # ---------------------------------------------------------------------------
 # --show-graph mode
 # ---------------------------------------------------------------------------
-
-
 def show_graph(discovered, deletion_order, account=None):
     """
     Print what the FK graph discovered, flag partial-coverage paths,
@@ -350,8 +344,6 @@ def show_graph(discovered, deletion_order, account=None):
 # ---------------------------------------------------------------------------
 # Management command
 # ---------------------------------------------------------------------------
-
-
 class Command(BaseCommand):
     help = "FK-graph-based account deletion — auto-discovers related models"
 
@@ -382,7 +374,6 @@ class Command(BaseCommand):
     # -----------------------------------------------------------------------
     # Helpers
     # -----------------------------------------------------------------------
-
     def _sql(self, sql, params=None, label="SQL"):
         if self.dry_run:
             _log(f"  [DRY RUN] {label}: {sql[:100]}")
@@ -437,7 +428,6 @@ class Command(BaseCommand):
     # These are M2M-linked (Project.data_sources); the FK graph only finds
     # DataSources that have credentials, so we handle the full set here.
     # -----------------------------------------------------------------------
-
     def _cascade_chunked_delete(self, queryset, label):
         """
         Drop-in replacement for queryset.delete() that:
@@ -630,16 +620,14 @@ class Command(BaseCommand):
     # -----------------------------------------------------------------------
     # Manual section: Form (M2M-linked)
     # -----------------------------------------------------------------------
-
     def _delete_forms(self, account):
         forms = Form.objects_include_deleted.filter(projects__account=account)
         with self._doing(f"Form account={account.id}"):
             self._delete_qs(forms, label="Form")
 
     # -----------------------------------------------------------------------
-    # Pre/post-flight cleanup
+    # Pre/post-deletion cleanup
     # -----------------------------------------------------------------------
-
     def _pre_deletion_clean_up(self, accounts_to_delete):
         _log("Pre-deletion cleanup: clearing users_profile, orphaned Instance, InstanceFile, OrgUnit...")
         try:
@@ -805,71 +793,6 @@ class Command(BaseCommand):
     # -----------------------------------------------------------------------
     # Main account deletion (graph-based)
     # -----------------------------------------------------------------------
-
-    def _execute_graph_deletion(self, discovered, deletion_order, account, skip_models=None):
-        """
-        Delete all discovered models in topological order.
-        Each model's rows are filtered using the auto-built account_lookup.
-        skip_models: set of model classes handled manually (excluded from this step).
-        """
-        skip_models = skip_models or set()
-        models_processed = 0
-        models_with_rows = 0
-        total_deleted = 0
-
-        for model in deletion_order:
-            if model not in discovered or model in skip_models:
-                continue
-            info = discovered[model]
-            manager = getattr(model, "objects_include_deleted", model._default_manager)
-
-            try:
-                qs = manager.filter(**{info.account_lookup: account})
-            except Exception as exc:
-                _log(f"  [skip] {model.__name__}: cannot build queryset ({exc})")
-                continue
-
-            models_processed += 1
-            label = f"{model.__name__}[{info.account_lookup}]"
-            if info.is_partial_coverage:
-                label += " ⚠ partial"
-
-            if self.dry_run:
-                _log(f"  [DRY RUN] would delete {label}")
-                continue
-
-            deleted_count = 0
-            for attempt in range(_MAX_PROTECT_UNBLOCK_ATTEMPTS):
-                try:
-                    deleted_count += _chunked_delete(qs, self.chunk_size, label=label)
-                    break
-                except ProtectedError as exc:
-                    # Auto-clear blocking objects (e.g. nullable PROTECT FKs from partial-coverage models)
-                    blocking_pks_by_model = defaultdict(list)
-                    for obj in exc.protected_objects:
-                        blocking_pks_by_model[type(obj)].append(obj.pk)
-                    for blocker_model, pks in blocking_pks_by_model.items():
-                        _log(f"  [auto-unblock] {blocker_model.__name__} ×{len(pks)} blocking {label}")
-                        _chunked_delete(
-                            blocker_model.objects.filter(pk__in=pks),
-                            self.chunk_size,
-                            f"{blocker_model.__name__}[unblock]",
-                        )
-            else:
-                raise RuntimeError(
-                    f"Could not delete {label} after {_MAX_PROTECT_UNBLOCK_ATTEMPTS} attempts — PROTECT cycle not resolved"
-                )
-
-            if deleted_count:
-                _log(f"  {label}: {deleted_count:,} deleted")
-                models_with_rows += 1
-                total_deleted += deleted_count
-
-        if not self.dry_run:
-            _log(
-                f"  topo step: {models_processed} models processed, {models_with_rows} non-empty, {total_deleted:,} rows deleted total"
-            )
-
     def _delete_account(self, account, discovered, deletion_order):
         _log(f"Account {account.id}: {account.name!r}")
 
@@ -959,6 +882,89 @@ class Command(BaseCommand):
         # ---- Step 6: Account itself ----
         self._delete_qs(Account.objects.filter(pk=account.pk), label=f"Account[{account.id}] {account.name!r}")
 
+    def _execute_graph_deletion(self, discovered, deletion_order, account, skip_models=None):
+        """
+        Delete all discovered models in topological order.
+        Each model's rows are filtered using the auto-built account_lookup.
+        skip_models: set of model classes handled manually (excluded from this step).
+        """
+        skip_models = skip_models or set()
+        models_processed = 0
+        models_with_rows = 0
+        total_deleted = 0
+
+        for model in deletion_order:
+            if model not in discovered or model in skip_models:
+                continue
+            info = discovered[model]
+            manager = getattr(model, "objects_include_deleted", model._default_manager)
+
+            try:
+                qs = manager.filter(**{info.account_lookup: account})
+            except Exception as exc:
+                _log(f"  [skip] {model.__name__}: cannot build queryset ({exc})")
+                continue
+
+            models_processed += 1
+            label = f"{model.__name__}[{info.account_lookup}]"
+            if info.is_partial_coverage:
+                label += " ⚠ partial"
+
+            if self.dry_run:
+                _log(f"  [DRY RUN] would delete {label}")
+                continue
+
+            deleted_count = 0
+            for attempt in range(_MAX_PROTECT_UNBLOCK_ATTEMPTS):
+                try:
+                    deleted_count += _chunked_delete(qs, self.chunk_size, label=label)
+                    break
+                except ProtectedError as exc:
+                    # Auto-clear blocking objects (e.g. nullable PROTECT FKs from partial-coverage models)
+                    blocking_pks_by_model = defaultdict(list)
+                    for obj in exc.protected_objects:
+                        blocking_pks_by_model[type(obj)].append(obj.pk)
+                    for blocker_model, pks in blocking_pks_by_model.items():
+                        _log(f"  [auto-unblock] {blocker_model.__name__} ×{len(pks)} blocking {label}")
+                        _chunked_delete(
+                            blocker_model.objects.filter(pk__in=pks),
+                            self.chunk_size,
+                            f"{blocker_model.__name__}[unblock]",
+                        )
+            else:
+                raise RuntimeError(
+                    f"Could not delete {label} after {_MAX_PROTECT_UNBLOCK_ATTEMPTS} attempts — PROTECT cycle not resolved"
+                )
+
+            if deleted_count:
+                _log(f"  {label}: {deleted_count:,} deleted")
+                models_with_rows += 1
+                total_deleted += deleted_count
+
+        if not self.dry_run:
+            _log(
+                f"  topo step: {models_processed} models processed, {models_with_rows} non-empty, {total_deleted:,} rows deleted total"
+            )
+
+    def _print_model_stats(self):
+        _log("Row counts after deletion:")
+        all_models = sorted(django_apps.get_models(), key=lambda m: m._meta.label)
+        for model in all_models:
+            manager = getattr(model, "objects_include_deleted", model._default_manager)
+            try:
+                row_count = manager.count()
+            except Exception:
+                continue
+            _log(f"  {model._meta.label:<55s}: {row_count:>10,}")
+
+        _log("Remaining accounts:")
+        for account in Account.objects.order_by("id"):
+            _log(f"  {account.id:6d}  {account.name}")
+
+        _log("Remaining credentials:")
+        for cred in ExternalCredentials.objects.all():
+            _log(f"  credential: {cred.id} {cred.url} {cred.login} {cred.name}")
+
     # -----------------------------------------------------------------------
     # Entry point
     # -----------------------------------------------------------------------
@@ -999,6 +1005,7 @@ class Command(BaseCommand):
         account_to_keep = None
         full_cleanup = False
 
+        # Checking whether we are in full cleanup mode (keep one account, delete all others) or in selective deletion mode (delete specific accounts)
         if options.get("account_to_keep") is not None:
             account_id_to_keep = options["account_to_keep"]
             account_to_keep = Account.objects.get(pk=account_id_to_keep)
@@ -1013,6 +1020,7 @@ class Command(BaseCommand):
                 found_ids = {a.id for a in accounts_to_delete}
                 raise SystemExit(f"Accounts not found: {[id for id in ids if id not in found_ids]}")
 
+        # Starting some clean up before deleting selected accounts
         self._pre_deletion_clean_up(accounts_to_delete)
 
         for account in accounts_to_delete:
@@ -1027,24 +1035,9 @@ class Command(BaseCommand):
                 )
                 _log(f"--- FAILED account={account.id} ({account.name!r}) ---")
 
+        # Finishing cleaning up - dangling/orphan data
         if full_cleanup:
             self._post_deletion_clean_up(account_to_keep)
 
         _log("Done!")
-        _log("Row counts after deletion:")
-
-        all_models = sorted(django_apps.get_models(), key=lambda m: m._meta.label)
-        for model in all_models:
-            manager = getattr(model, "objects_include_deleted", model._default_manager)
-            try:
-                row_count = manager.count()
-            except Exception:
-                continue
-            _log(f"  {model._meta.label:<55s}: {row_count:>10,}")
-
-        _log("Remaining accounts:")
-        for account in Account.objects.order_by("id"):
-            _log(f"  {account.id:6d}  {account.name}")
-        _log("Remaining credentials:")
-        for cred in ExternalCredentials.objects.all():
-            _log(f"  credential: {cred.id} {cred.url} {cred.login} {cred.name}")
+        self._print_model_stats()

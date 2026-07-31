@@ -640,7 +640,8 @@ class Command(BaseCommand):
     # Pre/post-flight cleanup
     # -----------------------------------------------------------------------
 
-    def _pre_flight(self, accounts_to_delete):
+    def _pre_deletion_clean_up(self, accounts_to_delete):
+        _log("Pre-deletion cleanup: clearing users_profile, orphaned Instance, InstanceFile, OrgUnit...")
         try:
             self._sql("DELETE FROM users_profile", label="users_profile")
         except django.db.utils.ProgrammingError:
@@ -671,21 +672,12 @@ class Command(BaseCommand):
             label="Task[queued→killed]",
             status=KILLED,
         )
+        _log("finished pre-deletion cleanup")
 
-    def _delete_form_without_project(self, form):
-        """Clear a project-less Form's M2M/version data and hard-delete it."""
-        label = f"Form[no project][{form.id}]"
-        if self.dry_run:
-            _log(f"  [DRY RUN] {label}: would clear org_unit_types, delete versions' instances/files, hard-delete")
-            return
-        OrgUnitType.reference_forms.through.objects.filter(form=form).delete()
-        form.org_unit_types.clear()
-        InstanceFile.objects.filter(instance__form_version__in=form.form_versions.all()).delete()
-        Instance.objects.filter(form_version__in=form.form_versions.all()).delete()
-        form.delete_hard()
-        _log(f"  {label}: done")
-
-    def _post_flight(self, account_to_keep):
+    def _post_deletion_clean_up(self, account_to_keep):
+        _log(
+            "Post-deletion cleanup: clearing orphan DataSource, Forms, Instance, Project, InstanceFile, APIImport, Session, Device..."
+        )
         # Orphan datasources — delete one by one, continue on error
         ds_ids_to_keep = DataSource.objects.filter(projects__account=account_to_keep).values_list("id", flat=True)
         orphan_ds = list(DataSource.objects.exclude(id__in=ds_ids_to_keep))
@@ -735,6 +727,20 @@ class Command(BaseCommand):
         )
         self._cleanup_modification_logs()
         self._cleanup_export_logs()
+        _log("finished post-deletion cleanup")
+
+    def _delete_form_without_project(self, form):
+        """Clear a project-less Form's M2M/version data and hard-delete it."""
+        label = f"Form[no project][{form.id}]"
+        if self.dry_run:
+            _log(f"  [DRY RUN] {label}: would clear org_unit_types, delete versions' instances/files, hard-delete")
+            return
+        OrgUnitType.reference_forms.through.objects.filter(form=form).delete()
+        form.org_unit_types.clear()
+        InstanceFile.objects.filter(instance__form_version__in=form.form_versions.all()).delete()
+        Instance.objects.filter(form_version__in=form.form_versions.all()).delete()
+        form.delete_hard()
+        _log(f"  {label}: done")
 
     def _cleanup_modification_logs(self):
         _log("Cleaning modification logs...")
@@ -1007,7 +1013,7 @@ class Command(BaseCommand):
                 found_ids = {a.id for a in accounts_to_delete}
                 raise SystemExit(f"Accounts not found: {[id for id in ids if id not in found_ids]}")
 
-        self._pre_flight(accounts_to_delete)
+        self._pre_deletion_clean_up(accounts_to_delete)
 
         for account in accounts_to_delete:
             _log(f"--- Deleting account={account.id} ({account.name!r}) ---")
@@ -1022,7 +1028,7 @@ class Command(BaseCommand):
                 _log(f"--- FAILED account={account.id} ({account.name!r}) ---")
 
         if full_cleanup:
-            self._post_flight(account_to_keep)
+            self._post_deletion_clean_up(account_to_keep)
 
         _log("Done!")
         _log("Row counts after deletion:")

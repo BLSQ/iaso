@@ -403,6 +403,25 @@ class Command(BaseCommand):
         n, _ = queryset.delete()
         _log(f"  {label}: {n} deleted")
 
+    def _delete_chunked(self, queryset, label=None):
+        """Dry-run-aware wrapper around the module-level _chunked_delete streaming delete."""
+        label = label or queryset.model.__name__
+        if self.dry_run:
+            _log(f"  [DRY RUN] {label}: ~{queryset.count()}")
+            return 0
+        return _chunked_delete(queryset, self.chunk_size, label=label)
+
+    def _update_qs(self, queryset, label=None, **fields):
+        """Dry-run-aware wrapper around queryset.update(**fields)."""
+        label = label or queryset.model.__name__
+        if self.dry_run:
+            _log(f"  [DRY RUN] {label}: would update ~{queryset.count()} rows to {fields}")
+            return 0
+        updated = queryset.update(**fields)
+        if updated:
+            _log(f"  {label}: {updated} updated")
+        return updated
+
     @contextmanager
     def _doing(self, step):
         """Context manager: logs current step; re-raises with context on error."""
@@ -427,6 +446,9 @@ class Command(BaseCommand):
         For models without signals (most iaso models), Collector stores querysets in
         fast_deletes — no instances are loaded into memory.
         """
+        if self.dry_run:
+            _log(f"  [DRY RUN] {label}: would cascade-delete ~{queryset.count()} rows and everything referencing them")
+            return
 
         for attempt in range(_MAX_PROTECT_UNBLOCK_ATTEMPTS):
             collector = Collector(using=queryset.db)
@@ -468,11 +490,15 @@ class Command(BaseCommand):
         # end in plan_items insertion order (fast_deletes before data, so SourceVersion before
         # DataSource). DataSource.default_version is already nulled, so either order is safe.
         # plan_models as dict preserves insertion order for cycle-node fallback.
-        plan_models = dict.fromkeys(item.model for item in plan_items)
-        fk_targets_by_holder = {m: set() for m in plan_models}
-        blocking_holder_count = {
-            m: 0 for m in plan_models
-        }  # Kahn's algorithm: remaining FK holders blocking each model
+        plan_models = {}
+        fk_targets_by_holder = {}
+        blocking_holder_count = {}
+        for plan_item in plan_items:
+            model = plan_item.model
+            plan_models[model] = None
+            fk_targets_by_holder[model] = set()
+            blocking_holder_count[model] = 0  # Kahn's algorithm: remaining FK holders blocking each model
+
         for model in plan_models:
             for field in model._meta.local_fields:
                 if isinstance(field, (ForeignKey, OneToOneField)):
@@ -543,8 +569,11 @@ class Command(BaseCommand):
             with self._doing(f"Entity {ds_label}"):
                 # Instance.entity is DO_NOTHING — PostgreSQL still enforces the FK.
                 # Null it out before deleting Entity to avoid IntegrityError.
-                if not self.dry_run:
-                    Instance.objects.filter(entity__in=entities_qs).update(entity=None)
+                self._update_qs(
+                    Instance.objects.filter(entity__in=entities_qs),
+                    label=f"Instance.entity=NULL[{ds_label}]",
+                    entity=None,
+                )
                 self._delete_qs(entities_qs, label=f"Entity[{ds_label}]")
 
             with self._doing(f"InstanceFile {ds_label}"):
@@ -554,34 +583,40 @@ class Command(BaseCommand):
                 )
 
             with self._doing(f"Instance {ds_label}"):
-                if not self.dry_run:
-                    _chunked_delete(instances_in_ds, self.chunk_size, f"Instance[{ds_label}]")
+                self._delete_chunked(instances_in_ds, label=f"Instance[{ds_label}]")
 
             # Planning.org_unit = PROTECT blocks OrgUnit deletion (hence DataSource cascade).
             # Cycle: Planning.selected_sampling_result = PROTECT(PSR) ↔ PSR.planning = CASCADE(Planning)
             # Break it: null Planning.selected_sampling_result → delete PSR → delete Planning.
             with self._doing(f"Planning/PSR cycle {ds_label}"):
-                if not self.dry_run:
-                    planning_qs = Planning.objects.filter(org_unit__version__in=versions_qs)
-                    planning_qs.update(selected_sampling_result=None)
-                    _chunked_delete(
-                        PlanningSamplingResult.objects.filter(planning__in=planning_qs),
-                        self.chunk_size,
-                        f"PlanningSamplingResult[{ds_label}]",
-                    )
-                    _chunked_delete(planning_qs, self.chunk_size, f"Planning[{ds_label}]")
+                planning_qs = Planning.objects.filter(org_unit__version__in=versions_qs)
+                self._update_qs(
+                    planning_qs,
+                    label=f"Planning.selected_sampling_result=NULL[{ds_label}]",
+                    selected_sampling_result=None,
+                )
+                self._delete_chunked(
+                    PlanningSamplingResult.objects.filter(planning__in=planning_qs),
+                    label=f"PlanningSamplingResult[{ds_label}]",
+                )
+                self._delete_chunked(planning_qs, label=f"Planning[{ds_label}]")
 
-            if not self.dry_run:
-                with self._doing(f"DataSource cascade {ds_label}"):
-                    # DataSource.default_version → SourceVersion cycle: null first.
-                    DataSource.objects.filter(pk=ds.pk).update(default_version=None)
-                    # OrgUnit.parent is a self-referential FK; batch _raw_delete fails if any
-                    # row's parent is another row in the same batch. Null all within this
-                    # datasource's versions before the cascade reaches OrgUnit.
-                    OrgUnit.objects.filter(version__in=versions_qs).update(parent=None)
-                    self._cascade_chunked_delete(DataSource.objects.filter(pk=ds.pk), ds_label)
-            else:
-                _log(f"  [DRY RUN] {ds_label}: would cascade-delete DataSource → SourceVersion → OrgUnit → …")
+            with self._doing(f"DataSource cascade {ds_label}"):
+                # DataSource.default_version → SourceVersion cycle: null first.
+                self._update_qs(
+                    DataSource.objects.filter(pk=ds.pk),
+                    label=f"DataSource.default_version=NULL[{ds_label}]",
+                    default_version=None,
+                )
+                # OrgUnit.parent is a self-referential FK; batch _raw_delete fails if any
+                # row's parent is another row in the same batch. Null all within this
+                # datasource's versions before the cascade reaches OrgUnit.
+                self._update_qs(
+                    OrgUnit.objects.filter(version__in=versions_qs),
+                    label=f"OrgUnit.parent=NULL[{ds_label}]",
+                    parent=None,
+                )
+                self._cascade_chunked_delete(DataSource.objects.filter(pk=ds.pk), ds_label)
 
     # -----------------------------------------------------------------------
     # Manual section: Form (M2M-linked)
@@ -622,8 +657,7 @@ class Command(BaseCommand):
         # OrgUnits with no version: null self-ref parent first, then delete instances/files
         # that reference them (DO_NOTHING FK — DB enforces NO ACTION so must be cleared first)
         no_version_ou = OrgUnit.objects.filter(version=None)
-        if not self.dry_run:
-            no_version_ou.update(parent=None)  # break self-ref tree
+        self._update_qs(no_version_ou, label="OrgUnit[no version].parent=NULL", parent=None)  # break self-ref tree
         no_version_instances = Instance.objects.filter(org_unit__in=no_version_ou)
         self._delete_qs(
             InstanceFile.objects.filter(instance__in=no_version_instances), label="InstanceFile[ou no version]"
@@ -635,9 +669,20 @@ class Command(BaseCommand):
         self._delete_qs(InstanceFile.objects.filter(instance__in=orphans), label="InstanceFile[orphan]")
         self._delete_qs(orphans, label="Instance[orphan]")
 
-        if not self.dry_run:
-            Task.objects.filter(status=QUEUED).update(status=KILLED)
-            _log("  Queued tasks killed")
+        self._update_qs(Task.objects.filter(status=QUEUED), label="Task[queued→killed]", status=KILLED)
+
+    def _delete_form_without_project(self, form):
+        """Clear a project-less Form's M2M/version data and hard-delete it."""
+        label = f"Form[no project][{form.id}]"
+        if self.dry_run:
+            _log(f"  [DRY RUN] {label}: would clear org_unit_types, delete versions' instances/files, hard-delete")
+            return
+        OrgUnitType.reference_forms.through.objects.filter(form=form).delete()
+        form.org_unit_types.clear()
+        InstanceFile.objects.filter(instance__form_version__in=form.form_versions.all()).delete()
+        Instance.objects.filter(form_version__in=form.form_versions.all()).delete()
+        form.delete_hard()
+        _log(f"  {label}: done")
 
     def _post_flight(self, account_to_keep):
         # Orphan datasources — delete one by one, continue on error
@@ -677,14 +722,7 @@ class Command(BaseCommand):
 
         for form_without_project in forms_without_project:
             try:
-                if not self.dry_run:
-                    OrgUnitType.reference_forms.through.objects.filter(form=form_without_project).delete()
-                    form_without_project.org_unit_types.clear()
-                    InstanceFile.objects.filter(
-                        instance__form_version__in=form_without_project.form_versions.all()
-                    ).delete()
-                    Instance.objects.filter(form_version__in=form_without_project.form_versions.all()).delete()
-                    form_without_project.delete_hard()
+                self._delete_form_without_project(form_without_project)
             except Exception:
                 _log(traceback.format_exc())
 
@@ -711,11 +749,8 @@ class Command(BaseCommand):
             ") DELETE FROM audit_modification WHERE id IN (SELECT id FROM cte)"
         )
         for i in range(2000):
-            if self.dry_run:
-                break
-            self.cursor.execute(sql)
-            _log(f"  Modification batch {i}: {self.cursor.rowcount} deleted")
-            if self.cursor.rowcount == 0:
+            deleted = self._sql(sql, label=f"Modification batch {i}")
+            if deleted == 0:
                 break
 
         for model_cls, app_label, model_name in [
@@ -738,27 +773,24 @@ class Command(BaseCommand):
         )
 
     def _cleanup_export_logs(self):
-        if self.dry_run:
-            return
         t0 = time.monotonic()
         total = 0
         # Single SQL per chunk — no Python-level ID transfer, no ORM LEFT JOIN.
         # NOT EXISTS with an indexed exportlog_id is efficient even on large tables.
+        delete_sql = (
+            "DELETE FROM iaso_exportlog"
+            " WHERE id IN ("
+            "   SELECT id FROM iaso_exportlog el"
+            "   WHERE NOT EXISTS ("
+            "     SELECT 1 FROM iaso_exportstatus_export_logs sel WHERE sel.exportlog_id = el.id"
+            "   )"
+            f"  LIMIT {self.chunk_size}"
+            ")"
+        )
         while True:
-            self.cursor.execute(
-                "DELETE FROM iaso_exportlog"
-                " WHERE id IN ("
-                "   SELECT id FROM iaso_exportlog el"
-                "   WHERE NOT EXISTS ("
-                "     SELECT 1 FROM iaso_exportstatus_export_logs sel WHERE sel.exportlog_id = el.id"
-                "   )"
-                f"  LIMIT {self.chunk_size}"
-                ")"
-            )
-            n = self.cursor.rowcount
-            total += n
-            _log(f"  ExportLog[orphan]: {total:,} deleted so far…")
-            if n < self.chunk_size:
+            deleted = self._sql(delete_sql, label="ExportLog[orphan] batch")
+            total += deleted
+            if deleted < self.chunk_size:
                 break
         if total:
             _log(f"  ExportLog[orphan]: {total:,} total ({time.monotonic() - t0:.1f}s)")
@@ -833,8 +865,11 @@ class Command(BaseCommand):
         # ---- Null out self-referential FK cycles before any deletion ----
         # Account.default_version → SourceVersion and SourceVersion → DataSource → Account
         # form a cycle that blocks cascade deletion of SourceVersion.
-        if not self.dry_run:
-            Account.objects.filter(pk=account.pk).update(default_version=None)
+        self._update_qs(
+            Account.objects.filter(pk=account.pk),
+            label=f"Account[{account.id}].default_version=NULL",
+            default_version=None,
+        )
 
         # ---- Collect data we'll need BEFORE any deletions start ----
         # Profile is in the FK graph (discovered via 'account' filter) and will be
@@ -867,21 +902,16 @@ class Command(BaseCommand):
         # Django's Collector raises PROTECT on PSR even when Planning is also being
         # collected — delete PSR first so Planning has no blocker.
         with self._doing(f"account={account.id} PlanningSamplingResult"):
-            if not self.dry_run:
-                _chunked_delete(
-                    PlanningSamplingResult.objects.filter(planning__project__account=account),
-                    self.chunk_size,
-                    "PlanningSamplingResult",
-                )
+            self._delete_chunked(
+                PlanningSamplingResult.objects.filter(planning__project__account=account),
+                label="PlanningSamplingResult",
+            )
 
         # Entity.attributes → Instance is PROTECT; Instance.entity → Entity is DO_NOTHING.
         with self._doing(f"account={account.id} Entity.attributes = NULL"):
-            if not self.dry_run:
-                Entity.objects_include_deleted.filter(account=account).update(attributes=None)
-            else:
-                _log(
-                    f"  [DRY RUN] Entity.attributes=NULL: ~{Entity.objects_include_deleted.filter(account=account).count()}"
-                )
+            self._update_qs(
+                Entity.objects_include_deleted.filter(account=account), label="Entity.attributes=NULL", attributes=None
+            )
 
         # ---- Step 3: Auto — topo-sorted FK-graph deletion ----
         with self._doing(f"account={account.id} FK-graph auto-deletion"):
@@ -916,10 +946,7 @@ class Command(BaseCommand):
             )
 
         # ---- Step 6: Account itself ----
-        if not self.dry_run:
-            account_id, account_name = account.id, account.name
-            account.delete()
-            _log(f"  Account {account_id} ({account_name!r}) deleted")
+        self._delete_qs(Account.objects.filter(pk=account.pk), label=f"Account[{account.id}] {account.name!r}")
 
     # -----------------------------------------------------------------------
     # Entry point

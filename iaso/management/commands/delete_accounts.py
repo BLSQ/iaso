@@ -120,7 +120,7 @@ def _chunked_delete(queryset, chunk_size=5000, label=None):
             _log(f"  {label}: _raw_delete failed ({exc!r}), falling back to .delete()")
             _, counts = chunk_qs.delete()
             deleted = counts.get(model._meta.label, 0)
-            counts_str = ", ".join(f"{k}: {v}" for k, v in sorted(counts.items()) if v)
+            counts_str = ", ".join(f"{model_label}: {count}" for model_label, count in sorted(counts.items()) if count)
             _log(f"  {label}: cascade counts: {counts_str}")
         total += deleted
 
@@ -401,8 +401,8 @@ class Command(BaseCommand):
         if self.dry_run:
             _log(f"  [DRY RUN] {label}: ~{queryset.count()}")
             return
-        n, _ = queryset.delete()
-        _log(f"  {label}: {n} deleted")
+        deleted_count, _ = queryset.delete()
+        _log(f"  {label}: {deleted_count} deleted")
 
     def _delete_streaming(self, queryset, label=None):
         """Dry-run-aware wrapper around the module-level _chunked_delete streaming delete."""
@@ -770,7 +770,7 @@ class Command(BaseCommand):
         )
 
     def _cleanup_export_logs(self):
-        t0 = time.monotonic()
+        started_at = time.monotonic()
         total = 0
         # Single SQL per chunk — no Python-level ID transfer, no ORM LEFT JOIN.
         # NOT EXISTS with an indexed exportlog_id is efficient even on large tables.
@@ -790,7 +790,7 @@ class Command(BaseCommand):
             if deleted < self.chunk_size:
                 break
         if total:
-            _log(f"  ExportLog[orphan]: {total:,} total ({time.monotonic() - t0:.1f}s)")
+            _log(f"  ExportLog[orphan]: {total:,} total ({time.monotonic() - started_at:.1f}s)")
 
     # -----------------------------------------------------------------------
     # Main account deletion (graph-based)
@@ -996,8 +996,8 @@ class Command(BaseCommand):
             ids = options["accounts_to_delete"]
             accounts_to_delete = list(Account.objects.filter(pk__in=ids))
             if len(accounts_to_delete) != len(ids):
-                found = {a.id for a in accounts_to_delete}
-                raise SystemExit(f"Accounts not found: {[i for i in ids if i not in found]}")
+                found_ids = {a.id for a in accounts_to_delete}
+                raise SystemExit(f"Accounts not found: {[id for id in ids if id not in found_ids]}")
 
         self._pre_flight()
 
@@ -1023,14 +1023,14 @@ class Command(BaseCommand):
         for model in all_models:
             manager = getattr(model, "objects_include_deleted", model._default_manager)
             try:
-                n = manager.count()
+                row_count = manager.count()
             except Exception:
                 continue
-            _log(f"  {model._meta.label:<55s}: {n:>10,}")
+            _log(f"  {model._meta.label:<55s}: {row_count:>10,}")
 
         _log("Remaining accounts:")
-        for acct in Account.objects.order_by("id"):
-            _log(f"  {acct.id:6d}  {acct.name}")
+        for account in Account.objects.order_by("id"):
+            _log(f"  {account.id:6d}  {account.name}")
         _log("Remaining credentials:")
         for cred in ExternalCredentials.objects.all():
             _log(f"  credential: {cred.id} {cred.url} {cred.login} {cred.name}")

@@ -49,16 +49,18 @@ import traceback
 
 from collections import defaultdict, deque
 from contextlib import contextmanager
+from dataclasses import dataclass
 from graphlib import TopologicalSorter
 
 import django
 
+from django.apps import apps as django_apps
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.models import Session
 from django.core.management.base import BaseCommand
 from django.db import connection
-from django.db.models import ForeignKey, ManyToManyRel, OneToOneField, TextField
+from django.db.models import ForeignKey, ManyToManyRel, OneToOneField, QuerySet, TextField
 from django.db.models.deletion import SET_NULL, Collector, ProtectedError
 from django.db.models.functions import Cast
 
@@ -131,30 +133,69 @@ def _chunked_delete(queryset, chunk_size=5000, label=None):
 # Only follow FK edges to models from these app module prefixes.
 # "iaso" covers the main app; "plugins" covers all plugin apps (polio, etc.).
 # Third-party app models (django_sql_dashboard, auth, etc.) are skipped — Django
-# CASCADE handles them automatically when their parent rows disappear.
+# CASCADE handles them automatically when the rows they target disappear.
 _PROJECT_APP_PREFIXES = ("iaso", "plugins")
-
-# Models discovered via a SET_NULL path — filter may miss rows where FK is NULL.
-# These are flagged as "partial coverage" in --show-graph.
-_PARTIAL_COVERAGE_NOTE = "⚠ partial: SET_NULL path, rows with NULL FK are missed"
 
 # Retry limit for auto-unblocking PROTECT errors: each attempt deletes the
 # blocking objects, so convergence depends on the depth of the PROTECT chain.
 _MAX_PROTECT_UNBLOCK_ATTEMPTS = 10
 
-# Models not reachable via reverse FK from Account — require manual handling.
-_MANUAL_MODELS_NOTE = [
-    (
-        "iaso.DataSource / SourceVersion / OrgUnit",
-        "linked via Project.data_sources M2M, BFS only finds those with credentials",
+
+@dataclass
+class DiscoveredModel:
+    """A model discovered via BFS from Account, and how to filter/delete it."""
+
+    account_lookup: str  # Django ORM lookup back to Account, e.g. 'project__account'
+    on_delete_value: str  # on_delete of the edge that discovered this model, e.g. 'CASCADE'
+    is_partial_coverage: bool  # True if any edge on the path is SET_NULL — filter may miss rows with a NULL FK
+
+
+@dataclass
+class FKEdge:
+    """A direct FK edge between two discovered models, used to order deletions."""
+
+    fk_holder: type  # model that declares the FK — must be deleted first
+    fk_target: type  # model the FK points to
+    on_delete_value: str
+
+
+@dataclass
+class ManualCleanupNote:
+    """A table that can't be reached by the FK-graph BFS and needs dedicated cleanup code."""
+
+    label: str  # e.g. "iaso.DataSource / SourceVersion / OrgUnit", or a bare table name
+    reason: str  # why this table needs manual/dedicated handling instead of the auto FK-graph
+
+
+@dataclass
+class DeletionPlanItem:
+    """One model's rows to delete in _cascade_chunked_delete's plan — from either
+    fast_deletes or data, never both."""
+
+    model: type
+    queryset: QuerySet  # set when this item came from collector.fast_deletes, else None
+    pks: list  # set when this item came from collector.data (no bulk queryset available), else None
+
+
+# Tables not reachable via reverse FK from Account — require manual handling.
+_MANUAL_CLEANUP_NOTES = [
+    ManualCleanupNote(
+        label="iaso.DataSource / SourceVersion / OrgUnit",
+        reason="linked via Project.data_sources M2M, BFS only finds those with credentials",
     ),
-    ("iaso.Form", "linked via projects M2M"),
-    ("audit.Modification", "content-type based, no FK to Account"),
-    ("iaso.ExportLog", "no FK to Account"),
-    ("django_sql_dashboard.Dashboard", "no FK to Account"),
-    ("django.contrib.sessions.Session", "no FK to Account"),
-    ("vector_control_apiimport", "raw SQL table, not a Django model"),
-    ("users_profile", "legacy raw SQL table"),
+    ManualCleanupNote(label="iaso.Form", reason="linked via projects M2M"),
+    ManualCleanupNote(label="audit.Modification", reason="content-type based, no FK to Account"),
+    ManualCleanupNote(label="iaso.ExportLog", reason="no FK to Account"),
+    ManualCleanupNote(label="django_sql_dashboard.Dashboard", reason="no FK to Account"),
+    ManualCleanupNote(label="django.contrib.sessions.Session", reason="no FK to Account"),
+    ManualCleanupNote(
+        label="hat_api_import.APIImport [vector_control_apiimport]",
+        reason="not a iaso/plugins app and no FK to Account",
+    ),
+    ManualCleanupNote(
+        label="users_profile",
+        reason="legacy table, no longer defined in the codebase — may still exist in older deployed databases",
+    ),
 ]
 
 
@@ -164,50 +205,57 @@ def _is_project_model(model):
     return app_module.startswith(_PROJECT_APP_PREFIXES)
 
 
+def _on_delete_name(on_delete):
+    """Human-readable name of a field's on_delete callable, e.g. 'CASCADE'."""
+    return getattr(on_delete, "__name__", str(on_delete))
+
+
 def build_fk_graph(root_model):
     """
     BFS from root_model through reverse FK relations.
 
     Returns:
-      discovered : {model: (filter_kwarg, on_delete_name, is_partial)}
-        filter_kwarg — Django ORM lookup, e.g. 'project__account'
-        on_delete_name — on_delete of the edge that discovered this model
-        is_partial — True if any edge on the path is SET_NULL (nullable FK)
-      graph_edges : list of (child_model, parent_model, on_delete_name)
-        Directed edges from FK holder → FK target (used for topo sort)
+      discovered : dict of {model: DiscoveredModel}
+      graph_edges : list of FKEdge — directed edges from FK holder → FK target (used for topo sort)
     """
-    discovered = {}  # model → (filter_kwarg, on_delete_name, is_partial)
+    discovered = {}  # model → DiscoveredModel
     graph_edges = []
 
-    visited = {root_model: (None, False)}  # model → (filter_kwarg, is_partial)
+    visited = {root_model}
     queue = deque([(root_model, None, False)])
 
     while queue:
-        current_model, current_filter, current_partial = queue.popleft()
+        current_model, current_lookup, current_partial = queue.popleft()
 
-        for rel in current_model._meta.related_objects:
-            if isinstance(rel, ManyToManyRel):
-                continue
-
-            child = rel.related_model
-            if child in visited:
-                continue
-            if getattr(child._meta, "abstract", False) or getattr(child._meta, "swapped", None):
-                continue
-            if getattr(child._meta, "proxy", False):
-                # Proxy models share the parent's DB table; deleting the parent rows covers them.
-                continue
-            if not _is_project_model(child):
+        for related_object in current_model._meta.related_objects:
+            if isinstance(related_object, ManyToManyRel):
                 continue
 
-            field_name = rel.field.name
-            new_filter = field_name if current_filter is None else f"{field_name}__{current_filter}"
-            on_delete_name = getattr(rel.on_delete, "__name__", str(rel.on_delete))
-            is_partial = current_partial or (rel.on_delete is SET_NULL)
+            # Despite the name, Django's `related_object.related_model` is the model that
+            # DEFINES the FK field (the holder) — current_model is the FK's target here.
+            fk_holder = related_object.related_model
+            if fk_holder in visited:
+                continue
+            if getattr(fk_holder._meta, "abstract", False) or getattr(fk_holder._meta, "swapped", None):
+                continue
+            if getattr(fk_holder._meta, "proxy", False):
+                # Proxy models share their base model's DB table; deleting the base model's rows covers them.
+                continue
+            if not _is_project_model(fk_holder):
+                continue
 
-            visited[child] = (new_filter, is_partial)
-            discovered[child] = (new_filter, on_delete_name, is_partial)
-            queue.append((child, new_filter, is_partial))
+            field_name = related_object.field.name
+
+            discovered_model = DiscoveredModel(
+                account_lookup=field_name if current_lookup is None else f"{field_name}__{current_lookup}",
+                on_delete_value=_on_delete_name(related_object.on_delete),
+                # if we got here through a nullable FK at some point, any model discovered downstream is marked too
+                is_partial_coverage=current_partial or (related_object.on_delete is SET_NULL),
+            )
+
+            discovered[fk_holder] = discovered_model
+            visited.add(fk_holder)
+            queue.append((fk_holder, discovered_model.account_lookup, discovered_model.is_partial_coverage))
 
     # Collect cross-edges between discovered models (for topo sort)
     for model in discovered:
@@ -217,8 +265,13 @@ def build_fk_graph(root_model):
             target = field.related_model
             if target not in discovered or target is model:
                 continue
-            on_delete_name = getattr(field.remote_field.on_delete, "__name__", "?")
-            graph_edges.append((model, target, on_delete_name))
+            graph_edges.append(
+                FKEdge(
+                    fk_holder=model,
+                    fk_target=target,
+                    on_delete_value=_on_delete_name(field.remote_field.on_delete),
+                )
+            )
 
     return discovered, graph_edges
 
@@ -239,11 +292,11 @@ def topo_sort_deletion_order(discovered, graph_edges):
     for model in discovered:
         ts.add(model)
 
-    for child, parent, on_delete_name in graph_edges:
-        if on_delete_name in ("CASCADE", "PROTECT"):
-            # child must be deleted BEFORE parent
+    for edge in graph_edges:
+        if edge.on_delete_value in ("CASCADE", "PROTECT"):
+            # fk_holder must be deleted BEFORE fk_target
             # ts.add(X, Y) means Y must come before X
-            ts.add(parent, child)
+            ts.add(edge.fk_target, edge.fk_holder)
 
     try:
         return list(ts.static_order())
@@ -253,75 +306,11 @@ def topo_sort_deletion_order(discovered, graph_edges):
 
 
 # ---------------------------------------------------------------------------
-# Graph-based deletion engine
-# ---------------------------------------------------------------------------
-
-
-def execute_graph_deletion(discovered, deletion_order, account, chunk_size, dry_run, skip_models=None):
-    """
-    Delete all discovered models in topological order.
-    Each model's rows are filtered using the auto-built filter_kwarg.
-    skip_models: set of model classes handled manually (excluded from this step).
-    """
-    skip_models = skip_models or set()
-    models_processed = 0
-    models_with_rows = 0
-    total_deleted = 0
-
-    for model in deletion_order:
-        if model not in discovered or model in skip_models:
-            continue
-        filter_kwarg, on_delete_name, is_partial = discovered[model]
-        manager = getattr(model, "objects_include_deleted", model._default_manager)
-
-        try:
-            qs = manager.filter(**{filter_kwarg: account})
-        except Exception as exc:
-            _log(f"  [skip] {model.__name__}: cannot build queryset ({exc})")
-            continue
-
-        models_processed += 1
-        label = f"{model.__name__}[{filter_kwarg}]"
-        if is_partial:
-            label += " ⚠ partial"
-
-        if dry_run:
-            _log(f"  [DRY RUN] would delete {label}")
-            continue
-
-        deleted_count = 0
-        for attempt in range(_MAX_PROTECT_UNBLOCK_ATTEMPTS):
-            try:
-                deleted_count += _chunked_delete(qs, chunk_size, label=label)
-                break
-            except ProtectedError as exc:
-                # Auto-clear blocking objects (e.g. nullable PROTECT FKs from partial-coverage models)
-                by_model = defaultdict(list)
-                for obj in exc.protected_objects:
-                    by_model[type(obj)].append(obj.pk)
-                for blocker_model, pks in by_model.items():
-                    _log(f"  [auto-unblock] {blocker_model.__name__} ×{len(pks)} blocking {label}")
-                    _chunked_delete(
-                        blocker_model.objects.filter(pk__in=pks), chunk_size, f"{blocker_model.__name__}[unblock]"
-                    )
-
-        if deleted_count:
-            _log(f"  {label}: {deleted_count:,} deleted")
-            models_with_rows += 1
-            total_deleted += deleted_count
-
-    if not dry_run:
-        _log(
-            f"  topo step: {models_processed} models processed, {models_with_rows} non-empty, {total_deleted:,} rows deleted total"
-        )
-
-
-# ---------------------------------------------------------------------------
 # --show-graph mode
 # ---------------------------------------------------------------------------
 
 
-def show_graph(discovered, graph_edges, deletion_order, account=None):
+def show_graph(discovered, deletion_order, account=None):
     """
     Print what the FK graph discovered, flag partial-coverage paths,
     and optionally show which discovered models have data for the account.
@@ -334,17 +323,17 @@ def show_graph(discovered, graph_edges, deletion_order, account=None):
     for model in deletion_order:
         if model not in discovered:
             continue
-        filter_kwarg, on_delete_name, is_partial = discovered[model]
-        flag = "⚠" if is_partial else " "
+        info = discovered[model]
+        flag = "⚠" if info.is_partial_coverage else " "
         count_str = ""
         if account is not None:
             try:
                 manager = getattr(model, "objects_include_deleted", model._default_manager)
-                count = manager.filter(**{filter_kwarg: account}).count()
+                count = manager.filter(**{info.account_lookup: account}).count()
                 count_str = f"  [{count} rows]"
             except Exception:
                 count_str = "  [?]"
-        _log(f"  {flag} {model._meta.label:53s} {on_delete_name:12s}  {filter_kwarg}{count_str}")
+        _log(f"  {flag} {model._meta.label:53s} {info.on_delete_value:12s}  {info.account_lookup}{count_str}")
 
     _log("")
     _log("⚠ = path contains a SET_NULL FK — rows where that FK is NULL are NOT found by this filter")
@@ -352,9 +341,9 @@ def show_graph(discovered, graph_edges, deletion_order, account=None):
     _log("")
 
     _log("=== Models NOT in FK graph (manual handling required) ===")
-    for label, reason in _MANUAL_MODELS_NOTE:
-        _log(f"  - {label}")
-        _log(f"      reason: {reason}")
+    for note in _MANUAL_CLEANUP_NOTES:
+        _log(f"  - {note.label}")
+        _log(f"      reason: {note.reason}")
 
 
 # ---------------------------------------------------------------------------
@@ -445,10 +434,10 @@ class Command(BaseCommand):
                 collector.collect(queryset)
                 break
             except ProtectedError as exc:
-                by_model = defaultdict(list)
+                blocking_pks_by_model = defaultdict(list)
                 for obj in exc.protected_objects:
-                    by_model[type(obj)].append(obj.pk)
-                for blocker_model, pks in by_model.items():
+                    blocking_pks_by_model[type(obj)].append(obj.pk)
+                for blocker_model, pks in blocking_pks_by_model.items():
                     _log(f"  [auto-unblock] {blocker_model.__name__} ×{len(pks)} blocking {label} (collect phase)")
                     _chunked_delete(
                         blocker_model.objects.filter(pk__in=pks), self.chunk_size, f"{blocker_model.__name__}[unblock]"
@@ -464,13 +453,13 @@ class Command(BaseCommand):
         # data (instance dicts). Topo-sort them together so FK holders are always
         # deleted before the models they reference, regardless of which list they
         # came from.
-        plan_items = []  # list of (model, queryset_or_None, pk_list_or_None)
+        plan_items = []
         for qs in collector.fast_deletes:
-            plan_items.append((qs.model, qs, None))
+            plan_items.append(DeletionPlanItem(model=qs.model, queryset=qs, pks=None))
         for model, instances in collector.data.items():
             pks = [obj.pk for obj in instances]
             if pks:
-                plan_items.append((model, None, pks))
+                plan_items.append(DeletionPlanItem(model=model, queryset=None, pks=pks))
 
         # Topo sort via Kahn's algorithm: if model A has a FK to model B, delete A first.
         # Use _meta.local_fields (forward FK/O2O only) — _meta.get_fields() also returns
@@ -479,14 +468,16 @@ class Command(BaseCommand):
         # end in plan_items insertion order (fast_deletes before data, so SourceVersion before
         # DataSource). DataSource.default_version is already nulled, so either order is safe.
         # plan_models as dict preserves insertion order for cycle-node fallback.
-        plan_models = dict.fromkeys(m for m, _, _ in plan_items)
-        successors = {m: set() for m in plan_models}
-        in_degree = {m: 0 for m in plan_models}  # Kahn's algorithm: number of incoming FK edges per model
+        plan_models = dict.fromkeys(item.model for item in plan_items)
+        fk_targets_by_holder = {m: set() for m in plan_models}
+        blocking_holder_count = {
+            m: 0 for m in plan_models
+        }  # Kahn's algorithm: remaining FK holders blocking each model
         for model in plan_models:
             for field in model._meta.local_fields:
                 if isinstance(field, (ForeignKey, OneToOneField)):
                     # Skip SET_NULL FKs: they don't create a hard ordering constraint
-                    # (the DB will null them on parent deletion, or we've already done so).
+                    # (the DB will null them on target deletion, or we've already done so).
                     # Including them creates false cycles (e.g. DataSource.default_version
                     # ↔ SourceVersion.data_source).
                     if field.remote_field.on_delete is SET_NULL:
@@ -494,49 +485,49 @@ class Command(BaseCommand):
                     target = field.related_model
                     if target and target in plan_models and target is not model:
                         # model holds FK → delete model first → target depends on model
-                        if target not in successors[model]:  # deduplicate before incrementing
-                            successors[model].add(target)
-                            in_degree[target] += 1
-        queue = [m for m in plan_models if in_degree[m] == 0]
+                        if target not in fk_targets_by_holder[model]:  # deduplicate before incrementing
+                            fk_targets_by_holder[model].add(target)
+                            blocking_holder_count[target] += 1
+        ready_models = [m for m in plan_models if blocking_holder_count[m] == 0]
         ordered_models = []
-        while queue:
-            m = queue.pop(0)
-            ordered_models.append(m)
-            for s in successors[m]:
-                in_degree[s] -= 1
-                if in_degree[s] == 0:
-                    queue.append(s)
+        while ready_models:
+            model = ready_models.pop(0)
+            ordered_models.append(model)
+            for unblocked_model in fk_targets_by_holder[model]:
+                blocking_holder_count[unblocked_model] -= 1
+                if blocking_holder_count[unblocked_model] == 0:
+                    ready_models.append(unblocked_model)
         # Append cycle participants at the end in their original insertion order
-        cycle_nodes = [m for m in plan_models if m not in set(ordered_models)]
-        if cycle_nodes:
-            _log(f"  {label}: topo-sort cycle (ignored): {[m.__name__ for m in cycle_nodes]}")
-        ordered_models.extend(cycle_nodes)
+        cycle_models = [m for m in plan_models if m not in set(ordered_models)]
+        if cycle_models:
+            _log(f"  {label}: topo-sort cycle (ignored): {[m.__name__ for m in cycle_models]}")
+        ordered_models.extend(cycle_models)
 
-        model_to_item = {m: (qs, pks) for m, qs, pks in plan_items}
+        model_to_item = {item.model: item for item in plan_items}
         skipped = [m for m in ordered_models if m not in model_to_item]
         if skipped:
             _log(
                 f"  [warn] {label}: {len(skipped)} model(s) in topo order but not in plan: {[m.__name__ for m in skipped]}"
             )
-        ordered_items = [(m, *model_to_item[m]) for m in ordered_models if m in model_to_item]
+        ordered_items = [model_to_item[m] for m in ordered_models if m in model_to_item]
 
         if plan_items:
-            _log(f"  {label}: cascade plan — {', '.join(sorted(m._meta.label for m, _, _ in plan_items))}")
+            _log(f"  {label}: cascade plan — {', '.join(sorted(item.model._meta.label for item in plan_items))}")
 
         total_steps = len(ordered_items)
-        for step, (model, qs, pks) in enumerate(ordered_items, 1):
-            step_label = f"{label}→{model._meta.label}"
+        for step, item in enumerate(ordered_items, 1):
+            step_label = f"{label}→{item.model._meta.label}"
             _log(f"  [{step}/{total_steps}] {step_label}…")
-            t0 = time.monotonic()
-            if qs is not None:
-                n = qs._raw_delete(using=qs.db)
+            step_started_at = time.monotonic()
+            if item.queryset is not None:
+                deleted_count = item.queryset._raw_delete(using=item.queryset.db)
             else:
-                n = 0
-                for i in range(0, len(pks), self.chunk_size):
-                    chunk = pks[i : i + self.chunk_size]
-                    n += model.objects.filter(pk__in=chunk)._raw_delete(using=queryset.db)
-            if n:
-                _log(f"  {step_label}: {n:,} deleted ({time.monotonic() - t0:.1f}s)")
+                deleted_count = 0
+                for offset in range(0, len(item.pks), self.chunk_size):
+                    chunk = item.pks[offset : offset + self.chunk_size]
+                    deleted_count += item.model.objects.filter(pk__in=chunk)._raw_delete(using=queryset.db)
+            if deleted_count:
+                _log(f"  {step_label}: {deleted_count:,} deleted ({time.monotonic() - step_started_at:.1f}s)")
 
     def _delete_datasource_tree(self, datasources, label_prefix=""):
         """Delete each DataSource fully before moving to the next."""
@@ -660,15 +651,15 @@ class Command(BaseCommand):
                 _log(f"  [error] orphan ds[{ds.id}] {ds.name!r}: {exc} — skipping")
 
         # Forms without projects
-        forms_no_project = Form.objects_include_deleted.filter(projects=None)
+        forms_without_project = Form.objects_include_deleted.filter(projects=None)
         self._delete_qs(
-            InstanceFile.objects.filter(instance__in=Instance.objects.filter(form__in=forms_no_project)),
+            InstanceFile.objects.filter(instance__in=Instance.objects.filter(form__in=forms_without_project)),
             label="InstanceFile[form no project]",
         )
-        self._delete_qs(Instance.objects.filter(form__in=forms_no_project), label="Instance[form no project]")
+        self._delete_qs(Instance.objects.filter(form__in=forms_without_project), label="Instance[form no project]")
 
         self._delete_qs(Project.objects.filter(account=None), label="Project[no account]")
-        # Forms with no form_id may still have instances (not covered by the forms_no_project cleanup above).
+        # Forms with no form_id may still have instances (not covered by the forms_without_project cleanup above).
         forms_no_form_id = Form.objects_include_deleted.filter(form_id=None)
         self._delete_qs(
             InstanceFile.objects.filter(instance__in=Instance.objects.filter(form__in=forms_no_form_id)),
@@ -684,14 +675,16 @@ class Command(BaseCommand):
         self._delete_qs(Session.objects.all(), label="Session")
         self._delete_qs(Device.objects.filter(projects=None), label="Device[orphan]")
 
-        for f in forms_no_project:
+        for form_without_project in forms_without_project:
             try:
                 if not self.dry_run:
-                    OrgUnitType.reference_forms.through.objects.filter(form=f).delete()
-                    f.org_unit_types.clear()
-                    InstanceFile.objects.filter(instance__form_version__in=f.form_versions.all()).delete()
-                    Instance.objects.filter(form_version__in=f.form_versions.all()).delete()
-                    f.delete_hard()
+                    OrgUnitType.reference_forms.through.objects.filter(form=form_without_project).delete()
+                    form_without_project.org_unit_types.clear()
+                    InstanceFile.objects.filter(
+                        instance__form_version__in=form_without_project.form_versions.all()
+                    ).delete()
+                    Instance.objects.filter(form_version__in=form_without_project.form_versions.all()).delete()
+                    form_without_project.delete_hard()
             except Exception:
                 _log(traceback.format_exc())
 
@@ -774,6 +767,66 @@ class Command(BaseCommand):
     # Main account deletion (graph-based)
     # -----------------------------------------------------------------------
 
+    def _execute_graph_deletion(self, discovered, deletion_order, account, skip_models=None):
+        """
+        Delete all discovered models in topological order.
+        Each model's rows are filtered using the auto-built account_lookup.
+        skip_models: set of model classes handled manually (excluded from this step).
+        """
+        skip_models = skip_models or set()
+        models_processed = 0
+        models_with_rows = 0
+        total_deleted = 0
+
+        for model in deletion_order:
+            if model not in discovered or model in skip_models:
+                continue
+            info = discovered[model]
+            manager = getattr(model, "objects_include_deleted", model._default_manager)
+
+            try:
+                qs = manager.filter(**{info.account_lookup: account})
+            except Exception as exc:
+                _log(f"  [skip] {model.__name__}: cannot build queryset ({exc})")
+                continue
+
+            models_processed += 1
+            label = f"{model.__name__}[{info.account_lookup}]"
+            if info.is_partial_coverage:
+                label += " ⚠ partial"
+
+            if self.dry_run:
+                _log(f"  [DRY RUN] would delete {label}")
+                continue
+
+            deleted_count = 0
+            for attempt in range(_MAX_PROTECT_UNBLOCK_ATTEMPTS):
+                try:
+                    deleted_count += _chunked_delete(qs, self.chunk_size, label=label)
+                    break
+                except ProtectedError as exc:
+                    # Auto-clear blocking objects (e.g. nullable PROTECT FKs from partial-coverage models)
+                    blocking_pks_by_model = defaultdict(list)
+                    for obj in exc.protected_objects:
+                        blocking_pks_by_model[type(obj)].append(obj.pk)
+                    for blocker_model, pks in blocking_pks_by_model.items():
+                        _log(f"  [auto-unblock] {blocker_model.__name__} ×{len(pks)} blocking {label}")
+                        _chunked_delete(
+                            blocker_model.objects.filter(pk__in=pks),
+                            self.chunk_size,
+                            f"{blocker_model.__name__}[unblock]",
+                        )
+
+            if deleted_count:
+                _log(f"  {label}: {deleted_count:,} deleted")
+                models_with_rows += 1
+                total_deleted += deleted_count
+
+        if not self.dry_run:
+            _log(
+                f"  topo step: {models_processed} models processed, {models_with_rows} non-empty, {total_deleted:,} rows deleted total"
+            )
+
     def _delete_account(self, account, discovered, deletion_order):
         _log(f"Account {account.id}: {account.name!r}")
 
@@ -835,12 +888,10 @@ class Command(BaseCommand):
             _log(
                 f"  Running FK-graph auto-deletion ({len(discovered)} models, skipping {len(manual_models)} manual)..."
             )
-            execute_graph_deletion(
+            self._execute_graph_deletion(
                 discovered,
                 deletion_order,
                 account,
-                self.chunk_size,
-                self.dry_run,
                 skip_models=manual_models,
             )
 
@@ -888,8 +939,8 @@ class Command(BaseCommand):
 
         # --list-accounts mode
         if options.get("list_accounts"):
-            for acct in Account.objects.order_by("id"):
-                _log(f"  {acct.id:6d}  {acct.name}")
+            for account in Account.objects.order_by("id"):
+                _log(f"  {account.id:6d}  {account.name}")
             return
 
         # --show-graph mode
@@ -897,15 +948,15 @@ class Command(BaseCommand):
             account = None
             if options.get("for_account"):
                 account = Account.objects.get(pk=options["for_account"])
-            show_graph(discovered, graph_edges, deletion_order, account=account)
+            show_graph(discovered, deletion_order, account=account)
             return
 
         if self.dry_run:
             _log("*** DRY RUN — no data will be modified ***")
 
         _log("Available accounts:")
-        for acct in Account.objects.order_by("id"):
-            _log(f"  {acct.id}: {acct.name}")
+        for account in Account.objects.order_by("id"):
+            _log(f"  {account.id}: {account.name}")
 
         account_to_keep = None
         full_cleanup = False
@@ -943,7 +994,6 @@ class Command(BaseCommand):
 
         _log("Done!")
         _log("Row counts after deletion:")
-        from django.apps import apps as django_apps
 
         all_models = sorted(django_apps.get_models(), key=lambda m: m._meta.label)
         for model in all_models:

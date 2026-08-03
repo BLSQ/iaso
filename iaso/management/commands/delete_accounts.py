@@ -99,7 +99,7 @@ def _log(msg):
 # ---------------------------------------------------------------------------
 # Streaming chunked delete
 # ---------------------------------------------------------------------------
-def _chunked_delete(queryset, chunk_size=5000, label=None):
+def _chunked_raw_delete(queryset, chunk_size=5000, label=None):
     """Delete in streaming chunks — never loads more than chunk_size PKs at once."""
     model = queryset.model
     label = label or model.__name__
@@ -380,7 +380,8 @@ class Command(BaseCommand):
     # -----------------------------------------------------------------------
     # Helpers
     # -----------------------------------------------------------------------
-    def _sql(self, sql, params=None, label="SQL"):
+    def _delete_with_sql(self, sql, params=None, label="SQL"):
+        """Deletes data by executing a SQL query"""
         if self.dry_run:
             _log(f"  [DRY RUN] {label}: {sql[:100]}")
             return 0
@@ -394,6 +395,7 @@ class Command(BaseCommand):
         return row_count
 
     def _delete_qs(self, queryset, label=None):
+        """Deletes a whole queryset with a single queryset.delete()"""
         label = label or queryset.model.__name__
         if self.dry_run:
             _log(f"  [DRY RUN] {label}: ~{queryset.count()}")
@@ -401,13 +403,13 @@ class Command(BaseCommand):
         deleted_count, _ = queryset.delete()
         _log(f"  {label}: {deleted_count} deleted")
 
-    def _delete_streaming(self, queryset, label=None):
-        """Dry-run-aware wrapper around the module-level _chunked_delete streaming delete."""
+    def _delete_qs_in_chunks(self, queryset, label=None):
+        """Deletes a queryset by doing queryset.raw_delete in chunks"""
         label = label or queryset.model.__name__
         if self.dry_run:
             _log(f"  [DRY RUN] {label}: ~{queryset.count()}")
             return 0
-        return _chunked_delete(queryset, self.chunk_size, label=label)
+        return _chunked_raw_delete(queryset, self.chunk_size, label=label)
 
     def _update_qs(self, queryset, label=None, **fields):
         """Dry-run-aware wrapper around queryset.update(**fields)."""
@@ -459,7 +461,7 @@ class Command(BaseCommand):
                     blocking_pks_by_model[type(obj)].append(obj.pk)
                 for blocker_model, pks in blocking_pks_by_model.items():
                     _log(f"  [auto-unblock] {blocker_model.__name__} ×{len(pks)} blocking {label} (collect phase)")
-                    _chunked_delete(
+                    _chunked_raw_delete(
                         blocker_model.objects.filter(pk__in=pks), self.chunk_size, f"{blocker_model.__name__}[unblock]"
                     )
         else:
@@ -588,7 +590,7 @@ class Command(BaseCommand):
                 )
 
             with self._doing(f"Instance {ds_label}"):
-                self._delete_streaming(instances_in_ds, label=f"Instance[{ds_label}]")
+                self._delete_qs_in_chunks(instances_in_ds, label=f"Instance[{ds_label}]")
 
             # Planning.org_unit = PROTECT blocks OrgUnit deletion (hence DataSource cascade).
             # Cycle: Planning.selected_sampling_result = PROTECT(PSR) ↔ PSR.planning = CASCADE(Planning)
@@ -600,11 +602,11 @@ class Command(BaseCommand):
                     label=f"Planning.selected_sampling_result=NULL[{ds_label}]",
                     selected_sampling_result=None,
                 )
-                self._delete_streaming(
+                self._delete_qs_in_chunks(
                     PlanningSamplingResult.objects.filter(planning__in=planning_qs),
                     label=f"PlanningSamplingResult[{ds_label}]",
                 )
-                self._delete_streaming(planning_qs, label=f"Planning[{ds_label}]")
+                self._delete_qs_in_chunks(planning_qs, label=f"Planning[{ds_label}]")
 
             with self._doing(f"DataSource cascade {ds_label}"):
                 # DataSource.default_version → SourceVersion cycle: null first.
@@ -635,9 +637,9 @@ class Command(BaseCommand):
     # Pre/post-deletion cleanup
     # -----------------------------------------------------------------------
     def _pre_deletion_clean_up(self, accounts_to_delete):
-        _log("Pre-deletion cleanup: clearing users_profile, orphaned Instance, InstanceFile, OrgUnit...")
+        _log("Pre-deletion cleanup: clearing users_profile, orphan Instance, InstanceFile, OrgUnit...")
         try:
-            self._sql("DELETE FROM users_profile", label="users_profile")
+            self._delete_with_sql("DELETE FROM users_profile", label="users_profile")
         except django.db.utils.ProgrammingError:
             pass
 
@@ -700,7 +702,7 @@ class Command(BaseCommand):
         self._delete_qs(Instance.objects.filter(form__in=forms_no_form_id), label="Instance[form no form_id]")
         self._delete_qs(forms_no_form_id, label="Form[no form_id]")
         # Rows with no app_id can't be attributed to any account — delete them to avoid leaks.
-        self._sql(
+        self._delete_with_sql(
             "DELETE FROM vector_control_apiimport WHERE headers->>'QUERY_STRING' NOT LIKE '%app_id=%'",
             label="vector_control_apiimport[no app_id]",
         )
@@ -715,7 +717,7 @@ class Command(BaseCommand):
 
         if _Dashboard is not None:
             self._delete_qs(_Dashboard.objects.all(), label="Dashboard")
-        self._sql(
+        self._delete_with_sql(
             "DELETE FROM iaso_exportrequest WHERE id NOT IN (SELECT DISTINCT export_request_id FROM iaso_exportstatus)",
             label="iaso_exportrequest[orphan]",
         )
@@ -750,7 +752,7 @@ class Command(BaseCommand):
             ") DELETE FROM audit_modification WHERE id IN (SELECT id FROM cte)"
         )
         for i in range(2000):
-            deleted = self._sql(sql, label=f"Modification batch {i}")
+            deleted = self._delete_with_sql(sql, label=f"Modification batch {i}")
             if deleted == 0:
                 break
 
@@ -789,7 +791,7 @@ class Command(BaseCommand):
             ")"
         )
         while True:
-            deleted = self._sql(delete_sql, label="ExportLog[orphan] batch")
+            deleted = self._delete_with_sql(delete_sql, label="ExportLog[orphan] batch")
             total += deleted
             if deleted < self.chunk_size:
                 break
@@ -842,7 +844,7 @@ class Command(BaseCommand):
         # Django's Collector raises PROTECT on PSR even when Planning is also being
         # collected — delete PSR first so Planning has no blocker.
         with self._doing(f"account={account.id} PlanningSamplingResult"):
-            self._delete_streaming(
+            self._delete_qs_in_chunks(
                 PlanningSamplingResult.objects.filter(planning__project__account=account),
                 label="PlanningSamplingResult",
             )
@@ -879,7 +881,7 @@ class Command(BaseCommand):
         # Rows are filtered by app_id (from QUERY_STRING). Rows with no app_id cannot be
         # attributed to any account and are cleaned up in _post_flight (account-to-keep mode).
         for project in Project.objects.filter(account=account):
-            self._sql(
+            self._delete_with_sql(
                 "DELETE FROM vector_control_apiimport WHERE headers->>'QUERY_STRING' LIKE %s",
                 params=[f"%app_id={project.app_id}%"],
                 label=f"vector_control_apiimport[app_id={project.app_id}]",
@@ -923,7 +925,7 @@ class Command(BaseCommand):
             deleted_count = 0
             for attempt in range(_MAX_PROTECT_UNBLOCK_ATTEMPTS):
                 try:
-                    deleted_count += _chunked_delete(qs, self.chunk_size, label=label)
+                    deleted_count += _chunked_raw_delete(qs, self.chunk_size, label=label)
                     break
                 except ProtectedError as exc:
                     # Auto-clear blocking objects (e.g. nullable PROTECT FKs from partial-coverage models)
@@ -932,7 +934,7 @@ class Command(BaseCommand):
                         blocking_pks_by_model[type(obj)].append(obj.pk)
                     for blocker_model, pks in blocking_pks_by_model.items():
                         _log(f"  [auto-unblock] {blocker_model.__name__} ×{len(pks)} blocking {label}")
-                        _chunked_delete(
+                        _chunked_raw_delete(
                             blocker_model.objects.filter(pk__in=pks),
                             self.chunk_size,
                             f"{blocker_model.__name__}[unblock]",

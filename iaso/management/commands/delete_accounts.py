@@ -195,6 +195,12 @@ _MANUAL_CLEANUP_NOTES = [
     ),
 ]
 
+# represents the different modes this command can be run in
+MODE_LIST_ACCOUNTS = "list_accounts"
+MODE_SHOW_GRAPH = "show_graph"
+MODE_DELETE_ACCOUNTS = "delete_accounts"
+MODE_KEEP_SINGLE_ACCOUNT = "keep_single_account"
+
 
 def _is_project_model(model):
     """True if this model belongs to iaso or a plugin (not a third-party or Django built-in app)."""
@@ -965,6 +971,85 @@ class Command(BaseCommand):
         for cred in ExternalCredentials.objects.all():
             _log(f"  credential: {cred.id} {cred.url} {cred.login} {cred.name}")
 
+    def _determine_mode(self, options):
+        if options.get("list_accounts"):
+            return MODE_LIST_ACCOUNTS
+        if options.get("show_graph"):
+            return MODE_SHOW_GRAPH
+        if options.get("account_to_keep") is not None:
+            return MODE_KEEP_SINGLE_ACCOUNT
+        if options.get("accounts_to_delete") is not None:
+            return MODE_DELETE_ACCOUNTS
+        raise ValueError("unknown mode, please fix parameters")
+
+    def _mode_list_accounts(self):
+        _log("Available accounts:")
+        for account in Account.objects.order_by("id"):
+            _log(f"  {account.id:6d}  {account.name}")
+        return 0
+
+    def _build_model_graph(self):
+        # Build FK graph once (same for all accounts)
+        _log("Building FK graph from Account...")
+        discovered, graph_edges = build_fk_graph(Account)
+        deletion_order = topo_sort_deletion_order(discovered, graph_edges)
+        _log(f"  Discovered {len(discovered)} models, topo-sorted deletion order computed")
+        return discovered, deletion_order
+
+    def _mode_show_graph(self, options, discovered_models, deletion_order):
+        if options.get("for_account"):
+            account = Account.objects.get(pk=options["for_account"])
+        else:
+            raise ValueError("please provide the for_account parameter when running in show_graph mode")
+        show_graph(discovered_models, deletion_order, account=account)
+        return 0
+
+    def _mode_delete_accounts(self, options, discovered_models, deletion_order):
+        if self.dry_run:
+            _log("*** DRY RUN — no data will be modified ***")
+        self._mode_list_accounts()
+
+        ids = options["accounts_to_delete"]
+        accounts_to_delete = list(Account.objects.filter(pk__in=ids))
+        if len(accounts_to_delete) != len(ids):
+            found_ids = {a.id for a in accounts_to_delete}
+            raise SystemExit(f"Accounts not found: {[id for id in ids if id not in found_ids]}")
+
+        self._pre_deletion_clean_up(accounts_to_delete)
+        self._delete_accounts(accounts_to_delete, discovered_models, deletion_order)
+
+        return 0
+
+    def _delete_accounts(self, accounts_to_delete, discovered_models, deletion_order):
+        for account in accounts_to_delete:
+            _log(f"--- Deleting account={account.id} ({account.name!r}) ---")
+            try:
+                self._delete_account(account, discovered_models, deletion_order)
+                _log(f"--- OK account={account.id} ({account.name!r}) deleted ---")
+            except Exception:
+                _log(
+                    f"ERROR account={account.id!r} ({account.name!r})"
+                    f" at step [{self._current_step}]:\n{traceback.format_exc()}"
+                )
+                _log(f"--- FAILED account={account.id} ({account.name!r}) ---")
+
+    def _mode_keep_single_account(self, options, discovered_models, deletion_order):
+        if self.dry_run:
+            _log("*** DRY RUN — no data will be modified ***")
+        self._mode_list_accounts()
+
+        account_id_to_keep = options["account_to_keep"]
+        account_to_keep = Account.objects.get(pk=account_id_to_keep)
+        _log(f"Keeping: {account_id_to_keep} — {account_to_keep.name!r}")
+        accounts_to_delete = list(Account.objects.exclude(pk=account_id_to_keep).order_by("-id"))
+        random.shuffle(accounts_to_delete)
+
+        self._pre_deletion_clean_up(accounts_to_delete)
+        self._delete_accounts(accounts_to_delete, discovered_models, deletion_order)
+        self._post_deletion_clean_up(account_to_keep)
+
+        return 0
+
     # -----------------------------------------------------------------------
     # Entry point
     # -----------------------------------------------------------------------
@@ -975,69 +1060,20 @@ class Command(BaseCommand):
         self.cursor = connection.cursor()
         self._current_step = ""
 
-        # Build FK graph once (same for all accounts)
-        _log("Building FK graph from Account...")
-        discovered, graph_edges = build_fk_graph(Account)
-        deletion_order = topo_sort_deletion_order(discovered, graph_edges)
-        _log(f"  Discovered {len(discovered)} models, topo-sorted deletion order computed")
+        mode = self._determine_mode(options)
 
-        # --list-accounts mode
-        if options.get("list_accounts"):
-            for account in Account.objects.order_by("id"):
-                _log(f"  {account.id:6d}  {account.name}")
-            return
+        if mode == MODE_LIST_ACCOUNTS:
+            return self._mode_list_accounts()
 
-        # --show-graph mode
-        if options.get("show_graph"):
-            account = None
-            if options.get("for_account"):
-                account = Account.objects.get(pk=options["for_account"])
-            show_graph(discovered, deletion_order, account=account)
-            return
+        discovered_models, deletion_order = self._build_model_graph()
 
-        if self.dry_run:
-            _log("*** DRY RUN — no data will be modified ***")
-
-        _log("Available accounts:")
-        for account in Account.objects.order_by("id"):
-            _log(f"  {account.id}: {account.name}")
-
-        account_to_keep = None
-        full_cleanup = False
-
-        # Checking whether we are in full cleanup mode (keep one account, delete all others) or in selective deletion mode (delete specific accounts)
-        if options.get("account_to_keep") is not None:
-            account_id_to_keep = options["account_to_keep"]
-            account_to_keep = Account.objects.get(pk=account_id_to_keep)
-            _log(f"Keeping: {account_id_to_keep} — {account_to_keep.name!r}")
-            accounts_to_delete = list(Account.objects.exclude(pk=account_id_to_keep).order_by("-id"))
-            random.shuffle(accounts_to_delete)
-            full_cleanup = True
-        else:
-            ids = options["accounts_to_delete"]
-            accounts_to_delete = list(Account.objects.filter(pk__in=ids))
-            if len(accounts_to_delete) != len(ids):
-                found_ids = {a.id for a in accounts_to_delete}
-                raise SystemExit(f"Accounts not found: {[id for id in ids if id not in found_ids]}")
-
-        # Starting some clean up before deleting selected accounts
-        self._pre_deletion_clean_up(accounts_to_delete)
-
-        for account in accounts_to_delete:
-            _log(f"--- Deleting account={account.id} ({account.name!r}) ---")
-            try:
-                self._delete_account(account, discovered, deletion_order)
-                _log(f"--- OK account={account.id} ({account.name!r}) deleted ---")
-            except Exception:
-                _log(
-                    f"ERROR account={account.id!r} ({account.name!r})"
-                    f" at step [{self._current_step}]:\n{traceback.format_exc()}"
-                )
-                _log(f"--- FAILED account={account.id} ({account.name!r}) ---")
-
-        # Finishing cleaning up - dangling/orphan data
-        if full_cleanup:
-            self._post_deletion_clean_up(account_to_keep)
+        if mode == MODE_SHOW_GRAPH:
+            return self._mode_show_graph(options, discovered_models, deletion_order)
+        if mode == MODE_DELETE_ACCOUNTS:
+            return self._mode_delete_accounts(options, discovered_models, deletion_order)
+        if mode == MODE_KEEP_SINGLE_ACCOUNT:
+            return self._mode_keep_single_account(options, discovered_models, deletion_order)
 
         _log("Done!")
         self._print_model_stats()
+        return 0

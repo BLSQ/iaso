@@ -354,7 +354,7 @@ class Command(BaseCommand):
     # Helpers
     # -----------------------------------------------------------------------
     def _delete_with_sql(self, sql, params=None, label="SQL"):
-        """Deletes data by executing a SQL query"""
+        """Deletes data by executing a SQL query - useful for deleting models where there's no clear FK path to the Account model (e.g. users_profile)."""
         if self.dry_run:
             _log(f"  [DRY RUN] {label}: {sql[:100]}")
             return 0
@@ -368,7 +368,7 @@ class Command(BaseCommand):
         return row_count
 
     def _delete_qs(self, queryset, label=None):
-        """Deletes a whole queryset with a single queryset.delete()"""
+        """Deletes a whole queryset with a single queryset.delete() - useful for deleting small tables"""
         label = label or queryset.model.__name__
         if self.dry_run:
             _log(f"  [DRY RUN] {label}: ~{queryset.count()}")
@@ -377,7 +377,7 @@ class Command(BaseCommand):
         _log(f"  {label}: {deleted_count} deleted")
 
     def _delete_qs_in_chunks(self, queryset, label=None):
-        """Deletes a queryset in chunks with raw_delete() — never loads more than chunk_size PKs at once."""
+        """Deletes a queryset in chunks with raw_delete() — useful for deleting big tables that can't be loaded at once."""
         model = queryset.model
         label = label or model.__name__
         if self.dry_run:
@@ -545,13 +545,12 @@ class Command(BaseCommand):
             step_label = f"{label}→{item.model._meta.label}"
             _log(f"  [{step}/{total_steps}] {step_label}…")
             step_started_at = time.monotonic()
-            if item.queryset is not None:
-                deleted_count = item.queryset._raw_delete(using=item.queryset.db)
-            else:
-                deleted_count = 0
-                for offset in range(0, len(item.pks), self.chunk_size):
-                    chunk = item.pks[offset : offset + self.chunk_size]
-                    deleted_count += item.model.objects.filter(pk__in=chunk)._raw_delete(using=queryset.db)
+            item_qs = (
+                item.queryset
+                if item.queryset is not None
+                else item.model.objects.using(queryset.db).filter(pk__in=item.pks)
+            )
+            deleted_count = self._delete_qs_in_chunks(item_qs, label=step_label)
             if deleted_count:
                 _log(f"  {step_label}: {deleted_count:,} deleted ({time.monotonic() - step_started_at:.1f}s)")
 

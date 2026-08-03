@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-10 07:42+0000\n"
+"POT-Creation-Date: 2026-07-27 11:25+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -21,7 +21,9 @@ msgstr ""
 #: dynamic_fields/filter_backends.py
 #, python-brace-format
 msgid "Dynamic fields cannot contain both {all_fields} and {default_fields}"
-msgstr "Les champs dynamiques ne peuvent pas contenir à la fois {all_fields} et {default_fields}"
+msgstr ""
+"Les champs dynamiques ne peuvent pas contenir à la fois {all_fields} et "
+"{default_fields}"
 
 #: dynamic_fields/filter_backends.py
 #, python-brace-format
@@ -172,6 +174,10 @@ msgstr ""
 #: iaso/api/metrics/serializers.py
 msgid "The file must be a CSV."
 msgstr "Le fichier doit être un CSV"
+
+#: iaso/api/metrics/serializers.py
+msgid "Unable to determine the CSV delimiter."
+msgstr "Impossible de déterminer le délimiteur du CSV"
 
 #: iaso/api/metrics/serializers.py
 #, python-brace-format
@@ -1033,8 +1039,8 @@ msgid "Trypelim project"
 msgstr "Projet Trypelim"
 
 #: iaso/modules.py
-msgid "Data validation"
-msgstr "Validation des données"
+msgid "Change requests"
+msgstr "Demandes de changement"
 
 #: iaso/modules.py
 msgid "SaaS"
@@ -1379,6 +1385,9 @@ msgstr "Virus détecté"
 #: iaso/utils/virus_scan/model.py
 msgid "Error"
 msgstr "Erreur lors de l'analyse"
+
+#~ msgid "Data validation"
+#~ msgstr "Validation des données"
 
 #~ msgid "Account id is required."
 #~ msgstr "L'identifiant du compte est requis."

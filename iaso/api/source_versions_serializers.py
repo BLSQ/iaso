@@ -1,11 +1,9 @@
 import logging
-import sys
 import tempfile
 
 from rest_framework import serializers
 
 from iaso.diffing import Differ, Dumper
-from iaso.management.commands.command_logger import CommandLogger
 from iaso.models import Group, OrgUnit, OrgUnitType, SourceVersion, Task
 from iaso.tasks.dhis2_ou_exporter import dhis2_ou_exporter
 
@@ -93,14 +91,13 @@ class DiffSerializer(serializers.Serializer):
 
     def generate_csv(self):
         data = self.validated_data
-        iaso_logger = CommandLogger(sys.stdout)
         if "groups" in data["fields_to_export"]:
             data["fields_to_export"].remove("groups")
             ignore_groups = False
         else:
             ignore_groups = True
 
-        diffs, fields = Differ(iaso_logger).diff(
+        diffs, fields = Differ().diff(
             data["ref_version_id"],
             data["source_version_id"],
             ignore_groups=ignore_groups,
@@ -116,7 +113,7 @@ class DiffSerializer(serializers.Serializer):
             field_names=data.get("fields_to_export"),
         )
         file = tempfile.NamedTemporaryFile(mode="w+t", encoding="utf-8", newline="", suffix=".csv", delete=False)
-        Dumper(iaso_logger).dump_as_csv(diffs, fields, file)
+        Dumper().dump_as_csv(diffs, fields, file)
         file.seek(0)
         return file
 

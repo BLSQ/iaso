@@ -1,5 +1,4 @@
 import datetime
-import os
 
 from typing import List
 
@@ -148,8 +147,6 @@ class CalendarXLSXExportAPITestCase(APITestCase):
         self.assertEqual(data_dict["January"][1], self.format_date_to_test(c2, c2_round_1))
         self.assertEqual(data_dict["January"][2], self.format_date_to_test(c2, c2_round_2))
 
-        self._clean_up_tmp_file(file_name)
-
     def test_create_calendar_xlsx_sheet_campaign_without_country(self):
         """
         When a campaign was not linked to a country, export XLSX calendar triggered an error('NoneType' object has no attribute 'id'):
@@ -165,8 +162,6 @@ class CalendarXLSXExportAPITestCase(APITestCase):
 
         data_dict = excel_data.to_dict()
         self.assertEqual(len(data_dict["COUNTRY"]), 0)
-
-        self._clean_up_tmp_file(file_name)
 
     def test_create_calendar_xlsx_sheet_round_with_no_end_date(self):
         """
@@ -191,8 +186,6 @@ class CalendarXLSXExportAPITestCase(APITestCase):
         data_dict = excel_data.to_dict()
         self.assertEqual(data_dict["January"][0], self.format_date_to_test(c, round))
 
-        self._clean_up_tmp_file(file_name)
-
     def test_create_calendar_xlsx_sheet_without_test_campaigns(self):
         """
         Test campaigns appeared in the XLSX, but they should not
@@ -214,8 +207,6 @@ class CalendarXLSXExportAPITestCase(APITestCase):
 
         data_dict = excel_data.to_dict()
         self.assertEqual(len(data_dict["COUNTRY"]), 0)
-
-        self._clean_up_tmp_file(file_name)
 
     def test_create_calendar_xlsx_sheet_with_separate_scopes_per_round(self):
         """
@@ -282,7 +273,6 @@ class CalendarXLSXExportAPITestCase(APITestCase):
         self.assertEqual(data_dict["COUNTRY"][0], org_unit.name)
         self.assertEqual(data_dict["January"][0], self.format_date_to_test(c, c_round_1))
         self.assertEqual(data_dict["January"][1], self.format_date_to_test(c, c_round_2))
-        self._clean_up_tmp_file(file_name)
 
     @staticmethod
     def format_date_to_test(campaign, round):
@@ -300,8 +290,3 @@ class CalendarXLSXExportAPITestCase(APITestCase):
             + round.vaccine_names
             + "\n"
         )
-
-    def _clean_up_tmp_file(self, file_name):
-        # Some tests here create a tmp file through /api/polio/campaigns/create_calendar_xlsx_sheet/
-        if os.path.exists(file_name):
-            os.remove(file_name)

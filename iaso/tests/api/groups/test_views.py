@@ -78,21 +78,21 @@ class GroupsAPITestCase(APITestCase):
         """GET /groups/ without auth: 401"""
 
         response = self.client.get("/api/groups/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_groups_list_wrong_permission(self):
         f"""GET /groups/ with authenticated user, without the {CORE_ORG_UNITS_PERMISSION} permission"""
 
         self.client.force_authenticate(self.user_missing_menu_permission)
         response = self.client.get("/api/groups/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_default_version_groups_list_ok(self):
         """GET /groups/ with authenticated user and only default version"""
 
         self.client.force_authenticate(self.core_permission_user)
         response = self.client.get("/api/groups/?defaultVersion=true")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidGroupListData(response.json(), 1)
 
     def test_groups_list_ok(self):
@@ -100,7 +100,7 @@ class GroupsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.core_permission_user)
         response = self.client.get("/api/groups/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidGroupListData(response.json(), 2)
 
     def test_groups_list_paginated(self):
@@ -108,7 +108,7 @@ class GroupsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.core_permission_user)
         response = self.client.get("/api/groups/?limit=1&page=1", headers={"Content-Type": "application/json"})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertValidGroupListData(response_data, 1, True)
@@ -121,28 +121,28 @@ class GroupsAPITestCase(APITestCase):
         """GET /groups/<group_id> without auth should result in a 401"""
 
         response = self.client.get(f"/api/groups/{self.group_1.id}/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_groups_retrieve_wrong_auth(self):
         """GET /groups/<group_id> with auth of unrelated user should result in a 404"""
 
         self.client.force_authenticate(self.user_from_other_account)
         response = self.client.get(f"/api/groups/{self.group_1.id}/")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_groups_retrieve_not_found(self):
         """GET /groups/<group_id>: id does not exist"""
 
         self.client.force_authenticate(self.core_permission_user)
         response = self.client.get("/api/groups/292003030/")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_groups_retrieve_ok_1(self):
         """GET /groups/<group_id> happy path"""
 
         self.client.force_authenticate(self.core_permission_user)
         response = self.client.get(f"/api/groups/{self.group_1.id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertValidGroupData(response.json())
 
@@ -150,21 +150,21 @@ class GroupsAPITestCase(APITestCase):
         """POST /groups/ without auth: 401"""
 
         response = self.client.post("/api/groups/", data={"name": "test group"}, format="json")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_groups_create_no_source_version(self):
         """POST /groups/ (user has no source version, cannot work)"""
 
         self.client.force_authenticate(self.user_from_other_account)
         response = self.client.post("/api/groups/", data={"name": "test group"}, format="json")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_groups_create_ok(self):
         """POST /groups/ happy path"""
 
         self.client.force_authenticate(self.core_permission_user)
         response = self.client.post("/api/groups/", data={"name": "test group"}, format="json")
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         response_data = response.json()
         self.assertValidGroupData(response_data, skip=["org_unit_count"])
@@ -177,7 +177,7 @@ class GroupsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.core_permission_user)
         response = self.client.post("/api/groups/", data={}, format="json")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
         response_data = response.json()
         self.assertHasError(response_data, "name")
@@ -235,7 +235,7 @@ class GroupsAPITestCase(APITestCase):
             data={"name": "test group with org units", "org_unit_ids": [self.org_unit_1.id, self.org_unit_2.id]},
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         response_data = response.json()
         group = m.Group.objects.get(id=response_data["id"])
@@ -250,7 +250,7 @@ class GroupsAPITestCase(APITestCase):
         response = self.client.post(
             "/api/groups/", data={"name": "test group empty", "org_unit_ids": []}, format="json"
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         group = m.Group.objects.get(id=response.json()["id"])
         self.assertEqual(group.org_units.count(), 0)
@@ -264,7 +264,7 @@ class GroupsAPITestCase(APITestCase):
             data={"name": "test group", "org_unit_ids": [999999]},
             format="json",
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("org_unit_ids", response.json())
 
     def test_groups_create_with_org_units_restricted_by_org_tree_fails(self):
@@ -279,7 +279,7 @@ class GroupsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("org_unit_ids", response.json())
 
     def test_groups_create_with_org_units_restricted_by_org_tree_ok(self):
@@ -294,7 +294,7 @@ class GroupsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         group = m.Group.objects.get(id=response.json()["id"])
         self.assertEqual(group.org_units.count(), 1)
         self.assertIn(self.restricted_child_org_unit, group.org_units.all())
@@ -323,7 +323,7 @@ class GroupsAPITestCase(APITestCase):
             data={"name": "test group", "org_unit_ids": [secondary_account_org_unit.id]},
             format="json",
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("org_unit_ids", response.json())
 
     def test_groups_create_with_org_units_without_write_permission(self):
@@ -347,7 +347,7 @@ class GroupsAPITestCase(APITestCase):
             data={"name": "test group", "org_unit_ids": [restricted_org_unit.id]},
             format="json",
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("org_unit_ids", response.json())
 
     def test_groups_partial_update_ok(self):
@@ -357,7 +357,7 @@ class GroupsAPITestCase(APITestCase):
         response = self.client.patch(
             f"/api/groups/{self.group_1.id}/", data={"name": "test group (updated)"}, format="json"
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertValidGroupData(response_data)
@@ -401,27 +401,27 @@ class GroupsAPITestCase(APITestCase):
         response = self.client.put(
             f"/api/groups/{self.group_1.id}/", data={"name": "test group (updated)"}, format="json"
         )
-        self.assertJSONResponse(response, 405)
+        self.assertJSONResponse(response, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_groups_destroy_no_auth(self):
         """DELETE /groups/<group_id> without auth -> 401"""
 
         response = self.client.delete(f"/api/groups/{self.group_1.id}/", format="json")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_groups_destroy_wrong_auth(self):
         """DELETE /groups/<group_id> with user that cannot access group -> 404"""
 
         self.client.force_authenticate(self.user_from_other_account)
         response = self.client.delete(f"/api/groups/{self.group_1.id}/", format="json")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_groups_destroy_ok(self):
         """DELETE /groups/<group_id> happy path"""
 
         self.client.force_authenticate(self.core_permission_user)
         response = self.client.delete(f"/api/groups/{self.group_1.id}/", format="json")
-        self.assertJSONResponse(response, 204)
+        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
 
     # Dropdown tests
     def test_dropdown_authenticated_user_ok(self):
@@ -429,7 +429,7 @@ class GroupsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.core_permission_user)
         response = self.client.get("/api/groups/dropdown/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.json()
         self.assertIsInstance(data, list)
@@ -449,7 +449,7 @@ class GroupsAPITestCase(APITestCase):
         """GET /groups/dropdown/ with anonymous user and valid app_id - happy path"""
 
         response = self.client.get(f"/api/groups/dropdown/?app_id={self.project_1.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.json()
         self.assertIsInstance(data, list)
@@ -459,7 +459,7 @@ class GroupsAPITestCase(APITestCase):
         """GET /groups/dropdown/ with anonymous user without app_id - should fail"""
 
         response = self.client.get("/api/groups/dropdown/")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
         data = response.json()
         self.assertIn("Parameter app_id is missing", str(data))
@@ -469,7 +469,7 @@ class GroupsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.core_permission_user)
         response = self.client.get("/api/groups/dropdown/?defaultVersion=true")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.json()
         self.assertIsInstance(data, list)
@@ -484,7 +484,7 @@ class GroupsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.core_permission_user)
         response = self.client.get(f"/api/groups/dropdown/?version={self.source_version_1.id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.json()
         self.assertIsInstance(data, list)
@@ -498,7 +498,7 @@ class GroupsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.core_permission_user)
         response = self.client.get(f"/api/groups/dropdown/?dataSource={self.data_source.id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.json()
         self.assertIsInstance(data, list)
@@ -521,7 +521,7 @@ class GroupsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.core_permission_user)
         response = self.client.get(f"/api/groups/dropdown/?dataSourceIds={self.data_source.id},{second_data_source.id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.json()
         self.assertIsInstance(data, list)
@@ -536,7 +536,7 @@ class GroupsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.core_permission_user)
         response = self.client.get("/api/groups/dropdown/?search=Councils")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.json()
         self.assertIsInstance(data, list)
@@ -555,7 +555,7 @@ class GroupsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.core_permission_user)
         response = self.client.get("/api/groups/dropdown/?blockOfCountries=true")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.json()
         self.assertIsInstance(data, list)
@@ -569,7 +569,7 @@ class GroupsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.core_permission_user)
         response = self.client.get("/api/groups/dropdown/?order=name")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.json()
         self.assertIsInstance(data, list)
@@ -584,7 +584,7 @@ class GroupsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.core_permission_user)
         response = self.client.get("/api/groups/dropdown/?limit=1&page=1")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.json()
         # Should return paginated response structure
@@ -602,7 +602,7 @@ class GroupsAPITestCase(APITestCase):
         """GET /groups/dropdown/ with invalid app_id - should fail"""
 
         response = self.client.get("/api/groups/dropdown/?app_id=invalid_app_id")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
         data = response.json()
         self.assertIn("No project found", str(data))
@@ -633,7 +633,7 @@ class GroupsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user_from_other_account)
         response = self.client.get("/api/groups/dropdown/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.json()
         self.assertIsInstance(data, list)
@@ -646,7 +646,7 @@ class GroupsAPITestCase(APITestCase):
         """GET /groups/dropdown/ with anonymous user and different project app_id"""
 
         response = self.client.get(f"/api/groups/dropdown/?app_id={self.project_2.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.json()
         self.assertIsInstance(data, list)

@@ -2,6 +2,7 @@ import datetime
 
 from django.contrib.auth.models import Group
 from django.contrib.gis.geos import Point
+from rest_framework import status
 
 from iaso import models as m
 from iaso.models.payments import PaymentStatuses
@@ -62,15 +63,15 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
         changeRequest2.save()
 
         response = self.client.get("/api/orgunits/changes/?created_at_after=17-10-2023&created_at_before=17-10-2023")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(1, len(response.data["results"]))
 
         response = self.client.get("/api/orgunits/changes/?created_at_after=17-10-2022")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(2, len(response.data["results"]))
 
         response = self.client.get("/api/orgunits/changes/?created_at_before=17-10-2022")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(1, len(response.data["results"]))
 
     def test_filter_on_forms(self):
@@ -89,7 +90,7 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
         response = self.client.get(f"/api/orgunits/changes/?forms={form.id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 2)
         self.assertIn(change_request1.id, [change["id"] for change in response.data["results"]])
         self.assertIn(change_request2.id, [change["id"] for change in response.data["results"]])
@@ -110,21 +111,21 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
         # Test filtering by both new and old groups
         response = self.client.get(f"/api/orgunits/changes/?groups={group1.id},{group2.id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 2)
         self.assertIn(change_request1.id, [change["id"] for change in response.data["results"]])
         self.assertIn(change_request2.id, [change["id"] for change in response.data["results"]])
 
         # Test filtering by new groups only
         response = self.client.get(f"/api/orgunits/changes/?groups={group1.id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 1)
         self.assertIn(change_request1.id, [change["id"] for change in response.data["results"]])
         self.assertNotIn(change_request2.id, [change["id"] for change in response.data["results"]])
 
         # Test filtering by old groups only
         response = self.client.get(f"/api/orgunits/changes/?groups={group2.id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 1)
         self.assertNotIn(change_request1.id, [change["id"] for change in response.data["results"]])
         self.assertIn(change_request2.id, [change["id"] for change in response.data["results"]])
@@ -149,14 +150,14 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
         # Test filtering by new parent
         response = self.client.get(f"/api/orgunits/changes/?parent_id={parent_org_unit.id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 1)
         self.assertIn(change_request1.id, [change["id"] for change in response.data["results"]])
         self.assertNotIn(change_request2.id, [change["id"] for change in response.data["results"]])
 
         # Test filtering by old parent
         response = self.client.get(f"/api/orgunits/changes/?parent_id={another_parent_org_unit.id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 1)
         self.assertNotIn(change_request1.id, [change["id"] for change in response.data["results"]])
         self.assertIn(change_request2.id, [change["id"] for change in response.data["results"]])
@@ -170,7 +171,7 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
         response = self.client.get(f"/api/orgunits/changes/?org_unit_type_id={org_unit_type.id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 1)
         self.assertIn(change_request1.id, [change["id"] for change in response.data["results"]])
         self.assertNotIn(change_request2.id, [change["id"] for change in response.data["results"]])
@@ -186,7 +187,7 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
         response = self.client.get(f"/api/orgunits/changes/?users={another_user.id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 1)
         self.assertIn(change_request1.id, [change["id"] for change in response.data["results"]])
         self.assertNotIn(change_request2.id, [change["id"] for change in response.data["results"]])
@@ -205,7 +206,7 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
         response = self.client.get(f"/api/orgunits/changes/?user_roles={user_role.id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 1)
         self.assertIn(change_request1.id, [change["id"] for change in response.data["results"]])
         self.assertNotIn(change_request2.id, [change["id"] for change in response.data["results"]])
@@ -226,13 +227,13 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
         response = self.client.get("/api/orgunits/changes/?with_location=true")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 2)
         self.assertIn(change_request_with_new_location.id, [change["id"] for change in response.data["results"]])
         self.assertIn(change_request_with_old_location.id, [change["id"] for change in response.data["results"]])
 
         response = self.client.get("/api/orgunits/changes/?with_location=false")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 1)
         self.assertIn(change_request_without_location.id, [change["id"] for change in response.data["results"]])
 
@@ -252,7 +253,7 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
         # Test filtering by multiple statuses
         response = self.client.get("/api/orgunits/changes/?status=new,rejected")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 2)
         result_statuses = {change["status"] for change in response.data["results"]}
         self.assertIn(m.OrgUnitChangeRequest.Statuses.NEW, result_statuses)
@@ -295,7 +296,7 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
         # Test filter on Pending status
         response = self.client.get("/api/orgunits/changes/?payment_status=pending")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 2)
         result_ids = {change["id"] for change in response.data["results"]}
         self.assertIn(change_request_approved.id, result_ids)
@@ -304,7 +305,7 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertNotIn(change_request_new.id, result_ids)
         # Test filter on PAID status
         response = self.client.get("/api/orgunits/changes/?payment_status=paid")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 1)
         result_ids = {change["id"] for change in response.data["results"]}
         self.assertIn(change_request_with_payment.id, result_ids)
@@ -332,7 +333,7 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get("/api/orgunits/changes/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 2)
         self.assertEqual(response.data["results"][0]["id"], change_request.pk)
         self.assertEqual(response.data["results"][1]["id"], change_request_with_sync.pk)
@@ -340,14 +341,14 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
         response = self.client.get(
             f"/api/orgunits/changes/?data_source_synchronization_id={data_source_synchronization.pk}"
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 1)
         self.assertEqual(response.data["results"][0]["id"], change_request_with_sync.pk)
 
         response = self.client.get(
             f"/api/orgunits/changes/?data_source_synchronization_id={data_source_synchronization.pk + 1}"
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 0)
 
     def test_filter_by_multiple_ids(self):
@@ -358,7 +359,7 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get(f"/api/orgunits/changes/?ids={change_request_1.pk},{change_request_3.pk}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 2)
         result_ids = {change["id"] for change in response.data["results"]}
         self.assertIn(change_request_1.pk, result_ids)
@@ -366,7 +367,7 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertIn(change_request_3.pk, result_ids)
 
         response = self.client.get(f"/api/orgunits/changes/?ids={change_request_2.pk}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 1)
         result_ids = {change["id"] for change in response.data["results"]}
         self.assertNotIn(change_request_1.pk, result_ids)
@@ -385,14 +386,14 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
         # Show only non-soft-deleted.
         response = self.client.get("/api/orgunits/changes/?is_soft_deleted=false")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 1)
         result_ids = {change["id"] for change in response.data["results"]}
         self.assertIn(change_request_1.pk, result_ids)
 
         # Show only soft-deleted.
         response = self.client.get("/api/orgunits/changes/?is_soft_deleted=true")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 2)
         result_ids = {change["id"] for change in response.data["results"]}
         self.assertIn(change_request_2.pk, result_ids)
@@ -400,7 +401,7 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
         # Show all, whether soft-deleted or not.
         response = self.client.get("/api/orgunits/changes/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 3)
         result_ids = {change["id"] for change in response.data["results"]}
         self.assertIn(change_request_1.pk, result_ids)
@@ -426,7 +427,7 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
         # Filter by single field.
         response = self.client.get("/api/orgunits/changes/?requested_fields=name")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 2)
         result_ids = {change["id"] for change in response.data["results"]}
         self.assertIn(change_request_1.pk, result_ids)
@@ -435,7 +436,7 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
         # Filter by multiple fields.
         response = self.client.get("/api/orgunits/changes/?requested_fields=name,parent")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 3)
         result_ids = {change["id"] for change in response.data["results"]}
         self.assertIn(change_request_1.pk, result_ids)
@@ -444,12 +445,12 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
         # Filter by non-used field.
         response = self.client.get("/api/orgunits/changes/?requested_fields=location")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 0)
 
         # Filter by non-existent fields.
         response = self.client.get("/api/orgunits/changes/?requested_fields=foo,bar,1")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 0)
 
     def test_filter_by_kind(self):
@@ -468,7 +469,7 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
         # Filter by single kind.
         response = self.client.get("/api/orgunits/changes/?kind=org_unit_creation")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 1)
         result_ids = {change["id"] for change in response.data["results"]}
         self.assertIn(change_request_for_new_org_unit.pk, result_ids)
@@ -476,7 +477,7 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
         # Filter by multiple kinds.
         response = self.client.get("/api/orgunits/changes/?kind=org_unit_creation,org_unit_change")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 2)
         result_ids = {change["id"] for change in response.data["results"]}
         self.assertIn(change_request_for_new_org_unit.pk, result_ids)
@@ -484,5 +485,5 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
         # Filter by non-existent fields.
         response = self.client.get("/api/orgunits/changes/?kind=foo")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 0)

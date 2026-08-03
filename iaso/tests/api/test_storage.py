@@ -10,6 +10,7 @@ import pytz
 
 from django.http import StreamingHttpResponse
 from django.utils import timezone
+from rest_framework import status
 
 from hat.api_import.models import APIImport
 from iaso.models import (
@@ -106,7 +107,7 @@ class StorageAPITestCase(APITestCase):
     def test_post_log_needs_authentication(self):
         """POST /api/mobile/storages/log/ is rejected if user is not authenticated."""
         response = self.client.post("/api/mobile/storages/logs/")
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_post_log_multiple_logs(self):
         """
@@ -140,7 +141,7 @@ class StorageAPITestCase(APITestCase):
             },
         ]
         response = self.client.post("/api/mobile/storages/logs/", post_body, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         self.assertEqual(StorageLogEntry.objects.count(), num_log_storage_before + 2)
 
@@ -170,7 +171,7 @@ class StorageAPITestCase(APITestCase):
         post_body = self._create_post_body_new_storage("entity_id")
         response = self.client.post("/api/mobile/storages/logs/", post_body, format="json")
 
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(StorageDevice.objects.count(), num_devices_before + 1)
 
         the_storage = StorageDevice.objects.latest("id")
@@ -190,7 +191,7 @@ class StorageAPITestCase(APITestCase):
         post_body = self._create_post_body_new_storage("entity_uuid")
         response = self.client.post("/api/mobile/storages/logs/", post_body, format="json")
 
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(StorageDevice.objects.count(), num_devices_before + 1)
 
         the_storage = StorageDevice.objects.latest("id")
@@ -234,7 +235,7 @@ class StorageAPITestCase(APITestCase):
             }
         ]
         response = self.client.post("/api/mobile/storages/logs/", post_body, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Ensure the no new devices were created
         self.assertEqual(StorageDevice.objects.count(), num_devices_before)
@@ -270,7 +271,7 @@ class StorageAPITestCase(APITestCase):
             }
         ]
         response = self.client.post("/api/mobile/storages/logs/", post_body, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         the_log_entry = StorageLogEntry.objects.get(id="66664567-e89b-12d3-a456-426614174000")
         device = the_log_entry.device
@@ -294,7 +295,7 @@ class StorageAPITestCase(APITestCase):
             }
         ]
         response = self.client.post("/api/mobile/storages/logs/", post_body, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         the_log_entry = StorageLogEntry.objects.get(id="66664567-e89b-12d3-a456-426614174000")
         device = the_log_entry.device
@@ -318,7 +319,7 @@ class StorageAPITestCase(APITestCase):
             }
         ]
         response = self.client.post("/api/mobile/storages/logs/", post_body, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         the_log_entry = StorageLogEntry.objects.get(id="66664567-e89b-12d3-a456-426614174000")
         device = the_log_entry.device
@@ -345,7 +346,7 @@ class StorageAPITestCase(APITestCase):
         response = self.client.post("/api/mobile/storages/logs/", post_body, format="json")
 
         # Returns a 201 anyways and stores an APIImport with has_problem=True
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(APIImport.objects.filter(import_type="storageLog").count(), 1)
         api_import = APIImport.objects.filter(import_type="storageLog").first()
         self.assertTrue(api_import.has_problem)
@@ -374,7 +375,7 @@ class StorageAPITestCase(APITestCase):
         response = self.client.post("/api/mobile/storages/logs/", post_body, format="json")
 
         # Returns a 201 anyways and stores an APIImport with has_problem=True
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(APIImport.objects.filter(import_type="storageLog").count(), 1)
         api_import = APIImport.objects.filter(import_type="storageLog").first()
         self.assertTrue(api_import.has_problem)
@@ -403,7 +404,7 @@ class StorageAPITestCase(APITestCase):
         response = self.client.post("/api/mobile/storages/logs/", post_body, format="json")
 
         # Returns a 201 anyways and stores an APIImport with has_problem=True
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(APIImport.objects.filter(import_type="storageLog").count(), 1)
         api_import = APIImport.objects.filter(import_type="storageLog").first()
         self.assertTrue(api_import.has_problem)
@@ -432,7 +433,7 @@ class StorageAPITestCase(APITestCase):
         response = self.client.post("/api/mobile/storages/logs/", post_body, format="json")
 
         # Returns a 201 anyways and stores an APIImport with has_problem=True
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(APIImport.objects.filter(import_type="storageLog").count(), 1)
         api_import = APIImport.objects.filter(import_type="storageLog").first()
         self.assertTrue(api_import.has_problem)
@@ -514,7 +515,7 @@ class StorageAPITestCase(APITestCase):
             }
         ]
         response = self.client.post("/api/mobile/storages/logs/", post_body, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         the_log_entry = StorageLogEntry.objects.get(id="66664567-e89b-12d3-a456-426614174000")
         self.assertEqual(the_log_entry.instances.count(), 0)
@@ -528,13 +529,13 @@ class StorageAPITestCase(APITestCase):
     def test_list_only_authenticated(self):
         """GET /api/storages/ is rejected if user is not authenticated."""
         response = self.client.get("/api/storages/")
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_list_only_storages_permission(self):
         """GET /api/storages/ is rejected if user does not have the 'storages' permission."""
         self.client.force_authenticate(self.another_user)
         response = self.client.get("/api/storages/")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_list_base(self):
         """
@@ -546,7 +547,7 @@ class StorageAPITestCase(APITestCase):
         """
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/storages/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         received_json = response.json()
         self.assertListEqual(
             received_json,
@@ -826,7 +827,7 @@ class StorageAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # Case 2: user without iaso_storage permissions
         self.client.force_authenticate(self.another_user)
@@ -840,7 +841,7 @@ class StorageAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_post_blacklisted_storage_ok(self):
         """
@@ -860,7 +861,7 @@ class StorageAPITestCase(APITestCase):
         with mock.patch("django.utils.timezone.now", wraps=lambda: datetime(2022, 10, 26, 2, 2, 2, tzinfo=pytz.utc)):
             response = self.client.post("/api/storages/blacklisted/", post_body, format="json")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # check that the storage status has been updated (was OK before)
         updated_storage = StorageDevice.objects.get(pk=self.existing_storage_device.pk)
@@ -889,7 +890,7 @@ class StorageAPITestCase(APITestCase):
             "storage_status": {"status": "BLACKLISTED", "reason": "DAMAGED", "comment": "not usable anymore"},
         }
         response = self.client.post("/api/storages/blacklisted/", post_body, format="json")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_post_blacklisted_storage_incorrect_status(self):
         """An error 400 is returned if we try to blacklist a device with an incorrect status"""
@@ -901,7 +902,7 @@ class StorageAPITestCase(APITestCase):
             "storage_status": {"status": "AZFDSGFDDFFD", "reason": "DAMAGED", "comment": "not usable anymore"},
         }
         response = self.client.post("/api/storages/blacklisted/", post_body, format="json")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_post_blacklisted_storage_incorrect_reason(self):
         """An error 400 is returned if we try to blacklist a device for an incorrect reason"""
@@ -913,7 +914,7 @@ class StorageAPITestCase(APITestCase):
             "storage_status": {"status": "BLACKLISTED", "reason": "AZFDSGFDDFFD", "comment": "not usable anymore"},
         }
         response = self.client.post("/api/storages/blacklisted/", post_body, format="json")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_post_blacklisted_reason_mandatory_when_blacklisting(self):
         """An error 400 is returned if we try to blacklist a device without specifying a reason"""
@@ -925,24 +926,24 @@ class StorageAPITestCase(APITestCase):
             "storage_status": {"status": "BLACKLISTED", "reason": None, "comment": "not usable anymore"},
         }
         response = self.client.post("/api/storages/blacklisted/", post_body, format="json")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_get_logs_for_device_unauthenticated(self):
         """A non authenticated user should receive a 401"""
         response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs")
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_get_logs_for_device_insufficient_permissions(self):
         """A user without the "iaso_storages" permission should receive a 403"""
         self.client.force_authenticate(self.another_user)
         response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_get_logs_for_device_base(self):
         """Test the basics of the logs per device endpoint"""
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         received_json = response.json()
         self.assertDictEqual(
             received_json,
@@ -988,7 +989,7 @@ class StorageAPITestCase(APITestCase):
             f"/api/storages/NFC/{self.existing_storage_device.id}/logs?org_unit_id={self.org_unit.id}"
         )
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         received_json = response.json()
         self.assertDictEqual(
             received_json,
@@ -1023,7 +1024,7 @@ class StorageAPITestCase(APITestCase):
             f"/api/storages/NFC/{self.existing_storage_device.id}/logs?org_unit_id={self.org_unit.id}"
         )
         received_json = response.json()
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertDictEqual(
             received_json,
             {
@@ -1067,7 +1068,7 @@ class StorageAPITestCase(APITestCase):
         # Case 1: we request WRITE_PROFILE, there is one from setupTestData
         response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?types=WRITE_PROFILE")
         received_json = response.json()
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertDictEqual(
             received_json,
             {
@@ -1106,7 +1107,7 @@ class StorageAPITestCase(APITestCase):
 
         # Case 2: we request WRITE_RECORD, there's currently none
         response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?types=WRITE_RECORD")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         received_json = response.json()
         self.assertDictEqual(
             received_json,
@@ -1127,7 +1128,7 @@ class StorageAPITestCase(APITestCase):
         response = self.client.get(
             f"/api/storages/NFC/{self.existing_storage_device.id}/logs?types=WRITE_PROFILE,WRITE_RECORD"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         received_json = response.json()
         self.assertDictEqual(
             received_json,
@@ -1178,7 +1179,7 @@ class StorageAPITestCase(APITestCase):
         response = self.client.get(
             f"/api/storages/NFC/{self.existing_storage_device.id}/logs?types=WRITE_PROFILE,WRITE_RECORD&order=id"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         received_json = response.json()
         self.assertEqual(
             received_json,
@@ -1242,7 +1243,7 @@ class StorageAPITestCase(APITestCase):
 
         # Case 1: we request the OK status, there is one from setupTestData
         response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?status=OK")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         received_json = response.json()
         self.assertDictEqual(
             received_json,
@@ -1282,7 +1283,7 @@ class StorageAPITestCase(APITestCase):
 
         # Case 2: we request the blacklisted status, there is none
         response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?status=BLACKLISTED")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         received_json = response.json()
         self.assertEqual(
             received_json,
@@ -1304,7 +1305,7 @@ class StorageAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?reason=STOLEN")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         received_json = response.json()
         self.assertDictEqual(
             received_json,
@@ -1336,7 +1337,7 @@ class StorageAPITestCase(APITestCase):
         )
 
         response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?performed_at=2022-11-03")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         received_json = response.json()
         # if the filter didn't worked, we would also receive the log from setupTestData
         self.assertEqual(len(received_json["logs"]), 1)
@@ -1600,7 +1601,7 @@ class StorageAPITestCase(APITestCase):
 
         # 1. Check the response status and content type
         response = self.client.get("/api/storages/?csv=true")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertEqual(response["Content-Type"], "text/csv")
 
@@ -1799,7 +1800,7 @@ class StorageAPITestCase(APITestCase):
         response = self.client.get(f"/api/storages/NFC/{self.existing_storage_device.id}/logs?csv=true")
 
         # 1. Check the response status and content type
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response["Content-Type"], "text/csv")
 
         data = self._csv_response_to_list(response)
@@ -1950,7 +1951,7 @@ class StorageAPITestCase(APITestCase):
     def test_get_blacklisted_devices(self):
         """Test the basics of the GET /api/mobile/storages/blacklisted endpoint"""
         response = self.client.get("/api/mobile/storages/blacklisted/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         received_json = response.json()
         self.assertEqual(
             received_json,

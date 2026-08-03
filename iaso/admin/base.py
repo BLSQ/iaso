@@ -2,7 +2,7 @@ from typing import Any, Protocol
 
 from django import forms as django_forms
 from django.contrib import admin, messages
-from django.contrib.admin import SimpleListFilter, widgets
+from django.contrib.admin import widgets
 from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import ArrayField
@@ -103,28 +103,6 @@ from ..utils.gis import convert_2d_point_to_3d
 task_service = LazyService("BACKGROUND_TASK_SERVICE")
 
 
-class EntityAutocompleteFilter(SimpleListFilter):
-    """
-    Limit `entity` list_filter to only entities linked to at least one storage device.
-    """
-
-    title = "entity"
-    parameter_name = "entity"
-
-    def lookups(self, request, model_admin):
-        lookups = []
-        storage_device_ids = set(StorageDevice.objects.values_list("entity_id", flat=True))
-        entities = Entity.objects.filter(id__in=storage_device_ids).only("pk", "name")
-        for entity in entities:
-            lookups.append([entity.pk, entity.name])
-        return lookups
-
-    def queryset(self, request, queryset):
-        if self.value():
-            return queryset.filter(entity__id=self.value())
-        return queryset
-
-
 class IasoJSONEditorWidget(JSONEditorWidget):
     class Media:
         css = {"all": ("css/admin-json-widget.css",)}
@@ -205,11 +183,10 @@ class OrgUnitAdmin(admin.GeoModelAdmin):
         "org_unit_type",
         "custom",
         "validation_status",
-        "sub_source",
         "version__data_source",
         "version__data_source__projects__account",
     )
-    search_fields = ("name", "source_ref", "uuid")
+    search_fields = ("name", "source_ref", "uuid", "sub_source")
     readonly_fields = ("path",)
     inlines = [
         OrgUnitReferenceInstanceInline,
@@ -288,6 +265,8 @@ class FormAdmin(admin.GeoModelAdmin):
 class FormVersionAdmin(admin.GeoModelAdmin):
     search_fields = ("form__name", "form__form_id")
     ordering = ("form__name",)
+    autocomplete_fields = ("form", "created_by", "updated_by")
+    list_select_related = ("form",)
     list_display = ("form_name", "form_id", "version_id", "created_at", "updated_at")
 
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
@@ -313,14 +292,18 @@ class FormVersionAdmin(admin.GeoModelAdmin):
 class FormPredefinedFilterAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
     list_display = ("form", "name", "short_name", "json_logic")
-    list_filter = ("form", "name", "short_name")
+    autocomplete_fields = ("form",)
+    search_fields = ("name", "short_name", "form__name", "form__form_id")
+    list_select_related = ("form",)
 
 
 @admin.register(FormAttachment)
 class FormAttachmentAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
     list_display = ("form", "name", "file", "md5")
-    list_filter = ("form", "name")
+    autocomplete_fields = ("form",)
+    search_fields = ("name", "form__name", "form__form_id")
+    list_select_related = ("form",)
 
 
 class InstanceFileAdminInline(admin.TabularInline):
@@ -342,7 +325,7 @@ class InstanceAdmin(admin.GeoModelAdmin):
         "last_modified_by",
         "created_by",
     )
-    search_fields = ("file_name", "uuid")
+    search_fields = ("file_name", "uuid", "form__name", "form__form_id")
     list_display = (
         "id",
         "uuid",
@@ -354,9 +337,9 @@ class InstanceAdmin(admin.GeoModelAdmin):
         "entity",
         "deleted",
     )
+    autocomplete_fields = ("form", "project")
     list_filter = (
         "project",
-        "form",
         "deleted",
         DuplicateUUIDFilter,
         has_relation_filter_factory("Entity ID", "entity_id"),
@@ -419,6 +402,7 @@ class InstanceAdmin(admin.GeoModelAdmin):
             "project",
             "form",
             "entity",
+            "entity__entity_type",  # Entity.__str__ renders its entity type
         )
         return queryset
 
@@ -470,19 +454,30 @@ class FeatureFlagAdmin(admin.ModelAdmin):
 @admin_attr_decorator
 class LinkAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("source", "destination")
+    autocomplete_fields = ("validator",)
 
 
 @admin.register(Mapping)
 @admin_attr_decorator
 class MappingAdmin(admin.GeoModelAdmin):
-    list_filter = ("form_id",)
-    autocomplete_fields = ["data_source"]
+    list_filter = ("mapping_type",)
+    search_fields = ("name", "form__name", "form__form_id")
+    list_display = ("id", "name", "form", "mapping_type", "data_source", "created_at")
+    list_display_links = ("id", "name")
+    list_select_related = ("form", "data_source")
+    autocomplete_fields = ["data_source", "form"]
 
 
 @admin.register(MappingVersion)
 @admin_attr_decorator
 class MappingVersionAdmin(admin.GeoModelAdmin):
-    list_filter = ("form_version_id",)
+    search_fields = ("name", "form_version__form__name", "form_version__form__form_id", "form_version__version_id")
+    # `name` is very often empty, so it can't be the only clickable column.
+    list_display = ("id", "name", "form_version", "mapping", "created_at", "updated_at")
+    list_display_links = ("id", "name")
+    list_select_related = ("form_version__form", "mapping__form")
+    autocomplete_fields = ["form_version", "mapping"]
+    ordering = ("-id",)
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
@@ -511,8 +506,10 @@ class ProfileAdmin(admin.GeoModelAdmin):
 @admin.register(ExportRequest)
 @admin_attr_decorator
 class ExportRequestAdmin(admin.GeoModelAdmin):
-    list_filter = ("launcher", "status")
+    list_filter = ("status",)
+    search_fields = ("launcher__username", "launcher__email")
     list_display = ("status", "launcher", "params", "last_error_message")
+    list_select_related = ("launcher",)
     readonly_fields = list_display
 
 
@@ -597,7 +594,10 @@ class TaskAdmin(admin.ModelAdmin):
 @admin.register(TaskLog)
 class TaskLogAdmin(admin.ModelAdmin):
     list_display = ("task", "created_at", "message")
-    list_filter = ["task"]
+    autocomplete_fields = ["task"]
+    search_fields = ["task__name", "message"]
+    # Task.__str__ renders created_by.
+    list_select_related = ["task", "task__created_by"]
     readonly_fields = ["created_at"]
 
 
@@ -701,6 +701,9 @@ class EntityTypeAdmin(admin.ModelAdmin):
 @admin_attr_decorator
 class PlanningAdmin(admin.ModelAdmin):
     raw_id_fields = ("org_unit",)
+    autocomplete_fields = ("project", "forms", "team", "created_by")
+    search_fields = ("name", "description")
+    list_select_related = ("project", "org_unit", "team")
     list_display = (
         "id",
         "name",
@@ -750,6 +753,9 @@ class PlanningAdmin(admin.ModelAdmin):
 @admin.register(Team)
 @admin_attr_decorator
 class TeamAdmin(admin.ModelAdmin):
+    autocomplete_fields = ("project", "parent", "users", "manager", "created_by")
+    search_fields = ("name", "description")
+    list_select_related = ("project", "parent")
     list_display = (
         "id",
         "name",
@@ -768,11 +774,13 @@ class TeamAdmin(admin.ModelAdmin):
 @admin_attr_decorator
 class AssignmentAdmin(admin.ModelAdmin):
     raw_id_fields = ("org_unit",)
+    autocomplete_fields = ("planning", "team", "user", "created_by")
+    search_fields = ("planning__name", "user__username")
+    list_select_related = ("planning", "user")
     list_display = (
         "id",
         "planning",
     )
-    list_filter = ("planning",)
     date_hierarchy = "created_at"
 
 
@@ -798,7 +806,9 @@ class PlanningSamplingResultAdmin(admin.ModelAdmin):
 @admin.register(InstanceLock)
 class InstanceLockAdmin(admin.ModelAdmin):
     raw_id_fields = ("top_org_unit",)
+    autocomplete_fields = ("instance", "locked_by", "unlocked_by")
     list_display = ("instance", "locked_by", "top_org_unit", "locked_at", "unlocked_by", "unlocked_at")
+    list_select_related = ("instance", "locked_by", "top_org_unit", "unlocked_by")
     date_hierarchy = "locked_at"
 
 
@@ -823,7 +833,10 @@ class StockItemRuleAdmin(admin.ModelAdmin):
     fields = ("sku", "form", "version", "impact", "question", "created_at", "updated_at", "created_by", "updated_by")
     readonly_fields = ("created_at", "updated_at", "created_by", "updated_by")
     list_display = ("sku", "form", "question", "impact", "version", "created_at")
-    list_filter = ("sku", "form", "impact")
+    autocomplete_fields = ("sku", "form")
+    search_fields = ("question", "form__name", "sku__name")
+    list_select_related = ("sku", "form", "version")
+    list_filter = ("sku", "impact")
 
 
 @admin.register(StockKeepingUnit)
@@ -844,8 +857,11 @@ class StockKeepingUnitAdmin(admin.ModelAdmin):
         "deleted_at",
     )
     readonly_fields = ("created_at", "updated_at", "created_by", "updated_by")
+    autocomplete_fields = ("account", "projects", "forms")
     list_display = ("name", "short_name", "account")
-    list_filter = ("account", "name", "short_name")
+    list_select_related = ("account",)
+    search_fields = ("name", "short_name")
+    list_filter = ("account",)
 
 
 @admin.register(StockKeepingUnitChildren)
@@ -871,7 +887,9 @@ class StockLedgerItemAdmin(admin.ModelAdmin):
         "created_by",
     )
     list_display = ("rule", "sku", "org_unit", "question", "impact", "value", "created_at")
-    list_filter = ("sku", "impact", "rule")
+    list_filter = ("sku", "impact")
+    search_fields = ("question", "rule__question", "rule__form__name")
+    list_select_related = ("rule", "sku", "org_unit")
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -902,7 +920,11 @@ class StorageDeviceAdmin(admin.ModelAdmin):
     )
     readonly_fields = ("created_at", "updated_at", "status_updated_at")
     list_display = ("account", "type", "customer_chosen_id", "entity")
-    list_filter = ("account", "type", "status", EntityAutocompleteFilter)
+    list_filter = ("account", "type", "status")
+    # `Entity.name` is unused, the name lives in the attributes, so search on the uuid.
+    search_fields = ("customer_chosen_id", "entity__uuid")
+    # Entity.__str__ renders its entity type.
+    list_select_related = ("account", "entity", "entity__entity_type")
     raw_id_fields = ("org_unit",)
     autocomplete_fields = ["entity"]
     inlines = [
@@ -942,11 +964,13 @@ class WorkflowAdmin(admin.ModelAdmin):
 
 class WorkflowChangeInline(admin.TabularInline):
     model = WorkflowChange
+    autocomplete_fields = ("form",)
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
 class WorkflowFollowupInline(admin.TabularInline):
     model = WorkflowFollowup
+    autocomplete_fields = ("forms",)
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
@@ -955,6 +979,8 @@ class WorkflowVersionAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
     inlines = [WorkflowChangeInline, WorkflowFollowupInline]
     list_filter = ("workflow", "status")
+    # WorkflowVersion.__str__ walks workflow -> entity_type.
+    list_select_related = ("workflow", "workflow__entity_type")
 
     def get_queryset(self, request):
         return WorkflowVersion.objects_include_deleted.all()
@@ -962,13 +988,16 @@ class WorkflowVersionAdmin(admin.ModelAdmin):
 
 @admin.register(AlgorithmRun)
 class AlgorithmRunAdmin(admin.ModelAdmin):
+    autocomplete_fields = ("launcher",)
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
 @admin.register(Page)
 class PageAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
-    autocomplete_fields = ["account"]
+    autocomplete_fields = ["account", "users"]
+    search_fields = ("name", "slug")
+    list_select_related = ("account",)
     list_display = ("name", "slug", "type", "account")
 
 
@@ -1220,12 +1249,21 @@ class UserRoleAdmin(admin.ModelAdmin):
 
 @admin.register(OrgUnitChangeRequestConfiguration)
 class OrgUnitChangeRequestConfigurationAdmin(admin.ModelAdmin):
-    autocomplete_fields = ["project"]
+    autocomplete_fields = [
+        "project",
+        "editable_reference_forms",
+        "created_by",
+        "updated_by",
+        "other_groups",
+        "org_unit_type",
+        "possible_types",
+        "possible_parent_types",
+    ]
 
 
 @admin.register(ValidationNode)
 class ValidationNode(admin.ModelAdmin):
-    autocomplete_fields = ["instance"]
+    autocomplete_fields = ["instance", "created_by", "updated_by"]
 
 
 @admin.register(GroupSet)
@@ -1353,5 +1391,13 @@ admin.site.register(DeviceOwnership)
 admin.site.register(MatchingAlgorithm)
 admin.site.register(ExternalCredentials)
 admin.site.register(DevicePosition)
-admin.site.register(BulkCreateUserFile)
 admin.site.register(Report)
+
+
+@admin.register(BulkCreateUserFile)
+class BulkCreateUserFileAdmin(admin.ModelAdmin):
+    autocomplete_fields = ("created_by", "account", "default_projects", "default_org_units")
+    raw_id_fields = ("default_permissions", "default_user_roles", "default_teams")
+    list_display = ("id", "file", "account", "created_by", "created_at")
+    list_select_related = ("account", "created_by")
+    search_fields = ("created_by__username", "account__name")

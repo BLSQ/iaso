@@ -123,7 +123,7 @@ module.exports = {
     },
 
     plugins: [
-        new webpack.HotModuleReplacementPlugin(),
+        // HMR plugin is applied automatically by devServer.hot
         new CleanWebpackPlugin(),
         new webpack.NoEmitOnErrorsPlugin(), // don't reload if there is an error
         new BundleTracker({

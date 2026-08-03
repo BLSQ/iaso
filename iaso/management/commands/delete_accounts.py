@@ -97,33 +97,6 @@ def _log(msg):
 
 
 # ---------------------------------------------------------------------------
-# Streaming chunked delete
-# ---------------------------------------------------------------------------
-def _chunked_raw_delete(queryset, chunk_size=5000, label=None):
-    """Delete in streaming chunks — never loads more than chunk_size PKs at once."""
-    model = queryset.model
-    label = label or model.__name__
-    total = 0
-
-    while True:
-        ids = list(queryset.order_by("pk").values_list("pk", flat=True)[:chunk_size])
-        if not ids:
-            break
-        chunk_qs = queryset.filter(pk__in=ids)
-        try:
-            deleted = chunk_qs._raw_delete(using=queryset.db)
-        except Exception as exc:
-            _log(f"  {label}: _raw_delete failed ({exc!r}), falling back to .delete()")
-            _, counts = chunk_qs.delete()
-            deleted = counts.get(model._meta.label, 0)
-            counts_str = ", ".join(f"{model_label}: {count}" for model_label, count in sorted(counts.items()) if count)
-            _log(f"  {label}: cascade counts: {counts_str}")
-        total += deleted
-
-    return total
-
-
-# ---------------------------------------------------------------------------
 # FK graph — discovery and topological sort
 # ---------------------------------------------------------------------------
 
@@ -404,12 +377,32 @@ class Command(BaseCommand):
         _log(f"  {label}: {deleted_count} deleted")
 
     def _delete_qs_in_chunks(self, queryset, label=None):
-        """Deletes a queryset by doing queryset.raw_delete in chunks"""
-        label = label or queryset.model.__name__
+        """Deletes a queryset in chunks with raw_delete() — never loads more than chunk_size PKs at once."""
+        model = queryset.model
+        label = label or model.__name__
         if self.dry_run:
             _log(f"  [DRY RUN] {label}: ~{queryset.count()}")
             return 0
-        return _chunked_raw_delete(queryset, self.chunk_size, label=label)
+
+        total = 0
+        while True:
+            ids = list(queryset.order_by("pk").values_list("pk", flat=True)[: self.chunk_size])
+            if not ids:
+                break
+            chunk_qs = queryset.filter(pk__in=ids)
+            try:
+                deleted = chunk_qs._raw_delete(using=queryset.db)
+            except Exception as exc:
+                _log(f"  {label}: _raw_delete failed ({exc!r}), falling back to .delete()")
+                _, counts = chunk_qs.delete()
+                deleted = counts.get(model._meta.label, 0)
+                counts_str = ", ".join(
+                    f"{model_label}: {count}" for model_label, count in sorted(counts.items()) if count
+                )
+                _log(f"  {label}: cascade counts: {counts_str}")
+            total += deleted
+
+        return total
 
     def _update_qs(self, queryset, label=None, **fields):
         """Dry-run-aware wrapper around queryset.update(**fields)."""
@@ -461,8 +454,8 @@ class Command(BaseCommand):
                     blocking_pks_by_model[type(obj)].append(obj.pk)
                 for blocker_model, pks in blocking_pks_by_model.items():
                     _log(f"  [auto-unblock] {blocker_model.__name__} ×{len(pks)} blocking {label} (collect phase)")
-                    _chunked_raw_delete(
-                        blocker_model.objects.filter(pk__in=pks), self.chunk_size, f"{blocker_model.__name__}[unblock]"
+                    self._delete_qs_in_chunks(
+                        blocker_model.objects.filter(pk__in=pks), label=f"{blocker_model.__name__}[unblock]"
                     )
         else:
             raise RuntimeError(
@@ -925,7 +918,7 @@ class Command(BaseCommand):
             deleted_count = 0
             for attempt in range(_MAX_PROTECT_UNBLOCK_ATTEMPTS):
                 try:
-                    deleted_count += _chunked_raw_delete(qs, self.chunk_size, label=label)
+                    deleted_count += self._delete_qs_in_chunks(qs, label=label)
                     break
                 except ProtectedError as exc:
                     # Auto-clear blocking objects (e.g. nullable PROTECT FKs from partial-coverage models)
@@ -934,10 +927,9 @@ class Command(BaseCommand):
                         blocking_pks_by_model[type(obj)].append(obj.pk)
                     for blocker_model, pks in blocking_pks_by_model.items():
                         _log(f"  [auto-unblock] {blocker_model.__name__} ×{len(pks)} blocking {label}")
-                        _chunked_raw_delete(
+                        self._delete_qs_in_chunks(
                             blocker_model.objects.filter(pk__in=pks),
-                            self.chunk_size,
-                            f"{blocker_model.__name__}[unblock]",
+                            label=f"{blocker_model.__name__}[unblock]",
                         )
             else:
                 raise RuntimeError(

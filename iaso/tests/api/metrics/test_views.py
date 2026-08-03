@@ -1,3 +1,5 @@
+from unittest import skipUnless
+
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from rest_framework import status
 
@@ -7,6 +9,7 @@ from iaso.models.metric import MetricType, MetricValue
 from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.models.project import Project
 from iaso.permissions.core_permissions import CORE_METRIC_TYPES_PERMISSION, CORE_ORG_UNITS_PERMISSION
+from iaso.plugins import is_snt_malaria_plugin_active
 from iaso.test import APITestCase
 
 
@@ -715,6 +718,32 @@ class MetricValueAPITestCase(APITestCase):
         self.assertEqual(csv[0], expected_header)
         expected_org_unit_values = ["", self.org_unit.name, str(self.org_unit.id)]
         self.assertEqual(csv[1], expected_org_unit_values)
+
+    @skipUnless(is_snt_malaria_plugin_active(), "requires the snt_malaria plugin")
+    def test_metric_value_csv_template_excludes_composite_metric_types(self):
+        from plugins.snt_malaria.models import CompositeLayer
+
+        custom_metric_type = MetricType.objects.create(
+            account=self.account,
+            code="MT_CUSTOM",
+            name="Custom Metric Type",
+            origin=MetricType.MetricTypeOrigin.CUSTOM,
+        )
+        composite_metric_type = MetricType.objects.create(
+            account=self.account,
+            code="MT_COMPOSITE",
+            name="Composite Metric Type",
+            category="Composite",
+            origin=MetricType.MetricTypeOrigin.CUSTOM,
+        )
+        CompositeLayer.objects.create(account=self.account, name="Composite Layer", metric_type=composite_metric_type)
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"{self.BASE_URL}csv_template/")
+        csv = self.assertCsvFileResponse(response, "metric_import_template.csv", return_as_lists=True)
+
+        expected_header = ["ADM1_NAME", "ADM2_NAME", "ADM2_ID", custom_metric_type.code]
+        self.assertEqual(csv[0], expected_header)
 
     def test_metric_value_csv_template_unauthenticated(self):
         response = self.client.get(f"{self.BASE_URL}csv_template/")

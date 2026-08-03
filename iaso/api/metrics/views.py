@@ -12,6 +12,7 @@ from iaso.api.common import CONTENT_TYPE_CSV, DropdownOptionsWithRepresentationS
 from iaso.api.metrics.filters import ValueAndTypeFilterBackend, ValueFilterBackend
 from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS
 from iaso.models import MetricType, MetricValue
+from iaso.plugins import is_snt_malaria_plugin_active
 from iaso.utils.org_units import get_valid_org_units_with_geography
 
 from .permissions import MetricsPermissions
@@ -107,6 +108,9 @@ class MetricValueViewSet(viewsets.ModelViewSet):
         account = request.user.iaso_profile.account
         # Get all custom metric types for the user's account
         metric_types = MetricType.objects.filter(account=account, origin=MetricType.MetricTypeOrigin.CUSTOM)
+        if is_snt_malaria_plugin_active():
+            # Composite metric types are computed from a graph, not meant to be filled in manually.
+            metric_types = metric_types.filter(composite_layer__isnull=True)
         # Get All org units for the user's account
         org_units = get_valid_org_units_with_geography(account).order_by("name")
 

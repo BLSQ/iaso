@@ -545,11 +545,7 @@ class Command(BaseCommand):
             step_label = f"{label}→{item.model._meta.label}"
             _log(f"  [{step}/{total_steps}] {step_label}…")
             step_started_at = time.monotonic()
-            item_qs = (
-                item.queryset
-                if item.queryset is not None
-                else item.model.objects.using(queryset.db).filter(pk__in=item.pks)
-            )
+            item_qs = item.queryset if item.queryset is not None else item.model.objects.filter(pk__in=item.pks)
             deleted_count = self._delete_qs_in_chunks(item_qs, label=step_label)
             if deleted_count:
                 _log(f"  {step_label}: {deleted_count:,} deleted ({time.monotonic() - step_started_at:.1f}s)")

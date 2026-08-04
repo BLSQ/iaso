@@ -806,6 +806,16 @@ class Command(BaseCommand):
         # deleted by the auto topo step.  Capture user_ids now before that happens.
         user_ids = list(Profile.objects.filter(account=account).values_list("user_id", flat=True))
 
+        # Project is also in the FK graph and will be deleted by the auto topo step —
+        # capture app_ids now, since step 5b needs them but can't look them up via
+        # Project.objects.filter(account=account) once Project rows are gone.
+        app_ids = list(
+            Project.objects.filter(account=account)
+            .exclude(app_id=None)
+            .exclude(app_id="")
+            .values_list("app_id", flat=True)
+        )
+
         # Models the manual sections own completely — exclude from the auto step so
         # the auto step doesn't redundantly re-attempt them (0-row no-ops are cheap
         # but the intent is clearer when responsibilities are explicit).
@@ -868,11 +878,12 @@ class Command(BaseCommand):
         # ---- Step 5b: vector_control_apiimport — delete rows for this account's projects ----
         # Rows are filtered by app_id (from QUERY_STRING). Rows with no app_id cannot be
         # attributed to any account and are cleaned up in _post_flight (account-to-keep mode).
-        for project in Project.objects.filter(account=account):
+        # Uses app_ids captured at the top — Project rows are already gone by now.
+        for app_id in app_ids:
             self._delete_with_sql(
                 "DELETE FROM vector_control_apiimport WHERE headers->>'QUERY_STRING' LIKE %s",
-                params=[f"%app_id={project.app_id}%"],
-                label=f"vector_control_apiimport[app_id={project.app_id}]",
+                params=[f"%app_id={app_id}%"],
+                label=f"vector_control_apiimport[app_id={app_id}]",
             )
 
         # ---- Step 6: Account itself ----

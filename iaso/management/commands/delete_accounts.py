@@ -614,14 +614,6 @@ class Command(BaseCommand):
                 self._cascade_chunked_delete(DataSource.objects.filter(pk=ds.pk), ds_label)
 
     # -----------------------------------------------------------------------
-    # Manual section: Form (M2M-linked)
-    # -----------------------------------------------------------------------
-    def _delete_forms(self, account):
-        forms = Form.objects_include_deleted.filter(projects__account=account)
-        with self._doing(f"Form account={account.id}"):
-            self._delete_qs(forms, label="Form")
-
-    # -----------------------------------------------------------------------
     # Pre/post-deletion cleanup
     # -----------------------------------------------------------------------
     def _pre_deletion_clean_up(self, accounts_to_delete):
@@ -802,18 +794,17 @@ class Command(BaseCommand):
         )
 
         # ---- Collect data we'll need BEFORE any deletions start ----
-        # Profile is in the FK graph (discovered via 'account' filter) and will be
-        # deleted by the auto topo step.  Capture user_ids now before that happens.
+        # Profile and Project are in the FK graph (discovered via 'account' filter) and will be deleted by the auto topo step
+        # multiple data types depend on them so we need to save the required info
         user_ids = list(Profile.objects.filter(account=account).values_list("user_id", flat=True))
-
-        # Project is also in the FK graph and will be deleted by the auto topo step —
-        # capture app_ids now, since step 5b needs them but can't look them up via
-        # Project.objects.filter(account=account) once Project rows are gone.
         app_ids = list(
             Project.objects.filter(account=account)
             .exclude(app_id=None)
             .exclude(app_id="")
             .values_list("app_id", flat=True)
+        )
+        form_ids = list(
+            Form.objects_include_deleted.filter(projects__account=account).values_list("pk", flat=True).distinct()
         )
 
         # Models the manual sections own completely — exclude from the auto step so
@@ -822,7 +813,7 @@ class Command(BaseCommand):
         # Profile IS left in the auto step — it will be handled there in topo order.
         manual_models = {
             DataSource,  # M2M gap, handled via _delete_datasource_tree
-            Form,  # M2M gap, handled via _delete_forms
+            Form,  # M2M gap
         }
 
         # ---- Step 1: Manual — DataSource tree (M2M gap) ----
@@ -866,8 +857,10 @@ class Command(BaseCommand):
             )
 
         # ---- Step 4: Manual — Form (M2M gap, after auto cleared FormVersion etc.) ----
+        # Uses form_ids captured at the top — Project rows are already gone by now.
         with self._doing(f"account={account.id} Form"):
-            self._delete_forms(account)
+            forms = Form.objects_include_deleted.filter(pk__in=form_ids)
+            self._delete_qs(forms, label="Form")
 
         # ---- Step 5: Manual — User (upstream from Profile, not in reverse FK graph) ----
         # Profile was deleted in the auto step; use the user_ids collected at the top.

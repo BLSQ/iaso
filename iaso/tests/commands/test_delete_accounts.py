@@ -189,17 +189,12 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self.assertFalse(m.Task.objects.filter(pk=populated["task"].pk).exists())
         self.assertFalse(m.ExternalCredentials.objects.filter(pk=populated["credentials"].pk).exists())
         self.assertFalse(APIImport.objects.filter(pk=populated["api_import"].pk).exists())
+        self.assertFalse(m.Form.objects_include_deleted.filter(pk=populated["form"].pk).exists())
 
         # Everything below depends on whether `_post_deletion_clean_up` ran, which is
         # exclusive to --account-to-keep mode.
         post_deletion_cleanup_ran = mode == MODE_KEEP_SINGLE_ACCOUNT
         assertion = self.assertFalse if post_deletion_cleanup_ran else self.assertTrue
-
-        # `_delete_forms` (step 4) filters via the M2M `projects__account` lookup, but step 3
-        # already deleted the Project, cascading away that M2M link first — so this Form
-        # always survives step 4. It's only actually hard-deleted if `_post_deletion_clean_up`'s
-        # project-less-Form sweep runs afterward.
-        assertion(m.Form.objects_include_deleted.filter(pk=populated["form"].pk).exists())
 
         if pre_deletion_orphans is not None:
             self.assertFalse(m.Instance.objects.filter(pk=pre_deletion_orphans["instance_no_form"].pk).exists())

@@ -13,7 +13,7 @@ What is automatic:
   - Deletion order computed from FK constraints (no more ProtectedError
     from cascade chains between discovered models)
 
-What still needs manual code (M2M gap):
+What's out of graph (needs dedicated code):
   - DataSource / SourceVersion / OrgUnit — linked to Account via
     Project.data_sources M2M, not a direct FK; the BFS path via credentials
     is SET_NULL and therefore partial
@@ -141,30 +141,30 @@ class DeletionPlanItem:
 
 
 @dataclass
-class ManualCleanupNote:
+class OutOfGraphCleanupNote:
     """A table that can't be reached by the FK-graph BFS and needs dedicated cleanup code."""
 
     label: str  # e.g. "iaso.DataSource / SourceVersion / OrgUnit", or a bare table name
-    reason: str  # why this table needs manual/dedicated handling instead of the auto FK-graph
+    reason: str  # why this table is out of graph and needs dedicated handling instead of the auto FK-graph
 
 
-# Tables not reachable via reverse FK from Account — require manual handling.
-_MANUAL_CLEANUP_NOTES = [
-    ManualCleanupNote(
+# Tables not reachable via reverse FK from Account — out of graph, require dedicated handling.
+_OUT_OF_GRAPH_CLEANUP_NOTES = [
+    OutOfGraphCleanupNote(
         label="iaso.DataSource / SourceVersion / OrgUnit",
         reason="linked via Project.data_sources M2M, BFS only finds those with credentials",
     ),
-    ManualCleanupNote(label="iaso.Form", reason="linked via projects M2M"),
-    ManualCleanupNote(label="iaso.OrgUnitType", reason="linked via projects M2M"),
-    ManualCleanupNote(label="audit.Modification", reason="content-type based, no FK to Account"),
-    ManualCleanupNote(label="iaso.ExportLog", reason="no FK to Account"),
-    ManualCleanupNote(label="django_sql_dashboard.Dashboard", reason="no FK to Account"),
-    ManualCleanupNote(label="django.contrib.sessions.Session", reason="no FK to Account"),
-    ManualCleanupNote(
+    OutOfGraphCleanupNote(label="iaso.Form", reason="linked via projects M2M"),
+    OutOfGraphCleanupNote(label="iaso.OrgUnitType", reason="linked via projects M2M"),
+    OutOfGraphCleanupNote(label="audit.Modification", reason="content-type based, no FK to Account"),
+    OutOfGraphCleanupNote(label="iaso.ExportLog", reason="no FK to Account"),
+    OutOfGraphCleanupNote(label="django_sql_dashboard.Dashboard", reason="no FK to Account"),
+    OutOfGraphCleanupNote(label="django.contrib.sessions.Session", reason="no FK to Account"),
+    OutOfGraphCleanupNote(
         label="hat_api_import.APIImport [vector_control_apiimport]",
         reason="not a iaso/plugins app and no FK to Account",
     ),
-    ManualCleanupNote(
+    OutOfGraphCleanupNote(
         label="users_profile",
         reason="legacy table, no longer defined in the codebase — may still exist in older deployed databases",
     ),
@@ -313,11 +313,11 @@ def show_graph(discovered, deletion_order, account=None):
 
     _log("")
     _log("⚠ = path contains a SET_NULL FK — rows where that FK is NULL are NOT found by this filter")
-    _log("    These models need manual handling or supplementary filters.")
+    _log("    These models may need dedicated supplementary filters to fully cover SET_NULL rows.")
     _log("")
 
-    _log("=== Models NOT in FK graph (manual handling required) ===")
-    for note in _MANUAL_CLEANUP_NOTES:
+    _log("=== Out-of-graph models (dedicated handling required) ===")
+    for note in _OUT_OF_GRAPH_CLEANUP_NOTES:
         _log(f"  - {note.label}")
         _log(f"      reason: {note.reason}")
 
@@ -448,11 +448,6 @@ class Command(BaseCommand):
         except Exception as exc:
             raise RuntimeError(f"[step: {step}] {exc}") from exc
 
-    # -----------------------------------------------------------------------
-    # Manual section: DataSource / SourceVersion / OrgUnit
-    # These are M2M-linked (Project.data_sources); the FK graph only finds
-    # DataSources that have credentials, so we handle the full set here.
-    # -----------------------------------------------------------------------
     def _cascade_chunked_delete(self, queryset, label):
         """
         Drop-in replacement for queryset.delete() that:
@@ -842,17 +837,17 @@ class Command(BaseCommand):
             OrgUnitType.objects.filter(projects__account=account).values_list("pk", flat=True).distinct()
         )
 
-        # Models the manual sections own completely — exclude from the auto step so
+        # Models the out-of-graph sections own completely — exclude from the auto step so
         # the auto step doesn't redundantly re-attempt them (0-row no-ops are cheap
         # but the intent is clearer when responsibilities are explicit).
         # Profile IS left in the auto step — it will be handled there in topo order.
-        manual_models = {
+        out_of_graph_models = {
             DataSource,  # M2M gap, handled via _delete_datasource_tree
             Form,  # M2M gap
             OrgUnitType,  # M2M gap
         }
 
-        # ---- Step 1: Manual — DataSource tree (M2M gap) ----
+        # ---- Step 1: Out-of-graph — DataSource tree (M2M gap) ----
         # Must run BEFORE the auto step because Instance/OrgUnit deletions within it
         # clear FK references that would otherwise block the topo-sorted deletions.
         with self._doing(f"account={account.id} DataSource tree"):
@@ -862,7 +857,7 @@ class Command(BaseCommand):
                     label_prefix=f"proj[{project.id}]/",
                 )
 
-        # ---- Step 2: Manual — break PROTECT cycles that topo sort can't handle ----
+        # ---- Step 2: Break PROTECT cycles that topo sort can't handle ----
 
         # PlanningSamplingResult.planning = CASCADE(Planning) and
         # Planning.selected_sampling_result = PROTECT(PSR) form a circular PROTECT.
@@ -883,28 +878,29 @@ class Command(BaseCommand):
         # ---- Step 3: Auto — topo-sorted FK-graph deletion ----
         with self._doing(f"account={account.id} FK-graph auto-deletion"):
             _log(
-                f"  Running FK-graph auto-deletion ({len(discovered)} models, skipping {len(manual_models)} manual)..."
+                f"  Running FK-graph auto-deletion ({len(discovered)} models, "
+                f"skipping {len(out_of_graph_models)} out-of-graph)..."
             )
             self._execute_graph_deletion(
                 discovered,
                 deletion_order,
                 account,
-                skip_models=manual_models,
+                skip_models=out_of_graph_models,
             )
 
-        # ---- Step 4: Manual — Form (M2M gap, after auto cleared FormVersion etc.) ----
+        # ---- Step 4: Out-of-graph — Form (M2M gap, after auto cleared FormVersion etc.) ----
         # Uses form_ids captured at the top — Project rows are already gone by now.
         with self._doing(f"account={account.id} Form"):
             forms = Form.objects_include_deleted.filter(pk__in=form_ids)
             self._delete_qs(forms, label="Form")
 
-        # ---- Step 4b: Manual — OrgUnitType (M2M gap, same shape as Form) ----
+        # ---- Step 4b: Out-of-graph — OrgUnitType (M2M gap, same shape as Form) ----
         # Uses org_unit_type_ids captured at the top — Project rows are already gone by now.
         with self._doing(f"account={account.id} OrgUnitType"):
             org_unit_types = OrgUnitType.objects.filter(pk__in=org_unit_type_ids)
             self._delete_qs(org_unit_types, label="OrgUnitType")
 
-        # ---- Step 5: Manual — User (upstream from Profile, not in reverse FK graph) ----
+        # ---- Step 5: Out-of-graph — User (upstream from Profile, not in reverse FK graph) ----
         # Profile was deleted in the auto step; use the user_ids collected at the top.
         with self._doing(f"account={account.id} User"):
             users = User.objects.filter(pk__in=user_ids)
@@ -928,7 +924,7 @@ class Command(BaseCommand):
         """
         Delete all discovered models in topological order.
         Each model's rows are filtered using the auto-built account_lookup.
-        skip_models: set of model classes handled manually (excluded from this step).
+        skip_models: set of out-of-graph model classes (excluded from this step).
         """
         skip_models = skip_models or set()
         models_processed = 0

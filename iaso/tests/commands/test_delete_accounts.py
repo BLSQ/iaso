@@ -18,8 +18,8 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
     """
     Builds two fully-populated accounts (one to keep, one to delete) covering both the
     auto-discovered FK graph (Team, Planning, PlanningSamplingResult, Task, EntityType,
-    Entity, ExternalCredentials) and the manually-handled M2M gaps (DataSource/SourceVersion/
-    OrgUnit, Form) that delete_accounts.py owns.
+    Entity, ExternalCredentials) and the out-of-graph M2M gaps (DataSource/SourceVersion/
+    OrgUnit, Form, OrgUnitType) that delete_accounts.py owns.
     """
 
     def setUp(self):

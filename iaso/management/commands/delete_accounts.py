@@ -673,6 +673,14 @@ class Command(BaseCommand):
         _log("finished pre-deletion cleanup")
 
     def _post_deletion_clean_up(self, account_to_keep):
+        """
+        Sweeps data left over once only `account_to_keep` should remain.
+        Most cleanups here are scoped to actual orphans (no surviving FK/M2M link).
+        A few tables (e.g. Session, Dashboard) have no link to Account at all, not even
+        indirectly — there's no way to tell which rows belong to the deleted account(s), so
+        those are wiped in full rather than left as an unscoped leak. Accepted tradeoff, not
+        a bug: only run --account-to-keep when losing that unscoped data is acceptable.
+        """
         _log(
             "Post-deletion cleanup: clearing orphan DataSource, Forms, Instance, Project, InstanceFile, APIImport, Session, Device..."
         )

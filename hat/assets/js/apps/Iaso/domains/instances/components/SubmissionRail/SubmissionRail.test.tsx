@@ -51,15 +51,12 @@ vi.mock('bluesquare-components', async () => {
     };
 });
 
-vi.mock(
-    '../ValidationWorkflow/InstanceValidationWidgetPaper',
-    () => ({
-        useValidationAvailability: () => 'available',
-        InstanceValidationContent: () => (
-            <div data-testid="validation-content">validation</div>
-        ),
-    }),
-);
+vi.mock('../ValidationWorkflow/InstanceValidationWidgetPaper', () => ({
+    useValidationAvailability: () => 'available',
+    InstanceValidationContent: () => (
+        <div data-testid="validation-content">validation</div>
+    ),
+}));
 
 vi.mock('../InstanceDetailsLocation', () => ({
     default: () => <div data-testid="location-content">location</div>,

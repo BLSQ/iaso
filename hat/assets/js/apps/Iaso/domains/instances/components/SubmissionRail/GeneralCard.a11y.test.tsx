@@ -44,10 +44,7 @@ describe('GeneralCard a11y', () => {
     it('expanded technical details has no accessibility violations', async () => {
         const user = userEvent.setup();
         const { container } = renderWithThemeAndIntlProvider(
-            <GeneralCard
-                currentInstance={makeInstance()}
-                showHistoryLink
-            />,
+            <GeneralCard currentInstance={makeInstance()} showHistoryLink />,
         );
         await user.click(
             screen.getByRole('button', { name: /Technical details/ }),

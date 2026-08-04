@@ -2,8 +2,8 @@ import React from 'react';
 import { axe } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
 import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers';
-import { SubmissionValue } from './index';
 import { makeField } from './testUtils';
+import { SubmissionValue } from './index';
 
 vi.mock('Iaso/components/maps/MarkerMapComponent', () => ({
     MarkerMap: () => <div data-testid="marker-map" />,

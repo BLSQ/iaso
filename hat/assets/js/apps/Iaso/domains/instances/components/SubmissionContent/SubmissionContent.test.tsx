@@ -7,9 +7,11 @@ import { SubmissionContent } from './SubmissionContent';
 import { formDescriptor, instanceData } from './testUtils';
 
 vi.mock('../SubmissionValue', () => ({
-    SubmissionValue: ({ field }: { field: { value: string; label?: string } }) => (
-        <span data-testid={`value-${field.value}`}>{field.value}</span>
-    ),
+    SubmissionValue: ({
+        field,
+    }: {
+        field: { value: string; label?: string };
+    }) => <span data-testid={`value-${field.value}`}>{field.value}</span>,
 }));
 
 vi.mock('../InstanceFileContentBasic', () => ({

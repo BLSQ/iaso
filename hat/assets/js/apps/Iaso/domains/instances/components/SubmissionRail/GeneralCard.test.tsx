@@ -34,7 +34,10 @@ vi.mock('bluesquare-components', async () => {
                 if (!values) return text;
                 return Object.entries(values).reduce(
                     (acc, [key, value]) =>
-                        acc.replace(new RegExp(`\\{${key}[^}]*\\}`, 'g'), String(value)),
+                        acc.replace(
+                            new RegExp(`\\{${key}[^}]*\\}`, 'g'),
+                            String(value),
+                        ),
                     text,
                 );
             },
@@ -71,10 +74,7 @@ describe('GeneralCard', () => {
         );
         expect(
             screen.getByRole('link', { name: 'See all versions' }),
-        ).toHaveAttribute(
-            'href',
-            expect.stringContaining('/instanceIds/42'),
-        );
+        ).toHaveAttribute('href', expect.stringContaining('/instanceIds/42'));
     });
 
     it('toggles technical details', async () => {

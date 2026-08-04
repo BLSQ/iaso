@@ -369,12 +369,30 @@ class Command(BaseCommand):
 
     def _delete_qs(self, queryset, label=None):
         """Deletes a whole queryset with a single queryset.delete() - useful for deleting small tables"""
-        label = label or queryset.model.__name__
+        model = queryset.model
+        label = label or model.__name__
         if self.dry_run:
             _log(f"  [DRY RUN] {label}: ~{queryset.count()}")
             return
+        if model is not Modification:
+            self._delete_modification_logs_for_pks(
+                ContentType.objects.get_for_model(model), list(queryset.values_list("pk", flat=True))
+            )
         deleted_count, _ = queryset.delete()
         _log(f"  {label}: {deleted_count} deleted")
+
+    def _delete_modification_logs_for_pks(self, content_type, pks):
+        """
+        Modification has no real DB-level FK to the model it logs (content_type + object_id,
+        GenericForeignKey-style) — rows referencing pks about to be deleted become invisible
+        orphans unless cleaned up right here, alongside the rows themselves.
+        """
+        if not pks:
+            return
+        self._delete_qs(
+            Modification.objects.filter(content_type=content_type, object_id__in=[str(pk) for pk in pks]),
+            label=f"Modification[{content_type.model}]",
+        )
 
     def _delete_qs_in_chunks(self, queryset, label=None):
         """Deletes a queryset in chunks with raw_delete() — useful for deleting big tables that can't be loaded at once."""
@@ -384,11 +402,15 @@ class Command(BaseCommand):
             _log(f"  [DRY RUN] {label}: ~{queryset.count()}")
             return 0
 
+        content_type = ContentType.objects.get_for_model(model) if model is not Modification else None
+
         total = 0
         while True:
             ids = list(queryset.order_by("pk").values_list("pk", flat=True)[: self.chunk_size])
             if not ids:
                 break
+            if content_type is not None:
+                self._delete_modification_logs_for_pks(content_type, ids)
             chunk_qs = queryset.filter(pk__in=ids)
             try:
                 deleted = chunk_qs._raw_delete(using=queryset.db)

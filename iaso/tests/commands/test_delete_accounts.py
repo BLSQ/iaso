@@ -71,7 +71,15 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         credentials = m.ExternalCredentials.objects.create(
             account=account, name=f"cred_{suffix}", login="login", password="pwd", url="http://example.com"
         )
+        # APIImport & Modification don't have any real FK to iaso models, but have some kind of FK
         api_import = APIImport.objects.create(json_body={}, headers={"QUERY_STRING": f"app_id={project.app_id}"})
+        modification = Modification.objects.create(
+            content_type=ContentType.objects.get_for_model(m.Instance),
+            object_id=str(instance.pk),
+            past_value={},
+            new_value={},
+            source="test",
+        )
 
         return {
             "org_unit_type": org_unit_type,
@@ -88,19 +96,16 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
             "task": task,
             "credentials": credentials,
             "api_import": api_import,
+            "modification": modification,
         }
 
     def _create_unscoped_data(self):
         """
-        Data with no usable link to any account, split by *when* the command cleans it up,
-        plus one dict of data that *does* belong to an account but through a link the
-        FK-graph BFS can't follow:
+        Data with no usable link to any account, split by *when* the command cleans it up:
         - "pre-deletion" orphans are swept by `_pre_deletion_clean_up`, which runs for both
           --account-to-delete and --account-to-keep.
         - "post-deletion" orphans are only swept by `_post_deletion_clean_up`, which runs
           exclusively in --account-to-keep mode (it assumes a single surviving account).
-        - "deleted account gap" data belongs to `self.account_to_delete`'s own records
-          (see the inline comment below for why it's tracked separately from the orphans).
         """
         pre_deletion_orphans = {
             "instance_no_form": m.Instance.objects.create(form=None),
@@ -136,24 +141,8 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
                 source="test",
             ),
         }
-        # Unlike the two dicts above, this data isn't unscoped — it belongs to
-        # `self.account_to_delete`'s own records, but only through a link the FK-graph
-        # BFS can't follow (M2M, or a GenericForeignKey with no DB-level FK at all — see
-        # `_MANUAL_CLEANUP_NOTES`), so it behaves differently across the three test modes.
-        deleted_account_gap_data = {
-            "api_import_for_deleted_account": APIImport.objects.create(
-                json_body={}, headers={"QUERY_STRING": f"app_id={self.project_to_delete.app_id}"}
-            ),
-            "modification_for_deleted_instance": Modification.objects.create(
-                content_type=ContentType.objects.get_for_model(m.Instance),
-                object_id=str(self.deleted["instance"].pk),
-                past_value={},
-                new_value={},
-                source="test",
-            ),
-        }
 
-        return pre_deletion_orphans, post_deletion_only_orphans, deleted_account_gap_data
+        return pre_deletion_orphans, post_deletion_only_orphans
 
     def _assert_org_unit_type_survives(self, populated):
         # OrgUnitType is linked to Project only through M2M and isn't even listed in
@@ -170,7 +159,6 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         mode,
         pre_deletion_orphans=None,
         post_deletion_only_orphans=None,
-        gap_data=None,
     ):
         self.assertFalse(m.Account.objects.filter(pk=account.pk).exists())
         self.assertFalse(m.DataSource.objects.filter(pk=data_source.pk).exists())
@@ -190,6 +178,7 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self.assertFalse(m.ExternalCredentials.objects.filter(pk=populated["credentials"].pk).exists())
         self.assertFalse(APIImport.objects.filter(pk=populated["api_import"].pk).exists())
         self.assertFalse(m.Form.objects_include_deleted.filter(pk=populated["form"].pk).exists())
+        self.assertFalse(Modification.objects.filter(pk=populated["modification"].pk).exists())
 
         # Everything below depends on whether `_post_deletion_clean_up` ran, which is
         # exclusive to --account-to-keep mode.
@@ -218,12 +207,6 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
             )
             assertion(Modification.objects.filter(pk=post_deletion_only_orphans["modification_orphan"].pk).exists())
 
-        if gap_data is not None:
-            self.assertFalse(APIImport.objects.filter(pk=gap_data["api_import_for_deleted_account"].pk).exists())
-            # The dangling Modification is only caught by `_cleanup_modification_logs`,
-            # part of `_post_deletion_clean_up`.
-            assertion(Modification.objects.filter(pk=gap_data["modification_for_deleted_instance"].pk).exists())
-
     def _assert_account_and_related_data_intact(
         self,
         account,
@@ -233,7 +216,6 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         populated,
         pre_deletion_orphans=None,
         post_deletion_only_orphans=None,
-        gap_data=None,
     ):
         self.assertTrue(m.Account.objects.filter(pk=account.pk).exists())
         self.assertTrue(m.DataSource.objects.filter(pk=data_source.pk).exists())
@@ -252,6 +234,7 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self.assertTrue(m.Task.objects.filter(pk=populated["task"].pk).exists())
         self.assertTrue(m.ExternalCredentials.objects.filter(pk=populated["credentials"].pk).exists())
         self.assertTrue(APIImport.objects.filter(pk=populated["api_import"].pk).exists())
+        self.assertTrue(Modification.objects.filter(pk=populated["modification"].pk).exists())
 
         if pre_deletion_orphans is not None:
             self.assertTrue(m.Instance.objects.filter(pk=pre_deletion_orphans["instance_no_form"].pk).exists())
@@ -279,16 +262,6 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
                 Modification.objects.filter(pk=post_deletion_only_orphans["modification_orphan"].pk).exists()
             )
 
-        if gap_data is not None:
-            # Only pass the keys expected to be intact at this call site — the two pieces of
-            # gap_data don't necessarily share the same fate (see test bodies).
-            if "api_import_for_deleted_account" in gap_data:
-                self.assertTrue(APIImport.objects.filter(pk=gap_data["api_import_for_deleted_account"].pk).exists())
-            if "modification_for_deleted_instance" in gap_data:
-                self.assertTrue(
-                    Modification.objects.filter(pk=gap_data["modification_for_deleted_instance"].pk).exists()
-                )
-
     def test_list_accounts_mode(self):
         management.call_command("delete_accounts", list_accounts=True, stdout=StringIO())
 
@@ -315,7 +288,7 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
             management.call_command("delete_accounts", accounts_to_delete=[missing_id], stdout=StringIO())
 
     def test_dry_run_does_not_delete_anything(self):
-        pre_deletion_orphans, post_deletion_only_orphans, gap_data = self._create_unscoped_data()
+        pre_deletion_orphans, post_deletion_only_orphans = self._create_unscoped_data()
 
         management.call_command(
             "delete_accounts",
@@ -332,7 +305,6 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
             self.deleted,
             pre_deletion_orphans=pre_deletion_orphans,
             post_deletion_only_orphans=post_deletion_only_orphans,
-            gap_data=gap_data,
         )
         self._assert_account_and_related_data_intact(
             self.account_to_keep, self.data_source_to_keep, self.version_to_keep, self.project_to_keep, self.kept
@@ -340,7 +312,7 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self._assert_org_unit_type_survives(self.deleted)
 
     def test_delete_specific_account(self):
-        pre_deletion_orphans, post_deletion_only_orphans, gap_data = self._create_unscoped_data()
+        pre_deletion_orphans, post_deletion_only_orphans = self._create_unscoped_data()
 
         management.call_command("delete_accounts", accounts_to_delete=[self.account_to_delete.pk], stdout=StringIO())
 
@@ -353,7 +325,6 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
             mode=MODE_DELETE_ACCOUNTS,
             pre_deletion_orphans=pre_deletion_orphans,
             post_deletion_only_orphans=post_deletion_only_orphans,
-            gap_data=gap_data,
         )
         self._assert_account_and_related_data_intact(
             self.account_to_keep, self.data_source_to_keep, self.version_to_keep, self.project_to_keep, self.kept
@@ -363,7 +334,7 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self._assert_org_unit_type_survives(self.deleted)
 
     def test_keep_single_account(self):
-        pre_deletion_orphans, post_deletion_only_orphans, gap_data = self._create_unscoped_data()
+        pre_deletion_orphans, post_deletion_only_orphans = self._create_unscoped_data()
 
         management.call_command("delete_accounts", account_to_keep=self.account_to_keep.pk, stdout=StringIO())
 
@@ -376,7 +347,6 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
             mode=MODE_KEEP_SINGLE_ACCOUNT,
             pre_deletion_orphans=pre_deletion_orphans,
             post_deletion_only_orphans=post_deletion_only_orphans,
-            gap_data=gap_data,
         )
         self._assert_account_and_related_data_intact(
             self.account_to_keep, self.data_source_to_keep, self.version_to_keep, self.project_to_keep, self.kept

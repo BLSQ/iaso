@@ -18,6 +18,7 @@ What still needs manual code (M2M gap):
     Project.data_sources M2M, not a direct FK; the BFS path via credentials
     is SET_NULL and therefore partial
   - Form — linked via projects M2M
+  - OrgUnitType — linked via projects M2M
   - Orphan audit log cleanup (content-type based, not FK based)
   - Orphan export log cleanup (no incoming M2M reference, not content-type or FK based)
 
@@ -154,6 +155,7 @@ _MANUAL_CLEANUP_NOTES = [
         reason="linked via Project.data_sources M2M, BFS only finds those with credentials",
     ),
     ManualCleanupNote(label="iaso.Form", reason="linked via projects M2M"),
+    ManualCleanupNote(label="iaso.OrgUnitType", reason="linked via projects M2M"),
     ManualCleanupNote(label="audit.Modification", reason="content-type based, no FK to Account"),
     ManualCleanupNote(label="iaso.ExportLog", reason="no FK to Account"),
     ManualCleanupNote(label="django_sql_dashboard.Dashboard", reason="no FK to Account"),
@@ -836,6 +838,9 @@ class Command(BaseCommand):
         form_ids = list(
             Form.objects_include_deleted.filter(projects__account=account).values_list("pk", flat=True).distinct()
         )
+        org_unit_type_ids = list(
+            OrgUnitType.objects.filter(projects__account=account).values_list("pk", flat=True).distinct()
+        )
 
         # Models the manual sections own completely — exclude from the auto step so
         # the auto step doesn't redundantly re-attempt them (0-row no-ops are cheap
@@ -844,6 +849,7 @@ class Command(BaseCommand):
         manual_models = {
             DataSource,  # M2M gap, handled via _delete_datasource_tree
             Form,  # M2M gap
+            OrgUnitType,  # M2M gap
         }
 
         # ---- Step 1: Manual — DataSource tree (M2M gap) ----
@@ -891,6 +897,12 @@ class Command(BaseCommand):
         with self._doing(f"account={account.id} Form"):
             forms = Form.objects_include_deleted.filter(pk__in=form_ids)
             self._delete_qs(forms, label="Form")
+
+        # ---- Step 4b: Manual — OrgUnitType (M2M gap, same shape as Form) ----
+        # Uses org_unit_type_ids captured at the top — Project rows are already gone by now.
+        with self._doing(f"account={account.id} OrgUnitType"):
+            org_unit_types = OrgUnitType.objects.filter(pk__in=org_unit_type_ids)
+            self._delete_qs(org_unit_types, label="OrgUnitType")
 
         # ---- Step 5: Manual — User (upstream from Profile, not in reverse FK graph) ----
         # Profile was deleted in the auto step; use the user_ids collected at the top.

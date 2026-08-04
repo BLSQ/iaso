@@ -144,11 +144,6 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
 
         return pre_deletion_orphans, post_deletion_only_orphans
 
-    def _assert_org_unit_type_survives(self, populated):
-        # OrgUnitType is linked to Project only through M2M and isn't even listed in
-        # _MANUAL_CLEANUP_NOTES — nothing in delete_accounts.py ever deletes it, in any mode.
-        self.assertTrue(m.OrgUnitType.objects.filter(pk=populated["org_unit_type"].pk).exists())
-
     def _assert_account_and_related_data_gone(
         self,
         account,
@@ -179,6 +174,7 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self.assertFalse(APIImport.objects.filter(pk=populated["api_import"].pk).exists())
         self.assertFalse(m.Form.objects_include_deleted.filter(pk=populated["form"].pk).exists())
         self.assertFalse(Modification.objects.filter(pk=populated["modification"].pk).exists())
+        self.assertFalse(m.OrgUnitType.objects.filter(pk=populated["org_unit_type"].pk).exists())
 
         # Everything below depends on whether `_post_deletion_clean_up` ran, which is
         # exclusive to --account-to-keep mode.
@@ -235,6 +231,7 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self.assertTrue(m.ExternalCredentials.objects.filter(pk=populated["credentials"].pk).exists())
         self.assertTrue(APIImport.objects.filter(pk=populated["api_import"].pk).exists())
         self.assertTrue(Modification.objects.filter(pk=populated["modification"].pk).exists())
+        self.assertTrue(m.OrgUnitType.objects.filter(pk=populated["org_unit_type"].pk).exists())
 
         if pre_deletion_orphans is not None:
             self.assertTrue(m.Instance.objects.filter(pk=pre_deletion_orphans["instance_no_form"].pk).exists())
@@ -309,7 +306,6 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self._assert_account_and_related_data_intact(
             self.account_to_keep, self.data_source_to_keep, self.version_to_keep, self.project_to_keep, self.kept
         )
-        self._assert_org_unit_type_survives(self.deleted)
 
     def test_delete_specific_account(self):
         pre_deletion_orphans, post_deletion_only_orphans = self._create_unscoped_data()
@@ -329,9 +325,6 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self._assert_account_and_related_data_intact(
             self.account_to_keep, self.data_source_to_keep, self.version_to_keep, self.project_to_keep, self.kept
         )
-        # M2M-only-reachable data (not in _MANUAL_CLEANUP_NOTES, no manual cleanup path
-        # anywhere) survives even though the rest of the account is gone.
-        self._assert_org_unit_type_survives(self.deleted)
 
     def test_keep_single_account(self):
         pre_deletion_orphans, post_deletion_only_orphans = self._create_unscoped_data()
@@ -351,4 +344,3 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self._assert_account_and_related_data_intact(
             self.account_to_keep, self.data_source_to_keep, self.version_to_keep, self.project_to_keep, self.kept
         )
-        self._assert_org_unit_type_survives(self.deleted)

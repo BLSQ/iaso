@@ -13,6 +13,7 @@ from django.core.files import File
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
+from rest_framework import status
 
 from iaso import models as m
 from iaso.api.common import EXPORTS_DATETIME_FORMAT
@@ -38,7 +39,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         response = self.client.post("/api/entities/", data=payload, format="json")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_create_multiples_entity(self):
         self.client.force_authenticate(self.yoda)
@@ -64,7 +65,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         response = self.client.post("/api/entities/bulk_create/", data=payload, format="json")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 2)
 
     def test_create_entity_same_attributes(self):
@@ -89,7 +90,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         response = self.client.post("/api/entities/bulk_create/", data=payload, format="json")
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_retrieve_entity(self):
         self.client.force_authenticate(self.yoda)
@@ -117,7 +118,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         response = self.client.get("/api/entities/", format="json")
 
-        res_json = self.assertJSONResponse(response, 200)
+        res_json = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidListData(list_data=res_json, expected_length=2, results_key="result")
 
     def test_retrieve_entity_without_attributes(self):
@@ -154,17 +155,17 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         response = self.client.get("/api/entities/", format="json")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["result"]), 3)
 
         response = self.client.get(f"/api/entities/?entity_type_id={self.entity_type.pk}", format="json")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["result"]), 3)
 
         response = self.client.get(f"/api/entities/{entity.pk}/")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_retrieve_entity_without_permission_hides_nfc_cards(self):
         restricted_user = self.create_user_with_profile(
@@ -182,7 +183,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         )
 
         response = self.client.get(f"/api/entities/{entity.pk}/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertNotIn("nfc_cards", response_data)
@@ -213,7 +214,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         )
 
         response = self.client.get(f"/api/entities/{entity.pk}/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertNotIn("nfc_cards", response_data)
@@ -244,7 +245,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         )
 
         response = self.client.get(f"/api/entities/{entity.pk}/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertIn("nfc_cards", response_data)
@@ -288,36 +289,36 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         # search by entity name - make sure it's case-insensitive and ignores white space
         response = self.client.get("/api/entities/", data={"search": " cLiEnT "}, format="json")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(data["result"]), 2)
 
         # Search by entity UUID
         response = self.client.get("/api/entities/", data={"search": entity_1.uuid}, format="json")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(data["result"]), 1)
         self.assertEqual(data["result"][0]["id"], entity_1.id)
 
         # Search by JSON attribute
         response = self.client.get("/api/entities/", data={"search": "30"}, format="json")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         # Both entities share the same instance attributes in this setup
         self.assertEqual(len(data["result"]), 2)
 
         # Multi-word search. "client new" should match "New Client"
         response = self.client.get("/api/entities/", data={"search": "client new"}, format="json")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(data["result"]), 1)
         self.assertEqual(data["result"][0]["id"], entity_1.id)
 
         # 'ids:' prefix search
         response = self.client.get("/api/entities/", data={"search": f"ids:{entity_2.id}"}, format="json")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(data["result"]), 1)
         self.assertEqual(data["result"][0]["id"], entity_2.id)
 
         # 'uuids:' prefix search
         response = self.client.get("/api/entities/", data={"search": f"uuids:{entity_2.uuid}"}, format="json")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(data["result"]), 1)
         self.assertEqual(data["result"][0]["id"], entity_2.id)
 
@@ -344,7 +345,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         )
         with self.assertNumQueries(9):
             response = self.client.get("/api/entities/", format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         result = response.json()["result"]
         self.assertEqual(len(result), 3)
         target_result = next(item for item in result if item["id"] == entities[0].id)
@@ -372,7 +373,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         # The subquery annotation (no join fan-out, no GROUP BY) is used regardless of ordering.
         with CaptureQueriesContext(connection) as ctx:
             response = self.client.get("/api/entities/", data={"order": "id"}, format="json")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         result = data["result"]
         self.assertEqual(len(result), 3)
         self.assertEqual(result[0]["last_saved_instance"], "2025-02-03T00:00:00Z")
@@ -382,7 +383,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         with CaptureQueriesContext(connection) as ctx:
             response = self.client.get("/api/entities/", data={"order": "-last_saved_instance"}, format="json")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         result = data["result"]
         self.assertEqual(len(result), 3)
         self.assertEqual(result[0]["last_saved_instance"], "2025-02-05T00:00:00Z")
@@ -442,7 +443,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         )
 
         response = self.client.get(f"/api/entities/?entity_type_ids={entity_type_2.pk}", format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         result = response.json()["result"]
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]["id"], entity.id)
@@ -452,7 +453,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         # Test the extra columns in the CSV export
         response = self.client.get(f"/api/entities/?entity_type_ids={entity_type_2.pk}&csv=true/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.get("Content-Disposition"), 'attachment; filename="entities-2021-07-18-14-57.csv"')
 
         # utf-8-sig automatically strips the \ufeff BOM
@@ -534,14 +535,14 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         # Test single UUID search
         response = self.client.get(f"/api/entities/?search=uuids:{entity1.uuid}", format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["result"]), 1)
         self.assertEqual(response.json()["result"][0]["id"], entity1.id)
 
         # Test multiple UUIDs search with comma separation
         uuids = f"{entity1.uuid},{entity2.uuid}"
         response = self.client.get(f"/api/entities/?search=uuids:{uuids}", format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["result"]), 2)
         result_ids = [r["id"] for r in response.json()["result"]]
         self.assertIn(entity1.id, result_ids)
@@ -550,7 +551,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         # Test with spaces around commas
         uuids_with_spaces = f"{entity1.uuid} , {entity3.uuid}"
         response = self.client.get(f"/api/entities/?search=uuids:{uuids_with_spaces}", format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["result"]), 2)
         result_ids = [r["id"] for r in response.json()["result"]]
         self.assertIn(entity1.id, result_ids)
@@ -560,14 +561,14 @@ class WebEntityAPITestCase(EntityAPITestCase):
         fake_uuid = "8872aafb-651f-4b0f-89af-35f0a06d9b44"
         uuids_with_fake = f"{entity1.uuid},{fake_uuid}"
         response = self.client.get(f"/api/entities/?search=uuids:{uuids_with_fake}", format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["result"]), 1)
         self.assertEqual(response.json()["result"][0]["id"], entity1.id)
 
         # Test invalid UUIDs
         invalid_uuids = "8872wwfb-651f 4b0f-89af 35f0a06d9b44"
         response = self.client.get(f"/api/entities/?search=uuids:{invalid_uuids}", format="json")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             response.json(), ["Failed parsing uuids in search 'uuids:8872wwfb-651f 4b0f-89af 35f0a06d9b44'"]
         )
@@ -617,14 +618,14 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         # Test single ID search
         response = self.client.get(f"/api/entities/?search=ids:{entity1.id}", format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["result"]), 1)
         self.assertEqual(response.json()["result"][0]["id"], entity1.id)
 
         # Test multiple IDs search with comma separation
         ids = f"{entity1.id},{entity2.id}"
         response = self.client.get(f"/api/entities/?search=ids:{ids}", format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["result"]), 2)
         result_ids = [r["id"] for r in response.json()["result"]]
         self.assertIn(entity1.id, result_ids)
@@ -633,7 +634,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         # Test with spaces around commas
         ids_with_spaces = f"{entity1.id} , {entity3.id}"
         response = self.client.get(f"/api/entities/?search=ids:{ids_with_spaces}", format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["result"]), 2)
         result_ids = [r["id"] for r in response.json()["result"]]
         self.assertIn(entity1.id, result_ids)
@@ -643,7 +644,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         fake_id = 99999
         ids_with_fake = f"{entity1.id},{fake_id}"
         response = self.client.get(f"/api/entities/?search=ids:{ids_with_fake}", format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["result"]), 1)
         self.assertEqual(response.json()["result"][0]["id"], entity1.id)
 
@@ -679,7 +680,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         # Search on specific date
         response = self.client.get(f"/api/entities/?dateFrom={date1_str}&dateTo={date1_str}")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["result"]), 1)
         results = response.json()["result"]
         self.assertEqual(len(results), 1)
@@ -687,25 +688,25 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         # Search on date range
         response = self.client.get(f"/api/entities/?dateFrom={date1_str}&dateTo={date2_str}")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = response.json()["result"]
         self.assertEqual(len(results), 2)
         self.assertEqual(set(r["id"] for r in results), set((entity1.id, entity2.id)))
 
         # Search on only from date
         response = self.client.get(f"/api/entities/?dateFrom={date2_str}")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = response.json()["result"]
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]["id"], entity2.id)
         response = self.client.get(f"/api/entities/?dateFrom={date3_str}")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = response.json()["result"]
         self.assertEqual(len(results), 0)
 
         # Search on only to date
         response = self.client.get(f"/api/entities/?dateTo={date1_str}")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = response.json()["result"]
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]["id"], entity1.id)
@@ -773,7 +774,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
             "/api/entities/",
             {"fields_search": self._generate_json_filter("and", "some", "F", "Bujumbura")},
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["result"]), 1)
         the_result = response.json()["result"][0]
         self.assertEqual(the_result["id"], ent1.id)
@@ -783,7 +784,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
             "/api/entities/",
             {"fields_search": self._generate_json_filter("and", "some", "M", "Bujumbura")},
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["result"]), 0)
 
         # gender f OR SOME residence Kinshasa
@@ -791,7 +792,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
             "/api/entities/",
             {"fields_search": self._generate_json_filter("or", "some", "F", "Kinshasa")},
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["result"]), 2)
         result_ids = [r["id"] for r in response.json()["result"]]
         self.assertEqual(sorted(result_ids), sorted([ent1.id, ent2.id]))
@@ -801,7 +802,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
             "/api/entities/",
             {"fields_search": self._generate_json_filter("and", "some", "M", "Kinshasa")},
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["result"]), 1)
         the_result = response.json()["result"][0]
         self.assertEqual(the_result["id"], ent2.id)
@@ -811,7 +812,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
             "/api/entities/",
             {"fields_search": self._generate_json_filter("and", "all", "M", "Kinshasa")},
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["result"]), 0)
 
         # age is 56
@@ -828,7 +829,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
                 )
             },
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["result"]), 1)
         the_result = response.json()["result"][0]
         self.assertEqual(the_result["id"], ent2.id)
@@ -853,6 +854,124 @@ class WebEntityAPITestCase(EntityAPITestCase):
             }
         )
 
+    def test_list_entities_fields_search_soft_deleted_instances(self):
+        self.client.force_authenticate(self.yoda)
+        self.form_2 = m.Form.objects.create(name="Form 2", form_id="form_2")
+
+        ent1_instance1 = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"gender": "F"},
+        )
+        ent1 = Entity.objects.create(
+            name="Ent 1",
+            entity_type=self.entity_type,
+            attributes=ent1_instance1,
+            account=self.account,
+        )
+        ent1_instance1.entity = ent1
+        ent1_instance1.save()
+
+        inst2 = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_2,
+            json={"residence": "Bujumbura"},
+            entity=ent1,
+        )
+
+        response = self.client.get(
+            "/api/entities/",
+            {"fields_search": self._generate_json_filter("and", "some", "F", "Bujumbura")},
+        )
+        res = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(res["result"]), 1)
+
+        # Soft-delete non-attributes instance
+        inst2.deleted = True
+        inst2.save()
+
+        response = self.client.get(
+            "/api/entities/",
+            {"fields_search": self._generate_json_filter("and", "some", "F", "Bujumbura")},
+        )
+        res = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(res["result"]), 0)
+
+        # Restore non-attributes instance, and soft-delete attributes instance
+        inst2.deleted = False
+        inst2.save()
+        ent1_instance1.deleted = True
+        ent1_instance1.save()
+
+        response = self.client.get(
+            "/api/entities/",
+            {"fields_search": self._generate_json_filter("and", "some", "F", "Bujumbura")},
+        )
+        res = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(res["result"]), 0)
+
+    def test_list_entities_filter_by_date_soft_deleted_instances(self):
+        self.client.force_authenticate(self.yoda)
+
+        source_date_attr = datetime.datetime(2024, 9, 12, 0, 0, 5, tzinfo=pytz.UTC)
+        source_date_attr_str = source_date_attr.strftime("%Y-%m-%d")
+
+        source_date = datetime.datetime(2024, 10, 15, 0, 0, 5, tzinfo=pytz.UTC)
+        source_date_str = source_date.strftime("%Y-%m-%d")
+
+        entity_type = EntityType.objects.create(name="ET", reference_form=self.form_1)
+
+        # initialize both an attribute and non-attribute Instance
+        inst_attr = Instance.objects.create(form=self.form_1, source_created_at=source_date_attr)
+        entity = Entity.objects.create(entity_type=entity_type, attributes=inst_attr, account=self.account)
+        inst_attr.entity = entity
+        inst_attr.save()
+
+        inst = Instance.objects.create(form=self.form_1, source_created_at=source_date, entity=entity)
+
+        # test regular instance
+        response = self.client.get(f"/api/entities/?dateFrom={source_date_str}&dateTo={source_date_str}")
+        resp = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(resp["result"]), 1)
+
+        inst.deleted = True
+        inst.save()
+
+        response = self.client.get(f"/api/entities/?dateFrom={source_date_str}&dateTo={source_date_str}")
+        res = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(res["result"]), 0)
+
+        # test attribute instance
+        response = self.client.get(f"/api/entities/?dateFrom={source_date_attr_str}&dateTo={source_date_attr_str}")
+        resp = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(resp["result"]), 1)
+
+        inst_attr.deleted = True
+        inst_attr.save()
+
+        response = self.client.get(f"/api/entities/?dateFrom={source_date_attr_str}&dateTo={source_date_attr_str}")
+        res = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(res["result"]), 0)
+
+    def test_list_entities_prefetch_soft_deleted_instances(self):
+        self.client.force_authenticate(self.yoda)
+
+        entity_type = EntityType.objects.create(name="ET2", reference_form=self.form_1)
+
+        # Entity with 1 active instance and 1 soft-deleted instance
+        instance_active = Instance.objects.create(form=self.form_1)
+        entity = Entity.objects.create(entity_type=entity_type, attributes=instance_active, account=self.account)
+        instance_active.entity = entity
+        instance_active.save()
+
+        Instance.objects.create(form=self.form_1, entity=entity, deleted=True)
+
+        response = self.client.get(f"/api/entities/{entity.id}/", format="json")
+        resp = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        self.assertEqual(len(resp["instances"]), 1)
+        self.assertEqual(resp["instances"][0], instance_active.id)
+
     def test_get_entity_by_id(self):
         self.client.force_authenticate(self.yoda)
 
@@ -872,7 +991,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         response = self.client.get(f"/api/entities/{Entity.objects.last().pk}/", format="json")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()["id"], Entity.objects.last().pk)
 
     def test_handle_wrong_attributes(self):
@@ -887,7 +1006,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         response = self.client.post("/api/entities/", data=payload, format="json")
 
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_update_entity(self):
         self.client.force_authenticate(self.yoda)
@@ -915,7 +1034,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         response = self.client.patch(f"/api/entities/{Entity.objects.last().pk}/", data=payload, format="json")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_retrieve_only_non_deleted_entity(self):
         self.client.force_authenticate(self.yoda)
@@ -951,7 +1070,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.client.delete(f"/api/entities/{Entity.objects.last().pk}/", format="json")
 
         response = self.client.get("/api/entities/", format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["result"]), 1)
 
     def test_cant_create_entity_without_attributes(self):
@@ -966,7 +1085,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         response = self.client.post("/api/entities/", data=payload, format="json")
 
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_retrieve_entity_only_same_account(self):
         self.client.force_authenticate(self.yoda)
@@ -989,7 +1108,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         response = self.client.get("/api/entities/", format="json")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["result"]), 1)
 
     @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1), tick=False)
@@ -1005,22 +1124,22 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         # export all entities type as csv
         response = self.client.get("/api/entities/?csv=true/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.get("Content-Disposition"), 'attachment; filename="entities-2021-07-18-14-57.csv"')
 
         # export all entities type as xlsx
         response = self.client.get("/api/entities/?xlsx=true/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.get("Content-Disposition"), 'attachment; filename="entities-2021-07-18-14-57.xlsx"')
 
         # export specific entity type as xlsx
         response = self.client.get(f"/api/entities/?entity_type_ids={self.entity_type.pk}&xlsx=true/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.get("Content-Disposition"), 'attachment; filename="entities-2021-07-18-14-57.xlsx"')
 
         # export specific entity type as csv
         response = self.client.get(f"/api/entities/?entity_type_ids={self.entity_type.pk}&csv=true/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.get("Content-Disposition"), 'attachment; filename="entities-2021-07-18-14-57.csv"')
 
         # Check the contents of the last CSV file
@@ -1044,7 +1163,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
     def test_entities_empty_export(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/entities/?csv=true/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.get("Content-Disposition"), 'attachment; filename="entities-2021-07-18-14-57.csv"')
 
         response_csv = response.getvalue().decode("utf-8")
@@ -1053,7 +1172,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(response_string, "\ufeff")
 
         response = self.client.get("/api/entities/?xlsx=true/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.get("Content-Disposition"), 'attachment; filename="entities-2021-07-18-14-57.xlsx"')
 
         response_xlsx = response.getvalue()
@@ -1071,7 +1190,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         entity.save()
 
         response = self.client.get("/api/entities/?xlsx=true/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_entity_mobile(self):
         self.client.force_authenticate(self.yoda)
@@ -1107,13 +1226,13 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         data = response.json().get("results")[0]
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(data.get("id"), str(entity.uuid))
         self.assertEqual(data.get("defining_instance_id"), str(instance.uuid))
 
         response = self.client.get(f"/api/mobile/entities/{entity.uuid}/?app_id={self.project.app_id}")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(data.get("id"), str(entity.uuid))
 
     def test_list_entities_mobile_with_multi_projects(self):
@@ -1146,7 +1265,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         )
         self.assertEqual(0, entity_in_first_project.count())
         response = self.client.get(f"/api/mobile/entities/?app_id={self.project.app_id}")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(0, response.data["count"])
 
         # The list should be restricted to the other project.
@@ -1155,7 +1274,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         )
         self.assertEqual(2, entity_in_other_project.count())
         response = self.client.get(f"/api/mobile/entities/?app_id={other_project.app_id}")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(2, response.data["count"])
         for item in response.data["results"]:
             self.assertEqual(item["entity_type_id"], str(entity_type_civilian.pk))
@@ -1284,7 +1403,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         response_json = response.json()
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response_json.get("count"), 2)
         self.assertEqual(
             response_json.get("results")[0].get("entity_type_id"),
@@ -1348,7 +1467,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         response_json = response.json()
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response_json["count"], 1)
         self.assertEqual(response_json["results"][0]["entity_type_id"], str(self.entity_type.id))
 
@@ -1412,7 +1531,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         response = self.client.get("/api/entities/", format="json")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         json_result = response.json()["result"]
         self.assertEqual(len(json_result), 1)
         self.assertEqual(json_result[0]["org_unit"]["name"], village_1.name)
@@ -1455,7 +1574,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(m.EntityDuplicate.objects.count(), 2)
 
         response = self.client.delete(f"/api/entities/{ent.id}/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         ent.refresh_from_db()
         self.assertIsNotNone(ent.deleted_at)

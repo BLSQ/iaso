@@ -37,7 +37,7 @@ class ValidationWorkflowAPIDeleteTestCase(BaseValidationWorkflowAPITestCase):
             res = self.client.delete(
                 reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug})
             )
-            self.assertJSONResponse(res, 204)
+            self.assertJSONResponse(res, status.HTTP_204_NO_CONTENT)
 
     def test_permissions(self):
         res = self.client.delete(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))

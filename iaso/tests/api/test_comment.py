@@ -1,4 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
+from rest_framework import status
 
 from iaso import models as m
 from iaso.test import APITestCase
@@ -30,11 +31,11 @@ class CommentApiTestCase(APITestCase):
 
     def test_setupaccount_unauth_post(self):
         response = self.client.post("/api/comments/", data={}, format="json")
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_setupaccount_unauth_list(self):
         response = self.client.get("/api/comments/", format="json")
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_setupaccount_post_no_perm(self):
         account = m.Account.objects.create(name="test account #2")
@@ -44,7 +45,7 @@ class CommentApiTestCase(APITestCase):
         data = {"comment": "comment", "content_type": "iaso-orgunit", "object_pk": self.orgunit.pk}
 
         response = self.client.post("/api/comments/", data=data, format="json")
-        self.assertEqual(response.status_code, 403, response.content)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, response.content)
 
     def test_post_not_orgunit(self):
         self.client.force_authenticate(self.user)
@@ -57,7 +58,7 @@ class CommentApiTestCase(APITestCase):
                 "object_pk": self.orgunit.pk,
             },
         )
-        self.assertEqual(response.status_code, 400, response.content)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, response.content)
         r = response.json()
         self.assertIn("non_field_errors", r)
         self.assertEqual(r["non_field_errors"], ["only comment on OrgUnit are accepted for now"])
@@ -69,14 +70,14 @@ class CommentApiTestCase(APITestCase):
         data = {"comment": "my comment", "content_type": "iaso-orgunit", "object_pk": self.orgunit.pk}
 
         response = self.client.post("/api/comments/", data=data, format="json")
-        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.content)
         self.assertIn("id", response.json())
 
         # Attempt to reread it
         response = self.client.get(
             "/api/comments/", data={"content_type": "iaso-orgunit", "object_pk": self.orgunit.pk}, format="json"
         )
-        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
         comments = response.json()
         self.assertEqual(len(comments), 1)
         c = comments[0]
@@ -92,7 +93,7 @@ class CommentApiTestCase(APITestCase):
         response = self.client.get(
             "/api/comments/", data={"content_type": "iaso-orgunit", "object_pk": self.orgunit.pk}, format="json"
         )
-        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
         comments = response.json()
         self.assertEqual(len(comments), 1)
         c = comments[0]
@@ -112,14 +113,14 @@ class CommentApiTestCase(APITestCase):
                 "object_pk": self.orgunit.pk,
             },
         )
-        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.content)
         self.assertIn("id", response.json())
 
         # we can see it
         response = self.client.get(
             "/api/comments/", data={"content_type": "iaso-orgunit", "object_pk": self.orgunit.pk}, format="json"
         )
-        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
         comments = response.json()
         self.assertEqual(len(comments), 1)
         c = comments[0]
@@ -143,4 +144,4 @@ class CommentApiTestCase(APITestCase):
                 "object_pk": self.orgunit.pk,
             },
         )
-        self.assertEqual(response.status_code, 400, response.content)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, response.content)

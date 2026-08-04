@@ -6,12 +6,23 @@ from decimal import Decimal
 
 import time_machine
 
+from django.contrib.gis.geos import MultiPolygon, Polygon
+from rest_framework import status
+
 from hat.audit import models as audit_models
 from iaso import models as m
 from iaso.api.org_unit_change_requests.views import OrgUnitChangeRequestViewSet
 from iaso.permissions.core_permissions import CORE_ORG_UNITS_CHANGE_REQUEST_REVIEW_PERMISSION
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
-from iaso.utils.models.common import get_creator_name
+
+
+def parse_csv_rows(response):
+    """Parse a CSV `HttpResponse` into a list of dicts keyed by column name, e.g.
+    `row["Name conclusion"]` instead of a magic-index `row[13]`.
+    """
+    response_csv = response.getvalue().decode("utf-8")
+    header, *rows = csv.reader(io.StringIO(response_csv))
+    return [dict(zip(header, row)) for row in rows]
 
 
 class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
@@ -96,21 +107,21 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             #  10. PREFETCH OrgUnitChangeRequest.old_reference_instances__form
             #  11. PREFETCH OrgUnitChangeRequest.org_unit_type.projects
             response = self.client.get("/api/orgunits/changes/")
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(2, len(response.data["results"]))
         self.assertEqual(2, response.data["count"])
 
     def test_list_without_auth(self):
         response = self.client.get("/api/orgunits/changes/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_retrieve_ok(self):
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
         self.client.force_authenticate(self.user)
         with self.assertNumQueries(10):
             response = self.client.get(f"/api/orgunits/changes/{change_request.pk}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response.data["id"], change_request.pk)
 
     def test_retrieve_should_not_include_soft_deleted_intances(self):
@@ -125,7 +136,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
 
         with self.assertNumQueries(10):
             response = self.client.get(f"/api/orgunits/changes/{change_request.pk}/")
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
             self.assertEqual(response.data["id"], change_request.pk)
             self.assertEqual(len(response.data["new_reference_instances"]), 1)
             self.assertEqual(response.data["new_reference_instances"][0]["id"], self.instance_1.pk)
@@ -144,7 +155,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
 
         with self.assertNumQueries(9):
             response = self.client.get(f"/api/orgunits/changes/{change_request.pk}/")
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
             self.assertEqual(response.data["id"], change_request.pk)
             self.assertEqual(len(response.data["new_reference_instances"]), 0)
             self.assertEqual(len(response.data["old_reference_instances"]), 0)
@@ -153,7 +164,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
     def test_retrieve_without_auth(self):
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
         response = self.client.get(f"/api/orgunits/changes/{change_request.pk}/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     @time_machine.travel(DT, tick=False)
     def test_create_ok(self):
@@ -164,7 +175,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "new_org_unit_type_id": self.org_unit_type.pk,
         }
         response = self.client.post("/api/orgunits/changes/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         change_request = m.OrgUnitChangeRequest.objects.get(new_name=data["new_name"])
         self.assertEqual(change_request.new_name, data["new_name"])
         self.assertEqual(change_request.new_org_unit_type, self.org_unit_type)
@@ -183,7 +194,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "new_org_unit_type_id": self.org_unit_type.pk,
         }
         response = self.client.post("/api/orgunits/changes/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         change_request = m.OrgUnitChangeRequest.objects.get(new_name=data["new_name"])
         self.assertEqual(change_request.uuid.__str__(), data["uuid"])
         self.assertEqual(change_request.new_name, data["new_name"])
@@ -201,7 +212,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "new_org_unit_type_id": data["new_org_unit_type_id"],
         }
         response = self.client.post("/api/orgunits/changes/", data=new_data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(m.OrgUnitChangeRequest.objects.count(), 1)
         change_request = m.OrgUnitChangeRequest.objects.get(uuid=data["uuid"])
         self.assertEqual(change_request.uuid.__str__(), data["uuid"])
@@ -228,7 +239,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "new_reference_instances": [],
         }
         response = self.client.post("/api/orgunits/changes/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         change_request = m.OrgUnitChangeRequest.objects.get(new_name=data["new_name"])
         self.assertEqual(change_request.new_name, "")
         self.assertEqual(change_request.new_groups.count(), 0)
@@ -266,7 +277,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         }
         with self.assertNumQueries(12):
             response = self.client.post("/api/orgunits/changes/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         change_request = m.OrgUnitChangeRequest.objects.get(new_name=data["new_name"])
         self.assertEqual(change_request.new_name, data["new_name"])
         self.assertEqual(change_request.new_org_unit_type, self.org_unit_type)
@@ -295,7 +306,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             # 7–8. Old groups: SELECT + M2M insert
             # 9–11. Old + new reference instances: SELECTs + M2M insert
             response = self.client.post("/api/orgunits/changes/?app_id=foo.bar.baz", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         change_request = m.OrgUnitChangeRequest.objects.get(uuid=data["uuid"])
         self.assertEqual(change_request.new_name, data["new_name"])
         self.assertEqual(change_request.created_at, self.DT)
@@ -317,7 +328,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
 
         with self.assertNumQueries(11):
             response = self.client.post("/api/orgunits/changes/?app_id=foo.bar.baz", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         change_request = m.OrgUnitChangeRequest.objects.get(uuid=data["uuid"])
         self.assertEqual(change_request.new_location_accuracy, Decimal("1.23"))
         self.assertEqual(change_request.created_at, self.DT)
@@ -332,7 +343,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "new_name": "Foo",
         }
         response = self.client.post("/api/orgunits/changes/", data=data, format="json")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_create_without_perm(self):
         self.client.force_authenticate(self.user)
@@ -343,7 +354,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "new_name": "I want this new name",
         }
         response = self.client.post("/api/orgunits/changes/", data=data, format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_partial_update_without_perm(self):
         self.client.force_authenticate(self.user)
@@ -360,7 +371,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "rejection_comment": "Not good enough.",
         }
         response = self.client.patch(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     @time_machine.travel(DT, tick=False)
     def test_partial_update_reject(self):
@@ -379,7 +390,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "rejection_comment": "Not good enough.",
         }
         response = self.client.patch(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         change_request.refresh_from_db()
         self.assertEqual(change_request.status, change_request.Statuses.REJECTED)
@@ -403,7 +414,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "approved_fields": ["new_name", "new_closed_date"],
         }
         response = self.client.patch(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         change_request.refresh_from_db()
         self.assertEqual(change_request.status, change_request.Statuses.APPROVED)
@@ -427,26 +438,76 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "approved_fields": ["new_name"],
         }
         response = self.client.patch(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("Status must be `new` but current status is `approved`.", response.content.decode())
+
+    @time_machine.travel(DT, tick=False)
+    def test_partial_update_approve_new_geom(self):
+        self.client.force_authenticate(self.user_with_review_perm)
+
+        new_geom = MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)], srid=4326), srid=4326)
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            created_by=self.user,
+            new_geom=new_geom,
+            requested_fields=["new_geom"],
+        )
+
+        data = {
+            "status": change_request.Statuses.APPROVED,
+            "approved_fields": ["new_geom"],
+        }
+        response = self.client.patch(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        change_request.refresh_from_db()
+        self.assertEqual(change_request.status, change_request.Statuses.APPROVED)
+        self.org_unit.refresh_from_db()
+        self.assertEqual(self.org_unit.geom, new_geom)
+        self.assertIsNotNone(self.org_unit.simplified_geom)
+        self.assertEqual(self.org_unit.validation_status, m.OrgUnit.VALIDATION_VALID)
+
+    @time_machine.travel(DT, tick=False)
+    def test_partial_update_approve_new_code(self):
+        self.client.force_authenticate(self.user_with_review_perm)
+
+        new_code = "000000000000001"
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            created_by=self.user,
+            new_code=new_code,
+            requested_fields=["new_code"],
+        )
+
+        data = {
+            "status": change_request.Statuses.APPROVED,
+            "approved_fields": ["new_code"],
+        }
+        response = self.client.patch(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        change_request.refresh_from_db()
+        self.assertEqual(change_request.status, change_request.Statuses.APPROVED)
+        self.org_unit.refresh_from_db()
+        self.assertEqual(self.org_unit.code, new_code)
 
     def test_update_should_be_forbidden(self):
         self.client.force_authenticate(self.user_with_review_perm)
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
         data = {"new_name": "Baz"}
         response = self.client.put(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
-        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_delete_should_be_forbidden(self):
         self.client.force_authenticate(self.user_with_review_perm)
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
         response = self.client.delete(f"/api/orgunits/changes/{change_request.pk}/", format="json")
-        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_bulk_review_without_perm(self):
         self.client.force_authenticate(self.user)
         response = self.client.patch("/api/orgunits/changes/bulk_review/", data={}, format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     @time_machine.travel(DT, tick=False)
     def test_bulk_review_approve(self):
@@ -480,7 +541,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "status": m.OrgUnitChangeRequest.Statuses.APPROVED,
         }
         response = self.client.patch("/api/orgunits/changes/bulk_review/", data=data, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
 
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_change_requests_bulk_approve")
@@ -529,7 +590,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
 
         querystring = f"?users={user_2.id}"
         response = self.client.patch(f"/api/orgunits/changes/bulk_review/{querystring}", data=data, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
 
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_change_requests_bulk_approve")
@@ -570,7 +631,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "rejection_comment": "No way.",
         }
         response = self.client.patch("/api/orgunits/changes/bulk_review/", data=data, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
 
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_change_requests_bulk_reject")
@@ -602,7 +663,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "select_all": 1,
         }
         response = self.client.post("/api/orgunits/changes/bulk_delete/", data=data, format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     @time_machine.travel(DT, tick=False)
     def test_bulk_delete(self):
@@ -624,7 +685,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "unselected_ids": [change_request_3.pk],
         }
         response = self.client.post("/api/orgunits/changes/bulk_delete/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         data = response.json()
         self.assertEqual(data, {"result": "success"})
@@ -687,7 +748,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "restore": 1,
         }
         response = self.client.post("/api/orgunits/changes/bulk_delete/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         data = response.json()
         self.assertEqual(data, {"result": "success"})
@@ -720,194 +781,86 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.assertEqual(new_values["deleted_at"], None)
         self.assertEqual(new_values["updated_by"], self.user_with_review_perm.pk)
 
+    # Golden CSV for `test_export_to_csv`, for two vanilla change requests (no
+    # `requested_fields`) on `self.org_unit` from `setUpTestData`. Only the truly
+    # dynamic values (ids, dates, reference instance ids) are placeholders: everything
+    # else is a hardcoded expected value, on purpose, so this test doesn't re-derive
+    # its expectations with the same logic as the view (which would let a shared bug
+    # hide from the test).
+
+    # I know the tuple of fields is long, and csv is quite large, so not too bad
+    EXPORT_TO_CSV_TEMPLATE = (
+        # Headers
+        "Id,Org unit ID,External reference,Name,Parent,Org unit type,Groups,Created,Created by,Updated,Updated by,"
+        "Name before change,Name after change,Name conclusion,"
+        "Parent 1 before change,Parent 1 after change,"
+        "Ref Ext parent 1 before change,Ref Ext parent 1 after change,Ref Ext parent 1 conclusion,"
+        "Ref Ext parent 2 before change,Ref Ext parent 2 after change,Ref Ext parent 2 conclusion,"
+        "Ref Ext parent 3 before change,Ref Ext parent 3 after change,Ref Ext parent 3 conclusion,"
+        "Opening date before change,Opening date after change,Opening date conclusion,"
+        "Closing date before change,Closing date after change,Closing date conclusion,"
+        "Groups before change,Groups after change,Groups conclusion,"
+        "Localisation before change,Localisation after change,Localisation conclusion,"
+        "Geometry before change,Geometry after change,Geometry conclusion,"
+        "Code before change,Code after change,Code conclusion,"
+        "Reference submission before,Reference submission after\n"
+        # Line 2
+        '{id_foo},{org_unit_id},112244,,,Org unit type,"Group 1,Group 2,Group 3",{created_foo},,{updated_foo},,,'
+        "Foo,same,,,,,same,,,same,,,same,,,same,"
+        '{closing_date},{closing_date},same,"Group 1,Group 2,Group 3","Group 1,Group 2,Group 3",same,,,same,,,same,,,same,'
+        '"{references}","{references}"\n'
+        # Line 3
+        '{id_bar},{org_unit_id},112244,,,Org unit type,"Group 1,Group 2,Group 3",{created_bar},,{updated_bar},,,'
+        "Bar,same,,,,,same,,,same,,,same,,,same,"
+        '{closing_date},{closing_date},same,"Group 1,Group 2,Group 3","Group 1,Group 2,Group 3",same,,,same,,,same,,,same,'
+        '"{references}","{references}"\n'
+    )
+
     def test_export_to_csv(self):
         """
-        It tests the CSV export for the org change requests list.
+        It tests the CSV export for the org change requests list, by comparing the
+        actual CSV against a template where only the genuinely dynamic values are
+        substituted in.
         """
-        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
-        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
+        change_request_foo = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
+        change_request_bar = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
 
         self.client.force_authenticate(self.user)
 
         response = self.client.get("/api/orgunits/changes/export_to_csv/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             response.get("Content-Disposition"),
             "attachment; filename=review-change-proposals--" + datetime.datetime.now().strftime("%Y-%m-%d") + ".csv",
         )
 
         response_csv = response.getvalue().decode("utf-8")
-        response_string = "".join(s for s in response_csv)
-        reader = csv.reader(io.StringIO(response_string), delimiter=",")
-
-        data = list(reader)
+        data = list(csv.reader(io.StringIO(response_csv)))
         self.assertEqual(len(data), 3)  # Header + 2 change requests
 
-        data_headers = data[0]
-        self.assertEqual(data_headers, OrgUnitChangeRequestViewSet.CSV_HEADER_COLUMNS)
-
-        first_data_row = data[1]
-
-        # Helper function to determine if a field has changed
-        def get_conclusion(field_name, old_value, new_value):
-            field_mapping = {
-                "name": "new_name",
-                "parent": "new_parent",
-                "ref_ext_parent_1": "new_parent",
-                "ref_ext_parent_2": "new_parent",
-                "ref_ext_parent_3": "new_parent",
-                "opening_date": "new_opening_date",
-                "closing_date": "new_closed_date",
-                "groups": "new_groups",
-                "localisation": "new_location",
-                "reference_submission": "new_reference_instances",
-            }
-            requested_field = field_mapping.get(field_name)
-            if requested_field not in change_request.requested_fields:
-                return "same"
-            if old_value == new_value:
-                return "same"
-            return "updated"
-
-        # Get parent reference extensions
-        def get_parent_ref_ext(parent, level):
-            if not parent:
-                return None
-
-            # Get ancestors up to the specified level
-            ancestors = list(parent.ancestors().order_by("path"))
-            if level <= len(ancestors):
-                return ancestors[level - 1].source_ref
-            return None
-
-        # Get location string
-        def get_location_str(location):
-            if not location:
-                return None
-            return f"{location.y}, {location.x}"
-
-        # Get reference instance IDs
-        def get_reference_instance_ids(instances):
-            if not instances.exists():
-                return ""
-            return ",".join(str(instance.id) for instance in instances.all().order_by("id"))
-
-        # Basic expected data
-        expected_row_data = [
-            str(change_request.id),
-            str(change_request.org_unit_id),
-            change_request.org_unit.source_ref,
-            change_request.org_unit.name,
-            change_request.org_unit.parent.name if change_request.org_unit.parent else None,
-            change_request.org_unit.org_unit_type.name if change_request.org_unit.org_unit_type else None,
-            ",".join(group.name for group in change_request.org_unit.groups.all()),
-            datetime.datetime.strftime(change_request.created_at, "%Y-%m-%d"),
-            get_creator_name(change_request.created_by) if change_request.created_by else None,
-            datetime.datetime.strftime(change_request.updated_at, "%Y-%m-%d"),
-            get_creator_name(change_request.updated_by) if change_request.updated_by else None,
-        ]
-
-        # Name changes
-        name_before = change_request.old_name if change_request.kind == change_request.Kind.ORG_UNIT_CHANGE else ""
-        name_after = change_request.new_name if change_request.new_name else change_request.org_unit.name
-        name_conclusion = get_conclusion("name", name_before, name_after)
-
-        expected_row_data.extend([name_before, name_after, name_conclusion])
-
-        # Parent changes
-        parent_before = change_request.old_parent.name if change_request.old_parent else ""
-        parent_after = (
-            change_request.new_parent.name
-            if change_request.new_parent
-            else change_request.org_unit.parent.name
-            if change_request.org_unit.parent
-            else None
+        reference_ids = ",".join(str(pk) for pk in sorted([self.instance_1.pk, self.instance_2.pk, self.instance_3.pk]))
+        expected_csv = self.EXPORT_TO_CSV_TEMPLATE.format(
+            id_foo=change_request_foo.id,
+            id_bar=change_request_bar.id,
+            org_unit_id=self.org_unit.id,
+            created_foo=change_request_foo.created_at.strftime("%Y-%m-%d"),
+            updated_foo=change_request_foo.updated_at.strftime("%Y-%m-%d"),
+            created_bar=change_request_bar.created_at.strftime("%Y-%m-%d"),
+            updated_bar=change_request_bar.updated_at.strftime("%Y-%m-%d"),
+            closing_date=self.DT.strftime("%Y-%m-%d"),
+            references=reference_ids,
         )
+        expected_data = list(csv.reader(io.StringIO(expected_csv)))
 
-        expected_row_data.extend([parent_before, parent_after])
+        self.assertEqual(data[0], OrgUnitChangeRequestViewSet.CSV_HEADER_COLUMNS)
+        self.assertEqual(expected_data[0], OrgUnitChangeRequestViewSet.CSV_HEADER_COLUMNS)
 
-        # Reference extensions for parents
-        for level in range(1, 4):
-            parent_before = change_request.old_parent if change_request.old_parent else None
-            parent_after = change_request.new_parent if change_request.new_parent else change_request.org_unit.parent
-
-            ref_ext_before = get_parent_ref_ext(parent_before, level)
-            ref_ext_after = get_parent_ref_ext(parent_after, level)
-            ref_ext_conclusion = get_conclusion(f"ref_ext_parent_{level}", ref_ext_before, ref_ext_after)
-
-            expected_row_data.extend([ref_ext_before, ref_ext_after, ref_ext_conclusion])
-
-        # Opening date changes
-        opening_date_before = (
-            change_request.old_opening_date.strftime("%Y-%m-%d") if change_request.old_opening_date else ""
-        )
-        opening_date_after = (
-            change_request.new_opening_date.strftime("%Y-%m-%d")
-            if change_request.new_opening_date
-            else (
-                change_request.org_unit.opening_date.strftime("%Y-%m-%d")
-                if change_request.org_unit.opening_date
-                else None
-            )
-        )
-        opening_date_conclusion = get_conclusion("opening_date", opening_date_before, opening_date_after)
-
-        expected_row_data.extend([opening_date_before, opening_date_after, opening_date_conclusion])
-
-        # Closing date changes
-        closing_date_before = (
-            change_request.old_closed_date.strftime("%Y-%m-%d") if change_request.old_closed_date else ""
-        )
-        closing_date_after = (
-            change_request.new_closed_date.strftime("%Y-%m-%d")
-            if change_request.new_closed_date
-            else (
-                change_request.org_unit.closed_date.strftime("%Y-%m-%d")
-                if change_request.org_unit.closed_date
-                else None
-            )
-        )
-        closing_date_conclusion = get_conclusion("closing_date", closing_date_before, closing_date_after)
-
-        expected_row_data.extend([closing_date_before, closing_date_after, closing_date_conclusion])
-
-        # Groups changes
-        groups_before = ",".join(group.name for group in change_request.old_groups.all())
-        groups_after = (
-            ",".join(group.name for group in change_request.new_groups.all())
-            if change_request.new_groups.exists()
-            else ",".join(group.name for group in change_request.org_unit.groups.all())
-        )
-        groups_conclusion = get_conclusion("groups", groups_before, groups_after)
-
-        expected_row_data.extend([groups_before, groups_after, groups_conclusion])
-
-        # Location changes
-        location_before = get_location_str(change_request.old_location)
-        location_after = (
-            get_location_str(change_request.new_location)
-            if change_request.new_location
-            else get_location_str(change_request.org_unit.location)
-        )
-        location_conclusion = get_conclusion("localisation", location_before, location_after)
-
-        expected_row_data.extend([location_before, location_after, location_conclusion])
-
-        # Reference instances changes
-        reference_before = get_reference_instance_ids(change_request.old_reference_instances)
-        reference_after = (
-            get_reference_instance_ids(change_request.new_reference_instances)
-            if change_request.new_reference_instances.exists()
-            else get_reference_instance_ids(change_request.org_unit.reference_instances)
-        )
-
-        expected_row_data.extend([reference_before, reference_after])
-
-        # Convert None values to empty strings for comparison
-        expected_row_data = ["" if v is None else str(v) for v in expected_row_data]
-        first_data_row = ["" if v is None else str(v) for v in first_data_row]
-
-        self.assertEqual(first_data_row, expected_row_data)
+        # The queryset is only ordered by `org_unit__name`, which is identical for
+        # both change requests here, so rows aren't guaranteed to come back in
+        # creation order: sort both sides by `Id` before comparing everything at once.
+        data[1:] = sorted(data[1:], key=lambda row: int(row[0]))
+        expected_data[1:] = sorted(expected_data[1:], key=lambda row: int(row[0]))
+        self.assertEqual(data, expected_data)
 
     def test_export_to_csv_with_new_change_request(self):
         """
@@ -920,18 +873,12 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get("/api/orgunits/changes/export_to_csv/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        response_csv = response.getvalue().decode("utf-8")
-        reader = csv.reader(io.StringIO(response_csv), delimiter=",")
-        data = list(reader)
-
-        # Skip header row
-        first_data_row = data[1]
+        first_data_row = parse_csv_rows(response)[0]
 
         # Check that the name conclusion is "updated" for a NEW change request with a name change
-        name_conclusion_index = 13  # Index of "Name conclusion" column
-        self.assertEqual(first_data_row[name_conclusion_index], "updated")
+        self.assertEqual(first_data_row["Name conclusion"], "updated")
 
     def test_export_to_csv_with_approved_change_request(self):
         """
@@ -948,23 +895,16 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get("/api/orgunits/changes/export_to_csv/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        response_csv = response.getvalue().decode("utf-8")
-        reader = csv.reader(io.StringIO(response_csv), delimiter=",")
-        data = list(reader)
-
-        # Skip header row
-        first_data_row = data[1]
+        first_data_row = parse_csv_rows(response)[0]
 
         # Check that the name conclusion is "updated" for an APPROVED change request with a name change
-        name_conclusion_index = 13  # Index of "Name conclusion" column
-        self.assertEqual(first_data_row[name_conclusion_index], "updated")
+        self.assertEqual(first_data_row["Name conclusion"], "updated")
 
         # Check that the groups conclusion is "same" for an APPROVED change request
         # where the field was requested but not changed
-        groups_conclusion_index = 33  # Index of "Groups conclusion" column
-        self.assertEqual(first_data_row[groups_conclusion_index], "same")
+        self.assertEqual(first_data_row["Groups conclusion"], "same")
 
     def test_export_to_csv_with_rejected_change_request(self):
         """
@@ -980,20 +920,45 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get("/api/orgunits/changes/export_to_csv/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        response_csv = response.getvalue().decode("utf-8")
-        reader = csv.reader(io.StringIO(response_csv), delimiter=",")
-        data = list(reader)
-
-        # Skip header row
-        first_data_row = data[1]
+        first_data_row = parse_csv_rows(response)[0]
 
         # Check that the name conclusion is "updated" for a REJECTED change request with a name change
-        name_conclusion_index = 13  # Index of "Name conclusion" column
-        self.assertEqual(first_data_row[name_conclusion_index], "updated")
+        self.assertEqual(first_data_row["Name conclusion"], "updated")
 
         # Check that the groups conclusion is "same" for a REJECTED change request
         # where the field was requested but not changed
-        groups_conclusion_index = 33  # Index of "Groups conclusion" column
-        self.assertEqual(first_data_row[groups_conclusion_index], "same")
+        self.assertEqual(first_data_row["Groups conclusion"], "same")
+
+    def test_export_to_csv_ref_ext_parent_should_report_ancestor_source_ref(self):
+        """
+        Regression test: the "Ref Ext parent N" columns are supposed to report the
+        `source_ref` of the org unit's ancestors (e.g. its country/region code), but
+        currently always come back empty.
+
+        `self.org_unit` (source_ref="112244") has no parent, so it is its own sole
+        "ancestor" at level 1. A change request on a *child* of `self.org_unit` should
+        therefore report "112244" in "Ref Ext parent 1 after change" — but the query
+        that's supposed to populate this (a `Prefetch("ancestors", ..., to_attr=
+        "cached_ancestors")` in `OrgUnitChangeRequestViewSet.export_to_csv`) silently
+        never runs, because `ancestors()` is a plain method (from django_ltree's
+        `TreeModel`), not a real Django relation that `prefetch_related()` can use.
+        See `get_parent_ref_ext` in `iaso.api.org_unit_change_requests.csv_export`.
+        """
+        child_org_unit = m.OrgUnit.objects.create(
+            org_unit_type=self.org_unit_type,
+            version=self.version,
+            parent=self.org_unit,
+            source_ref="55667788",
+        )
+        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=child_org_unit, new_name="Child renamed")
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get("/api/orgunits/changes/export_to_csv/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        row = next(r for r in parse_csv_rows(response) if r["Id"] == str(change_request.id))
+
+        self.assertEqual(row["Ref Ext parent 1 after change"], self.org_unit.source_ref)

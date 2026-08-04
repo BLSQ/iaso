@@ -1,5 +1,7 @@
 import uuid
 
+from rest_framework import status
+
 from iaso import models as m
 from iaso.test import APITestCase
 
@@ -92,7 +94,7 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
             #   8. PREFETCH OrgUnitChangeRequest.new_groups
             #   8. PREFETCH OrgUnitChangeRequest.new_reference_instances
             response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project_a.app_id}")
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
             self.assertEqual(2, len(response.data["results"]))
 
     def test_list_should_be_filtered_by_project_via_orgunittype(self):
@@ -104,7 +106,7 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
 
         # This should return only change requests related to `self.project_b`.
         response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project_b.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(1, len(response.data["results"]))
         self.assertEqual(response.data["results"][0]["org_unit_id"], self.org_unit_b.pk)
 
@@ -125,12 +127,12 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
 
         # Get Change Requests for project A
         response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project_a.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(1, len(response.data["results"]))
 
         # Get Change Requests for project B
         response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project_b.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(0, len(response.data["results"]))
 
     def test_list_should_be_filtered_by_project_via_new_reference_instances_when_form_removed_from_project(self):
@@ -149,7 +151,7 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
 
         # We expect no results as instance_3 is attached to a form which is attached to no project.
         response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project_a.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(0, len(response.data["results"]))
 
     def test_list_should_be_filtered_by_project_via_new_reference_instances_when_instance_project_is_null(self):
@@ -181,7 +183,7 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
 
         # We expect no results as instance is attached to no project.
         response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project_a.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(0, len(response.data["results"]))
 
     def test_list_should_not_include_change_requests_linked_to_data_source_synchronization(self):
@@ -203,7 +205,7 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
         )
 
         response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project_a.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(0, len(response.data["results"]))
 
     def test_list_should_not_include_soft_deleted_intances(self):
@@ -215,7 +217,7 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project_a.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(1, len(response.data["results"]))
         self.assertEqual(len(response.data["results"][0]["new_reference_instances"]), 1)
         self.assertEqual(response.data["results"][0]["new_reference_instances"][0]["id"], self.instance_1.pk)
@@ -225,9 +227,9 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
         self.instance_1.save()
 
         response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project_a.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(0, len(response.data["results"]))
 
     def test_list_without_auth(self):
         response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project_a.app_id}")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)

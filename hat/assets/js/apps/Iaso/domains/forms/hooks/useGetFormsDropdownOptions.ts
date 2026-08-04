@@ -30,6 +30,10 @@ export type UseGetFormsDropdownParams = {
      * Enable/disable the query (default: true)
      */
     enabled?: boolean;
+    /**
+     * Callback to be called when the query succeeds
+     */
+    onSuccess?: (data: FormsDropdownOptions) => void;
 };
 
 /**
@@ -70,7 +74,12 @@ export type FormsDropdownOptions = DropdownOptionsWithOriginal<
 export const useGetFormsDropdownOptions = (
     options: UseGetFormsDropdownParams = {},
 ): UseQueryResult<FormsDropdownOptions, Error> => {
-    const { extraFields = [], params = {}, enabled = true } = options;
+    const {
+        extraFields = [],
+        params = {},
+        enabled = true,
+        onSuccess = () => {},
+    } = options;
     const allFields = useMemo(
         () => [...DEFAULT_FIELDS, ...extraFields],
         [extraFields],
@@ -95,6 +104,7 @@ export const useGetFormsDropdownOptions = (
             staleTime: 1000 * 60 * 15, // 15 minutes
             cacheTime: 1000 * 60 * 5, // 5 minutes
             keepPreviousData: true,
+            onSuccess,
             select: data => {
                 if (!data?.forms) return [];
 

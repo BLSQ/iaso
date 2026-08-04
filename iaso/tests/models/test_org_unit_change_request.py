@@ -5,7 +5,7 @@ from decimal import Decimal
 
 import time_machine
 
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.core.exceptions import ValidationError
 
 from hat.audit.models import Modification
@@ -208,6 +208,8 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
             "new_groups",
             "new_location",
             "new_location_accuracy",
+            "new_geom",
+            "new_code",
             "new_opening_date",
             "new_closed_date",
             "new_reference_instances",
@@ -487,3 +489,92 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         del self.user.iaso_profile.projects_ids
         filtered_change_requests = m.OrgUnitChangeRequest.objects.filter_on_user_projects(self.user)
         self.assertEqual(filtered_change_requests.count(), 1)
+
+    @time_machine.travel(DT, tick=False)
+    def test_approve_new_geom(self):
+        """Approving new_geom writes geom to the org unit and recomputes simplified_geom."""
+        new_geom = MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)], srid=4326), srid=4326)
+        org_unit = m.OrgUnit.objects.create(
+            version=self.version,
+            org_unit_type=self.org_unit_type,
+            name="Test facility",
+        )
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=org_unit,
+            new_geom=new_geom,
+            requested_fields=["new_geom"],
+        )
+
+        change_request.approve(user=self.user, approved_fields=["new_geom"])
+
+        org_unit.refresh_from_db()
+        self.assertEqual(org_unit.geom, new_geom)
+        self.assertIsNotNone(org_unit.simplified_geom)
+        # simplified_geom is derived from geom — must be a (Multi)Polygon, not None.
+        self.assertIn(org_unit.simplified_geom.geom_type, ("Polygon", "MultiPolygon"))
+
+    @time_machine.travel(DT, tick=False)
+    def test_approve_new_geom_cleared(self):
+        """Approving new_geom=None clears both geom and simplified_geom on the org unit."""
+        existing_geom = MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)], srid=4326), srid=4326)
+        org_unit = m.OrgUnit.objects.create(
+            version=self.version,
+            org_unit_type=self.org_unit_type,
+            name="Test facility with geom",
+            geom=existing_geom,
+            simplified_geom=existing_geom,
+        )
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=org_unit,
+            old_geom=existing_geom,
+            new_geom=None,
+            requested_fields=["new_geom"],
+        )
+
+        change_request.approve(user=self.user, approved_fields=["new_geom"])
+
+        org_unit.refresh_from_db()
+        self.assertIsNone(org_unit.geom)
+        self.assertIsNone(org_unit.simplified_geom)
+
+    @time_machine.travel(DT, tick=False)
+    def test_approve_new_code(self):
+        """Approving new_code writes the code to the org unit."""
+        org_unit = m.OrgUnit.objects.create(
+            version=self.version,
+            org_unit_type=self.org_unit_type,
+            name="Test facility",
+            code="old-code",
+        )
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=org_unit,
+            old_code="old-code",
+            new_code="new-code-123",
+            requested_fields=["new_code"],
+        )
+
+        change_request.approve(user=self.user, approved_fields=["new_code"])
+
+        org_unit.refresh_from_db()
+        self.assertEqual(org_unit.code, "new-code-123")
+
+    @time_machine.travel(DT, tick=False)
+    def test_approve_new_code_cleared(self):
+        """Approving new_code="" clears the code on the org unit."""
+        org_unit = m.OrgUnit.objects.create(
+            version=self.version,
+            org_unit_type=self.org_unit_type,
+            name="Test facility",
+            code="old-code",
+        )
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=org_unit,
+            old_code="old-code",
+            new_code="",
+            requested_fields=["new_code"],
+        )
+
+        change_request.approve(user=self.user, approved_fields=["new_code"])
+
+        org_unit.refresh_from_db()
+        self.assertEqual(org_unit.code, "")

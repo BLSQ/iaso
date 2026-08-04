@@ -11,7 +11,8 @@ from rest_framework.viewsets import GenericViewSet
 from hat.audit.models import SETUP_ACCOUNT_API, Modification
 from iaso.api.common import IsAdminOrSuperUser
 from iaso.api.setup_account.serializers import SetupAccountSerializer
-from iaso.models import Account, FeatureFlag
+from iaso.api.setup_account.utils import DEFAULT_PROJECT_FEATURE_FLAGS
+from iaso.models import Account
 
 
 logger = logging.getLogger(__name__)
@@ -34,7 +35,7 @@ class SetupAccountViewSet(CreateModelMixin, GenericViewSet):
             "language": request.data.get("language", "en"),
             "modules": request.data.get("modules", []),
             "feature_flags": request.data.get("feature_flags", []),
-            "project_feature_flags": [FeatureFlag.REQUIRE_AUTHENTICATION, FeatureFlag.MOBILE_SYNCHRONIZE_WITH_ZIP],
+            "project_feature_flags": DEFAULT_PROJECT_FEATURE_FLAGS,
             "requesting_user": request.user.username if request.user else None,
             "requesting_user_id": request.user.id if request.user else None,
             "create_main_org_unit": request.data.get("create_main_org_unit", True),

@@ -7,6 +7,7 @@ import React, {
 } from 'react';
 import SyncIcon from '@mui/icons-material/Sync';
 import {
+    Alert,
     Button,
     Dialog,
     DialogActions,
@@ -127,15 +128,17 @@ export const SyncDialog: FunctionComponent<Props> = ({ dataSource }) => {
         handleClose();
     }, [exportData, exportToDHIS2, handleClose]);
 
-    const areVersionsFromSameDataSource =
-        sourceVersion?.data_source === dataSource.id;
     const allowPreview =
         Boolean(exportData.source_version_id?.value) &&
         (Boolean(exportData.ref_status?.value) ||
             exportData.ref_status?.value === '') &&
         exportData.fields_to_export?.value.length > 0 &&
         Boolean(exportData.ref_version_id?.value);
-    const allowSync = allowPreview && areVersionsFromSameDataSource;
+    const allowSync = allowPreview;
+    const isCrossDatasource =
+        allowPreview &&
+        refVersion !== undefined &&
+        refVersion.data_source !== dataSource.id;
     const allowConfirmExport = allowPreview && credentials?.is_valid;
 
     // Reset Treeview when changing source datasource
@@ -239,6 +242,11 @@ export const SyncDialog: FunctionComponent<Props> = ({ dataSource }) => {
                             <Dhis2Credentials credentials={credentials} />
                         </Grid>
                     </Grid>
+                    {isCrossDatasource && (
+                        <Alert severity="warning" sx={{ mt: 2 }}>
+                            {formatMessage(MESSAGES.crossDatasourceSyncWarning)}
+                        </Alert>
+                    )}
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose}>

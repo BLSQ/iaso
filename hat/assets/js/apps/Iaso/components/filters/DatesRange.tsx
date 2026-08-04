@@ -2,7 +2,7 @@ import React, { useState, useCallback, FunctionComponent } from 'react';
 import EventIcon from '@mui/icons-material/Event';
 import { Grid, useTheme, useMediaQuery, Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { DesktopDatePicker as DatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import {
     useSafeIntl,
     IconButton,
@@ -161,6 +161,9 @@ const DatesRange: FunctionComponent<Props> = ({
                                         // @ts-expect-error data-test for automated tests
                                         'data-test': 'start-date',
                                     },
+                                    InputLabelProps: {
+                                        shrink: true,
+                                    },
                                 },
                             }}
                         />
@@ -212,6 +215,9 @@ const DatesRange: FunctionComponent<Props> = ({
                                     InputProps: {
                                         // @ts-expect-error data-test for automated tests
                                         'data-test': 'end-date',
+                                    },
+                                    InputLabelProps: {
+                                        shrink: true,
                                     },
                                 },
                             }}

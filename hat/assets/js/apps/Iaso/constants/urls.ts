@@ -71,7 +71,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     formAI: {
         url: 'forms/ai',
-        params: ['accountId'],
+        params: ['accountId', 'formId'],
     },
     pipelineList: {
         url: 'settings/pipelines/',

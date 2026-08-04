@@ -1,6 +1,7 @@
 import json
 
 from django.utils.text import slugify
+from rest_framework import status
 
 from iaso.models.base import Account
 from iaso.models.data_store import JsonDataStore
@@ -45,45 +46,45 @@ class JsonDataStoreAPITestCase(SwaggerTestCaseMixin, APITestCase):
         """GET /datastore/ without auth should result in a 401"""
 
         response = self.client.get(api_url)
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_datastore_list_permissions(self):
         """GET /datastore/ with auth but without the proper permission should return a 403"""
 
         self.client.force_authenticate(self.unauthorized)
         response = self.client.get(api_url)
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         self.client.force_authenticate(self.authorized_user_write)
         response = self.client.get(api_url)
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         self.client.force_authenticate(self.authorized_user_read)
         response = self.client.get(api_url)
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_datastore_detail_without_auth(self):
         """GET /datastore/{slug} without auth should result in a 401"""
 
         response = self.client.get(f"{api_url}{self.data_store1.slug}/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_datastore_detail_permissions(self):
         """GET /datastore/{slug} with auth but without the proper permission should return a 403. Wrong account should return a 404"""
 
         self.client.force_authenticate(self.unauthorized)
         response = self.client.get(f"{api_url}{self.data_store1.slug}/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.authorized_user_write)
         response = self.client.get(f"{api_url}{self.data_store1.slug}/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.user_with_perm_but_wrong_account)
         response = self.client.get(f"{api_url}{self.data_store2.slug}/")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
         self.client.force_authenticate(self.authorized_user_read)
         response = self.client.get(f"{api_url}{self.data_store1.slug}/")
-        response_body = self.assertJSONResponse(response, 200)
+        response_body = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response_body["data"], data_store_content1)
 
     def test_list_results_filtered_by_account(self):
@@ -91,14 +92,14 @@ class JsonDataStoreAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
         self.client.force_authenticate(self.authorized_user_read)
         response = self.client.get(api_url)
-        response_body = self.assertJSONResponse(response, 200)
+        response_body = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response_body["results"]), 2)
         self.assertEqual(response_body["results"][0]["data"], data_store_content1)
         self.assertEqual(response_body["results"][1]["data"], data_store_content2)
 
         self.client.force_authenticate(self.user_with_perm_but_wrong_account)
         response = self.client.get(api_url)
-        response_body = self.assertJSONResponse(response, 200)
+        response_body = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response_body["results"]), 1)
         self.assertEqual(response_body["results"][0]["data"], data_store_content3)
 
@@ -109,25 +110,25 @@ class JsonDataStoreAPITestCase(SwaggerTestCaseMixin, APITestCase):
         response = self.client.post(
             api_url, {"data": {"post": "new datastore"}, "key": "new_store", "account": self.account1.pk}, format="json"
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         self.client.force_authenticate(self.authorized_user_read)
         response = self.client.post(
             api_url, {"data": {"post": "new datastore"}, "key": "new_store", "account": self.account1.pk}, format="json"
         )
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.unauthorized)
         response = self.client.post(
             api_url, {"data": {"post": "new datastore"}, "key": "new_store", "account": self.account1.pk}, format="json"
         )
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_create_datastore(self):
         """POST /api/datastore/ creates correct data."""
         self.client.force_authenticate(self.authorized_user_write)
         response = self.client.post(api_url, {"data": {"post": "new datastore"}, "key": "new_store"}, format="json")
-        response_body = self.assertJSONResponse(response, 201)
+        response_body = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertEqual(response_body["key"], "new_store")
         self.assertEqual(response_body["data"]["post"], "new datastore")
 
@@ -140,7 +141,7 @@ class JsonDataStoreAPITestCase(SwaggerTestCaseMixin, APITestCase):
             {"key": f"{new_slug}", "data": data_store_content2},
             format="multipart",
         )
-        response_body = self.assertJSONResponse(response, 200)
+        response_body = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response_body["key"], new_slug)
         self.assertEqual(response_body["data"], json.loads(data_store_content2))
 
@@ -151,12 +152,12 @@ class JsonDataStoreAPITestCase(SwaggerTestCaseMixin, APITestCase):
         response = self.client.put(
             f"{api_url}{self.data_store1.slug}/", {"key": f"{new_slug}", "data": data_store_content2}
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response = self.client.put(
             f"{api_url}{new_slug}/", {"key": f"{self.data_store2.slug}", "data": data_store_content2}
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_update_datastore_permissions(self):
         """PUT /api/datastore/{slug} should only be possible with the write permission"""
@@ -165,13 +166,13 @@ class JsonDataStoreAPITestCase(SwaggerTestCaseMixin, APITestCase):
         response = self.client.put(
             f"{api_url}{self.data_store1.slug}/", {"key": f"{new_slug}", "data": data_store_content2}
         )
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.unauthorized)
         response = self.client.put(
             f"{api_url}{self.data_store1.slug}/", {"key": f"{new_slug}", "data": data_store_content2}
         )
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_slugs_unique_per_account(self):
         """POST /api/datastore/ should return a 400 if another datastore with the same slug already exists for the user's account"""
@@ -183,18 +184,18 @@ class JsonDataStoreAPITestCase(SwaggerTestCaseMixin, APITestCase):
         response = self.client.post(
             api_url, {"data": {"post": "new datastore"}, "key": "new_store", "account": self.account1.pk}, format="json"
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_delete(self):
         """DELETE /api/datastore/{slug} should return a 204 and delete the datastore"""
 
         self.client.force_authenticate(self.authorized_user_write)
         response = self.client.delete(f"{api_url}{self.data_store1.slug}/")
-        self.assertJSONResponse(response, 204)
+        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
 
         self.client.force_authenticate(self.authorized_user_read)
         response = self.client.get(api_url)
-        response_body = self.assertJSONResponse(response, 200)
+        response_body = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response_body["results"]), 1)
 
     def test_delete_permissions(self):
@@ -202,19 +203,19 @@ class JsonDataStoreAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
         self.client.force_authenticate(self.unauthorized)
         response = self.client.delete(f"{api_url}{self.data_store2.slug}/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.authorized_user_read)
         response = self.client.delete(f"{api_url}{self.data_store2.slug}/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.user_with_perm_but_wrong_account)
         response = self.client.delete(f"{api_url}{self.data_store2.slug}/")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
         self.client.force_authenticate(self.authorized_user_write)
         response = self.client.delete(f"{api_url}{self.data_store2.slug}/")
-        self.assertJSONResponse(response, 204)
+        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
 
     def test_slug_sanitization_post(self):
         """POST request should sanitize the 'key' valeu of the request which will be used as slug"""
@@ -223,7 +224,7 @@ class JsonDataStoreAPITestCase(SwaggerTestCaseMixin, APITestCase):
         slugified = slugify(ugly_slug)
         self.client.force_authenticate(self.authorized_user_write)
         response = self.client.post(api_url, {"data": {"post": "new datastore"}, "key": ugly_slug}, format="json")
-        response_body = self.assertJSONResponse(response, 201)
+        response_body = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertEqual(response_body["key"], slugified)
 
     def test_slug_sanitization_put(self):
@@ -235,23 +236,23 @@ class JsonDataStoreAPITestCase(SwaggerTestCaseMixin, APITestCase):
         response = self.client.put(
             f"{api_url}{self.data_store1.slug}/", {"key": f"{ugly_slug}", "data": data_store_content2}
         )
-        response_body = self.assertJSONResponse(response, 200)
+        response_body = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response_body["key"], slugified)
 
     def test_list_response_is_openapi_compliant(self):
         self.client.force_authenticate(self.authorized_user_read)
         response = self.client.get(api_url)
-        response_body = self.assertJSONResponse(response, 200)
+        response_body = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertResponseCompliantToSwagger(response_body, "PaginatedDataStoreList")
 
     def test_retrieve_response_is_openapi_compliant(self):
         self.client.force_authenticate(self.authorized_user_read)
         response = self.client.get(f"{api_url}{self.data_store1.slug}/")
-        response_body = self.assertJSONResponse(response, 200)
+        response_body = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertResponseCompliantToSwagger(response_body, "DataStore")
 
     def test_create_response_is_openapi_compliant(self):
         self.client.force_authenticate(self.authorized_user_write)
         response = self.client.post(api_url, {"data": {"post": "new datastore"}, "key": "openapi_store"}, format="json")
-        response_body = self.assertJSONResponse(response, 201)
+        response_body = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertResponseCompliantToSwagger(response_body, "DataStore")

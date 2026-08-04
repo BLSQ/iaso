@@ -125,7 +125,6 @@ class RefreshVrfDataTestCase(APITestCase):
         response = self.assertJSONResponse(response, 200)
         task = response["task"]
         task_id = task["id"]
-        print("Task", task)
         self.assertEqual(task["status"], RUNNING)
 
         response = self.client.patch(

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-10 07:42+0000\n"
+"POT-Creation-Date: 2026-07-30 08:47+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -17,16 +17,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.5\n"
-
-#: dynamic_fields/filter_backends.py
-#, python-brace-format
-msgid "Dynamic fields cannot contain both {all_fields} and {default_fields}"
-msgstr "Les champs dynamiques ne peuvent pas contenir à la fois {all_fields} et {default_fields}"
-
-#: dynamic_fields/filter_backends.py
-#, python-brace-format
-msgid "Invalid dynamic fields: {fields}"
-msgstr "Champs dynamiques invalides : {fields}"
 
 #: iaso/api/api_import/filters.py iaso/api/pages.py iaso/api/payments/views.py
 msgid "User ID"
@@ -174,6 +164,10 @@ msgid "The file must be a CSV."
 msgstr "Le fichier doit être un CSV"
 
 #: iaso/api/metrics/serializers.py
+msgid "Unable to determine the CSV delimiter."
+msgstr "Impossible de déterminer le délimiteur du CSV"
+
+#: iaso/api/metrics/serializers.py
 #, python-brace-format
 msgid "The CSV must contain '{missing_headers}' columns."
 msgstr "Le CSV doit contenir les en-têtes '{missing_headers}'"
@@ -197,6 +191,10 @@ msgstr "Ces IDs d'org unit n'existent pas:"
 #: iaso/api/metrics/serializers.py
 msgid "Year must be between 1900 and 2100."
 msgstr "L'année doit être entre 1900 et 2100,"
+
+#: iaso/api/metrics/serializers.py
+msgid "metric_type_ids must be a comma-separated list of integers."
+msgstr "metric_type_ids doit être une liste d'integer séparé par une virgule"
 
 #: iaso/api/microplanning/filters.py
 msgid "Planning is missing sampling group or target org unit scope"
@@ -1033,8 +1031,8 @@ msgid "Trypelim project"
 msgstr "Projet Trypelim"
 
 #: iaso/modules.py
-msgid "Data validation"
-msgstr "Validation des données"
+msgid "Change requests"
+msgstr "Demandes de changement"
 
 #: iaso/modules.py
 msgid "SaaS"
@@ -1379,6 +1377,19 @@ msgstr "Virus détecté"
 #: iaso/utils/virus_scan/model.py
 msgid "Error"
 msgstr "Erreur lors de l'analyse"
+
+#, python-brace-format
+#~ msgid "Dynamic fields cannot contain both {all_fields} and {default_fields}"
+#~ msgstr ""
+#~ "Les champs dynamiques ne peuvent pas contenir à la fois {all_fields} et "
+#~ "{default_fields}"
+
+#, python-brace-format
+#~ msgid "Invalid dynamic fields: {fields}"
+#~ msgstr "Champs dynamiques invalides : {fields}"
+
+#~ msgid "Data validation"
+#~ msgstr "Validation des données"
 
 #~ msgid "Account id is required."
 #~ msgstr "L'identifiant du compte est requis."

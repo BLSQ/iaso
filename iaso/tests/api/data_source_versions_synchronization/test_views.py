@@ -39,6 +39,8 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
         )
 
         cls.data_source = m.DataSource.objects.create(name="Data source")
+        cls.project = m.Project.objects.create(name="Project1", account=cls.account)
+        cls.project.data_sources.add(cls.data_source)
         cls.source_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
         cls.source_2 = m.SourceVersion.objects.create(data_source=cls.data_source, number=2)
         cls.source_3 = m.SourceVersion.objects.create(data_source=cls.data_source, number=3)
@@ -72,25 +74,25 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
 
     def test_list_without_auth(self):
         response = self.client.get("/api/datasources/sync/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_list_without_perms(self):
         # No perms.
         self.client.force_authenticate(self.user)
         self.user.user_permissions.clear()
         response = self.client.get("/api/datasources/sync/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
         # Not enough perms.
         self.user.user_permissions.add(Permission.objects.get(codename=CORE_SOURCE_WRITE_PERMISSION.codename))
         response = self.client.get("/api/datasources/sync/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_list_ok(self):
         self.client.force_authenticate(self.user)
         with self.assertNumQueries(4):
             response = self.client.get("/api/datasources/sync/")
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
             self.assertEqual(2, len(response.data["results"]))
 
     def test_list_ok_with_dynamic_fields(self):
@@ -112,7 +114,7 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
     def test_retrieve_ok(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(f"/api/datasources/sync/{self.data_source_sync_1.id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_create_without_perms(self):
         self.client.force_authenticate(self.user)
@@ -123,7 +125,7 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
             "source_version_to_compare_with": self.source_3.pk,
         }
         response = self.client.post("/api/datasources/sync/", data=data, format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_create_ok(self):
         self.client.force_authenticate(self.user)
@@ -133,7 +135,7 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
             "source_version_to_compare_with": self.source_3.pk,
         }
         response = self.client.post("/api/datasources/sync/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
 
         data_source_sync = m.DataSourceVersionsSynchronization.objects.get(id=response.data["id"])
         self.assertEqual(data_source_sync.name, "Foo synchronization")
@@ -146,7 +148,7 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
         self.client.force_authenticate(self.user)
         self.user.user_permissions.clear()
         response = self.client.patch(f"/api/datasources/sync/{self.data_source_sync_1.id}/create_json_diff/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_create_json_diff(self):
         self.client.force_authenticate(self.user)
@@ -165,7 +167,7 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
         response = self.client.patch(
             f"/api/datasources/sync/{self.data_source_sync_1.id}/create_json_diff/", data=json_diff_params
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.data_source_sync_1.refresh_from_db()
         self.assertIsNotNone(self.data_source_sync_1.json_diff)
@@ -201,13 +203,13 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
             "source_version_to_compare_with_org_unit_group": self.group_2.id,
             "ignore_groups": True,
             "show_deleted_org_units": False,
-            "field_names": ["name", "code"],
+            "field_names": ["name", "not_a_valid_field"],
         }
         response = self.client.patch(
             f"/api/datasources/sync/{self.data_source_sync_1.id}/create_json_diff/", data=json_diff_params
         )
         json_response = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('"code" is not a valid choice', json_response["field_names"][0])
+        self.assertIn('"not_a_valid_field" is not a valid choice', json_response["field_names"][0])
 
         self.data_source_sync_1.refresh_from_db()
         self.assertIsNone(self.data_source_sync_1.json_diff)
@@ -218,7 +220,7 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
         response = self.client.patch(
             f"/api/datasources/sync/{self.data_source_sync_1.id}/synchronize_source_versions_async/"
         )
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_synchronize_source_versions_async(self):
         # We use an empty `json_diff` here because `synchronize_source_versions()` (which
@@ -232,7 +234,7 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
             f"/api/datasources/sync/{self.data_source_sync_1.id}/synchronize_source_versions_async/"
         )
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="synchronize_source_versions_task")
 

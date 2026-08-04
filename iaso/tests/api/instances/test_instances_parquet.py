@@ -9,6 +9,7 @@ import pytz
 
 from django.contrib.gis.geos import Point
 from django.core.files import File
+from rest_framework import status
 
 from iaso import models as m
 from iaso.models import OrgUnitReferenceInstance
@@ -274,7 +275,7 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
                 f"/api/instances/?form_ids={self.instance_1.form.id}&parquet=true&order=id",
                 headers={"Content-Type": "text/csv"},
             )
-            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
 
             self.assert_parquet_content_type(response)
 
@@ -296,7 +297,7 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
         response = self.client.get(
             f"/api/instances/?form_ids={self.instance_1.form.id}&parquet=true&unknown_unsupported_filter=bad_param"
         )
-        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         self.assertEqual(
             response.json(),
             {

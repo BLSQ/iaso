@@ -1,15 +1,10 @@
 import React, { FunctionComponent, useState } from 'react';
 import Alert from '@mui/lab/Alert';
 import { Box, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 
-import {
-    LoadingSpinner,
-    commonStyles,
-    useGoBack,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { LoadingSpinner, useGoBack, useSafeIntl } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
+import { MainWrapper } from '../../components/MainWrapper';
 import TopBar from '../../components/nav/TopBarComponent';
 
 import { baseUrls } from '../../constants/urls';
@@ -19,7 +14,6 @@ import {
     ParamsWithAccountId,
     useParamsObject,
 } from '../../routing/hooks/useParamsObject';
-import { ClassNames } from '../../types/utils';
 import { useGetEntityFields } from '../entities/hooks/useGetEntityFields';
 import { Descriptor } from './components/InstanceFileContentRich';
 import SpeedDialInstance from './components/SpeedDialInstance';
@@ -32,13 +26,6 @@ import {
     useReassignInstance,
 } from './hooks/useReassignInstance';
 import MESSAGES from './messages';
-
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-    alert: {
-        marginBottom: theme.spacing(4),
-    },
-}));
 
 type Logs = {
     list: any[];
@@ -69,7 +56,6 @@ const InstanceDetails: FunctionComponent = () => {
         useReassignInstance<ReassignInstancePayload>();
 
     const { formatMessage } = useSafeIntl();
-    const classes: ClassNames = useStyles();
     const goBack = useGoBack(baseUrls.instances);
 
     const params = useParamsObject(
@@ -93,7 +79,7 @@ const InstanceDetails: FunctionComponent = () => {
     const showHistoryLink = (instanceLogsDetails?.list?.length || 0) > 1;
 
     return (
-        <section className={classes.relativeContainer}>
+        <Box component="section" sx={{ position: 'relative' }}>
             <TopBar
                 title={
                     currentInstance
@@ -107,11 +93,11 @@ const InstanceDetails: FunctionComponent = () => {
                         : ''
                 }
                 displayBackButton
-                goBack={() => goBack()}
+                goBack={goBack}
             />
             {isLoading && <LoadingSpinner />}
             {currentInstance && !isLoading && (
-                <Box className={classes.containerFullHeightNoTabPadded}>
+                <MainWrapper sx={{ p: 4 }}>
                     {currentInstance.can_user_modify && showDial && (
                         <SpeedDialInstance
                             currentInstance={currentInstance}
@@ -132,10 +118,7 @@ const InstanceDetails: FunctionComponent = () => {
 
                         <Grid xs={12} md={4} lg={3} item>
                             {currentInstance.deleted && (
-                                <Alert
-                                    severity="warning"
-                                    className={classes.alert}
-                                >
+                                <Alert severity="warning" sx={{ mb: 4 }}>
                                     {formatMessage(MESSAGES.warningSoftDeleted)}
                                     <br />
                                     {formatMessage(
@@ -162,9 +145,9 @@ const InstanceDetails: FunctionComponent = () => {
                             />
                         </Grid>
                     </Grid>
-                </Box>
+                </MainWrapper>
             )}
-        </section>
+        </Box>
     );
 };
 

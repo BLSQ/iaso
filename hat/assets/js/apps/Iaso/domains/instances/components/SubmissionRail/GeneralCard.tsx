@@ -16,8 +16,10 @@ import {
     LinkWithLocation,
     textPlaceholder,
     useSafeIntl,
+    IntlMessage,
 } from 'bluesquare-components';
 import get from 'lodash/get';
+import { SxStyles } from 'Iaso/types/general';
 import { baseUrls } from '../../../../constants/urls';
 import {
     INSTANCE_METAS_FIELDS,
@@ -42,7 +44,7 @@ const statusColor = (status: string): 'success' | 'error' | 'default' => {
 };
 
 /** Status value -> its label message, keyed on the INSTANCE_STATUS_* constants. */
-const STATUS_LABELS: Record<string, { id: string; defaultMessage: string }> = {
+const STATUS_LABELS: Record<string, IntlMessage> = {
     [INSTANCE_STATUS_READY]: MESSAGES.ready,
     [INSTANCE_STATUS_ERROR]: MESSAGES.error,
     [INSTANCE_STATUS_EXPORTED]: MESSAGES.exported,
@@ -64,15 +66,61 @@ const getFieldValue = (key: string, instance: Instance): ReactNode => {
     return field.render ? field.render(value) : value;
 };
 
-const countBadgeSx = {
-    height: 20,
-    fontSize: 12,
-    fontWeight: 500,
-    color: 'text.secondary',
-    backgroundColor: 'grey.100',
-    border: 'none',
-    '& .MuiChip-label': { px: 0.9 },
-} as const;
+const styles: SxStyles = {
+    root: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 1,
+        flexWrap: 'wrap',
+        px: 2.25,
+        pt: 1.75,
+        pb: 1,
+    },
+    countBadge: {
+        height: 20,
+        fontSize: 12,
+        fontWeight: 500,
+        color: 'text.secondary',
+        backgroundColor: 'grey.100',
+        border: 'none',
+        '& .MuiChip-label': { px: 0.9 },
+    },
+    referenceSubmissionChip: {
+        height: 22,
+        fontSize: 12,
+        fontWeight: 500,
+        color: 'text.secondary',
+        backgroundColor: 'grey.100',
+        border: 1,
+        borderColor: 'divider',
+        '& .MuiChip-label': { px: 1.25 },
+    },
+    statusBadgeContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        flexWrap: 'wrap',
+        gap: 0.75,
+    },
+    downloadXmlLink: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 0.75,
+        mt: 1.25,
+        fontSize: 12,
+        fontWeight: 600,
+    },
+    technicalDetailsButton: {
+        justifyContent: 'flex-start',
+        gap: 0.75,
+        color: 'text.secondary',
+        fontSize: 12,
+        fontWeight: 600,
+        textTransform: 'none',
+        mt: 0.75,
+    },
+};
 
 export const GeneralCard: FunctionComponent<Props> = ({
     currentInstance,
@@ -122,42 +170,14 @@ export const GeneralCard: FunctionComponent<Props> = ({
 
     return (
         <Paper elevation={0} variant="outlined" sx={{ mb: 2 }}>
-            <Box
-                sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 1,
-                    flexWrap: 'wrap',
-                    px: 2.25,
-                    pt: 1.75,
-                    pb: 1,
-                }}
-            >
+            <Box sx={styles.root}>
                 <Tooltip title={formatMessage(MESSAGES.general)}>
                     <InfoOutlinedIcon color="primary" />
                 </Tooltip>
-                <Box
-                    sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'flex-end',
-                        flexWrap: 'wrap',
-                        gap: 0.75,
-                    }}
-                >
+                <Box sx={styles.statusBadgeContainer}>
                     <Chip
                         size="small"
-                        sx={{
-                            height: 22,
-                            fontSize: 12,
-                            fontWeight: 500,
-                            color: 'text.secondary',
-                            backgroundColor: 'grey.100',
-                            border: 1,
-                            borderColor: 'divider',
-                            '& .MuiChip-label': { px: 1.25 },
-                        }}
+                        sx={styles.referenceSubmissionChip}
                         label={formatMessage(
                             currentInstance.is_reference_instance
                                 ? MESSAGES.referenceSubmission
@@ -220,21 +240,13 @@ export const GeneralCard: FunctionComponent<Props> = ({
                             }}
                         />
                     }
-                    sx={{
-                        justifyContent: 'flex-start',
-                        gap: 0.75,
-                        color: 'text.secondary',
-                        fontSize: 12,
-                        fontWeight: 600,
-                        textTransform: 'none',
-                        mt: 0.75,
-                    }}
+                    sx={styles.technicalDetailsButton}
                 >
                     {formatMessage(MESSAGES.technicalDetails)}
                     <Chip
                         size="small"
                         label={`${technicalRows.length}`}
-                        sx={{ ...countBadgeSx, ml: 0.9 }}
+                        sx={{ ...styles.countBadge, ml: 0.9 }}
                     />
                 </Button>
                 <Collapse in={showTechnical} unmountOnExit>
@@ -246,14 +258,7 @@ export const GeneralCard: FunctionComponent<Props> = ({
                             onClick={() =>
                                 window.open(currentInstance.file_url, '_blank')
                             }
-                            sx={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: 0.75,
-                                mt: 1.25,
-                                fontSize: 12,
-                                fontWeight: 600,
-                            }}
+                            sx={styles.downloadXmlLink}
                         >
                             <DescriptionOutlinedIcon sx={{ fontSize: 16 }} />
                             {formatMessage(MESSAGES.downloadXml)}

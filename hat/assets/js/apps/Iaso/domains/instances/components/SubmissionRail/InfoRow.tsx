@@ -1,6 +1,7 @@
 import React, { FunctionComponent, ReactNode } from 'react';
 import { Box, Typography } from '@mui/material';
 import { textPlaceholder } from 'bluesquare-components';
+import { SxStyles } from 'Iaso/types/general';
 
 /** Width of the label column, matching the design's 118px key column. */
 export const LABEL_WIDTH = 118;
@@ -10,27 +11,41 @@ export const LABEL_WIDTH = 118;
  * labels, 12px for meta (dates). Weights are limited to 500 (labels) and 600
  * (emphasised values); de-emphasis is done with colour, not extra weights.
  */
-const LABEL_SX = {
-    fontSize: 13,
-    fontWeight: 500,
-    lineHeight: 1.35,
-    color: 'text.secondary',
-} as const;
-const VALUE_SX = {
-    fontSize: 14,
-    fontWeight: 600,
-    color: 'text.primary',
-    wordBreak: 'break-word',
-    minWidth: 0,
-} as const;
-
-const rowSx = {
-    display: 'grid',
-    gridTemplateColumns: `${LABEL_WIDTH}px minmax(0, 1fr)`,
-    gap: 1.75,
-    alignItems: 'baseline',
-    py: 0.9,
-} as const;
+const styles: SxStyles = {
+    label: {
+        fontSize: 13,
+        fontWeight: 500,
+        lineHeight: 1.35,
+        color: 'text.secondary',
+    },
+    value: {
+        fontSize: 14,
+        fontWeight: 600,
+        color: 'text.primary',
+        wordBreak: 'break-word',
+        minWidth: 0,
+    },
+    valueMono: {
+        wordBreak: 'break-word',
+        minWidth: 0,
+        fontWeight: 500,
+        fontFamily: 'monospace',
+        fontSize: 13,
+        color: 'text.secondary',
+    },
+    row: {
+        display: 'grid',
+        gridTemplateColumns: `${LABEL_WIDTH}px minmax(0, 1fr)`,
+        gap: 1.75,
+        alignItems: 'baseline',
+        py: 0.9,
+    },
+    valueMonoDisabled: {
+        fontFamily: 'monospace',
+        fontSize: 12,
+        color: 'text.disabled',
+    },
+};
 
 type Props = {
     label: string;
@@ -49,23 +64,13 @@ export const InfoRow: FunctionComponent<Props> = ({
     children,
     mono = false,
 }) => (
-    <Box sx={rowSx}>
-        <Typography component="span" sx={LABEL_SX}>
+    <Box sx={styles.row}>
+        <Typography component="span" sx={styles.label}>
             {label}
         </Typography>
         <Typography
             component="span"
-            sx={
-                mono
-                    ? {
-                          ...VALUE_SX,
-                          fontWeight: 500,
-                          fontFamily: 'monospace',
-                          fontSize: 13,
-                          color: 'text.secondary',
-                      }
-                    : VALUE_SX
-            }
+            sx={mono ? styles.valueMono : styles.value}
         >
             {children}
         </Typography>
@@ -81,25 +86,18 @@ export const ActivityRow: FunctionComponent<{
     who?: ReactNode;
     when?: ReactNode;
 }> = ({ label, who, when }) => (
-    <Box sx={rowSx}>
-        <Typography component="span" sx={LABEL_SX}>
+    <Box sx={styles.row}>
+        <Typography component="span" sx={styles.label}>
             {label}
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
             {who && (
-                <Typography component="span" sx={VALUE_SX}>
+                <Typography component="span" sx={styles.value}>
                     {who}
                 </Typography>
             )}
             {when && (
-                <Typography
-                    component="span"
-                    sx={{
-                        fontFamily: 'monospace',
-                        fontSize: 12,
-                        color: 'text.disabled',
-                    }}
-                >
+                <Typography component="span" sx={styles.valueMonoDisabled}>
                     {when}
                 </Typography>
             )}
@@ -122,7 +120,7 @@ export const KvRow: FunctionComponent<{
     return (
         <Box
             sx={{
-                ...rowSx,
+                ...styles.row,
                 gridTemplateColumns: 'minmax(96px, 42%) 1fr',
                 borderBottom: 1,
                 borderColor: 'divider',
@@ -133,7 +131,7 @@ export const KvRow: FunctionComponent<{
                 component="span"
                 title={label}
                 sx={{
-                    ...LABEL_SX,
+                    ...styles.label,
                     textAlign: 'right',
                     wordBreak: 'break-word',
                 }}
@@ -143,7 +141,7 @@ export const KvRow: FunctionComponent<{
             <Box
                 component="span"
                 sx={{
-                    ...VALUE_SX,
+                    ...styles.value,
                     fontWeight: isEmpty ? 500 : 600,
                     color: isEmpty ? 'text.disabled' : 'text.primary',
                 }}

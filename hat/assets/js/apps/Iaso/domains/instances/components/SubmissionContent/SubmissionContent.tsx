@@ -7,7 +7,6 @@ import ViewColumnIcon from '@mui/icons-material/ViewColumn';
 import {
     Box,
     Button,
-    Chip,
     FormControlLabel,
     IconButton,
     InputAdornment,
@@ -22,24 +21,118 @@ import {
     alpha,
 } from '@mui/material';
 import { ErrorBoundary, useSafeIntl } from 'bluesquare-components';
+import { numericValues } from 'Iaso/domains/instances/utils/intl';
+import { SxStyles } from 'Iaso/types/general';
 import { useLocale } from '../../../app/contexts/LocaleContext';
 import MESSAGES from '../../messages';
-import { numericValues } from '../../utils/intl';
 import { getFormLanguages, pickDefaultLanguage } from '../../utils/questions';
 import InstanceFileContentBasic from '../InstanceFileContentBasic';
 import { Descriptor } from '../InstanceFileContentRich';
+import { SubmissionContentHeader } from './SubmissionContentHeader';
 import { SubmissionFieldRow } from './SubmissionFieldRow';
 import { SubmissionField } from './types';
 import {
-    FilteredSection,
     spansFullWidth,
     useFilteredSubmission,
     useSubmissionSections,
 } from './useSubmissionSections';
 
-/** Minimum height of the panel toolbar. */
-const TOOLBAR_HEIGHT = 57;
-
+const styles: SxStyles = {
+    toolbar: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: 1.5,
+        px: 2.75,
+        py: 1,
+        // muted "chrome" strip so these display controls read as
+        // distinct from the answers below, not as the first field
+        backgroundColor: 'grey.100',
+        borderBottom: 1,
+        borderColor: 'divider',
+    },
+    searchField: {
+        flexGrow: 1,
+        minWidth: 240,
+        maxWidth: 480,
+        backgroundColor: 'background.paper',
+    },
+    languageField: {
+        minWidth: 160,
+        backgroundColor: 'background.paper',
+        // subdued so this reads as a display control,
+        // not something demanding attention
+        '& .MuiInputBase-input': {
+            color: 'text.secondary',
+        },
+    },
+    languageControls: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.75,
+        flexWrap: 'wrap',
+    },
+    languageIcon: {
+        color: 'text.secondary',
+    },
+    showQuestionIdsLabel: {
+        color: 'text.secondary',
+    },
+    searchResults: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 1.5,
+        px: 2.75,
+        py: 1.4,
+        backgroundColor: 'action.hover',
+        borderBottom: 1,
+        borderColor: 'divider',
+    },
+    noResults: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 1.25,
+        py: 6.75,
+        px: 2.75,
+        textAlign: 'center',
+        color: 'text.secondary',
+    },
+    noResultsIcon: {
+        fontSize: 40,
+        color: 'text.disabled',
+    },
+    fields: {
+        display: 'block',
+        columnGap: 4.5,
+        px: 0,
+        py: 0,
+    },
+    fieldsTwoColumns: {
+        display: 'grid',
+        gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+        px: 2.75,
+        py: 0.5,
+    },
+    toggleButtonGroup: theme => ({
+        // segmented control: blue icons, active filled blue
+        '& .MuiToggleButton-root': {
+            color: theme.palette.primary.main,
+            '&:hover': {
+                backgroundColor: alpha(theme.palette.primary.main, 0.08),
+            },
+            '&.Mui-selected': {
+                color: theme.palette.primary.contrastText,
+                backgroundColor: theme.palette.primary.main,
+                '&:hover': {
+                    backgroundColor: theme.palette.primary.dark,
+                },
+            },
+        },
+    }),
+};
 /**
  * Whether the field at `index` has no field rendered directly below it, so its
  * bottom divider would dangle at the edge of the section. In one column that is
@@ -67,87 +160,6 @@ type Props = {
     instanceData?: Record<string, any>;
     files?: string[];
     showNote?: boolean;
-};
-
-const SectionHeader: FunctionComponent<{
-    section: FilteredSection;
-    isSearching: boolean;
-    showQuestionIds: boolean;
-}> = ({ section, isSearching, showQuestionIds }) => {
-    const { formatMessage } = useSafeIntl();
-    return (
-        <Box
-            sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1.4,
-                px: 2.75,
-                py: 1.5,
-                pl: 2.75 + section.depth * 2,
-                backgroundColor: 'grey.100',
-                borderTop: 1,
-                borderBottom: 1,
-                borderColor: 'divider',
-            }}
-        >
-            <Box
-                sx={{
-                    width: 4,
-                    height: 18,
-                    borderRadius: 1,
-                    backgroundColor: 'primary.main',
-                    flex: '0 0 auto',
-                }}
-            />
-            <Typography
-                variant="subtitle2"
-                sx={{
-                    color: 'primary.main',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.03em',
-                }}
-            >
-                {section.label}
-            </Typography>
-            <Chip
-                size="small"
-                sx={{
-                    height: 20,
-                    fontSize: 11.5,
-                    fontWeight: 500,
-                    color: 'text.secondary',
-                    backgroundColor: 'background.paper',
-                    border: 1,
-                    borderColor: 'divider',
-                    '& .MuiChip-label': { px: 1 },
-                }}
-                label={
-                    isSearching
-                        ? formatMessage(MESSAGES.matchingFieldsCount, {
-                              count: `${section.fields.length}`,
-                              total: `${section.totalFields}`,
-                          })
-                        : formatMessage(
-                              MESSAGES.fieldsCount,
-                              numericValues({ count: section.fields.length }),
-                          )
-                }
-            />
-            {showQuestionIds && section.id && (
-                <Typography
-                    component="code"
-                    sx={{
-                        ml: 'auto',
-                        fontFamily: 'monospace',
-                        fontSize: 11.5,
-                        color: 'text.disabled',
-                    }}
-                >
-                    {section.id}
-                </Typography>
-            )}
-        </Box>
-    );
 };
 
 export const SubmissionContent: FunctionComponent<Props> = ({
@@ -205,23 +217,7 @@ export const SubmissionContent: FunctionComponent<Props> = ({
 
     return (
         <Paper elevation={0} variant="outlined">
-            <Box
-                sx={{
-                    minHeight: TOOLBAR_HEIGHT,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    flexWrap: 'wrap',
-                    gap: 1.5,
-                    px: 2.75,
-                    py: 1,
-                    // muted "chrome" strip so these display controls read as
-                    // distinct from the answers below, not as the first field
-                    backgroundColor: 'grey.100',
-                    borderBottom: 1,
-                    borderColor: 'divider',
-                }}
-            >
+            <Box sx={styles.toolbar}>
                 <TextField
                     size="small"
                     value={query}
@@ -230,12 +226,7 @@ export const SubmissionContent: FunctionComponent<Props> = ({
                         if (event.key === 'Escape') setQuery('');
                     }}
                     placeholder={formatMessage(MESSAGES.searchQuestions)}
-                    sx={{
-                        flexGrow: 1,
-                        minWidth: 240,
-                        maxWidth: 480,
-                        backgroundColor: 'background.paper',
-                    }}
+                    sx={styles.searchField}
                     InputProps={{
                         startAdornment: (
                             <InputAdornment position="start">
@@ -260,14 +251,7 @@ export const SubmissionContent: FunctionComponent<Props> = ({
                         ) : undefined,
                     }}
                 />
-                <Box
-                    sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1.75,
-                        flexWrap: 'wrap',
-                    }}
-                >
+                <Box sx={styles.languageControls}>
                     {languages.length > 1 && (
                         <TextField
                             select
@@ -277,15 +261,7 @@ export const SubmissionContent: FunctionComponent<Props> = ({
                             aria-label={formatMessage(
                                 MESSAGES.questionLanguage,
                             )}
-                            sx={{
-                                minWidth: 160,
-                                backgroundColor: 'background.paper',
-                                // subdued so this reads as a display control,
-                                // not something demanding attention
-                                '& .MuiInputBase-input': {
-                                    color: 'text.secondary',
-                                },
-                            }}
+                            sx={styles.languageField}
                             InputProps={{
                                 startAdornment: (
                                     <InputAdornment position="start">
@@ -296,7 +272,7 @@ export const SubmissionContent: FunctionComponent<Props> = ({
                                         >
                                             <TranslateIcon
                                                 fontSize="small"
-                                                sx={{ color: 'text.secondary' }}
+                                                sx={styles.languageIcon}
                                             />
                                         </Tooltip>
                                     </InputAdornment>
@@ -327,7 +303,7 @@ export const SubmissionContent: FunctionComponent<Props> = ({
                         label={
                             <Typography
                                 variant="body2"
-                                sx={{ color: 'text.secondary' }}
+                                sx={styles.showQuestionIdsLabel}
                             >
                                 {formatMessage(MESSAGES.showQuestionIds)}
                             </Typography>
@@ -341,26 +317,7 @@ export const SubmissionContent: FunctionComponent<Props> = ({
                             if (value) setTwoColumns(value === 'two');
                         }}
                         aria-label={formatMessage(MESSAGES.layoutDensity)}
-                        sx={theme => ({
-                            // segmented control: blue icons, active filled blue
-                            '& .MuiToggleButton-root': {
-                                color: theme.palette.primary.main,
-                                '&:hover': {
-                                    backgroundColor: alpha(
-                                        theme.palette.primary.main,
-                                        0.08,
-                                    ),
-                                },
-                                '&.Mui-selected': {
-                                    color: theme.palette.primary.contrastText,
-                                    backgroundColor: theme.palette.primary.main,
-                                    '&:hover': {
-                                        backgroundColor:
-                                            theme.palette.primary.dark,
-                                    },
-                                },
-                            },
-                        })}
+                        sx={styles.toggleButtonGroup}
                     >
                         <ToggleButton
                             value="one"
@@ -383,19 +340,7 @@ export const SubmissionContent: FunctionComponent<Props> = ({
             </Box>
 
             {isSearching && (
-                <Box
-                    sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: 1.5,
-                        px: 2.75,
-                        py: 1.4,
-                        backgroundColor: 'action.hover',
-                        borderBottom: 1,
-                        borderColor: 'divider',
-                    }}
-                >
+                <Box sx={styles.searchResults}>
                     <Typography variant="body2" color="primary">
                         {matchCount > 0
                             ? formatMessage(MESSAGES.searchResultsCount, {
@@ -416,22 +361,19 @@ export const SubmissionContent: FunctionComponent<Props> = ({
                 {shownSections.map(section => (
                     <Box component="section" key={section.id ?? 'lead'}>
                         {section.label && (
-                            <SectionHeader
+                            <SubmissionContentHeader
                                 section={section}
                                 isSearching={isSearching}
                                 showQuestionIds={showQuestionIds}
                             />
                         )}
                         <Box
-                            sx={{
-                                display: twoColumns ? 'grid' : 'block',
-                                gridTemplateColumns: twoColumns
-                                    ? { xs: '1fr', md: '1fr 1fr' }
-                                    : undefined,
-                                columnGap: 4.5,
-                                px: twoColumns ? 2.75 : 0,
-                                py: twoColumns ? 0.5 : 0,
-                            }}
+                            sx={
+                                [
+                                    styles.fields,
+                                    twoColumns && styles.fieldsTwoColumns,
+                                ] as unknown as SxStyles
+                            }
                         >
                             {section.fields.map((field, index) => (
                                 <SubmissionFieldRow
@@ -454,19 +396,8 @@ export const SubmissionContent: FunctionComponent<Props> = ({
             </ErrorBoundary>
 
             {isSearching && matchCount === 0 && (
-                <Box
-                    sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: 1.25,
-                        py: 6.75,
-                        px: 2.75,
-                        textAlign: 'center',
-                        color: 'text.secondary',
-                    }}
-                >
-                    <SearchIcon sx={{ fontSize: 40, color: 'text.disabled' }} />
+                <Box sx={styles.noResults}>
+                    <SearchIcon sx={styles.noResultsIcon} />
                     <Typography variant="body2">
                         {formatMessage(MESSAGES.noQuestionsMatch, {
                             query: query.trim(),

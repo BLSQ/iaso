@@ -113,9 +113,9 @@ module.exports = {
         },
         watchFiles: {
             paths: ['src/**/*', 'assets/**/*', '../plugins/**/*'],
-            options: {
-                usePolling: true,
-            },
+            // options: {
+            //     usePolling: true,
+            // },
         },
     },
 
@@ -130,7 +130,9 @@ module.exports = {
             __LOCALE: JSON.stringify(LOCALE),
         }),
         new webpack.DefinePlugin({
-           'process.env.ORVAL_API_BASE_URL': JSON.stringify(process.env?.ORVAL_API_BASE_URL ?? "")
+            'process.env.ORVAL_API_BASE_URL': JSON.stringify(
+                process.env?.ORVAL_API_BASE_URL ?? '',
+            ),
         }),
         // XLSX
         new webpack.IgnorePlugin({ resourceRegExp: /cptable/ }),

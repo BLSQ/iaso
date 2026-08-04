@@ -1,38 +1,43 @@
-import React, { FunctionComponent, ReactNode } from 'react';
-import FunctionsIcon from '@mui/icons-material/Functions';
-import { Box, Tooltip, Typography } from '@mui/material';
-import { SubmissionValue } from './SubmissionValue';
+import React, { FunctionComponent } from 'react';
+import { Box, Theme } from '@mui/material';
+import { SxStyles } from 'Iaso/types/general';
+import { SubmissionValue } from '../SubmissionValue';
+import { SubmissionFieldRowLabel } from './SubmissionFieldRowLabel';
 import { SubmissionField } from './types';
 import { spansFullWidth } from './useSubmissionSections';
 
-/** Wrap the first occurrence of `query` in `text` with a <mark>. */
-export const HighlightedText: FunctionComponent<{
-    text: string;
-    query: string;
-}> = ({ text, query }) => {
-    const trimmed = query.trim();
-    if (!trimmed) return <>{text}</>;
-    const index = text.toLowerCase().indexOf(trimmed.toLowerCase());
-    if (index < 0) return <>{text}</>;
-    return (
-        <>
-            {text.slice(0, index)}
-            <Box
-                component="mark"
-                sx={{
-                    backgroundColor: 'warning.light',
-                    color: 'inherit',
-                    borderRadius: 0.5,
-                    px: '1px',
-                }}
-            >
-                {text.slice(index, index + trimmed.length)}
-            </Box>
-            {text.slice(index + trimmed.length)}
-        </>
-    );
-};
-
+const getStyles = (
+    spanFull: boolean,
+    twoColumns: boolean,
+    stacked: boolean,
+    hideBorder: boolean,
+): SxStyles => ({
+    root: {
+        gridColumn: spanFull ? '1 / -1' : undefined,
+        display: stacked ? 'flex' : 'grid',
+        flexDirection: stacked ? 'column' : undefined,
+        gridTemplateColumns: stacked
+            ? undefined
+            : 'minmax(0, 1.35fr) minmax(0, 1fr)',
+        gap: (theme: Theme) =>
+            stacked ? theme.spacing(0.75) : theme.spacing(3.5),
+        alignItems: stacked ? 'stretch' : 'start',
+        py: 1.6,
+        px: twoColumns ? 0 : 2.75,
+        borderBottom: hideBorder ? 0 : 1,
+        borderColor: 'divider',
+        '&:hover': twoColumns ? undefined : { backgroundColor: 'action.hover' },
+    },
+    value: {
+        minWidth: 0,
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 0.75,
+        justifyContent: stacked ? 'flex-start' : 'flex-end',
+        textAlign: stacked ? 'left' : 'right',
+        fontSize: 14,
+    },
+});
 type Props = {
     field: SubmissionField;
     files: string[];
@@ -43,29 +48,6 @@ type Props = {
     /** Drop the bottom divider when nothing is rendered directly below */
     hideBorder?: boolean;
 };
-
-const QuestionId: FunctionComponent<{ id: string; query: string }> = ({
-    id,
-    query,
-}) => (
-    <Typography
-        component="code"
-        sx={{
-            alignSelf: 'flex-start',
-            fontFamily: 'monospace',
-            fontSize: 11.5,
-            color: 'text.secondary',
-            backgroundColor: 'grey.100',
-            border: 1,
-            borderColor: 'divider',
-            borderRadius: 1,
-            px: 0.75,
-            mt: 0.25,
-        }}
-    >
-        <HighlightedText text={id} query={query} />
-    </Typography>
-);
 
 export const SubmissionFieldRow: FunctionComponent<Props> = ({
     field,
@@ -89,73 +71,16 @@ export const SubmissionFieldRow: FunctionComponent<Props> = ({
         field.id.toLowerCase().includes(query.trim().toLowerCase()),
     );
     const showId = showQuestionIds || idMatchesQuery;
-
-    const label: ReactNode = (
-        <Box
-            sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 0.4,
-                minWidth: 0,
-            }}
-        >
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5 }}>
-                {field.kind === 'calculated' && (
-                    <Tooltip
-                        placement="right-start"
-                        title={field.tooltip ?? ''}
-                        disableHoverListener={!field.tooltip}
-                    >
-                        <FunctionsIcon color="disabled" fontSize="small" />
-                    </Tooltip>
-                )}
-                <Typography
-                    component="span"
-                    sx={{
-                        fontSize: 14,
-                        lineHeight: 1.4,
-                        wordBreak: 'break-word',
-                        color: field.empty ? 'text.secondary' : 'text.primary',
-                    }}
-                >
-                    <HighlightedText text={field.label} query={query} />
-                </Typography>
-            </Box>
-            {showId && <QuestionId id={field.id} query={query} />}
-        </Box>
-    );
-
+    const styles = getStyles(spanFull, twoColumns, stacked, hideBorder);
     return (
-        <Box
-            sx={theme => ({
-                gridColumn: spanFull ? '1 / -1' : undefined,
-                display: stacked ? 'flex' : 'grid',
-                flexDirection: stacked ? 'column' : undefined,
-                gridTemplateColumns: stacked
-                    ? undefined
-                    : 'minmax(0, 1.35fr) minmax(0, 1fr)',
-                gap: stacked ? theme.spacing(0.75) : theme.spacing(3.5),
-                alignItems: stacked ? 'stretch' : 'start',
-                py: 1.6,
-                px: twoColumns ? 0 : 2.75,
-                borderBottom: hideBorder ? 0 : 1,
-                borderColor: 'divider',
-                '&:hover': twoColumns
-                    ? undefined
-                    : { backgroundColor: 'action.hover' },
-            })}
-        >
-            {label}
+        <Box sx={styles.root}>
+            <SubmissionFieldRowLabel
+                field={field}
+                query={query}
+                showId={showId}
+            />
             <Box
-                sx={{
-                    minWidth: 0,
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: 0.75,
-                    justifyContent: stacked ? 'flex-start' : 'flex-end',
-                    textAlign: stacked ? 'left' : 'right',
-                    fontSize: 14,
-                }}
+                sx={styles.value}
                 title={
                     typeof field.rawValue === 'string'
                         ? field.rawValue

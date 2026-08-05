@@ -125,6 +125,7 @@ Lorsque cette variable est définie, Product Fruits sera activé et seuls le nom
 | `WEBPACK_PORT`   | true      | `3000`            | Port du serveur de développement.                    |
 | `WEBPACK_PROTOCOL` | true      | `http`            | Protocole du serveur de développement.               |
 | `WEBPACK_PATH`   | true      | `./assets/webpack/` | Chemin des fichiers de sortie webpack.               |
+| `WEBPACK_POLL`   | true      | `false`           | Polling des fichiers (nécessaire sous Docker ; plus lent, à laisser désactivé en local). |
 | `OLD_BROWSER`    | true      | `false`           | Active le mode de compatibilité pour les navigateurs plus anciens. |
 | `LIVE_COMPONENTS` | true      | `false`           | Utilise les composants `bluesquare-components` locaux pour le développement. |
 

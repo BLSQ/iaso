@@ -6,9 +6,9 @@
     "license": "Apache-2.0",
     "engines": {
         "node": "22.18.0",
-        "npm": "11.13.0"
+        "npm": "11.19.0"
     },
-    "packageManager": "npm@11.13.0",
+    "packageManager": "npm@11.19.0",
     "scripts": {
         "show-lint-problems": "eslint \"./hat/assets/js/**/*.{js,jsx,ts,tsx}\" \"./plugins/polio/js/**/*.{js,jsx,ts,tsx}\"",
         "fix-lint": "eslint \"./hat/assets/js/**/*.{js,jsx,ts,tsx}\" \"./plugins/polio/js/**/*.{js,jsx,ts,tsx}\" --cache --fix",

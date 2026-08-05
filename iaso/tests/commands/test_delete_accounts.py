@@ -357,6 +357,49 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
             self.account_to_keep, self.data_source_to_keep, self.version_to_keep, self.project_to_keep, self.kept
         )
 
+    def test_delete_multiple_specific_accounts(self):
+        account_to_delete_2, data_source_to_delete_2, version_to_delete_2, project_to_delete_2 = (
+            self.create_account_datasource_version_project("source deleted 2", "account deleted 2", "project deleted 2")
+        )
+        deleted_2 = self._populate_account(
+            account_to_delete_2, version_to_delete_2, project_to_delete_2, suffix="deleted2"
+        )
+
+        pre_deletion_orphans, post_deletion_only_orphans = self._create_unscoped_data()
+
+        # call_command's list-kwarg support for action="append" only works for a single
+        # value — passing multiple repeats the flag as separate argv-style args instead.
+        management.call_command(
+            "delete_accounts",
+            "--account-to-delete",
+            str(self.account_to_delete.pk),
+            "--account-to-delete",
+            str(account_to_delete_2.pk),
+            verbosity=0,
+        )
+
+        self._assert_account_and_related_data_gone(
+            self.account_to_delete,
+            self.data_source_to_delete,
+            self.version_to_delete,
+            self.project_to_delete,
+            self.deleted,
+            mode=MODE_DELETE_ACCOUNTS,
+            pre_deletion_orphans=pre_deletion_orphans,
+            post_deletion_only_orphans=post_deletion_only_orphans,
+        )
+        self._assert_account_and_related_data_gone(
+            account_to_delete_2,
+            data_source_to_delete_2,
+            version_to_delete_2,
+            project_to_delete_2,
+            deleted_2,
+            mode=MODE_DELETE_ACCOUNTS,
+        )
+        self._assert_account_and_related_data_intact(
+            self.account_to_keep, self.data_source_to_keep, self.version_to_keep, self.project_to_keep, self.kept
+        )
+
     def test_keep_single_account(self):
         pre_deletion_orphans, post_deletion_only_orphans = self._create_unscoped_data()
 

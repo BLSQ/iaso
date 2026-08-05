@@ -280,12 +280,47 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         with self.assertRaises(SystemExit):
             management.call_command("delete_accounts", accounts_to_delete=[missing_id], verbosity=0)
 
-    def test_dry_run_does_not_delete_anything(self):
+    def test_keep_single_account_unknown_id_raises(self):
+        missing_id = m.Account.objects.order_by("-pk").first().pk + 1000
+
+        with self.assertRaises(SystemExit):
+            management.call_command("delete_accounts", account_to_keep=missing_id, verbosity=0)
+
+    def test_show_graph_mode_unknown_for_account_raises(self):
+        missing_id = m.Account.objects.order_by("-pk").first().pk + 1000
+
+        with self.assertRaises(SystemExit):
+            management.call_command("delete_accounts", show_graph=True, for_account=missing_id, verbosity=0)
+
+    def test_dry_run_delete_accounts_mode_does_not_delete_anything(self):
         pre_deletion_orphans, post_deletion_only_orphans = self._create_unscoped_data()
 
         management.call_command(
             "delete_accounts",
             accounts_to_delete=[self.account_to_delete.pk],
+            dry_run=True,
+            verbosity=0,
+        )
+
+        self._assert_account_and_related_data_intact(
+            self.account_to_delete,
+            self.data_source_to_delete,
+            self.version_to_delete,
+            self.project_to_delete,
+            self.deleted,
+            pre_deletion_orphans=pre_deletion_orphans,
+            post_deletion_only_orphans=post_deletion_only_orphans,
+        )
+        self._assert_account_and_related_data_intact(
+            self.account_to_keep, self.data_source_to_keep, self.version_to_keep, self.project_to_keep, self.kept
+        )
+
+    def test_dry_run_keep_single_account_mode_does_not_delete_anything(self):
+        pre_deletion_orphans, post_deletion_only_orphans = self._create_unscoped_data()
+
+        management.call_command(
+            "delete_accounts",
+            account_to_keep=self.account_to_keep.pk,
             dry_run=True,
             verbosity=0,
         )

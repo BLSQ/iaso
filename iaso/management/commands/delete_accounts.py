@@ -1027,10 +1027,12 @@ class Command(BaseCommand):
         return discovered, deletion_order
 
     def _mode_show_graph(self, options, discovered_models, deletion_order):
-        if options.get("for_account"):
-            account = Account.objects.get(pk=options["for_account"])
-        else:
+        if not options.get("for_account"):
             raise ValueError("please provide the for_account parameter when running in show_graph mode")
+        for_account_id = options["for_account"]
+        account = Account.objects.filter(pk=for_account_id).first()
+        if account is None:
+            raise SystemExit(f"Account not found: {for_account_id}")
         show_graph(discovered_models, deletion_order, log=self._log, account=account)
         return 0
 
@@ -1069,7 +1071,9 @@ class Command(BaseCommand):
         self._mode_list_accounts()
 
         account_id_to_keep = options["account_to_keep"]
-        account_to_keep = Account.objects.get(pk=account_id_to_keep)
+        account_to_keep = Account.objects.filter(pk=account_id_to_keep).first()
+        if account_to_keep is None:
+            raise SystemExit(f"Account not found: {account_id_to_keep}")
         self._log(f"Keeping: {account_id_to_keep} — {account_to_keep.name!r}")
         accounts_to_delete = list(Account.objects.exclude(pk=account_id_to_keep).order_by("-id"))
         random.shuffle(accounts_to_delete)

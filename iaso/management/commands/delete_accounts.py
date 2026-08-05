@@ -91,13 +91,6 @@ except (ImportError, RuntimeError):
 
 
 # ---------------------------------------------------------------------------
-# Logging
-# ---------------------------------------------------------------------------
-def _log(msg):
-    print(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] {msg}")
-
-
-# ---------------------------------------------------------------------------
 # FK graph — discovery and topological sort
 # ---------------------------------------------------------------------------
 
@@ -254,7 +247,7 @@ def build_fk_graph(root_model):
     return discovered, graph_edges
 
 
-def topo_sort_deletion_order(discovered, graph_edges):
+def topo_sort_deletion_order(discovered, graph_edges, log):
     """
     Topological sort: model A before model B if A has a CASCADE or PROTECT FK to B
     (A must be deleted first to avoid blocking B's deletion).
@@ -279,22 +272,22 @@ def topo_sort_deletion_order(discovered, graph_edges):
     try:
         return list(ts.static_order())
     except Exception as exc:
-        _log(f"  [topo sort] cycle detected ({exc}), falling back to reverse-BFS order")
+        log(f"  [topo sort] cycle detected ({exc}), falling back to reverse-BFS order")
         return list(reversed(list(discovered.keys())))
 
 
 # ---------------------------------------------------------------------------
 # --show-graph mode
 # ---------------------------------------------------------------------------
-def show_graph(discovered, deletion_order, account=None):
+def show_graph(discovered, deletion_order, log, account=None):
     """
     Print what the FK graph discovered, flag partial-coverage paths,
     and optionally show which discovered models have data for the account.
     """
-    _log(f"=== FK Graph from Account — {len(discovered)} models discovered ===")
-    _log("")
-    _log(f"{'Model':55s} {'on_delete':12s} {'filter path'}")
-    _log("-" * 120)
+    log(f"=== FK Graph from Account — {len(discovered)} models discovered ===")
+    log("")
+    log(f"{'Model':55s} {'on_delete':12s} {'filter path'}")
+    log("-" * 120)
 
     for model in deletion_order:
         if model not in discovered:
@@ -309,17 +302,17 @@ def show_graph(discovered, deletion_order, account=None):
                 count_str = f"  [{count} rows]"
             except Exception:
                 count_str = "  [?]"
-        _log(f"  {flag} {model._meta.label:53s} {info.on_delete_value:12s}  {info.account_lookup}{count_str}")
+        log(f"  {flag} {model._meta.label:53s} {info.on_delete_value:12s}  {info.account_lookup}{count_str}")
 
-    _log("")
-    _log("⚠ = path contains a SET_NULL FK — rows where that FK is NULL are NOT found by this filter")
-    _log("    These models may need dedicated supplementary filters to fully cover SET_NULL rows.")
-    _log("")
+    log("")
+    log("⚠ = path contains a SET_NULL FK — rows where that FK is NULL are NOT found by this filter")
+    log("    These models may need dedicated supplementary filters to fully cover SET_NULL rows.")
+    log("")
 
-    _log("=== Out-of-graph models (dedicated handling required) ===")
+    log("=== Out-of-graph models (dedicated handling required) ===")
     for note in _OUT_OF_GRAPH_CLEANUP_NOTES:
-        _log(f"  - {note.label}")
-        _log(f"      reason: {note.reason}")
+        log(f"  - {note.label}")
+        log(f"      reason: {note.reason}")
 
 
 # ---------------------------------------------------------------------------
@@ -355,10 +348,14 @@ class Command(BaseCommand):
     # -----------------------------------------------------------------------
     # Helpers
     # -----------------------------------------------------------------------
+    def _log(self, message):
+        if self.verbosity > 0:
+            self.stdout.write(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] {message}")
+
     def _delete_with_sql(self, sql, params=None, label="SQL"):
         """Deletes data by executing a SQL query - useful for deleting models where there's no clear FK path to the Account model (e.g. users_profile)."""
         if self.dry_run:
-            _log(f"  [DRY RUN] {label}: {sql[:100]}")
+            self._log(f"  [DRY RUN] {label}: {sql[:100]}")
             return 0
         if params:
             self.cursor.execute(sql, params)
@@ -366,7 +363,7 @@ class Command(BaseCommand):
             self.cursor.execute(sql)
         row_count = self.cursor.rowcount
         if row_count:
-            _log(f"  {label}: {row_count:,} deleted")
+            self._log(f"  {label}: {row_count:,} deleted")
         return row_count
 
     def _delete_qs(self, queryset, label=None):
@@ -374,14 +371,14 @@ class Command(BaseCommand):
         model = queryset.model
         label = label or model.__name__
         if self.dry_run:
-            _log(f"  [DRY RUN] {label}: ~{queryset.count()}")
+            self._log(f"  [DRY RUN] {label}: ~{queryset.count()}")
             return
         if model is not Modification:
             self._delete_modification_logs_for_pks(
                 ContentType.objects.get_for_model(model), list(queryset.values_list("pk", flat=True))
             )
         deleted_count, _ = queryset.delete()
-        _log(f"  {label}: {deleted_count} deleted")
+        self._log(f"  {label}: {deleted_count} deleted")
 
     def _delete_modification_logs_for_pks(self, content_type, pks):
         """
@@ -401,7 +398,7 @@ class Command(BaseCommand):
         model = queryset.model
         label = label or model.__name__
         if self.dry_run:
-            _log(f"  [DRY RUN] {label}: ~{queryset.count()}")
+            self._log(f"  [DRY RUN] {label}: ~{queryset.count()}")
             return 0
 
         content_type = ContentType.objects.get_for_model(model) if model is not Modification else None
@@ -417,13 +414,13 @@ class Command(BaseCommand):
             try:
                 deleted = chunk_qs._raw_delete(using=queryset.db)
             except Exception as exc:
-                _log(f"  {label}: _raw_delete failed ({exc!r}), falling back to .delete()")
+                self._log(f"  {label}: _raw_delete failed ({exc!r}), falling back to .delete()")
                 _, counts = chunk_qs.delete()
                 deleted = counts.get(model._meta.label, 0)
                 counts_str = ", ".join(
                     f"{model_label}: {count}" for model_label, count in sorted(counts.items()) if count
                 )
-                _log(f"  {label}: cascade counts: {counts_str}")
+                self._log(f"  {label}: cascade counts: {counts_str}")
             total += deleted
 
         return total
@@ -432,11 +429,11 @@ class Command(BaseCommand):
         """Dry-run-aware wrapper around queryset.update(**fields)."""
         label = label or queryset.model.__name__
         if self.dry_run:
-            _log(f"  [DRY RUN] {label}: would update ~{queryset.count()} rows to {fields}")
+            self._log(f"  [DRY RUN] {label}: would update ~{queryset.count()} rows to {fields}")
             return 0
         updated = queryset.update(**fields)
         if updated:
-            _log(f"  {label}: {updated} updated")
+            self._log(f"  {label}: {updated} updated")
         return updated
 
     @contextmanager
@@ -459,7 +456,9 @@ class Command(BaseCommand):
         fast_deletes — no instances are loaded into memory.
         """
         if self.dry_run:
-            _log(f"  [DRY RUN] {label}: would cascade-delete ~{queryset.count()} rows and everything referencing them")
+            self._log(
+                f"  [DRY RUN] {label}: would cascade-delete ~{queryset.count()} rows and everything referencing them"
+            )
             return
 
         for attempt in range(_MAX_PROTECT_UNBLOCK_ATTEMPTS):
@@ -472,7 +471,7 @@ class Command(BaseCommand):
                 for obj in exc.protected_objects:
                     blocking_pks_by_model[type(obj)].append(obj.pk)
                 for blocker_model, pks in blocking_pks_by_model.items():
-                    _log(f"  [auto-unblock] {blocker_model.__name__} ×{len(pks)} blocking {label} (collect phase)")
+                    self._log(f"  [auto-unblock] {blocker_model.__name__} ×{len(pks)} blocking {label} (collect phase)")
                     self._delete_qs_in_chunks(
                         blocker_model.objects.filter(pk__in=pks), label=f"{blocker_model.__name__}[unblock]"
                     )
@@ -545,34 +544,34 @@ class Command(BaseCommand):
         # Append cycle participants at the end in their original insertion order
         cycle_models = [m for m in plan_models if m not in set(ordered_models)]
         if cycle_models:
-            _log(f"  {label}: topo-sort cycle (ignored): {[m.__name__ for m in cycle_models]}")
+            self._log(f"  {label}: topo-sort cycle (ignored): {[m.__name__ for m in cycle_models]}")
         ordered_models.extend(cycle_models)
 
         model_to_item = {item.model: item for item in plan_items}
         skipped = [m for m in ordered_models if m not in model_to_item]
         if skipped:
-            _log(
+            self._log(
                 f"  [warn] {label}: {len(skipped)} model(s) in topo order but not in plan: {[m.__name__ for m in skipped]}"
             )
         ordered_items = [model_to_item[m] for m in ordered_models if m in model_to_item]
 
         if plan_items:
-            _log(f"  {label}: cascade plan — {', '.join(sorted(item.model._meta.label for item in plan_items))}")
+            self._log(f"  {label}: cascade plan — {', '.join(sorted(item.model._meta.label for item in plan_items))}")
 
         total_steps = len(ordered_items)
         for step, item in enumerate(ordered_items, 1):
             step_label = f"{label}→{item.model._meta.label}"
-            _log(f"  [{step}/{total_steps}] {step_label}…")
+            self._log(f"  [{step}/{total_steps}] {step_label}…")
             step_started_at = time.monotonic()
             item_qs = item.queryset if item.queryset is not None else item.model.objects.filter(pk__in=item.pks)
             deleted_count = self._delete_qs_in_chunks(item_qs, label=step_label)
             if deleted_count:
-                _log(f"  {step_label}: {deleted_count:,} deleted ({time.monotonic() - step_started_at:.1f}s)")
+                self._log(f"  {step_label}: {deleted_count:,} deleted ({time.monotonic() - step_started_at:.1f}s)")
 
     def _delete_datasource_tree(self, datasources, label_prefix=""):
         """Delete each DataSource fully before moving to the next."""
         ds_list = datasources if isinstance(datasources, list) else list(datasources)
-        _log(f"  Deleting {len(ds_list)} datasource(s)")
+        self._log(f"  Deleting {len(ds_list)} datasource(s)")
 
         for ds in ds_list:
             ds_label = f"{label_prefix}ds[{ds.id}]"
@@ -636,7 +635,7 @@ class Command(BaseCommand):
     # Pre/post-deletion cleanup
     # -----------------------------------------------------------------------
     def _pre_deletion_clean_up(self, accounts_to_delete):
-        _log("Pre-deletion cleanup: clearing users_profile, orphan Instance, InstanceFile, OrgUnit...")
+        self._log("Pre-deletion cleanup: clearing users_profile, orphan Instance, InstanceFile, OrgUnit...")
         try:
             self._delete_with_sql("DELETE FROM users_profile", label="users_profile")
         except django.db.utils.ProgrammingError:
@@ -667,7 +666,7 @@ class Command(BaseCommand):
             label="Task[queued→killed]",
             status=KILLED,
         )
-        _log("finished pre-deletion cleanup")
+        self._log("finished pre-deletion cleanup")
 
     def _post_deletion_clean_up(self, account_to_keep):
         """
@@ -678,18 +677,18 @@ class Command(BaseCommand):
         those are wiped in full rather than left as an unscoped leak. Accepted tradeoff, not
         a bug: only run --account-to-keep when losing that unscoped data is acceptable.
         """
-        _log(
+        self._log(
             "Post-deletion cleanup: clearing orphan DataSource, Forms, Instance, Project, InstanceFile, APIImport, Session, Device..."
         )
         # Orphan datasources — delete one by one, continue on error
         ds_ids_to_keep = DataSource.objects.filter(projects__account=account_to_keep).values_list("id", flat=True)
         orphan_ds = list(DataSource.objects.exclude(id__in=ds_ids_to_keep))
-        _log(f"Orphan datasources: {len(orphan_ds)}")
+        self._log(f"Orphan datasources: {len(orphan_ds)}")
         for ds in orphan_ds:
             try:
                 self._delete_datasource_tree([ds])
             except Exception as exc:
-                _log(f"  [error] orphan ds[{ds.id}] {ds.name!r}: {exc} — skipping")
+                self._log(f"  [error] orphan ds[{ds.id}] {ds.name!r}: {exc} — skipping")
 
         # Forms without projects
         forms_without_project = Form.objects_include_deleted.filter(projects=None)
@@ -720,7 +719,7 @@ class Command(BaseCommand):
             try:
                 self._delete_form_without_project(form_without_project)
             except Exception:
-                _log(traceback.format_exc())
+                self._log(traceback.format_exc())
 
         if _Dashboard is not None:
             self._delete_qs(_Dashboard.objects.all(), label="Dashboard")
@@ -730,23 +729,23 @@ class Command(BaseCommand):
         )
         self._cleanup_modification_logs()
         self._cleanup_export_logs()
-        _log("finished post-deletion cleanup")
+        self._log("finished post-deletion cleanup")
 
     def _delete_form_without_project(self, form):
         """Clear a project-less Form's M2M/version data and hard-delete it."""
         label = f"Form[no project][{form.id}]"
         if self.dry_run:
-            _log(f"  [DRY RUN] {label}: would clear org_unit_types, delete versions' instances/files, hard-delete")
+            self._log(f"  [DRY RUN] {label}: would clear org_unit_types, delete versions' instances/files, hard-delete")
             return
         OrgUnitType.reference_forms.through.objects.filter(form=form).delete()
         form.org_unit_types.clear()
         InstanceFile.objects.filter(instance__form_version__in=form.form_versions.all()).delete()
         Instance.objects.filter(form_version__in=form.form_versions.all()).delete()
         form.delete_hard()
-        _log(f"  {label}: done")
+        self._log(f"  {label}: done")
 
     def _cleanup_modification_logs(self):
-        _log("Cleaning modification logs...")
+        self._log("Cleaning modification logs...")
         if not self.dry_run:
             self.cursor.execute("SET work_mem = '1GB'")
 
@@ -803,13 +802,13 @@ class Command(BaseCommand):
             if deleted < self.chunk_size:
                 break
         if total:
-            _log(f"  ExportLog[orphan]: {total:,} total ({time.monotonic() - started_at:.1f}s)")
+            self._log(f"  ExportLog[orphan]: {total:,} total ({time.monotonic() - started_at:.1f}s)")
 
     # -----------------------------------------------------------------------
     # Main account deletion (graph-based)
     # -----------------------------------------------------------------------
     def _delete_account(self, account, discovered, deletion_order):
-        _log(f"Account {account.id}: {account.name!r}")
+        self._log(f"Account {account.id}: {account.name!r}")
 
         # ---- Null out self-referential FK cycles before any deletion ----
         # Account.default_version → SourceVersion and SourceVersion → DataSource → Account
@@ -877,7 +876,7 @@ class Command(BaseCommand):
 
         # ---- Step 3: Auto — topo-sorted FK-graph deletion ----
         with self._doing(f"account={account.id} FK-graph auto-deletion"):
-            _log(
+            self._log(
                 f"  Running FK-graph auto-deletion ({len(discovered)} models, "
                 f"skipping {len(out_of_graph_models)} out-of-graph)..."
             )
@@ -940,7 +939,7 @@ class Command(BaseCommand):
             try:
                 qs = manager.filter(**{info.account_lookup: account})
             except Exception as exc:
-                _log(f"  [skip] {model.__name__}: cannot build queryset ({exc})")
+                self._log(f"  [skip] {model.__name__}: cannot build queryset ({exc})")
                 continue
 
             models_processed += 1
@@ -949,7 +948,7 @@ class Command(BaseCommand):
                 label += " ⚠ partial"
 
             if self.dry_run:
-                _log(f"  [DRY RUN] would delete {label}")
+                self._log(f"  [DRY RUN] would delete {label}")
                 continue
 
             deleted_count = 0
@@ -963,7 +962,7 @@ class Command(BaseCommand):
                     for obj in exc.protected_objects:
                         blocking_pks_by_model[type(obj)].append(obj.pk)
                     for blocker_model, pks in blocking_pks_by_model.items():
-                        _log(f"  [auto-unblock] {blocker_model.__name__} ×{len(pks)} blocking {label}")
+                        self._log(f"  [auto-unblock] {blocker_model.__name__} ×{len(pks)} blocking {label}")
                         self._delete_qs_in_chunks(
                             blocker_model.objects.filter(pk__in=pks),
                             label=f"{blocker_model.__name__}[unblock]",
@@ -974,17 +973,17 @@ class Command(BaseCommand):
                 )
 
             if deleted_count:
-                _log(f"  {label}: {deleted_count:,} deleted")
+                self._log(f"  {label}: {deleted_count:,} deleted")
                 models_with_rows += 1
                 total_deleted += deleted_count
 
         if not self.dry_run:
-            _log(
+            self._log(
                 f"  topo step: {models_processed} models processed, {models_with_rows} non-empty, {total_deleted:,} rows deleted total"
             )
 
     def _print_model_stats(self):
-        _log("Row counts after deletion:")
+        self._log("Row counts after deletion:")
         all_models = sorted(django_apps.get_models(), key=lambda m: m._meta.label)
         for model in all_models:
             manager = getattr(model, "objects_include_deleted", model._default_manager)
@@ -992,15 +991,15 @@ class Command(BaseCommand):
                 row_count = manager.count()
             except Exception:
                 continue
-            _log(f"  {model._meta.label:<55s}: {row_count:>10,}")
+            self._log(f"  {model._meta.label:<55s}: {row_count:>10,}")
 
-        _log("Remaining accounts:")
+        self._log("Remaining accounts:")
         for account in Account.objects.order_by("id"):
-            _log(f"  {account.id:6d}  {account.name}")
+            self._log(f"  {account.id:6d}  {account.name}")
 
-        _log("Remaining credentials:")
+        self._log("Remaining credentials:")
         for cred in ExternalCredentials.objects.all():
-            _log(f"  credential: {cred.id} {cred.url} {cred.login} {cred.name}")
+            self._log(f"  credential: {cred.id} {cred.url} {cred.login} {cred.name}")
 
     def _determine_mode(self, options):
         if options.get("list_accounts"):
@@ -1014,17 +1013,17 @@ class Command(BaseCommand):
         raise ValueError("unknown mode, please fix parameters")
 
     def _mode_list_accounts(self):
-        _log("Available accounts:")
+        self._log("Available accounts:")
         for account in Account.objects.order_by("id"):
-            _log(f"  {account.id:6d}  {account.name}")
+            self._log(f"  {account.id:6d}  {account.name}")
         return 0
 
     def _build_model_graph(self):
         # Build FK graph once (same for all accounts)
-        _log("Building FK graph from Account...")
+        self._log("Building FK graph from Account...")
         discovered, graph_edges = build_fk_graph(Account)
-        deletion_order = topo_sort_deletion_order(discovered, graph_edges)
-        _log(f"  Discovered {len(discovered)} models, topo-sorted deletion order computed")
+        deletion_order = topo_sort_deletion_order(discovered, graph_edges, log=self._log)
+        self._log(f"  Discovered {len(discovered)} models, topo-sorted deletion order computed")
         return discovered, deletion_order
 
     def _mode_show_graph(self, options, discovered_models, deletion_order):
@@ -1032,12 +1031,12 @@ class Command(BaseCommand):
             account = Account.objects.get(pk=options["for_account"])
         else:
             raise ValueError("please provide the for_account parameter when running in show_graph mode")
-        show_graph(discovered_models, deletion_order, account=account)
+        show_graph(discovered_models, deletion_order, log=self._log, account=account)
         return 0
 
     def _mode_delete_accounts(self, options, discovered_models, deletion_order):
         if self.dry_run:
-            _log("*** DRY RUN — no data will be modified ***")
+            self._log("*** DRY RUN — no data will be modified ***")
         self._mode_list_accounts()
 
         ids = options["accounts_to_delete"]
@@ -1053,25 +1052,25 @@ class Command(BaseCommand):
 
     def _delete_accounts(self, accounts_to_delete, discovered_models, deletion_order):
         for account in accounts_to_delete:
-            _log(f"--- Deleting account={account.id} ({account.name!r}) ---")
+            self._log(f"--- Deleting account={account.id} ({account.name!r}) ---")
             try:
                 self._delete_account(account, discovered_models, deletion_order)
-                _log(f"--- OK account={account.id} ({account.name!r}) deleted ---")
+                self._log(f"--- OK account={account.id} ({account.name!r}) deleted ---")
             except Exception:
-                _log(
+                self._log(
                     f"ERROR account={account.id!r} ({account.name!r})"
                     f" at step [{self._current_step}]:\n{traceback.format_exc()}"
                 )
-                _log(f"--- FAILED account={account.id} ({account.name!r}) ---")
+                self._log(f"--- FAILED account={account.id} ({account.name!r}) ---")
 
     def _mode_keep_single_account(self, options, discovered_models, deletion_order):
         if self.dry_run:
-            _log("*** DRY RUN — no data will be modified ***")
+            self._log("*** DRY RUN — no data will be modified ***")
         self._mode_list_accounts()
 
         account_id_to_keep = options["account_to_keep"]
         account_to_keep = Account.objects.get(pk=account_id_to_keep)
-        _log(f"Keeping: {account_id_to_keep} — {account_to_keep.name!r}")
+        self._log(f"Keeping: {account_id_to_keep} — {account_to_keep.name!r}")
         accounts_to_delete = list(Account.objects.exclude(pk=account_id_to_keep).order_by("-id"))
         random.shuffle(accounts_to_delete)
 
@@ -1086,6 +1085,7 @@ class Command(BaseCommand):
     # -----------------------------------------------------------------------
 
     def handle(self, *args, **options):
+        self.verbosity = options.get("verbosity", 1)
         self.chunk_size = options["chunk_size"]
         self.dry_run = options.get("dry_run", False)
         self.cursor = connection.cursor()
@@ -1105,6 +1105,6 @@ class Command(BaseCommand):
         if mode == MODE_KEEP_SINGLE_ACCOUNT:
             return self._mode_keep_single_account(options, discovered_models, deletion_order)
 
-        _log("Done!")
+        self._log("Done!")
         self._print_model_stats()
         return 0

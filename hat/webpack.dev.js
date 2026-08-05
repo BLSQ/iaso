@@ -34,6 +34,9 @@ const WEBPACK_URL =
         : '';
 const WEBPACK_PATH =
     process.env.WEBPACK_PATH || path.resolve(__dirname, './assets/webpack/');
+// Docker bind mounts often miss native FS events; enable polling only there
+// (set WEBPACK_POLL=true). Native local watch is much faster without it.
+const WEBPACK_POLL = process.env.WEBPACK_POLL === 'true';
 
 // Generate the combined translations file
 const combinedTranslationsPath = generateCombinedTranslations(__dirname);
@@ -91,6 +94,12 @@ module.exports = {
     },
     devtool: 'source-map',
 
+    // Poll only when WEBPACK_POLL=true (Docker). HMR uses webpack's own watcher;
+    // native FS events are enough on the host.
+    watchOptions: WEBPACK_POLL
+        ? { poll: 1000, aggregateTimeout: 300 }
+        : undefined,
+
     // config for webpack-dev-server
     devServer: {
         historyApiFallback: true,
@@ -111,16 +120,10 @@ module.exports = {
             overlay: true,
             progress: true,
         },
-        watchFiles: {
-            paths: ['src/**/*', 'assets/**/*', '../plugins/**/*'],
-            options: {
-                usePolling: true,
-            },
-        },
     },
 
     plugins: [
-        new webpack.HotModuleReplacementPlugin(),
+        // HMR plugin is applied automatically by devServer.hot
         new CleanWebpackPlugin(),
         new webpack.NoEmitOnErrorsPlugin(), // don't reload if there is an error
         new BundleTracker({
@@ -130,7 +133,9 @@ module.exports = {
             __LOCALE: JSON.stringify(LOCALE),
         }),
         new webpack.DefinePlugin({
-           'process.env.ORVAL_API_BASE_URL': JSON.stringify(process.env?.ORVAL_API_BASE_URL ?? "")
+            'process.env.ORVAL_API_BASE_URL': JSON.stringify(
+                process.env?.ORVAL_API_BASE_URL ?? '',
+            ),
         }),
         // XLSX
         new webpack.IgnorePlugin({ resourceRegExp: /cptable/ }),

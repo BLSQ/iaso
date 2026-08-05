@@ -3,14 +3,15 @@ import json
 import logging
 import uuid
 
-from typing import Optional
+from typing import Any, Optional
 
 import anthropic
 import openpyxl
 
 from django.conf import settings
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
-from pyxform import create_survey_from_xls
+
+from iaso.odk.parsing import create_survey_from_xls_buffered
 
 
 logger = logging.getLogger(__name__)
@@ -295,7 +296,8 @@ def convert_to_xform_xml(xlsform_buffer: io.BytesIO) -> Optional[str]:
     try:
         xlsform_buffer.seek(0)
         xlsform_buffer.name = "form.xlsx"
-        survey = create_survey_from_xls(xlsform_buffer, default_name="data")
+        # pyxform Survey subclasses dict; basedpyright then treats .to_xml as a dict.
+        survey: Any = create_survey_from_xls_buffered(xlsform_buffer)
         return survey.to_xml(validate=False)
     except Exception as e:
         logger.error("Failed to convert XLSForm to XForm XML: %s", e)

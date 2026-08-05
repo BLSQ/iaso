@@ -62,22 +62,38 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.models import Session
 from django.core.management.base import BaseCommand
 from django.db import connection
-from django.db.models import ForeignKey, ManyToManyRel, OneToOneField, QuerySet, TextField
+from django.db.models import ForeignKey, ManyToManyRel, OneToOneField, Q, QuerySet, TextField
 from django.db.models.deletion import SET_NULL, Collector, ProtectedError
 from django.db.models.functions import Cast
 
 from hat.audit.models import Modification
 from iaso.models import (
     Account,
+    AccountFeatureFlag,
     CommentIaso,
     Form,
+    MatchingAlgorithm,
+    OpenHEXAInstance,
     OrgUnitType,
+    RecordType,
+    Report,
+    ReportVersion,
     Task,
 )
-from iaso.models.base import KILLED, QUEUED, DataSource, ExternalCredentials, Profile
+from iaso.models.base import (
+    KILLED,
+    QUEUED,
+    DataSource,
+    ExportLog,
+    ExportRequest,
+    ExportStatus,
+    ExternalCredentials,
+    Profile,
+)
 from iaso.models.device import Device
 from iaso.models.entity import Entity
 from iaso.models.instances import Instance, InstanceFile
+from iaso.models.json_config import Config
 from iaso.models.microplanning import Planning, PlanningSamplingResult
 from iaso.models.org_unit import OrgUnit
 from iaso.models.project import Project
@@ -149,8 +165,19 @@ _OUT_OF_GRAPH_CLEANUP_NOTES = [
     ),
     OutOfGraphCleanupNote(label="iaso.Form", reason="linked via projects M2M"),
     OutOfGraphCleanupNote(label="iaso.OrgUnitType", reason="linked via projects M2M"),
+    OutOfGraphCleanupNote(
+        label="iaso.CommentIaso",
+        reason="GenericForeignKey (content_type + object_pk) to OrgUnit, not a real FK",
+    ),
+    OutOfGraphCleanupNote(
+        label="iaso.ReportVersion",
+        reason="only Report points to it (PROTECT); no reverse-FK path back to Account for BFS to follow",
+    ),
     OutOfGraphCleanupNote(label="audit.Modification", reason="content-type based, no FK to Account"),
-    OutOfGraphCleanupNote(label="iaso.ExportLog", reason="no FK to Account"),
+    OutOfGraphCleanupNote(
+        label="iaso.ExportRequest / iaso.ExportLog",
+        reason="no FK to Account — only reachable via ExportStatus.instance",
+    ),
     OutOfGraphCleanupNote(label="django_sql_dashboard.Dashboard", reason="no FK to Account"),
     OutOfGraphCleanupNote(label="django.contrib.sessions.Session", reason="no FK to Account"),
     OutOfGraphCleanupNote(
@@ -672,7 +699,7 @@ class Command(BaseCommand):
         """
         Sweeps data left over once only `account_to_keep` should remain.
         Most cleanups here are scoped to actual orphans (no surviving FK/M2M link).
-        A few tables (e.g. Session, Dashboard) have no link to Account at all, not even
+        A few tables (e.g. Session, Dashboard, Config) have no link to Account at all, not even
         indirectly — there's no way to tell which rows belong to the deleted account(s), so
         those are wiped in full rather than left as an unscoped leak. Accepted tradeoff, not
         a bug: only run --account-to-keep when losing that unscoped data is acceptable.
@@ -712,7 +739,6 @@ class Command(BaseCommand):
             "DELETE FROM vector_control_apiimport WHERE headers->>'QUERY_STRING' NOT LIKE '%app_id=%'",
             label="vector_control_apiimport[no app_id]",
         )
-        self._delete_qs(Session.objects.all(), label="Session")
         self._delete_qs(Device.objects.filter(projects=None), label="Device[orphan]")
 
         for form_without_project in forms_without_project:
@@ -721,14 +747,22 @@ class Command(BaseCommand):
             except Exception:
                 self._log(traceback.format_exc())
 
-        if _Dashboard is not None:
-            self._delete_qs(_Dashboard.objects.all(), label="Dashboard")
         self._delete_with_sql(
             "DELETE FROM iaso_exportrequest WHERE id NOT IN (SELECT DISTINCT export_request_id FROM iaso_exportstatus)",
             label="iaso_exportrequest[orphan]",
         )
         self._cleanup_modification_logs()
         self._cleanup_export_logs()
+
+        # OpenHEXAWorkspace are deleted after Accounts are deleted (CASCADE), so any OHInstance without any workspace has to be deleted
+        self._delete_qs(OpenHEXAInstance.objects.filter(openhexa_workspaces__isnull=True), label="OpenHEXAInstance")
+
+        # the following models have no link at all with Account
+        if _Dashboard is not None:
+            self._delete_qs(_Dashboard.objects.all(), label="Dashboard")
+        self._delete_qs(Config.objects.all(), label="Config")
+        self._delete_qs(Session.objects.all(), label="Session")
+
         self._log("finished post-deletion cleanup")
 
     def _delete_form_without_project(self, form):
@@ -835,6 +869,30 @@ class Command(BaseCommand):
         org_unit_type_ids = list(
             OrgUnitType.objects.filter(projects__account=account).values_list("pk", flat=True).distinct()
         )
+        matching_algorithm_ids = list(
+            MatchingAlgorithm.objects.filter(projects__account=account).values_list("pk", flat=True)
+        )
+        org_unit_ids = list(
+            OrgUnit.objects.filter(version__data_source__projects__account=account)
+            .values_list("pk", flat=True)
+            .distinct()
+        )
+        record_type_ids = list(RecordType.objects.filter(projects__account=account).values_list("pk", flat=True))
+        report_version_ids = list(
+            Report.objects.filter(project__account=account).values_list("published_version_id", flat=True).distinct()
+        )
+        device_ids = list(Device.objects.filter(projects__account=account).values_list("pk", flat=True))
+        # ExportStatus has no FK to Account either — only reachable via its Instance, which
+        # can itself be tied to the account through any of 3 independent paths (project,
+        # org_unit's version/data_source, or form). Collect the ExportRequest/ExportLog ids
+        # it's about to orphan so Step 4g can clean them up once ExportStatus cascades away.
+        export_status_for_account = ExportStatus.objects.filter(
+            Q(instance__project__account=account)
+            | Q(instance__org_unit__version__data_source__projects__account=account)
+            | Q(instance__form__projects__account=account)
+        )
+        export_request_ids = list(export_status_for_account.values_list("export_request_id", flat=True).distinct())
+        export_log_ids = list(export_status_for_account.values_list("export_logs__id", flat=True).distinct())
 
         # Models the out-of-graph sections own completely — exclude from the auto step so
         # the auto step doesn't redundantly re-attempt them (0-row no-ops are cheap
@@ -855,6 +913,15 @@ class Command(BaseCommand):
                     list(project.data_sources.all()),
                     label_prefix=f"proj[{project.id}]/",
                 )
+
+        # ---- Step 1b: Out-of-graph — CommentIaso (GenericForeignKey to OrgUnit, no real FK) ----
+        # Uses org_unit_ids captured at the top — OrgUnit rows are already gone by now.
+        with self._doing(f"account={account.id} CommentIaso"):
+            orgunit_ct = ContentType.objects.get_for_model(OrgUnit)
+            self._delete_qs(
+                CommentIaso.objects.filter(content_type=orgunit_ct, object_pk__in=[str(pk) for pk in org_unit_ids]),
+                label="CommentIaso",
+            )
 
         # ---- Step 2: Break PROTECT cycles that topo sort can't handle ----
 
@@ -899,6 +966,30 @@ class Command(BaseCommand):
             org_unit_types = OrgUnitType.objects.filter(pk__in=org_unit_type_ids)
             self._delete_qs(org_unit_types, label="OrgUnitType")
 
+        # --- Step 4c: Out-of-graph - MatchingAlgorithm (M2M gap, linked to Projects) ----
+        # Uses matching_algorithm_ids captured at the top — Project rows are already gone by now.
+        with self._doing(f"account={account.id} MatchingAlgorithm"):
+            matching_algorithms = MatchingAlgorithm.objects.filter(pk__in=matching_algorithm_ids)
+            self._delete_qs(matching_algorithms, label="MatchingAlgorithm")
+
+        # --- Step 4d: Out-of-graph - RecordType (M2M gap, linked to Projects) ----
+        # Uses record_type_ids captured at the top — Project rows are already gone by now.
+        with self._doing(f"account={account.id} RecordType"):
+            record_types = RecordType.objects.filter(pk__in=record_type_ids)
+            self._delete_qs(record_types, label="RecordType")
+
+        # --- Step 4e: Out-of-graph - ReportVersion (Report.published_version = PROTECT, no reverse FK) ----
+        # Uses report_version_ids captured at the top — Report rows are already gone by now.
+        with self._doing(f"account={account.id} ReportVersion"):
+            report_versions = ReportVersion.objects.filter(pk__in=report_version_ids)
+            self._delete_qs(report_versions, label="ReportVersion")
+
+        # --- Step 4f: Out-of-graph - Device (M2M gap, linked to Projects) ----
+        # Uses device_ids captured at the top — Project rows are already gone by now.
+        with self._doing(f"account={account.id} Device"):
+            devices = Device.objects.filter(pk__in=device_ids)
+            self._delete_qs(devices, label="Device")
+
         # ---- Step 5: Out-of-graph — User (upstream from Profile, not in reverse FK graph) ----
         # Profile was deleted in the auto step; use the user_ids collected at the top.
         with self._doing(f"account={account.id} User"):
@@ -914,6 +1005,32 @@ class Command(BaseCommand):
                 "DELETE FROM vector_control_apiimport WHERE headers->>'QUERY_STRING' LIKE %s",
                 params=[f"%app_id={app_id}%"],
                 label=f"vector_control_apiimport[app_id={app_id}]",
+            )
+
+        # ---- Step 5c: Out-of-graph — AccountFeatureFlag (M2M with Account) ----
+        with self._doing(f"account={account.id} AccountFeatureFlag"):
+            self._delete_qs(AccountFeatureFlag.objects.filter(account=account), label="AccountFeatureFlag")
+
+        # ---- Step 5d: Out-of-graph — ExportRequest / ExportLog (no FK to Account at all; only
+        # reachable via ExportStatus.instance, which cascaded away with this account's Instances
+        # in Step 3). Scoped to export_request_ids/export_log_ids captured at the top — deletes
+        # them only if no other ExportStatus still references them.
+        with self._doing(f"account={account.id} ExportRequest/ExportLog"):
+            self._delete_qs(
+                ExportRequest.objects.filter(pk__in=export_request_ids).exclude(
+                    pk__in=ExportStatus.objects.filter(export_request_id__in=export_request_ids).values_list(
+                        "export_request_id", flat=True
+                    )
+                ),
+                label="ExportRequest[orphan]",
+            )
+            self._delete_qs(
+                ExportLog.objects.filter(pk__in=export_log_ids).exclude(
+                    pk__in=ExportStatus.objects.filter(export_logs__id__in=export_log_ids).values_list(
+                        "export_logs__id", flat=True
+                    )
+                ),
+                label="ExportLog[orphan]",
             )
 
         # ---- Step 6: Account itself ----

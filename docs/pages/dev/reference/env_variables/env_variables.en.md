@@ -194,6 +194,7 @@ For detailed setup instructions, see [Plausible Analytics Setup](../analytics/pl
 | name | optional | default value | description |
 |------|----------|---------------|-------------|
 | FORM_AI_MODEL | true | `claude-opus-4-7` | Anthropic model used by the Form AI to generate XLSForms |
+| FORM_AI_MAX_TOKENS | true | `32000` | Maximum output tokens for Form AI Claude responses. Higher values help when editing large existing forms; the API call uses streaming so the Anthropic SDK accepts this limit |
 
 ## Root url override
 

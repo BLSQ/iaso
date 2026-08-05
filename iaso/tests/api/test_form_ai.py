@@ -10,7 +10,15 @@ from django.test import override_settings
 from rest_framework import status
 
 from iaso import models as m
-from iaso.api.form_ai.agent import FormSettings, GeneratedForm, SurveyRow, parse_form_response
+from iaso.api.form_ai.agent import (
+    FORM_TOO_LARGE_MESSAGE,
+    FormSettings,
+    GeneratedForm,
+    SurveyRow,
+    generate_form,
+    parse_form_response,
+    parse_xlsform_to_json,
+)
 from iaso.models.form_ai import TemporaryForm
 from iaso.modules import MODULE_FORM_AI
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
@@ -73,6 +81,57 @@ class FormAIParseResponseTestCase(APITestCase):
         self.assertEqual(form.choices[0].model_dump()["list_name"], "yes_no")
         self.assertNotIn("list name", form.choices[0].model_dump())
         self.assertEqual(form.choices[1].list_name, "yes_no")
+
+
+class FormAICompactParseTestCase(APITestCase):
+    def test_parse_xlsform_omits_empty_string_fields(self):
+        with open("iaso/tests/fixtures/odk_form_valid_sample1_2020022401.xlsx", "rb") as xls_file:
+            data = parse_xlsform_to_json(xls_file)
+
+        self.assertIn("survey", data)
+        self.assertTrue(data["survey"])
+        for row in data["survey"]:
+            for value in row.values():
+                self.assertNotEqual(value, "")
+        for row in data.get("choices", []):
+            for value in row.values():
+                self.assertNotEqual(value, "")
+
+
+class FormAIGenerateFormTruncationTestCase(APITestCase):
+    @patch("iaso.api.form_ai.agent.call_claude")
+    def test_max_tokens_returns_friendly_message_without_poisoning_history(self, mock_call):
+        truncated = '{"survey": [{"type": "text", "name": "q1", "label": "Hi'
+        mock_call.return_value = {"text": truncated, "stop_reason": "max_tokens"}
+
+        result = generate_form("Add a question", [], api_key="sk-test")
+
+        self.assertIsNone(result["form"])
+        self.assertEqual(result["assistant_message"], FORM_TOO_LARGE_MESSAGE)
+        self.assertEqual(result["conversation_history"][-1]["content"], FORM_TOO_LARGE_MESSAGE)
+        self.assertNotIn(truncated, result["conversation_history"][-1]["content"])
+
+    @patch("iaso.api.form_ai.agent.call_claude")
+    def test_invalid_form_json_returns_friendly_message_without_poisoning_history(self, mock_call):
+        truncated = '{"survey": [{"type": "text", "name": "q1", "label": "Hi'
+        mock_call.return_value = {"text": truncated, "stop_reason": "end_turn"}
+
+        result = generate_form("Add a question", [], api_key="sk-test")
+
+        self.assertIsNone(result["form"])
+        self.assertEqual(result["assistant_message"], FORM_TOO_LARGE_MESSAGE)
+        self.assertEqual(result["conversation_history"][-1]["content"], FORM_TOO_LARGE_MESSAGE)
+
+    @patch("iaso.api.form_ai.agent.call_claude")
+    def test_conversational_non_json_is_returned_as_is(self, mock_call):
+        reply = "What kind of questions would you like to add?"
+        mock_call.return_value = {"text": reply, "stop_reason": "end_turn"}
+
+        result = generate_form("Hello", [], api_key="sk-test")
+
+        self.assertIsNone(result["form"])
+        self.assertEqual(result["assistant_message"], reply)
+        self.assertEqual(result["conversation_history"][-1]["content"], reply)
 
 
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
@@ -262,6 +321,9 @@ class FormAILoadFormTestCase(APITestCase):
         self.assertIn("survey", data["xlsform_data"])
         self.assertIn("choices", data["xlsform_data"])
         self.assertIn("settings", data["xlsform_data"])
+        for row in data["xlsform_data"]["survey"]:
+            for value in row.values():
+                self.assertNotEqual(value, "")
 
     def test_form_with_no_version_returns_404(self):
         empty_form = m.Form.objects.create(name="Empty", form_id="empty")

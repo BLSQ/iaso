@@ -5,6 +5,7 @@ from django.test import TestCase
 from rest_framework.test import APIRequestFactory
 
 from iaso import models as m
+from iaso.api.forms.possible_fields import POSSIBLE_FIELDS_USAGE_ENTITY_TYPE_CONFIG
 from iaso.api.forms.serializers import FormSerializer
 
 
@@ -79,27 +80,24 @@ class FormsSerializerTestCase(TestCase):
         with self.assertNumQueries(10):
             self.assertEqual(serializer.data, expected_data)
 
-    def test_get_possible_fields_with_latest_version_filters_by_supported_types(self):
-        """
-        Test that `get_possible_fields_with_latest_version()` only returns fields with supported types.
-        """
+    def test_possible_fields_with_latest_version_uses_query_param_usage(self):
         mock_form = Mock()
         mock_form.possible_fields = [
-            {"name": "field1", "type": "text"},  # supported
-            {"name": "field2", "type": "number"},  # supported
-            {"name": "field3", "type": "photo"},  # not supported
-            {"name": "field4", "type": "select"},  # not supported
-            {"name": "field5", "type": "integer"},  # supported
-            {"name": "field6", "type": None},  # supported
+            {"name": "name", "type": "text"},
+            {"name": "beneficiary_id", "type": "barcode"},
+            {"name": "photo", "type": "image"},
         ]
-        mock_form.latest_version = None  # No latest version to keep the test simple.
+        mock_form.latest_version = None
 
-        result = FormSerializer.get_possible_fields_with_latest_version(mock_form)
+        request = APIRequestFactory().get(f"/?possible_fields_usage={POSSIBLE_FIELDS_USAGE_ENTITY_TYPE_CONFIG}")
+        request.query_params = QueryDict(
+            f"possible_fields_usage={POSSIBLE_FIELDS_USAGE_ENTITY_TYPE_CONFIG}", mutable=True
+        )
+        serializer = FormSerializer(context={"request": request})
 
-        expected_fields = [
-            {"name": "field1", "type": "text"},
-            {"name": "field2", "type": "number"},
-            {"name": "field5", "type": "integer"},
-            {"name": "field6", "type": None},
-        ]
-        self.assertEqual(result, expected_fields)
+        result = serializer.get_possible_fields_with_latest_version(mock_form)
+
+        self.assertEqual(
+            [field["name"] for field in result],
+            ["name", "beneficiary_id"],
+        )

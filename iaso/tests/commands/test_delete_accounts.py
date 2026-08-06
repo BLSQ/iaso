@@ -407,6 +407,7 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self.assertFalse(m.Account.objects.filter(pk=account.pk).exists())
         self.assertFalse(m.AccountFeatureFlag.objects.filter(pk=other_models["account_feature_flag"].pk).exists())
         self.assertFalse(m.AlgorithmRun.objects.filter(pk=other_models["algorithm_run"].pk).exists())
+        self.assertFalse(APIImport.objects.filter(pk=other_models["api_import"].pk).exists())
         self.assertFalse(Assignment.objects.filter(pk=other_models["assignment"].pk).exists())
         self.assertFalse(m.BulkCreateUserFile.objects.filter(pk=other_models["bulk_create_user_file"].pk).exists())
         self.assertFalse(m.CommentIaso.objects.filter(pk=other_models["comment_iaso"].pk).exists())
@@ -450,7 +451,6 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self.assertFalse(m.MetricType.objects.filter(pk=other_models["metric_type"].pk).exists())
         self.assertFalse(m.MetricValue.objects.filter(pk=other_models["metric_value"].pk).exists())
         self.assertFalse(Modification.objects.filter(pk=other_models["modification"].pk).exists())
-        self.assertFalse(APIImport.objects.filter(pk=other_models["api_import"].pk).exists())
         self.assertFalse(m.OpenHEXAWorkspace.objects.filter(pk=other_models["openhexa_workspace"].pk).exists())
         self.assertFalse(
             m.OrgUnit.objects.filter(

@@ -69,7 +69,7 @@ steps:
   displayName: 'Environment info'
 
 - script: |
-    uv run ruff check .
+    uv run ruff check . && uv run ruff format .
   displayName: 'Check formatting with ruff'
 
 

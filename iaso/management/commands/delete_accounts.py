@@ -165,9 +165,21 @@ _OUT_OF_GRAPH_CLEANUP_NOTES = [
     ),
     OutOfGraphCleanupNote(label="iaso.Form", reason="linked via projects M2M"),
     OutOfGraphCleanupNote(label="iaso.OrgUnitType", reason="linked via projects M2M"),
+    OutOfGraphCleanupNote(label="iaso.MatchingAlgorithm", reason="linked via projects M2M"),
+    OutOfGraphCleanupNote(label="iaso.RecordType", reason="linked via projects M2M"),
+    OutOfGraphCleanupNote(label="iaso.Device", reason="linked via projects M2M"),
+    OutOfGraphCleanupNote(label="iaso.AccountFeatureFlag", reason="linked via Account.feature_flags M2M, not a FK"),
     OutOfGraphCleanupNote(
         label="iaso.CommentIaso",
         reason="GenericForeignKey (content_type + object_pk) to OrgUnit, not a real FK",
+    ),
+    OutOfGraphCleanupNote(
+        label="auth.User",
+        reason="upstream of Profile — Profile.user is a FK held BY the discovered model, pointing outward; BFS never follows that direction",
+    ),
+    OutOfGraphCleanupNote(
+        label="iaso.OpenHEXAInstance",
+        reason="upstream of OpenHEXAWorkspace, same shape as auth.User/Profile — OpenHEXAWorkspace.openhexa_instance points outward",
     ),
     OutOfGraphCleanupNote(
         label="iaso.ReportVersion",
@@ -180,6 +192,7 @@ _OUT_OF_GRAPH_CLEANUP_NOTES = [
     ),
     OutOfGraphCleanupNote(label="django_sql_dashboard.Dashboard", reason="no FK to Account"),
     OutOfGraphCleanupNote(label="django.contrib.sessions.Session", reason="no FK to Account"),
+    OutOfGraphCleanupNote(label="iaso.Config", reason="no relation to Account at all — only M2M to auth.User"),
     OutOfGraphCleanupNote(
         label="hat_api_import.APIImport [vector_control_apiimport]",
         reason="not a iaso/plugins app and no FK to Account",

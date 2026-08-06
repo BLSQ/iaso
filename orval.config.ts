@@ -115,6 +115,11 @@ const createConfig = (
     };
 };
 
+const ENABLED_PLUGINS = (process.env.PLUGINS || '')
+    .split(',')
+    .map((plugin: string) => plugin.trim())
+    .filter(Boolean);
+
 const loadPluginProjects = () => {
     const projects = {};
     // getPluginFolders expects the `hat` dir and resolves ../plugins from it.
@@ -124,6 +129,10 @@ const loadPluginProjects = () => {
             `plugins/${plugin}/js/orval.config.cjs`,
         );
         if (!fs.existsSync(contribPath)) return;
+        if (!ENABLED_PLUGINS.includes(plugin)) {
+            console.log(`Plugin ${plugin} is not listed in PLUGINS, skipping its orval config.`);
+            return;
+        }
         const descriptors = require(contribPath);
         (Array.isArray(descriptors) ? descriptors : []).forEach((d: any) => {
             projects[d.project] = createConfig(

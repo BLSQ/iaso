@@ -93,11 +93,12 @@ export const getPluginProjectDescriptors = ({
         );
         if (!fs.existsSync(contribPath)) return;
         if (!enabledPlugins.includes(plugin)) {
-            console.log(
+            console.warn(
                 `Plugin ${plugin} is not listed in PLUGINS, skipping its orval config.`,
             );
             return;
         }
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const pluginDescriptors = require(contribPath);
         (Array.isArray(pluginDescriptors) ? pluginDescriptors : []).forEach(
             (descriptor: PluginProjectDescriptor) => {
@@ -108,7 +109,7 @@ export const getPluginProjectDescriptors = ({
                     schemaHasTag(tag, targetFile, targetUrl),
                 );
                 if (tags.length && !isInSchema) {
-                    console.log(
+                    console.warn(
                         `Project ${descriptor.project} of plugin ${plugin}: none of its tags (${tags.join(
                             ', ',
                         )}) was found in the OpenAPI schema, skipping it so its generated client is not emptied.`,

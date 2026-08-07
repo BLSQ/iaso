@@ -16,11 +16,13 @@ We will primarily rely on the following tools:
 - [Backend](#backend)
   - [Setting up drf-spectacular](#setting-up-drf-spectacular)
   - [Documenting your endpoint](#documenting-your-endpoint)
+  - [Documenting an endpoint that lives in a plugin](#documenting-an-endpoint-that-lives-in-a-plugin)
   - [Testing the generated OpenAPI schema](#testing-the-generated-openapi-schema)
   - [Utilities](#utilities)
 - [Frontend](#frontend)
   - [Configuration](#configuration)
   - [Generating new files](#generating-new-files)
+  - [Generating a client for a plugin](#generating-a-client-for-a-plugin)
   - [Integrating React Query hooks](#integrating-react-query-hooks)
   - [Using zod schemas](#using-zod-schemas)
   - [Integrating with formik](#integrating-with-formik)
@@ -117,6 +119,36 @@ Once your ViewSet is ready, always verify the schema using your Swagger UI (e.g.
 * parameters are visible
 * no endpoints are missing
 
+### Documenting an endpoint that lives in a plugin
+
+Plugin endpoints reach the schema exactly like core ones, but two rules become mandatory because
+several plugins can be enabled at the same time.
+
+#### Namespace your component names
+
+drf-spectacular derives a component name from the **serializer class name**, so two plugins
+declaring a `NotificationSerializer` both produce a component named `Notification` and the last one
+loaded wins.
+
+Use `@extend_schema_serializer` to namespace the component, and keep the class name as is so the
+Python imports do not change:
+
+```python
+from drf_spectacular.utils import extend_schema_serializer
+
+@extend_schema_serializer(component_name="TrypelimNotification")
+class NotificationSerializer(serializers.Serializer):
+    ...
+```
+
+
+#### Namespace your tags
+
+Orval selects the operations of a project by tag, so a plugin tag must be unique across plugins and
+stable over time: `Trypelim Notifications`, `Polio - Notifications`, and so on. Renaming a tag
+without updating the plugin descriptor silently empties the generated client (see
+[Generating a client for a plugin](#generating-a-client-for-a-plugin)).
+
 ### Testing the generated OpenAPI schema
 
 We provide a custom `SwaggerTestCaseMixin` to validate that API responses conform to the declared schema.
@@ -172,6 +204,12 @@ Several environment variables are also available to control the generation proce
 * `ORVAL_TARGET_FILE`: path to a local OpenAPI file, if used instead of a remote endpoint
 * `API_TOKEN`: bearer token used when fetching the schema from a protected /swagger/ endpoint
 * `MSW_DELAY`: adds an artificial delay to MSW mocks, useful for simulating loading states during development and testing
+* `PLUGINS`: the plugins enabled on the backend, read from the same variable Django uses. Only the plugins listed here, and whose tag is actually present in the schema, contribute an Orval project (see [Generating a client for a plugin](#generating-a-client-for-a-plugin)). An unset or empty value means no plugin is enabled, exactly as in `hat/settings.py`
+
+Note that `ORVAL_TARGET_URL_DOMAIN` is used twice: to build the schema URL, and to decide which
+domain the `Authorization` header is attached to. If it does not match the host actually serving the
+schema, the bearer token is dropped and the generation fails with a 401 and
+`Failed to resolve input`.
 
 ### Generating new files
 
@@ -299,6 +337,10 @@ module.exports = {
 };
 ```
 
+`createConfig` also accepts a `schemas` filter and a `workspace`, the folder the client is generated
+into. It defaults to `./hat/assets/js/apps/Iaso/api/<your_project>`; plugins pass a path inside their
+own folder instead, see [Generating a client for a plugin](#generating-a-client-for-a-plugin).
+
 #### 4. Generate the client
 Once everything is configured, run:
 
@@ -313,6 +355,87 @@ npm run orval
 ```
 
 This will generate the new API module, ready to be used in the codebase.
+
+#### Generating a client for a plugin
+
+Plugins do not run their own Orval: generation is always driven by the root `orval.config.ts`, and a
+plugin only *registers* a project. The generated files are written inside the plugin folder, while
+the mutator and the query/mutation option helpers always come from `hat/assets/js/orval/`, so every
+generated hook imports the same `react-query` instance as the host application.
+
+#### 1. Declare the project in the plugin
+
+Create `plugins/<plugin>/js/orval.config.cjs`:
+
+```javascript
+module.exports = [
+    {
+        project: 'trypelimNotifications',
+        tags: ['Trypelim Notifications'],
+        workspace: './plugins/trypelim/js/src/domains/Management/notifications/api',
+        mutationInvalidates: [],
+    },
+];
+```
+
+A second example, from the polio plugin, with the mutations that invalidate the list:
+
+```javascript
+module.exports = [
+    {
+        project: 'polioNotifications',
+        tags: ['Polio - Notifications'],
+        workspace: './plugins/polio/js/src/domains/Notifications/api',
+        mutationInvalidates: [
+            {
+                onMutations: [
+                    'apiPolioNotificationsCreate',
+                    'apiPolioNotificationsUpdate',
+                    'apiPolioNotificationsPartialUpdate',
+                    'apiPolioNotificationsDestroy',
+                    'apiPolioNotificationsImportXlsxCreate',
+                ],
+                invalidates: ['apiPolioNotificationsList'],
+            },
+        ],
+    },
+];
+```
+
+* the file must be at `js/orval.config.cjs`, not `js/src/`, since the root config resolves exactly that path
+* the extension must be `.cjs`: the file is loaded with a synchronous `require()`, so it has to stay CommonJS even if a `"type": "module"` is introduced later
+* point `workspace` at a dedicated `api` subfolder and keep hand-written code (`index.tsx`, `hooks/`, `components/`) outside of it, so a regeneration only ever rewrites generated files
+
+#### 2. Nothing to add to the root config
+
+`getPluginProjectDescriptors()`, in `hat/assets/js/orval/plugins/pluginProjects.ts`, lists the plugin
+folders, loads the descriptor of each one, and `orval.config.ts` turns the surviving ones into
+projects. A new plugin is picked up automatically.
+
+#### 3. Enable the plugin, on the backend too
+
+A plugin descriptor becomes a project only if two conditions hold, both of them protecting the
+generated client. Orval empties the workspace of a project before resolving its input and reports a
+success even when the tag filter matched no operation, so a project that generates nothing does not
+leave its client untouched: it deletes it, or at least rewrites its `index.ts` barrels as empty
+files, which breaks every import of the domain.
+
+1. **the plugin is listed in `PLUGINS`**, read exactly as Django reads it, an unset value meaning no
+   plugin is enabled. A plugin folder is on disk whether or not its Django app is loaded.
+2. **the tag is present in the schema**. `PLUGINS` only describes what the process running Orval
+   believes; it cannot know what the targeted backend serves. Running `PLUGINS=trypelim npm run orval`
+   against a backend started without the plugin passes the first check while the schema has none of
+   its operations. The schema is therefore fetched once per run and the tag looked up in it. An
+   unreachable backend or an expired token also fails this check, which skips the project instead of
+   emptying it.
+
+Skipped projects are logged, and `--project=<skipped project>` fails with `Project not found` rather
+than touching any file. As a last safety net, plugin workspaces are generated with `clean: false`, so
+even an unexpected empty generation cannot delete files.
+
+
+A bare `npm run orval` regenerates the core projects and every enabled plugin project.
+
 
 ### Integrating React Query hooks
 
@@ -724,6 +847,31 @@ const NewSchema = BaseSchema.extend({
 
 This allows you to reuse the generated schema while customizing it for your specific needs.
 
+### Orval reports a success but my generated files disappeared or my index.ts is empty
+
+The tag of the project matched no operation in the schema, and the output folder had already been
+cleaned. Check, in order:
+
+* is the plugin listed in `PLUGINS`, both in the process running Orval and in the container serving
+  the schema ?
+* before generating, does the schema contain the tag?
+* was the tag renamed in the backend, or an `@extend_schema` decorator removed?
+
+
+### My plugin is skipped although PLUGINS is correct in the .env
+
+Print what the config actually reads, the value may come from somewhere else:
+
+```shell
+echo "shell=[$PLUGINS]"
+grep -n '^PLUGINS' .env
+node -e "require('dotenv').config(); console.log('dotenv=['+process.env.PLUGINS+']')"
+```
+
+`dotenv` never overrides a variable already exported in your shell, keeps the first of two duplicate
+lines, and does not strip an inline comment written after the value.
+
+
 ### When running tests with msw, I want to hide all the logs from network interceptor
 
 In your .env :
@@ -745,3 +893,17 @@ VITEST_DEBUG="!msw:*"
 
 3. **Upstream bugs**  
    A few issues originate from Orval itself. Temporary fixes have been applied locally using `patch-package` until upstream fixes are available.
+
+4. **Cleaning runs before the schema is read**  
+   Orval empties the workspace of a project before resolving its input, and reports a success even
+   when the tag filter matched no operation. A project generating nothing therefore *deletes* its
+   client, or at least rewrites its `index.ts` barrels as empty files, which breaks every import of
+   the domain. This happens when the tag is missing from the schema (plugin not loaded on the
+   backend, tag renamed, `@extend_schema` removed), but also when the backend is unreachable or the
+   token has expired.
+   Plugin projects are protected on three levels, see
+   [Generating a client for a plugin](#generating-a-client-for-a-plugin): the `PLUGINS` check, the
+   presence of the tag in the schema, and `clean: false` on their workspace.
+   **Core projects still use `clean: true`** and are not covered: check that the schema is the one
+   you expect before generating, and keep the generated clients committed so `git checkout` can
+   restore them.

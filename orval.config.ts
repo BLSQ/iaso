@@ -1,16 +1,28 @@
 import { mutationInvalidates as validationWorkflowsMutationInvalidates} from './hat/assets/js/orval/apiConfiguration/validationWorkflows/configuration';
 import { createSchemaTransformer, normalizeSchema } from './hat/assets/js/orval/transformer/fakerTransformer';
 import { mutationInvalidates as accountsMutationInvalidates } from './hat/assets/js/orval/apiConfiguration/accounts/configuration';
+import { getPluginProjectDescriptors, PluginProjectDescriptor } from './hat/assets/js/orval/plugins/pluginProjects';
+
+import path from 'path';
 
 require('dotenv').config();
 
 const ORVAL_TARGET = `${process.env.ORVAL_TARGET_URL_PROTOCOL || 'http'}://${process.env.ORVAL_TARGET_URL_DOMAIN || 'localhost:8000'}`;
 const ORVAL_TARGET_FILE = process.env?.ORVAL_TARGET_FILE
+const ORVAL_TARGET_SWAGGER_URL = new URL('/swagger/?format=json', ORVAL_TARGET).toString();
+const ORVAL_HELPERS_DIR = path.resolve(__dirname, 'hat/assets/js/orval/');
 
-const createConfig = (project: string, tags: string[] | RegExp[], mutationInvalidates?: any[], schemas?: string[] | RegExp[]) => {
+const createConfig = (
+    project: string,
+    tags: string[] | RegExp[],
+    mutationInvalidates?: any[],
+    schemas?: string[] | RegExp[],
+    workspace: string = `./hat/assets/js/apps/Iaso/api/${project}`,
+    clean: boolean = true,
+) => {
     return {
         input: {
-            target: ORVAL_TARGET_FILE ? ORVAL_TARGET_FILE : new URL('/swagger/?format=json', ORVAL_TARGET).toString(),
+            target: ORVAL_TARGET_FILE ? ORVAL_TARGET_FILE : ORVAL_TARGET_SWAGGER_URL,
             filters: {
                 tags: tags,
                 ...schemas ? {schemas: schemas} : {}
@@ -35,11 +47,11 @@ const createConfig = (project: string, tags: string[] | RegExp[], mutationInvali
         output: {
             mode: 'tags-split',
             client: 'react-query',
-            clean: true,
+            clean,
             baseUrl: {
                 runtime: 'process.env.ORVAL_API_BASE_URL'
             },
-            workspace: `./hat/assets/js/apps/Iaso/api/${project}`,
+            workspace,
             override: {
                 // operations: OperationConfig.operations,
                 requestOptions: {
@@ -54,11 +66,11 @@ const createConfig = (project: string, tags: string[] | RegExp[], mutationInvali
                     useInvalidate: true,
                     mutationInvalidates: mutationInvalidates ?? [],
                     queryOptions: {
-                        path: './hat/assets/js/orval/mutator/custom-query-options.ts',
+                        path: path.join(ORVAL_HELPERS_DIR, 'mutator/custom-query-options.ts'),
                         name: 'getCustomQueryOptions',
                     },
                     mutationOptions: {
-                        path: './hat/assets/js/orval/mutator/custom-mutation-options.ts',
+                        path: path.join(ORVAL_HELPERS_DIR, 'mutator/custom-mutation-options.ts'),
                         name: 'useCustomMutationOptions',
                         optionalQueryClient: true,
                     },
@@ -67,7 +79,7 @@ const createConfig = (project: string, tags: string[] | RegExp[], mutationInvali
                     includeHttpResponseReturnType: false,
                 },
                 mutator: {
-                    path: '../../../../orval/client/custom-fetch.ts',
+                    path: path.join(ORVAL_HELPERS_DIR, 'client/custom-fetch.ts'),
                     name: 'customFetchInstance',
                     runtimeValidation: true
                 },
@@ -104,10 +116,30 @@ const createConfig = (project: string, tags: string[] | RegExp[], mutationInvali
     };
 };
 
+const loadPluginProjects = () => {
+    const projects = {};
+    getPluginProjectDescriptors({
+        rootDir: __dirname,
+        targetFile: ORVAL_TARGET_FILE,
+        targetUrl: ORVAL_TARGET_SWAGGER_URL,
+    }).forEach((d: PluginProjectDescriptor) => {
+        projects[d.project] = createConfig(
+            d.project,
+            d.tags,
+            d.mutationInvalidates,
+            d.schemas,
+            d.workspace,
+            false,
+        );
+    });
+    return projects;
+};
+
 module.exports = {
     accounts: createConfig('accounts', ['Account'], accountsMutationInvalidates),
     accountFeatureFlags: createConfig('accountFeatureFlags', ['Account feature flags']),
     apiImports: createConfig('apiImports', ['API import']),
     modules: createConfig('modules', ["Modules"]),
     validationWorkflows: createConfig('validationWorkflows', ['Validation workflows'], validationWorkflowsMutationInvalidates),
+    ...loadPluginProjects(),
 };

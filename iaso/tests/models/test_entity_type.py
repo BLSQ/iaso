@@ -58,3 +58,23 @@ class EntityTypeListFieldsTest(TestCase):
 
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]["name"], "first_name")
+
+    def test_falls_back_to_name_when_label_blank(self):
+        self.form.possible_fields = [
+            {"name": "start", "type": "start", "label": ""},
+            {"name": "end", "type": "end", "label": ""},
+            {"name": "calc", "type": "calculate", "label": ""},
+            {"name": "first_name", "type": "text", "label": "Prénom"},
+        ]
+        self.form.save()
+        self.entity_type.fields_list_view = ["start", "end", "calc", "first_name"]
+        self.entity_type.save()
+
+        result = self.entity_type.get_list_view_fields()
+        by_name = {field["name"]: field for field in result}
+
+        self.assertEqual(len(result), 4)
+        self.assertEqual(by_name["start"]["label"], "start")
+        self.assertEqual(by_name["end"]["label"], "end")
+        self.assertEqual(by_name["calc"]["label"], "calc")
+        self.assertEqual(by_name["first_name"]["label"], "Prénom")

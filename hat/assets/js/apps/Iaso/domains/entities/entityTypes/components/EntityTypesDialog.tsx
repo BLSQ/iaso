@@ -153,6 +153,7 @@ const EntityTypesDialog: FunctionComponent<Props> = ({
     } = useGetFormForEntityType({
         formId: values?.reference_form,
         enabled: isOpen,
+        possibleFieldsUsage: 'entity_type_config',
     });
 
     const possibleFieldsOptions = useMemo(

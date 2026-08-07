@@ -1,15 +1,15 @@
 import { mutationInvalidates as validationWorkflowsMutationInvalidates} from './hat/assets/js/orval/apiConfiguration/validationWorkflows/configuration';
 import { createSchemaTransformer, normalizeSchema } from './hat/assets/js/orval/transformer/fakerTransformer';
 import { mutationInvalidates as accountsMutationInvalidates } from './hat/assets/js/orval/apiConfiguration/accounts/configuration';
+import { getPluginProjectDescriptors, PluginProjectDescriptor } from './hat/assets/js/orval/plugins/pluginProjects';
 
-const fs = require('fs');
-const path = require('path');
-const { getPluginFolders } = require('./hat/assets/js/apps/Iaso/bundle/plugins');
+import path from 'path';
 
 require('dotenv').config();
 
 const ORVAL_TARGET = `${process.env.ORVAL_TARGET_URL_PROTOCOL || 'http'}://${process.env.ORVAL_TARGET_URL_DOMAIN || 'localhost:8000'}`;
 const ORVAL_TARGET_FILE = process.env?.ORVAL_TARGET_FILE
+const ORVAL_TARGET_SWAGGER_URL = new URL('/swagger/?format=json', ORVAL_TARGET).toString();
 const ORVAL_HELPERS_DIR = path.resolve(__dirname, 'hat/assets/js/orval/');
 
 const createConfig = (
@@ -18,10 +18,11 @@ const createConfig = (
     mutationInvalidates?: any[],
     schemas?: string[] | RegExp[],
     workspace: string = `./hat/assets/js/apps/Iaso/api/${project}`,
+    clean: boolean = true,
 ) => {
     return {
         input: {
-            target: ORVAL_TARGET_FILE ? ORVAL_TARGET_FILE : new URL('/swagger/?format=json', ORVAL_TARGET).toString(),
+            target: ORVAL_TARGET_FILE ? ORVAL_TARGET_FILE : ORVAL_TARGET_SWAGGER_URL,
             filters: {
                 tags: tags,
                 ...schemas ? {schemas: schemas} : {}
@@ -46,7 +47,7 @@ const createConfig = (
         output: {
             mode: 'tags-split',
             client: 'react-query',
-            clean: true,
+            clean,
             baseUrl: {
                 runtime: 'process.env.ORVAL_API_BASE_URL'
             },
@@ -115,34 +116,21 @@ const createConfig = (
     };
 };
 
-const ENABLED_PLUGINS = (process.env.PLUGINS || '')
-    .split(',')
-    .map((plugin: string) => plugin.trim())
-    .filter(Boolean);
-
 const loadPluginProjects = () => {
     const projects = {};
-    // getPluginFolders expects the `hat` dir and resolves ../plugins from it.
-    getPluginFolders(path.resolve(__dirname, 'hat')).forEach((plugin: string) => {
-        const contribPath = path.resolve(
-            __dirname,
-            `plugins/${plugin}/js/orval.config.cjs`,
+    getPluginProjectDescriptors({
+        rootDir: __dirname,
+        targetFile: ORVAL_TARGET_FILE,
+        targetUrl: ORVAL_TARGET_SWAGGER_URL,
+    }).forEach((d: PluginProjectDescriptor) => {
+        projects[d.project] = createConfig(
+            d.project,
+            d.tags,
+            d.mutationInvalidates,
+            d.schemas,
+            d.workspace,
+            false,
         );
-        if (!fs.existsSync(contribPath)) return;
-        if (!ENABLED_PLUGINS.includes(plugin)) {
-            console.log(`Plugin ${plugin} is not listed in PLUGINS, skipping its orval config.`);
-            return;
-        }
-        const descriptors = require(contribPath);
-        (Array.isArray(descriptors) ? descriptors : []).forEach((d: any) => {
-            projects[d.project] = createConfig(
-                d.project,
-                d.tags,
-                d.mutationInvalidates,
-                d.schemas,
-                d.workspace,
-            );
-        });
     });
     return projects;
 };

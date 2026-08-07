@@ -24,8 +24,6 @@ def _backfill_model(Model, model_name):
     can safely be re-run (e.g. after a partial failure) without recomputing
     hashes that were already stored.
     """
-    print("-" * 80)
-    print(f"Start populating `{model_name}.md5`…")
 
     to_update = []
     # `only` keeps the SELECT narrow so we don't pull unused columns on large tables.
@@ -56,8 +54,6 @@ def _backfill_model(Model, model_name):
     if to_update:
         print(f"Updating {len(to_update)} {model_name}…")
         Model.objects.bulk_update(to_update, ["md5"])
-
-    print(f"Done with {model_name}.")
 
 
 def migrate_data_forward(apps, schema_editor):

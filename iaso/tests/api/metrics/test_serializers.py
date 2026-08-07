@@ -604,8 +604,17 @@ class ImportMetricValuesSerializerTestCase(TestCase):
         csv_content = f"ADM1_NAME,ADM2_NAME,ADM2_ID,MT1\nDISTRICT,District 1,{self.district1.id},1"
         valid_file = SimpleUploadedFile("test.csv", csv_content.encode(), content_type="text/csv")
         serializer = ImportMetricValuesSerializer(data={"file": valid_file}, context={"request": self.request})
-        self.assertFalse(serializer.is_valid())
-        self.assertIn("This field is required.", serializer.errors["year"][0])
+        self.assertTrue(serializer.is_valid())
+
+    def test_save_without_year_creates_metric_value_with_year_none(self):
+        """Importing a CSV without a year should create MetricValues with year=None."""
+        csv_content = f"ADM1_NAME,ADM2_NAME,ADM2_ID,MT1\nDISTRICT,District 1,{self.district1.id},1"
+        valid_file = SimpleUploadedFile("test.csv", csv_content.encode(), content_type="text/csv")
+        serializer = ImportMetricValuesSerializer(data={"file": valid_file}, context={"request": self.request})
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        metric_values = serializer.save()
+        self.assertEqual(len(metric_values), 1)
+        self.assertIsNone(metric_values[0].year)
 
     def test_validate_year_not_integer(self):
         csv_content = f"ADM1_NAME,ADM2_NAME,ADM2_ID,MT1\nDISTRICT,District 1,{self.district1.id},1"

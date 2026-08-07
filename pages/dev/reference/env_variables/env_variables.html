@@ -1182,6 +1182,12 @@ for status monitoring), you can set the environment variable <code>MAINTENANCE_M
 <td><code>claude-opus-4-7</code></td>
 <td>Anthropic model used by the Form AI to generate XLSForms</td>
 </tr>
+<tr>
+<td>FORM_AI_MAX_TOKENS</td>
+<td>true</td>
+<td><code>32000</code></td>
+<td>Maximum output tokens for Form AI Claude responses. Higher values help when editing large existing forms; the API call uses streaming so the Anthropic SDK accepts this limit</td>
+</tr>
 </tbody>
 </table>
 <h2 id="root-url-override">Root url override<a class="headerlink" href="#root-url-override" title="Permanent link">#</a></h2>

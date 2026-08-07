@@ -55,10 +55,19 @@ class PossibleFieldsFilterTestCase(SimpleTestCase):
             {"name": "symptoms", "type": "select_multiple"},
             {"name": "beneficiary_id", "type": "barcode"},
             {"name": "location", "type": "geopoint"},
+            # media / complex geo / structural — not displayable in entity type config
             {"name": "photo", "type": "image"},
             {"name": "audio_note", "type": "audio"},
             {"name": "trace", "type": "geotrace"},
             {"name": "secret", "type": "hidden"},
+            # XLSForm types not supported yet by useGetFieldValue
+            {"name": "score", "type": "range"},
+            {"name": "today_field", "type": "today"},
+            {"name": "consent", "type": "acknowledge"},
+            {"name": "phone", "type": "phonenumber"},
+            {"name": "collector", "type": "username"},
+            {"name": "contact_email", "type": "email"},
+            {"name": "device", "type": "deviceid"},
         ]
 
         result = filter_possible_fields_by_usage(fields, POSSIBLE_FIELDS_USAGE_ENTITY_TYPE_CONFIG)

@@ -11,24 +11,26 @@ POSSIBLE_FIELDS_USAGE_ENTITY_TYPE_CONFIG = "entity_type_config"
 # Displayable XLSForm question types for entity type list/detail/search config.
 # Based on https://xlsform.org/en/#question-types and types rendered by useGetFieldValue.
 # Excludes media (image/audio/video/file), complex geo (geotrace/geoshape), and structural types.
+# Frontend doesn't support all types yet, so we need to exclude them from the entity type config.
+# You can adapt frontend support by updating the useGetFieldValue function in the hooks/useGetFieldValue.tsx file.
 ENTITY_TYPE_CONFIG_FIELD_TYPES = [
     # text / numeric
     "text",
     "integer",
     "decimal",
     "number",
-    "range",
+    # "range", Type not supported yet
     "barcode",
     "calculate",
     "note",
-    # temporal
+    # temporal Type not supported yet
     "date",
     "time",
     "dateTime",
     "datetime",
     "start",
     "end",
-    "today",
+    # "today", Type not supported yet
     # choice (exact + with choice-list suffix via prefix match)
     "select one",
     "select_one",
@@ -39,11 +41,11 @@ ENTITY_TYPE_CONFIG_FIELD_TYPES = [
     # geo (single point is displayable as a map)
     "geopoint",
     # other scalar-ish XLSForm / ODK types
-    "acknowledge",
-    "phonenumber",
-    "username",
-    "email",
-    "deviceid",
+    # "acknowledge",
+    # "phonenumber", Type not supported yet
+    # "username", Type not supported yet
+    # "email", Type not supported yet
+    # "deviceid", Type not supported yet
     None,
 ]
 

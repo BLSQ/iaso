@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from iaso.utils.encryption import calculate_md5, file_content_changed
+from iaso.utils.encryption import calculate_md5
 from iaso.utils.virus_scan.clamav import scan_uploaded_file_for_virus
 from iaso.utils.virus_scan.model import ModelWithFile, VirusScanStatus
 
@@ -114,12 +114,12 @@ class ModelWithFileSerializer(serializers.ModelSerializer):
         """Whether this update clears a file that was previously set on ``obj``."""
         return bool(obj) and "file" in validated_data and not validated_data["file"] and bool(obj.file)
 
-    def _check_if_file_exists_and_needs_scanning(self, validated_data, obj, new_md5=None):
+    def _check_if_file_exists_and_needs_scanning(self, validated_data, obj, new_md5):
         """
         Determines if a file exists in validated_data and if it needs scanning.
         Files are always scanned during creation. Files are scanned during update only if they have changed.
 
-        ``new_md5`` is the pre-computed md5 of the new file; when omitted it is computed on demand.
+        ``new_md5`` is the pre-computed md5 of the new file.
         """
         if "file" not in validated_data:
             return False
@@ -136,7 +136,5 @@ class ModelWithFileSerializer(serializers.ModelSerializer):
         if not old_file:
             return True  # no previous file, so we need to scan the new one
 
-        if new_md5 is None:
-            return file_content_changed(obj.md5, file)
         # Empty stored md5 means the previous content is unknown, so treat it as changed.
         return not obj.md5 or obj.md5 != new_md5

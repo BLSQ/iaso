@@ -3,15 +3,20 @@ import { axe } from 'jest-axe';
 import { describe, expect, it } from 'vitest';
 
 import { renderWithThemeAndIntlProvider } from '../../../../../tests/helpers';
-import { Field } from '../types/fields';
 import { EntityBaseInfoContents } from '../components/EntityBaseInfoContents';
+import { Field } from '../types/fields';
 
 describe('EntityBaseInfoContents accessibility', () => {
     it('has no accessibility violations for common entity field types', async () => {
         const fields: Field[] = [
             { key: 'name', label: 'Name', type: 'text', value: 'Ada Lovelace' },
             { key: 'age', label: 'Age', type: 'integer', value: 36 },
-            { key: 'dob', label: 'Date of birth', type: 'date', value: '01/15/2020' },
+            {
+                key: 'dob',
+                label: 'Date of birth',
+                type: 'date',
+                value: '01/15/2020',
+            },
             {
                 key: 'appointment',
                 label: 'Appointment time',

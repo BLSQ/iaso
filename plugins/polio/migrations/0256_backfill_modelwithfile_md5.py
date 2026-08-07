@@ -40,8 +40,8 @@ def _backfill_model(Model, model_name):
     for instance in queryset:
         try:
             md5 = calculate_md5(instance.file)
-        except (FileNotFoundError, OSError):
-            # Missing/unreadable file: skip this row, don't abort the whole run.
+        except (FileNotFoundError, OSError) as e:
+            print(f"there was an error while calculating file md5 - {str(e)}")
             continue
 
         if md5:

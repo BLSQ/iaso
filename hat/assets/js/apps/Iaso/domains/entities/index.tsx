@@ -118,7 +118,10 @@ export const Entities: FunctionComponent = () => {
 
     const { cursor: _cursor, ...tableParams } = params;
 
-    const columns = useColumns(entityTypeIds, extraColumns || []);
+    const { columns, formDescriptorsReady } = useColumns(
+        entityTypeIds,
+        extraColumns || [],
+    );
 
     const { data: types } = useGetEntityTypesDropdown();
 
@@ -195,7 +198,12 @@ export const Entities: FunctionComponent = () => {
                                 baseUrl={baseUrl}
                                 params={tableParams}
                                 showPagination={false}
-                                extraProps={{ loading: isFetching }}
+                                extraProps={{
+                                    loading: isFetching,
+                                    // Bust Table React.memo when select labels
+                                    // become available (Cell fn changes are ignored).
+                                    formDescriptorsReady,
+                                }}
                                 noDataMessage={
                                     !isSearchActive
                                         ? MESSAGES.searchToSeeEntities

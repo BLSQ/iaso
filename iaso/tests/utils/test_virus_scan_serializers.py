@@ -9,13 +9,13 @@ from iaso.utils.virus_scan.model import ModelWithFile, VirusScanStatus
 from iaso.utils.virus_scan.serializers import ModelWithFileSerializer
 
 
-class DummyModel(ModelWithFile):
+class DummyFileModel(ModelWithFile):
     int_value = models.IntegerField(blank=True, null=True)
 
 
 class DummyModelSerializer(ModelWithFileSerializer):
     class Meta:
-        model = DummyModel
+        model = DummyFileModel
         fields = ["file", "int_value"]
 
 
@@ -31,7 +31,7 @@ class ModelWithFileSerializerScanTestCase(TestCase):
     def test_update_needs_scanning_when_md5_empty(self):
         file = SimpleUploadedFile("doc.pdf", b"content")
         new_md5 = calculate_md5(file)
-        obj = MagicMock(spec=DummyModel)
+        obj = MagicMock(spec=DummyFileModel)
         obj.file = SimpleUploadedFile("doc.pdf", b"content")
         obj.md5 = ""
         self.assertTrue(self.serializer._check_if_file_exists_and_needs_scanning({"file": file}, obj, new_md5))
@@ -40,7 +40,7 @@ class ModelWithFileSerializerScanTestCase(TestCase):
         content = b"same content"
         file = SimpleUploadedFile("doc.pdf", content)
         new_md5 = calculate_md5(file)
-        obj = MagicMock(spec=DummyModel)
+        obj = MagicMock(spec=DummyFileModel)
         obj.file = SimpleUploadedFile("old.pdf", content)
         obj.md5 = new_md5
         self.assertFalse(self.serializer._check_if_file_exists_and_needs_scanning({"file": file}, obj, new_md5))
@@ -48,7 +48,7 @@ class ModelWithFileSerializerScanTestCase(TestCase):
     def test_update_needs_scanning_when_md5_differs(self):
         new_file = SimpleUploadedFile("doc.pdf", b"new content")
         new_md5 = calculate_md5(new_file)
-        obj = MagicMock(spec=DummyModel)
+        obj = MagicMock(spec=DummyFileModel)
         old_file = SimpleUploadedFile("x.pdf", b"old content")
         obj.file = old_file
         obj.md5 = calculate_md5(old_file)
@@ -57,7 +57,7 @@ class ModelWithFileSerializerScanTestCase(TestCase):
     def test_update_needs_scanning_when_no_previous_file(self):
         file = SimpleUploadedFile("doc.pdf", b"content")
         new_md5 = calculate_md5(file)
-        obj = MagicMock(spec=DummyModel)
+        obj = MagicMock(spec=DummyFileModel)
         obj.file = None
         obj.md5 = ""
         self.assertTrue(self.serializer._check_if_file_exists_and_needs_scanning({"file": file}, obj, new_md5))
@@ -78,7 +78,7 @@ class ModelWithFileSerializerScanTestCase(TestCase):
     def test_scan_file_if_exists_sets_md5_on_update(self, mock_scan):
         mock_scan.return_value = (VirusScanStatus.CLEAN, None)
         file = SimpleUploadedFile("doc.pdf", b"new content")
-        obj = MagicMock(spec=DummyModel)
+        obj = MagicMock(spec=DummyFileModel)
         obj.file = SimpleUploadedFile("doc.pdf", b"old content")
         obj.md5 = calculate_md5(SimpleUploadedFile("x.pdf", b"old content"))
         validated_data = {"file": file}
@@ -90,7 +90,7 @@ class ModelWithFileSerializerScanTestCase(TestCase):
         self.assertEqual(validated_data["file_scan_status"], VirusScanStatus.CLEAN)
 
     def test_scan_file_if_exists_removing_file_resets_scan_fields(self):
-        obj = MagicMock(spec=DummyModel)
+        obj = MagicMock(spec=DummyFileModel)
         obj.file = SimpleUploadedFile("doc.pdf", b"content")
         obj.md5 = calculate_md5(SimpleUploadedFile("x.pdf", b"content"))
         validated_data = {"file": None}
@@ -103,7 +103,7 @@ class ModelWithFileSerializerScanTestCase(TestCase):
         self.assertIsNone(validated_data["file_last_scan"])
 
     def test_scan_file_if_exists_removing_file_with_no_previous_file_does_not_touch_scan_fields(self):
-        obj = MagicMock(spec=DummyModel)
+        obj = MagicMock(spec=DummyFileModel)
         obj.file = None
         obj.md5 = ""
         validated_data = {"file": None}

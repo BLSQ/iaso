@@ -3,17 +3,23 @@ import json
 import logging
 import uuid
 
-from typing import Optional
+from typing import Any, Optional
 
 import anthropic
 import openpyxl
 
 from django.conf import settings
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
-from pyxform import create_survey_from_xls
+
+from iaso.odk.parsing import create_survey_from_xls_buffered
 
 
 logger = logging.getLogger(__name__)
+
+FORM_TOO_LARGE_MESSAGE = (
+    "The form is too large to regenerate in one response. "
+    "Please try a smaller change, or contact your administrator if this keeps happening."
+)
 
 XLSFORM_SYSTEM_PROMPT = """You are an expert ODK XLSForm designer. You create well-structured data collection forms based on user descriptions.
 
@@ -68,7 +74,8 @@ When the user asks you to create or modify a form, you MUST respond with valid J
 - Use `relevant` for skip logic with `${variable_name}` references.
 - Use `constraint` for data validation.
 - When modifying an existing form, return the COMPLETE updated form, not just the changes.
-- Preserve ALL existing columns/fields from the original form, including any you don't recognize.
+- Preserve ALL existing non-empty columns/fields from the original form, including any you don't recognize.
+- Omit empty optional fields from survey and choices rows (do not emit keys with empty string values).
 - For internationalized forms, preserve all `label::Language` and `hint::Language` columns.
 - Your `message` should briefly explain what you created or changed.
 - Don't include by default a question to ask for health facility, region or district (org units in general) because the tool handling these forms does not need this.
@@ -113,7 +120,7 @@ class GeneratedForm(BaseModel):
 
 
 def _parse_sheet(ws) -> list[dict]:
-    """Parse a worksheet into a list of dicts, preserving ALL columns."""
+    """Parse a worksheet into a list of dicts, omitting empty string values."""
     rows = list(ws.iter_rows(values_only=True))
     if not rows:
         return []
@@ -127,26 +134,27 @@ def _parse_sheet(ws) -> list[dict]:
     result = []
     for row in rows[1:]:
         row_dict = {}
-        all_empty = True
         for i, header in enumerate(headers):
             if not header:
                 continue
             val = row[i] if i < len(row) else None
-            if val is not None:
-                row_dict[header] = str(val)
-                all_empty = False
-            else:
-                row_dict[header] = ""
-        if not all_empty:
+            if val is None:
+                continue
+            str_val = str(val)
+            if str_val == "":
+                continue
+            row_dict[header] = str_val
+        if row_dict:
             result.append(row_dict)
     return result
 
 
 def parse_xlsform_to_json(xls_file) -> dict:
-    """Parse an existing XLSForm Excel file, preserving ALL columns.
+    """Parse an existing XLSForm Excel file, preserving non-empty columns.
 
-    This allows loading an existing form into the conversation context
-    so the AI can modify it without losing any data.
+    Empty string values are omitted so the conversation context stays compact.
+    This allows loading an existing form into the conversation so the AI can
+    modify it without losing meaningful data.
     """
     wb = openpyxl.load_workbook(xls_file, read_only=True)
 
@@ -170,7 +178,11 @@ def parse_xlsform_to_json(xls_file) -> dict:
 
 
 def call_claude(message: str, conversation_history: list[dict], api_key: Optional[str] = None) -> dict:
-    """Call Claude API with the conversation and return the raw response."""
+    """Call Claude API with the conversation and return text plus stop_reason.
+
+    Uses streaming because high max_tokens values (needed for large forms) are
+    rejected by the Anthropic SDK for non-streaming requests.
+    """
     client = anthropic.Anthropic(api_key=api_key)
 
     messages = []
@@ -178,14 +190,18 @@ def call_claude(message: str, conversation_history: list[dict], api_key: Optiona
         messages.append({"role": entry["role"], "content": entry["content"]})
     messages.append({"role": "user", "content": message})
 
-    response = client.messages.create(
+    with client.messages.stream(
         model=settings.FORM_AI_MODEL,
-        max_tokens=8192,
+        max_tokens=settings.FORM_AI_MAX_TOKENS,
         system=XLSFORM_SYSTEM_PROMPT,
         messages=messages,
-    )
+    ) as stream:
+        response = stream.get_final_message()
 
-    return response.content[0].text
+    return {
+        "text": response.content[0].text,
+        "stop_reason": response.stop_reason,
+    }
 
 
 def parse_form_response(response_text: str) -> GeneratedForm:
@@ -200,6 +216,16 @@ def parse_form_response(response_text: str) -> GeneratedForm:
 
     data = json.loads(text)
     return GeneratedForm(**data)
+
+
+def _looks_like_form_json(response_text: str) -> bool:
+    """True when the text appears to be (or start) a form JSON payload."""
+    text = response_text.strip()
+    if "```json" in text:
+        text = text.split("```json")[1]
+    elif text.startswith("```"):
+        text = text.split("```", 1)[1]
+    return '"survey"' in text
 
 
 def _collect_all_keys(rows: list) -> list[str]:
@@ -270,7 +296,8 @@ def convert_to_xform_xml(xlsform_buffer: io.BytesIO) -> Optional[str]:
     try:
         xlsform_buffer.seek(0)
         xlsform_buffer.name = "form.xlsx"
-        survey = create_survey_from_xls(xlsform_buffer, default_name="data")
+        # pyxform Survey subclasses dict; basedpyright then treats .to_xml as a dict.
+        survey: Any = create_survey_from_xls_buffered(xlsform_buffer)
         return survey.to_xml(validate=False)
     except Exception as e:
         logger.error("Failed to convert XLSForm to XForm XML: %s", e)
@@ -290,12 +317,23 @@ def generate_form(
     - form: GeneratedForm instance (None if the response was conversational)
     - conversation_history: Updated conversation history
     """
-    response_text = call_claude(message, conversation_history, api_key=api_key)
+    claude_response = call_claude(message, conversation_history, api_key=api_key)
+    response_text = claude_response["text"]
+    stop_reason = claude_response.get("stop_reason")
 
-    new_history = list(conversation_history) + [
-        {"role": "user", "content": message},
-        {"role": "assistant", "content": response_text},
-    ]
+    def _history_with_assistant(assistant_content: str) -> list[dict]:
+        return list(conversation_history) + [
+            {"role": "user", "content": message},
+            {"role": "assistant", "content": assistant_content},
+        ]
+
+    if stop_reason == "max_tokens":
+        logger.warning("Form AI response truncated (stop_reason=max_tokens)")
+        return {
+            "assistant_message": FORM_TOO_LARGE_MESSAGE,
+            "form": None,
+            "conversation_history": _history_with_assistant(FORM_TOO_LARGE_MESSAGE),
+        }
 
     try:
         form = parse_form_response(response_text)
@@ -317,20 +355,34 @@ def generate_form(
         return {
             "assistant_message": form.message,
             "form": form,
-            "conversation_history": new_history,
+            "conversation_history": _history_with_assistant(response_text),
         }
 
     except json.JSONDecodeError as e:
+        if _looks_like_form_json(response_text):
+            logger.warning("Form AI response looked like form JSON but failed to parse: %s", e)
+            return {
+                "assistant_message": FORM_TOO_LARGE_MESSAGE,
+                "form": None,
+                "conversation_history": _history_with_assistant(FORM_TOO_LARGE_MESSAGE),
+            }
         logger.info("Response was not valid JSON (might be conversational): %s", e)
         return {
             "assistant_message": response_text,
             "form": None,
-            "conversation_history": new_history,
+            "conversation_history": _history_with_assistant(response_text),
         }
     except Exception as e:
+        if _looks_like_form_json(response_text):
+            logger.warning("Failed to parse AI form response that looked like form JSON: %s", e)
+            return {
+                "assistant_message": FORM_TOO_LARGE_MESSAGE,
+                "form": None,
+                "conversation_history": _history_with_assistant(FORM_TOO_LARGE_MESSAGE),
+            }
         logger.warning("Failed to parse AI form response: %s", e)
         return {
             "assistant_message": response_text,
             "form": None,
-            "conversation_history": new_history,
+            "conversation_history": _history_with_assistant(response_text),
         }

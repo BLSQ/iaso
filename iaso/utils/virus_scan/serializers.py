@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from iaso.utils.encryption import calculate_md5, file_content_changed
 from iaso.utils.virus_scan.clamav import scan_uploaded_file_for_virus
-from iaso.utils.virus_scan.model import ModelWithFile
+from iaso.utils.virus_scan.model import ModelWithFile, VirusScanStatus
 
 
 class ModelWithFileSerializer(serializers.ModelSerializer):
@@ -70,6 +70,10 @@ class ModelWithFileSerializer(serializers.ModelSerializer):
         during the creation of objects that inherit from ModelWithFile. It scans
         a potential file in validated_data and adds the scan results as additional fields.
 
+        If an update clears a previously set file (validated_data['file'] is falsy while
+        obj already has a file), the scan metadata (md5, file_scan_status, file_last_scan)
+        is reset to its defaults.
+
         Args:
             validated_data (dict): The validated data from a DRF serializer,
                 which may contain a 'file' key with an uploaded file.
@@ -98,7 +102,17 @@ class ModelWithFileSerializer(serializers.ModelSerializer):
             validated_data["file_scan_status"] = result
             validated_data["file_last_scan"] = timestamp
             validated_data["md5"] = new_md5
+        elif self._file_removed(validated_data, obj):
+            # The file is being cleared on an update: the scan metadata describes a file
+            # that no longer exists, so it must be reset to its defaults, not left stale.
+            validated_data["file_scan_status"] = VirusScanStatus.PENDING
+            validated_data["file_last_scan"] = None
+            validated_data["md5"] = ""
         return needs_scanning
+
+    def _file_removed(self, validated_data, obj) -> bool:
+        """Whether this update clears a file that was previously set on ``obj``."""
+        return bool(obj) and "file" in validated_data and not validated_data["file"] and bool(obj.file)
 
     def _check_if_file_exists_and_needs_scanning(self, validated_data, obj, new_md5=None):
         """

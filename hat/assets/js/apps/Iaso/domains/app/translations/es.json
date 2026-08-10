@@ -556,7 +556,7 @@
     "iaso.label.devices": "Dispositivos",
     "iaso.label.dhis2Id": "ID de DHIS2",
     "iaso.label.dhis2Link": "Ir a DHIS2",
-    "iaso.label.dhis2Mappings": "Mapeos de DHIS",
+    "iaso.label.dhis2Mappings": "Mapeos de DHIS2",
     "iaso.label.display": "Mostrar",
     "iaso.label.displayPassword": "Mostrar la contraseña",
     "iaso.label.djangoAdmin": "Administración de Django",

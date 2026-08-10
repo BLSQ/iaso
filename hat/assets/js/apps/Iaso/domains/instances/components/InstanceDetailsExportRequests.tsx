@@ -1,11 +1,12 @@
 import React, { FunctionComponent } from 'react';
-import { Divider } from '@mui/material';
+import { Divider, Link } from '@mui/material';
 import {
     textPlaceholder,
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
+import { Link as RouterLink } from 'react-router-dom';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import MESSAGES from '../messages';
 import InstanceDetailsField from './InstanceDetailsField';
@@ -17,23 +18,30 @@ type Props = {
     currentInstance: any;
 };
 
-const InstanceDetailsExportRequests: FunctionComponent<Props> = ({
+/**
+ * Body of the export requests panel, without any surrounding paper, so it can
+ * be dropped either in a WidgetPaper or in an accordion row of the detail rail.
+ */
+export const InstanceDetailsExportRequestsContent: FunctionComponent<Props> = ({
     currentInstance,
 }) => {
     const { formatMessage } = useSafeIntl();
     return (
-        <WidgetPaper
-            id="export-requests"
-            padded
-            title={formatMessage(MESSAGES.exportRequests)}
-            IconButton={IconButtonComponent}
-            iconButtonProps={{
-                url: `/forms/mappings/formId/${currentInstance.form_id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`,
-                color: 'secondary',
-                icon: 'dhis',
-                tooltipMessage: MESSAGES.dhis2Mappings,
-            }}
-        >
+        <>
+            <InstanceDetailsField
+                label={formatMessage(MESSAGES.dhis2Mappings)}
+                valueTitle={null}
+                renderValue={() => (
+                    <Link
+                        component={RouterLink}
+                        to={`/forms/mappings/formId/${currentInstance.form_id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
+                        color="primary"
+                        underline="hover"
+                    >
+                        {formatMessage(MESSAGES.link)}
+                    </Link>
+                )}
+            />
             <InstanceDetailsField
                 label={formatMessage(MESSAGES.lastExportSuccessAt)}
                 valueTitle={null}
@@ -78,6 +86,30 @@ const InstanceDetailsExportRequests: FunctionComponent<Props> = ({
                     )}
                 </React.Fragment>
             ))}
+        </>
+    );
+};
+
+const InstanceDetailsExportRequests: FunctionComponent<Props> = ({
+    currentInstance,
+}) => {
+    const { formatMessage } = useSafeIntl();
+    return (
+        <WidgetPaper
+            id="export-requests"
+            padded
+            title={formatMessage(MESSAGES.exportRequests)}
+            IconButton={IconButtonComponent}
+            iconButtonProps={{
+                url: `/forms/mappings/formId/${currentInstance.form_id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`,
+                color: 'secondary',
+                icon: 'dhis',
+                tooltipMessage: MESSAGES.dhis2Mappings,
+            }}
+        >
+            <InstanceDetailsExportRequestsContent
+                currentInstance={currentInstance}
+            />
         </WidgetPaper>
     );
 };

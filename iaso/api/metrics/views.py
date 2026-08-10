@@ -12,7 +12,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
 from iaso.api.common import CONTENT_TYPE_CSV, DropdownOptionsWithRepresentationSerializer
-from iaso.api.metrics.filters import ValueAndTypeFilterBackend, ValueFilterBackend
+from iaso.api.metrics.filters import MetricValueFilter, ValueAndTypeFilterBackend, ValueFilterBackend
 from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS, get_org_unit_row
 from iaso.models import MetricType, MetricValue
 from iaso.plugins import is_snt_malaria_plugin_active
@@ -93,7 +93,7 @@ class MetricValueViewSet(viewsets.ModelViewSet):
     serializer_class = MetricValueSerializer
     queryset = MetricValue.objects.all()
     filter_backends = [DjangoFilterBackend, ValueFilterBackend]
-    filterset_fields = ["metric_type_id", "org_unit_id"]
+    filterset_class = MetricValueFilter
     http_method_names = ["get", "options", "post"]
     permission_classes = [MetricsPermissions]
 

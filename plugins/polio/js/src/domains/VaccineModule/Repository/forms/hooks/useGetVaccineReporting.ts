@@ -5,12 +5,14 @@ import { useSnackQuery } from '../../../../../../../../../hat/assets/js/apps/Ias
 import { VaccineRepositoryForms } from '../../types';
 
 const getVaccineReporting = params => {
-    const apiParams = params.campaignStatus
-        ? {
-              ...params,
-              campaign_status: params.campaignStatus,
-          }
-        : params;
+    const { campaignStatus, campaignCategory, ...rest } = params;
+    const apiParams = {
+        ...rest,
+        ...(campaignStatus ? { campaign_status: campaignStatus } : {}),
+        ...(campaignCategory && campaignCategory !== 'all'
+            ? { campaign_category: campaignCategory }
+            : {}),
+    };
     const queryString = new URLSearchParams(apiParams).toString();
     return getRequest(`/api/polio/vaccine/repository/?${queryString}`);
 };

@@ -26,6 +26,7 @@ type VaccineSupplyChainParams = {
     rounds__started_at__gte?: string;
     rounds__started_at__lte?: string;
     country_blocks?: string;
+    campaign_category?: string;
 } & Partial<UrlParams>;
 
 export const VaccineSupplyChain: FunctionComponent = () => {

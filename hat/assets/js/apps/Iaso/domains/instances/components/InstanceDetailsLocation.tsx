@@ -13,12 +13,28 @@ import MESSAGES from '../messages';
 import { Instance } from '../types/instance';
 import InstanceDetailsField from './InstanceDetailsField';
 
+type FieldComponentProps = {
+    label: string;
+    value?: any;
+    valueTitle?: any;
+};
+
 type Props = {
     currentInstance: Instance;
+    /**
+     * How each location row is rendered. Defaults to InstanceDetailsField (the
+     * legacy right-aligned-with-colon style used by the compare view); the
+     * submission rail passes a design-matching row instead.
+     */
+    FieldComponent?: React.ComponentType<FieldComponentProps>;
+    /** Height of the map. The narrow rail passes a shorter, landscape height. */
+    mapHeight?: number;
 };
 
 const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
     currentInstance,
+    FieldComponent = InstanceDetailsField,
+    mapHeight,
 }) => {
     const { formatMessage } = useSafeIntl();
     const orgUnitTree: OrgUnit[] = currentInstance.org_unit
@@ -44,7 +60,7 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
     return (
         <>
             {orgUnitTree.map(ou => (
-                <InstanceDetailsField
+                <FieldComponent
                     key={ou.id}
                     label={
                         ou.org_unit_type?.name ??
@@ -55,7 +71,7 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                 />
             ))}
             {orgUnit && (
-                <InstanceDetailsField
+                <FieldComponent
                     label={formatMessage(MESSAGES.source_ref)}
                     valueTitle={
                         <OrgUnitLabel
@@ -71,7 +87,7 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                 />
             )}
             {orgUnit && orgUnit.groups && (
-                <InstanceDetailsField
+                <FieldComponent
                     label={formatMessage(MESSAGES.groups)}
                     value={
                         currentInstance.org_unit.groups.length > 0
@@ -86,13 +102,13 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                 hasCoordinatesFromOrgUnit &&
                 !hasCoordinatesFromForm && (
                     <>
-                        <InstanceDetailsField
+                        <FieldComponent
                             label={formatMessage(MESSAGES.latitude)}
                             value={`${
                                 currentInstance.org_unit.latitude
                             } ${formatMessage(MESSAGES.fromOrgUnit)}`}
                         />
-                        <InstanceDetailsField
+                        <FieldComponent
                             label={formatMessage(MESSAGES.longitude)}
                             value={`${
                                 currentInstance.org_unit.longitude
@@ -102,18 +118,18 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                 )}
             {hasCoordinatesFromForm && (
                 <>
-                    <InstanceDetailsField
+                    <FieldComponent
                         label={formatMessage(MESSAGES.latitude)}
                         value={currentInstance.latitude}
                     />
-                    <InstanceDetailsField
+                    <FieldComponent
                         label={formatMessage(MESSAGES.longitude)}
                         value={currentInstance.longitude}
                     />
                 </>
             )}
             {hasAltitudeFromForm && (
-                <InstanceDetailsField
+                <FieldComponent
                     label={formatMessage(MESSAGES.altitude)}
                     value={currentInstance.altitude}
                 />
@@ -121,7 +137,7 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
             {!hasAltitudeFromForm &&
                 hasAltitudeFromOrgUnit &&
                 !hasCoordinatesFromForm && (
-                    <InstanceDetailsField
+                    <FieldComponent
                         label={formatMessage(MESSAGES.altitude)}
                         value={`${orgUnit.altitude} ${formatMessage(
                             MESSAGES.fromOrgUnit,
@@ -129,7 +145,7 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                     />
                 )}
             {hasAccuracy && (
-                <InstanceDetailsField
+                <FieldComponent
                     label={formatMessage(MESSAGES.accuracy)}
                     value={currentInstance.accuracy}
                 />
@@ -139,6 +155,7 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                 <MarkerMap
                     latitude={currentInstance.latitude}
                     longitude={currentInstance.longitude}
+                    mapHeight={mapHeight}
                 />
             )}
 
@@ -148,6 +165,7 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                     <MarkerMap
                         latitude={orgUnit.latitude}
                         longitude={orgUnit.longitude}
+                        mapHeight={mapHeight}
                     />
                 )}
         </>

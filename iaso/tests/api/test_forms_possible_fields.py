@@ -61,6 +61,7 @@ class PossibleFieldsFilterTestCase(SimpleTestCase):
             {"name": "trace", "type": "geotrace"},
             {"name": "secret", "type": "hidden"},
             # XLSForm types not supported yet by useGetFieldValue
+            {"name": "location", "type": "geopoint"},
             {"name": "score", "type": "range"},
             {"name": "today_field", "type": "today"},
             {"name": "consent", "type": "acknowledge"},
@@ -74,7 +75,7 @@ class PossibleFieldsFilterTestCase(SimpleTestCase):
 
         self.assertEqual(
             [field["name"] for field in result],
-            ["name", "age", "dob", "gender", "gender_with_list", "symptoms", "beneficiary_id", "location"],
+            ["name", "age", "dob", "gender", "gender_with_list", "symptoms", "beneficiary_id"],
         )
 
     def test_unknown_or_missing_usage_falls_back_to_deduplication(self):

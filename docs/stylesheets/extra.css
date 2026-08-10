@@ -40,10 +40,7 @@
 /* Doc screenshot helpers — use with attr_list, e.g. ![](shot.png){ .doc-shot }
    mkdocs-glightbox wraps images in <a class="glightbox"> (inline by default),
    so size/layout must target that wrapper too. */
-a.glightbox:has(img.doc-shot),
-a.glightbox:has(img.doc-shot-sm),
-a.glightbox:has(img.doc-shot-lg),
-a.glightbox:has(img.doc-shot-phone) {
+a.glightbox {
     display: block;
     float: none !important;
     clear: both;

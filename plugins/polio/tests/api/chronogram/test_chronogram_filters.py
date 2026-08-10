@@ -62,9 +62,7 @@ class ChronogramFiltersTestCase(APITestCase):
             obr_name="Preventive Campaign", account=cls.account, is_preventive=True
         )
         cls.campaign_preventive.campaign_types.add(cls.polio_type)
-        cls.round_preventive = Round.objects.create(
-            number=1, campaign=cls.campaign_preventive, started_at=TODAY.date()
-        )
+        cls.round_preventive = Round.objects.create(number=1, campaign=cls.campaign_preventive, started_at=TODAY.date())
         cls.chronogram_preventive = Chronogram.objects.create(round=cls.round_preventive, created_by=cls.user)
 
     def test_filter_for_power_bi(self):

@@ -440,6 +440,4 @@ class VaccineRepositoryFormsAPITestCase(APITestCase, PolioTestCaseMixin):
         response = self.client.get(f"{BASE_URL}?campaign_category=regular")
         data = self.assertJSONResponse(response, 200)
         self.assertEqual(len(data["results"]), 2)
-        self.assertTrue(
-            all(result["campaign_obr_name"] != "Another Campaign" for result in data["results"])
-        )
+        self.assertTrue(all(result["campaign_obr_name"] != "Another Campaign" for result in data["results"]))

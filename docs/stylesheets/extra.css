@@ -37,28 +37,32 @@
     display: inline-block; 
 }
 
-/* Doc screenshot helpers — use with attr_list, e.g. ![](shot.png){ .doc-shot align=center } */
-img.doc-shot {
-  height: 240px;
+/* Doc screenshot helpers — use with attr_list, e.g. ![](shot.png){ .doc-shot } */
+img.doc-shot,
+img.doc-shot-sm,
+img.doc-shot-lg,
+img.doc-shot-phone {
+  display: block;
+  float: none !important; /* override Material align=left/right floats */
   width: auto;
   max-width: 100%;
   object-fit: contain;
+  margin: 0.75rem 0 1rem;
+  clear: both;
+}
+img.doc-shot {
+  height: 240px;
 }
 img.doc-shot-sm {
   height: 160px;
-  width: auto;
-  max-width: 100%;
-  object-fit: contain;
 }
 img.doc-shot-lg {
   height: 360px;
-  width: auto;
-  max-width: 100%;
-  object-fit: contain;
 }
 img.doc-shot-phone {
   height: 420px;
-  width: auto;
-  max-width: 100%;
-  object-fit: contain;
+}
+img.doc-shot-center {
+  margin-left: auto;
+  margin-right: auto;
 }

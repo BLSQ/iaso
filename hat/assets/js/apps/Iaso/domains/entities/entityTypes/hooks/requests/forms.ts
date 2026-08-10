@@ -38,12 +38,17 @@ type Result = {
     isFetchingForm: boolean;
     name?: string;
 };
+
+export type PossibleFieldsUsage = 'deduplication' | 'entity_type_config';
+
 export const useGetFormForEntityType = ({
     formId,
     enabled = true,
+    possibleFieldsUsage = 'deduplication',
 }: {
     formId?: number;
     enabled?: boolean;
+    possibleFieldsUsage?: PossibleFieldsUsage;
 }): Result => {
     const { data: currentForm, isFetching: isFetchingForm } = useGetForm(
         formId,
@@ -53,6 +58,8 @@ export const useGetFormForEntityType = ({
             'name',
             'latest_form_version',
         ].join(','),
+        undefined,
+        { possible_fields_usage: possibleFieldsUsage },
     );
     return {
         ...usePossibleFields(

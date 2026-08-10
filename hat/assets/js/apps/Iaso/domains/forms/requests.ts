@@ -16,15 +16,20 @@ export const useGetForm = (
     enabled = Boolean(formId) && formId !== '0',
     fields?: string,
     appId?: string,
+    extraQueryParams?: Record<string, string>,
 ): UseQueryResult<Form, Error> => {
     const queryKey: any[] = ['forms', formId];
     if (fields) {
         queryKey.push(fields);
     }
+    if (extraQueryParams) {
+        queryKey.push(extraQueryParams);
+    }
 
     const params = {
         ...(appId ? { app_id: appId } : {}),
         ...(fields ? { fields: fields } : {}),
+        ...extraQueryParams,
     };
     const url = `/api/forms/${formId}/?${createSearchParamsWithArray(params).toString()}`;
     return useSnackQuery({

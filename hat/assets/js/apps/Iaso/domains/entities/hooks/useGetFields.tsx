@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 import { FormDescriptor, PossibleField } from '../../forms/types/forms';
 
 import { formatLabel } from '../../instances/utils';
@@ -11,28 +13,30 @@ export const useGetFields = (
     possibleFields?: PossibleField[],
     formDescriptors?: FormDescriptor[],
 ): Field[] => {
-    const fields: Field[] = [];
     const getValue = useGetFieldValue(formDescriptors);
-    if (possibleFields && entity?.attributes?.file_content) {
-        const fileContent = entity.attributes.file_content;
-        fieldsKeys.forEach(fieldKey => {
-            const possibleField = possibleFields.find(
-                pf => pf.name === fieldKey,
-            );
-            if (possibleField) {
-                const value = getValue(
-                    fieldKey,
-                    fileContent,
-                    possibleField.type,
+    return useMemo(() => {
+        const fields: Field[] = [];
+        if (possibleFields && entity?.attributes?.file_content) {
+            const fileContent = entity.attributes.file_content;
+            fieldsKeys.forEach(fieldKey => {
+                const possibleField = possibleFields.find(
+                    pf => pf.name === fieldKey,
                 );
-                fields.push({
-                    value,
-                    label: formatLabel(possibleField),
-                    type: possibleField.type,
-                    key: fieldKey,
-                });
-            }
-        });
-    }
-    return fields;
+                if (possibleField) {
+                    const value = getValue(
+                        fieldKey,
+                        fileContent,
+                        possibleField.type,
+                    );
+                    fields.push({
+                        value,
+                        label: formatLabel(possibleField),
+                        type: possibleField.type,
+                        key: fieldKey,
+                    });
+                }
+            });
+        }
+        return fields;
+    }, [fieldsKeys, entity, possibleFields, getValue]);
 };

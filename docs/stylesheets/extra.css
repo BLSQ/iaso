@@ -48,6 +48,8 @@ a.glightbox {
     max-width: 100%;
     margin-left: auto;
     margin-right: auto;
+    margin-bottom: 1rem;
+    margin-top: 1rem;
 }
 img.doc-shot,
 img.doc-shot-sm,

@@ -65,6 +65,7 @@ plugins:
           options:
             docstring_style: sphinx
 markdown_extensions:
+  - attr_list # size/align images: ![…](…){ width="400" } or { .doc-shot align=center }
   - markdown_include.include: # "import" bits of text in yout md file
       base_path: .
   - admonition  # add rst style admonitions to md. Useful when converting old rst docs

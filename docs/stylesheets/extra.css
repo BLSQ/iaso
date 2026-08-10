@@ -36,3 +36,29 @@
     margin-right: 8px;
     display: inline-block; 
 }
+
+/* Doc screenshot helpers — use with attr_list, e.g. ![](shot.png){ .doc-shot align=center } */
+img.doc-shot {
+  height: 240px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+img.doc-shot-sm {
+  height: 160px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+img.doc-shot-lg {
+  height: 360px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+img.doc-shot-phone {
+  height: 420px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}

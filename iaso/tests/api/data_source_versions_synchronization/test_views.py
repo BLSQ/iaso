@@ -186,7 +186,7 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
             f"'org_unit_group_ref': {self.group_2.pk}, "
             "'ignore_groups': True, "
             "'show_deleted_org_units': False, "
-            "'field_names': {'name'}"
+            "'field_names': ['name']"
             "}"
         )
         self.assertEqual(self.data_source_sync_1.diff_config, expected_diff_config_str)
@@ -213,6 +213,29 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
 
         self.data_source_sync_1.refresh_from_db()
         self.assertIsNone(self.data_source_sync_1.json_diff)
+
+    def test_create_json_diff_with_groups_and_code_and_geometry_in_field_names(self):
+        self.client.force_authenticate(self.user)
+
+        self.assertIsNone(self.data_source_sync_1.json_diff)
+
+        json_diff_params = {
+            "source_version_to_update_validation_status": m.OrgUnit.VALIDATION_NEW,
+            "source_version_to_compare_with_validation_status": m.OrgUnit.VALIDATION_NEW,
+            "source_version_to_update_org_unit_group": self.group_1.id,
+            "source_version_to_compare_with_org_unit_group": self.group_2.id,
+            "ignore_groups": True,
+            "show_deleted_org_units": False,
+            "field_names": ["name", "code", "geometry", "groups"],
+        }
+        response = self.client.patch(
+            f"/api/datasources/sync/{self.data_source_sync_1.id}/create_json_diff/", data=json_diff_params
+        )
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        self.data_source_sync_1.refresh_from_db()
+        self.assertIsNotNone(self.data_source_sync_1.json_diff)
+        self.assertIn("'field_names': ['code', 'geometry', 'name']", self.data_source_sync_1.diff_config)
 
     def test_synchronize_source_versions_async_without_perms(self):
         self.client.force_authenticate(self.user)

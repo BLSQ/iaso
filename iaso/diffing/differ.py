@@ -82,6 +82,10 @@ class Differ:
         elif not isinstance(field_names, list):
             field_names = list(field_names)
 
+        # Filter out groups
+        # groups are synchronizable, but are handled via the `ignore_groups` param.
+        field_names = [f for f in field_names if f != "groups"]
+
         orgunits_dhis2 = self.load_pyramid(
             version,
             validation_status=validation_status,

@@ -71,9 +71,7 @@ const createJsonDiffAsync = async ({
     }
 
     // Options
-    const nonEmptyFields = fieldsToExport.filter(
-        field => field !== 'geometry' && field !== 'groups' && field !== 'code',
-    );
+    const nonEmptyFields = fieldsToExport.filter(field => field !== 'groups');
     if (nonEmptyFields.length > 0) {
         params.field_names = nonEmptyFields;
     }

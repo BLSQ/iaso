@@ -490,6 +490,58 @@ class WebEntityAPITestCase(EntityAPITestCase):
         ]
         self.assertEqual(row_to_test, expected_row)
 
+    def test_list_entities_columns_with_blank_label_fields(self):
+        """start/end/calculate often have blank labels; columns must still be returned."""
+        self.client.force_authenticate(self.yoda)
+
+        possible_fields = [
+            {"name": "first_name", "type": "text", "label": "First Name"},
+            {"name": "start", "type": "start", "label": ""},
+            {"name": "end", "type": "end", "label": ""},
+            {"name": "score", "type": "calculate", "label": ""},
+        ]
+        form = m.Form.objects.create(
+            name="Meta fields form",
+            form_id="meta_fields_form",
+            possible_fields=possible_fields,
+        )
+        form.projects.add(self.project)
+        entity_type = m.EntityType.objects.create(
+            name="Type with meta fields",
+            reference_form=form,
+            account=self.account,
+            fields_list_view=["first_name", "start", "end", "score"],
+        )
+        instance = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=form,
+            json={
+                "first_name": "Ada",
+                "start": "2026-08-07T10:00:00.000+02:00",
+                "end": "2026-08-07T10:05:00.000+02:00",
+                "score": "42",
+            },
+        )
+        entity = Entity.objects.create(
+            entity_type=entity_type,
+            attributes=instance,
+            account=self.yoda.iaso_profile.account,
+        )
+
+        response = self.client.get(f"/api/entities/?entity_type_ids={entity_type.pk}", format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        payload = response.json()
+        self.assertEqual(len(payload["result"]), 1)
+        self.assertEqual(payload["result"][0]["id"], entity.id)
+        self.assertEqual(payload["result"][0]["start"], "2026-08-07T10:00:00.000+02:00")
+        self.assertEqual(payload["result"][0]["score"], "42")
+
+        columns_by_name = {column["name"]: column for column in payload["columns"]}
+        self.assertEqual(set(columns_by_name), {"first_name", "start", "end", "score"})
+        self.assertEqual(columns_by_name["start"]["label"], "start")
+        self.assertEqual(columns_by_name["end"]["label"], "end")
+        self.assertEqual(columns_by_name["score"]["label"], "score")
+
     def test_list_entities_search_uuid_filter(self):
         """
         Test the 'uuids:' search filter of /api/entities with comma-separated UUIDs

@@ -114,7 +114,10 @@ class EntityType(models.Model):
         for field_data in self.reference_form.possible_fields:
             name = field_data.get("name")
             if name in selected_fields:
-                fields[name] = field_data
+                # ODK start/end/calculate often have an empty label; fall back to name
+                # so list/export columns remain displayable and serializer-valid.
+                label = field_data.get("label") or name
+                fields[name] = {**field_data, "label": label}
 
         return list(fields.values())
 

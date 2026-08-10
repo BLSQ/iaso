@@ -1,0 +1,1950 @@
+<!DOCTYPE html><html lang="en" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      
+      <link rel="icon" href="../../../../assets/iaso-favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.2.6">
+    
+    
+      
+        <title>API synchronization - IASO</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.0e669242.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.85d0ee34.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  <link href="../../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#api-synchronization" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../../index.html" title="IASO" class="md-header__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IASO
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              API synchronization
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24Z"></path></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="api_synchronization.html" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../../fr/pages/dev/reference/guidelines/api_synchronization.html" hreflang="fr" class="md-select__link">
+              Français
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../../es/pages/dev/reference/guidelines/api_synchronization.html" hreflang="es" class="md-select__link">
+              Español
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"></path></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required="">
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"></path></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"></path></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"></path></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix="">
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/BLSQ/iaso" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+<!-- Navigation -->
+
+
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../../index.html" title="IASO" class="md-nav__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    IASO
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/BLSQ/iaso" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix="">
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../index.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2">
+        
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Users
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Users
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_concepts.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Concepts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_modules.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Modules
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/user_guide.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Web Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_mobile.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Mobile Application
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/how_to/use_form_ai.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Using Form AI
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3">
+        
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Developers
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Developers
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1">
+        
+          <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    References
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            References
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data_model_glossary.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data model glossary
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../SQL_Dashboard_feature.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SQL Dashboard feature
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docker.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Docker
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../background_tasks.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Background tasks &amp; worker
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../env_variables.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Environnement variables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_6">
+        
+          <label class="md-nav__link" for="__nav_3_1_6" id="__nav_3_1_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Models
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1_6">
+            <span class="md-nav__icon md-icon"></span>
+            Models
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API/entity.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API reference: Entity
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2">
+        
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    How to
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            How to
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/contribute.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contribute
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/setup_dev_env.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Setup a dev environment
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/use_iaso_apis.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Use iaso apis
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/build_odk_preview.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Building the ODK Web Forms preview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4">
+        
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    More about IASO
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            More about IASO
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.openiaso.com/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    IASO website
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.digitalpublicgoods.net/r/iaso" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Digital Public Goods Registry
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/BLSQ/iaso/releases" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Release notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.bluesquarehub.com/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Bluesquare website
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+            <!-- pdf download  -->
+            <div id="pdf-download-container">
+                <button id="pdf-download" type="button">
+                    <span id="button-text">Download current page</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#192041">
+                        <path d="M360-460h40v-80h40q17 0 28.5-11.5T480-580v-40q0-17-11.5-28.5T440-660h-80v200Zm40-120v-40h40v40h-40Zm120 120h80q17 0 28.5-11.5T640-500v-120q0-17-11.5-28.5T600-660h-80v200Zm40-40v-120h40v120h-40Zm120 40h40v-80h40v-40h-40v-40h40v-40h-80v200ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table of contents -->
+
+
+<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    Table of contents
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    Quick start
+  </a>
+  
+    <nav class="md-nav" aria-label="Quick start">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generate-openapi-schema" class="md-nav__link">
+    Generate OpenAPI schema
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-orval" class="md-nav__link">
+    Run orval
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#import-generated-hooks" class="md-nav__link">
+    Import generated hooks
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backend" class="md-nav__link">
+    Backend
+  </a>
+  
+    <nav class="md-nav" aria-label="Backend">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#setting-up-drf-spectacular" class="md-nav__link">
+    Setting up drf-spectacular
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documenting-your-endpoint" class="md-nav__link">
+    Documenting your endpoint
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-the-generated-openapi-schema" class="md-nav__link">
+    Testing the generated OpenAPI schema
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#utilities" class="md-nav__link">
+    Utilities
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#frontend" class="md-nav__link">
+    Frontend
+  </a>
+  
+    <nav class="md-nav" aria-label="Frontend">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    Configuration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generating-new-files" class="md-nav__link">
+    Generating new files
+  </a>
+  
+    <nav class="md-nav" aria-label="Generating new files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-define-the-mutation-invalidates-and-operations" class="md-nav__link">
+    1. Define the mutation invalidates and operations:
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-register-operations-in-the-central-configuration" class="md-nav__link">
+    2. Register operations in the central configuration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-add-an-entry-to-orval-config" class="md-nav__link">
+    3. Add an entry to orval config
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-generate-the-client" class="md-nav__link">
+    4. Generate the client
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integrating-react-query-hooks" class="md-nav__link">
+    Integrating React Query hooks
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-zod-schemas" class="md-nav__link">
+    Using zod schemas
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integrating-with-formik" class="md-nav__link">
+    Integrating with formik
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    Testing
+  </a>
+  
+    <nav class="md-nav" aria-label="Testing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#integration-testing-without-a-backend" class="md-nav__link">
+    Integration testing (without a backend)
+  </a>
+  
+    <nav class="md-nav" aria-label="Integration testing (without a backend)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-setup" class="md-nav__link">
+    1. Setup
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-mock-data" class="md-nav__link">
+    2. Mock data
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-deterministic-tests" class="md-nav__link">
+    3. Deterministic tests
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-simulating-loading-states" class="md-nav__link">
+    4. Simulating loading states
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-overriding-generated-mocks" class="md-nav__link">
+    5. Overriding generated mocks
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-summary" class="md-nav__link">
+    6. Summary
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e2e-tests" class="md-nav__link">
+    E2E Tests
+  </a>
+  
+    <nav class="md-nav" aria-label="E2E Tests">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-setup_1" class="md-nav__link">
+    1. Setup
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-functional-test-helpers" class="md-nav__link">
+    2. Functional Test Helpers
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-writing-tests" class="md-nav__link">
+    3. Writing Tests
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ci" class="md-nav__link">
+    CI
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#faq" class="md-nav__link">
+    FAQ
+  </a>
+  
+    <nav class="md-nav" aria-label="FAQ">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-do-i-extend-a-generated-zod-schema" class="md-nav__link">
+    How do I extend a generated Zod schema?
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-running-tests-with-msw-i-want-to-hide-all-the-logs-from-network-interceptor" class="md-nav__link">
+    When running tests with msw, I want to hide all the logs from network interceptor
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#known-issues-and-caveats" class="md-nav__link">
+    Known Issues and Caveats
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+        </div>
+    </div>
+</div>
+
+
+
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+    <a href="https://github.com/BLSQ/iaso/edit/main/docs/pages/dev/reference/guidelines/api_synchronization.en.md" title="Edit this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"></path></svg>
+    </a>
+  
+  
+
+
+<h1 id="api-synchronization">API synchronization<a class="headerlink" href="#api-synchronization" title="Permanent link">#</a></h1>
+<p>This document outlines how to effectively synchronize the backend and frontend using OpenAPI.</p>
+<p>We will primarily rely on the following tools:</p>
+<ul>
+<li><a href="https://drf-spectacular.readthedocs.io/en/latest/">drf-spectacular</a> (backend)</li>
+<li><a href="https://orval.dev/">orval</a> (frontend)</li>
+</ul>
+<hr>
+<h2 id="table-of-contents">Table of contents<a class="headerlink" href="#table-of-contents" title="Permanent link">#</a></h2>
+<ul>
+<li><a href="#quick-start">Quick start</a></li>
+<li><a href="#backend">Backend</a></li>
+<li><a href="#setting-up-drf-spectacular">Setting up drf-spectacular</a></li>
+<li><a href="#documenting-your-endpoint">Documenting your endpoint</a></li>
+<li><a href="#testing-the-generated-openapi-schema">Testing the generated OpenAPI schema</a></li>
+<li><a href="#utilities">Utilities</a></li>
+<li><a href="#frontend">Frontend</a></li>
+<li><a href="#configuration">Configuration</a></li>
+<li><a href="#generating-new-files">Generating new files</a></li>
+<li><a href="#integrating-react-query-hooks">Integrating React Query hooks</a></li>
+<li><a href="#using-zod-schemas">Using zod schemas</a></li>
+<li><a href="#integrating-with-formik">Integrating with formik</a></li>
+<li><a href="#testing">Testing</a><ul>
+<li><a href="#integration-testing-without-a-backend">Integration testing (without a backend)</a></li>
+<li><a href="#e2e-tests">E2E Tests</a></li>
+</ul>
+</li>
+<li><a href="#ci">CI</a></li>
+<li><a href="#faq">FAQ</a></li>
+<li><a href="#known-issues-and-caveats">Known Issues and Caveats</a></li>
+</ul>
+<hr>
+<h2 id="quick-start">Quick start<a class="headerlink" href="#quick-start" title="Permanent link">#</a></h2>
+<p>The typical workflow is:</p>
+<ol>
+<li>Update backend (serializers / views)</li>
+<li>Generate OpenAPI schema</li>
+<li>Run Orval</li>
+<li>Use generated hooks in frontend</li>
+<li>Test with MSW and/or E2E</li>
+</ol>
+<h3 id="generate-openapi-schema">Generate OpenAPI schema<a class="headerlink" href="#generate-openapi-schema" title="Permanent link">#</a></h3>
+<pre><code class="language-shell">python manage.py generate_openapi_schema
+</code></pre>
+<h3 id="run-orval">Run orval<a class="headerlink" href="#run-orval" title="Permanent link">#</a></h3>
+<pre><code class="language-shell">npm run orval
+</code></pre>
+<h3 id="import-generated-hooks">Import generated hooks<a class="headerlink" href="#import-generated-hooks" title="Permanent link">#</a></h3>
+<pre><code class="language-typescript">import { useGetSomething } from '...'
+</code></pre>
+<hr>
+<h2 id="backend">Backend<a class="headerlink" href="#backend" title="Permanent link">#</a></h2>
+<p>To enable client side typescript generation from our swagger, we first need to make sure that our swagger is as accurate as possible.</p>
+<h3 id="setting-up-drf-spectacular">Setting up drf-spectacular<a class="headerlink" href="#setting-up-drf-spectacular" title="Permanent link">#</a></h3>
+<p>To generate the OpenAPI schema from the backend, we use <a href="https://drf-spectacular.readthedocs.io/en/latest/">drf-spectacular</a>, a library designed to integrate seamlessly with Django REST Framework.</p>
+<p>Most of the configuration is defined in <code>settings.py</code>:</p>
+<pre><code class="language-python">SPECTACULAR_SETTINGS = {
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "REDOC_DIST": "SIDECAR",
+    "TITLE": "Iaso",
+    "DESCRIPTION": "Iaso Swagger",
+    "VERSION": "v1",
+    "SERVE_PERMISSIONS": [
+        "iaso.drf_spectacular_utils.permissions.HasAccountAndProfile",
+    ],
+    "TAGS": [
+        {"name": "Mobile", "description": "Endpoints used by the mobile application"},
+        {"name": "v2", "description": "Version 2 of the API"},
+    ],
+    "SWAGGER_UI_SETTINGS": {  # see https://swagger.io/docs/open-source-tools/swagger-ui/usage/configuration/
+        "defaultModelsExpandDepth": 0,  # collapsing schemas by default
+        "docExpansion": "list",  # put this to "none" if you want all the sections to be collapsed by default
+        "tagsSorter": "alpha",  # sorting tags by alphanumeric
+        "displayOperationId": bool(DEBUG),
+    },
+    "DISABLE_ERRORS_AND_WARNINGS": get_env_var_or_default("DRF_SPECTACULAR_DISABLE_ERRORS_AND_WARNINGS", "true").lower()
+    in ["true", "1"],
+    # "COMPONENT_NO_READ_ONLY_REQUIRED": True,
+    "COMPONENT_SPLIT_REQUEST": True,
+}
+</code></pre>
+<h3 id="documenting-your-endpoint">Documenting your endpoint<a class="headerlink" href="#documenting-your-endpoint" title="Permanent link">#</a></h3>
+<p>Here are some best practices to ensure your endpoints are well-documented and compatible with OpenAPI generation using drf-spectacular:</p>
+<ul>
+<li>Use <strong>serializers</strong> for request and response bodies</li>
+<li>Use <strong>filters</strong> / <strong>query parameters</strong> for GET inputs (via django-filter or DRF filters)</li>
+<li>Explicitly document custom fields:</li>
+<li>For <code>SerializerMethodField</code>, always annotate the method with <code>@extend_schema_field</code></li>
+<li>Prefer explicit <code>@extend_schema</code> annotations when behavior is non-trivial</li>
+</ul>
+<p>Once your ViewSet is ready, always verify the schema using your Swagger UI (e.g. /swagger-ui/) to ensure:</p>
+<ul>
+<li>fields are correctly typed</li>
+<li>parameters are visible</li>
+<li>no endpoints are missing</li>
+</ul>
+<h3 id="testing-the-generated-openapi-schema">Testing the generated OpenAPI schema<a class="headerlink" href="#testing-the-generated-openapi-schema" title="Permanent link">#</a></h3>
+<p>We provide a custom <code>SwaggerTestCaseMixin</code> to validate that API responses conform to the declared schema.</p>
+<p>Example:</p>
+<pre><code class="language-python">from iaso.test import SwaggerTestCaseMixin, APITestCase
+
+class BaseProfileAPITestCase(SwaggerTestCaseMixin, APITestCase):
+    def assertValidSchema(self):
+        url = "/api/profile/"
+        res = self.client.get(url)
+        res_json = self.assertJSONResponse(res, 200)
+        self.assertResponseCompliantToSwagger(res_json, "MySchema")
+</code></pre>
+<p>This ensures that:</p>
+<ul>
+<li>your endpoint response matches the documented schema</li>
+<li>regressions are caught early in backend tests</li>
+</ul>
+<h3 id="utilities">Utilities<a class="headerlink" href="#utilities" title="Permanent link">#</a></h3>
+<p>A Django management command is available to automatically generate an OpenAPI schema file.</p>
+<pre><code class="language-shell">python manage.py generate_openapi_schema
+</code></pre>
+<hr>
+<h2 id="frontend">Frontend<a class="headerlink" href="#frontend" title="Permanent link">#</a></h2>
+<p>We use Orval to generate frontend code from the OpenAPI specification defined by the backend.</p>
+<p>This enables the automatic generation of:</p>
+<ul>
+<li>MSW mocks</li>
+<li>React Query hooks</li>
+<li>Zod schemas and validation</li>
+</ul>
+<h3 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">#</a></h3>
+<p>As described in the documentation, all configuration is defined in <code>orval.config.ts</code>.</p>
+<p>Several environment variables are also available to control the generation process:</p>
+<ul>
+<li><code>ORVAL_TARGET_URL_PROTOCOL</code>: <code>http</code> or <code>https</code>, the protocol used in the URL to fetch the OpenAPI schema</li>
+<li><code>ORVAL_TARGET_URL_DOMAIN</code>: default <code>localhost:8000</code>, the host serving the OpenAPI schema</li>
+<li><code>ORVAL_API_BASE_URL</code>: the base url that will be appended to your generated hooks for the API.</li>
+<li><code>ORVAL_TARGET_FILE</code>: path to a local OpenAPI file, if used instead of a remote endpoint</li>
+<li><code>API_TOKEN</code>: bearer token used when fetching the schema from a protected /swagger/ endpoint</li>
+<li><code>MSW_DELAY</code>: adds an artificial delay to MSW mocks, useful for simulating loading states during development and testing</li>
+</ul>
+<h3 id="generating-new-files">Generating new files<a class="headerlink" href="#generating-new-files" title="Permanent link">#</a></h3>
+<p>We have split the <code>orval.config.ts</code> into multiple projects, allowing selective regeneration of specific parts of the API without overwriting the entire generated client.</p>
+<p>Each project should be associated with at least one OpenAPI tag.</p>
+<p>To add a new project:</p>
+<h4 id="1-define-the-mutation-invalidates-and-operations">1. Define the mutation invalidates and operations:<a class="headerlink" href="#1-define-the-mutation-invalidates-and-operations" title="Permanent link">#</a></h4>
+<p>Under <code>./hat/assets/js/orval/apiConfiguration</code>, create a folder named after your project.</p>
+<p>Add a <code>configuration.ts</code> file that defines:</p>
+<ul>
+<li>query configurations</li>
+<li>mutation → cache invalidation rules</li>
+</ul>
+<p>Example:</p>
+<pre><code class="language-typescript">export const workflowsOperations = {
+    apiValidationWorkflowsList: {
+        query: {
+            options: {
+                retry: false,
+                staleTime: Infinity,
+                cacheTime: Infinity,
+                keepPreviousData: true,
+            },
+        },
+    },
+    apiValidationWorkflowsRetrieve: {
+        query: {
+            options: {
+                staleTime: Infinity,
+                cacheTime: Infinity,
+                keepPreviousData: true,
+            },
+        },
+    },
+};
+
+export const mutationInvalidates = [
+    {
+        onMutations: [
+            'apiValidationWorkflowsDestroy',
+            'apiValidationWorkflowsUpdate',
+            'apiValidationWorkflowsPartialUpdate',
+        ],
+        invalidates: [
+            'apiValidationWorkflowsList',
+            { query: 'apiValidationWorkflowsRetrieve', params: ['slug'] },
+        ],
+    },
+    {
+        onMutations: ['apiValidationWorkflowsCreate'],
+        invalidates: ['apiValidationWorkflowsList'],
+    },
+];
+</code></pre>
+<p>Note that it's possible to make a GET operations locale aware, meaning react queries will trigger again if the locale changes.</p>
+<p>Example: </p>
+<pre><code class="language-typescript">export const modulesOperations = {
+    apiModulesList: {
+        query: {
+            meta: {
+                localeAware: true,
+            },
+            options: {
+                retry: false,
+                staleTime: Infinity,
+                cacheTime: Infinity,
+                keepPreviousData: true,
+            },
+        },
+    },
+    apiModulesDropdownList: {
+        query: {
+            meta: {
+                localeAware: true,
+            },
+            options: {
+                retry: false,
+                staleTime: Infinity,
+                cacheTime: Infinity,
+                keepPreviousData: true,
+            },
+        },
+    },
+};
+</code></pre>
+<h4 id="2-register-operations-in-the-central-configuration">2. Register operations in the central configuration<a class="headerlink" href="#2-register-operations-in-the-central-configuration" title="Permanent link">#</a></h4>
+<p>Do not forget to export your operations in <code>apiConfiguration/index.ts</code>. (This will allow one of our custom orval fix to work.)</p>
+<p>Example:</p>
+<pre><code class="language-typescript">
+import { workflowsOperations } from './validationWorkflows/configuration';
+
+export const OperationConfig: Record&lt;string, any&gt; = {
+    operations: {
+        ...workflowsOperations,
+    },
+};
+</code></pre>
+<h4 id="3-add-an-entry-to-orval-config">3. Add an entry to orval config<a class="headerlink" href="#3-add-an-entry-to-orval-config" title="Permanent link">#</a></h4>
+<p>Add a new entry in <code>orval.config.ts</code>:</p>
+<pre><code class="language-javascript">module.exports = {
+    ...,
+    validationWorkflows: createConfig(
+            &lt;your_project&gt;, 
+            [&lt;related_openapi_tags&gt;], 
+            your_mutation_array
+    ),
+};
+</code></pre>
+<h4 id="4-generate-the-client">4. Generate the client<a class="headerlink" href="#4-generate-the-client" title="Permanent link">#</a></h4>
+<p>Once everything is configured, run:</p>
+<pre><code class="language-shell">npm run orval -- --project=&lt;your_project&gt; 
+</code></pre>
+<p>or </p>
+<pre><code class="language-shell">npm run orval 
+</code></pre>
+<p>This will generate the new API module, ready to be used in the codebase.</p>
+<h3 id="integrating-react-query-hooks">Integrating React Query hooks<a class="headerlink" href="#integrating-react-query-hooks" title="Permanent link">#</a></h3>
+<p>Orval generates React Query hooks under <code>./hat/assets/js/apps/Iaso/api/&lt;your_project&gt;/endpoints/</code>, which can be directly used in the application.</p>
+<p>Example usage:</p>
+<pre><code class="language-typescript">
+import {
+    useApiValidationWorkflowsCreate,
+    useApiValidationWorkflowsRetrieve,
+} from 'Iaso/api/validationWorkflows';
+
+useApiValidationWorkflowsRetrieve()
+</code></pre>
+<p>Each generated hook comes with the default React Query options defined in the project configuration (see operations and mutationInvalidates). 
+These defaults ensure consistent caching and invalidation behavior across the application.</p>
+<p>These options can still be overridden at call time if needed:</p>
+<pre><code class="language-typescript">
+useApiValidationWorkflowsRetrieve(slug, {...otherQueryOptions})
+</code></pre>
+<h3 id="using-zod-schemas">Using zod schemas<a class="headerlink" href="#using-zod-schemas" title="Permanent link">#</a></h3>
+<p>WIP</p>
+<h3 id="integrating-with-formik">Integrating with formik<a class="headerlink" href="#integrating-with-formik" title="Permanent link">#</a></h3>
+<p>Each generated endpoints comed with zod schemas that we can reuse into formik. 
+In order to achieve this, we'll use <a href="#https://github.com/robertLichtnow/zod-formik-adapter">zod-formik-adapter</a> that allows us to convert zod schemas to formik compatible validation schemas.</p>
+<p>There is also a wrapper utility function <code>withFormikSubmitAsync</code> that you can use in the formik <code>save</code> method to automatically display errors from the backend.</p>
+<p>Here under an example:</p>
+<pre><code class="language-typescript">
+import React from 'react';
+import { Alert, Box } from '@mui/material';
+import {
+    ConfirmCancelModal,
+    makeFullModal,
+    useSafeIntl,
+} from 'bluesquare-components';
+import { Field, FormikProvider, useFormik } from 'formik';
+import { toFormikValidationSchema } from 'zod-formik-adapter';
+import {
+    AccountUpdateAIApiKeyRequest,
+    useApiAccountsAiApiKeyUpdate,
+} from 'Iaso/api/accounts';
+import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
+import PasswordInput from 'Iaso/components/forms/PasswordInput';
+import MESSAGES from 'Iaso/domains/accounts/messages';
+import { withFormikSubmitAsync } from 'Iaso/utils/forms';
+
+type Props = {
+    accountId: number;
+    isOpen: boolean;
+    closeDialog: () =&gt; void;
+};
+
+const EditAIApiKeyModal = ({ accountId, isOpen, closeDialog }: Props) =&gt; {
+    const { formatMessage } = useSafeIntl();
+    const { mutateAsync: saveAIApiKey } = useApiAccountsAiApiKeyUpdate({
+        mutation: {
+            ignoreErrorCodes: [400],
+        },
+    });
+    const formik = useFormik({
+        initialValues: {},
+        validationSchema: toFormikValidationSchema(
+            AccountUpdateAIApiKeyRequest,
+        ),
+        onSubmit: withFormikSubmitAsync(values =&gt;
+            saveAIApiKey({
+                id: accountId,
+                data: values as AccountUpdateAIApiKeyRequest,
+            }),
+        ),
+    });
+    ...
+
+</code></pre>
+<h3 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">#</a></h3>
+<p>The generated code includes a set of testing utilities that make it easier to write efficient and reliable tests:</p>
+<ul>
+<li>MSW mocks</li>
+<li>Faker.js integration</li>
+</ul>
+<h4 id="integration-testing-without-a-backend">Integration testing (without a backend)<a class="headerlink" href="#integration-testing-without-a-backend" title="Permanent link">#</a></h4>
+<p>These tools allow us to mock API calls, meaning a backend is no longer required for integration testing.</p>
+<h5 id="1-setup">1. Setup<a class="headerlink" href="#1-setup" title="Permanent link">#</a></h5>
+<p>Import the required MSW mocks in your test:</p>
+<pre><code class="language-typescript">import {
+    getValidationWorkflowsMock,
+} from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows.msw';
+
+const server = setupServer(...getValidationWorkflowsMock());
+</code></pre>
+<p>Configure the MSW server using Vitest hooks:</p>
+<pre><code class="language-typescript">describe(() =&gt; {
+  beforeAll(() =&gt; {
+    server.listen({
+      onUnhandledRequest: 'error',
+    });
+    faker.seed(1); // if you want "fixed" generated mock data 
+  });
+
+  afterEach(() =&gt; {
+    server.resetHandlers();
+    TestingQueryClient.clear();
+  });
+
+  afterAll(() =&gt; {
+    faker.seed(Date.now()); // reset
+    server.close();
+  });
+  beforeEach(() =&gt; {
+    vi.clearAllMocks();
+    vi.unstubAllEnvs();
+  });
+});
+
+</code></pre>
+<h5 id="2-mock-data">2. Mock data<a class="headerlink" href="#2-mock-data" title="Permanent link">#</a></h5>
+<p>By default, generated mocks return randomized data using Faker.js.</p>
+<p>If you need a specific response for a given call, you can override it:</p>
+<pre><code class="language-typescript">import {
+  getApiValidationWorkflowsListResponseMock,
+  getApiValidationWorkflowsListMockHandler,
+} from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows.msw';
+
+const data = getApiValidationWorkflowsListResponseMock({
+  count: 2,
+  has_next: false,
+  has_previous: false,
+  limit: 10,
+  pages: 1,
+  page: 1,
+}) as WithResults;
+
+server.use(
+        getApiValidationWorkflowsListMockHandler(validationWorkFlows),
+);
+</code></pre>
+<h5 id="3-deterministic-tests">3. Deterministic tests<a class="headerlink" href="#3-deterministic-tests" title="Permanent link">#</a></h5>
+<p>To avoid flaky tests caused by random data, you may need to fix the Faker seed. A helper function <code>getSeedFor</code> is available to help determine a stable seed.</p>
+<h5 id="4-simulating-loading-states">4. Simulating loading states<a class="headerlink" href="#4-simulating-loading-states" title="Permanent link">#</a></h5>
+<p>You can simulate network latency using the MSW_DELAY environment variable:</p>
+<pre><code class="language-typescript">
+it('displays a spinner while loading', async () =&gt; {
+    vi.stubEnv('MSW_DELAY', '1000000');
+})
+</code></pre>
+<h5 id="5-overriding-generated-mocks">5. Overriding generated mocks<a class="headerlink" href="#5-overriding-generated-mocks" title="Permanent link">#</a></h5>
+<p>Generated handlers can be overridden when needed:</p>
+<pre><code class="language-typescript">const customMockHandlers = {
+  // @ts-ignore
+  destroy: getApiValidationWorkflowsDestroyMockHandler(async info =&gt; {
+    mockDeleteWorkflow(info.params.slug);
+    return new HttpResponse(null, { status: 204 });
+  }),
+};
+
+server.use(
+   getApiValidationWorkflowsListMockHandler(validationWorkFlows),
+   customMockHandlers.destroy,
+);
+</code></pre>
+<h5 id="6-summary">6. Summary<a class="headerlink" href="#6-summary" title="Permanent link">#</a></h5>
+<p>These tools make it easy to define flexible API mocks and thoroughly test the frontend without requiring a running backend.</p>
+<h4 id="e2e-tests">E2E Tests<a class="headerlink" href="#e2e-tests" title="Permanent link">#</a></h4>
+<p>In addition to mocked integration tests, we can also run true end-to-end (E2E) tests against the real backend.</p>
+<p>This approach validates complete user flows, including basic CRUD operations, and ensures that the frontend and backend interact correctly in a real environment.</p>
+<p>To support this, a set of backend testing helpers has been introduced. These helpers allow programmatic data setup and cleanup, enabling reliable and repeatable E2E tests without manual intervention.</p>
+<h6 id="1-setup_1">1. Setup<a class="headerlink" href="#1-setup_1" title="Permanent link">#</a></h6>
+<p>In your <code>settings.py</code>, set the <code>TEST_MODE</code> variable to <code>True</code> to enable the functional test (FT) helpers.</p>
+<p>When using this mode, it is strongly recommended to use a dedicated database, as it will be flushed during tests.</p>
+<h6 id="2-functional-test-helpers">2. Functional Test Helpers<a class="headerlink" href="#2-functional-test-helpers" title="Permanent link">#</a></h6>
+<p>The API exposes several endpoints to support E2E testing and database management:</p>
+<ul>
+<li>
+<p><code>/api/ft-helpers/clean-database/</code><br>
+  Resets the backend database by flushing all data.</p>
+</li>
+<li>
+<p><code>/api/ft-helpers/create-user/</code><br>
+  Creates a user that can be used for authentication during tests.</p>
+</li>
+<li>
+<p><code>/api/token/</code><br>
+  Returns an authentication token using the credentials of the created user. This token can then be included in request headers.</p>
+</li>
+</ul>
+<h6 id="3-writing-tests">3. Writing Tests<a class="headerlink" href="#3-writing-tests" title="Permanent link">#</a></h6>
+<p>Below is an example of an E2E test with a running backend.
+These tests should be located under: <code>__tests__/api/&lt;project&gt;.api.test.tsx</code>
+To avoid any issue with the backend, you need to run a special command for those tests : </p>
+<pre><code class="language-shell">npm run test:api-e2e
+</code></pre>
+<pre><code class="language-typescript">
+import { act, renderHook, waitFor } from '@testing-library/react';
+import {
+    useApiValidationWorkflowsCreate,
+    useApiValidationWorkflowsRetrieve,
+} from 'Iaso/api/validationWorkflows';
+import { useCustomApiValidationWorkflowsList } from 'Iaso/domains/instances/validationWorkflow/api/Get';
+import { SUBMISSION_VALIDATION_WORKFLOW } from 'Iaso/utils/featureFlags';
+import { cleanDatabase, createUserAndGetToken } from '../../tests/ft_helpers';
+import { QueryClientWrapperWithIntlProvider } from '../../tests/helpers';
+
+let token: any;
+
+describe('ValidationWorkflow api e2e tests', () =&gt; {
+    beforeEach(async () =&gt; {
+        // clean DB
+        await cleanDatabase();
+
+        // create user and retrieve token
+        token = await createUserAndGetToken({
+            username: 'myuser',
+            password: 'mypasswordnotsosecure',
+            account_name: 'myaccountname',
+            feature_flags: [SUBMISSION_VALIDATION_WORKFLOW],
+            is_superuser: true,
+            is_staff: true
+        });
+    });
+
+    it('CRUD accordingly', async () =&gt; {
+        const { result: resultList } = renderHook(
+            () =&gt;
+                useCustomApiValidationWorkflowsList(
+                    {},
+                    {
+                        request: {
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                            },
+                        },
+                    },
+                ),
+            { wrapper: QueryClientWrapperWithIntlProvider },
+        );
+
+        await waitFor(() =&gt; expect(resultList.current.isSuccess).toBe(true));
+
+        expect(resultList.current.data).toStrictEqual({
+            count: 0,
+            has_next: false,
+            has_previous: false,
+            limit: 20,
+            page: 1,
+            pages: 1,
+            results: [],
+        });
+
+        // create validation workflow
+        const { result: resultCreate } = renderHook(
+            () =&gt;
+                useApiValidationWorkflowsCreate({
+                    request: {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    },
+                }),
+            { wrapper: QueryClientWrapperWithIntlProvider },
+        );
+
+        await act(async () =&gt; {
+            await resultCreate.current.mutateAsync({
+                data: {
+                    name: 'test-validation-workflow',
+                    description: 'a description',
+                },
+            });
+        });
+
+        await waitFor(() =&gt; {
+            expect(resultCreate.current.isSuccess).toBe(true);
+            expect(resultCreate.current.isError).toBe(false);
+        });
+
+        await act(async () =&gt; {
+            await resultList.current.refetch();
+        });
+
+        await waitFor(() =&gt; expect(resultList.current.isSuccess).toBe(true));
+
+        expect(resultList.current.data).toMatchObject({
+            count: 1,
+            has_next: false,
+            has_previous: false,
+            limit: 20,
+            page: 1,
+            pages: 1,
+        });
+        expect(resultList.current.data?.results.length).toBe(1);
+        expect(resultList.current.data?.results[0]).toMatchObject({
+            name: 'test-validation-workflow',
+            slug: 'test-validation-workflow',
+            form_count: 0,
+            created_by: 'myuser',
+            updated_by: null,
+        });
+
+        expect(resultList.current.data?.results[0].updated_at).not.toBeNull();
+        expect(resultList.current.data?.results[0].created_at).not.toBeNull();
+
+        // retrieve
+        const { result: resultRetrieve } = renderHook(
+            () =&gt;
+                useApiValidationWorkflowsRetrieve('test-validation-workflow', {
+                    request: {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    },
+                }),
+            { wrapper: QueryClientWrapperWithIntlProvider },
+        );
+
+        await waitFor(() =&gt; {
+            expect(resultRetrieve.current.isSuccess).toBe(true);
+        });
+
+        expect(resultRetrieve.current.data).toMatchObject({
+            created_by: 'myuser',
+            description: 'a description',
+            forms: [],
+            name: 'test-validation-workflow',
+            node_templates: [],
+            slug: 'test-validation-workflow',
+            updated_by: null,
+        });
+
+        expect(resultRetrieve.current.data?.updated_at).not.toBeNull();
+        expect(resultRetrieve.current.data?.created_at).not.toBeNull();
+
+        // update
+
+        // check with read and list
+
+        // delete
+    });
+});
+
+
+
+</code></pre>
+<h4 id="ci">CI<a class="headerlink" href="#ci" title="Permanent link">#</a></h4>
+<p>Since Orval-generated files must be committed and pushed to the repository, a CI check ensures they are always up to date.</p>
+<p>This helps prevent inconsistencies between the OpenAPI schema and the generated client, reducing the risk of runtime errors.</p>
+<hr>
+<h2 id="faq">FAQ<a class="headerlink" href="#faq" title="Permanent link">#</a></h2>
+<h3 id="how-do-i-extend-a-generated-zod-schema">How do I extend a generated Zod schema?<a class="headerlink" href="#how-do-i-extend-a-generated-zod-schema" title="Permanent link">#</a></h3>
+<p>You can extend a generated schema using Zod’s <code>.extend()</code> method:</p>
+<pre><code class="language-typescript">import { BaseSchema } from "project/models";
+
+const NewSchema = BaseSchema.extend({
+  // add or override fields here
+});
+</code></pre>
+<p>This allows you to reuse the generated schema while customizing it for your specific needs.</p>
+<h3 id="when-running-tests-with-msw-i-want-to-hide-all-the-logs-from-network-interceptor">When running tests with msw, I want to hide all the logs from network interceptor<a class="headerlink" href="#when-running-tests-with-msw-i-want-to-hide-all-the-logs-from-network-interceptor" title="Permanent link">#</a></h3>
+<p>In your .env :</p>
+<pre><code class="language-dotenv">VITEST_DEBUG="!msw:*"
+</code></pre>
+<hr>
+<h2 id="known-issues-and-caveats">Known Issues and Caveats<a class="headerlink" href="#known-issues-and-caveats" title="Permanent link">#</a></h2>
+<ol>
+<li>
+<p><strong>Zod integration</strong><br>
+   Orval does not currently support Zod parsing out of the box when using <code>react-query</code> with custom fetchers, mutators, or HTTP clients. This is a known limitation and is still a work in progress on their side:<br>
+   https://github.com/orval-labs/orval/issues/2858 https://github.com/orval-labs/orval/pull/3226</p>
+</li>
+<li>
+<p><strong>Missing operations with custom mutators</strong><br>
+   When using custom mutators, some operations may not be generated. Refer to the implementation in <code>custom-mutators</code> for details and workarounds.</p>
+</li>
+<li>
+<p><strong>Upstream bugs</strong><br>
+   A few issues originate from Orval itself. Temporary fixes have been applied locally using <code>patch-package</code> until upstream fixes are available.</p>
+</li>
+</ol>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../../..", "features": ["content.action.edit"], "search": "../../../../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.78eede0e.min.js"></script>
+      
+        <script src="../../../../extrajs/html2pdf.bundle.min.js"></script>
+      
+        <script src="../../../../extrajs/pdfDownload.js"></script>
+      
+        <script src="https://plausible.io/js/script.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>

@@ -1,0 +1,2208 @@
+<!DOCTYPE html><html lang="en" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/iaso-favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.2.6">
+    
+    
+      
+        <title>OpenHexa Integration with Iaso - IASO</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.0e669242.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.85d0ee34.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#openhexa-integration-with-iaso" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../index.html" title="IASO" class="md-header__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../assets/iaso.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IASO
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              OpenHexa Integration with Iaso
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24Z"></path></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="openhexa-integration.html" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../fr/pages/dev/how_to/openhexa-integration.html" hreflang="fr" class="md-select__link">
+              Français
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../es/pages/dev/how_to/openhexa-integration.html" hreflang="es" class="md-select__link">
+              Español
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"></path></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required="">
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"></path></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"></path></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"></path></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix="">
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/BLSQ/iaso" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+<!-- Navigation -->
+
+
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../index.html" title="IASO" class="md-nav__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../assets/iaso.png" alt="logo">
+
+    </a>
+    IASO
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/BLSQ/iaso" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix="">
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../index.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2">
+        
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Users
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Users
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../users/reference/iaso_concepts.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Concepts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../users/reference/iaso_modules.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Modules
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../users/reference/user_guide.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Web Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../users/reference/iaso_mobile.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Mobile Application
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../users/how_to/use_form_ai.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Using Form AI
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3">
+        
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Developers
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Developers
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1">
+        
+          <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    References
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            References
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/data_model_glossary.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data model glossary
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/SQL_Dashboard_feature.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SQL Dashboard feature
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/docker.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Docker
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/background_tasks.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Background tasks &amp; worker
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/env_variables.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Environnement variables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_6">
+        
+          <label class="md-nav__link" for="__nav_3_1_6" id="__nav_3_1_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Models
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1_6">
+            <span class="md-nav__icon md-icon"></span>
+            Models
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/API/entity.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API reference: Entity
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2">
+        
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    How to
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            How to
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="contribute.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contribute
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="setup_dev_env.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Setup a dev environment
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="use_iaso_apis.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Use iaso apis
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="build_odk_preview.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Building the ODK Web Forms preview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4">
+        
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    More about IASO
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            More about IASO
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.openiaso.com/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    IASO website
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.digitalpublicgoods.net/r/iaso" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Digital Public Goods Registry
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/BLSQ/iaso/releases" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Release notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.bluesquarehub.com/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Bluesquare website
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+            <!-- pdf download  -->
+            <div id="pdf-download-container">
+                <button id="pdf-download" type="button">
+                    <span id="button-text">Download current page</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#192041">
+                        <path d="M360-460h40v-80h40q17 0 28.5-11.5T480-580v-40q0-17-11.5-28.5T440-660h-80v200Zm40-120v-40h40v40h-40Zm120 120h80q17 0 28.5-11.5T640-500v-120q0-17-11.5-28.5T600-660h-80v200Zm40-40v-120h40v120h-40Zm120 40h40v-80h40v-40h-40v-40h40v-40h-80v200ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table of contents -->
+
+
+<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    Table of Contents
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-setup" class="md-nav__link">
+    Configuration Setup
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-openhexa-configuration-in-iaso" class="md-nav__link">
+    1. OpenHexa Configuration in Iaso
+  </a>
+  
+    <nav class="md-nav" aria-label="1. OpenHexa Configuration in Iaso">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#openhexainstance-model" class="md-nav__link">
+    OpenHEXAInstance Model
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openhexaworkspace-model" class="md-nav__link">
+    OpenHEXAWorkspace Model
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workspace-config-structure-account-level-pipeline-parameters" class="md-nav__link">
+    Workspace config structure (account-level pipeline parameters)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-openhexa-workspace-setup" class="md-nav__link">
+    2. OpenHexa Workspace Setup
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openhexa-pipeline-parameters" class="md-nav__link">
+    OpenHexa Pipeline Parameters
+  </a>
+  
+    <nav class="md-nav" aria-label="OpenHexa Pipeline Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#supported-parameter-types" class="md-nav__link">
+    Supported Parameter Types
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameter-properties" class="md-nav__link">
+    Parameter Properties
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameter-definition-example" class="md-nav__link">
+    Parameter Definition Example
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-openhexa-pipelines" class="md-nav__link">
+    Creating OpenHexa Pipelines
+  </a>
+  
+    <nav class="md-nav" aria-label="Creating OpenHexa Pipelines">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-initialize-pipeline-project" class="md-nav__link">
+    1. Initialize Pipeline Project
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-pipeline-structure" class="md-nav__link">
+    2. Pipeline Structure
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-basic-pipeline-template" class="md-nav__link">
+    3. Basic Pipeline Template
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-publish-pipeline" class="md-nav__link">
+    4. Publish Pipeline
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pipeline-development" class="md-nav__link">
+    Pipeline Development
+  </a>
+  
+    <nav class="md-nav" aria-label="Pipeline Development">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-local-development-setup" class="md-nav__link">
+    1. Local Development Setup
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Local Development Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#install-ngrok" class="md-nav__link">
+    Install ngrok
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#start-ngrok-tunnel" class="md-nav__link">
+    Start ngrok Tunnel
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update-openhexa-connection" class="md-nav__link">
+    Update OpenHexa Connection
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-pipeline-testing" class="md-nav__link">
+    2. Pipeline Testing
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#task-management" class="md-nav__link">
+    Task Management
+  </a>
+  
+    <nav class="md-nav" aria-label="Task Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-task-creation" class="md-nav__link">
+    1. Task Creation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-task-status-updates" class="md-nav__link">
+    2. Task Status Updates
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-task-status-values" class="md-nav__link">
+    3. Task Status Values
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#development-utilities" class="md-nav__link">
+    Development Utilities
+  </a>
+  
+    <nav class="md-nav" aria-label="Development Utilities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#openhexa-configuration-utilities" class="md-nav__link">
+    OpenHexa Configuration Utilities
+  </a>
+  
+    <nav class="md-nav" aria-label="OpenHexa Configuration Utilities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get_openhexa_configaccount" class="md-nav__link">
+    get_openhexa_config(account)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#require_openhexa_config-decorator" class="md-nav__link">
+    @require_openhexa_config Decorator
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#with_openhexa_config-decorator" class="md-nav__link">
+    @with_openhexa_config Decorator
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-examples" class="md-nav__link">
+    Usage Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#in-management-commands" class="md-nav__link">
+    In Management Commands
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#in-celery-tasks" class="md-nav__link">
+    In Celery Tasks
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-integration" class="md-nav__link">
+    API Integration
+  </a>
+  
+    <nav class="md-nav" aria-label="API Integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#permissions-pipeline-management" class="md-nav__link">
+    Permissions (Pipeline management)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1-configuration-check-api" class="md-nav__link">
+    1. Configuration Check API
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-pipeline-list-api" class="md-nav__link">
+    2. Pipeline List API
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-pipeline-details-api" class="md-nav__link">
+    3. Pipeline Details API
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-launch-pipeline-api" class="md-nav__link">
+    4. Launch Pipeline API
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-update-task-status-api" class="md-nav__link">
+    5. Update Task Status API
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#frontend-integration" class="md-nav__link">
+    Frontend Integration
+  </a>
+  
+    <nav class="md-nav" aria-label="Frontend Integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pipeline-management-interface" class="md-nav__link">
+    Pipeline Management Interface
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-features" class="md-nav__link">
+    Key Features
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    Troubleshooting
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-issues" class="md-nav__link">
+    Common Issues
+  </a>
+  
+    <nav class="md-nav" aria-label="Common Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-403-forbidden-on-apiopenhexapipelines-or-the-pipelines-dashboard" class="md-nav__link">
+    1. 403 Forbidden on /api/openhexa/pipelines/ or the pipelines dashboard
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-no-openhexa-workspace-configured-for-your-account" class="md-nav__link">
+    2. "No OpenHEXA workspace configured for your account"
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-user-profile-not-found" class="md-nav__link">
+    3. "User profile not found"
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-the-provided-config-contains-invalid-keys" class="md-nav__link">
+    4. "The provided config contains invalid key(s)"
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-openhexa-url-must-contain-graphql" class="md-nav__link">
+    5. "OpenHEXA URL must contain 'graphql'"
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-local-development-issues" class="md-nav__link">
+    6. Local Development Issues
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#useful-commands" class="md-nav__link">
+    Useful Commands
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-resources" class="md-nav__link">
+    Additional Resources
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+        </div>
+    </div>
+</div>
+
+
+
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+    <a href="https://github.com/BLSQ/iaso/edit/main/docs/pages/dev/how_to/openhexa-integration.en.md" title="Edit this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"></path></svg>
+    </a>
+  
+  
+
+
+<h1 id="openhexa-integration-with-iaso">OpenHexa Integration with Iaso<a class="headerlink" href="#openhexa-integration-with-iaso" title="Permanent link">#</a></h1>
+<p>This guide covers the complete integration between Iaso and OpenHexa, including pipeline creation, parameter handling, task management, and local development setup.</p>
+<h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Permanent link">#</a></h2>
+<ol>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#configuration-setup">Configuration Setup</a></li>
+<li><a href="#openhexa-pipeline-parameters">OpenHexa Pipeline Parameters</a></li>
+<li><a href="#creating-openhexa-pipelines">Creating OpenHexa Pipelines</a></li>
+<li><a href="#pipeline-development">Pipeline Development</a></li>
+<li><a href="#task-management">Task Management</a></li>
+<li><a href="#development-utilities">Development Utilities</a></li>
+<li><a href="#api-integration">API Integration</a></li>
+<li><a href="#frontend-integration">Frontend Integration</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+</ol>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
+<p>OpenHexa is a data pipeline platform that integrates with Iaso to execute data processing tasks. The integration allows:</p>
+<ul>
+<li><strong>Pipeline Management</strong>: Create, configure, and run data pipelines</li>
+<li><strong>Parameter Handling</strong>: Dynamic parameter configuration through the Iaso UI, with optional <strong>account-level default parameters</strong> per pipeline so users do not have to fill them when launching</li>
+<li><strong>Task Tracking</strong>: Monitor pipeline execution status and results</li>
+<li><strong>Result Storage</strong>: Store pipeline outputs in Iaso's task system</li>
+</ul>
+<h2 id="configuration-setup">Configuration Setup<a class="headerlink" href="#configuration-setup" title="Permanent link">#</a></h2>
+<h3 id="1-openhexa-configuration-in-iaso">1. OpenHexa Configuration in Iaso<a class="headerlink" href="#1-openhexa-configuration-in-iaso" title="Permanent link">#</a></h3>
+<p>OpenHexa configuration is stored in Iaso using two models:</p>
+<h4 id="openhexainstance-model">OpenHEXAInstance Model<a class="headerlink" href="#openhexainstance-model" title="Permanent link">#</a></h4>
+<p>Stores the OpenHexa server connection details:</p>
+<pre><code class="language-python">from iaso.models.openhexa import OpenHEXAInstance
+
+instance = OpenHEXAInstance.objects.create(
+    name="Production OpenHEXA",
+    url="https://your-openhexa-instance.com/graphql/",
+    token="your-openhexa-api-token"
+)
+</code></pre>
+<p><strong>Fields</strong>:
+- <code>name</code>: Descriptive name for the OpenHexa instance
+- <code>url</code>: GraphQL API endpoint (must contain 'graphql')
+- <code>token</code>: API authentication token</p>
+<h4 id="openhexaworkspace-model">OpenHEXAWorkspace Model<a class="headerlink" href="#openhexaworkspace-model" title="Permanent link">#</a></h4>
+<p>Links an Iaso account to an OpenHexa workspace and stores <strong>per-account, per-pipeline configuration</strong>. Parameters defined in <code>config</code> are used as defaults when launching a pipeline for that account, so users do not have to fill them each time.</p>
+<pre><code class="language-python">from iaso.models.openhexa import OpenHEXAWorkspace
+
+workspace = OpenHEXAWorkspace.objects.create(
+    openhexa_instance=instance,
+    account=your_account,
+    slug="your-workspace-slug",
+    config={
+        "lqas_pipeline_code": "optional-pipeline-code",  # Optional
+        "pipelines": [
+            {
+                "id": "72250039-3b5c-4424-8c69-ee9ad5c67d2a",
+                "parameters": {
+                    "version": 79,
+                    "locality_type_id": 146,
+                    "health_area_type_id": 143,
+                },
+            },
+        ],
+    },
+)
+</code></pre>
+<p><strong>Fields</strong>:
+- <code>openhexa_instance</code>: Foreign key to OpenHEXAInstance
+- <code>account</code>: Foreign key to the Iaso Account
+- <code>slug</code>: Workspace slug in OpenHexa
+- <code>config</code>: Optional JSON field for workspace-specific configuration (see <a href="#workspace-config-structure-account-level-pipeline-parameters">Workspace config structure</a> below)</p>
+<h4 id="workspace-config-structure-account-level-pipeline-parameters">Workspace config structure (account-level pipeline parameters)<a class="headerlink" href="#workspace-config-structure-account-level-pipeline-parameters" title="Permanent link">#</a></h4>
+<p>The <code>config</code> JSON defines <strong>default parameters per pipeline per account</strong>. When a user launches a pipeline, the frontend and API can merge these stored parameters with any user-provided values, so the same parameters are reused for every execution for that account.</p>
+<p><strong>Structure</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lqas_pipeline_code</code></td>
+<td>string (optional)</td>
+<td>Optional pipeline code identifier (e.g. for LQAS sampling). Can be used by the frontend or other features.</td>
+</tr>
+<tr>
+<td><code>pipelines</code></td>
+<td>array</td>
+<td>List of pipeline configurations for this account</td>
+</tr>
+<tr>
+<td><code>pipelines[].id</code></td>
+<td>string (UUID)</td>
+<td>OpenHexa pipeline ID</td>
+</tr>
+<tr>
+<td><code>pipelines[].parameters</code></td>
+<td>object</td>
+<td>Default parameter key-value pairs for this pipeline (e.g. <code>version</code>, <code>locality_type_id</code>, org unit type IDs, etc.)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-json">{
+  "lqas_pipeline_code": "optional-pipeline-code",
+  "pipelines": [
+    {
+      "id": "72250039-3b5c-4424-8c69-ee9ad5c67d2a",
+      "parameters": {
+        "version": 79,
+        "locality_type_id": 146,
+        "health_area_type_id": 143
+      }
+    }
+  ]
+}
+</code></pre>
+<p>Parameters in <code>pipelines[].parameters</code> are passed as the pipeline’s <code>config</code> when launching via the API. Storing them in the workspace config allows admins to hardcode values per account and per pipeline so end users do not have to fill them when launching.</p>
+<h3 id="2-openhexa-workspace-setup">2. OpenHexa Workspace Setup<a class="headerlink" href="#2-openhexa-workspace-setup" title="Permanent link">#</a></h3>
+<ol>
+<li>
+<p><strong>Add Workspace to OpenHexa</strong>:
+   <code>bash
+   openhexa workspaces add https://your-openhexa-instance.com your-workspace-slug</code></p>
+</li>
+<li>
+<p><strong>Verify Connection</strong>:
+   <code>bash
+   openhexa workspaces list</code></p>
+</li>
+</ol>
+<h2 id="openhexa-pipeline-parameters">OpenHexa Pipeline Parameters<a class="headerlink" href="#openhexa-pipeline-parameters" title="Permanent link">#</a></h2>
+<p>OpenHexa supports the following parameter types:</p>
+<h3 id="supported-parameter-types">Supported Parameter Types<a class="headerlink" href="#supported-parameter-types" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>str</code></td>
+<td>String values</td>
+<td><code>"Hello World"</code></td>
+</tr>
+<tr>
+<td><code>bool</code></td>
+<td>Boolean values</td>
+<td><code>true</code>, <code>false</code></td>
+</tr>
+<tr>
+<td><code>int</code></td>
+<td>Integer values</td>
+<td><code>42</code></td>
+</tr>
+<tr>
+<td><code>float</code></td>
+<td>Floating-point values</td>
+<td><code>3.14</code></td>
+</tr>
+<tr>
+<td><code>list</code></td>
+<td>Array of values</td>
+<td><code>["item1", "item2"]</code></td>
+</tr>
+<tr>
+<td><code>dict</code></td>
+<td>Key-value pairs</td>
+<td><code>{"key": "value"}</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="parameter-properties">Parameter Properties<a class="headerlink" href="#parameter-properties" title="Permanent link">#</a></h3>
+<p>Each parameter can have the following properties:</p>
+<ul>
+<li><strong><code>type</code></strong>: The parameter type (required)</li>
+<li><strong><code>name</code></strong>: Human-readable name (required)</li>
+<li><strong><code>code</code></strong>: Unique identifier (required)</li>
+<li><strong><code>default</code></strong>: Default value (optional)</li>
+<li><strong><code>required</code></strong>: Whether the parameter is required (optional)</li>
+<li><strong><code>choices</code></strong>: Available options for select parameters (optional)</li>
+<li><strong><code>multiple</code></strong>: Whether multiple values are allowed (optional)</li>
+</ul>
+<h3 id="parameter-definition-example">Parameter Definition Example<a class="headerlink" href="#parameter-definition-example" title="Permanent link">#</a></h3>
+<pre><code class="language-python">from openhexa.sdk import pipeline, parameter
+
+@pipeline(name="My Pipeline")
+@parameter("country", type=str, name="Country", default="Burkina Faso", required=True)
+@parameter("demo_data", type=bool, name="Use Demo Data", default=True)
+@parameter("max_records", type=int, name="Maximum Records", default=1000)
+@parameter("confidence", type=float, name="Confidence Threshold", default=0.85)
+@parameter("user_preferences", type=dict, name="User Preferences", default={})
+def my_pipeline(country, demo_data, max_records, confidence, user_preferences):
+    # Pipeline implementation
+    pass
+</code></pre>
+<h2 id="creating-openhexa-pipelines">Creating OpenHexa Pipelines<a class="headerlink" href="#creating-openhexa-pipelines" title="Permanent link">#</a></h2>
+<h3 id="1-initialize-pipeline-project">1. Initialize Pipeline Project<a class="headerlink" href="#1-initialize-pipeline-project" title="Permanent link">#</a></h3>
+<pre><code class="language-bash"># Create new pipeline directory
+mkdir my-pipeline
+cd my-pipeline
+
+# Initialize with template
+openhexa pipelines init --template example
+</code></pre>
+<h3 id="2-pipeline-structure">2. Pipeline Structure<a class="headerlink" href="#2-pipeline-structure" title="Permanent link">#</a></h3>
+<pre><code>my-pipeline/
+├── pipeline.py          # Main pipeline file
+├── requirements.txt     # Python dependencies
+└── README.md           # Pipeline documentation
+</code></pre>
+<h3 id="3-basic-pipeline-template">3. Basic Pipeline Template<a class="headerlink" href="#3-basic-pipeline-template" title="Permanent link">#</a></h3>
+<pre><code class="language-python">from openhexa.sdk import pipeline, parameter, current_run
+from logging import getLogger
+
+logger = getLogger(__name__)
+
+@pipeline(name="My Iaso Pipeline")
+@parameter("task_id", type=str, name="Task ID", required=True)
+@parameter("pipeline_id", type=str, name="Pipeline ID", required=True)
+@parameter("country", type=str, name="Country", default="Burkina Faso")
+@parameter("demo_data", type=bool, name="Use Demo Data", default=True)
+@parameter("max_records", type=int, name="Maximum Records", default=1000)
+@parameter("confidence", type=float, name="Confidence Threshold", default=0.85)
+def my_pipeline(task_id, pipeline_id, country, demo_data, max_records, confidence):
+    """
+    Example pipeline that processes data and updates Iaso task status.
+    """
+    current_run.log_info(f"=== My Iaso Pipeline Started ===")
+    current_run.log_info(f"Country: {country}")
+    current_run.log_info(f"Demo data: {demo_data}")
+    current_run.log_info(f"Max records: {max_records}")
+    current_run.log_info(f"Confidence threshold: {confidence}")
+
+    # Update task status
+    update_task_status(task_id, pipeline_id, "RUNNING", "Processing data...", 25)
+
+    try:
+        # Your data processing logic here
+        result = process_data(country, demo_data, max_records, confidence)
+
+        # Update task with success
+        update_task_status(task_id, pipeline_id, "SUCCESS", "Processing completed", 100, result)
+
+        return result
+
+    except Exception as e:
+        # Update task with error
+        update_task_status(task_id, pipeline_id, "ERROR", f"Error: {str(e)}", 100)
+        raise
+
+def process_data(country, demo_data, max_records, confidence):
+    """Example data processing function."""
+    # Simulate data processing
+    import time
+    time.sleep(2)
+
+    return {
+        "country": country,
+        "records_processed": max_records,
+        "confidence_score": confidence,
+        "demo_data_used": demo_data,
+        "status": "completed"
+    }
+
+def update_task_status(task_id, pipeline_id, status, message, progress, result=None):
+    """Update Iaso task status via API."""
+    try:
+        import requests
+        from openhexa.sdk import workspace
+
+        # Get Iaso connection
+        connection = workspace.custom_connection("iaso-pipeline")
+        token = connection.value
+
+        # API endpoint for updating task status
+        api_url = f"{connection.url}/api/openhexa/pipelines/{pipeline_id}/"
+
+        # Prepare update data
+        update_data = {
+            "task_id": task_id,
+            "status": status,
+            "progress_message": message,
+            "progress_value": progress,
+            "end_value": 100,
+            "result": result
+        }
+
+        # Send update request
+        response = requests.patch(
+            api_url,
+            json=update_data,
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=30
+        )
+
+        if response.status_code == 200:
+            current_run.log_info(f"Task status updated: {status}")
+        else:
+            current_run.log_error(f"Failed to update task status: {response.status_code}")
+
+    except Exception as e:
+        current_run.log_error(f"Error updating task status: {str(e)}")
+
+if __name__ == "__main__":
+    my_pipeline()
+</code></pre>
+<h3 id="4-publish-pipeline">4. Publish Pipeline<a class="headerlink" href="#4-publish-pipeline" title="Permanent link">#</a></h3>
+<pre><code class="language-bash"># Push pipeline to OpenHexa
+openhexa pipelines push pipeline.py --code my-pipeline --name "v1.0" --description "Initial version"
+</code></pre>
+<h2 id="pipeline-development">Pipeline Development<a class="headerlink" href="#pipeline-development" title="Permanent link">#</a></h2>
+<h3 id="1-local-development-setup">1. Local Development Setup<a class="headerlink" href="#1-local-development-setup" title="Permanent link">#</a></h3>
+<p>For local development, you need to set up ngrok to allow OpenHexa to communicate with your local Iaso instance:</p>
+<h4 id="install-ngrok">Install ngrok<a class="headerlink" href="#install-ngrok" title="Permanent link">#</a></h4>
+<pre><code class="language-bash"># Install ngrok (macOS with Homebrew)
+brew install ngrok
+
+# Or download from https://ngrok.com/
+</code></pre>
+<h4 id="start-ngrok-tunnel">Start ngrok Tunnel<a class="headerlink" href="#start-ngrok-tunnel" title="Permanent link">#</a></h4>
+<pre><code class="language-bash"># Start tunnel to your local Iaso instance (usually port 8081)
+ngrok http 8081
+</code></pre>
+<p>This will provide a public URL like <code>https://abc123.ngrok.io</code> that forwards to your local Iaso instance.</p>
+<h4 id="update-openhexa-connection">Update OpenHexa Connection<a class="headerlink" href="#update-openhexa-connection" title="Permanent link">#</a></h4>
+<p>In your OpenHexa workspace, create a custom connection:</p>
+<ul>
+<li><strong>Connection Name</strong>: <code>iaso-pipeline</code></li>
+<li><strong>Connection Type</strong>: <code>Custom</code></li>
+<li><strong>URL</strong>: <code>https://abc123.ngrok.io</code> (your ngrok URL)</li>
+<li><strong>Token</strong>: Your Iaso API token</li>
+</ul>
+<h3 id="2-pipeline-testing">2. Pipeline Testing<a class="headerlink" href="#2-pipeline-testing" title="Permanent link">#</a></h3>
+<pre><code class="language-bash"># Test pipeline locally
+python pipeline.py
+
+# Run pipeline on OpenHexa
+openhexa pipelines run my-pipeline --config '{"country": "Burkina Faso", "demo_data": true}'
+</code></pre>
+<h2 id="task-management">Task Management<a class="headerlink" href="#task-management" title="Permanent link">#</a></h2>
+<h3 id="1-task-creation">1. Task Creation<a class="headerlink" href="#1-task-creation" title="Permanent link">#</a></h3>
+<p>Tasks are automatically created when launching pipelines through the Iaso API:</p>
+<pre><code class="language-python"># Example task creation in Iaso
+task = Task.objects.create(
+    name=f"OpenHexa Pipeline: {pipeline_name}",
+    status="QUEUED",
+    launcher=user,
+    account=account,
+    params={
+        "pipeline_id": pipeline_id,
+        "version": version_id,
+        "config": parameter_values
+    }
+)
+</code></pre>
+<h3 id="2-task-status-updates">2. Task Status Updates<a class="headerlink" href="#2-task-status-updates" title="Permanent link">#</a></h3>
+<p>Pipelines can update task status through the API:</p>
+<pre><code class="language-python"># PATCH /api/openhexa/pipelines/{pipeline_id}/
+{
+    "task_id": "task-uuid",
+    "status": "RUNNING|SUCCESS|ERROR",
+    "progress_message": "Processing data...",
+    "progress_value": 50,
+    "end_value": 100,
+    "result": {"key": "value"}
+}
+</code></pre>
+<p>Use an Iaso API token for a user who has <strong>Pipeline management</strong> (<code>iaso.iaso_pipeline_management</code>); the launch flow’s <code>connection_token</code> satisfies this when the launcher has the permission.</p>
+<h3 id="3-task-status-values">3. Task Status Values<a class="headerlink" href="#3-task-status-values" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>QUEUED</code></td>
+<td>Task is waiting to be executed</td>
+</tr>
+<tr>
+<td><code>RUNNING</code></td>
+<td>Task is currently executing</td>
+</tr>
+<tr>
+<td><code>SUCCESS</code></td>
+<td>Task completed successfully</td>
+</tr>
+<tr>
+<td><code>ERROR</code></td>
+<td>Task failed with an error</td>
+</tr>
+<tr>
+<td><code>CANCELLED</code></td>
+<td>Task was cancelled</td>
+</tr>
+</tbody>
+</table>
+<h2 id="development-utilities">Development Utilities<a class="headerlink" href="#development-utilities" title="Permanent link">#</a></h2>
+<h3 id="openhexa-configuration-utilities">OpenHexa Configuration Utilities<a class="headerlink" href="#openhexa-configuration-utilities" title="Permanent link">#</a></h3>
+<p>Iaso provides utility functions and decorators in <code>iaso/utils/openhexa.py</code> to simplify OpenHexa integration:</p>
+<h4 id="get_openhexa_configaccount">get_openhexa_config(account)<a class="headerlink" href="#get_openhexa_configaccount" title="Permanent link">#</a></h4>
+<p>Retrieves OpenHexa configuration for a given account.</p>
+<pre><code class="language-python">from iaso.utils.openhexa import get_openhexa_config
+from django.core.exceptions import ValidationError
+
+try:
+    openhexa_url, openhexa_token, workspace_slug, workspace = get_openhexa_config(account)
+    # Use the configuration
+except ValidationError as e:
+    # Handle missing or invalid configuration
+    print(f"Configuration error: {e}")
+</code></pre>
+<p><strong>Returns</strong>: Tuple of <code>(openhexa_url, openhexa_token, workspace_slug, workspace)</code></p>
+<p><strong>Raises</strong>: <code>ValidationError</code> if configuration is missing or invalid</p>
+<h4 id="require_openhexa_config-decorator">@require_openhexa_config Decorator<a class="headerlink" href="#require_openhexa_config-decorator" title="Permanent link">#</a></h4>
+<p>Decorator for API view methods that automatically handles configuration retrieval and error responses:</p>
+<pre><code class="language-python">from iaso.utils.openhexa import require_openhexa_config
+from rest_framework.viewsets import ViewSet
+
+class MyViewSet(ViewSet):
+    @require_openhexa_config
+    def my_endpoint(self, request, openhexa_config=None):
+        openhexa_url, openhexa_token, workspace_slug, workspace = openhexa_config
+        # Your logic here
+        return Response({"status": "success"})
+</code></pre>
+<p><strong>Features</strong>:
+- Automatically extracts account from <code>request.user.iaso_profile.account</code>
+- Returns 422 error if user has no profile or configuration is invalid
+- Injects configuration as <code>openhexa_config</code> kwarg</p>
+<h4 id="with_openhexa_config-decorator">@with_openhexa_config Decorator<a class="headerlink" href="#with_openhexa_config-decorator" title="Permanent link">#</a></h4>
+<p>Decorator for standalone functions, management commands, or Celery tasks:</p>
+<pre><code class="language-python">from iaso.utils.openhexa import with_openhexa_config
+from django.core.management.base import BaseCommand
+
+class Command(BaseCommand):
+    @with_openhexa_config
+    def process_data(self, account, data, openhexa_config=None):
+        openhexa_url, openhexa_token, workspace_slug, workspace = openhexa_config
+        # Your logic here
+</code></pre>
+<p><strong>Features</strong>:
+- Accepts <code>account</code> as first parameter
+- Raises <code>ValidationError</code> if configuration is invalid (caller must handle)
+- Injects configuration as <code>openhexa_config</code> kwarg</p>
+<h3 id="usage-examples">Usage Examples<a class="headerlink" href="#usage-examples" title="Permanent link">#</a></h3>
+<h4 id="in-management-commands">In Management Commands<a class="headerlink" href="#in-management-commands" title="Permanent link">#</a></h4>
+<pre><code class="language-python">from django.core.management.base import BaseCommand, CommandError
+from django.core.exceptions import ValidationError
+from iaso.models import Account
+from iaso.utils.openhexa import get_openhexa_config
+
+class Command(BaseCommand):
+    def handle(self, *args, **options):
+        account = Account.objects.get(id=42)
+
+        try:
+            openhexa_url, openhexa_token, workspace_slug, workspace = get_openhexa_config(account)
+            # Process data with OpenHexa
+        except ValidationError as e:
+            raise CommandError(f"OpenHexa configuration error: {e}")
+</code></pre>
+<h4 id="in-celery-tasks">In Celery Tasks<a class="headerlink" href="#in-celery-tasks" title="Permanent link">#</a></h4>
+<pre><code class="language-python">from celery import shared_task
+from django.core.exceptions import ValidationError
+from iaso.utils.openhexa import with_openhexa_config
+
+@shared_task
+@with_openhexa_config
+def process_openhexa_export(account, export_id, openhexa_config=None):
+    openhexa_url, openhexa_token, workspace_slug, workspace = openhexa_config
+    # Process export
+</code></pre>
+<h2 id="api-integration">API Integration<a class="headerlink" href="#api-integration" title="Permanent link">#</a></h2>
+<h3 id="permissions-pipeline-management">Permissions (Pipeline management)<a class="headerlink" href="#permissions-pipeline-management" title="Permanent link">#</a></h3>
+<p>All endpoints under <code>/api/openhexa/pipelines/</code> are guarded by the <strong>Pipeline management</strong> permission (<code>iaso.iaso_pipeline_management</code> in Django; codename <code>iaso_pipeline_management</code> on the core permission model). That includes:</p>
+<ul>
+<li><code>GET /api/openhexa/pipelines/config/</code></li>
+<li><code>GET /api/openhexa/pipelines/</code></li>
+<li><code>GET /api/openhexa/pipelines/{pipeline_id}/</code></li>
+<li><code>POST /api/openhexa/pipelines/{pipeline_id}/launch/</code></li>
+<li><code>PATCH /api/openhexa/pipelines/{pipeline_id}/</code></li>
+</ul>
+<p>Users who are authenticated but do not have this permission receive <strong>403 Forbidden</strong>. Unauthenticated requests receive <strong>401 Unauthorized</strong>.</p>
+<p>Grant <strong>Pipeline management</strong> to any user or role that should open the pipelines UI or call these APIs. Pipelines that call back into Iaso (for example <code>PATCH</code> to update task status) must use an API token for a user who has this permission—typically the launcher, via the <code>connection_token</code> (and host) injected into the launch <code>config</code> by Iaso.</p>
+<h3 id="1-configuration-check-api">1. Configuration Check API<a class="headerlink" href="#1-configuration-check-api" title="Permanent link">#</a></h3>
+<p><strong>Endpoint</strong>: <code>GET /api/openhexa/pipelines/config/</code></p>
+<p><strong>Description</strong>: Check if OpenHexa is configured for the current user's account and retrieve the <strong>full workspace config</strong> (including account-level pipeline parameters). The frontend uses this to pre-fill or hardcode parameters when launching pipelines so users do not have to enter them.</p>
+<p><strong>Response</strong> (when configured):</p>
+<pre><code class="language-json">{
+    "configured": true,
+    "config": {
+        "lqas_pipeline_code": "optional-pipeline-code",
+        "pipelines": [
+            {
+                "id": "72250039-3b5c-4424-8c69-ee9ad5c67d2a",
+                "parameters": {
+                    "version": 79,
+                    "locality_type_id": 146,
+                    "health_area_type_id": 143
+                }
+            }
+        ]
+    }
+}
+</code></pre>
+<p>When the workspace has no config stored, <code>config</code> is an empty object: <code>"config": {}</code>. The full <code>config</code> object is whatever is stored on the workspace (e.g. <code>lqas_pipeline_code</code>, <code>pipelines</code>, or any other keys).</p>
+<p><strong>Behavior</strong> (caller must have <strong>Pipeline management</strong>; see <a href="#permissions-pipeline-management">Permissions</a> above):</p>
+<ul>
+<li><strong>401</strong> if the request is not authenticated</li>
+<li><strong>403</strong> if the user does not have Pipeline management</li>
+<li>Returns <code>{"configured": false}</code> (HTTP 200) if the user has no Iaso profile or OpenHexa is not configured / invalid for the account</li>
+<li>Returns <code>configured: true</code> and <code>config</code> (the full <code>OpenHEXAWorkspace.config</code> JSON) when the account’s OpenHexa setup is valid</li>
+<li>The frontend looks up the current pipeline by ID in <code>config.pipelines</code> to get <code>parameters</code> for that pipeline and uses them as defaults when launching</li>
+</ul>
+<h3 id="2-pipeline-list-api">2. Pipeline List API<a class="headerlink" href="#2-pipeline-list-api" title="Permanent link">#</a></h3>
+<p><strong>Endpoint</strong>: <code>GET /api/openhexa/pipelines/</code></p>
+<p><strong>Response</strong>:</p>
+<pre><code class="language-json">{
+    "results": [
+        {
+            "id": "pipeline-uuid",
+            "name": "My Pipeline",
+            "currentVersion": {
+                "versionNumber": "v1.0"
+            }
+        }
+    ]
+}
+</code></pre>
+<h3 id="3-pipeline-details-api">3. Pipeline Details API<a class="headerlink" href="#3-pipeline-details-api" title="Permanent link">#</a></h3>
+<p><strong>Endpoint</strong>: <code>GET /api/openhexa/pipelines/{pipeline_id}/</code></p>
+<p><strong>Response</strong>:</p>
+<pre><code class="language-json">{
+    "id": "pipeline-uuid",
+    "name": "My Pipeline",
+    "currentVersion": {
+        "versionNumber": "v1.0",
+        "id": "version-uuid",
+        "parameters": [
+            {
+                "type": "str",
+                "name": "Country",
+                "code": "country",
+                "default": "Burkina Faso",
+                "required": true
+            }
+        ]
+    }
+}
+</code></pre>
+<h3 id="4-launch-pipeline-api">4. Launch Pipeline API<a class="headerlink" href="#4-launch-pipeline-api" title="Permanent link">#</a></h3>
+<p><strong>Endpoint</strong>: <code>POST /api/openhexa/pipelines/{pipeline_id}/launch/</code></p>
+<p><strong>Request Body</strong>:</p>
+<pre><code class="language-json">{
+    "version": "version-uuid",
+    "config": {
+        "country": "Burkina Faso",
+        "demo_data": true,
+        "max_records": 1000
+    }
+}
+</code></pre>
+<p><strong>Response</strong>:</p>
+<pre><code class="language-json">{
+    "task": {
+        "id": 123,
+        "name": "pipeline-uuid-vversion-uuid",
+        "status": "RUNNING",
+        "progress_message": null,
+        "progress_value": null,
+        "end_value": null,
+        "result": null,
+        "updated_at": "2025-01-11T10:00:00Z"
+    }
+}
+</code></pre>
+<h3 id="5-update-task-status-api">5. Update Task Status API<a class="headerlink" href="#5-update-task-status-api" title="Permanent link">#</a></h3>
+<p><strong>Endpoint</strong>: <code>PATCH /api/openhexa/pipelines/{pipeline_id}/</code></p>
+<p><strong>Request Body</strong>:</p>
+<pre><code class="language-json">{
+    "task_id": "task-uuid",
+    "status": "SUCCESS",
+    "progress_message": "Processing completed",
+    "progress_value": 100,
+    "end_value": 100,
+    "result": {
+        "records_processed": 1000,
+        "status": "completed"
+    }
+}
+</code></pre>
+<h2 id="frontend-integration">Frontend Integration<a class="headerlink" href="#frontend-integration" title="Permanent link">#</a></h2>
+<p>Iaso includes a simple frontend integration for OpenHexa pipelines that provides:</p>
+<p>Users need the <strong>Pipeline management</strong> permission to use the pipelines screens and the underlying <code>/api/openhexa/pipelines/</code> APIs (see <a href="#permissions-pipeline-management">Permissions (Pipeline management)</a> under API Integration).</p>
+<h3 id="pipeline-management-interface">Pipeline Management Interface<a class="headerlink" href="#pipeline-management-interface" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>Pipeline List</strong>: View all available OpenHexa pipelines at <code>/dashboard/pipelines/</code></li>
+<li><strong>Pipeline Details</strong>: Configure and launch pipelines at <code>/dashboard/pipelines/{pipeline_id}/</code></li>
+<li><strong>Parameter Configuration</strong>: Dynamic form generation based on pipeline parameters, with <strong>defaults from account config</strong> when available</li>
+<li><strong>Task Launching</strong>: Submit pipeline configurations and monitor execution</li>
+</ul>
+<h3 id="key-features">Key Features<a class="headerlink" href="#key-features" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>Dynamic Parameter Forms</strong>: Automatically generates input fields based on pipeline parameter types</li>
+<li><strong>Account-level default parameters</strong>: The frontend calls <code>GET /api/openhexa/pipelines/config/</code> and reads <code>config.pipelines</code> to find the entry matching the current pipeline ID. The stored <code>parameters</code> are used to pre-fill the launch form (or to run without user input when all required parameters are defined per account). This allows hardcoding parameters per account and per pipeline so they remain the same for each execution.</li>
+<li><strong>Real-time Status Updates</strong>: Shows pipeline execution progress and results</li>
+<li><strong>Parameter Validation</strong>: Client-side validation for required parameters</li>
+<li><strong>Error Handling</strong>: Displays clear error messages for failed operations</li>
+</ul>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">#</a></h2>
+<h3 id="common-issues">Common Issues<a class="headerlink" href="#common-issues" title="Permanent link">#</a></h3>
+<h4 id="1-403-forbidden-on-apiopenhexapipelines-or-the-pipelines-dashboard">1. 403 Forbidden on <code>/api/openhexa/pipelines/</code> or the pipelines dashboard<a class="headerlink" href="#1-403-forbidden-on-apiopenhexapipelines-or-the-pipelines-dashboard" title="Permanent link">#</a></h4>
+<p><strong>Cause</strong>: The authenticated user does not have the <strong>Pipeline management</strong> permission (<code>iaso.iaso_pipeline_management</code>).</p>
+<p><strong>Solution</strong>: Grant <strong>Pipeline management</strong> to the user (or to a role assigned to the user) in the account admin / permissions UI, then retry.</p>
+<p>For pipeline code that calls Iaso (e.g. task status <code>PATCH</code>), ensure the token is for a user with this permission—use the launcher token from <code>connection_token</code> in the launch payload when possible.</p>
+<h4 id="2-no-openhexa-workspace-configured-for-your-account">2. "No OpenHEXA workspace configured for your account"<a class="headerlink" href="#2-no-openhexa-workspace-configured-for-your-account" title="Permanent link">#</a></h4>
+<p><strong>Cause</strong>: The account has no associated OpenHEXA workspace or the workspace configuration is incomplete.</p>
+<p><strong>Solution</strong>: Create or update the OpenHEXA configuration:</p>
+<pre><code class="language-python">from iaso.models import Account
+from iaso.models.openhexa import OpenHEXAInstance, OpenHEXAWorkspace
+
+# Get or create OpenHEXA instance
+instance, created = OpenHEXAInstance.objects.get_or_create(
+    name="Production OpenHEXA",
+    defaults={
+        "url": "https://your-openhexa-instance.com/graphql/",
+        "token": "your-api-token"
+    }
+)
+
+# Get the account
+account = Account.objects.get(id=42)
+
+# Create workspace for the account (optionally with per-pipeline parameters)
+workspace, created = OpenHEXAWorkspace.objects.get_or_create(
+    account=account,
+    defaults={
+        "openhexa_instance": instance,
+        "slug": "your-workspace-slug",
+        "config": {
+            "pipelines": [
+                {
+                    "id": "your-pipeline-uuid",
+                    "parameters": {"version": 1, "locality_type_id": 123},
+                },
+            ],
+        },
+    },
+)
+</code></pre>
+<p><strong>Validation checklist</strong>:
+- ✅ OpenHEXAInstance exists with valid URL and token
+- ✅ URL contains 'graphql' (e.g., <code>https://example.com/graphql/</code>)
+- ✅ OpenHEXAWorkspace exists for the account
+- ✅ Workspace has a non-empty slug
+- ✅ Workspace is linked to an OpenHEXAInstance</p>
+<h4 id="3-user-profile-not-found">3. "User profile not found"<a class="headerlink" href="#3-user-profile-not-found" title="Permanent link">#</a></h4>
+<p><strong>Cause</strong>: On endpoints that use <code>@require_openhexa_config</code> (list, detail, launch), the authenticated user has no <code>iaso_profile</code>. Note: without <strong>Pipeline management</strong> you get <strong>403</strong> before this message; this case applies once the user has the permission but still lacks a profile.</p>
+<p><strong>Solution</strong>: Ensure all users who need to access OpenHexa have an Iaso profile:</p>
+<pre><code class="language-python">from django.contrib.auth.models import User
+from iaso.models import Profile, Account
+
+user = User.objects.get(username="myuser")
+account = Account.objects.get(id=42)
+
+# Create profile if it doesn't exist
+profile, created = Profile.objects.get_or_create(
+    user=user,
+    defaults={"account": account}
+)
+</code></pre>
+<h4 id="4-the-provided-config-contains-invalid-keys">4. "The provided config contains invalid key(s)"<a class="headerlink" href="#4-the-provided-config-contains-invalid-keys" title="Permanent link">#</a></h4>
+<p><strong>Cause</strong>: The pipeline parameters don't match the expected parameter names.</p>
+<p><strong>Solution</strong>: Ensure all parameters in your pipeline are properly defined with <code>@parameter</code> decorators:</p>
+<pre><code class="language-python">@parameter("task_id", type=str, name="Task ID", required=True)
+@parameter("pipeline_id", type=str, name="Pipeline ID", required=True)
+</code></pre>
+<h4 id="5-openhexa-url-must-contain-graphql">5. "OpenHEXA URL must contain 'graphql'"<a class="headerlink" href="#5-openhexa-url-must-contain-graphql" title="Permanent link">#</a></h4>
+<p><strong>Cause</strong>: The OpenHEXA instance URL doesn't contain the required 'graphql' keyword.</p>
+<p><strong>Solution</strong>: Update the instance URL to include the GraphQL endpoint:</p>
+<pre><code class="language-python">from iaso.models.openhexa import OpenHEXAInstance
+
+instance = OpenHEXAInstance.objects.get(name="Production OpenHEXA")
+instance.url = "https://your-openhexa-instance.com/graphql/"  # Must contain 'graphql'
+instance.save()
+</code></pre>
+<h4 id="6-local-development-issues">6. Local Development Issues<a class="headerlink" href="#6-local-development-issues" title="Permanent link">#</a></h4>
+<p><strong>Cause</strong>: OpenHexa can't reach your local Iaso instance.</p>
+<p><strong>Solution</strong>: 
+1. Use ngrok to create a public tunnel: <code>ngrok http 8081</code>
+2. Update the OpenHexa connection URL to use the ngrok URL
+3. Ensure your local Iaso instance is running on port 8081</p>
+<h3 id="useful-commands">Useful Commands<a class="headerlink" href="#useful-commands" title="Permanent link">#</a></h3>
+<pre><code class="language-bash"># List OpenHexa workspaces
+openhexa workspaces list
+
+# Test pipeline locally
+python pipeline.py
+
+# Push pipeline to OpenHexa
+openhexa pipelines push pipeline.py --code my-pipeline
+
+# Run pipeline on OpenHexa
+openhexa pipelines run my-pipeline
+
+# Check pipeline status
+openhexa pipelines status my-pipeline
+</code></pre>
+<h2 id="additional-resources">Additional Resources<a class="headerlink" href="#additional-resources" title="Permanent link">#</a></h2>
+<ul>
+<li><a href="https://docs.openhexa.org/">OpenHexa Documentation</a></li>
+<li><a href="https://github.com/BLSQ/openhexa-sdk-python">OpenHexa SDK Python</a></li>
+<li><a href="https://iaso.readthedocs.io/">Iaso API Documentation</a></li>
+<li><a href="https://ngrok.com/docs">ngrok Documentation</a></li>
+</ul>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["content.action.edit"], "search": "../../../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.78eede0e.min.js"></script>
+      
+        <script src="../../../extrajs/html2pdf.bundle.min.js"></script>
+      
+        <script src="../../../extrajs/pdfDownload.js"></script>
+      
+        <script src="https://plausible.io/js/script.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>

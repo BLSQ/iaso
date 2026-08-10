@@ -1,0 +1,1913 @@
+<!DOCTYPE html><html lang="fr" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      
+      <link rel="icon" href="../../../../assets/iaso-favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.2.6">
+    
+    
+      
+        <title>Planning-Pipeline Integration Documentation - IASO</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.0e669242.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.85d0ee34.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  <link href="../../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#planning-pipeline-integration-documentation" class="md-skip">
+          Aller au contenu
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="En-tête">
+    <a href="../../../index.html" title="IASO" class="md-header__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IASO
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Planning-Pipeline Integration Documentation
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Sélectionner la langue">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24Z"></path></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../../pages/dev/how_to/planning-pipeline-integration.html" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="planning-pipeline-integration.html" hreflang="fr" class="md-select__link">
+              Français
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../../es/pages/dev/how_to/planning-pipeline-integration.html" hreflang="es" class="md-select__link">
+              Español
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"></path></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Rechercher" placeholder="Rechercher" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required="">
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"></path></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"></path></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Recherche">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Effacer" aria-label="Effacer" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"></path></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix="">
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initialisation de la recherche
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/BLSQ/iaso" title="Aller au dépôt" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+<!-- Navigation -->
+
+
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../index.html" title="IASO" class="md-nav__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    IASO
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/BLSQ/iaso" title="Aller au dépôt" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix="">
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../index.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Accueil
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2">
+        
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Guide d'utilisateur
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Guide d'utilisateur
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../users/reference/iaso_concepts.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Concepts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../users/reference/iaso_modules.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Modules
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../users/reference/user_guide.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Plateforme Web
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../users/reference/iaso_mobile.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Mobile
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../users/how_to/use_form_ai.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Utiliser IA pour formulaires
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3">
+        
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Développeurs
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Développeurs
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1">
+        
+          <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Références
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            Références
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/data_model_glossary.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data model glossary
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/SQL_Dashboard_feature.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SQL Dashboard feature
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/docker.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Docker
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/background_tasks.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Background tasks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/env_variables.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Variables d'environnement
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_6">
+        
+          <label class="md-nav__link" for="__nav_3_1_6" id="__nav_3_1_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Modèles
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1_6">
+            <span class="md-nav__icon md-icon"></span>
+            Modèles
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/API/entity.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API reference: Entity
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2">
+        
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Guides
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            Guides
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="contribute.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contribute
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="setup_dev_env.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Setup dev env
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="use_iaso_apis.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Use iaso apis
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="build_odk_preview.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Building the ODK Web Forms preview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4">
+        
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    En savoir plus sur IASO
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            En savoir plus sur IASO
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.openiaso.com/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Demander une démo
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.digitalpublicgoods.net/r/iaso" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Digital Public Goods Registry
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/BLSQ/iaso/releases" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Release notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.bluesquarehub.com/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Bluesquare
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+            <!-- pdf download  -->
+            <div id="pdf-download-container">
+                <button id="pdf-download" type="button">
+                    <span id="button-text">Download current page</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#192041">
+                        <path d="M360-460h40v-80h40q17 0 28.5-11.5T480-580v-40q0-17-11.5-28.5T440-660h-80v200Zm40-120v-40h40v40h-40Zm120 120h80q17 0 28.5-11.5T640-500v-120q0-17-11.5-28.5T600-660h-80v200Zm40-40v-120h40v120h-40Zm120 40h40v-80h40v-40h-40v-40h40v-40h-80v200ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table of contents -->
+
+
+<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+<nav class="md-nav md-nav--secondary" aria-label="Table des matières">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table des matières
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-overview" class="md-nav__link">
+    Architecture Overview
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-components" class="md-nav__link">
+    Core Components
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-flow" class="md-nav__link">
+    Data Flow
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pipeline-integration" class="md-nav__link">
+    Pipeline Integration
+  </a>
+  
+    <nav class="md-nav" aria-label="Pipeline Integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pipeline-parameters" class="md-nav__link">
+    Pipeline Parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameter-structure" class="md-nav__link">
+    Parameter Structure
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameter Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#planning_id" class="md-nav__link">
+    planning_id
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task_id" class="md-nav__link">
+    task_id
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipeline_id" class="md-nav__link">
+    pipeline_id
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#org_unit_type_sequence_identifiers" class="md-nav__link">
+    org_unit_type_sequence_identifiers
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#org_unit_type_quantities" class="md-nav__link">
+    org_unit_type_quantities
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#org_unit_type_exceptions" class="md-nav__link">
+    org_unit_type_exceptions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#org_unit_type_criteria" class="md-nav__link">
+    org_unit_type_criteria
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connection_host" class="md-nav__link">
+    connection_host
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connection_token" class="md-nav__link">
+    connection_token
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipeline-execution-flow" class="md-nav__link">
+    Pipeline Execution Flow
+  </a>
+  
+    <nav class="md-nav" aria-label="Pipeline Execution Flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#iaso-side-backend" class="md-nav__link">
+    Iaso Side (Backend)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openhexa-side-pipeline" class="md-nav__link">
+    OpenHEXA Side (Pipeline)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#status-management" class="md-nav__link">
+    Status Management
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-authentication" class="md-nav__link">
+    API Authentication
+  </a>
+  
+    <nav class="md-nav" aria-label="API Authentication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generic-api-caller" class="md-nav__link">
+    Generic API Caller
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#token-acquisition" class="md-nav__link">
+    Token Acquisition
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-status-updates" class="md-nav__link">
+    Task Status Updates
+  </a>
+  
+    <nav class="md-nav" aria-label="Task Status Updates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-pipeline-progress-updates-recommended" class="md-nav__link">
+    1. Pipeline Progress Updates (Recommended)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-direct-api-updates-low-level" class="md-nav__link">
+    2. Direct API Updates (Low-Level)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-automatic-status-polling-system" class="md-nav__link">
+    3. Automatic Status Polling System
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background-task-system" class="md-nav__link">
+    Background Task System
+  </a>
+  
+    <nav class="md-nav" aria-label="Background Task System">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#task-creation-and-management" class="md-nav__link">
+    Task Creation and Management
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-benefits" class="md-nav__link">
+    Key Benefits
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polling-behavior" class="md-nav__link">
+    Polling Behavior
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openhexa-configuration" class="md-nav__link">
+    OpenHexa Configuration
+  </a>
+  
+    <nav class="md-nav" aria-label="OpenHexa Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#configuration-via-openhexainstance-model" class="md-nav__link">
+    Configuration via OpenHEXAInstance Model
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration via OpenHEXAInstance Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-configuration-fields" class="md-nav__link">
+    Key Configuration Fields
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lqas-pipeline-configuration" class="md-nav__link">
+    LQAS Pipeline Configuration
+  </a>
+  
+    <nav class="md-nav" aria-label="LQAS Pipeline Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#planning-model-configuration" class="md-nav__link">
+    Planning Model Configuration
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-endpoints" class="md-nav__link">
+    API Endpoints
+  </a>
+  
+    <nav class="md-nav" aria-label="API Endpoints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pipeline-management" class="md-nav__link">
+    Pipeline Management
+  </a>
+  
+    <nav class="md-nav" aria-label="Pipeline Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#launch-pipeline" class="md-nav__link">
+    Launch Pipeline
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update-task-status-pipeline-iaso" class="md-nav__link">
+    Update Task Status (Pipeline → Iaso)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automatic-status-updates-iaso-openhexa" class="md-nav__link">
+    Automatic Status Updates (Iaso → OpenHEXA)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#group-management" class="md-nav__link">
+    Group Management
+  </a>
+  
+    <nav class="md-nav" aria-label="Group Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#create-org-unit-group-pipeline-iaso" class="md-nav__link">
+    Create Org Unit Group (Pipeline → Iaso)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sampling-results-storage" class="md-nav__link">
+    Sampling Results Storage
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+        </div>
+    </div>
+</div>
+
+
+
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+    <a href="https://github.com/BLSQ/iaso/edit/main/docs/pages/dev/how_to/planning-pipeline-integration.en.md" title="Editer cette page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"></path></svg>
+    </a>
+  
+  
+
+
+<h1 id="planning-pipeline-integration-documentation">Planning-Pipeline Integration Documentation<a class="headerlink" href="#planning-pipeline-integration-documentation" title="Permanent link">#</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
+<p>This document describes the integration between Iaso's Planning feature and OpenHexa pipelines for LQAS (Lot Quality Assurance Sampling) sampling. The integration allows users to configure sampling parameters and automatically generate <strong>org unit groups</strong> using LQAS algorithms. </p>
+<p><strong>Important</strong>: The pipeline is responsible <strong>only for sampling</strong> and creating org unit groups. Assignment of org units to teams/users is handled separately on the Iaso side.</p>
+<h2 id="architecture-overview">Architecture Overview<a class="headerlink" href="#architecture-overview" title="Permanent link">#</a></h2>
+<h3 id="core-components">Core Components<a class="headerlink" href="#core-components" title="Permanent link">#</a></h3>
+<ol>
+<li><strong>Planning System</strong>: Manages planning configurations and sampling results</li>
+<li><strong>OpenHexa Integration</strong>: Handles pipeline execution and task management via <code>OpenHEXAInstance</code> and <code>OpenHEXAWorkspace</code> model</li>
+<li><strong>Sampling Engine</strong>: OpenHexa pipeline that selects org units using LQAS algorithm</li>
+<li><strong>Group Creation</strong>: Pipeline creates org unit groups in Iaso</li>
+<li><strong>Assignment Engine</strong>: Iaso-side system that assigns groups to teams/users (separate from pipeline)</li>
+<li><strong>UI Components</strong>: Frontend interfaces for configuration and monitoring</li>
+</ol>
+<h3 id="data-flow">Data Flow<a class="headerlink" href="#data-flow" title="Permanent link">#</a></h3>
+<pre><code>Planning Configuration → Pipeline Parameters → OpenHexa Execution → LQAS Sampling → Group Creation → Task Result Storage → UI Display
+</code></pre>
+<p><strong>Note</strong>: Assignment of org units to teams/users happens on the Iaso side after the pipeline completes.</p>
+<h2 id="pipeline-integration">Pipeline Integration<a class="headerlink" href="#pipeline-integration" title="Permanent link">#</a></h2>
+<h3 id="pipeline-parameters">Pipeline Parameters<a class="headerlink" href="#pipeline-parameters" title="Permanent link">#</a></h3>
+<p>The OpenHexa pipeline receives the following parameters:</p>
+<pre><code class="language-python">@pipeline
+def lqas_assignment_pipeline(
+    planning_id: int,
+    task_id: int,
+    pipeline_id: str,                               # Pipeline UUID for status updates
+    org_unit_type_sequence_identifiers: List[int],  # [398, 399, 400] - IDs from higher to lower level
+    org_unit_type_quantities: List[int],            # [2, 3, 4] - quantities at each level
+    org_unit_type_exceptions: List[str],            # ["12098,108033", "", ""] - exceptions per level
+    org_unit_type_criteria: List[str],              # ["RURAL/URBAN", "RURAL", "URBAN"] - criteria per level
+    connection_host: str,                           # "http://localhost:8081" - Iaso server URL
+    connection_token: str,                          # JWT Bearer token for authentication
+):
+    """
+    LQAS Org Unit Selection Pipeline
+
+    This pipeline samples org units using LQAS algorithm and creates an org unit group.
+    The group can then be used on the Iaso side to create assignments to teams/users.
+
+    Args:
+        planning_id: ID of the planning to generate sampling for
+        task_id: ID of the task for progress and status updates
+        pipeline_id: UUID of the pipeline for API status update endpoint
+        org_unit_type_sequence_identifiers: List of org unit type IDs in hierarchy order (top to bottom)
+        org_unit_type_quantities: List of quantities to select at each level
+        org_unit_type_exceptions: List of comma-separated org unit IDs to exclude at each level
+        org_unit_type_criteria: List of criteria for selection at each level (RURAL/URBAN, RURAL, or URBAN)
+        connection_host: Host URL of the Iaso server (e.g., "http://localhost:8081")
+        connection_token: JWT Bearer token for authentication
+    """
+</code></pre>
+<h3 id="parameter-structure">Parameter Structure<a class="headerlink" href="#parameter-structure" title="Permanent link">#</a></h3>
+<h4 id="planning_id">planning_id<a class="headerlink" href="#planning_id" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Type</strong>: <code>int</code></li>
+<li><strong>Description</strong>: ID of the planning for which org units should be sampled</li>
+<li><strong>Required</strong>: Yes</li>
+<li><strong>Example</strong>: <code>123</code></li>
+</ul>
+<h4 id="task_id">task_id<a class="headerlink" href="#task_id" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Type</strong>: <code>int</code></li>
+<li><strong>Description</strong>: ID of the background task for progress and status updates</li>
+<li><strong>Required</strong>: Yes (can be None in some cases)</li>
+<li><strong>Example</strong>: <code>456</code></li>
+</ul>
+<h4 id="pipeline_id">pipeline_id<a class="headerlink" href="#pipeline_id" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Type</strong>: <code>str</code></li>
+<li><strong>Description</strong>: UUID of the OpenHexa pipeline, used to construct the API endpoint for task status updates (<code>/api/openhexa/pipelines/{pipeline_id}/</code>)</li>
+<li><strong>Required</strong>: Yes</li>
+<li><strong>Example</strong>: <code>"f2bbb20d-0170-4b73-af08-e24390859571"</code></li>
+</ul>
+<h4 id="org_unit_type_sequence_identifiers">org_unit_type_sequence_identifiers<a class="headerlink" href="#org_unit_type_sequence_identifiers" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Type</strong>: <code>List[int]</code></li>
+<li><strong>Description</strong>: IDs of org unit types in hierarchical order (from highest to lowest level). Defines the hierarchy levels to sample from.</li>
+<li><strong>Example</strong>: <code>[398, 399, 400]</code> where:</li>
+<li><code>398</code> = Country level</li>
+<li><code>399</code> = Region level  </li>
+<li><code>400</code> = District level</li>
+</ul>
+<h4 id="org_unit_type_quantities">org_unit_type_quantities<a class="headerlink" href="#org_unit_type_quantities" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Type</strong>: <code>List[int]</code></li>
+<li><strong>Description</strong>: Number of org units to randomly select at each hierarchy level using LQAS sampling</li>
+<li><strong>Example</strong>: <code>[2, 3, 4]</code> means:</li>
+<li>Select 2 org units at country level</li>
+<li>From each selected country, select 3 org units at region level</li>
+<li>From each selected region, select 4 org units at district level</li>
+<li>Total sampled: 2 × 3 × 4 = 24 org units at the lowest level</li>
+</ul>
+<h4 id="org_unit_type_exceptions">org_unit_type_exceptions<a class="headerlink" href="#org_unit_type_exceptions" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Type</strong>: <code>List[str]</code></li>
+<li><strong>Description</strong>: Org unit IDs to exclude from random sampling at each hierarchy level. Each string contains comma-separated IDs of org units to exclude during LQAS sampling at that specific level.</li>
+<li><strong>Example</strong>: <code>["12098,108033", "", ""]</code> means:</li>
+<li>At country level: exclude org units with IDs 12098 and 108033 from sampling pool</li>
+<li>At region level: no exclusions (empty string)</li>
+<li>At district level: no exclusions (empty string)</li>
+<li><strong>Note</strong>: Empty strings indicate no exclusions at that level</li>
+</ul>
+<h4 id="org_unit_type_criteria">org_unit_type_criteria<a class="headerlink" href="#org_unit_type_criteria" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Type</strong>: <code>List[str]</code></li>
+<li><strong>Description</strong>: Selection criteria for org units at each hierarchy level. Controls whether to include rural, urban, or both types of org units in the sampling pool.</li>
+<li><strong>Choices</strong>: <code>"RURAL/URBAN"</code>, <code>"RURAL"</code>, <code>"URBAN"</code></li>
+<li><strong>Example</strong>: <code>["RURAL/URBAN", "RURAL", "URBAN"]</code> means:</li>
+<li>At first level: include both rural and urban org units in sampling pool</li>
+<li>At second level: include only rural org units in sampling pool</li>
+<li>At third level: include only urban org units in sampling pool</li>
+<li><strong>Note</strong>: This filters the available org units before applying LQAS random sampling</li>
+</ul>
+<h4 id="connection_host">connection_host<a class="headerlink" href="#connection_host" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Type</strong>: <code>str</code></li>
+<li><strong>Description</strong>: Base URL of the Iaso server. This enables multitenant support by allowing pipelines to connect to different Iaso instances. This URL is automatically generated during pipeline launch based on the current HTTP request.</li>
+<li><strong>Example</strong>: <code>"https://iaso.example.com"</code> or <code>"http://localhost:8081"</code></li>
+<li><strong>Note</strong>: This parameter is <strong>automatically added</strong> to the config by the backend during pipeline launch - the frontend should <strong>not</strong> provide this parameter.</li>
+</ul>
+<h4 id="connection_token">connection_token<a class="headerlink" href="#connection_token" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Type</strong>: <code>str</code></li>
+<li><strong>Security</strong>: ⚠️ <strong>This parameter should be protected/hidden in the OpenHexa UI</strong> - it contains sensitive authentication credentials and should not be visible to end users</li>
+<li><strong>Description</strong>: JWT Bearer token for authentication with the Iaso API. This token is automatically generated during pipeline launch using the authenticated user's credentials and is used in the <code>Authorization: Bearer {token}</code> header for all API calls from the pipeline.</li>
+<li><strong>Example</strong>: <code>"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."</code> (JWT access token)</li>
+<li><strong>Note</strong>: This parameter is <strong>automatically added</strong> to the config by the backend during pipeline launch - the frontend should <strong>not</strong> provide this parameter.</li>
+</ul>
+<h3 id="pipeline-execution-flow">Pipeline Execution Flow<a class="headerlink" href="#pipeline-execution-flow" title="Permanent link">#</a></h3>
+<h4 id="iaso-side-backend">Iaso Side (Backend)<a class="headerlink" href="#iaso-side-backend" title="Permanent link">#</a></h4>
+<ol>
+<li><strong>Task Creation</strong>: Create background task using <code>beanstalk_worker</code> decorator</li>
+<li><strong>Pipeline Launch</strong>: Launch OpenHEXA pipeline via GraphQL API</li>
+<li><strong>Continuous Polling</strong>: Start background polling loop to monitor pipeline status</li>
+<li><strong>Status Synchronization</strong>: Update Iaso task status to match OpenHEXA pipeline status</li>
+<li><strong>Result Handling</strong>: Process pipeline results when completed</li>
+</ol>
+<h4 id="openhexa-side-pipeline">OpenHEXA Side (Pipeline)<a class="headerlink" href="#openhexa-side-pipeline" title="Permanent link">#</a></h4>
+<ol>
+<li><strong>Connection Test</strong>: Validate connection to Iaso API using provided host and token</li>
+<li><strong>Validation</strong>: Verify parameters and org unit type hierarchy</li>
+<li><strong>Data Fetch</strong>: Retrieve planning info and org units from Iaso</li>
+<li><strong>Sampling</strong>: Apply LQAS algorithm to select org units based on quantities, criteria, and exceptions</li>
+<li><strong>Group Creation</strong>: Create org unit group in Iaso containing sampled units</li>
+<li><strong>Progress Updates</strong>: Update task progress throughout execution</li>
+<li><strong>Result Storage</strong>: Store sampling results (task_id, group_id, planning_id, org_unit_ids) to database</li>
+<li><strong>Task Update</strong>: Save final results to task (group_id, org_units_count, etc.)</li>
+</ol>
+<p><strong>Note</strong>: The pipeline does NOT create assignments. Assignment creation is handled on the Iaso side.</p>
+<h4 id="status-management">Status Management<a class="headerlink" href="#status-management" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Automatic</strong>: Iaso polling system handles all status transitions</li>
+<li><strong>Real-time</strong>: Status updates happen automatically as OpenHEXA pipeline progresses</li>
+<li><strong>Reliable</strong>: Configurable timeout protection - prevents ghost tasks while allowing sufficient execution time</li>
+<li><strong>Aligned</strong>: Iaso task status always matches OpenHEXA pipeline status</li>
+</ul>
+<h3 id="api-authentication">API Authentication<a class="headerlink" href="#api-authentication" title="Permanent link">#</a></h3>
+<p>The pipeline uses JWT Bearer token authentication instead of OpenHexa's connection system. This approach provides better multitenant support, security, and direct control over API calls.</p>
+<h4 id="generic-api-caller">Generic API Caller<a class="headerlink" href="#generic-api-caller" title="Permanent link">#</a></h4>
+<p>The pipeline uses a generic API caller function for all Iaso API interactions:</p>
+<pre><code class="language-python">def call_api(
+    base_url: str,
+    endpoint: str,
+    bearer_token: str,
+    method: str = "GET",
+    data: Optional[Dict] = None,
+    params: Optional[Dict] = None,
+    timeout: int = 300,
+) -&gt; Any:
+    """
+    Generic API caller that uses Bearer token authentication.
+
+    Args:
+        base_url (str): Root server URL, e.g. "http://localhost:8081"
+        endpoint (str): API endpoint, e.g. "/api/forms/" (no trailing slash required)
+        bearer_token (str): Bearer token for authentication
+        method (str): HTTP method, default "GET" (can be "POST", "PUT", "PATCH", "DELETE")
+        data (dict, optional): Data payload for POST/PUT/PATCH
+        params (dict, optional): Query params for GET requests
+        timeout (int): Request timeout in seconds (default: 300s / 5 minutes)
+                      Increase for large data fetches like org unit hierarchies
+
+    Returns:
+        dict or str: JSON response if possible, otherwise raw text
+    """
+</code></pre>
+<p><strong>Key Features:</strong>
+- Bearer token authentication
+- Configurable timeout (default 5 minutes for large hierarchies)
+- Automatic JSON parsing
+- HTTP error handling with <code>raise_for_status()</code></p>
+<h4 id="token-acquisition">Token Acquisition<a class="headerlink" href="#token-acquisition" title="Permanent link">#</a></h4>
+<p>JWT tokens for pipeline authentication are automatically generated by the backend during pipeline launch:</p>
+<pre><code class="language-python"># Backend automatically generates JWT token during pipeline launch
+config["connection_token"] = get_user_token(request.user)
+config["connection_host"] = f"{scheme}://{host}"
+</code></pre>
+<p>The backend uses the authenticated user's credentials to generate a JWT access token that can be used as a Bearer token for API authentication. This approach ensures that:</p>
+<ul>
+<li>The token is always valid and properly scoped to the authenticated user</li>
+<li>No additional API calls are needed from the frontend</li>
+<li>Token generation is handled securely on the server side</li>
+<li>The token is automatically included in the pipeline configuration</li>
+</ul>
+<p><strong>Benefits of this approach:</strong>
+- <strong>Automatic Token Generation</strong>: JWT tokens are generated server-side during pipeline launch
+- <strong>Multitenant Support</strong>: Each pipeline run can connect to different Iaso instances
+- <strong>Standard Authentication</strong>: Uses industry-standard JWT Bearer token authentication
+- <strong>Better Performance</strong>: No dependency on OpenHexa's connection management
+- <strong>Error Handling</strong>: Proper connection testing and error reporting
+- <strong>Security</strong>: JWT tokens are time-limited and secure, generated with user's credentials
+- <strong>Clean Implementation</strong>: No cookie access issues or HttpOnly problems
+- <strong>Compatibility</strong>: Works seamlessly with existing Django JWT setup
+- <strong>Simplified Frontend</strong>: Frontend doesn't need to handle token acquisition</p>
+<h3 id="task-status-updates">Task Status Updates<a class="headerlink" href="#task-status-updates" title="Permanent link">#</a></h3>
+<p>The pipeline integration uses a dual approach for task status management:</p>
+<h4 id="1-pipeline-progress-updates-recommended">1. Pipeline Progress Updates (Recommended)<a class="headerlink" href="#1-pipeline-progress-updates-recommended" title="Permanent link">#</a></h4>
+<p>The pipeline uses a <code>TaskProgressLogger</code> class for convenient progress tracking:</p>
+<pre><code class="language-python">class TaskProgressLogger:
+    """Logger for task progress with Iaso integration.
+
+    Encapsulates task context to avoid repetitive parameter passing.
+    Implements smart batching to reduce API calls.
+    """
+
+    def __init__(
+        self,
+        task_id: Optional[int],
+        pipeline_id: str,
+        connection_host: str,
+        connection_token: str,
+        batch_threshold: int = 5,
+    ):
+        """Initialize the logger with task context.
+
+        Args:
+            task_id: ID of the task (can be None)
+            pipeline_id: Pipeline ID for the endpoint
+            connection_host: Iaso server URL
+            connection_token: Bearer token for authentication
+            batch_threshold: Minimum progress change to trigger API call (default: 5%)
+        """
+
+    def log(
+        self,
+        message: str,
+        progress_value: Optional[int] = None,
+        result_data: Optional[Dict] = None,
+        log_level: str = "info",
+        force_send: bool = False,
+    ):
+        """Log progress with current task context.
+
+        Args:
+            message: Progress message
+            progress_value: Optional progress value (end_value is always 100)
+            result_data: Optional result data to save (usually for final step)
+            log_level: Level of the log (info, error, warning, debug)
+            force_send: Force immediate API call (bypasses batching)
+        """
+
+    def flush(self):
+        """Force send any pending updates (call at end of pipeline)."""
+</code></pre>
+<p><strong>Usage Example:</strong></p>
+<pre><code class="language-python"># Initialize logger once at pipeline start
+logger = TaskProgressLogger(
+    task_id=task_id,
+    pipeline_id=pipeline_id,
+    connection_host=connection_host,
+    connection_token=connection_token,
+)
+
+# Use throughout pipeline
+logger.log("Starting data fetch", 10)
+logger.log("Data fetched successfully", 50)
+logger.log("Processing complete", 100, result_data={"count": 42})
+</code></pre>
+<p><strong>Smart Batching Features:</strong>
+- Batches updates by default (only sends when progress changes by 5% or more)
+- Always sends errors and warnings immediately
+- Always sends final update (100% or with result_data)
+- Can force immediate send with <code>force_send=True</code>
+- Auto-raises RuntimeError on error log level (fails pipeline properly)</p>
+<h4 id="2-direct-api-updates-low-level">2. Direct API Updates (Low-Level)<a class="headerlink" href="#2-direct-api-updates-low-level" title="Permanent link">#</a></h4>
+<p>For direct control, use the <code>update_task_on_iaso()</code> function:</p>
+<pre><code class="language-python">def update_task_on_iaso(
+    connection_host: str,
+    connection_token: str,
+    task_id: int,
+    pipeline_id: str,
+    message: str,
+    progress_value: Optional[int] = None,
+    end_value: Optional[int] = None,
+    result_data: Optional[Dict] = None,
+):
+    """
+    Update task progress on Iaso (does NOT update status).
+
+    Args:
+        connection_host: Iaso server URL
+        connection_token: Bearer token for authentication
+        task_id: Task ID to update
+        pipeline_id: Pipeline ID for the endpoint
+        message: Progress message
+        progress_value: Optional progress value
+        end_value: Optional end value
+        result_data: Optional result data to save
+    """
+    # Sends PATCH request to /api/openhexa/pipelines/{pipeline_id}/
+    # with task_id, progress_message, progress_value, end_value, result
+</code></pre>
+<p><strong>Note:</strong> Status updates (QUEUED, RUNNING, SUCCESS, ERRORED) are handled automatically by Iaso's polling system. The pipeline should only send progress updates and messages.</p>
+<h4 id="3-automatic-status-polling-system">3. Automatic Status Polling System<a class="headerlink" href="#3-automatic-status-polling-system" title="Permanent link">#</a></h4>
+<p>The main status management is handled by Iaso's background task system that continuously polls OpenHEXA for pipeline status:</p>
+<pre><code class="language-python">@task_decorator(task_name="launch_openhexa_pipeline")
+def launch_openhexa_pipeline(
+    pipeline_id: str,
+    openhexa_url: str,
+    openhexa_token: str,
+    version: str,
+    config: dict,
+    delay: int = 2,
+    max_polling_duration_minutes: int = 200,
+    task: Task = None,
+):
+    """
+    Background task that:
+    1. Launches the OpenHEXA pipeline
+    2. Continuously polls OpenHEXA for status updates
+    3. Updates Iaso task status to match OpenHEXA pipeline status
+    4. Handles all status transitions automatically
+    5. Times out after max_polling_duration_minutes to prevent ghost tasks
+    """
+</code></pre>
+<p><strong>Key Features</strong>:
+- <strong>Continuous Polling</strong>: Polls OpenHEXA until pipeline reaches final state or timeout
+- <strong>Configurable Timeout</strong>: Default 10-minute timeout prevents ghost tasks (configurable via <code>max_polling_duration_minutes</code>)
+- <strong>Status Alignment</strong>: Iaso task status always matches OpenHEXA pipeline status
+- <strong>Automatic Transitions</strong>: Handles all status changes automatically
+- <strong>Error Handling</strong>: Proper error handling and logging
+- <strong>Timeout Protection</strong>: Prevents indefinite polling that could create ghost tasks</p>
+<p><strong>Timeout Implementation</strong>:</p>
+<pre><code class="language-python"># Check if polling timeout has been reached
+current_time = datetime.now()
+elapsed_time = current_time - polling_start_time
+if elapsed_time &gt; max_polling_duration:
+    timeout_message = (
+        f"Polling timeout reached after {max_polling_duration_minutes} minutes for pipeline {pipeline_id}"
+    )
+    logger.warning(timeout_message)
+    task.report_failure(Exception(timeout_message))
+    return
+</code></pre>
+<p><strong>Status Values</strong>:
+- <code>QUEUED</code>: Pipeline is queued for execution
+- <code>RUNNING</code>: Pipeline is executing
+- <code>SUCCESS</code>: Pipeline completed successfully
+- <code>ERRORED</code>: Pipeline failed with error
+- <code>EXPORTED</code>: Pipeline results have been exported
+- <code>SKIPPED</code>: Pipeline execution was skipped
+- <code>KILLED</code>: Pipeline was terminated</p>
+<p><strong>OpenHEXA Status Mapping</strong>:
+- <code>success</code>, <code>completed</code>, <code>done</code> → <code>SUCCESS</code>
+- <code>failed</code>, <code>errored</code>, <code>cancelled</code>, <code>error</code> → <code>ERRORED</code>
+- <code>running</code>, <code>queued</code>, <code>pending</code>, <code>started</code> → <code>RUNNING</code></p>
+<h3 id="background-task-system">Background Task System<a class="headerlink" href="#background-task-system" title="Permanent link">#</a></h3>
+<p>The integration uses Iaso's <code>beanstalk_worker</code> system for reliable background task execution:</p>
+<h4 id="task-creation-and-management">Task Creation and Management<a class="headerlink" href="#task-creation-and-management" title="Permanent link">#</a></h4>
+<pre><code class="language-python"># Task is automatically created by the decorator
+@task_decorator(task_name="launch_openhexa_pipeline")
+def launch_openhexa_pipeline(user, pipeline_id, openhexa_url, openhexa_token, version, config, delay=2, task=None):
+    """
+    Single task handles both pipeline launch and continuous monitoring
+    """
+    # 1. Set task properties
+    task.external = True
+    task.status = QUEUED
+
+    # 2. Launch OpenHEXA pipeline
+    ExternalTaskModelViewSet.launch_task(...)
+
+    # 3. Start continuous polling loop
+    while True:
+        # Poll OpenHEXA for status
+        # Update Iaso task status accordingly
+        # Handle final states (SUCCESS/ERRORED)
+</code></pre>
+<h4 id="key-benefits">Key Benefits<a class="headerlink" href="#key-benefits" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Single Task</strong>: One task handles both launch and monitoring (no separate polling tasks)</li>
+<li><strong>User Association</strong>: Task is automatically associated with the launching user</li>
+<li><strong>Reliable Execution</strong>: Uses Iaso's proven background task system</li>
+<li><strong>Status Consistency</strong>: Task status always reflects OpenHEXA pipeline status</li>
+<li><strong>Error Handling</strong>: Proper error handling and logging throughout</li>
+<li><strong>Kill Support</strong>: Respects task kill signals for graceful termination</li>
+</ul>
+<h4 id="polling-behavior">Polling Behavior<a class="headerlink" href="#polling-behavior" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Continuous</strong>: Polls until pipeline reaches final state or timeout</li>
+<li><strong>Efficient</strong>: Only logs status changes, not every poll attempt</li>
+<li><strong>Configurable</strong>: Polling delay can be adjusted (default: 2 seconds)</li>
+<li><strong>Timeout Protection</strong>: Default 10-minute timeout prevents ghost tasks</li>
+<li><strong>Robust</strong>: Handles network errors and continues polling</li>
+<li><strong>Aligned</strong>: Iaso task status always matches OpenHEXA pipeline status</li>
+</ul>
+<h2 id="openhexa-configuration">OpenHexa Configuration<a class="headerlink" href="#openhexa-configuration" title="Permanent link">#</a></h2>
+<h3 id="configuration-via-openhexainstance-model">Configuration via OpenHEXAInstance Model<a class="headerlink" href="#configuration-via-openhexainstance-model" title="Permanent link">#</a></h3>
+<p>The OpenHexa integration is now configured using the <code>OpenHEXAInstance</code> model instead of the legacy <code>Config</code> model. This provides better multitenant support and instance management.</p>
+<p>For detailed information on OpenHexa configuration, see the <a href="openhexa-integration.html">OpenHexa Integration Guide</a>.</p>
+<h4 id="key-configuration-fields">Key Configuration Fields<a class="headerlink" href="#key-configuration-fields" title="Permanent link">#</a></h4>
+<ul>
+<li><code>url</code>: The GraphQL endpoint URL for OpenHexa</li>
+<li><code>token</code>: Authentication token for OpenHexa API</li>
+<li>Workspace information is managed through OpenHexa workspace connections</li>
+</ul>
+<h3 id="lqas-pipeline-configuration">LQAS Pipeline Configuration<a class="headerlink" href="#lqas-pipeline-configuration" title="Permanent link">#</a></h3>
+<p>The Planning feature can be configured to use specific LQAS pipelines:</p>
+<h4 id="planning-model-configuration">Planning Model Configuration<a class="headerlink" href="#planning-model-configuration" title="Permanent link">#</a></h4>
+<pre><code class="language-python">class Planning(SoftDeletableModel):
+    # ... other fields ...
+    pipeline_uuids = ArrayField(
+        models.CharField(max_length=36),
+        default=list,
+        blank=True,
+        help_text="List of OpenHexa pipeline UUIDs available for this planning",
+    )
+</code></pre>
+<p>This allows linking specific LQAS sampling pipelines to a planning configuration.</p>
+<h2 id="api-endpoints">API Endpoints<a class="headerlink" href="#api-endpoints" title="Permanent link">#</a></h2>
+<h3 id="pipeline-management">Pipeline Management<a class="headerlink" href="#pipeline-management" title="Permanent link">#</a></h3>
+<h4 id="launch-pipeline">Launch Pipeline<a class="headerlink" href="#launch-pipeline" title="Permanent link">#</a></h4>
+<pre><code class="language-http">POST /api/openhexa/pipelines/{pipeline_id}/launch/
+Content-Type: application/json
+
+{
+    "version": "uuid-of-pipeline-version",
+    "config": {
+        "planning_id": 123,
+        "task_id": 456,
+        "pipeline_id": "f2bbb20d-0170-4b73-af08-e24390859571",
+        "org_unit_type_sequence_identifiers": [398, 399, 400],
+        "org_unit_type_quantities": [2, 3, 4],
+        "org_unit_type_exceptions": ["12098,108033", "", ""],
+        "org_unit_type_criteria": ["RURAL/URBAN", "RURAL", "URBAN"]
+    }
+}
+</code></pre>
+<p><strong>Note</strong>: The <code>connection_host</code> and <code>connection_token</code> parameters are automatically added to the config by the backend during pipeline launch. The frontend should not include these parameters in the request.</p>
+<h4 id="update-task-status-pipeline-iaso">Update Task Status (Pipeline → Iaso)<a class="headerlink" href="#update-task-status-pipeline-iaso" title="Permanent link">#</a></h4>
+<pre><code class="language-http">PATCH /api/openhexa/pipelines/{pipeline_id}/
+Content-Type: application/json
+
+{
+    "task_id": 456,
+    "progress_message": "Pipeline completed successfully",
+    "progress_value": 100,
+    "end_value": 100,
+    "result_data": {
+        "pipeline_name": "LQAS Org Unit Selection Pipeline",
+        "status": "SUCCESS",
+        "group_id": 789,
+        "planning_id": 123,
+        "org_units_ids": [1001, 1002, 1003],
+        "org_units_count": 3,
+        "execution_time": "2025-12-05T10:30:00"
+    }
+}
+</code></pre>
+<p><strong>Note</strong>: The <code>status</code> parameter is optional and not used by default. Status updates are handled automatically by Iaso's polling system. The pipeline should only send progress updates and messages with result data.</p>
+<h4 id="automatic-status-updates-iaso-openhexa">Automatic Status Updates (Iaso → OpenHEXA)<a class="headerlink" href="#automatic-status-updates-iaso-openhexa" title="Permanent link">#</a></h4>
+<p>Status updates are handled automatically by the background polling system:</p>
+<ul>
+<li><strong>QUEUED</strong>: When pipeline is launched</li>
+<li><strong>RUNNING</strong>: When OpenHEXA pipeline starts executing</li>
+<li><strong>SUCCESS</strong>: When OpenHEXA pipeline completes successfully</li>
+<li><strong>ERRORED</strong>: When OpenHEXA pipeline fails</li>
+<li><strong>KILLED</strong>: When task is manually terminated</li>
+</ul>
+<p>The polling system continuously monitors OpenHEXA and updates Iaso task status accordingly.</p>
+<h3 id="group-management">Group Management<a class="headerlink" href="#group-management" title="Permanent link">#</a></h3>
+<h4 id="create-org-unit-group-pipeline-iaso">Create Org Unit Group (Pipeline → Iaso)<a class="headerlink" href="#create-org-unit-group-pipeline-iaso" title="Permanent link">#</a></h4>
+<p>The pipeline creates org unit groups via the Iaso API:</p>
+<pre><code class="language-http">POST /api/groups/
+Content-Type: application/json
+Authorization: Bearer {connection_token}
+
+{
+    "name": "LQAS Group for Planning 123 - 2025-12-05 10:30",
+    "org_unit_ids": [1001, 1002, 1003, ...]
+}
+</code></pre>
+<p><strong>Response</strong>:</p>
+<pre><code class="language-json">{
+    "id": 789,
+    "name": "LQAS Group for Planning 123 - 2025-12-05 10:30",
+    "org_unit_ids": [1001, 1002, 1003, ...]
+}
+</code></pre>
+<h3 id="sampling-results-storage">Sampling Results Storage<a class="headerlink" href="#sampling-results-storage" title="Permanent link">#</a></h3>
+<p>The pipeline stores sampling results in a database table for later retrieval:</p>
+<pre><code class="language-sql">CREATE TABLE assignments_plannings (
+    task_id INTEGER,
+    group_id INTEGER,
+    planning_id INTEGER,
+    org_units_ids TEXT  -- JSON string of org unit IDs
+);
+</code></pre>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../../..", "features": ["content.action.edit"], "search": "../../../../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copi\u00e9 dans le presse-papier", "clipboard.copy": "Copier dans le presse-papier", "search.result.more.one": "1 de plus sur cette page", "search.result.more.other": "# de plus sur cette page", "search.result.none": "Aucun document trouv\u00e9", "search.result.one": "1 document trouv\u00e9", "search.result.other": "# documents trouv\u00e9s", "search.result.placeholder": "Taper pour d\u00e9marrer la recherche", "search.result.term.missing": "Non trouv\u00e9", "select.version": "S\u00e9lectionner la version"}}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.78eede0e.min.js"></script>
+      
+        <script src="../../../../extrajs/html2pdf.bundle.min.js"></script>
+      
+        <script src="../../../../extrajs/pdfDownload.js"></script>
+      
+        <script src="https://plausible.io/js/script.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>

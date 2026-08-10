@@ -382,7 +382,7 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             'campaign',
             'country',
             'on_time',
-            'on_hold',
+            'campaign_category',
         ],
     },
     chronogramTemplateTask: {

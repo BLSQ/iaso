@@ -39,7 +39,7 @@ ENTITY_TYPE_CONFIG_FIELD_TYPES = [
     "select all that apply",
     "select_all_that_apply",
     # geo (single point is displayable as a map)
-    "geopoint",
+    # "geopoint", Type not supported yet
     # other scalar-ish XLSForm / ODK types
     # "acknowledge",
     # "phonenumber", Type not supported yet

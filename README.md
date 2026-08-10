@@ -150,6 +150,24 @@ uv run ./manage.py runserver
 
 > **Note:** You still need a running PostgreSQL (with PostGIS) database. You can either use the Docker `db` service (`docker compose up db`) or a locally installed PostgreSQL.
 
+### Node.js and npm (native frontend)
+
+Frontend tooling is pinned to the same versions as Docker/CI (`node:22.18.0`, `npm@11.19.0`) via `package.json` (`engines` + `packageManager`), `.nvmrc`, and `.npmrc` (`engine-strict=true`). Wrong versions will fail `npm ci` / `npm install`.
+
+```bash
+# Node (nvm, fnm, or asdf all read .nvmrc)
+nvm install   # or: fnm use / asdf install
+nvm use
+
+# npm via Corepack (ships with Node 22) — do not add npm as a dependency
+corepack enable
+corepack prepare npm@11.19.0 --activate
+
+node -v   # v22.18.0
+npm -v    # 11.19.0
+npm ci
+```
+
 ## Transition from `pip` to `uv`
 IASO transitioned from `pip` to `uv` in July 2026. If you installed IASO before that, there are some things you might need to do to pull the latest changes and make your project work with `uv`:
 - if you are using a docker image: rebuild the latest image with `docker compose build iaso`
@@ -953,6 +971,8 @@ External service dependencies:
 - Access to an SMTP server to send e-mail.
 
 Currently supported version of Python is 3.9.
+
+Frontend: Node.js **22.18.0** and npm **11.19.0** (see `.nvmrc` / `package.json` `engines`; required for `npm ci` with the versioned lockfile).
 
 The PostgreSQL database server and Enketo server can both be deployed in Docker on the same physical machine, it is advised to double the recommended values in that case.
 

@@ -70,7 +70,7 @@ const FormAI: FunctionComponent = () => {
                     if (data.xform_xml) {
                         setXformXml(data.xform_xml);
                     }
-                    const formJson = JSON.stringify(data.xlsform_data, null, 2);
+                    const formJson = JSON.stringify(data.xlsform_data);
                     const displayMsg = formatMessage(MESSAGES.formLoaded, {
                         formName: data.form_name,
                         versionId: data.version_id,

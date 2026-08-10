@@ -25,8 +25,8 @@ Then you can:
 - From the Project page, click on the QR code at the end of the corresponding line.
 ![Project QR code](./iaso_mobile_attachments/qrcodeiasoEN.png){ .doc-shot }
 - Scan the QR code with the IASO mobile application.
-![Scan QR code step 1](./iaso_mobile_attachments/iasoqrcodeEN1.png){ .doc-shot-phone .doc-shot-center }
-![Scan QR code step 2](./iaso_mobile_attachments/iasoqrcodeEN2.png){ .doc-shot-phone  .doc-shot-center }
+![Scan QR code step 1](./iaso_mobile_attachments/iasoqrcodeEN1.png){ .doc-shot-phone }
+![Scan QR code step 2](./iaso_mobile_attachments/iasoqrcodeEN2.png){ .doc-shot-phone }
 - It's ready!
 
 You can also enter manually the url and the Project App ID.
@@ -38,7 +38,7 @@ You can find the App ID on IASO web on the Project page.
 
 See below an overview of the main buttons that you can find on the main screen in data collection mode. 
 
-![Mobile app buttons overview](./iaso_mobile_attachments/mobileappbuttons.png){ .doc-shot-lg  .doc-shot-center }
+![Mobile app buttons overview](./iaso_mobile_attachments/mobileappbuttons.png){ .doc-shot-lg }
 
 In the More Options part, you can take the below actions:
 - Refresh data: you need to have internet connectivity to do so. It will synchronize the mobile application with IASO web data. In order to avoid that it takes too long in low-connectivity settings, you can choose to refresh only sub-parts such as Forms, Organization Units, or other. 
@@ -51,7 +51,7 @@ In the More Options part, you can take the below actions:
 
 Once you are connected to the IASO mobile application, you can then proceed with your data collection. Here below are the different screens that you would see for a simple data collection.
 
-![Data collection screens](./iaso_mobile_attachments/datacollection.png){ .doc-shot-lg  .doc-shot-center }
+![Data collection screens](./iaso_mobile_attachments/datacollection.png){ .doc-shot-lg }
 
 You will then have data collection form chosen opening. You can proceed with answering the different questions and press "Next" until the end of the Form.
 
@@ -67,11 +67,11 @@ If you collect data with your mobile device, they are stored in your device. You
 
 Click on the "Send Finalized Forms" icon on the mobile application home page on the top right corner.
 
-![Upload collected data](./iaso_mobile_attachments/uploaddata.png){ .doc-shot-phone .doc-shot-center}
+![Upload collected data](./iaso_mobile_attachments/uploaddata.png){ .doc-shot-phone}
 
 Then, a specific page will open to let you know if the data has been correctly uploaded. Finalize the operation by clicking on "Send to server".
 
-![Send to server](./iaso_mobile_attachments/sendserver.png){ .doc-shot-phone  .doc-shot-center}
+![Send to server](./iaso_mobile_attachments/sendserver.png){ .doc-shot-phone }
 
 ## Recommended Devices for IASO Data Collection (last edited Feb 2025)
 

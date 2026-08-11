@@ -34,6 +34,7 @@ from iaso.permissions.core_permissions import (
     CORE_ORG_UNITS_READ_PERMISSION,
     CORE_SUBMISSIONS_PERMISSION,
 )
+from iaso.plugins import is_trypelim_plugin_active
 
 
 SHAPE_RESULTS_MAX = 1000
@@ -43,6 +44,11 @@ class MobileOrgUnitsSetPagination(Paginator):
     page_size_query_param = LIMIT
     page_query_param = PAGE
     page_size = None  # None to disable pagination by default.
+
+    if is_trypelim_plugin_active():
+        # limit the sizes of the responses on Trypelim
+        # refs: SLEEP-1803
+        max_page_size = 5000
 
     def get_iaso_page_number(self, request):
         return int(request.query_params.get(self.page_query_param, 1))

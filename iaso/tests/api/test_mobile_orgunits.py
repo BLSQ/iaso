@@ -24,6 +24,7 @@ from iaso.models import (
     SourceVersion,
 )
 from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION
+from iaso.plugins import is_trypelim_plugin_active
 from iaso.test import APITestCase
 
 
@@ -163,7 +164,9 @@ class MobileOrgUnitAPITestCase(APITestCase):
 
         response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, "limit": 25000, "page": 1})
 
-        self.assertEqual(response.json()["limit"], 25000)
+        if is_trypelim_plugin_active():
+            # page limit is capped at 5k for trypelim
+            self.assertEqual(response.json()["limit"], 5000)
 
     @tag("trypelim")
     def test_org_unit_have_correct_parent_id_without_limit(self):

@@ -27,7 +27,7 @@ RUN npm run webpack-prod
 
 # install old FE trypelim dependencies and build it
 WORKDIR /opt/app/plugins/trypelim/src-legacy/
-RUN npm ci --legacy-peer-deps
+RUN npm ci
 RUN npm run webpack-prod
 
 # ── Stage 2: Python dependency builder ────────────────────────────────────────

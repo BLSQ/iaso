@@ -2,7 +2,7 @@
 name = "Iaso"
 readme = "README.md"
 requires-python = ">=3.9,<3.10"
-version = "2026.8.4a0"
+version = "2026.8.11"
 dependencies = [
     "anthropic==0.52.0", # https://github.com/anthropics/anthropic-sdk-python/tags
     "azure-storage-blob==12.19.0",

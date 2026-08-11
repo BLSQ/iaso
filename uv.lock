@@ -1803,7 +1803,7 @@ wheels = [
 
 [[package]]
 name = "iaso"
-version = "2026.8.4a0"
+version = "2026.8.11"
 source = { virtual = "." }
 dependencies = [
     { name = "anthropic" },
@@ -2183,7 +2183,7 @@ name = "jinxed"
 version = "2.0.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "ansicon", marker = "sys_platform == 'win32'" },
+    { name = "ansicon" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/3c/5e/2eea62fd64689685b082f29e1dcd0e57a19009c90733318a4bc9ddb54b2c/jinxed-2.0.4.tar.gz", hash = "sha256:a92ac48923433c0a88577bb0479191788813fd5055ef17ff2b04a701a1b83f19", size = 135991, upload-time = "2026-05-23T16:30:58.304Z" }
 wheels = [

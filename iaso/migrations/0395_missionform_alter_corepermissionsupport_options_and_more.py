@@ -211,6 +211,8 @@ class Migration(migrations.Migration):
             ],
             options={
                 "ordering": ("id",),
+                "verbose_name": "Mission with forms",
+                "verbose_name_plural": "Missions with forms",
             },
             bases=("iaso.mission", models.Model),
         ),

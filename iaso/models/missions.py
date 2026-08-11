@@ -84,6 +84,8 @@ class MissionWithForms(Mission):
 
     class Meta:
         ordering = ("id",)
+        verbose_name_plural = "Missions with forms"
+        verbose_name = "Mission with forms"
 
 
 class MissionFormThroughForm(models.Model):

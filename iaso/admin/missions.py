@@ -2,7 +2,6 @@ from django.contrib import admin
 from polymorphic.admin import PolymorphicChildModelAdmin, PolymorphicChildModelFilter, PolymorphicParentModelAdmin
 
 from iaso.models import (
-    Mission,
     MissionEntityType,
     MissionForm,
     MissionFormThroughForm,
@@ -11,19 +10,12 @@ from iaso.models import (
 )
 
 
-@admin.register(Mission)
-class MissionAdmin(PolymorphicParentModelAdmin):
-    base_model = Mission
-    child_models = (MissionWithForms,)
-    list_filter = (PolymorphicChildModelFilter, "account")
-    list_display = ("name", "mission_type", "account")
-
-
 class MissionFormThroughFormInline(admin.TabularInline):
     model = MissionFormThroughForm
     extra = 0
 
 
+@admin.register(MissionWithForms)
 class MissionWithFormsAdmin(PolymorphicParentModelAdmin):
     base_model = MissionWithForms
     child_models = (MissionForm, MissionEntityType, MissionOrgUnitType)

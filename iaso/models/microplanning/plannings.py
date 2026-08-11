@@ -49,7 +49,7 @@ class Planning(SoftDeletableModel):
     project = models.ForeignKey(Project, on_delete=models.PROTECT)
     started_at = models.DateField(null=True, blank=True)
     ended_at = models.DateField(null=True, blank=True)
-    missions = models.ManyToManyField("MissionForm", blank=True, related_name="plannings")
+    missions = models.ManyToManyField("Mission", blank=True, related_name="plannings")
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     org_unit = models.ForeignKey(OrgUnit, on_delete=models.PROTECT)
     target_org_unit_types = models.ManyToManyField(

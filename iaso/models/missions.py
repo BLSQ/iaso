@@ -18,9 +18,6 @@ class MissionType(models.TextChoices):
 
 
 class MissionQuerySet(RelatedPolymorphicQuerySet):
-    def annotate_with_form_count(self):
-        return self.annotate(forms_count=Count("forms"))
-
     def filter_for_user(self, user: User):
         iaso_profile = getattr(user, "iaso_profile", None)
         account = getattr(iaso_profile, "account", None)
@@ -34,11 +31,11 @@ class MissionManager(PolymorphicManager.from_queryset(MissionQuerySet)):
         return super().get_queryset().filter(deleted_at__isnull=True)
 
 
-class MissionForm(SoftDeletableModel, CreatedAndUpdatedModel, PolymorphicModel):
+class Mission(SoftDeletableModel, CreatedAndUpdatedModel, PolymorphicModel):
     class Meta:
         ordering = ("id",)
 
-    MISSION_TYPE = MissionType.FORM_FILLING
+    MISSION_TYPE = None
 
     objects = MissionManager()
 
@@ -46,8 +43,6 @@ class MissionForm(SoftDeletableModel, CreatedAndUpdatedModel, PolymorphicModel):
     description = models.CharField(max_length=500, blank=True)
     account = models.ForeignKey("Account", on_delete=models.CASCADE, related_name="missions")
     mission_type = models.CharField(max_length=30, choices=MissionType.choices)
-    forms = models.ManyToManyField("Form", related_name="mission_forms", through="MissionFormThroughForm")
-
     created_by = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
 
     def get_assignments(self):
@@ -61,8 +56,38 @@ class MissionForm(SoftDeletableModel, CreatedAndUpdatedModel, PolymorphicModel):
         return self.name
 
 
+class MissionWithFormsQuerySet(RelatedPolymorphicQuerySet):
+    def annotate_with_form_count(self):
+        return self.annotate(forms_count=Count("forms"))
+
+    def filter_for_user(self, user: User):
+        iaso_profile = getattr(user, "iaso_profile", None)
+        account = getattr(iaso_profile, "account", None)
+        if not account:
+            return self.none()
+        return self.filter(account=account)
+
+
+class MissionWithFormsManager(PolymorphicManager.from_queryset(MissionWithFormsQuerySet)):
+    def get_queryset(self):
+        return super().get_queryset().filter(deleted_at__isnull=True)
+
+
+class MissionWithForms(Mission):
+    """
+    Represents a mission that has forms as M2M to avoid duplication of table
+    """
+
+    forms = models.ManyToManyField("Form", related_name="mission_forms", through="MissionFormThroughForm")
+
+    objects = MissionWithFormsManager()
+
+    class Meta:
+        ordering = ("id",)
+
+
 class MissionFormThroughForm(models.Model):
-    mission_form = models.ForeignKey("MissionForm", on_delete=models.CASCADE)
+    mission_form = models.ForeignKey("MissionWithForms", on_delete=models.CASCADE)
     form = models.ForeignKey("Form", on_delete=models.CASCADE)
     min_cardinality = models.PositiveIntegerField(
         default=1, help_text="Minimum number of times this form should be filled"
@@ -74,8 +99,23 @@ class MissionFormThroughForm(models.Model):
     class Meta:
         unique_together = (("mission_form", "form"),)
 
+    def get_assignments(self):
+        raise NotImplementedError
 
-class MissionOrgUnitType(MissionForm):
+
+class MissionForm(MissionWithForms):
+    """Contains the information for the FORM_FILLING mission type"""
+
+    class Meta:
+        ordering = ("id",)
+
+    MISSION_TYPE = MissionType.FORM_FILLING
+
+    def get_assignments(self):
+        raise NotImplementedError
+
+
+class MissionOrgUnitType(MissionWithForms):
     """Contains the information for the ORG_UNIT_AND_FORM mission type"""
 
     MISSION_TYPE = MissionType.ORG_UNIT_AND_FORM
@@ -92,7 +132,7 @@ class MissionOrgUnitType(MissionForm):
         raise NotImplementedError
 
 
-class MissionEntityType(MissionForm):
+class MissionEntityType(MissionWithForms):
     """Contains the information for the ENTITY_AND_FORM mission type"""
 
     MISSION_TYPE = MissionType.ENTITY_AND_FORM

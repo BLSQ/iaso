@@ -200,7 +200,7 @@ class MissionAPIDropdownTestCase(SwaggerTestCaseMixin, APITestCase):
 
         ContentType.objects.clear_cache()
 
-        with self.assertNumQueries(8):
+        with self.assertNumQueries(3):
             res = self.client.get(reverse("missions-dropdown"))
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data, 6)

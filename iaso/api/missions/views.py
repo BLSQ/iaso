@@ -15,7 +15,7 @@ from iaso.api.missions.serializers.list import MissionPolymorphicListSerializer
 from iaso.api.missions.serializers.retrieve import MissionPolymorphicRetrieveSerializer
 from iaso.api.missions.serializers.update import MissionPolymorphicUpdateSerializer
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
-from iaso.models import MissionEntityType, MissionForm, MissionOrgUnitType
+from iaso.models import MissionEntityType, MissionOrgUnitType, MissionWithForms
 from iaso.models.missions import (
     MissionFormThroughForm,
     MissionType,
@@ -56,9 +56,13 @@ class MissionViewSet(AuditMixin, ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = MissionForm.objects.filter_for_user(user)
+        queryset = MissionWithForms.objects.filter_for_user(user)
         if self.action == "list":
-            return queryset.annotate_with_form_count()
+            return (
+                queryset.select_polymorphic_related(MissionOrgUnitType, "org_unit_type")
+                .select_polymorphic_related(MissionEntityType, "entity_type")
+                .annotate_with_form_count()
+            )
 
         if self.action == "retrieve":
             return (
@@ -71,7 +75,7 @@ class MissionViewSet(AuditMixin, ModelViewSet):
                 .select_polymorphic_related(MissionEntityType, "entity_type")
             )
         if self.action == "dropdown":
-            return queryset.only("id", "name", "polymorphic_ctype_id")
+            return queryset.non_polymorphic().only("id", "name")
 
         return queryset
 

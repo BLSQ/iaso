@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer
-from iaso.models import MissionForm
+from iaso.models import MissionWithForms
 
 
 class MissionDropdownSerializer(ModelSerializer):
@@ -9,5 +9,5 @@ class MissionDropdownSerializer(ModelSerializer):
     value = serializers.IntegerField(read_only=True, source="pk", allow_null=False)
 
     class Meta:
-        model = MissionForm
+        model = MissionWithForms
         fields = ["label", "value"]

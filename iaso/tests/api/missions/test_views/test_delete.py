@@ -132,7 +132,7 @@ class MissionAPIDeleteTestCase(SwaggerTestCaseMixin, APITestCase):
     def test_num_queries(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
         ContentType.objects.clear_cache()
-        with self.assertNumQueries(8):
+        with self.assertNumQueries(12):
             res = self.client.delete(reverse("missions-detail", kwargs={"pk": self.mission_form_2.pk}))
 
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
@@ -146,3 +146,5 @@ class MissionAPIDeleteTestCase(SwaggerTestCaseMixin, APITestCase):
         self.mission_form_1.refresh_from_db()
 
         self.assertIsNotNone(self.mission_form_1.deleted_at)
+        self.assertIsNotNone(self.mission_form_1.missionwithforms.deleted_at)
+        self.assertIsNotNone(self.mission_form_1.mission_ptr.deleted_at)

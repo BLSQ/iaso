@@ -105,7 +105,7 @@ describe('Mission list integration test', () => {
         TestingQueryClient.setDefaultOptions(previousDefaults);
     });
     beforeEach(() => {
-        faker.seed(4);
+        faker.seed(6);
         vi.clearAllMocks();
         vi.unstubAllEnvs();
         mockUserHasAllPermissions.mockReturnValue(true);
@@ -167,9 +167,9 @@ describe('Mission list integration test', () => {
 
         Object.entries(uniqueMissionTypes ?? {})?.forEach(([item, count]) => {
             const label = missionTypeChipLabels[item] ?? item;
-            expect(
-                screen.getAllByRole('cell', { name: label }),
-            ).toHaveLength(count);
+            expect(screen.getAllByRole('cell', { name: label })).toHaveLength(
+                count,
+            );
         });
 
         data?.results?.forEach(

@@ -2,7 +2,7 @@ import React from 'react';
 import { screen } from '@testing-library/react';
 import type { FormikProps } from 'formik';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { MissionTypeDropdownValueEnum } from 'Iaso/api/missions';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions';
 
 import { renderWithThemeAndIntlProvider } from '../../../../../tests/helpers';
 import { EditMissionForm } from './EditMissionForm';
@@ -72,7 +72,7 @@ type Props = {
 };
 
 const renderComponent = ({
-    missionType = MissionTypeDropdownValueEnum.enum.FORM_FILLING,
+    missionType = MissionTypeDa2Enum.enum.FORM_FILLING,
 }: Props = {}) => {
     const formik = createFormik();
 
@@ -98,7 +98,7 @@ describe('EditMissionForm unit tests', () => {
 
     it('renders MissionFormsBaseInput and FormsChip for FORM_FILLING', () => {
         renderComponent({
-            missionType: MissionTypeDropdownValueEnum.enum.FORM_FILLING,
+            missionType: MissionTypeDa2Enum.enum.FORM_FILLING,
         });
 
         expect(screen.getByTestId('forms-base-input')).toBeInTheDocument();
@@ -109,7 +109,7 @@ describe('EditMissionForm unit tests', () => {
 
     it('renders MissionOrgUnitTypeInput and OrgUnitAndFormChip for ORG_UNIT_AND_FORM', () => {
         renderComponent({
-            missionType: MissionTypeDropdownValueEnum.enum.ORG_UNIT_AND_FORM,
+            missionType: MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM,
         });
 
         expect(screen.getByTestId('org-unit-input')).toBeInTheDocument();
@@ -122,7 +122,7 @@ describe('EditMissionForm unit tests', () => {
 
     it('renders MissionEntityTypeInput and EntityAndFormChip for ENTITY_AND_FORM', () => {
         renderComponent({
-            missionType: MissionTypeDropdownValueEnum.enum.ENTITY_AND_FORM,
+            missionType: MissionTypeDa2Enum.enum.ENTITY_AND_FORM,
         });
 
         expect(screen.getByTestId('entity-input')).toBeInTheDocument();

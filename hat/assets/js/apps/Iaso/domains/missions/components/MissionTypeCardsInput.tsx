@@ -8,7 +8,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import { FormikProps } from 'formik';
 import { FieldInputProps } from 'formik/dist/types';
 import { get } from 'lodash';
-import { MissionTypeDropdownValueEnum } from 'Iaso/api/missions';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../messages';
 
@@ -84,17 +84,17 @@ const styles: SxStyles = {
 
 const MISSION_TYPE_OPTIONS = [
     {
-        value: MissionTypeDropdownValueEnum.enum.FORM_FILLING,
+        value: MissionTypeDa2Enum.enum.FORM_FILLING,
         Icon: DescriptionIcon,
         labelMessage: MESSAGES.form,
     },
     {
-        value: MissionTypeDropdownValueEnum.enum.ORG_UNIT_AND_FORM,
+        value: MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM,
         Icon: LocationOnIcon,
         labelMessage: MESSAGES.orgUnitAndFormChip,
     },
     {
-        value: MissionTypeDropdownValueEnum.enum.ENTITY_AND_FORM,
+        value: MissionTypeDa2Enum.enum.ENTITY_AND_FORM,
         Icon: AssignmentIndIcon,
         labelMessage: MESSAGES.entityAndFormChip,
     },

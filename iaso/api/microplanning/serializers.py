@@ -12,9 +12,11 @@ from iaso.models import (
     EntityType,
     Form,
     Group,
+    Mission,
     MissionEntityType,
     MissionForm,
     MissionOrgUnitType,
+    MissionWithForms,
     OrgUnit,
     OrgUnitType,
     Planning,
@@ -99,7 +101,7 @@ class MissionReadSerializer(serializers.ModelSerializer):
     entity_max_cardinality = serializers.IntegerField(read_only=True, source="entity_type.max_cardinality")
 
     class Meta:
-        model = MissionForm
+        model = MissionWithForms
         fields = [
             "id",
             "name",
@@ -134,7 +136,7 @@ class MissionWriteSerializer(serializers.ModelSerializer):
     entity_max_cardinality = serializers.IntegerField(required=False, source="entity_type.max_cardinality")
 
     class Meta:
-        model = MissionForm
+        model = MissionWithForms
         fields = [
             "id",
             "name",
@@ -247,7 +249,7 @@ class MissionWriteSerializer(serializers.ModelSerializer):
 
 class AuditMissionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = MissionForm
+        model = MissionWithForms
         fields = "__all__"
 
 
@@ -263,7 +265,7 @@ class NestedMissionSerializer(serializers.ModelSerializer):
     entity_max_cardinality = serializers.IntegerField(read_only=True, source="entity_type.max_cardinality")
 
     class Meta:
-        model = MissionForm
+        model = MissionWithForms
         fields = [
             "id",
             "name",
@@ -304,7 +306,7 @@ class PlanningWriteSerializer(serializers.ModelSerializer):
         self.fields["project"].queryset = account.project_set.all()
         self.fields["team"].queryset = Team.objects.filter_for_user(user)
         self.fields["org_unit"].queryset = OrgUnit.objects.filter_for_user_and_app_id(user, None)
-        self.fields["missions"].child_relation.queryset = MissionForm.objects.filter_for_user(user)
+        self.fields["missions"].child_relation.queryset = Mission.objects.filter_for_user(user)
         self.fields["target_org_unit_types"].child_relation.queryset = OrgUnitType.objects.filter(
             projects__account=account
         ).distinct()

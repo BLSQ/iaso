@@ -296,7 +296,7 @@ class MissionOrgUnitTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
         self.client.force_authenticate(user=self.user_account_write_perm)
 
         ContentType.objects.clear_cache()
-        with self.assertNumQueries(13):
+        with self.assertNumQueries(14):
             res = self.client.post(
                 reverse("missions-list"),
                 data={

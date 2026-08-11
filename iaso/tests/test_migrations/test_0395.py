@@ -7,7 +7,7 @@ from iaso.test import IasoMigratorTestCase
 class Test0395DirectMigration(IasoMigratorTestCase):
     migrate_from = ("iaso", "0394_remove_show_pages_feature_flag")
     migrate_to = ("iaso", "0395_missionform_alter_corepermissionsupport_options_and_more")
-    num_queries = 55
+    num_queries = 65
 
     def prepare(self):
         Account = self.old_state.apps.get_model("iaso", "Account")
@@ -71,7 +71,7 @@ class Test0395DirectMigration(IasoMigratorTestCase):
 
         self.assertEqual(MissionForm.objects.count(), 3)
 
-        planning_1_first_mission = planning_1.missions.all()[0]
+        planning_1_first_mission = planning_1.missions.all()[0].missionwithforms.missionform
 
         self.assertEqual(planning_1_first_mission.forms.count(), 1)
         self.assertEqual(planning_1_first_mission.forms.first().name, "form1")
@@ -84,7 +84,7 @@ class Test0395DirectMigration(IasoMigratorTestCase):
             [(self.form1.pk, 1, 1)],
         )
 
-        planning_1_second_mission = planning_1.missions.all()[1]
+        planning_1_second_mission = planning_1.missions.all()[1].missionwithforms.missionform
 
         self.assertEqual(planning_1_second_mission.forms.count(), 1)
         self.assertEqual(planning_1_second_mission.forms.first().name, "form2")
@@ -96,7 +96,7 @@ class Test0395DirectMigration(IasoMigratorTestCase):
             ),
             [(self.form2.pk, 1, 1)],
         )
-        planning_2_first_mission = planning_2.missions.all()[0]
+        planning_2_first_mission = planning_2.missions.all()[0].missionwithforms.missionform
 
         self.assertEqual(planning_2_first_mission.forms.count(), 1)
         self.assertEqual(planning_2_first_mission.forms.first().name, "form2")
@@ -111,7 +111,7 @@ class Test0395DirectMigration(IasoMigratorTestCase):
 
 
 class Test0395ReverseMigration(IasoMigratorTestCase):
-    num_queries = 43
+    num_queries = 46
 
     migrate_from = ("iaso", "0395_missionform_alter_corepermissionsupport_options_and_more")
     migrate_to = ("iaso", "0394_remove_show_pages_feature_flag")

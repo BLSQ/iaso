@@ -327,7 +327,7 @@ class MissionEntityTypeAPIUpdateTestCase(SwaggerTestCaseMixin, APITestCase):
 
         ContentType.objects.clear_cache()
 
-        with self.assertNumQueries(18):
+        with self.assertNumQueries(19):
             res = self.client.put(
                 reverse("missions-detail", kwargs={"pk": self.mission_et_1.pk}),
                 data=body,

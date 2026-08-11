@@ -200,7 +200,7 @@ class MissionAPIListTestCase(SwaggerTestCaseMixin, APITestCase):
 
         ContentType.objects.clear_cache()
 
-        with self.assertNumQueries(13):
+        with self.assertNumQueries(11):
             res = self.client.get(reverse("missions-list"))
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data, 6)

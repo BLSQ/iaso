@@ -5,7 +5,7 @@ import { useSafeIntl, useRedirectTo, LinkButton } from 'bluesquare-components';
 import { useFormik, FormikProvider } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import {
-    MissionTypeDropdownValueEnum,
+    MissionTypeDa2Enum,
     useApiMicroplanningMissionsCreate,
 } from 'Iaso/api/missions';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
@@ -39,7 +39,7 @@ export const MissionCreate: FunctionComponent = () => {
         validationSchema: toFormikValidationSchema(MissionCreateBody),
         initialValues: {
             name: '',
-            mission_type: MissionTypeDropdownValueEnum.enum.FORM_FILLING,
+            mission_type: MissionTypeDa2Enum.enum.FORM_FILLING,
             forms: [],
         },
         validateOnBlur: true,

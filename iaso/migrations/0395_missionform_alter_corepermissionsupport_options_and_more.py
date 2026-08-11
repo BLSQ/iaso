@@ -3,13 +3,15 @@
 import django.db.models.deletion
 
 from django.conf import settings
-from django.db import migrations, models
+from django.db import connection, migrations, models
 
 
 def migrate_forms_to_missions(apps, schema_editor):
     """Convert each Planning-Form pair to a FORM_FILLING Mission with MissionForm."""
     ContentType = apps.get_model("contenttypes", "ContentType")
     Planning = apps.get_model("iaso", "Planning")
+    Mission = apps.get_model("iaso", "Mission")
+    MissionWithForms = apps.get_model("iaso", "MissionWithForms")
     MissionForm = apps.get_model("iaso", "MissionForm")
     MissionFormThroughForm = apps.get_model("iaso", "MissionFormThroughForm")
     PlanningFormThrough = apps.get_model("iaso", "Planning_forms")
@@ -30,7 +32,7 @@ def migrate_forms_to_missions(apps, schema_editor):
 
         for form in planning.forms.all():
             mission_objects.append(
-                MissionForm(
+                Mission(
                     name=form.name,
                     account_id=account.id,
                     mission_type="FORM_FILLING",
@@ -40,7 +42,17 @@ def migrate_forms_to_missions(apps, schema_editor):
             )
             mission_form_through_objects.append({"form_id": form.id, "min_cardinality": 1, "max_cardinality": 1})
 
-        mission_objs = MissionForm.objects.bulk_create(mission_objects)
+        mission_objs = Mission.objects.bulk_create(mission_objects)
+
+        with connection.cursor() as cursor:
+            sql = f"INSERT INTO {MissionWithForms._meta.db_table} (mission_ptr_id) VALUES (%s)"
+            params = [[m.id] for m in mission_objs]
+            cursor.executemany(sql, params)
+
+        with connection.cursor() as cursor:
+            sql = f"INSERT INTO {MissionForm._meta.db_table} (missionwithforms_ptr_id) VALUES (%s)"
+            params = [[m.id] for m in mission_objs]
+            cursor.executemany(sql, params)
 
         MissionFormThroughForm.objects.bulk_create(
             [
@@ -77,7 +89,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name="MissionForm",
+            name="Mission",
             fields=[
                 ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
@@ -106,6 +118,16 @@ class Migration(migrations.Migration):
                     "created_by",
                     models.ForeignKey(
                         blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL
+                    ),
+                ),
+                (
+                    "polymorphic_ctype",
+                    models.ForeignKey(
+                        editable=False,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="polymorphic_%(app_label)s.%(class)s_set+",
+                        to="contenttypes.contenttype",
                     ),
                 ),
             ],
@@ -173,6 +195,26 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
+            name="MissionWithForms",
+            fields=[
+                (
+                    "mission_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="iaso.mission",
+                    ),
+                ),
+            ],
+            options={
+                "ordering": ("id",),
+            },
+            bases=("iaso.mission", models.Model),
+        ),
+        migrations.CreateModel(
             name="MissionFormThroughForm",
             fields=[
                 ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
@@ -191,47 +233,57 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("form", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.form")),
-                ("mission_form", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.missionform")),
             ],
-            options={
-                "unique_together": {("mission_form", "form")},
-            },
-        ),
-        migrations.AddField(
-            model_name="missionform",
-            name="forms",
-            field=models.ManyToManyField(
-                related_name="mission_forms", through="iaso.MissionFormThroughForm", to="iaso.form"
-            ),
-        ),
-        migrations.AddField(
-            model_name="missionform",
-            name="polymorphic_ctype",
-            field=models.ForeignKey(
-                editable=False,
-                null=True,
-                on_delete=django.db.models.deletion.CASCADE,
-                related_name="polymorphic_%(app_label)s.%(class)s_set+",
-                to="contenttypes.contenttype",
-            ),
         ),
         migrations.AddField(
             model_name="planning",
             name="missions",
-            field=models.ManyToManyField(blank=True, related_name="plannings", to="iaso.missionform"),
+            field=models.ManyToManyField(blank=True, related_name="plannings", to="iaso.mission"),
         ),
         migrations.CreateModel(
-            name="MissionOrgUnitType",
+            name="MissionForm",
             fields=[
                 (
-                    "missionform_ptr",
+                    "missionwithforms_ptr",
                     models.OneToOneField(
                         auto_created=True,
                         on_delete=django.db.models.deletion.CASCADE,
                         parent_link=True,
                         primary_key=True,
                         serialize=False,
-                        to="iaso.missionform",
+                        to="iaso.missionwithforms",
+                    ),
+                ),
+            ],
+            options={
+                "ordering": ("id",),
+            },
+            bases=("iaso.missionwithforms",),
+        ),
+        migrations.AddField(
+            model_name="missionwithforms",
+            name="forms",
+            field=models.ManyToManyField(
+                related_name="mission_forms", through="iaso.MissionFormThroughForm", to="iaso.form"
+            ),
+        ),
+        migrations.AddField(
+            model_name="missionformthroughform",
+            name="mission_form",
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.missionwithforms"),
+        ),
+        migrations.CreateModel(
+            name="MissionOrgUnitType",
+            fields=[
+                (
+                    "missionwithforms_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="iaso.missionwithforms",
                     ),
                 ),
                 (
@@ -260,20 +312,24 @@ class Migration(migrations.Migration):
             options={
                 "abstract": False,
             },
-            bases=("iaso.missionform",),
+            bases=("iaso.missionwithforms",),
+        ),
+        migrations.AlterUniqueTogether(
+            name="missionformthroughform",
+            unique_together={("mission_form", "form")},
         ),
         migrations.CreateModel(
             name="MissionEntityType",
             fields=[
                 (
-                    "missionform_ptr",
+                    "missionwithforms_ptr",
                     models.OneToOneField(
                         auto_created=True,
                         on_delete=django.db.models.deletion.CASCADE,
                         parent_link=True,
                         primary_key=True,
                         serialize=False,
-                        to="iaso.missionform",
+                        to="iaso.missionwithforms",
                     ),
                 ),
                 (
@@ -302,7 +358,7 @@ class Migration(migrations.Migration):
             options={
                 "abstract": False,
             },
-            bases=("iaso.missionform",),
+            bases=("iaso.missionwithforms",),
         ),
         migrations.RunPython(migrate_forms_to_missions, reverse_migrate_missions_to_forms),
         migrations.RemoveField(

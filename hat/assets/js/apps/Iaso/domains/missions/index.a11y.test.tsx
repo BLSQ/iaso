@@ -99,7 +99,7 @@ describe('Missions list a11y tests', () => {
         TestingQueryClient.setDefaultOptions(previousDefaults);
     });
     beforeEach(() => {
-        faker.seed(4);
+        faker.seed(6);
         vi.clearAllMocks();
         vi.unstubAllEnvs();
         mockUserHasAllPermissions.mockReturnValue(true);

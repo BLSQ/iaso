@@ -21,7 +21,7 @@ from iaso.api.common import (
 )
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.models.microplanning import Assignment, Planning
-from iaso.models.missions import MissionForm
+from iaso.models.missions import MissionWithForms
 from iaso.models.org_unit import OrgUnit
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
 
@@ -452,7 +452,7 @@ class AssignmentViewSet(PlanningOrgUnitChildrenQuerysetMixin, AuditMixin, ModelV
 class MissionViewSet(AuditMixin, ModelViewSet):
     remove_results_key_if_paginated = True
     permission_classes = [AuthenticationEnforcedPermission, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]  # type: ignore
-    queryset = MissionForm.objects.all()
+    queryset = MissionWithForms.objects.all()
     filter_backends = [
         filters.OrderingFilter,
         DjangoFilterBackend,

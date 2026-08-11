@@ -73,6 +73,7 @@ services:
         - ENKETO_URL
         - FAVICON_PATH
         - FORM_AI_MODEL
+        - FORM_AI_MAX_TOKENS
         - FORUM_PATH
         - HAT_LOGGING_LEVEL
         - HIDE_BASIC_NAV_ITEMS

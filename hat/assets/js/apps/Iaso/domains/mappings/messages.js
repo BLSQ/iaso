@@ -38,7 +38,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.updated_at',
     },
     dhis2Mappings: {
-        defaultMessage: 'DHIS mappings',
+        defaultMessage: 'DHIS2 mappings',
         id: 'iaso.label.dhis2Mappings',
     },
     mappingType: {

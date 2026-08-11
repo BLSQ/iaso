@@ -10,7 +10,7 @@ WORKDIR /opt/app
 
 # Copy package files
 COPY ../../package.json package-lock.json ./
-RUN npm install -g npm@11.13.0 && \
+RUN npm install -g npm@11.19.0 && \
     rm -rf node_modules && \
     npm cache clean --force && \
     npm ci

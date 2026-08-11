@@ -138,7 +138,7 @@ class MetricValueSerializer(serializers.ModelSerializer):
 
 class ImportMetricValuesSerializer(serializers.Serializer):
     file = serializers.FileField(required=True)
-    year = serializers.IntegerField(required=True, allow_null=False)
+    year = serializers.IntegerField(required=False, allow_null=True)
 
     def validate_file(self, value):
         if not value.name.endswith(".csv"):
@@ -194,6 +194,9 @@ class ImportMetricValuesSerializer(serializers.Serializer):
         return value
 
     def validate_year(self, value):
+        if value is None:
+            return value
+
         if value < 1900 or value > 2100:
             raise serializers.ValidationError(_("Year must be between 1900 and 2100."))
         return value
@@ -201,7 +204,7 @@ class ImportMetricValuesSerializer(serializers.Serializer):
     def save(self, **kwargs):
         df = self.context["metric_values_df"]
         existing_metric_types_map = self.context["existing_metric_types_map"]
-        year = self.validated_data["year"]
+        year = self.validated_data.get("year", None)
         metric_values = []
         for index, row in df.iterrows():
             org_unit_id = row["ADM2_ID"]

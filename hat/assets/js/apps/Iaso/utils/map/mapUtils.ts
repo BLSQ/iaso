@@ -317,3 +317,26 @@ export const CloseTooltipOnMoveStart: FunctionComponent = () => {
     });
     return null;
 };
+
+export type GeoPoint = {
+    latitude: number;
+    longitude: number;
+    altitude?: number;
+    accuracy?: number;
+};
+
+/** ODK stores a geopoint as "latitude longitude altitude accuracy". */
+export const parseGeoPoint = (value: unknown): GeoPoint | undefined => {
+    if (typeof value !== 'string') return undefined;
+    const [latitude, longitude, altitude, accuracy] = value
+        .trim()
+        .split(/\s+/)
+        .map(Number);
+    if (Number.isNaN(latitude) || Number.isNaN(longitude)) return undefined;
+    return {
+        latitude,
+        longitude,
+        altitude: Number.isNaN(altitude) ? undefined : altitude,
+        accuracy: Number.isNaN(accuracy) ? undefined : accuracy,
+    };
+};

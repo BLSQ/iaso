@@ -180,6 +180,7 @@ For detailed setup instructions, see [Plausible Analytics Setup](../analytics/pl
 | WEBPACK_PORT | true | `3000` | Port for the development server |
 | WEBPACK_PROTOCOL | true | `http` | Protocol for the development server |
 | WEBPACK_PATH | true | `./assets/webpack/` | Path for webpack output files |
+| WEBPACK_POLL | true | `false` | Poll for file changes (needed in Docker bind mounts; slower, leave off on host) |
 | OLD_BROWSER | true | `false` | Enable compatibility mode for older browsers |
 | LIVE_COMPONENTS | true | `false` | Use local bluesquare-components for development |
 
@@ -194,6 +195,7 @@ For detailed setup instructions, see [Plausible Analytics Setup](../analytics/pl
 | name | optional | default value | description |
 |------|----------|---------------|-------------|
 | FORM_AI_MODEL | true | `claude-opus-4-7` | Anthropic model used by the Form AI to generate XLSForms |
+| FORM_AI_MAX_TOKENS | true | `32000` | Maximum output tokens for Form AI Claude responses. Higher values help when editing large existing forms; the API call uses streaming so the Anthropic SDK accepts this limit |
 
 ## Root url override
 

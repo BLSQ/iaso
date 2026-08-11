@@ -86,10 +86,14 @@ export const useGetTypes = (): UseQueryResult<Array<EntityType>, Error> => {
 
 export const useGetType = (
     typeId: string,
+    enabled = true,
 ): UseQueryResult<EntityType, Error> => {
     return useSnackQuery({
         queryKey: ['entitytype', typeId],
-        queryFn: () => getRequest(`/api/entitytypes/${typeId}`),
+        queryFn: () => getRequest(`/api/entitytypes/${typeId}/`),
+        options: {
+            enabled,
+        },
     });
 };
 

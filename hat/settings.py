@@ -1008,6 +1008,7 @@ SETUPER_SANDBOX_PASSWORD = env.str("SETUPER_SANDBOX_PASSSWORD", default="distric
 
 # Form AI
 FORM_AI_MODEL = env.str("FORM_AI_MODEL", default="claude-opus-4-7")
+FORM_AI_MAX_TOKENS = env.int("FORM_AI_MAX_TOKENS", default=32000)
 
 # TEST MODE
 TEST_MODE = env.bool("TEST_MODE", default=False)

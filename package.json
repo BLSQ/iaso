@@ -4,6 +4,11 @@
     "description": "Iaso data collection platform",
     "author": "Bluesquare",
     "license": "Apache-2.0",
+    "engines": {
+        "node": "22.18.0",
+        "npm": "11.19.0"
+    },
+    "packageManager": "npm@11.19.0",
     "scripts": {
         "show-lint-problems": "eslint \"./hat/assets/js/**/*.{js,jsx,ts,tsx}\" \"./plugins/polio/js/**/*.{js,jsx,ts,tsx}\"",
         "fix-lint": "eslint \"./hat/assets/js/**/*.{js,jsx,ts,tsx}\" \"./plugins/polio/js/**/*.{js,jsx,ts,tsx}\" --cache --fix",
@@ -22,7 +27,7 @@
         "webpack": "webpack --config ./hat/webpack.dev.js",
         "webpack-prod": "webpack --config ./hat/webpack.prod.js",
         "webpack-server": "webpack serve --config ./hat/webpack.dev.js",
-        "webpack-server-verbose": "webpack --config ./hat/webpack.dev.js --progress --stats detailed",
+        "webpack-server-verbose": "webpack serve --config ./hat/webpack.dev.js --progress --stats detailed",
         "dev": "npm run webpack-server",
         "tsc": "tsc --watch",
         "scan-translations": "python ./scripts/scantranslations.py",
@@ -92,9 +97,7 @@
         "lodash": "^4.17.15",
         "moment": "^2.29.4",
         "notistack": "^3.0.1",
-        "npm": "11.13.0",
         "polyfill-object.fromentries": "^1.0.1",
-        "quill": "^2.0.2",
         "react": "^18.2.0",
         "react-color": "^2.17.3",
         "react-dom": "^18.2.0",
@@ -144,8 +147,6 @@
         "@vitest/coverage-v8": "^4.0.18",
         "@vitest/eslint-plugin": "^1.6.7",
         "babel-loader": "^9.1.3",
-        "babel-plugin-require-context-hook": "^1.0.0",
-        "babel-polyfill": "^6.26.0",
         "canvas": "^3.1.2",
         "clean-webpack-plugin": "^4.0.0",
         "css-loader": "^7.1.2",
@@ -159,7 +160,6 @@
         "eslint-plugin-prettier": "^5.4.0",
         "eslint-plugin-react": "^7.37.5",
         "eslint-plugin-react-hooks": "^5.2.0",
-        "eslint-webpack-plugin": "^5.0.1",
         "fishery": "^2.4.0",
         "jest-axe": "^10.0.0",
         "jsdom": "^26.1.0",
@@ -179,5 +179,14 @@
     "overrides": {
         "canvg": "4.0.3",
         "jspdf": "4.2.1"
+    },
+    "allowScripts": {
+        "esbuild": true,
+        "unrs-resolver": true,
+        "fsevents@2.3.2": true,
+        "fsevents@2.3.3": true,
+        "canvas": true,
+        "msw": true,
+        "core-js": true
     }
 }

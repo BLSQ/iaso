@@ -44,9 +44,10 @@ describe('FileValue', () => {
                 files={['/media/uploads/scan.png']}
             />,
         );
-        expect(
-            screen.getByRole('img', { name: 'attachment' }),
-        ).toHaveAttribute('src', '/media/uploads/scan.png');
+        expect(screen.getByRole('img', { name: 'attachment' })).toHaveAttribute(
+            'src',
+            '/media/uploads/scan.png',
+        );
     });
 
     it('renders a video item for video files', () => {

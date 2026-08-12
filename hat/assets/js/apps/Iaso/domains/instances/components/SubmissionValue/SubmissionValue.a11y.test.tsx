@@ -56,12 +56,12 @@ describe('SubmissionValue a11y', () => {
             empty: false,
         }),
     ])('has no accessibility violations for $kind fields', async field => {
-        const files =
-            field.kind === 'photo'
-                ? ['/media/uploads/facility.jpg']
-                : field.kind === 'file'
-                  ? ['/media/uploads/report.pdf']
-                  : [];
+        let files: string[] = [];
+        if (field.kind === 'photo') {
+            files = ['/media/uploads/facility.jpg'];
+        } else if (field.kind === 'file') {
+            files = ['/media/uploads/report.pdf'];
+        }
         const { container } = renderWithThemeAndIntlProvider(
             <SubmissionValue field={field} files={files} />,
         );

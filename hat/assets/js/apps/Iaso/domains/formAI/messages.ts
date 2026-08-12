@@ -107,6 +107,7 @@ const MESSAGES = defineMessages({
     },
     loadFormUserContext: {
         defaultMessage:
+            // eslint-disable-next-line max-len
             'I\'m loading an existing form called "{formName}" (ODK form_id: "{formOdkId}", version: "{versionId}"). Here is its current XLSForm structure in JSON:\n\n{formJson}\n\nPlease remember this form structure. When I ask you to modify it, return the COMPLETE updated form in the standard JSON format.',
         id: 'iaso.formAI.loadFormUserContext',
     },

@@ -60,9 +60,13 @@ plugins:
                   #   - ./pages/dev/how_to/deploy/deploy.md
                   # - Use the APIs:
                   - ./pages/dev/how_to/use_iaso_apis/use_iaso_apis.md
+                  # - Modify org units via the API:
+                  - ./pages/dev/how_to/modify_org_units_via_api/modify_org_units_via_api.md
+                  # - Read org units via the FHIR API:
+                  - ./pages/dev/how_to/read_org_units_via_fhir/read_org_units_via_fhir.md
                   # - Run docs locally:
                   #   - ./pages/dev/how_to/run_docs_locally/run_docs_locally.md
-                  # - Write a visit on an NFC card: 
+                  # - Write a visit on an NFC card:
                   #   - ./pages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.md
 
               - En savoir plus sur IASO:
@@ -113,9 +117,13 @@ plugins:
                   #   - ./pages/dev/how_to/deploy/deploy.md
                   # - Use the APIs:
                   - ./pages/dev/how_to/use_iaso_apis/use_iaso_apis.md
+                  # - Modify org units via the API:
+                  - ./pages/dev/how_to/modify_org_units_via_api/modify_org_units_via_api.md
+                  # - Read org units via the FHIR API:
+                  - ./pages/dev/how_to/read_org_units_via_fhir/read_org_units_via_fhir.md
                   # - Run docs locally:
                   #   - ./pages/dev/how_to/run_docs_locally/run_docs_locally.md
-                  # - Write a visit on an NFC card: 
+                  # - Write a visit on an NFC card:
                   #   - ./pages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.md
 
               - Más sobre IASO:
@@ -187,6 +195,10 @@ nav: # nav configures the side bar menu
       #   - ./pages/dev/how_to/deploy/deploy.md
       # - Use the APIs:
       - ./pages/dev/how_to/use_iaso_apis/use_iaso_apis.md
+      # - Modify org units via the API:
+      - ./pages/dev/how_to/modify_org_units_via_api/modify_org_units_via_api.md
+      # - Read org units via the FHIR API:
+      - ./pages/dev/how_to/read_org_units_via_fhir/read_org_units_via_fhir.md
       # - Run docs locally:
       #   - ./pages/dev/how_to/run_docs_locally/run_docs_locally.md
       # - Write a visit on an NFC card:

@@ -14,6 +14,7 @@ import {
 import { useDynamicFormDescriptors } from 'Iaso/domains/forms/fields/hooks/useGetFormDescriptor';
 import { getQueryBuildersFields } from 'Iaso/domains/forms/fields/hooks/useGetQueryBuildersFields';
 import { useDynamicPossibleFields } from 'Iaso/domains/forms/hooks/useGetPossibleFields';
+import { getLocaleDateFormat } from 'Iaso/utils/dates';
 import { Popper } from '../../../forms/fields/components/Popper';
 import { useGetQueryBuilderListToReplace } from '../../../forms/fields/hooks/useGetQueryBuilderListToReplace';
 import { parseJson } from '../../../instances/utils/jsonLogicParse';
@@ -170,6 +171,7 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
     const getHumanReadableJsonLogic = useHumanReadableJsonLogic(
         isFetching ? {} : allFields,
         queryBuilderListToReplace,
+        getLocaleDateFormat,
     );
 
     const handleReset = useCallback(() => {

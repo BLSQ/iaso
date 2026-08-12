@@ -63,7 +63,6 @@ ENABLE_CORS = env.bool("ENABLE_CORS", default=True)
 # This should be the same as the one set on: `/admin/sites/site/1/change/`
 
 DNS_DOMAIN = env.str("DNS_DOMAIN", default="localhost:8081")
-TESTING = env.bool("TESTING", default=False)
 IN_TESTS = len(sys.argv) > 1 and sys.argv[1] == "test"
 PLUGINS = env.list("PLUGINS", default=[], delimiter=",")
 ROOT_REDIRECT_PATTERN_NAME = env.str("ROOT_REDIRECT_PATTERN_NAME", default="dashboard:home_iaso")
@@ -163,7 +162,7 @@ SITE_ID = 1
 
 LOGGING_LEVEL = env.str("DJANGO_LOGGING_LEVEL", default="INFO")
 HAT_LOGGING_LEVEL = env.str("HAT_LOGGING_LEVEL", default="DEBUG")
-if TESTING:
+if IN_TESTS:
     # We don't want to see log output when running tests
     LOGGING_LEVEL = "CRITICAL"
 
@@ -571,6 +570,7 @@ SIMPLE_JWT = {
 AWS_S3_REGION_NAME = env.str("AWS_S3_REGION_NAME", default="eu-central-1")
 AWS_ACCESS_KEY_ID = env.str("AWS_ACCESS_KEY_ID", default=None)
 AWS_SECRET_ACCESS_KEY = env.str("AWS_SECRET_ACCESS_KEY", default=None)
+AWS_PUBLIC_STORAGE_BUCKET_NAME = env.str("AWS_PUBLIC_STORAGE_BUCKET_NAME", default=None)
 
 MEDIA_URL_PREFIX = "/media/"
 if USE_S3:
@@ -1008,6 +1008,7 @@ SETUPER_SANDBOX_PASSWORD = env.str("SETUPER_SANDBOX_PASSSWORD", default="distric
 
 # Form AI
 FORM_AI_MODEL = env.str("FORM_AI_MODEL", default="claude-opus-4-7")
+FORM_AI_MAX_TOKENS = env.int("FORM_AI_MAX_TOKENS", default=32000)
 
 # TEST MODE
 TEST_MODE = env.bool("TEST_MODE", default=False)

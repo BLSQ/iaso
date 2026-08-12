@@ -13,6 +13,7 @@ from django.utils.html import strip_tags
 from django.utils.translation import gettext_lazy as _
 
 from iaso.utils.encryption import calculate_md5
+from iaso.utils.models.sized_file_field import SizedFileField
 from iaso.utils.models.upload_to import get_account_name_based_on_user
 
 from .. import periods
@@ -317,9 +318,9 @@ class FormVersion(models.Model):
 
     form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="form_versions")
     # xml file representation
-    file = models.FileField(upload_to=form_version_upload_to)
+    file = SizedFileField(upload_to=form_version_upload_to)
     md5 = models.CharField(blank=True, max_length=32)
-    xls_file = models.FileField(upload_to=form_version_upload_to, null=True, blank=True)
+    xls_file = SizedFileField(upload_to=form_version_upload_to, null=True, blank=True)
     form_descriptor = models.JSONField(null=True, blank=True)
     version_id = models.TextField()  # extracted from xls
     created_at = models.DateTimeField(auto_now_add=True)
@@ -409,7 +410,7 @@ class FormAttachment(models.Model):
 
     form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="attachments")
     name = models.TextField(null=False, blank=False)
-    file = models.FileField(upload_to=form_attachment_upload_to, max_length=512)
+    file = SizedFileField(upload_to=form_attachment_upload_to, max_length=512)
     file_last_scan = models.DateTimeField(blank=True, null=True)
     file_scan_status = models.CharField(max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING)
     md5 = models.CharField(null=False, blank=False, max_length=32)

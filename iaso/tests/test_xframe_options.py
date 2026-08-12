@@ -1,6 +1,7 @@
 from unittest import mock
 
 from django.http import HttpResponse
+from rest_framework import status
 
 from iaso import models as m
 from iaso.models import Page
@@ -30,7 +31,7 @@ class XFrameOptionsTestCase(TestCase):
             return_value=HttpResponse("ok"),
         ):
             response = self.client.get("/dashboard/home/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.get("X-Frame-Options"), "DENY")
 
     def test_authenticated_dashboard_sets_deny(self):
@@ -40,7 +41,7 @@ class XFrameOptionsTestCase(TestCase):
             return_value=HttpResponse("ok"),
         ):
             response = self.client.get("/dashboard/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.get("X-Frame-Options"), "DENY")
 
     def test_embeddable_dashboard_is_exempt(self):
@@ -49,10 +50,10 @@ class XFrameOptionsTestCase(TestCase):
             return_value=HttpResponse("ok"),
         ):
             response = self.client.get("/dashboard/polio/embeddedCalendar/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsNone(response.get("X-Frame-Options"))
 
     def test_pages_view_is_exempt(self):
         response = self.client.get(f"/pages/{self.public_page.slug}/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsNone(response.get("X-Frame-Options"))

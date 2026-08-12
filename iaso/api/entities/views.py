@@ -223,8 +223,23 @@ class EntityViewSet(ModelViewSet):
         if serializer.is_valid():
             return serializer.validated_data
 
-        logger.warning(f"Invalid possible_fields in reference_form for EntityType {entity_type_id}")
-        return []
+        # Keep valid columns instead of dropping the whole list when one field
+        # has an unexpected shape (e.g. blank/missing label on start/end/calculate).
+        valid_columns = []
+        for field in fields:
+            field_serializer = EntityTypeColumnSerializer(data=field)
+            if field_serializer.is_valid():
+                valid_columns.append(field_serializer.validated_data)
+            else:
+                logger.warning(
+                    "Invalid possible_field for EntityType %s: %s errors=%s",
+                    entity_type_id,
+                    field,
+                    field_serializer.errors,
+                )
+        if not valid_columns:
+            logger.warning(f"Invalid possible_fields in reference_form for EntityType {entity_type_id}")
+        return valid_columns
 
     def create(self, request, *args, **kwargs):
         data = request.data

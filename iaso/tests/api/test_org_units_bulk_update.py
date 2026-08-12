@@ -1,6 +1,7 @@
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.test import tag
+from rest_framework import status
 
 from beanstalk_worker.services import TestTaskService
 from hat.audit import models as am
@@ -132,7 +133,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             data={"select_all": True, "validation_status": m.OrgUnit.VALIDATION_REJECTED},
             format="json",
         )
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
         self.assertEqual(Task.objects.filter(status=QUEUED).count(), 0)
 
@@ -150,7 +151,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_bulk_update")
         self.assertEqual(task.launcher, self.raccoon)
@@ -173,7 +174,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             data={"select_all": True, "validation_status": m.OrgUnit.VALIDATION_REJECTED},
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_bulk_update")
         self.assertEqual(task.launcher, self.raccoon)
@@ -199,7 +200,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         }
         response = self.client.post("/api/tasks/create/orgunitsbulkupdate/", data=operation_payload, format="json")
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_bulk_update")
         self.assertEqual(task.launcher, self.yoda)
@@ -238,7 +239,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             format="json",
         )
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_bulk_update")
         self.assertEqual(task.launcher, self.yoda)
@@ -269,7 +270,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             data={"select_all": True, "validation_status": m.OrgUnit.VALIDATION_REJECTED},
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_bulk_update")
         self.assertEqual(task.launcher, self.yoda)
@@ -307,7 +308,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_bulk_update")
         self.assertEqual(task.launcher, self.yoda)
@@ -339,7 +340,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_bulk_update")
         self.assertEqual(task.launcher, self.yoda)
@@ -372,7 +373,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_bulk_update")
         self.assertEqual(task.launcher, self.yoda)
@@ -415,7 +416,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             format="json",
         )
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         self.assertValidTaskAndInDB(data["task"])
 
@@ -433,7 +434,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(Task.objects.filter(status=QUEUED).count(), 0)
 
         response = self.client.get("/api/tasks/%d/" % task.id)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Task completion status
         return self.assertValidTaskAndInDB(response.json(), new_status)
 

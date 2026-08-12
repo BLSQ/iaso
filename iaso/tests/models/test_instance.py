@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 from django.core.files import File
 from django.core.files.uploadedfile import UploadedFile
 from django.utils.timezone import now
+from rest_framework import status
 
 from iaso import models as m
 from iaso.odk import parsing
@@ -616,17 +617,17 @@ class InstanceAPITestCase(APITestCase, InstanceBase):
         # Authenticate & query API endpoint
         self.client.force_authenticate(self.yoda)
         response_1 = self.client.get(f"/api/instances/{self.instance_1.id}/", format="json")
-        json_1 = self.assertJSONResponse(response_1, 200)
+        json_1 = self.assertJSONResponse(response_1, status.HTTP_200_OK)
         response_2 = self.client.get(f"/api/instances/{self.instance_2.id}/", format="json")
-        json_2 = self.assertJSONResponse(response_2, 200)
+        json_2 = self.assertJSONResponse(response_2, status.HTTP_200_OK)
         response_3 = self.client.get(f"/api/instances/{self.instance_3.id}/", format="json")
-        json_3 = self.assertJSONResponse(response_3, 200)
+        json_3 = self.assertJSONResponse(response_3, status.HTTP_200_OK)
         response_4 = self.client.get(f"/api/instances/{self.instance_4.id}/", format="json")
-        json_4 = self.assertJSONResponse(response_4, 200)
+        json_4 = self.assertJSONResponse(response_4, status.HTTP_200_OK)
         response_5 = self.client.get(f"/api/instances/{self.instance_5.id}/", format="json")
-        json_5 = self.assertJSONResponse(response_5, 200)
+        json_5 = self.assertJSONResponse(response_5, status.HTTP_200_OK)
         response_6 = self.client.get(f"/api/instances/{self.instance_6.id}/", format="json")
-        json_6 = self.assertJSONResponse(response_6, 200)
+        json_6 = self.assertJSONResponse(response_6, status.HTTP_200_OK)
 
         # Check results
         self.assertStatusesAreEqual(self.instance_1, json_1["status"], m.Instance.STATUS_READY)

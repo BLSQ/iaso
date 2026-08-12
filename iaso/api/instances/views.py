@@ -688,6 +688,7 @@ class InstancesViewSet(viewsets.ViewSet):
         log_modification(original, instance, INSTANCE_API, user=request.user)
         return Response(instance.as_full_model())
 
+    @transaction.atomic
     def patch(self, request, pk=None):
         original = get_object_or_404(self.get_queryset(), pk=pk)
         instance = get_object_or_404(self.get_queryset(), pk=pk)
@@ -701,7 +702,7 @@ class InstancesViewSet(viewsets.ViewSet):
         access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
         data_org_unit = request.data.get("org_unit", None)
 
-        if instance.org_unit not in access_ou:
+        if instance.org_unit_id is None or not access_ou.filter(pk=instance.org_unit_id).exists():
             raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})
 
         # If the org unit change but the instance was marked as the reference_instance for this org unit,

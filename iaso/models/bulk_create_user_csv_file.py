@@ -4,6 +4,8 @@ from django.contrib.auth.models import Permission, User
 from django.db import models
 from django.utils import timezone
 
+from iaso.utils.models.sized_file_field import SizedFileField
+
 
 def bulk_create_user_file_upload_to(bulk_create, filename):
     account_name = "unknown_account"  #  shouldn't be unknown, but the model is nullable
@@ -24,7 +26,7 @@ def bulk_create_user_file_upload_to(bulk_create, filename):
 
 
 class BulkCreateUserFile(models.Model):
-    file = models.FileField(upload_to=bulk_create_user_file_upload_to, blank=False, null=False)
+    file = SizedFileField(upload_to=bulk_create_user_file_upload_to, blank=False, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
     account = models.ForeignKey("Account", on_delete=models.PROTECT, null=True)

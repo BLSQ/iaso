@@ -35,7 +35,7 @@ export const AccountUpdateRequest = zod.strictObject({
                     'VALIDATION_WORKFLOW',
                 ])
                 .describe(
-                    '\* `DATA_COLLECTION_FORMS` - Data collection - Forms\n\* `DEFAULT` - Default\n\* `DHIS2_MAPPING` - DHIS2 mapping\n\* `EMBEDDED_LINKS` - Embedded links\n\* `ENTITIES` - Entities\n\* `EXTERNAL_STORAGE` - External storage\n\* `PLANNING` - Planning\n\* `POLIO_PROJECT` - Polio project\n\* `REGISTRY` - Registry\n\* `PAYMENTS` - Payments\n\* `COMPLETENESS_PER_PERIOD` - Completeness per Period\n\* `TRYPELIM_PROJECT` - Trypelim project\n\* `DATA_VALIDATION` - Data validation\n\* `SAAS` - SaaS\n\* `STOCK_MANAGEMENT` - Stock management\n\* `SNT_MALARIA` - SNT Malaria\n\* `FORM_AI` - Form AI\n\* `VALIDATION_WORKFLOW` - Validation workflow',
+                    '\* `DATA_COLLECTION_FORMS` - Data collection - Forms\n\* `DEFAULT` - Default\n\* `DHIS2_MAPPING` - DHIS2 mapping\n\* `EMBEDDED_LINKS` - Embedded links\n\* `ENTITIES` - Entities\n\* `EXTERNAL_STORAGE` - External storage\n\* `PLANNING` - Planning\n\* `POLIO_PROJECT` - Polio project\n\* `REGISTRY` - Registry\n\* `PAYMENTS` - Payments\n\* `COMPLETENESS_PER_PERIOD` - Completeness per Period\n\* `TRYPELIM_PROJECT` - Trypelim project\n\* `DATA_VALIDATION` - Change requests\n\* `SAAS` - SaaS\n\* `STOCK_MANAGEMENT` - Stock management\n\* `SNT_MALARIA` - SNT Malaria\n\* `FORM_AI` - Form AI\n\* `VALIDATION_WORKFLOW` - Validation workflow',
                 ),
         )
         .nullish(),

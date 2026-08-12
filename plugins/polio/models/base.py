@@ -2,7 +2,6 @@ import datetime
 import enum
 import json
 import math
-import os
 import typing
 
 from collections import defaultdict
@@ -1372,13 +1371,13 @@ class NotificationManager(models.Manager):
 
 
 class CustomPublicStorage(
-    S3Boto3Storage if os.environ.get("AWS_PUBLIC_STORAGE_BUCKET_NAME") else import_string(settings.DEFAULT_FILE_STORAGE)
+    S3Boto3Storage if settings.AWS_PUBLIC_STORAGE_BUCKET_NAME else import_string(settings.DEFAULT_FILE_STORAGE)
 ):
-    if os.environ.get("AWS_PUBLIC_STORAGE_BUCKET_NAME"):
+    if settings.AWS_PUBLIC_STORAGE_BUCKET_NAME:
         default_acl = "public-read"
         file_overwrite = False
         querystring_auth = False
-        bucket_name = os.environ.get("AWS_PUBLIC_STORAGE_BUCKET_NAME", "")
+        bucket_name = settings.AWS_PUBLIC_STORAGE_BUCKET_NAME
 
 
 ## Terminology
@@ -2034,11 +2033,11 @@ class NotificationImport(ModelWithFile):
 
 
 @task_decorator(task_name="create_polio_notifications_async")
-def create_polio_notifications_async(pk: int, task: Task = None) -> None:
+def create_polio_notifications_async(pk: int, user: User = None, task: Task = None) -> None:
     task.report_progress_and_stop_if_killed(progress_message="Importing polio notifications…")
-    user = task.launcher
+    importer = user or task.launcher
     notification_import = NotificationImport.objects.get(pk=pk)
-    notification_import.create_notifications(created_by=user)
+    notification_import.create_notifications(created_by=importer)
     num_created = Notification.objects.filter(import_source=notification_import).count()
     task.report_success(message=f"{num_created} polio notifications created.")
 

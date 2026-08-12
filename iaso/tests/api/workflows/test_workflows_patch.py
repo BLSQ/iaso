@@ -1,5 +1,7 @@
 import jsonschema
 
+from rest_framework import status
+
 from iaso.tests.api.workflows.base import BaseWorkflowsAPITestCase
 from iaso.tests.api.workflows.test_workflows import post_answer_schema
 
@@ -14,7 +16,7 @@ class WorkflowsPatchAPITestCase(BaseWorkflowsAPITestCase):
             data={"status": "PUBLISHED"},
         )
 
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.data["detail"].code, "not_authenticated")
         self.assertEqual(response.data["detail"], "Authentication credentials were not provided.")
 
@@ -25,7 +27,7 @@ class WorkflowsPatchAPITestCase(BaseWorkflowsAPITestCase):
             data={"status": "PUBLISHED"},
         )
 
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data["detail"].code, "permission_denied")
         self.assertEqual(
             response.data["detail"],
@@ -37,7 +39,7 @@ class WorkflowsPatchAPITestCase(BaseWorkflowsAPITestCase):
 
         response = self.client.patch(f"{BASE_API}1000/", data={"status": "PUBLISHED"})
 
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
         assert "detail" in response.data
         assert response.data["detail"] == "Not found."
 
@@ -49,7 +51,7 @@ class WorkflowsPatchAPITestCase(BaseWorkflowsAPITestCase):
             data={"status": "PUBLISHED"},
         )
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         try:
             jsonschema.validate(instance=response.data, schema=post_answer_schema)
@@ -67,7 +69,7 @@ class WorkflowsPatchAPITestCase(BaseWorkflowsAPITestCase):
             data={"status": "DRAFT"},
         )
 
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
         assert (
             str(response.data)
@@ -84,7 +86,7 @@ class WorkflowsPatchAPITestCase(BaseWorkflowsAPITestCase):
             data={"name": new_name},
         )
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         try:
             jsonschema.validate(instance=response.data, schema=post_answer_schema)

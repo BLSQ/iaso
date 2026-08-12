@@ -23,7 +23,7 @@ class ProfileRetrieveAPITestCase(BaseProfileAPITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.get(reverse("profiles-detail", kwargs={"pk": "me"}))
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(
             response_data["account"]["user_manual_path"],
@@ -38,7 +38,7 @@ class ProfileRetrieveAPITestCase(BaseProfileAPITestCase):
 
         # no feature flag at first
         response = self.client.get(reverse("profiles-detail", kwargs={"pk": "me"}))
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileData(response_data)
         self.assertIn("account", response_data)
         self.assertEqual(response_data["account"]["feature_flags"], [])
@@ -47,7 +47,7 @@ class ProfileRetrieveAPITestCase(BaseProfileAPITestCase):
         self.account.feature_flags.add(aff)
 
         response = self.client.get(reverse("profiles-detail", kwargs={"pk": "me"}))
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileData(response_data)
 
         self.assertIn("account", response_data)
@@ -57,7 +57,7 @@ class ProfileRetrieveAPITestCase(BaseProfileAPITestCase):
         # remove feature flags
         self.account.feature_flags.remove(aff)
         response = self.client.get(reverse("profiles-detail", kwargs={"pk": "me"}))
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileData(response_data)
         self.assertIn("account", response_data)
 
@@ -68,12 +68,12 @@ class ProfileRetrieveAPITestCase(BaseProfileAPITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.get(reverse("profiles-detail", kwargs={"pk": self.jane.iaso_profile.id}))
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_retrieve_profile_me_without_auth(self):
         """GET /profiles/me/ without auth should result in a 401"""
         response = self.client.get(reverse("profiles-detail", kwargs={"pk": "me"}))
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_retrieve_me_is_compatible_for_mobile(self):
         user = self.create_user_with_profile(
@@ -91,7 +91,7 @@ class ProfileRetrieveAPITestCase(BaseProfileAPITestCase):
 
         self.client.force_authenticate(user)
         response = self.client.get(reverse("profiles-detail", kwargs={"pk": "me"}))
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileData(response_data)
 
         for k in ["id", "first_name", "last_name", "user_name", "email", "phone_number", "organization", "projects"]:
@@ -105,7 +105,7 @@ class ProfileRetrieveAPITestCase(BaseProfileAPITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.get(reverse("profiles-detail", kwargs={"pk": "me"}))
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertValidProfileData(response_data)
         self.assertEqual(response_data["user_name"], "janedoe")
@@ -126,7 +126,7 @@ class ProfileRetrieveAPITestCase(BaseProfileAPITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.get(reverse("profiles-detail", kwargs={"pk": "me"}))
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response_data["user_roles_permissions"][0]["name"], "Data manager")
 
     def test_retrieve_profile_me_no_profile(self):
@@ -155,7 +155,7 @@ class ProfileRetrieveAPITestCase(BaseProfileAPITestCase):
 
         self.client.force_authenticate(self.john)
         response = self.client.get(reverse("profiles-detail", kwargs={"pk": "me"}))
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertValidProfileData(response_data)
         self.assertEqual(response_data["user_name"], "johndoe")

@@ -30,6 +30,7 @@ from iaso.utils import extract_form_version_id, flat_parse_xml_soup
 from iaso.utils.emoji import fix_emoji
 from iaso.utils.file_utils import get_file_type
 from iaso.utils.jsonlogic import annotate_suffixed_json_fields, instance_jsonlogic_to_q
+from iaso.utils.models.sized_file_field import SizedFileField
 from iaso.utils.models.upload_to import get_account_name_based_on_user
 
 from ..utils.dhis2 import generate_id_for_dhis_2
@@ -500,7 +501,7 @@ class Instance(ValidationWorkflowArtefact):
     export_id = models.TextField(null=True, blank=True, default=generate_id_for_dhis_2)
     correlation_id = models.BigIntegerField(null=True, blank=True)
     name = models.TextField(null=True, blank=True)  # form.name
-    file = models.FileField(upload_to=instance_upload_to, null=True, blank=True)
+    file = SizedFileField(upload_to=instance_upload_to, null=True, blank=True)
     file_name = models.TextField(null=True, blank=True)
     location = PointField(null=True, blank=True, dim=3, srid=4326)
     org_unit = models.ForeignKey("OrgUnit", on_delete=models.DO_NOTHING, null=True, blank=True)
@@ -985,7 +986,7 @@ class InstanceFile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     name = models.TextField(null=True, blank=True)
-    file = models.FileField(upload_to=instance_file_upload_to, null=True, blank=True)
+    file = SizedFileField(upload_to=instance_file_upload_to, null=True, blank=True)
     deleted = models.BooleanField(default=False)
 
     objects = models.Manager()

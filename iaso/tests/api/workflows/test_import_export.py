@@ -1,5 +1,7 @@
 from uuid import uuid4
 
+from rest_framework import status
+
 from iaso.models import Account, EntityType, Workflow, WorkflowVersion
 from iaso.models.workflow import WorkflowVersionsStatus
 from iaso.tests.api.workflows.base import BaseWorkflowsAPITestCase
@@ -13,7 +15,7 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
     def test_workflow_export_without_auth(self):
         response = self.client.get(f"{BASE_API}export/{self.workflow_et_adults_blue.pk}/", format="json")
 
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.data["detail"].code, "not_authenticated")
         self.assertEqual(response.data["detail"], "Authentication credentials were not provided.")
 
@@ -21,7 +23,7 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
         self.client.force_authenticate(user=self.anon)
         response = self.client.get(f"{BASE_API}export/{self.workflow_et_adults_blue.pk}/", format="json")
 
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data["detail"].code, "permission_denied")
         self.assertEqual(response.data["detail"], "You do not have permission to perform this action.")
 
@@ -29,14 +31,14 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
         self.client.force_authenticate(user=self.blue_adult_np)
         response = self.client.get(f"{BASE_API}export/{self.workflow_et_adults_blue.pk}/", format="json")
 
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data["detail"].code, "permission_denied")
         self.assertEqual(response.data["detail"], "You do not have permission to perform this action.")
 
     def test_workflow_import_without_auth(self):
         response = self.client.post(f"{BASE_API}import/", format="json", data={})
 
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.data["detail"].code, "not_authenticated")
         self.assertEqual(response.data["detail"], "Authentication credentials were not provided.")
 
@@ -44,7 +46,7 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
         self.client.force_authenticate(user=self.anon)
         response = self.client.post(f"{BASE_API}import/", format="json", data={})
 
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data["detail"].code, "permission_denied")
         self.assertEqual(response.data["detail"], "You do not have permission to perform this action.")
 
@@ -52,7 +54,7 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
         self.client.force_authenticate(user=self.blue_adult_np)
         response = self.client.post(f"{BASE_API}import/", format="json", data={})
 
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data["detail"].code, "permission_denied")
         self.assertEqual(response.data["detail"], "You do not have permission to perform this action.")
 
@@ -64,7 +66,7 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
         orig_wf = self.workflow_et_adults_blue
         orig_versions_count = orig_wf.workflow_versions.count()
 
-        self.assertJSONResponse(r, 200)
+        self.assertJSONResponse(r, status.HTTP_200_OK)
         self.assertEqual(len(r.data["versions"]), orig_versions_count)
         self.assertEqual(r.data["entity_type"], orig_wf.entity_type.name)
 
@@ -73,7 +75,7 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
         self.assertEqual(last_version["status"], orig_wf.workflow_versions.latest("created_at").status)
 
         r2 = self.client.post(f"{BASE_API}import/", format="json", data=r.data)
-        self.assertJSONResponse(r2, 200)
+        self.assertJSONResponse(r2, status.HTTP_200_OK)
         self.assertEqual(r2.data["status"], f"Workflow {orig_wf.uuid} imported successfully")
 
         after_import_wf = Workflow.objects.get(pk=self.workflow_et_adults_blue.pk)
@@ -90,7 +92,7 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
         orig_versions_count = orig_wf.workflow_versions.count()
         orig_versions = list(orig_wf.workflow_versions.all())
 
-        self.assertJSONResponse(r, 200)
+        self.assertJSONResponse(r, status.HTTP_200_OK)
         self.assertEqual(len(r.data["versions"]), orig_versions_count)
         self.assertEqual(r.data["entity_type"], orig_wf.entity_type.name)
 
@@ -102,7 +104,7 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
         r.data["versions"][2]["status"] = WorkflowVersionsStatus.DRAFT.value
 
         r2 = self.client.post(f"{BASE_API}import/", format="json", data=r.data)
-        self.assertJSONResponse(r2, 200)
+        self.assertJSONResponse(r2, status.HTTP_200_OK)
         self.assertEqual(r2.data["status"], f"Workflow {orig_wf.uuid} imported successfully")
 
         after_import_wf = Workflow.objects.get(pk=self.workflow_et_adults_blue.pk)
@@ -128,7 +130,7 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
         orig_version_change = orig_version.changes.first()
         orig_version_first_followup = orig_version.follow_ups.order_by("created_at").first()
 
-        self.assertJSONResponse(r, 200)
+        self.assertJSONResponse(r, status.HTTP_200_OK)
         self.assertEqual(len(r.data["versions"]), orig_versions_count)
         self.assertEqual(r.data["entity_type"], orig_wf.entity_type.name)
 
@@ -140,7 +142,7 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
         r.data["versions"][1]["follow_ups"][0]["condition"] = {"!=": [2, 2]}
 
         r2 = self.client.post(f"{BASE_API}import/", format="json", data=r.data)
-        self.assertJSONResponse(r2, 200)
+        self.assertJSONResponse(r2, status.HTTP_200_OK)
         self.assertEqual(r2.data["status"], f"Workflow {orig_wf.uuid} imported successfully")
 
         after_import_wf = Workflow.objects.get(pk=self.workflow_et_adults_blue_with_followups_and_changes.pk)
@@ -182,7 +184,7 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
         orig_versions_count = orig_wf.workflow_versions.count()
         orig_version = orig_wf.workflow_versions.filter(status="DRAFT").first()
 
-        self.assertJSONResponse(r, 200)
+        self.assertJSONResponse(r, status.HTTP_200_OK)
         self.assertEqual(len(r.data["versions"]), orig_versions_count)
         self.assertEqual(r.data["entity_type"], orig_wf.entity_type.name)
 
@@ -208,7 +210,7 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
         r.data["versions"][1]["uuid"] = uuid4()
 
         r2 = self.client.post(f"{BASE_API}import/", format="json", data=r.data)
-        self.assertJSONResponse(r2, 200)
+        self.assertJSONResponse(r2, status.HTTP_200_OK)
         self.assertEqual(r2.data["status"], f"Workflow {r.data['uuid']} imported successfully")
 
     # To verify that we are fixing bug WC2-301 part 1
@@ -223,13 +225,13 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
         orig_wf = self.workflow_et_adults_blue_with_followups_and_changes
         orig_versions_count = orig_wf.workflow_versions.count()
 
-        self.assertJSONResponse(r, 200)
+        self.assertJSONResponse(r, status.HTTP_200_OK)
 
         r.data["versions"][0]["status"] = WorkflowVersionsStatus.PUBLISHED.value
         r.data["versions"][1]["status"] = WorkflowVersionsStatus.PUBLISHED.value
 
         r2 = self.client.post(f"{BASE_API}import/", format="json", data=r.data)
-        self.assertJSONResponse(r2, 400)
+        self.assertJSONResponse(r2, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(r2.data["error"], "There can only be one published version in the workflow data.")
 
     def test_import_with_one_published_version_and_one_published_locally(self):
@@ -239,7 +241,7 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
         r = self.client.get(
             f"{BASE_API}export/{self.workflow_et_adults_blue_with_followups_and_changes.pk}/", format="json"
         )
-        self.assertJSONResponse(r, 200)
+        self.assertJSONResponse(r, status.HTTP_200_OK)
 
         # Step 2: Modify the exported data to have only one version with status PUBLISHED
         r.data["versions"][0]["status"] = WorkflowVersionsStatus.UNPUBLISHED.value
@@ -255,7 +257,7 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
 
         # Step 4: Import the workflow JSON with one published version
         r2 = self.client.post(f"{BASE_API}import/", format="json", data=r.data)
-        self.assertJSONResponse(r2, 200)
+        self.assertJSONResponse(r2, status.HTTP_200_OK)
         self.assertEqual(r2.data["status"], f"Workflow {r.data['uuid']} imported successfully")
 
         # Step 5: Verify that the local published version status has been set to UNPUBLISHED
@@ -271,7 +273,7 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
         r = self.client.get(
             f"{BASE_API}export/{self.workflow_et_adults_blue_with_followups_and_changes.pk}/", format="json"
         )
-        self.assertJSONResponse(r, 200)
+        self.assertJSONResponse(r, status.HTTP_200_OK)
         exported_workflow_data = r.data
 
         # Change the name to trigger a change in the version and so it will undelete it
@@ -285,7 +287,7 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
 
         # Step 3: Import the workflow JSON and verify that it (previously it was throwing an 500 error)
         r2 = self.client.post(f"{BASE_API}import/", format="json", data=exported_workflow_data)
-        self.assertJSONResponse(r2, 200)
+        self.assertJSONResponse(r2, status.HTTP_200_OK)
         self.assertEqual(r2.data["status"], f"Workflow {r.data['uuid']} imported successfully")
 
         # Step 4: Verify if the previously soft deleted workflow version is was undeleted

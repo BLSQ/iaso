@@ -2,6 +2,7 @@ from math import floor
 
 from django.core.files.uploadedfile import UploadedFile
 from django.utils import timezone
+from rest_framework import status
 
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_COMPLETENESS_PERMISSION
@@ -151,7 +152,7 @@ class DerivedInstancesTests(APITestCase):
         """POST /derivedinstances/ without auth should result in a 401"""
 
         response = self.client.post("/api/derivedinstances/")
-        self.assertEqual(401, response.status_code)
+        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
 
     def test_post_derived_instances_with_updated(self):
@@ -280,5 +281,5 @@ class DerivedInstancesTests(APITestCase):
         stats = response.json()["stats"][0]
 
         self.assertEqual(stats, expected_stats)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])

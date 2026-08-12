@@ -23,7 +23,11 @@ import getDisplayName from '../../../utils/usersUtils';
 import MESSAGES from '../messages';
 import { Instance } from '../types/instance';
 
-const InstanceDetailsLocksHistory: FunctionComponent<{
+/**
+ * Body of the locks history panel, without any surrounding paper, so it can be
+ * dropped either in a WidgetPaper or in an accordion row of the detail rail.
+ */
+export const InstanceDetailsLocksHistoryContent: FunctionComponent<{
     currentInstance: Instance;
 }> = ({ currentInstance }: { currentInstance: Instance }) => {
     const { formatMessage } = useSafeIntl();
@@ -37,11 +41,7 @@ const InstanceDetailsLocksHistory: FunctionComponent<{
     );
     const hasLocks = (currentInstance?.instance_locks?.length ?? 0) > 0;
     return (
-        <WidgetPaper
-            id="export-requests"
-            padded
-            title={formatMessage(MESSAGES.instanceLocks)}
-        >
+        <>
             {isLoading && <LoadingSpinner fixed={false} />}
             {!hasLocks && (
                 <Grid xs={5} container item>
@@ -130,6 +130,23 @@ const InstanceDetailsLocksHistory: FunctionComponent<{
                     </TableBody>
                 </Table>
             )}
+        </>
+    );
+};
+
+const InstanceDetailsLocksHistory: FunctionComponent<{
+    currentInstance: Instance;
+}> = ({ currentInstance }: { currentInstance: Instance }) => {
+    const { formatMessage } = useSafeIntl();
+    return (
+        <WidgetPaper
+            id="locks-history"
+            padded
+            title={formatMessage(MESSAGES.instanceLocks)}
+        >
+            <InstanceDetailsLocksHistoryContent
+                currentInstance={currentInstance}
+            />
         </WidgetPaper>
     );
 };

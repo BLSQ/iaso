@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.db import models
 
 from iaso.models import Project
+from iaso.utils.models.sized_file_field import SizedFileField
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 from iaso.utils.models.upload_to import get_account_name_based_on_user
 
@@ -27,7 +28,7 @@ def report_version_upload_to(report_version: "ReportVersion", filename: str):
 class ReportVersion(SoftDeletableModel):
     PUBLISHED = [("published", "Published"), ("unpublished", "Unpublished")]
 
-    file = models.FileField(upload_to=report_version_upload_to)
+    file = SizedFileField(upload_to=report_version_upload_to)
     name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

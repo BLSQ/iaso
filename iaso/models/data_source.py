@@ -299,6 +299,9 @@ class DataSourceVersionsSynchronization(models.Model):
         if self.change_requests.exists():
             raise ValidationError("Change requests have already been created.")
 
+        if field_names is not None:
+            field_names = sorted(f for f in field_names if f != "groups")
+
         differ_params = {
             # Version to update.
             "version": self.source_version_to_update,
@@ -317,7 +320,7 @@ class DataSourceVersionsSynchronization(models.Model):
             "show_deleted_org_units": show_deleted_org_units,
             "field_names": field_names,
         }
-        diffs, _ = Differ(logger_to_use or logger).diff(**differ_params)
+        diffs, _ = Differ().diff(**differ_params)
 
         # Reduce the size of the diff that will be stored in the DB.
         diffs = [diff for diff in diffs if diff.status != Differ.STATUS_SAME]

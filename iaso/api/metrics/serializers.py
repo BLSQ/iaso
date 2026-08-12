@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from iaso.api.common.serializer_fields import JSONSchemaField
-from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS, get_missing_headers
+from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS, get_missing_headers, get_org_unit_row
 from iaso.models import MetricType, MetricValue
 from iaso.models.org_unit import OrgUnit
 from iaso.utils.org_units import get_valid_org_units_with_geography
@@ -138,14 +138,18 @@ class MetricValueSerializer(serializers.ModelSerializer):
 
 class ImportMetricValuesSerializer(serializers.Serializer):
     file = serializers.FileField(required=True)
-    year = serializers.IntegerField(required=True, allow_null=False)
+    year = serializers.IntegerField(required=False, allow_null=True)
 
     def validate_file(self, value):
         if not value.name.endswith(".csv"):
             raise serializers.ValidationError(_("The file must be a CSV."))
 
-        dialect = csv.Sniffer().sniff(value.read(1024).decode("utf-8", errors="ignore"))
-        value.seek(0)  # Reset file pointer after reading for dialect inference
+        try:
+            header_line = value.readline().decode("utf-8", errors="ignore")
+            value.seek(0)  # Reset file pointer after reading for dialect inference
+            dialect = csv.Sniffer().sniff(header_line, delimiters=";,|\t")
+        except csv.Error:
+            raise serializers.ValidationError(_("Unable to determine the CSV delimiter."))
         df = pd.read_csv(value, sep=dialect.delimiter)
         self.context["metric_values_df"] = df  # Store the DataFrame for use in the save method
         header_errors = get_missing_headers(df, REQUIRED_METRIC_VALUES_HEADERS)
@@ -190,6 +194,9 @@ class ImportMetricValuesSerializer(serializers.Serializer):
         return value
 
     def validate_year(self, value):
+        if value is None:
+            return value
+
         if value < 1900 or value > 2100:
             raise serializers.ValidationError(_("Year must be between 1900 and 2100."))
         return value
@@ -197,7 +204,7 @@ class ImportMetricValuesSerializer(serializers.Serializer):
     def save(self, **kwargs):
         df = self.context["metric_values_df"]
         existing_metric_types_map = self.context["existing_metric_types_map"]
-        year = self.validated_data["year"]
+        year = self.validated_data.get("year", None)
         metric_values = []
         for index, row in df.iterrows():
             org_unit_id = row["ADM2_ID"]
@@ -225,6 +232,65 @@ class ImportMetricValuesSerializer(serializers.Serializer):
             ).delete()
 
             return MetricValue.objects.bulk_create(metric_values)
+
+
+class ExportMetricValuesSerializer(serializers.Serializer):
+    metric_type_ids = serializers.CharField(required=True)
+    year = serializers.IntegerField(required=False, allow_null=True)
+
+    def validate_metric_type_ids(self, value):
+        try:
+            requested_ids = list(dict.fromkeys(int(mt_id) for mt_id in value.split(",") if mt_id))
+        except ValueError:
+            raise serializers.ValidationError(_("metric_type_ids must be a comma-separated list of integers."))
+        if not requested_ids:
+            raise serializers.ValidationError(_("metric_type_ids must be a comma-separated list of integers."))
+        return requested_ids
+
+    def get_metric_types(self):
+        """The requested metric types, scoped to the user's account, in the requested order."""
+        account = self.context["request"].user.iaso_profile.account
+        requested_ids = self.validated_data["metric_type_ids"]
+        metric_types_by_id = MetricType.objects.filter(account=account, id__in=requested_ids).in_bulk()
+        return [metric_types_by_id[mt_id] for mt_id in requested_ids if mt_id in metric_types_by_id]
+
+    def get_csv_rows(self):
+        """Returns (headers, rows) for the requested metric types, in the same column format as the CSV template."""
+        account = self.context["request"].user.iaso_profile.account
+        metric_types = self.get_metric_types()
+        year = self.validated_data.get("year")
+
+        org_units = list(get_valid_org_units_with_geography(account).select_related("parent").order_by("name"))
+
+        values = MetricValue.objects.filter(
+            metric_type_id__in=[mt.id for mt in metric_types], org_unit_id__in=[ou.id for ou in org_units]
+        )
+        if year is not None:
+            values = values.filter(Q(year=year) | Q(year__isnull=True))
+        else:
+            values = values.filter(year__isnull=True)
+
+        # A timeless (year=None) value acts as a fallback: sorting it first means a same-year value,
+        # processed later, overwrites it in the dict below.
+        value_by_metric_and_org_unit = {
+            (value.metric_type_id, value.org_unit_id): value
+            for value in sorted(values, key=lambda value: value.year is not None)
+        }
+
+        headers = REQUIRED_METRIC_VALUES_HEADERS + [mt.code for mt in metric_types]
+
+        rows = []
+        for ou in org_units:
+            row = get_org_unit_row(ou)
+            for mt in metric_types:
+                value = value_by_metric_and_org_unit.get((mt.id, ou.id))
+                if value is None:
+                    row.append("")
+                else:
+                    row.append(value.value if value.value is not None else value.string_value)
+            rows.append(row)
+
+        return headers, rows
 
 
 class OrgUnitIdSerializer(serializers.Serializer):

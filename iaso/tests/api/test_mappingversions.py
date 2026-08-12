@@ -4,6 +4,7 @@ from unittest import mock
 
 from django.core.files import File
 from django.test import override_settings
+from rest_framework import status
 
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_MAPPINGS_PERMISSION
@@ -70,14 +71,14 @@ class FormsVersionAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.put("/api/mappingversions/33/", data={})
-        self.assertJSONResponse(response, 405)
+        self.assertJSONResponse(response, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_mappingversions_destroy(self):
         """DELETE /mappingversions/<mappingversion_id>: not authorized for now"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.delete("/api/mappingversions/33/")
-        self.assertJSONResponse(response, 405)
+        self.assertJSONResponse(response, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_mappingversions_create_ok_first_version(self):
         """POST /mappingversions/ happy path (first version)"""

@@ -1,3 +1,5 @@
+from rest_framework import status
+
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
@@ -19,7 +21,7 @@ class FeatureFlagAPITestCases(APITestCase):
         self.client.force_authenticate(self.john)
 
         response = self.client.get("/api/featureflags/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         response_data = response.json()
         response_feature_flags = response_data["featureflags"]
         feature_flags = [ff for ff in response_feature_flags if ff["code"].endswith("_test")]

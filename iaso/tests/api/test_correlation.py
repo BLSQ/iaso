@@ -5,6 +5,7 @@ import responses
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import UploadedFile
 from django.utils.timezone import now
+from rest_framework import status
 
 from iaso import models as m
 from iaso.models import FeatureFlag, Instance, Mapping, Profile
@@ -75,11 +76,11 @@ class CorrelationAPITestCase(APITestCase):
         response = self.client.post(
             "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=instance_body, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         with open("iaso/tests/fixtures/land_speeder.xml") as fp:
             self.client.post("/sync/form_upload/", {"xml_submission_file": fp}, format="multipart")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         instance = m.Instance.objects.get(uuid=uuid)
         self.assertTrue(str(instance.correlation_id).startswith(str(instance.id)))
 
@@ -114,7 +115,7 @@ class CorrelationAPITestCase(APITestCase):
         response = self.client.post(
             "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=instance_body, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         with open("iaso/tests/fixtures/%s" % file_name) as fp:
             self.client.post("/sync/form_upload/", {"xml_submission_file": fp}, format="multipart")
@@ -162,7 +163,7 @@ class CorrelationAPITestCase(APITestCase):
 
         anonymous_uploaded_instance = Instance.objects.last()
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(anonymous_uploaded_instance.created_by, None)
         self.assertEqual(anonymous_uploaded_instance.last_modified_by, None)
 
@@ -173,7 +174,7 @@ class CorrelationAPITestCase(APITestCase):
 
         updated_instance = Instance.objects.get(uuid=anonymous_uploaded_instance.uuid)
 
-        self.assertEqual(response_form.status_code, 201)
+        self.assertEqual(response_form.status_code, status.HTTP_201_CREATED)
         self.assertEqual(updated_instance.last_modified_by, user)
 
     @responses.activate
@@ -246,7 +247,7 @@ class CorrelationAPITestCase(APITestCase):
         response = self.client.post(
             "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=instance_body, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         with open("iaso/tests/fixtures/%s" % file_name) as fp:
             self.client.post("/sync/form_upload/", {"xml_submission_file": fp}, format="multipart")

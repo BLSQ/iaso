@@ -1,5 +1,6 @@
 from django.contrib.auth.models import Group
 from django.utils.timezone import now
+from rest_framework import status
 
 from iaso import models as m
 from iaso.models import Page
@@ -85,14 +86,14 @@ class PagesAPITestCase(APITestCase):
         """GET /pages/ without auth should result in a 401"""
 
         response = self.client.get("/api/pages/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_pages_list_without_pages_permission(self):
         """GET /pages/ without iaso_pages permission should result in a 403"""
         self.client.force_login(self.user_no_iaso_pages_permission)
 
         response = self.client.get("/api/pages/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_pages_list_linked_to_current_user(self):
         """Get /pages/ only pages linked to the current user"""
@@ -102,7 +103,7 @@ class PagesAPITestCase(APITestCase):
         # Check when the user has only read permission but not embedded links linked to him
         self.client.force_login(self.user_no_write_permission)
         response = self.client.get("/api/pages/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["results"]), 0)
 
         # Check when the user has only read permission but has some embedded links linked to him
@@ -111,13 +112,13 @@ class PagesAPITestCase(APITestCase):
         )
         self.client.force_login(self.user_no_write_permission)
         response = self.client.get("/api/pages/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["results"]), 1)
 
         # Check when the user has write permission
         self.client.force_login(self.first_user)
         response = self.client.get("/api/pages/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["results"]), 3)
 
     def test_pages_list_search_by_name_or_by_slug(self):
@@ -127,12 +128,12 @@ class PagesAPITestCase(APITestCase):
         page2 = self.create_page(name="TEST2", slug="test_2", needs_authentication=True, users=[self.second_user.pk])
 
         response = self.client.get("/api/pages/?search=Test1")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["results"]), 1)
         self.assertEqual(page1.name, "TEST1")
 
         response = self.client.get("/api/pages/?search=Test_2")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["results"]), 1)
         self.assertEqual(response.json()["results"][0]["name"], page2.name)
 
@@ -143,7 +144,7 @@ class PagesAPITestCase(APITestCase):
         self.create_page(name="TEST2", slug="test_2", needs_authentication=True, users=[self.fourth_user.pk])
 
         response = self.client.get("/api/pages/?needs_authentication=false")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["results"]), 1)
         self.assertEqual(response.json()["results"][0]["name"], page1.name)
 
@@ -158,7 +159,7 @@ class PagesAPITestCase(APITestCase):
         self.create_page(name="TEST3", slug="test_3", needs_authentication=True, users=[self.fourth_user.pk])
 
         response = self.client.get("/api/pages/?userId=" + str(self.fifth_user.pk))
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["results"]), 1)
         self.assertEqual(response.json()["results"][0]["id"], page2.id)
 
@@ -181,7 +182,7 @@ class PagesAPITestCase(APITestCase):
         # User with manager role sees manager pages
         self.client.force_login(self.read_user_manager)
         response = self.client.get("/api/pages/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         results = response.json()["results"]
         self.assertEqual(len(results), 2)
         slugs = {page["slug"] for page in results}
@@ -191,7 +192,7 @@ class PagesAPITestCase(APITestCase):
         # User with viewer role sees viewer pages
         self.client.force_login(self.read_user_viewer)
         response = self.client.get("/api/pages/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         results = response.json()["results"]
         self.assertEqual(len(results), 2)
         slugs = {page["slug"] for page in results}
@@ -201,7 +202,7 @@ class PagesAPITestCase(APITestCase):
         # User with multiple roles sees all matching pages
         self.client.force_login(self.read_user_multi)
         response = self.client.get("/api/pages/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         results = response.json()["results"]
         self.assertEqual(len(results), 3)
         slugs = {page["slug"] for page in results}
@@ -212,12 +213,12 @@ class PagesAPITestCase(APITestCase):
         # READ user without any matching role sees nothing
         self.client.force_login(self.user_no_write_permission)
         response = self.client.get("/api/pages/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["results"]), 0)
 
         self.client.force_login(self.first_user)
         response = self.client.get("/api/pages/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["results"]), 3)
 
     def test_create_page_with_user_roles_validation(self):
@@ -238,7 +239,7 @@ class PagesAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         # Creating page with user roles from different account should fail
         response = self.client.post(
@@ -254,7 +255,7 @@ class PagesAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("user_roles", response.json())
 
     def test_create_page_with_no_write_permission(self):
@@ -274,7 +275,7 @@ class PagesAPITestCase(APITestCase):
             format="json",
         )
 
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_page_delete_without_write_permission(self):
         """DELETE /pages/page_id without write page permission should result in a 403"""
@@ -308,7 +309,7 @@ class PagesAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_create_page(self):
         self.client.force_login(self.first_user)
@@ -341,7 +342,7 @@ class PagesAPITestCase(APITestCase):
             format="json",
         )
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
     def test_anonymous_access_based_on_needs_authentication(self):
         """Anonymous users can access public pages (needs_authentication=False) but not private pages"""
@@ -350,10 +351,10 @@ class PagesAPITestCase(APITestCase):
         page_private = self.create_page(name="Private Page", slug="private_page", needs_authentication=True, users=[])
 
         response = self.client.get(f"/pages/{page_public.slug}/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response = self.client.get(f"/pages/{page_private.slug}/")
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, status.HTTP_302_FOUND)
         self.assertIn("/login", response.url)
 
     def test_update_page(self):
@@ -387,7 +388,7 @@ class PagesAPITestCase(APITestCase):
             format="json",
         )
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_page_delete(self):
         self.client.force_login(self.first_user)
@@ -419,4 +420,4 @@ class PagesAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 204)
+        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)

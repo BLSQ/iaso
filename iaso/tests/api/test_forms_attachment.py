@@ -90,7 +90,7 @@ class FormAttachmentsAPITestCase(APITestCase):
         f"""GET {BASE_URL} without auth: 0 result"""
 
         response = self.client.get(BASE_URL)
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertValidAttachmentListData(response.json(), 0)
 
@@ -98,13 +98,13 @@ class FormAttachmentsAPITestCase(APITestCase):
         f"""GET {BASE_URL} with wrong id: 404"""
 
         response = self.client.get(BASE_URL, headers={"Content-Type": "application/json"}, data={"form_id": -1})
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_attachment_list_wrong_app_id(self):
         f"""GET {BASE_URL} with wrong app id: 404"""
 
         response = self.client.get(BASE_URL, headers={"Content-Type": "application/json"}, data={"app_id": "wrong"})
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_attachment_list_ok_empty_list(self):
         f"""GET {BASE_URL} empty list: we expect no results"""
@@ -113,7 +113,7 @@ class FormAttachmentsAPITestCase(APITestCase):
         response = self.client.get(
             BASE_URL, headers={"Content-Type": "application/json"}, data={"form_id": self.form_1.id}
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidAttachmentListData(response.json(), 0)
 
     def test_attachment_list_ok_not_empty_list(self):
@@ -123,7 +123,7 @@ class FormAttachmentsAPITestCase(APITestCase):
         response = self.client.get(
             BASE_URL, headers={"Content-Type": "application/json"}, data={"form_id": self.form_2.id}
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidAttachmentListData(response.json(), 2)
 
     def test_form_attachments_retrieve(self):
@@ -131,7 +131,7 @@ class FormAttachmentsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"{BASE_URL}{self.attachment1.id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         form_version_data = response.json()
         self.assertValidAttachmentData(form_version_data)
 
@@ -139,14 +139,14 @@ class FormAttachmentsAPITestCase(APITestCase):
         f"""DELETE {BASE_URL}<form_attachment_id>: is not allowed"""
 
         response = self.client.delete(f"{BASE_URL}{self.attachment1.id}/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_form_attachments_delete(self):
         f"""DELETE {BASE_URL}<form_attachment_id>: allowed"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.delete(f"{BASE_URL}{self.attachment1.id}/")
-        self.assertJSONResponse(response, 204)
+        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
 
     def test_form_attachments_create_unauthenticated(self):
         f"""POST {BASE_URL}: is not allowed"""
@@ -158,7 +158,7 @@ class FormAttachmentsAPITestCase(APITestCase):
                 format="multipart",
                 headers={"accept": "application/json"},
             )
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_form_attachments_create_without_scanning_file(self):
         f"""POST {BASE_URL}: allowed"""
@@ -259,7 +259,7 @@ class FormAttachmentsAPITestCase(APITestCase):
         self.form_1.save()
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"{BASE_URL}{attachment.id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         form_attachment_data = response.json()
         self.assertEqual("logo.png", form_attachment_data["name"])
         self.assertEqual(f"http://testserver{attachment.file.url}", form_attachment_data["file"])
@@ -272,14 +272,14 @@ class FormAttachmentsAPITestCase(APITestCase):
                 format="multipart",
                 headers={"accept": "application/json"},
             )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         form_attachment_data = response.json()
         self.assertValidAttachmentData(form_attachment_data)
         self.assertEqual("logo.png", form_attachment_data["name"])
         self.assertEqual("36e9383ddb4944fee0f791eedbab13db", form_attachment_data["md5"])
         self.assertEqual(f"http://testserver{self.form_1.attachments.first().file.url}", form_attachment_data["file"])
         response = self.client.delete(f"{BASE_URL}{form_attachment_data['id']}/")
-        self.assertJSONResponse(response, 204)
+        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
 
     def assertValidAttachmentListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(
@@ -304,13 +304,13 @@ class FormAttachmentsAPITestCase(APITestCase):
         f"""GET {BASE_URL} without auth: 0 result"""
         response = self.client.get(MANIFEST_MOBILE_URL.format(form_id=self.form_2.id))
 
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_manifest_form_not_found(self):
         f"""GET {MANIFEST_MOBILE_URL} with wrong id: 404"""
         self.client.force_authenticate(self.yoda)
         response = self.client.get(MANIFEST_MOBILE_URL.format(form_id=100))
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_manifest_form_found_but_empty_attachments(self):
         f"""GET {MANIFEST_MOBILE_URL} with no attachments: 200"""

@@ -91,7 +91,7 @@ const MESSAGES = defineMessages({
     },
     dhis2Mappings: {
         id: 'iaso.label.dhis2Mappings',
-        defaultMessage: 'DHIS mappings',
+        defaultMessage: 'DHIS2 mappings',
     },
     deleteFormTitle: {
         id: 'iaso.forms.dialog.deleteFormTitle',

@@ -30,6 +30,9 @@ export type Descriptor = {
     bind?: {
         calculate?: string;
     };
+    // present only on the root survey descriptor
+    _translations?: Record<string, unknown>;
+    default_language?: string;
 };
 
 type Data = Record<string, any>;
@@ -146,7 +149,7 @@ const getRawValue = (descriptor: Descriptor, data: Data): string => {
  * (handles the different scenarios, such as select fields)
  */
 
-const getDisplayedValue = (
+export const getDisplayedValue = (
     descriptor: Descriptor,
     data: Data,
     activeLocale: string,

@@ -25,7 +25,7 @@ COPY package.json .
 COPY package-lock.json .
 
 
-RUN npm install -g npm@11.13.0
+RUN npm install -g npm@11.19.0
 
 RUN rm -rf node_modules
 RUN npm cache clean --force

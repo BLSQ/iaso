@@ -209,15 +209,13 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
         remaining_visible = Campaign.objects.filter(deleted_at__isnull=True).count()
 
         response = self.client.get(f"{URL}", format="json")
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), remaining_visible)
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        self.assertEqual(len(result), remaining_visible)
 
         # filter on active
         response = self.client.get(f"{URL}?deletion_status=active", format="json")
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), remaining_visible)
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        self.assertEqual(len(result), remaining_visible)
 
     def test_filter_category_regular(self):
         # regular category: excludes campaigns on hold and campaigns with current or next round on hold.

@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AnonymousUser
 from django.core.files import File
+from rest_framework import status
 
 from iaso import models as m
 from iaso.api.deduplication.entity_duplicate import merge_entities
@@ -62,7 +63,7 @@ class EntityAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/mobile/entities/deleted/?app_id={self.project.app_id}")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         json_response = response.json()
         self.assertEqual(len(json_response["results"]), 0)
 
@@ -77,7 +78,7 @@ class EntityAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/mobile/entities/deleted/?app_id={self.project.app_id}")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         json_response = response.json()
         self.assertEqual(json_response["count"], 1)
         self.assertEqual(len(json_response["results"]), 1)
@@ -108,7 +109,7 @@ class EntityAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/mobile/entities/deleted/?app_id={self.project.app_id}")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         json_response = response.json()
         self.assertEqual(json_response["count"], 2)
         self.assertEqual(len(json_response["results"]), 2)
@@ -138,12 +139,12 @@ class EntityAPITestCase(APITestCase):
         # The list of deleted entities for project `mos.quito` should be empty.
         self.client.force_authenticate(self.user)
         response = self.client.get("/api/mobile/entities/deleted/?app_id=mos.quito")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(0, response.data["count"])
 
         # Only the deleted entities of project `app.id.com` should be returned.
         response = self.client.get("/api/mobile/entities/deleted/?app_id=app.id.com")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(3, response.data["count"])
         for item in response.data["results"]:
             self.assertEqual(self.entity_type.pk, item["entity_type_id"])

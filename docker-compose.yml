@@ -74,6 +74,9 @@ services:
         volumes: *hat_volumes
         env_file:
             -   .env
+        environment:
+            # Bind mounts don't reliably forward FS events; see hat/webpack.dev.js
+            WEBPACK_POLL: 'true'
         logging: *iaso_logging
         command: start_webpack
 

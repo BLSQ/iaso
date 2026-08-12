@@ -21,10 +21,12 @@ import {
 import { baseUrls } from '../../constants/urls';
 
 import getDisplayName from '../../utils/usersUtils';
+import { useGetFormDescriptor } from '../forms/fields/hooks/useGetFormDescriptor';
 import { LinkToInstance } from '../instances/components/LinkToInstance';
 import { formatLabel } from '../instances/utils';
 import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
 import { useFilterOrgUnitsByGroupUrl } from '../orgUnits/utils';
+import { useGetType } from './entityTypes/hooks/requests/entitiyTypes';
 import { useGetFieldValue } from './hooks/useGetFieldValue';
 import MESSAGES from './messages';
 import { ExtraColumn } from './types/fields';
@@ -38,84 +40,103 @@ export const useStaticColumns = (): Array<Column> => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     const filterOrgUnitsByGroupUrl = useFilterOrgUnitsByGroupUrl();
-    return [
-        {
-            Header: formatMessage(MESSAGES.id),
-            id: 'uuid',
-            accessor: 'uuid',
-        },
-        {
-            Header: formatMessage(MESSAGES.lastVisit),
-            id: 'last_saved_instance',
-            accessor: 'last_saved_instance',
-            Cell: settings => {
-                return (
-                    <>
-                        {getValue(
-                            'last_saved_instance',
-                            settings.row.original,
-                            'date',
-                        )}
-                    </>
-                );
+    return useMemo(
+        () => [
+            {
+                Header: formatMessage(MESSAGES.id),
+                id: 'uuid',
+                accessor: 'uuid',
             },
-        },
-        {
-            Header: 'Groups',
-            id: 'attributes__org_unit__groups',
-            sortable: false,
-            Cell: settings => {
-                const groups = settings.row.original?.org_unit?.groups;
-                if (!groups || groups.length === 0) {
-                    return <span>{textPlaceholder}</span>;
-                }
+            {
+                Header: formatMessage(MESSAGES.lastVisit),
+                id: 'last_saved_instance',
+                accessor: 'last_saved_instance',
+                Cell: settings => {
+                    return (
+                        <>
+                            {getValue(
+                                'last_saved_instance',
+                                settings.row.original,
+                                'date',
+                            )}
+                        </>
+                    );
+                },
+            },
+            {
+                Header: 'Groups',
+                id: 'attributes__org_unit__groups',
+                sortable: false,
+                Cell: settings => {
+                    const groups = settings.row.original?.org_unit?.groups;
+                    if (!groups || groups.length === 0) {
+                        return <span>{textPlaceholder}</span>;
+                    }
 
-                return groups.map((group, index) => (
-                    <span key={group.id}>
-                        <LinkWithLocation
-                            to={filterOrgUnitsByGroupUrl(group.id)}
-                        >
-                            {group.name}
-                        </LinkWithLocation>
-                        {index !== groups.length - 1 && ', '}
-                    </span>
-                ));
+                    return groups.map((group, index) => (
+                        <span key={group.id}>
+                            <LinkWithLocation
+                                to={filterOrgUnitsByGroupUrl(group.id)}
+                            >
+                                {group.name}
+                            </LinkWithLocation>
+                            {index !== groups.length - 1 && ', '}
+                        </span>
+                    ));
+                },
             },
-        },
-        {
-            Header: 'HC',
-            id: 'attributes__org_unit__name',
-            accessor: 'attributes__org_unit__name',
-            Cell: settings => {
-                return settings.row.original?.org_unit ? (
-                    <LinkToOrgUnit orgUnit={settings.row.original?.org_unit} />
-                ) : (
-                    <span>{textPlaceholder}</span>
-                );
+            {
+                Header: 'HC',
+                id: 'attributes__org_unit__name',
+                accessor: 'attributes__org_unit__name',
+                Cell: settings => {
+                    return settings.row.original?.org_unit ? (
+                        <LinkToOrgUnit
+                            orgUnit={settings.row.original?.org_unit}
+                        />
+                    ) : (
+                        <span>{textPlaceholder}</span>
+                    );
+                },
             },
-        },
-    ];
+        ],
+        [formatMessage, getValue, filterOrgUnitsByGroupUrl],
+    );
+};
+
+type UseColumnsResult = {
+    columns: Array<Column>;
+    // Used to bust Table memo when async formDescriptors arrive (Cell closures
+    // are ignored by getSimplifiedColumns, which only compares accessors).
+    formDescriptorsReady: boolean;
 };
 
 export const useColumns = (
     entityTypeIds: string[],
     extraColumns: Array<ExtraColumn>,
-): Array<Column> => {
+): UseColumnsResult => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     const staticColumns = useStaticColumns();
-    const getValue = useGetFieldValue();
-    return useMemo(() => {
-        const columns: Array<Column> = staticColumns;
+    const { data: entityType } = useGetType(
+        entityTypeIds[0],
+        entityTypeIds.length === 1,
+    );
+    const { data: formDescriptors } = useGetFormDescriptor(
+        entityType?.reference_form,
+    );
+    const getValue = useGetFieldValue(formDescriptors);
+    const columns = useMemo(() => {
+        const cols: Array<Column> = [...staticColumns];
         if (entityTypeIds.length !== 1) {
-            columns.unshift({
+            cols.unshift({
                 Header: formatMessage(MESSAGES.type),
                 id: 'entity_type__name',
                 accessor: 'entity_type',
             });
         }
         extraColumns.forEach(extraColumn => {
-            columns.push({
+            cols.push({
                 Header: formatLabel(extraColumn),
                 id: extraColumn.name,
                 accessor: extraColumn.name,
@@ -132,7 +153,7 @@ export const useColumns = (
                 },
             });
         });
-        columns.push({
+        cols.push({
             Header: formatMessage(MESSAGES.actions),
             accessor: 'actions',
             resizable: false,
@@ -157,7 +178,7 @@ export const useColumns = (
                 );
             },
         });
-        return columns;
+        return cols;
     }, [
         staticColumns,
         entityTypeIds.length,
@@ -165,6 +186,11 @@ export const useColumns = (
         formatMessage,
         getValue,
     ]);
+
+    return {
+        columns,
+        formDescriptorsReady: Boolean(formDescriptors),
+    };
 };
 
 const generateColumnsFromFieldsList = (

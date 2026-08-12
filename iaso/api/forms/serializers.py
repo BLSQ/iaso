@@ -8,8 +8,12 @@ from dynamic_fields.serializer import DynamicFieldsModelSerializerBackwardCompat
 from hat.audit.models import FORM_API, log_modification
 from iaso.api.common import ModelSerializer, TimestampField
 from iaso.api.form_predefined_filters.serializers import FormPredefinedFilterSerializer
+from iaso.api.forms.possible_fields import (
+    POSSIBLE_FIELDS_USAGE_DEDUPLICATION,
+    filter_possible_fields_by_usage,
+)
 from iaso.api.projects import ProjectSerializer
-from iaso.models import EntityDuplicateAnalyzis, Form, FormVersion, Group, OrgUnitType, Project
+from iaso.models import Form, FormVersion, Group, OrgUnitType, Project
 
 
 class FormVersionNestedSerializer(ModelSerializer):
@@ -162,11 +166,13 @@ class FormSerializer(DynamicFieldsModelSerializerBackwardCompatible):
             return obj.has_attachments
         return obj.attachments.exists()
 
-    @staticmethod
-    def get_possible_fields_with_latest_version(obj: Form):
-        possible_fields = [
-            field for field in obj.possible_fields if field["type"] in EntityDuplicateAnalyzis.SUPPORTED_FIELD_TYPES
-        ]
+    def get_possible_fields_with_latest_version(self, obj: Form):
+        request = self.context.get("request")
+        usage = POSSIBLE_FIELDS_USAGE_DEDUPLICATION
+        if request is not None:
+            usage = request.query_params.get("possible_fields_usage", POSSIBLE_FIELDS_USAGE_DEDUPLICATION)
+
+        possible_fields = filter_possible_fields_by_usage(obj.possible_fields, usage)
 
         latest_version = obj.latest_version
         if not latest_version:

@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.urls import reverse
+from rest_framework import status
 
 from iaso.tests.api.profiles.test_views.common import BaseProfileAPITestCase
 
@@ -13,26 +14,26 @@ class ProfileDropdownAPITestCase(BaseProfileAPITestCase):
         with self.subTest("should not be paginated by default"):
             response = self.client.get(reverse("profiles-dropdown"))
 
-            response_data = self.assertJSONResponse(response, 200)
+            response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
             self.assertValidListData(list_data=response_data, results_key=None, expected_length=7, paginated=False)
 
         with self.subTest("should not be paginated if limit is provided"):
             response = self.client.get(reverse("profiles-dropdown"), {"limit": 1})
-            response_data = self.assertJSONResponse(response, 200)
+            response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
             self.assertValidListData(list_data=response_data, results_key="results", expected_length=1, paginated=True)
 
         with self.subTest("Can still be filtered"):
             for parameter in ["so", "some org", "Some organization"]:
                 with self.subTest(f"Searching with {parameter}"):
                     response = self.client.get(reverse("profiles-dropdown"), {"search": parameter})
-                    response_data = self.assertJSONResponse(response, 200)
+                    response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
                     self.assertValidListData(
                         list_data=response_data, results_key=None, expected_length=1, paginated=False
                     )
 
         with self.subTest("Check response data"):
             response = self.client.get(reverse("profiles-dropdown"), {"search": parameter})
-            response_data = self.assertJSONResponse(response, 200)
+            response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
             self.assertValidListData(list_data=response_data, results_key=None, expected_length=1, paginated=False)
 
             item = response_data[0]
@@ -48,7 +49,7 @@ class ProfileDropdownAPITestCase(BaseProfileAPITestCase):
 
         with self.assertNumQueries(5):
             response = self.client.get(reverse("profiles-dropdown"))
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
 
         for i in range(20):
             self.create_user_with_profile(username=f"extra_user_{i}", account=self.account)
@@ -59,4 +60,4 @@ class ProfileDropdownAPITestCase(BaseProfileAPITestCase):
         # otherwise the "user" relation is being fetched once per profile instead of via select_related.
         with self.assertNumQueries(5):
             response = self.client.get(reverse("profiles-dropdown"))
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)

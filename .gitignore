@@ -196,6 +196,7 @@ plugins/snt_malaria
 plugins/snt-malaria
 plugins/saas
 plugins/ginger
+plugins/active_list
 
 # some local env config to be ignored
 .direnv
@@ -216,4 +217,6 @@ iaso-enketo/
 .eslintcache
 .claude
 
-plugins/active_list
+
+# default open API file for orval
+openapi.json

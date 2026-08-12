@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.utils.timezone import now
+from rest_framework import status
 
 from iaso import models as m
 from iaso.tests.api.entities.common_base_with_setup import EntityAPITestCase
@@ -55,7 +56,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         self.client.force_authenticate(self.yoda)
 
         response = self.client.get("/api/entities/", data={"limit": 2, "cursor": "null"}, format="json")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         # Default order is -created_at
         self.assertEqual(len(data["result"]), 2)
@@ -67,7 +68,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
 
         next_cursor = data["next"]
         response_page_2 = self.client.get("/api/entities/", data={"cursor": next_cursor, "limit": 2}, format="json")
-        data_page_2 = self.assertJSONResponse(response_page_2, 200)
+        data_page_2 = self.assertJSONResponse(response_page_2, status.HTTP_200_OK)
 
         self.assertEqual(len(data_page_2["result"]), 2)
         self.assertEqual(data_page_2["result"][0]["id"], self.entity_2.id)
@@ -78,7 +79,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
 
         prev_cursor = data_page_2["previous"]
         response_page_1 = self.client.get("/api/entities/", data={"cursor": prev_cursor, "limit": 2}, format="json")
-        data_page_1 = self.assertJSONResponse(response_page_1, 200)
+        data_page_1 = self.assertJSONResponse(response_page_1, status.HTTP_200_OK)
 
         self.assertEqual(data_page_1["result"][0]["id"], self.entity_4_null.id)
         self.assertEqual(data_page_1["result"][1]["id"], self.entity_3.id)
@@ -90,21 +91,21 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         params = {"order": "attributes__org_unit__name", "limit": 2}
 
         response_p1 = self.client.get("/api/entities/", data=params | {"cursor": "null"}, format="json")
-        data_p1 = self.assertJSONResponse(response_p1, 200)
+        data_p1 = self.assertJSONResponse(response_p1, status.HTTP_200_OK)
 
         self.assertEqual(len(data_p1["result"]), 2)
         self.assertEqual(data_p1["result"][0]["id"], self.entity_1.id)  # Burkina Faso
         self.assertEqual(data_p1["result"][1]["id"], self.entity_3.id)  # Karo
 
         response_p2 = self.client.get("/api/entities/", data=params | {"cursor": data_p1["next"]}, format="json")
-        data_p2 = self.assertJSONResponse(response_p2, 200)
+        data_p2 = self.assertJSONResponse(response_p2, status.HTTP_200_OK)
         self.assertEqual(len(data_p2["result"]), 2)
         self.assertEqual(data_p2["result"][0]["id"], self.entity_2.id)  # Yaba
         self.assertEqual(data_p2["result"][1]["id"], self.entity_4_null.id)  # NULL
         self.assertIsNone(data_p2["next"])
 
         response_back = self.client.get("/api/entities/", data=params | {"cursor": data_p2["previous"]}, format="json")
-        data_back = self.assertJSONResponse(response_back, 200)
+        data_back = self.assertJSONResponse(response_back, status.HTTP_200_OK)
         self.assertEqual(len(data_back["result"]), 2)
         self.assertEqual(data_back["result"][0]["id"], self.entity_1.id)
         self.assertEqual(data_back["result"][1]["id"], self.entity_3.id)
@@ -117,14 +118,14 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         params = {"order": "-attributes__org_unit__name", "limit": 2}
 
         response = self.client.get("/api/entities/", data=params | {"cursor": "null"}, format="json")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(data["result"][0]["id"], self.entity_4_null.id)  # NULL
         self.assertEqual(data["result"][1]["id"], self.entity_2.id)  # Yaba
 
         next_cursor = data["next"]
         response_2 = self.client.get("/api/entities/", data=params | {"cursor": next_cursor}, format="json")
-        data_2 = self.assertJSONResponse(response_2, 200)
+        data_2 = self.assertJSONResponse(response_2, status.HTTP_200_OK)
 
         self.assertEqual(data_2["result"][0]["id"], self.entity_3.id)  # Karo
         self.assertEqual(data_2["result"][1]["id"], self.entity_1.id)  # Burkina Faso
@@ -132,7 +133,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         # Reverse direction, ensure the IS NULL OR logic transitions correctly back to page 1
         prev_cursor = data_2["previous"]
         response_back = self.client.get("/api/entities/", data=params | {"cursor": prev_cursor}, format="json")
-        data_back = self.assertJSONResponse(response_back, 200)
+        data_back = self.assertJSONResponse(response_back, status.HTTP_200_OK)
 
         self.assertEqual(data_back["result"][0]["id"], self.entity_4_null.id)
         self.assertEqual(data_back["result"][1]["id"], self.entity_2.id)
@@ -155,7 +156,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         params = {"order": "-attributes__json__first_name", "limit": 2}
 
         response_p1 = self.client.get("/api/entities/", data=params | {"cursor": "null"}, format="json")
-        data_p1 = self.assertJSONResponse(response_p1, 200)
+        data_p1 = self.assertJSONResponse(response_p1, status.HTTP_200_OK)
 
         self.assertEqual(len(data_p1["result"]), 2)
         self.assertEqual(data_p1["result"][0]["id"], self.entity_4_null.id)  # NULL
@@ -163,7 +164,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         self.assertIsNotNone(data_p1["next"])
 
         response_p2 = self.client.get("/api/entities/", data=params | {"cursor": data_p1["next"]}, format="json")
-        data_p2 = self.assertJSONResponse(response_p2, 200)
+        data_p2 = self.assertJSONResponse(response_p2, status.HTTP_200_OK)
 
         self.assertEqual(len(data_p2["result"]), 2)
 
@@ -173,7 +174,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         self.assertIsNotNone(data_p2["previous"])
 
         response_back = self.client.get("/api/entities/", data=params | {"cursor": data_p2["previous"]}, format="json")
-        data_back = self.assertJSONResponse(response_back, 200)
+        data_back = self.assertJSONResponse(response_back, status.HTTP_200_OK)
 
         self.assertEqual(len(data_back["result"]), 2)
         self.assertEqual(data_back["result"][0]["id"], self.entity_4_null.id)
@@ -199,7 +200,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         params = {"order": "-attributes__org_unit__name", "limit": 3}
 
         res_p1 = self.client.get("/api/entities/", data=params | {"cursor": "null"}, format="json")
-        data_p1 = self.assertJSONResponse(res_p1, 200)
+        data_p1 = self.assertJSONResponse(res_p1, status.HTTP_200_OK)
 
         self.assertEqual(len(data_p1["result"]), 3)
 
@@ -209,12 +210,12 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
             self.assertTrue(name is None or name == "Alpaca" or name.startswith("Null_Entity_"))
 
         res_p2 = self.client.get("/api/entities/", data=params | {"cursor": data_p1["next"]}, format="json")
-        data_p2 = self.assertJSONResponse(res_p2, 200)
+        data_p2 = self.assertJSONResponse(res_p2, status.HTTP_200_OK)
 
         self.assertEqual(len(data_p2["result"]), 3)
 
         res_back = self.client.get("/api/entities/", data=params | {"cursor": data_p2["previous"]}, format="json")
-        data_back = self.assertJSONResponse(res_back, 200)
+        data_back = self.assertJSONResponse(res_back, status.HTTP_200_OK)
 
         self.assertEqual(len(data_back["result"]), 3)
         self.assertEqual([e["id"] for e in data_back["result"]], [e["id"] for e in data_p1["result"]])
@@ -237,25 +238,25 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         params = {"order": "attributes__org_unit__name", "limit": 4}
 
         res_p1 = self.client.get("/api/entities/", data=params | {"cursor": "null"}, format="json")
-        data_p1 = self.assertJSONResponse(res_p1, 200)
+        data_p1 = self.assertJSONResponse(res_p1, status.HTTP_200_OK)
 
         self.assertEqual(len(data_p1["result"]), 4)
         self.assertIsNotNone(data_p1["next"])
 
         res_p2 = self.client.get("/api/entities/", data=params | {"cursor": data_p1["next"]}, format="json")
-        data_p2 = self.assertJSONResponse(res_p2, 200)
+        data_p2 = self.assertJSONResponse(res_p2, status.HTTP_200_OK)
 
         self.assertEqual(len(data_p2["result"]), 4)
         self.assertIsNotNone(data_p2["next"])
 
         res_p3 = self.client.get("/api/entities/", data=params | {"cursor": data_p2["next"]}, format="json")
-        data_p3 = self.assertJSONResponse(res_p3, 200)
+        data_p3 = self.assertJSONResponse(res_p3, status.HTTP_200_OK)
 
         self.assertEqual(len(data_p3["result"]), 1)
         self.assertIsNone(data_p3["next"])
 
         res_back_p2 = self.client.get("/api/entities/", data=params | {"cursor": data_p3["previous"]}, format="json")
-        data_back_p2 = self.assertJSONResponse(res_back_p2, 200)
+        data_back_p2 = self.assertJSONResponse(res_back_p2, status.HTTP_200_OK)
 
         self.assertEqual(len(data_back_p2["result"]), 4)
 
@@ -271,12 +272,12 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         params = {"order": "attributes__org_unit__name", "limit": 2}
 
         res_p1 = self.client.get("/api/entities/", data=params | {"cursor": "null"}, format="json")
-        data_p1 = self.assertJSONResponse(res_p1, 200)
+        data_p1 = self.assertJSONResponse(res_p1, status.HTTP_200_OK)
 
         self.assertEqual(len(data_p1["result"]), 2)
 
         res_p2 = self.client.get("/api/entities/", data=params | {"cursor": data_p1["next"]}, format="json")
-        data_p2 = self.assertJSONResponse(res_p2, 200)
+        data_p2 = self.assertJSONResponse(res_p2, status.HTTP_200_OK)
 
         self.assertEqual(len(data_p2["result"]), 2)
 
@@ -291,7 +292,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
 
         response = self.client.get("/api/entities/", data={"limit": 2, "cursor": "null"}, format="json")
 
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(len(data["result"]), 0)
         self.assertIsNone(data["next"])
@@ -329,19 +330,19 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         params = {"order": "-attributes__json__last_name", "limit": 3}
 
         response_p1 = self.client.get("/api/entities/", data=params | {"cursor": "null"}, format="json")
-        data_p1 = self.assertJSONResponse(response_p1, 200)
+        data_p1 = self.assertJSONResponse(response_p1, status.HTTP_200_OK)
         self.assertEqual(len(data_p1["result"]), 3)
         self.assertIsNotNone(data_p1["next"])
 
         response_p2 = self.client.get("/api/entities/", data=params | {"cursor": data_p1["next"]}, format="json")
-        data_p2 = self.assertJSONResponse(response_p2, 200)
+        data_p2 = self.assertJSONResponse(response_p2, status.HTTP_200_OK)
 
         self.assertEqual(len(data_p2["result"]), 3)
         self.assertIsNone(data_p2["next"], "End of data reached, next should be null")
         self.assertIsNotNone(data_p2["previous"])
 
         response_back = self.client.get("/api/entities/", data=params | {"cursor": data_p2["previous"]}, format="json")
-        data_back = self.assertJSONResponse(response_back, 200)
+        data_back = self.assertJSONResponse(response_back, status.HTTP_200_OK)
         self.assertEqual(len(data_back["result"]), 3)
 
         self.assertEqual([e["id"] for e in data_back["result"]], [e["id"] for e in data_p1["result"]])
@@ -353,7 +354,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         params = {"order": "-created_at", "limit": 2}
 
         res_p1 = self.client.get("/api/entities/", data=params | {"cursor": "null"}, format="json")
-        data_p1 = self.assertJSONResponse(res_p1, 200)
+        data_p1 = self.assertJSONResponse(res_p1, status.HTTP_200_OK)
         next_cursor = data_p1["next"]
 
         # Delete the last item on page 1 (which the 'next' cursor is referencing)
@@ -361,7 +362,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         m.Entity.objects.filter(id=last_item_id).delete()
 
         res_p2 = self.client.get("/api/entities/", data=params | {"cursor": next_cursor}, format="json")
-        data_p2 = self.assertJSONResponse(res_p2, 200)
+        data_p2 = self.assertJSONResponse(res_p2, status.HTTP_200_OK)
 
         self.assertEqual(len(data_p2["result"]), 2)
 
@@ -370,7 +371,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
 
         # Test the unfiltered count
         response = self.client.get("/api/entities/count/", format="json")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(data["count"], 4)
 
@@ -378,7 +379,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         response_filtered = self.client.get(
             "/api/entities/count/", data={"entity_type_ids": self.entity_type_2.id}, format="json"
         )
-        data_filtered = self.assertJSONResponse(response_filtered, 200)
+        data_filtered = self.assertJSONResponse(response_filtered, status.HTTP_200_OK)
 
         self.assertEqual(data_filtered["count"], 2)
 
@@ -413,14 +414,14 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         params = {"order": "name,-created_at", "limit": 2}
 
         res_p1 = self.client.get("/api/entities/", data=params | {"cursor": "null"}, format="json")
-        data_p1 = self.assertJSONResponse(res_p1, 200)
+        data_p1 = self.assertJSONResponse(res_p1, status.HTTP_200_OK)
 
         self.assertEqual(len(data_p1["result"]), 2)
         self.assertEqual(data_p1["result"][0]["id"], e1.id)
         self.assertEqual(data_p1["result"][1]["id"], e2.id)
 
         res_p2 = self.client.get("/api/entities/", data=params | {"cursor": data_p1["next"]}, format="json")
-        data_p2 = self.assertJSONResponse(res_p2, 200)
+        data_p2 = self.assertJSONResponse(res_p2, status.HTTP_200_OK)
 
         self.assertEqual(len(data_p2["result"]), 2)
         self.assertEqual(data_p2["result"][0]["id"], e3.id)
@@ -428,7 +429,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         self.assertIsNone(data_p2["next"])
 
         res_back = self.client.get("/api/entities/", data=params | {"cursor": data_p2["previous"]}, format="json")
-        data_back = self.assertJSONResponse(res_back, 200)
+        data_back = self.assertJSONResponse(res_back, status.HTTP_200_OK)
 
         self.assertEqual(len(data_back["result"]), 2)
         self.assertEqual(data_back["result"][0]["id"], e1.id)
@@ -459,21 +460,21 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         params = {"order": "attributes__org_unit__name,-name", "limit": 2}
 
         res_p1 = self.client.get("/api/entities/", data=params | {"cursor": "null"}, format="json")
-        data_p1 = self.assertJSONResponse(res_p1, 200)
+        data_p1 = self.assertJSONResponse(res_p1, status.HTTP_200_OK)
 
         self.assertEqual(len(data_p1["result"]), 2)
         self.assertEqual(data_p1["result"][0]["id"], e1.id)
         self.assertEqual(data_p1["result"][1]["id"], e2.id)
 
         res_p2 = self.client.get("/api/entities/", data=params | {"cursor": data_p1["next"]}, format="json")
-        data_p2 = self.assertJSONResponse(res_p2, 200)
+        data_p2 = self.assertJSONResponse(res_p2, status.HTTP_200_OK)
 
         self.assertEqual(len(data_p2["result"]), 2)
         self.assertEqual(data_p2["result"][0]["id"], e3.id)
         self.assertEqual(data_p2["result"][1]["id"], e4.id)
 
         res_back = self.client.get("/api/entities/", data=params | {"cursor": data_p2["previous"]}, format="json")
-        data_back = self.assertJSONResponse(res_back, 200)
+        data_back = self.assertJSONResponse(res_back, status.HTTP_200_OK)
 
         self.assertEqual(len(data_back["result"]), 2)
         self.assertEqual(data_back["result"][0]["id"], e1.id)

@@ -219,7 +219,7 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
             duplicate_reference_instance,
         ]:
             self.assertIn(str(instance.org_unit_id), result)
-        logs = m.TaskLog.objects.filter(task=task).all()
+        logs = m.TaskLog.objects.filter(task=task).order_by("created_at")
         self.assertEqual(len(logs), 2)
         self.assertEqual(logs[0].message, "Searching for Instances for link or unlink to/from Org unit")
         self.assertEqual(logs[1].message, result)
@@ -353,7 +353,7 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
         # they were filtered out
         self.assertNotIn(instance_filtered_out_by_user.id, reference_instances)
         self.assertNotIn(instance_filtered_out_by_org_unit_type.id, reference_instances)
-        logs = m.TaskLog.objects.filter(task=task).all()
+        logs = m.TaskLog.objects.filter(task=task).order_by("created_at")
         self.assertEqual(len(logs), 4)
         self.assertEqual(logs[0].message, "Searching for Instances for link or unlink to/from Org unit")
         self.assertIn("sec, processed 0 instances", logs[1].message)

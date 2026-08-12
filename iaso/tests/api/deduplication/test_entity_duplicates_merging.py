@@ -5,6 +5,7 @@ from uuid import uuid4
 
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import UploadedFile
+from rest_framework import status
 
 from beanstalk_worker.services import TestTaskService
 from iaso import models as m
@@ -234,7 +235,7 @@ class EntityDuplicatesMergingAPITestCase(APITestCase):
             format="json",
         )
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_data = response.json()
 
         self.assertIn("entity1_id", response_data)
@@ -301,7 +302,7 @@ class EntityDuplicatesMergingAPITestCase(APITestCase):
             data={"merge": merged_data, "entity1_id": entity1.id, "entity2_id": entity2.id},
             format="json",
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_data = response.json()
 
         # Verify DB updates were correctly done

@@ -19,6 +19,7 @@ services:
         - AUTHENTICATION_ENFORCED
         - AVAILABLE_LANGUAGES
         - AWS_ACCESS_KEY_ID
+        - AWS_PUBLIC_STORAGE_BUCKET_NAME
         - AWS_S3_ENDPOINT_URL
         - AWS_S3_REGION_NAME
         - AWS_SECRET_ACCESS_KEY
@@ -72,6 +73,7 @@ services:
         - ENKETO_URL
         - FAVICON_PATH
         - FORM_AI_MODEL
+        - FORM_AI_MAX_TOKENS
         - FORUM_PATH
         - HAT_LOGGING_LEVEL
         - HIDE_BASIC_NAV_ITEMS

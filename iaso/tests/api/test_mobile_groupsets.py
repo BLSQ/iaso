@@ -1,6 +1,7 @@
 import json
 
 from django.utils.timezone import now
+from rest_framework import status
 
 from iaso import models as m
 from iaso.api.query_params import APP_ID
@@ -96,12 +97,12 @@ class MobileGroupSetsAPITestCase(APITestCase):
 
     def test_api_mobile_groupsets_list_without_app_id(self):
         response = self.client.get("/api/mobile/group_sets/")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_api_mobile_groupsets_list_with_unknown_app_id(self):
         """GET /api/mobile/groups/ with unknown app_id"""
         response = self.client.get("/api/mobile/group_sets/", {APP_ID: "foo"})
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_api_mobile_groupsets_list_with_app_id(self):
         """GET /api/mobile/groups/ with app_id"""
@@ -117,7 +118,7 @@ class MobileGroupSetsAPITestCase(APITestCase):
         # Groups with `source_version_1`.
         with self.assertNumQueries(3):
             response = self.client.get("/api/mobile/group_sets/", {APP_ID: self.project_cameroon.app_id})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(json.dumps(response.data), json.dumps([record_cameroon]))
 
         record_nigeria = {

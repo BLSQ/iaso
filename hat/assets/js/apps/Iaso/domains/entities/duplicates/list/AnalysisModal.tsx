@@ -102,6 +102,7 @@ const AnalysisModal: FunctionComponent<Props> = ({
     const { possibleFields, isFetchingForm } = useGetFormForEntityType({
         formId: referenceForm,
         enabled: isOpen,
+        possibleFieldsUsage: 'deduplication',
     });
 
     const isConfirm = algorithm && entityType && entityTypeFields.length > 0;

@@ -1,6 +1,7 @@
 import typing
 
 from django.test import override_settings
+from rest_framework import status
 
 from iaso import models as m
 from iaso.api.query_params import APP_ID
@@ -56,21 +57,21 @@ class OrgUnitTypesAPITestCase(APITestCase):
         """GET /orgunittypes/ without auth for project which requires it: 401"""
 
         response = self.client.get("/api/orgunittypes/", {APP_ID: self.ead.app_id})
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_orgunittypes_list_with_wrong_auth_for_project_requiring_auth(self):
         """GET /orgunittypes/ with wrong auth for project which requires it: 401"""
 
         self.client.force_authenticate(user=self.john)
         response = self.client.get("/api/orgunittypes/", {APP_ID: self.ead.app_id})
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_orgunittypes_list_with_auth_for_project_requiring_auth(self):
         """GET /orgunittypes/ with auth for project which requires it: 200"""
 
         self.client.force_authenticate(user=self.jane)
         response = self.client.get("/api/orgunittypes/", {APP_ID: self.ead.app_id})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     @override_settings(AUTHENTICATION_ENFORCED=True)
     def test_orgunittypes_list_with_auth_for_project_requiring_auth_strict(self):
@@ -78,13 +79,13 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
         self.client.force_authenticate(user=self.jane)
         response = self.client.get("/api/orgunittypes/", {APP_ID: self.ead.app_id})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_org_unit_types_list_without_auth_or_app_id(self):
         """GET /orgunittypes/ without auth or app id should result in a 200 empty response"""
 
         response = self.client.get("/api/orgunittypes/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidOrgUnitTypeListData(response.json(), 0)
 
     def test_org_unit_types_list_with_auth(self):
@@ -92,7 +93,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/orgunittypes/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertValidOrgUnitTypeListData(response_data, 2)
@@ -103,33 +104,33 @@ class OrgUnitTypesAPITestCase(APITestCase):
         """GET /orgunittypes/<org_unit_type_id>/ without auth or app id should result in a 200 empty response"""
 
         response = self.client.get(f"/api/orgunittypes/{self.org_unit_type_1.id}/")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_org_unit_types_retrieve_ok(self):
         """GET /orgunittypes/<org_unit_type_id>/ happy path"""
 
         self.client.force_authenticate(self.jane)
         response = self.client.get(f"/api/orgunittypes/{self.org_unit_type_1.id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidOrgUnitTypeData(response.json())
 
     def test_dynamic_fields(self):
         self.client.force_authenticate(self.jane)
         response = self.client.get(f"/api/orgunittypes/{self.org_unit_type_1.id}/", data={"fields": ":all"})
-        res_data = self.assertJSONResponse(response, 200)
+        res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidOrgUnitTypeData(res_data)
 
         response = self.client.get(
             f"/api/orgunittypes/{self.org_unit_type_1.id}/", data={"fields": "id,name,short_name"}
         )
-        res_data = self.assertJSONResponse(response, 200)
+        res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertCountEqual(res_data.keys(), ["id", "name", "short_name"])
 
     def test_org_unit_type_create_no_auth(self):
         """POST /orgunittypes/ without auth: 401"""
 
         response = self.client.post("/api/orgunittypes/", data={}, format="json")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_org_unit_type_create_without_permission_forbidden(self):
         """POST /orgunittypes/ with auth but without CORE_ORG_UNITS_TYPES_PERMISSION: 403"""
@@ -150,7 +151,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_org_unit_type_read_without_write_permission_ok(self):
         """GET /orgunittypes/ with auth but without CORE_ORG_UNITS_TYPES_PERMISSION: 200 (read allowed)"""
@@ -160,7 +161,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
         )
         self.client.force_authenticate(read_only_user)
         response = self.client.get("/api/orgunittypes/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_org_unit_type_create_invalid(self):
         """POST /orgunittypes/ without project ids: invalid"""
@@ -169,7 +170,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
         response = self.client.post(
             "/api/orgunittypes/", data={"name": "", "depth": 1, "project_ids": []}, format="json"
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(response.json(), "name", "This field may not be blank.")
         self.assertHasError(response.json(), "short_name", "This field is required.")
         self.assertHasError(response.json(), "project_ids", "This list may not be empty.")
@@ -190,7 +191,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(response.json(), "project_ids", "Invalid project ids")
 
     def test_org_unit_type_create_ok(self):
@@ -212,7 +213,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
         )
 
         org_unit_type_data = response.json()
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertValidOrgUnitTypeData(org_unit_type_data)
         self.assertEqual(1, len(org_unit_type_data["projects"]))
 
@@ -232,7 +233,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         org_unit_type_data = response.json()
         self.assertValidOrgUnitTypeData(org_unit_type_data)
@@ -255,7 +256,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidOrgUnitTypeData(response.json())
 
     def test_org_unit_type_update_with_reference_form_id_ok(self):
@@ -274,7 +275,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidOrgUnitTypeData(response.json())
 
     def test_org_unit_type_partial_update_ok(self):
@@ -284,7 +285,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
         response = self.client.patch(
             f"/api/orgunittypes/{self.org_unit_type_1.id}/", data={"short_name": "P"}, format="json"
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidOrgUnitTypeData(response.json())
         self.org_unit_type_1.refresh_from_db()
         self.assertEqual("P", self.org_unit_type_1.short_name)
@@ -294,7 +295,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.delete(f"/api/orgunittypes/{self.org_unit_type_1.id}/", format="json")
-        self.assertJSONResponse(response, 204)
+        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
 
     def assertValidOrgUnitTypeListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(

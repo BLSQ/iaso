@@ -55,7 +55,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.planningList',
     },
     dhis2Mappings: {
-        defaultMessage: 'DHIS mappings',
+        defaultMessage: 'DHIS2 mappings',
         id: 'iaso.label.dhis2Mappings',
     },
     completeness: {

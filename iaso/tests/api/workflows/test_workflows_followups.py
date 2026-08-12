@@ -1,3 +1,5 @@
+from rest_framework import status
+
 from iaso.models import WorkflowFollowup
 from iaso.tests.api.workflows.base import BaseWorkflowsAPITestCase
 
@@ -13,7 +15,7 @@ class WorkflowsFollowupsAPITestCase(BaseWorkflowsAPITestCase):
             data={"order": 0, "condition": "true", "form_ids": [self.form_adults_blue.pk]},
         )
 
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.data["detail"].code, "not_authenticated")
         self.assertEqual(response.data["detail"], "Authentication credentials were not provided.")
 
@@ -26,7 +28,7 @@ class WorkflowsFollowupsAPITestCase(BaseWorkflowsAPITestCase):
             data={"order": 0, "condition": "true", "form_ids": [self.form_adults_blue.pk]},
         )
 
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data["detail"].code, "permission_denied")
         self.assertEqual(
             response.data["detail"],
@@ -42,7 +44,7 @@ class WorkflowsFollowupsAPITestCase(BaseWorkflowsAPITestCase):
             data={"order": 0, "condition": "true", "form_ids": [self.form_adults_blue.pk]},
         )
 
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data["detail"].code, "permission_denied")
         self.assertEqual(
             response.data["detail"],
@@ -58,7 +60,7 @@ class WorkflowsFollowupsAPITestCase(BaseWorkflowsAPITestCase):
             data={"order": 0, "condition": "true", "form_ids": [self.form_adults_blue.pk]},
         )
 
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_cannot_add_followups_to_version_not_in_draft(self):
         self.client.force_authenticate(self.blue_adult_1)
@@ -68,7 +70,7 @@ class WorkflowsFollowupsAPITestCase(BaseWorkflowsAPITestCase):
             data={"order": 0, "condition": "true", "form_ids": [self.form_adults_blue.pk]},
         )
 
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         assert "is not in draft status" in str(response.data[0])
         assert response.data[0].code == "invalid"
 
@@ -80,7 +82,7 @@ class WorkflowsFollowupsAPITestCase(BaseWorkflowsAPITestCase):
             data={"order": -1, "condition": "true", "form_ids": [self.form_adults_blue.pk]},
         )
 
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         assert "order must be positive" in str(response.data["order"][0])
         assert response.data["order"][0].code == "invalid"
 
@@ -92,7 +94,7 @@ class WorkflowsFollowupsAPITestCase(BaseWorkflowsAPITestCase):
             data={"order": 0, "condition": "true", "form_ids": [10000]},
         )
 
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         assert "Form 10000 does not exist" in str(response.data["form_ids"][0])
         assert response.data["form_ids"][0].code == "invalid"
 
@@ -104,7 +106,7 @@ class WorkflowsFollowupsAPITestCase(BaseWorkflowsAPITestCase):
             data={"order": 0, "condition": "true", "form_ids": [self.form_children_blue.pk]},
         )
 
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         assert f"User doesn't have access to form {self.form_children_blue.pk}" in str(response.data["form_ids"][0])
         assert response.data["form_ids"][0].code == "invalid"
 
@@ -117,7 +119,7 @@ class WorkflowsFollowupsAPITestCase(BaseWorkflowsAPITestCase):
             data=[{"order": 1}],
         )
 
-        assert response_bulk.status_code == 400
+        assert response_bulk.status_code == status.HTTP_400_BAD_REQUEST
         assert "id is required for bulk update" in response_bulk.data
 
     def test_create_bulkupdate_delete(self):
@@ -128,7 +130,7 @@ class WorkflowsFollowupsAPITestCase(BaseWorkflowsAPITestCase):
             data={"order": 1, "condition": "true", "form_ids": [self.form_adults_blue.pk]},
         )
 
-        self.assertJSONResponse(response_1, 200)
+        self.assertJSONResponse(response_1, status.HTTP_200_OK)
         assert response_1.data["forms"][0]["id"] == self.form_adults_blue.pk
         assert response_1.data["order"] == 1
         assert response_1.data["condition"] == "true"
@@ -141,7 +143,7 @@ class WorkflowsFollowupsAPITestCase(BaseWorkflowsAPITestCase):
             data={"order": 2, "condition": "true", "form_ids": [self.form_adults_blue_2.pk]},
         )
 
-        self.assertJSONResponse(response_2, 200)
+        self.assertJSONResponse(response_2, status.HTTP_200_OK)
         assert response_2.data["forms"][0]["id"] == self.form_adults_blue_2.pk
         assert response_2.data["order"] == 2
         assert response_2.data["condition"] == "true"
@@ -157,7 +159,7 @@ class WorkflowsFollowupsAPITestCase(BaseWorkflowsAPITestCase):
         first_obj = response_bulk.data[0]
         second_obj = response_bulk.data[1]
 
-        self.assertJSONResponse(response_2, 200)
+        self.assertJSONResponse(response_2, status.HTTP_200_OK)
         assert first_obj["id"] == followup_1_id
         assert first_obj["order"] == 2
         assert WorkflowFollowup.objects.get(pk=followup_1_id).order == 2
@@ -167,9 +169,9 @@ class WorkflowsFollowupsAPITestCase(BaseWorkflowsAPITestCase):
         assert WorkflowFollowup.objects.get(pk=followup_2_id).order == 1
 
         response_delete_1 = self.client.delete(f"{BASE_API}{followup_1_id}/")
-        self.assertJSONResponse(response_delete_1, 204)
+        self.assertJSONResponse(response_delete_1, status.HTTP_204_NO_CONTENT)
         self.assertRaises(WorkflowFollowup.DoesNotExist, WorkflowFollowup.objects.get, pk=followup_1_id)
 
         response_delete_2 = self.client.delete(f"{BASE_API}{followup_2_id}/")
-        self.assertJSONResponse(response_delete_2, 204)
+        self.assertJSONResponse(response_delete_2, status.HTTP_204_NO_CONTENT)
         self.assertRaises(WorkflowFollowup.DoesNotExist, WorkflowFollowup.objects.get, pk=followup_2_id)

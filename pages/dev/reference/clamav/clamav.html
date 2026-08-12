@@ -808,9 +808,14 @@
 <p>Replace your invocations of <code>docker compose</code> by <code>docker compose -f docker-compose.yml -f docker/docker-compose-clamav.yml</code>. You need to specify both config files. e.g. to launch the cluster:</p>
 <pre><code class="language-bash">docker compose -f docker-compose.yml -f docker/docker-compose-clamav.yml up
 </code></pre>
-<p>To start scanning files, you'll need to set two environment variables in Iaso:
-- <code>CLAMAV_ACTIVE</code> set to <code>True</code>, in order to tell the backend that file uploads must be scanned (default = <code>False</code>)
-- <code>CLAMAV_FQDN</code> set to the address that Iaso can use to reach your ClamAV instance (<code>localhost</code> in a local IASO installation without Docker, <code>clamav</code> in a IASO installation with Docker)</p>
+<p>For Mac Silicon users:</p>
+<pre><code class="language-bash">DOCKER_DEFAULT_PLATFORM=linux/amd64 docker compose -f docker-compose.yml -f docker/docker-compose-clamav.yml up
+</code></pre>
+<p>To start scanning files, you'll need to set two environment variables in Iaso:</p>
+<ul>
+<li><code>CLAMAV_ACTIVE</code> set to <code>True</code>, in order to tell the backend that file uploads must be scanned (default = <code>False</code>)</li>
+<li><code>CLAMAV_FQDN</code> set to the address that Iaso can use to reach your ClamAV instance (<code>localhost</code> in a local IASO installation without Docker, <code>clamav</code> in a IASO installation with Docker)</li>
+</ul>
 <p>Iaso and ClamAV will communicate over the default ClamAV port, <code>3310</code>, through a TCP socket.
 If you need to use another port, you'll need to edit the <code>docker/docker-compose-clamav.yml</code> file and provide the new port to Iaso through the <code>CLAMAV_PORT</code> environment variable.</p>
 

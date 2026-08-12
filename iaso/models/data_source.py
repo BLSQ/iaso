@@ -299,6 +299,9 @@ class DataSourceVersionsSynchronization(models.Model):
         if self.change_requests.exists():
             raise ValidationError("Change requests have already been created.")
 
+        if field_names is not None:
+            field_names = sorted(f for f in field_names if f != "groups")
+
         differ_params = {
             # Version to update.
             "version": self.source_version_to_update,

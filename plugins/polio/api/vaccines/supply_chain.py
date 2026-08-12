@@ -22,6 +22,7 @@ from rest_framework.response import Response
 
 from iaso.api.common import ModelViewSet, parse_comma_separated_numeric_values
 from iaso.models import OrgUnit
+from iaso.utils.encryption import calculate_md5, file_content_changed
 from iaso.utils.virus_scan.clamav import scan_uploaded_file_for_virus
 from iaso.utils.virus_scan.serializers import ModelWithFileSerializer
 from plugins.polio.api.vaccines.permissions import VaccineStockPermission, has_vaccine_stock_edit_access
@@ -141,7 +142,7 @@ class NestedVaccinePreAlertSerializerForPost(ModelWithFileSerializer):
 
     def update(self, instance, validated_data):
         validated_data["request_form"] = self.context["vaccine_request_form"]
-        self.scan_file_if_exists(validated_data)
+        self.scan_file_if_exists(validated_data, instance)
         return super().update(instance, validated_data)
 
 
@@ -192,8 +193,7 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
                     current_obj.file = new_file
                     continue
 
-                # Compare file names and sizes
-                if os.path.basename(old_file.name) != os.path.basename(new_file.name) or old_file.size != new_file.size:
+                if file_content_changed(current_obj.md5, new_file):
                     is_different = True
                     current_obj.file = new_file
             elif hasattr(current_obj, key) and getattr(current_obj, key) != attrs[key]:
@@ -290,24 +290,7 @@ class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSer
         # Check if any values are actually different
         is_different = False
         for key in attrs.keys():
-            if key == "file":
-                # Skip if no new document is being uploaded
-                if not attrs[key]:
-                    continue
-
-                new_file = attrs[key]
-                old_file = current_obj.file
-
-                # If there's no existing document but we're uploading one
-                if not old_file:
-                    is_different = True
-                    current_obj.file = new_file
-                    continue
-
-                if os.path.basename(old_file.name) != os.path.basename(new_file.name) or old_file.size != new_file.size:
-                    is_different = True
-                    current_obj.file = new_file
-            elif hasattr(current_obj, key) and getattr(current_obj, key) != attrs[key]:
+            if hasattr(current_obj, key) and getattr(current_obj, key) != attrs[key]:
                 is_different = True
                 break
 
@@ -369,15 +352,15 @@ class PatchPreAlertSerializer(serializers.Serializer):
                         new_file = item[key]
                         old_file = pa.file
 
-                        if not old_file or (
-                            os.path.basename(old_file.name) != os.path.basename(new_file.name)
-                            or old_file.size != new_file.size
-                        ):
+                        # Hash once and reuse for both the change check and persistence.
+                        new_md5 = calculate_md5(new_file)
+                        if not old_file or not pa.md5 or pa.md5 != new_md5:
                             is_different = True
                             result, timestamp = scan_uploaded_file_for_virus(new_file)
                             pa.file = new_file
                             pa.file_scan_status = result
                             pa.file_last_scan = timestamp
+                            pa.md5 = new_md5
                     elif hasattr(pa, key) and getattr(pa, key) != item[key]:
                         is_different = True
                         setattr(pa, key, item[key])
@@ -526,6 +509,7 @@ class VaccineRequestFormPostSerializer(ModelWithFileSerializer):
         if self.scan_file_if_exists(validated_data):
             request_form.file_last_scan = validated_data["file_last_scan"]
             request_form.file_scan_status = validated_data["file_scan_status"]
+            request_form.md5 = validated_data["md5"]
             request_form.save()
         return request_form
 
@@ -609,7 +593,7 @@ class VaccineRequestFormDetailSerializer(ModelWithFileSerializer):
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        self.scan_file_if_exists(validated_data)
+        self.scan_file_if_exists(validated_data, instance)
         return super().update(instance, validated_data)
 
 

@@ -3,9 +3,7 @@ import { Field } from '../../../entities/types/fields';
 import { Instance } from '../../types/instance';
 
 /** Minimal instance fixture for SubmissionRail tests. */
-export const makeInstance = (
-    overrides: Partial<Instance> = {},
-): Instance =>
+export const makeInstance = (overrides: Partial<Instance> = {}): Instance =>
     ({
         id: 42,
         uuid: 'abc-123',

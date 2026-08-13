@@ -44,12 +44,12 @@ export const useGetForm = (
     });
 };
 
-export const createForm = formData =>
+export const createForm = (formData: Form) =>
     postRequest('/api/forms/', formData).catch(error => {
         openSnackBar(errorSnackBar('createFormError', null, error));
     });
 
-export const updateForm = (formId, formData) =>
+export const updateForm = (formId: number, formData: Form) =>
     putRequest(`/api/forms/${formId}/`, formData).catch(error => {
         openSnackBar(errorSnackBar('updateFormError', null, error));
     });
@@ -65,16 +65,20 @@ export type FormVersionDiff = {
         new_type: string;
     }[];
 };
+type FormVersionData = {
+    data: Record<string, any>;
+    xls_file: File;
+};
 
 export const previewFormVersion = (
-    formVersionData,
+    formVersionData: FormVersionData,
 ): Promise<FormVersionDiff> => {
     const { data } = formVersionData;
     const fileData = { xls_file: formVersionData.xls_file };
     return postRequest('/api/formversions/preview/', data, fileData);
 };
 
-export const createFormVersion = formVersionData => {
+export const createFormVersion = (formVersionData: FormVersionData) => {
     const { data } = formVersionData;
     const fileData = { xls_file: formVersionData.xls_file };
 
@@ -92,7 +96,7 @@ export const createFormVersion = formVersionData => {
     });
 };
 
-export const updateFormVersion = data => {
+export const updateFormVersion = (data: Record<string, any>) => {
     return patchRequest(`/api/formversions/${data.id}/`, data).catch(error => {
         openSnackBar(errorSnackBar('updateFormVersionError', null, error));
         throw error;

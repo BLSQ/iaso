@@ -8,7 +8,6 @@ import React, {
 import { Box, Button, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    CommonStyles,
     LoadingSpinner,
     commonStyles,
     useGoBack,
@@ -20,6 +19,7 @@ import mapValues from 'lodash/mapValues';
 import omit from 'lodash/omit';
 import { useQueryClient } from 'react-query';
 import { FormPredefinedFilters } from 'Iaso/domains/forms/components/FormPredefinedFilters';
+import { DjangoError } from 'Iaso/types/general';
 import TopBar from '../../components/nav/TopBarComponent';
 import { openSnackBar } from '../../components/snackBars/EventDispatcher';
 import { succesfullSnackBar } from '../../constants/snackBars';
@@ -35,12 +35,12 @@ import { requiredFields } from './config/index';
 import { CR_MODE_NONE } from './constants';
 import MESSAGES from './messages';
 import { createForm, updateForm, useGetForm } from './requests';
-import { FormParams } from './types/forms';
+import { Form, FormParams } from './types/forms';
 
 const useStyles = makeStyles(theme => ({
-    ...(commonStyles(theme) as unknown as CommonStyles),
+    ...(commonStyles(theme) as unknown as Record<string, any>),
     tabs: {
-        ...commonStyles(theme).tabs,
+        ...(commonStyles(theme).tabs as unknown as Record<string, any>),
         padding: 0,
     },
 }));
@@ -67,7 +67,8 @@ const defaultForm = {
     validation_workflow: null,
 };
 
-const formatFormData = value => {
+// Detail API payload is wider than `Form` (short_name, nested relations, etc.).
+const formatFormData = (value?: Record<string, any> | null) => {
     let form = value;
     if (!form) form = defaultForm;
     return {
@@ -169,14 +170,14 @@ const FormDetail: FunctionComponent = () => {
                 omit(currentForm, ['form_id', 'possible_fields']),
                 v => v.value,
             );
-            saveForm = createForm(formData);
+            saveForm = createForm(formData as Form);
         } else {
             isUpdate = true;
             formData = mapValues(
                 omit(currentForm, ['possible_fields']),
                 v => v.value,
             );
-            saveForm = updateForm(currentForm.id.value, formData);
+            saveForm = updateForm(currentForm.id.value, formData as Form);
         }
         setIsLoading(true);
         let savedFormData;
@@ -190,9 +191,9 @@ const FormDetail: FunctionComponent = () => {
                     formId: savedFormData.id,
                 });
             }
-        } catch (error) {
-            if (error.status === 400) {
-                Object.entries(error.details).forEach(
+        } catch (error: unknown) {
+            if ((error as DjangoError).status === 400) {
+                Object.entries((error as DjangoError).details).forEach(
                     ([errorKey, errorMessages]) => {
                         setFieldErrors(errorKey, errorMessages);
                     },
@@ -208,7 +209,7 @@ const FormDetail: FunctionComponent = () => {
     }, [form, setFormState]);
 
     const onChange = useCallback(
-        (keyValue: string, value) => {
+        (keyValue: string, value: any) => {
             if (isSaved) setIsSaved(false);
             setFieldValue(keyValue, value);
             if (!isFieldValid(keyValue, value, detailRequiredFields)) {
@@ -250,7 +251,7 @@ const FormDetail: FunctionComponent = () => {
         if (form) {
             singlePerPeriodValue = form.period_type
                 ? form.single_per_period
-                : null;
+                : false;
         }
         return singlePerPeriodValue;
     }, [form]);

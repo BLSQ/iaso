@@ -4,7 +4,9 @@ import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderWithThemeAndIntlProvider } from '../../../../../tests/helpers';
 import * as useGetInstancesModule from '../hooks/useGetInstances';
-import { FormsFilterComponent } from './FormsFilterComponent';
+import { FormsFilterComponent, newForms } from './FormsFilterComponent';
+
+// Form ids are numeric (Form["id"] / Instance["form_id"])
 
 const mockUseGetColors = vi.fn();
 
@@ -58,8 +60,8 @@ vi.mock('bluesquare-components', async () => {
                                 .split(',')
                                 .filter(id => id !== '');
                             const selectedForms = options.filter(
-                                (opt: { id: string }) =>
-                                    selectedIds.includes(opt.id),
+                                (opt: { id: number }) =>
+                                    selectedIds.includes(String(opt.id)),
                             );
                             onChange(selectedForms);
                         }}
@@ -132,21 +134,21 @@ describe('FormsFilterComponent', () => {
             const mockInstances = [
                 {
                     id: 1,
-                    form_id: 'form1',
+                    form_id: 1,
                     form_name: 'Form A',
                     latitude: 48.8566,
                     longitude: 2.3522,
                 },
                 {
                     id: 2,
-                    form_id: 'form1',
+                    form_id: 1,
                     form_name: 'Form A',
                     latitude: 48.86,
                     longitude: 2.35,
                 },
                 {
                     id: 3,
-                    form_id: 'form1',
+                    form_id: 1,
                     form_name: 'Form A',
                     latitude: 48.865,
                     longitude: 2.355,
@@ -174,14 +176,14 @@ describe('FormsFilterComponent', () => {
             const mockInstances = [
                 {
                     id: 1,
-                    form_id: 'formA',
+                    form_id: 1,
                     form_name: 'Form A',
                     latitude: 48.8566,
                     longitude: 2.3522,
                 },
                 {
                     id: 2,
-                    form_id: 'formB',
+                    form_id: 2,
                     form_name: 'Form B',
                     latitude: 48.86,
                     longitude: 2.35,
@@ -206,7 +208,7 @@ describe('FormsFilterComponent', () => {
             const mockInstances = [
                 {
                     id: 1,
-                    form_id: 'form1',
+                    form_id: 1,
                     form_name: 'Form A',
                     latitude: 48.8566,
                     longitude: 2.3522,
@@ -280,7 +282,7 @@ describe('FormsFilterComponent', () => {
             const mockInstances = [
                 {
                     id: 1,
-                    form_id: 'form1',
+                    form_id: 1,
                     form_name: 'Form A',
                     latitude: 48.8566,
                     longitude: 2.3522,
@@ -301,7 +303,7 @@ describe('FormsFilterComponent', () => {
             );
 
             const selectInput = screen.getByTestId('select-input-forms');
-            await user.selectOptions(selectInput, 'form1');
+            await user.selectOptions(selectInput, '1');
 
             await waitFor(() => {
                 expect(setFormsSelected).toHaveBeenCalled();
@@ -316,7 +318,7 @@ describe('FormsFilterComponent', () => {
                     instances: [
                         {
                             id: 1,
-                            form_id: 'form1',
+                            form_id: 1,
                             form_name: 'Form A',
                             latitude: 48.8566,
                             longitude: 2.3522,
@@ -326,15 +328,15 @@ describe('FormsFilterComponent', () => {
                 isLoading: false,
             });
 
-            const selectedForms = [
+            const selectedForms: newForms[] = [
                 {
-                    id: 'form1',
+                    id: 1,
                     name: 'Form A',
                     color: '#FF0000',
                     instances: [
                         {
                             id: 1,
-                            form_id: 'form1',
+                            form_id: 1,
                             form_name: 'Form A',
                             latitude: 48.8566,
                             longitude: 2.3522,
@@ -362,28 +364,28 @@ describe('FormsFilterComponent', () => {
                     instances: [
                         {
                             id: 1,
-                            form_id: 'form1',
+                            form_id: 1,
                             form_name: 'Form A',
-                            latitude: null,
-                            longitude: null,
+                            latitude: undefined,
+                            longitude: undefined,
                         },
                     ],
                 },
                 isLoading: false,
             });
 
-            const selectedForms = [
+            const selectedForms: newForms[] = [
                 {
-                    id: 'form1',
+                    id: 1,
                     name: 'Form A',
                     color: '#FF0000',
                     instances: [
                         {
                             id: 1,
-                            form_id: 'form1',
+                            form_id: 1,
                             form_name: 'Form A',
-                            latitude: null,
-                            longitude: null,
+                            latitude: undefined,
+                            longitude: undefined,
                         },
                     ],
                 },
@@ -409,7 +411,7 @@ describe('FormsFilterComponent', () => {
                     instances: [
                         {
                             id: 1,
-                            form_id: 'form1',
+                            form_id: 1,
                             form_name: 'Form A',
                             latitude: 48.8566,
                             longitude: 2.3522,
@@ -419,15 +421,15 @@ describe('FormsFilterComponent', () => {
                 isLoading: false,
             });
 
-            const selectedForms = [
+            const selectedForms: newForms[] = [
                 {
-                    id: 'form1',
+                    id: 1,
                     name: 'Form A',
                     color: '#FF0000',
                     instances: [
                         {
                             id: 1,
-                            form_id: 'form1',
+                            form_id: 1,
                             form_name: 'Form A',
                             latitude: 48.8566,
                             longitude: 2.3522,
@@ -459,14 +461,14 @@ describe('FormsFilterComponent', () => {
                     instances: [
                         {
                             id: 1,
-                            form_id: 'form1',
+                            form_id: 1,
                             form_name: 'Form A',
                             latitude: 48.8566,
-                            longitude: null,
+                            longitude: undefined,
                         },
                         {
                             id: 2,
-                            form_id: 'form1',
+                            form_id: 1,
                             form_name: 'Form A',
                             latitude: 48.86,
                             longitude: 2.35,
@@ -476,22 +478,22 @@ describe('FormsFilterComponent', () => {
                 isLoading: false,
             });
 
-            const selectedForms = [
+            const selectedForms: newForms[] = [
                 {
-                    id: 'form1',
+                    id: 1,
                     name: 'Form A',
                     color: '#FF0000',
                     instances: [
                         {
                             id: 1,
-                            form_id: 'form1',
+                            form_id: 1,
                             form_name: 'Form A',
                             latitude: 48.8566,
-                            longitude: null,
+                            longitude: undefined,
                         },
                         {
                             id: 2,
-                            form_id: 'form1',
+                            form_id: 1,
                             form_name: 'Form A',
                             latitude: 48.86,
                             longitude: 2.35,

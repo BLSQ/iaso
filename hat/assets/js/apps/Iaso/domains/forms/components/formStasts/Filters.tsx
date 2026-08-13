@@ -35,7 +35,7 @@ export const Filters: FunctionComponent<Props> = ({ baseUrl, params }) => {
     });
 
     const handleChange = useCallback(
-        (key, value) => {
+        (key: string, value: any) => {
             setFiltersUpdated(true);
             setFilters({
                 ...filters,

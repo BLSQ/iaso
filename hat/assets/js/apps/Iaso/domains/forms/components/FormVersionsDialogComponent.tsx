@@ -11,6 +11,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
+import { DjangoError } from 'Iaso/types/general';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { ErrorsPopper } from '../../../components/forms/ErrorsPopper';
 import FileInputComponent from '../../../components/forms/FileInputComponent';
@@ -39,7 +40,7 @@ const emptyVersion = {
     xls_file: null,
 };
 
-const emptyVersionFromId = (id = null) => ({
+const emptyVersionFromId = (id: number | null = null) => ({
     id,
     start_period: null,
     end_period: null,
@@ -56,7 +57,7 @@ type Props = {
     periodType?: string;
     formId?: number;
     titleMessage: IntlMessage;
-    renderTrigger: any;
+    renderTrigger: (props: { openDialog: () => void }) => React.JSX.Element;
 };
 
 const FormVersionsDialogComponent: FunctionComponent<Props> = ({
@@ -117,24 +118,27 @@ const FormVersionsDialogComponent: FunctionComponent<Props> = ({
                 setIsLoading(false);
                 setStep('edit');
                 setDiff(null);
-                // FIXME TS seems to think formVersion.id is always either null or undefined
-                setFormState(emptyVersionFromId(formVersion.id));
+                setFormState(emptyVersionFromId(formVersion.id ?? null));
                 openSnackBar(succesfullSnackBar());
                 queryClient.invalidateQueries(['formVersions', formId]);
-            } catch (error) {
+            } catch (error: unknown) {
                 setIsLoading(false);
-                if (error.status === 400) {
-                    Object.entries(error.details).forEach(entry => {
-                        const entryKey = entry[0];
-                        const entryValue: any = entry[1];
-                        if (entryKey === 'xls_file_validation_errors') {
-                            setXlsFileErrors(
-                                entryValue.map(err => err.message),
-                            );
-                        } else {
-                            setFieldErrors(entryKey, entryValue);
-                        }
-                    });
+                if ((error as DjangoError).status === 400) {
+                    Object.entries((error as DjangoError).details).forEach(
+                        entry => {
+                            const entryKey = entry[0];
+                            const entryValue: any = entry[1];
+                            if (entryKey === 'xls_file_validation_errors') {
+                                setXlsFileErrors(
+                                    entryValue.map(
+                                        (err: DjangoError) => err.message,
+                                    ),
+                                );
+                            } else {
+                                setFieldErrors(entryKey, entryValue);
+                            }
+                        },
+                    );
                 }
             }
         },
@@ -177,15 +181,19 @@ const FormVersionsDialogComponent: FunctionComponent<Props> = ({
                         setIsLoading(false);
                         return;
                     }
-                } catch (error) {
+                } catch (error: unknown) {
                     setIsLoading(false);
-                    if (error.status === 400) {
-                        Object.entries(error.details ?? {}).forEach(entry => {
+                    if ((error as DjangoError).status === 400) {
+                        Object.entries(
+                            (error as DjangoError).details ?? {},
+                        ).forEach(entry => {
                             const entryKey = entry[0];
                             const entryValue: any = entry[1];
                             if (entryKey === 'xls_file_validation_errors') {
                                 setXlsFileErrors(
-                                    entryValue.map(err => err.message),
+                                    entryValue.map(
+                                        (err: DjangoError) => err.message,
+                                    ),
                                 );
                             } else {
                                 setFieldErrors(entryKey, entryValue);
@@ -286,7 +294,6 @@ const FormVersionsDialogComponent: FunctionComponent<Props> = ({
                                             setXlsFileErrors([]);
                                             setFieldValue(key, value);
                                         }}
-                                        value={formState.xls_file.value}
                                         label={MESSAGES.xls_form_file}
                                         errors={formState.xls_file.errors}
                                         required

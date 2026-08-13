@@ -21,7 +21,7 @@ type instance = {
     longitude?: Instance['longitude'];
 };
 
-type newForms = {
+export type newForms = {
     id: Form['id'];
     name: Form['name'];
     color: string;

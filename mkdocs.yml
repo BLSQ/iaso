@@ -97,6 +97,7 @@ extra_css:
 extra_javascript:
   - ./extrajs/html2pdf.bundle.min.js
   - ./extrajs/pdfDownload.js
+  - ./extrajs/external_links.js
   - https://plausible.io/js/script.js
 use_directory_urls: false # IMPORTANT: without this the paths to pictures will break on build
 nav: # nav configures the side bar menu - this is the ONLY place the nav tree is defined.
@@ -148,6 +149,7 @@ nav: # nav configures the side bar menu - this is the ONLY place the nav tree is
       - ./pages/dev/how_to/build_odk_preview.md
 
   - More about IASO:
+    - ./pages/more_about_iaso.md
     - IASO website: https://www.openiaso.com/
     - Digital Public Goods Registry: https://www.digitalpublicgoods.net/r/iaso
     - Release notes: https://github.com/BLSQ/iaso/releases

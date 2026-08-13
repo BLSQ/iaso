@@ -173,9 +173,9 @@ class MobileOrgUnitAPITestCase(APITestCase):
             # 5. SELECT "iaso_project" LEFT JOIN "iaso_account" + "iaso_sourceversion"
             #    (Project.get_for_user_and_app_id — select_related avoids extra account/version queries)
             # 6. SELECT EXISTS "iaso_featureflag" (LIMIT_OU_DOWNLOAD_TO_ROOTS)
-            # 7. SELECT "iaso_orgunit" … (main list + parent + org unit type)
-            # 8. Prefetch org unit types → projects (M2M)
-            # 9. Prefetch org units → groups
+            # 7. SELECT "iaso_orgunit" … (main list + parent/org_unit_type joins for annotations)
+            # 8. Prefetch org units → groups (M2M)
+            # 9. Retrieve valid project unit type IDs (M2M via valid_org_unit_type_ids cached_property)
             # 10. SELECT COUNT(*) FROM "django_cache_table"
             # 11. SAVEPOINT (atomic cache write)
             # 12. SELECT "django_cache_table" (cache key)

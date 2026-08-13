@@ -34,8 +34,8 @@
         
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
       
     
     
@@ -67,12 +67,16 @@
   
     
     
+      
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo">
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
   
     
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -94,7 +98,7 @@
 
   
 
-<header class="md-header md-header--shadow" data-md-component="header">
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="En-tête">
     <a href="../../../index.html" title="IASO" class="md-header__button md-logo" aria-label="IASO" data-md-component="logo">
       
@@ -122,6 +126,30 @@
       </div>
     </div>
     
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom" aria-label="Switch to dark mode" type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5c-.84 0-1.65.15-2.39.42L12 2M3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29L3.34 7m.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14L3.36 17M20.65 7l-1.77 3.79a7.023 7.023 0 0 0-2.38-4.15l4.15.36m-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29L20.64 17M12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44L12 22Z"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom" aria-label="Switch to light mode" type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3 3.19.09m3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95 2.06.05m-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31Z"></path></svg>
+      </label>
+    
+  
+</form>
       
     
     
@@ -210,13 +238,102 @@
     
   </nav>
   
+    
+      
+<nav class="md-tabs" aria-label="Onglets" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../index.html" class="md-tabs__link">
+        
+  
+    
+  
+  Accueil
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../users/reference/iaso_concepts.html" class="md-tabs__link">
+          
+  
+  Guide d'utilisateur
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../reference/data_model_glossary.html" class="md-tabs__link">
+          
+  
+  Développeurs
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="https://www.openiaso.com/" class="md-tabs__link">
+          
+  
+  En savoir plus sur IASO
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
 </header>
     
     <div class="md-container" data-md-component="container">
       
       
-        
-          
         
       
       <main class="md-main" data-md-component="main">
@@ -231,8 +348,12 @@
             
 
 
+  
 
-<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="../../../index.html" title="IASO" class="md-nav__button md-logo" aria-label="IASO" data-md-component="logo">
       
@@ -922,418 +1043,6 @@
 <!-- Table of contents -->
 
 
-<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
-    <div class="md-sidebar__scrollwrap">
-        <div class="md-sidebar__inner">
-            
-
-<nav class="md-nav md-nav--secondary" aria-label="Table des matières">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table des matières
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
-      
-        <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
-    Overview
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#architecture-overview" class="md-nav__link">
-    Architecture Overview
-  </a>
-  
-    <nav class="md-nav" aria-label="Architecture Overview">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#core-components" class="md-nav__link">
-    Core Components
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#data-flow" class="md-nav__link">
-    Data Flow
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#pipeline-integration" class="md-nav__link">
-    Pipeline Integration
-  </a>
-  
-    <nav class="md-nav" aria-label="Pipeline Integration">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#pipeline-parameters" class="md-nav__link">
-    Pipeline Parameters
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#parameter-structure" class="md-nav__link">
-    Parameter Structure
-  </a>
-  
-    <nav class="md-nav" aria-label="Parameter Structure">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#planning_id" class="md-nav__link">
-    planning_id
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#task_id" class="md-nav__link">
-    task_id
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pipeline_id" class="md-nav__link">
-    pipeline_id
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#org_unit_type_sequence_identifiers" class="md-nav__link">
-    org_unit_type_sequence_identifiers
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#org_unit_type_quantities" class="md-nav__link">
-    org_unit_type_quantities
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#org_unit_type_exceptions" class="md-nav__link">
-    org_unit_type_exceptions
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#org_unit_type_criteria" class="md-nav__link">
-    org_unit_type_criteria
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#connection_host" class="md-nav__link">
-    connection_host
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#connection_token" class="md-nav__link">
-    connection_token
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pipeline-execution-flow" class="md-nav__link">
-    Pipeline Execution Flow
-  </a>
-  
-    <nav class="md-nav" aria-label="Pipeline Execution Flow">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#iaso-side-backend" class="md-nav__link">
-    Iaso Side (Backend)
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#openhexa-side-pipeline" class="md-nav__link">
-    OpenHEXA Side (Pipeline)
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#status-management" class="md-nav__link">
-    Status Management
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#api-authentication" class="md-nav__link">
-    API Authentication
-  </a>
-  
-    <nav class="md-nav" aria-label="API Authentication">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#generic-api-caller" class="md-nav__link">
-    Generic API Caller
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#token-acquisition" class="md-nav__link">
-    Token Acquisition
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#task-status-updates" class="md-nav__link">
-    Task Status Updates
-  </a>
-  
-    <nav class="md-nav" aria-label="Task Status Updates">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-pipeline-progress-updates-recommended" class="md-nav__link">
-    1. Pipeline Progress Updates (Recommended)
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-direct-api-updates-low-level" class="md-nav__link">
-    2. Direct API Updates (Low-Level)
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-automatic-status-polling-system" class="md-nav__link">
-    3. Automatic Status Polling System
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#background-task-system" class="md-nav__link">
-    Background Task System
-  </a>
-  
-    <nav class="md-nav" aria-label="Background Task System">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#task-creation-and-management" class="md-nav__link">
-    Task Creation and Management
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#key-benefits" class="md-nav__link">
-    Key Benefits
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#polling-behavior" class="md-nav__link">
-    Polling Behavior
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#openhexa-configuration" class="md-nav__link">
-    OpenHexa Configuration
-  </a>
-  
-    <nav class="md-nav" aria-label="OpenHexa Configuration">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#configuration-via-openhexainstance-model" class="md-nav__link">
-    Configuration via OpenHEXAInstance Model
-  </a>
-  
-    <nav class="md-nav" aria-label="Configuration via OpenHEXAInstance Model">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#key-configuration-fields" class="md-nav__link">
-    Key Configuration Fields
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lqas-pipeline-configuration" class="md-nav__link">
-    LQAS Pipeline Configuration
-  </a>
-  
-    <nav class="md-nav" aria-label="LQAS Pipeline Configuration">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#planning-model-configuration" class="md-nav__link">
-    Planning Model Configuration
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#api-endpoints" class="md-nav__link">
-    API Endpoints
-  </a>
-  
-    <nav class="md-nav" aria-label="API Endpoints">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#pipeline-management" class="md-nav__link">
-    Pipeline Management
-  </a>
-  
-    <nav class="md-nav" aria-label="Pipeline Management">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#launch-pipeline" class="md-nav__link">
-    Launch Pipeline
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#update-task-status-pipeline-iaso" class="md-nav__link">
-    Update Task Status (Pipeline → Iaso)
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#automatic-status-updates-iaso-openhexa" class="md-nav__link">
-    Automatic Status Updates (Iaso → OpenHEXA)
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#group-management" class="md-nav__link">
-    Group Management
-  </a>
-  
-    <nav class="md-nav" aria-label="Group Management">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#create-org-unit-group-pipeline-iaso" class="md-nav__link">
-    Create Org Unit Group (Pipeline → Iaso)
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#sampling-results-storage" class="md-nav__link">
-    Sampling Results Storage
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-        </div>
-    </div>
-</div>
-
-
 
           
             <div class="md-content" data-md-component="content">
@@ -1870,6 +1579,12 @@ Authorization: Bearer {connection_token}
           
         </div>
         
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden="">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"></path></svg>
+            Retour en haut de la page
+          </button>
+        
       </main>
       
         <footer class="md-footer">
@@ -1895,7 +1610,7 @@ Authorization: Bearer {connection_token}
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../../../..", "features": ["content.action.edit"], "search": "../../../../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copi\u00e9 dans le presse-papier", "clipboard.copy": "Copier dans le presse-papier", "search.result.more.one": "1 de plus sur cette page", "search.result.more.other": "# de plus sur cette page", "search.result.none": "Aucun document trouv\u00e9", "search.result.one": "1 document trouv\u00e9", "search.result.other": "# documents trouv\u00e9s", "search.result.placeholder": "Taper pour d\u00e9marrer la recherche", "search.result.term.missing": "Non trouv\u00e9", "select.version": "S\u00e9lectionner la version"}}</script>
+    <script id="__config" type="application/json">{"base": "../../../..", "features": ["content.action.edit", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "toc.integrate"], "search": "../../../../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copi\u00e9 dans le presse-papier", "clipboard.copy": "Copier dans le presse-papier", "search.result.more.one": "1 de plus sur cette page", "search.result.more.other": "# de plus sur cette page", "search.result.none": "Aucun document trouv\u00e9", "search.result.one": "1 document trouv\u00e9", "search.result.other": "# documents trouv\u00e9s", "search.result.placeholder": "Taper pour d\u00e9marrer la recherche", "search.result.term.missing": "Non trouv\u00e9", "select.version": "S\u00e9lectionner la version"}}</script>
     
     
       <script src="../../../../assets/javascripts/bundle.78eede0e.min.js"></script>

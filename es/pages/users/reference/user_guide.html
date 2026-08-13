@@ -38,8 +38,8 @@
         
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
       
     
     
@@ -73,12 +73,16 @@
   
     
     
+      
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo">
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
   
     
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -100,7 +104,7 @@
 
   
 
-<header class="md-header md-header--shadow" data-md-component="header">
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Cabecera">
     <a href="../../../index.html" title="IASO" class="md-header__button md-logo" aria-label="IASO" data-md-component="logo">
       
@@ -128,6 +132,30 @@
       </div>
     </div>
     
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom" aria-label="Switch to dark mode" type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5c-.84 0-1.65.15-2.39.42L12 2M3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29L3.34 7m.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14L3.36 17M20.65 7l-1.77 3.79a7.023 7.023 0 0 0-2.38-4.15l4.15.36m-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29L20.64 17M12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44L12 22Z"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom" aria-label="Switch to light mode" type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3 3.19.09m3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95 2.06.05m-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31Z"></path></svg>
+      </label>
+    
+  
+</form>
       
     
     
@@ -216,13 +244,104 @@
     
   </nav>
   
+    
+      
+<nav class="md-tabs" aria-label="Pestañas" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../index.html" class="md-tabs__link">
+        
+  
+    
+  
+  Inicio
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="iaso_concepts.html" class="md-tabs__link">
+          
+  
+  Guía de usuario
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../dev/reference/data_model_glossary.html" class="md-tabs__link">
+          
+  
+  Desarrolladores
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="https://www.openiaso.com/" class="md-tabs__link">
+          
+  
+  Más sobre IASO
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
 </header>
     
     <div class="md-container" data-md-component="container">
       
       
-        
-          
         
       
       <main class="md-main" data-md-component="main">
@@ -237,8 +356,12 @@
             
 
 
+  
 
-<nav class="md-nav md-nav--primary" aria-label="Navegación" data-md-level="0">
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navegación" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="../../../index.html" title="IASO" class="md-nav__button md-logo" aria-label="IASO" data-md-component="logo">
       
@@ -1398,460 +1521,6 @@
 <!-- Table of contents -->
 
 
-<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
-    <div class="md-sidebar__scrollwrap">
-        <div class="md-sidebar__inner">
-            
-
-<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Tabla de contenidos
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
-      
-        <li class="md-nav__item">
-  <a href="#inicio-de-sesion" class="md-nav__link">
-    Inicio de sesión
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#navegando-en-iaso" class="md-nav__link">
-    Navegando en IASO
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#gestionar-formularios-de-recoleccion-de-datos" class="md-nav__link">
-    Gestionar formularios de recolección de datos
-  </a>
-  
-    <nav class="md-nav" aria-label="Gestionar formularios de recolección de datos">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#lista-de-formularios" class="md-nav__link">
-    Lista de formularios
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#crearsubir-un-formulario-de-recoleccion-de-datos" class="md-nav__link">
-    Crear/Subir un formulario de recolección de datos
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#envios-de-formularios" class="md-nav__link">
-    Envíos de formularios
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#gestionar-envios" class="md-nav__link">
-    Gestionar envíos
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#estadisticas-de-formularios" class="md-nav__link">
-    Estadísticas de formularios
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mapeos-dhis2" class="md-nav__link">
-    Mapeos DHIS2
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#completitud" class="md-nav__link">
-    Completitud
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#estadisticas-de-completitud" class="md-nav__link">
-    Estadísticas de completitud
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#georegistry-gestion-de-unidades-organizacionales" class="md-nav__link">
-    Georegistry - Gestión de Unidades Organizacionales
-  </a>
-  
-    <nav class="md-nav" aria-label="Georegistry - Gestión de Unidades Organizacionales">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#lista-de-unidades-organizacionales" class="md-nav__link">
-    Lista de Unidades Organizacionales
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#grupos-de-unidades-organizacionales" class="md-nav__link">
-    Grupos de Unidades Organizacionales
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#gestion-de-tipos-de-unidades-organizacionales" class="md-nav__link">
-    Gestión de tipos de Unidades Organizacionales
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#gestion-de-fuentes-de-datos" class="md-nav__link">
-    Gestión de Fuente(s) de Datos
-  </a>
-  
-    <nav class="md-nav" aria-label="Gestión de Fuente(s) de Datos">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#lista-de-fuentes-de-datos" class="md-nav__link">
-    Lista de Fuente(s) de Datos
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#coincidencia" class="md-nav__link">
-    Coincidencia
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#registro" class="md-nav__link">
-    Registro
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#revisar-propuestas-de-cambio" class="md-nav__link">
-    Revisar propuestas de cambio
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#planificacion" class="md-nav__link">
-    Planificación
-  </a>
-  
-    <nav class="md-nav" aria-label="Planificación">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#lista-de-planificacion" class="md-nav__link">
-    Lista de Planificación
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#entidades" class="md-nav__link">
-    Entidades
-  </a>
-  
-    <nav class="md-nav" aria-label="Entidades">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#como-crear-una-entidad" class="md-nav__link">
-    Cómo crear una entidad
-  </a>
-  
-    <nav class="md-nav" aria-label="Cómo crear una entidad">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#crear-el-tipo-de-entidad" class="md-nav__link">
-    Crear el tipo de entidad
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#crear-una-entidad" class="md-nav__link">
-    Crear una entidad
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#como-configurar-como-mostramos-una-entidad" class="md-nav__link">
-    ¿Cómo configurar cómo mostramos una entidad?
-  </a>
-  
-    <nav class="md-nav" aria-label="¿Cómo configurar cómo mostramos una entidad?">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#en-la-interfaz-web" class="md-nav__link">
-    En la interfaz web
-  </a>
-  
-    <nav class="md-nav" aria-label="En la interfaz web">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#en-la-lista" class="md-nav__link">
-    En la lista
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#en-la-pantalla-de-detalles" class="md-nav__link">
-    En la pantalla de detalles
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#en-la-aplicacion-movil" class="md-nav__link">
-    En la aplicación móvil
-  </a>
-  
-    <nav class="md-nav" aria-label="En la aplicación móvil">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#en-la-lista_1" class="md-nav__link">
-    En la lista
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#en-la-pantalla-de-detalles_1" class="md-nav__link">
-    En la pantalla de detalles
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#buscar-una-entidad" class="md-nav__link">
-    Buscar una entidad
-  </a>
-  
-    <nav class="md-nav" aria-label="Buscar una entidad">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#en-la-web" class="md-nav__link">
-    En la web
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#en-la-aplicacion" class="md-nav__link">
-    En la aplicación
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#que-son-los-flujos-de-trabajo" class="md-nav__link">
-    ¿Qué son los flujos de trabajo?
-  </a>
-  
-    <nav class="md-nav" aria-label="¿Qué son los flujos de trabajo?">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#crear-un-flujo-de-trabajo" class="md-nav__link">
-    Crear un flujo de trabajo
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#seguimientos-y-cambios" class="md-nav__link">
-    Seguimientos y cambios
-  </a>
-  
-    <nav class="md-nav" aria-label="Seguimientos y cambios">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#seguimientos" class="md-nav__link">
-    Seguimientos
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cambios" class="md-nav__link">
-    Cambios
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#usar-valores-del-perfil-en-formularios-subsecuentes" class="md-nav__link">
-    Usar valores del perfil en formularios subsecuentes
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#publicar-flujos-de-trabajo" class="md-nav__link">
-    Publicar flujos de trabajo
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#admin" class="md-nav__link">
-    Admin
-  </a>
-  
-    <nav class="md-nav" aria-label="Admin">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#tareas" class="md-nav__link">
-    Tareas
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#monitoreo" class="md-nav__link">
-    Monitoreo
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#proyectos" class="md-nav__link">
-    Proyectos
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#usuarios" class="md-nav__link">
-    Usuarios
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#roles-de-usuario" class="md-nav__link">
-    Roles de usuario
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#equipos" class="md-nav__link">
-    Equipos
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-        </div>
-    </div>
-</div>
-
-
 
           
             <div class="md-content" data-md-component="content">
@@ -2601,6 +2270,12 @@ por un usuario usando los diferentes filtros.</p>
           
         </div>
         
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden="">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"></path></svg>
+            Volver al principio
+          </button>
+        
       </main>
       
         <footer class="md-footer">
@@ -2626,7 +2301,7 @@ por un usuario usando los diferentes filtros.</p>
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../../../..", "features": ["content.action.edit"], "search": "../../../../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}}</script>
+    <script id="__config" type="application/json">{"base": "../../../..", "features": ["content.action.edit", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "toc.integrate"], "search": "../../../../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}}</script>
     
     
       <script src="../../../../assets/javascripts/bundle.78eede0e.min.js"></script>

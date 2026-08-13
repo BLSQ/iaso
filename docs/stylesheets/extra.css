@@ -1,11 +1,11 @@
 :root {
-    --md-primary-fg-color:#192041;
-    --md-accent-fg-color: #FFC200;
-  }
+    --md-primary-fg-color: #192041;
+    --md-accent-fg-color: #ffc200;
+}
 
 .md-footer {
     display: none !important;
-  }
+}
 #pdf-download-container {
     padding-top: 20px;
     text-align: left;
@@ -14,8 +14,8 @@
     align-items: center;
 }
 #pdf-download {
-    background-color: #FFC200;;
-    color:#192041;;
+    background-color: #ffc200;
+    color: #192041;
     border-radius: 4px;
     vertical-align: middle;
     padding-left: 8px;
@@ -23,16 +23,55 @@
     padding-top: 8px;
     padding-bottom: 8px;
     font-size: 0.7rem;
-    cursor:pointer;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
 }
-#pdf-download svg{
-    vertical-align: middle; 
+#pdf-download svg {
+    vertical-align: middle;
 }
 
-#button-text{
+#button-text {
     margin-right: 8px;
-    display: inline-block; 
+    display: inline-block;
+}
+
+/* Doc screenshot helpers — use with attr_list, e.g. ![](shot.png){ .doc-shot }
+   mkdocs-glightbox wraps images in <a class="glightbox"> (inline by default),
+   so size/layout must target that wrapper too. */
+a.glightbox {
+    display: block;
+    float: none !important;
+    clear: both;
+    width: fit-content;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+}
+img.doc-shot,
+img.doc-shot-sm,
+img.doc-shot-lg,
+img.doc-shot-phone {
+    display: block;
+    float: none !important;
+    width: auto;
+    max-width: 100%;
+    height: auto; /* overridden per size class below */
+    object-fit: contain;
+    margin: 0; /* spacing lives on the glightbox <a> */
+}
+img.doc-shot {
+    height: 300px;
+}
+img.doc-shot-sm {
+    height: 160px;
+}
+img.doc-shot-lg {
+    height: 360px;
+}
+img.doc-shot-phone {
+    height: 420px;
 }

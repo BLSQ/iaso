@@ -105,6 +105,7 @@ nav: # nav configures the side bar menu - this is the ONLY place the nav tree is
   # (mkdocs-static-i18n swaps in the .fr.md/.es.md version of each file for you).
   - Home: index.md
   - Users:
+     - ./pages/users/how_to/get_started_with_iaso.md
      - ./pages/users/reference/iaso_concepts.md
      - ./pages/users/reference/iaso_modules.md
      - ./pages/users/reference/user_guide.md

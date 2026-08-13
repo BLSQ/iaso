@@ -18,10 +18,7 @@ You'll then receive an email with instructions to create your account.
 
 ## 2. Connect to your account
 
-Go to your server URL:
-
-- [app.openiaso.com](https://app.openiaso.com/) — if you have a SaaS account
-- [iaso.bluesquare.org](https://iaso.bluesquare.org/) — if you have a project account
+Go to [app.openiaso.com](https://app.openiaso.com/).
 
 Enter your credentials and click "Login".
 

@@ -33,6 +33,14 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/decisions/0000-use-one-api-endpoint-per-operation.html"/>
     </url>
     <url>
+        <loc>Nonepages/more_about_iaso.html</loc>
+        <lastmod>2026-08-13</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/more_about_iaso.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/more_about_iaso.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/more_about_iaso.html"/>
+    </url>
+    <url>
         <loc>Nonepages/dev/how_to/add_new_permission.html</loc>
         <lastmod>2026-08-13</lastmod>
         <changefreq>daily</changefreq>
@@ -617,6 +625,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/decisions/0000-use-one-api-endpoint-per-operation.html"/>
     </url>
     <url>
+        <loc>Nonefr/pages/more_about_iaso.html</loc>
+        <lastmod>2026-08-13</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/more_about_iaso.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/more_about_iaso.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/more_about_iaso.html"/>
+    </url>
+    <url>
         <loc>Nonefr/pages/dev/how_to/add_new_permission.html</loc>
         <lastmod>2026-08-13</lastmod>
         <changefreq>daily</changefreq>
@@ -1199,6 +1215,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/decisions/0000-use-one-api-endpoint-per-operation.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonedecisions/0000-use-one-api-endpoint-per-operation.html"/>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/decisions/0000-use-one-api-endpoint-per-operation.html"/>
+    </url>
+    <url>
+        <loc>Nonees/pages/more_about_iaso.html</loc>
+        <lastmod>2026-08-13</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/more_about_iaso.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/more_about_iaso.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/more_about_iaso.html"/>
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/add_new_permission.html</loc>

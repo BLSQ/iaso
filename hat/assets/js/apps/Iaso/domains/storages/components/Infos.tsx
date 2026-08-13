@@ -13,7 +13,6 @@ import { StatusModal } from './StatusModal';
 
 const useStyles = makeStyles(theme => ({
     leftCell: {
-        // @ts-ignore
         borderRight: `1px solid ${theme.palette.lightGray.border}`,
         fontWeight: 'bold',
     },

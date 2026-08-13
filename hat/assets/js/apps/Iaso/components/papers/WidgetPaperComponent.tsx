@@ -20,7 +20,6 @@ import { makeStyles } from '@mui/styles';
 
 const useStyles = makeStyles(theme => ({
     root: {
-        // @ts-ignore
         backgroundColor: theme.palette.lightGray.background,
         marginBottom: theme.spacing(4),
         '&:last-child': {

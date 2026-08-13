@@ -22,7 +22,6 @@ import { StatusCell } from './StatusCell';
 
 const styles: SxStyles = {
     leftCell: {
-        // @ts-ignore
         borderRight: (theme: Theme) =>
             `1px solid ${theme.palette.lightGray.border}`,
         fontWeight: 'bold',

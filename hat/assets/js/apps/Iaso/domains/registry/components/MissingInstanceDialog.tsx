@@ -45,9 +45,7 @@ const useStyles = makeStyles(theme => ({
         '& .MuiTableContainer-root': {
             maxHeight: '60vh',
             overflow: 'auto',
-            // @ts-ignore
             borderTop: `1px solid ${theme.palette.lightGray.border}`,
-            // @ts-ignore
             borderBottom: `1px solid ${theme.palette.lightGray.border}`,
         },
         '& .MuiTableHead-root': {

@@ -56,7 +56,6 @@ const useTableStyle = makeStyles(theme => {
             height: 'auto',
             maxHeight: '60vh',
             '& thead tr th': {
-                // @ts-ignore
                 boxShadow: `2px 2px ${theme.palette.lightGray.main}`,
             },
             '& tbody tr:hover': {

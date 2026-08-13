@@ -34,7 +34,6 @@ const useStyles = makeStyles(theme => ({
         marginTop: theme.spacing(4),
     },
     icon: {
-        // @ts-ignore
         color: theme.palette.lightGray.border,
         fontWeight: 100,
         fontSize: 150,

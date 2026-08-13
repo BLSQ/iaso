@@ -36,9 +36,7 @@ const useStyles = makeStyles(theme => ({
         backgroundColor: theme.palette.background.paper,
         borderTop: 'none !important',
         borderLeft: 'none !important',
-        // @ts-ignore
         borderRight: `1px solid ${theme.palette.lightGray.border}  !important`,
-        // @ts-ignore
         borderBottom: `1px solid ${theme.palette.lightGray.border}  !important`,
     },
     labelTableCellFixWith: {

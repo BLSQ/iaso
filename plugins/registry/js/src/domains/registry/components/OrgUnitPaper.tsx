@@ -1,3 +1,10 @@
+import React, {
+    Dispatch,
+    FunctionComponent,
+    SetStateAction,
+    useCallback,
+    useState,
+} from 'react';
 import { Box, Paper, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -6,26 +13,18 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import classnames from 'classnames';
-import React, {
-    Dispatch,
-    FunctionComponent,
-    SetStateAction,
-    useCallback,
-    useState,
-} from 'react';
-import { baseUrls } from '../../../constants/urls';
-import { MESSAGES } from '../messages';
-
-import { OrgUnitChildrenMap } from './OrgUnitChildrenMap';
-
 import { OrgUnit } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgunitTypes';
+import { baseUrls } from '../../../constants/urls';
 import {
     OrgUnitListChildren,
     OrgUnitListTab,
     RegistryParams,
 } from '../../../types';
+import { MESSAGES } from '../messages';
+
 import { OrgUnitChildrenList } from './OrgUnitChildrenList';
+import { OrgUnitChildrenMap } from './OrgUnitChildrenMap';
 
 type Props = {
     orgUnit: OrgUnit;
@@ -45,7 +44,6 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     paper: {
         width: '100%',
-        // @ts-ignore
         backgroundColor: theme.palette.lightGray.background,
         marginBottom: theme.spacing(4),
         '&:last-child': {

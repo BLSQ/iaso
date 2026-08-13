@@ -27,7 +27,7 @@ const styles = {
         backgroundColor: 'white',
         height: '8px',
         boxShadow: theme =>
-            `0px 0px 0px 1px ${theme.palette.ligthGray.border} inset`,
+            `0px 0px 0px 1px ${theme.palette.lightGray.border} inset`,
         '& .MuiLinearProgress-bar': {
             backgroundColor: color || 'primary.main',
         },

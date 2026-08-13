@@ -46,9 +46,9 @@ const useStyles = makeStyles(theme => ({
     },
     buttonContainer: {
         // @ts-ignore
-        borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
+        borderLeft: `1px solid ${theme.palette.lightGray.border}`,
         // @ts-ignore
-        borderBottom: `1px solid ${theme.palette.ligthGray.border}`,
+        borderBottom: `1px solid ${theme.palette.lightGray.border}`,
     },
     buttonGrid: {
         paddingTop: theme.spacing(2),
@@ -60,7 +60,7 @@ const useStyles = makeStyles(theme => ({
     },
     leftCell: {
         // @ts-ignore
-        borderRight: `1px solid ${theme.palette.ligthGray.border}`,
+        borderRight: `1px solid ${theme.palette.lightGray.border}`,
         fontWeight: 'bold',
     },
 }));

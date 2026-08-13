@@ -103,7 +103,7 @@ const useStyles = makeStyles(theme => ({
         borderLeft: 'none !important',
         borderRight: 'none !important',
         // @ts-ignore
-        borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
+        borderBottom: `1px solid ${theme.palette.lightGray.border}  !important`,
     },
     tableCell: {
         backgroundColor: 'transparent',
@@ -111,7 +111,7 @@ const useStyles = makeStyles(theme => ({
         borderLeft: 'none !important',
         borderRight: 'none !important',
         // @ts-ignore
-        borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
+        borderBottom: `1px solid ${theme.palette.lightGray.border}  !important`,
     },
     tableCellCalculated: {
         // @ts-ignore

@@ -24,7 +24,7 @@ const styles: SxStyles = {
     tableContainer: {
         borderTop: theme =>
             // @ts-ignore
-            `1px solid ${theme.palette.ligthGray.border}`,
+            `1px solid ${theme.palette.lightGray.border}`,
         ...getStickyTableHeadStyles(tableScrollMaxHeight),
     },
 };

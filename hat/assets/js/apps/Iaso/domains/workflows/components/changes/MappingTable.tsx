@@ -46,11 +46,11 @@ const useStyles = makeStyles(theme => ({
         maxHeight: '60vh',
         overflow: 'auto',
         // @ts-ignore
-        borderTop: `1px solid ${theme.palette.ligthGray.border}`,
+        borderTop: `1px solid ${theme.palette.lightGray.border}`,
         // @ts-ignore
-        borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
+        borderLeft: `1px solid ${theme.palette.lightGray.border}`,
         // @ts-ignore
-        borderRight: `1px solid ${theme.palette.ligthGray.border}`,
+        borderRight: `1px solid ${theme.palette.lightGray.border}`,
         '& table tbody tr td': {
             '& label': {
                 opacity: 0,

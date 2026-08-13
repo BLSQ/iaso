@@ -164,13 +164,7 @@ class MobileOrgUnitSerializer(serializers.ModelSerializer):
                 if parent_org_unit_type_id not in self.valid_org_unit_type_ids:
                     return None
             else:
-                # Fallback logic if the serializer is used in isolation (e.g. tests)
-                parent = org_unit.parent
-                parent_org_unit_type = parent.org_unit_type if parent is not None else None
-                if parent_org_unit_type is None or not any(
-                    p.app_id == self.app_id for p in parent_org_unit_type.projects.all()
-                ):
-                    return None
+                raise NotImplementedError("The serializer requires a valid project in its context.")
 
         return parent_id
 

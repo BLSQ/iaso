@@ -1,6 +1,6 @@
 :root {
     --md-primary-fg-color: #192041;
-    --md-accent-fg-color: #ffc200;
+    --md-accent-fg-color: #fcb900;
 }
 
 .md-footer {
@@ -14,7 +14,7 @@
     align-items: center;
 }
 #pdf-download {
-    background-color: #ffc200;
+    background-color: #fcb900;
     color: #192041;
     border-radius: 4px;
     vertical-align: middle;

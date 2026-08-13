@@ -5,11 +5,30 @@ theme:
   logo: ./assets/iaso.png
   favicon: ./assets/iaso-favicon.png
   custom_dir: ./docs/overrides # here we need to specify /docs in the path. That's just how it is
+  font:
+    text: Inter
+    code: JetBrains Mono
   palette:
-    primary: 'custom'
-    secondary: 'custom'
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
   features:
     - content.action.edit
+    - navigation.tabs # top-level nav (Home/Users/Developers/More about IASO) as tabs instead of one long sidebar
+    - navigation.tabs.sticky # tabs stay visible while scrolling
+    - navigation.top # "back to top" button
+    - toc.integrate # page headings nest under the active page in the LEFT sidebar, no separate right-hand rail
 hooks:
   - docs_redirect_hook.py # writes redirects for pages moved by the 2026 pages/ flatten
 plugins:

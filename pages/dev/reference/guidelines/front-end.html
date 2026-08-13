@@ -1,0 +1,1689 @@
+<!DOCTYPE html><html lang="en" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      
+      <link rel="icon" href="../../../../assets/iaso-favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.2.6">
+    
+    
+      
+        <title>Front-end guidelines - IASO</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.0e669242.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.85d0ee34.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  <link href="../../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#front-end-guidelines" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../../index.html" title="IASO" class="md-header__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IASO
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Front-end guidelines
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24Z"></path></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="front-end.html" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../../fr/pages/dev/reference/guidelines/front-end.html" hreflang="fr" class="md-select__link">
+              Français
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../../es/pages/dev/reference/guidelines/front-end.html" hreflang="es" class="md-select__link">
+              Español
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"></path></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required="">
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"></path></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"></path></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"></path></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix="">
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/BLSQ/iaso" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+<!-- Navigation -->
+
+
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../../index.html" title="IASO" class="md-nav__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    IASO
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/BLSQ/iaso" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix="">
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../index.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2">
+        
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Users
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Users
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_concepts.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Concepts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_modules.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Modules
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/user_guide.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Web Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_mobile.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Mobile Application
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/how_to/use_form_ai.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Using Form AI
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3">
+        
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Developers
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Developers
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1">
+        
+          <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    References
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            References
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data_model_glossary.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data model glossary
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../SQL_Dashboard_feature.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SQL Dashboard feature
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docker.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Docker
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../background_tasks.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Background tasks &amp; worker
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../env_variables.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Environnement variables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_6">
+        
+          <label class="md-nav__link" for="__nav_3_1_6" id="__nav_3_1_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Models
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1_6">
+            <span class="md-nav__icon md-icon"></span>
+            Models
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API/entity.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API reference: Entity
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2">
+        
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    How to
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            How to
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/contribute.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contribute
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/setup_dev_env.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Setup a dev environment
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/use_iaso_apis.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Use iaso apis
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/build_odk_preview.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Building the ODK Web Forms preview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4">
+        
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    More about IASO
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            More about IASO
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.openiaso.com/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    IASO website
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.digitalpublicgoods.net/r/iaso" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Digital Public Goods Registry
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/BLSQ/iaso/releases" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Release notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.bluesquarehub.com/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Bluesquare website
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+            <!-- pdf download  -->
+            <div id="pdf-download-container">
+                <button id="pdf-download" type="button">
+                    <span id="button-text">Download current page</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#192041">
+                        <path d="M360-460h40v-80h40q17 0 28.5-11.5T480-580v-40q0-17-11.5-28.5T440-660h-80v200Zm40-120v-40h40v40h-40Zm120 120h80q17 0 28.5-11.5T640-500v-120q0-17-11.5-28.5T600-660h-80v200Zm40-40v-120h40v120h-40Zm120 40h40v-80h40v-40h-40v-40h40v-40h-80v200ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table of contents -->
+
+
+<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#prerequisite" class="md-nav__link">
+    Prerequisite
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#legacy" class="md-nav__link">
+    Legacy
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bluesquare-components" class="md-nav__link">
+    Bluesquare-components
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    Architecture
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#styling-components" class="md-nav__link">
+    Styling components
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#translating" class="md-nav__link">
+    Translating
+  </a>
+  
+    <nav class="md-nav" aria-label="Translating">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    Basic usage
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reuse-translation-for-a-plugin" class="md-nav__link">
+    Reuse translation for a plugin
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-rich-text" class="md-nav__link">
+    Use rich text
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#maps" class="md-nav__link">
+    Maps
+  </a>
+  
+    <nav class="md-nav" aria-label="Maps">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#from-react-leaflet" class="md-nav__link">
+    From react-leaflet
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-components" class="md-nav__link">
+    Custom components
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tables" class="md-nav__link">
+    Tables
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filters" class="md-nav__link">
+    Filters
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#convenience-hooks" class="md-nav__link">
+    Convenience hooks:
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#code-style" class="md-nav__link">
+    Code style
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#react-query-best-practices" class="md-nav__link">
+    React Query Best Practices
+  </a>
+  
+    <nav class="md-nav" aria-label="React Query Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#query-key-structure" class="md-nav__link">
+    Query Key Structure
+  </a>
+  
+    <nav class="md-nav" aria-label="Query Key Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#recommended-pattern" class="md-nav__link">
+    Recommended Pattern
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#invalidation-scopes" class="md-nav__link">
+    Invalidation Scopes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query-keys-for-filtered-lists" class="md-nav__link">
+    Query Keys for Filtered Lists
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-patterns" class="md-nav__link">
+    Common Patterns
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#react-query-devtools" class="md-nav__link">
+    React Query Devtools
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remarks" class="md-nav__link">
+    Remarks
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+        </div>
+    </div>
+</div>
+
+
+
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+    <a href="https://github.com/BLSQ/iaso/edit/main/docs/pages/dev/reference/guidelines/front-end.en.md" title="Edit this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"></path></svg>
+    </a>
+  
+  
+
+
+<h1 id="front-end-guidelines">Front-end guidelines<a class="headerlink" href="#front-end-guidelines" title="Permanent link">#</a></h1>
+<h2 id="prerequisite">Prerequisite<a class="headerlink" href="#prerequisite" title="Permanent link">#</a></h2>
+<p>First of all make sure your eslint, prettier, typescript environnement is set properly.</p>
+<p>On VSC code you can format code following IAOS rules while saving in the settings:</p>
+<pre><code>"[javascript]": {
+    "editor.formatOnSave": true,
+},
+"[typescript]": {
+    "editor.formatOnSave": true,
+},
+</code></pre>
+<p>Make sure you installed eslint extension too.<br>
+On each file you can have only one component.<br>
+Use constants, and config files to store static data.<br>
+Don't be afraid to split your code into smaller parts, using understandable naming convention. It will help to understand what you are doing in your code.</p>
+<h2 id="legacy">Legacy<a class="headerlink" href="#legacy" title="Permanent link">#</a></h2>
+<p>Class component, proptypes are still old way to create features in IASO.<br>
+Please use <code>hooks</code>, <code>typescript</code> and <code>arrow component</code>.<br>
+We already have a lot of typing done in each domain of the application (forms, submissions, org units, ... )</p>
+<h2 id="bluesquare-components">Bluesquare-components<a class="headerlink" href="#bluesquare-components" title="Permanent link">#</a></h2>
+<p>Lots of components used in IASO has been moved to a separate <a href="https://github.com/BLSQ/bluesquare-components">repo</a>.<br>
+We tried to be the most generic has possible in this repo, people from outside IASO should be able to use it in their own project.<br>
+To use it locally, checkout the repo on the same level has ISO and run: <code>LIVE_COMPONENTS=true pm run dev</code> in IASO folder.<br>
+This will use directly the code from your local repo.<br>
+To make it available too everybody you have to build new files with <code>npm run clean &amp;&amp; npm run build</code> in bluesquare-component folder.</p>
+<h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">#</a></h2>
+<p>Main index file is located here: <code>hat/assets/js/apps/Iaso/index</code><br>
+This is the entrypoint of the app, setting up providers, theme, react-query query client, custom plugins,...</p>
+<p><strong><code>components</code></strong><br>
+Used to store generic components that can be used everywhere, like <code>inputComponent</code>, <code>buttons</code>, ...</p>
+<p><strong><code>domains</code></strong><br>
+For every big feature entity in IASO (forms, org units, plannings, ...) we have a domain folder allowing to display related pages.</p>
+<ul>
+<li><code>index</code> is generally used to display a list of items</li>
+<li><code>details</code> the details of an item</li>
+<li><code>config</code> used to store constants for the domain (columns, default order, ...)</li>
+<li><code>hooks</code>: dedicated hooks to make requests or compute specitic data for the domain</li>
+<li><code>components</code>: mostly intermediate components using smaller ones to construct domain page</li>
+<li><code>messages</code>: translations messages used for this specific domain
+  config: used to store constants like defaultOrder, columns, 'baseUrls'</li>
+<li><code>types</code>: All types related to the domain</li>
+</ul>
+<h2 id="styling-components">Styling components<a class="headerlink" href="#styling-components" title="Permanent link">#</a></h2>
+<p>In our effort to maintain readability and conciseness in our code, we are transitioning away from the <code>makeStyles</code> hook and adopting a new approach for styling our components. We will now use a separate object, <code>styles</code>, to define our styles outside of the component function. This object will then be referenced within the <code>sx</code> prop in our JSX.</p>
+<p>Here's how to apply this approach:</p>
+<ol>
+<li>Define your styles in a <code>styles</code> object using the <code>SxStyles</code> type from <code>hat/assets/js/apps/Iaso/types/general.ts</code>. This helps with readability and keeps the component code clean.</li>
+<li>Apply styles to your components using the <code>sx</code> prop by referencing the <code>styles</code> object properties.</li>
+</ol>
+<p>Example:</p>
+<pre><code>const styles: SxStyles = {
+    root: {
+        cursor: 'pointer',
+    },
+    tooltip: {
+        color: 'text.primary',
+        bgcolor: 'background.paper',
+        boxShadow: (theme: Theme) =&gt; theme.shadows[1],
+        '&amp; .MuiTooltip-arrow': {
+            color: 'background.paper',
+        },
+    },
+    noResult: {
+        textDecoration: 'underline dotted',
+    },
+};
+
+...
+ &lt;Box sx={styles.root}&gt;
+ ...
+</code></pre>
+<h2 id="translating">Translating<a class="headerlink" href="#translating" title="Permanent link">#</a></h2>
+<h3 id="basic-usage">Basic usage<a class="headerlink" href="#basic-usage" title="Permanent link">#</a></h3>
+<p>We are using <a href="https://www.npmjs.com/package/react-intl">react-intl</a> to translate messages.
+To ease the use, there is a bluesquare-component wrapper named <code>useSafeIntl</code>.</p>
+<p>To make it work you will need two things, first an object to define a message id and a default translation:</p>
+<pre><code class="language-typescript">someLabel: {
+    id: 'iaso.label.some-label',
+    defaultMessage: 'Some label',
+},
+</code></pre>
+<p>Then translations files named as {language}.json in which you will define the actual translation for the message id.</p>
+<pre><code class="language-json">{
+    "iaso.label.some-label": "Some label translated",
+    ...
+}
+</code></pre>
+<p>Now in your component code you can use safe intl to translate:</p>
+<pre><code class="language-tsx">import { useSafeIntl } from 'bluesquare-components';
+
+const { formatMessage } = useSafeIntl();
+
+formatMessage(MESSAGES.someLabel);
+</code></pre>
+<h3 id="reuse-translation-for-a-plugin">Reuse translation for a plugin<a class="headerlink" href="#reuse-translation-for-a-plugin" title="Permanent link">#</a></h3>
+<p>To keep this clean and not have to refer iaso / faraway paths, you can have a message with the same id.
+And refer to this one, not having to duplicate the translation.
+This approach is not mandatory but will keep your plugin code as agnostic as possible.</p>
+<h3 id="use-rich-text">Use rich text<a class="headerlink" href="#use-rich-text" title="Permanent link">#</a></h3>
+<p>You can use rich text by using the values property of the formatMessage.</p>
+<p>Let's say you have a message like this:</p>
+<p><code>Some &lt;b&gt;message&lt;/b&gt;</code></p>
+<p>If you just use formatMessage as usual, it will render the <code>&lt;b&gt;</code> tags as string.
+To have it rendered as bold text, you can do this:</p>
+<pre><code class="language-tsx">formatMessage(MESSAGES.someMessage, {
+    b: chunks =&gt; &lt;b&gt;chunks&lt;/b&gt;,
+});
+</code></pre>
+<p>Note that the <code>&lt;b&gt;</code> tag in the message can be anything you want:
+<code>Some &lt;superimportant&gt;message&lt;/superimportant&gt;</code></p>
+<pre><code class="language-tsx">formatMessage(MESSAGES.someMessage, {
+    superimportant: chunks =&gt; &lt;b&gt;chuncks&lt;/b&gt;,
+});
+</code></pre>
+<p>This also work with lists</p>
+<p><code>Some items: &lt;ul&gt;&lt;li&gt;item1&lt;/li&gt;&lt;li&gt;item2&lt;/li&gt;&lt;/ul&gt;</code></p>
+<pre><code class="language-tsx">formatMessage(MESSAGES.someListMessage, {
+    li: chunks =&gt; &lt;li&gt;chunks&lt;/li&gt;,
+    ul: chunks =&gt; &lt;ul&gt;chunks&lt;/ul&gt;,
+});
+</code></pre>
+<h2 id="maps">Maps<a class="headerlink" href="#maps" title="Permanent link">#</a></h2>
+<p>We are using <a href="https://leafletjs.com/reference.html">leaflet</a> latest version and <a href="https://react-leaflet.js.org/docs/v3/start-introduction/">react-leaflet</a> (LTS version 3).
+To use latest version of react-leaflet we need to upgrade to react 18.</p>
+<p>Styles are located in <code>bluesquare-components</code>, you have to import it on each map:</p>
+<pre><code>const styles = (theme) =&gt; ({
+    mapContainer: {
+        ...commonStyles(theme).mapContainer,
+    },
+});
+</code></pre>
+<h3 id="from-react-leaflet">From react-leaflet<a class="headerlink" href="#from-react-leaflet" title="Permanent link">#</a></h3>
+<p><strong>MapContainer</strong></p>
+<p>The main container of the Map.
+Props we use:</p>
+<ul>
+<li><code>bounds</code>: not required, bounds of markers and shapes displayed, used by fit to bound, doc <a href="https://leafletjs.com/reference.html#latlngbounds">here</a>.</li>
+<li><code>boundsOptions</code>: not required, options related to bounds, doc <a href="https://leafletjs.com/reference.html#fitbounds-options">here</a>.</li>
+<li><code>zoomControl</code>: required and set to <code>false</code>, in order to use the <code>CustomZoomControl</code>.</li>
+<li><code>whenCreated</code>: not required,to use a ref of the map in the same component as the MapContainer, you get it by doing
+  whenCreated={mapInstance =&gt; {
+  map.current = mapInstance;
+  }}</li>
+</ul>
+<p>default props:</p>
+<pre><code>doubleClickZoom={false}
+scrollWheelZoom={false}
+maxZoom={currentTile.maxZoom}
+style={{ height: '100%' }}
+center={[0, 0]}
+zoomControl={false}
+keyboard={false}
+bounds={bounds}
+boundsOptions={boundsOptions}
+</code></pre>
+<p><strong>Scalecontrol</strong></p>
+<p>Used to display a scale on the bottom left of the map.</p>
+<p>Props we use:</p>
+<ul>
+<li><code>imperial</code>: always set to <code>false</code></li>
+</ul>
+<p>We use other component from react-leaflet not listed here as they are optionnal and used like describe in their <a href="https://react-leaflet.js.org/docs/v3/api-components/">docs</a>.</p>
+<h3 id="custom-components">Custom components<a class="headerlink" href="#custom-components" title="Permanent link">#</a></h3>
+<p><strong>CustomZoomControl</strong></p>
+<p>This will display an extended zoom control on the top left of the map.
+You can zoom in and out, select an area to zoom in and fit the map to the bounds of the map.</p>
+<p>Props:</p>
+<ul>
+<li><code>bounds</code>: not required, computed bounds displayed on the map, doc <a href="https://leafletjs.com/reference.html#latlngbounds">here</a>.</li>
+<li><code>boundsOptions</code>: not required, options related to bounds, doc <a href="https://leafletjs.com/reference.html#fitbounds-options">here</a>.</li>
+<li><code>bound</code>: not required, a boolean to fit to bounds on load, not working if bounds stays undefined.</li>
+</ul>
+<p><strong>CustomTileLayer + TilesSwitchDialog</strong></p>
+<p>Control to display a dialog allowing to change the tile layer of the map, on the top right of the map
+Those twot components are going together, maybe we should refactor it to a single component.</p>
+<p>CustomTileLayer Props:</p>
+<ul>
+<li><code>currentTile</code>: required, active tile of the map, usually setted in the map itself with a <code>useState</code>.</li>
+</ul>
+<p>TilesSwitchDialog Props:</p>
+<ul>
+<li><code>currentTile</code>: required, active tile of the map, usually setted in the map itself with a <code>useState</code>.</li>
+<li><code>setCurrentTile</code>: required, method to update current tile on the map.</li>
+</ul>
+<p><strong>MapToggleTooltips</strong></p>
+<p>A switch to show or hide tooltips on the map.</p>
+<p>Props:</p>
+<ul>
+<li><code>showTooltip</code>: required, usually setted in the map itself with a <code>useState</code>.</li>
+<li><code>setShowTooltip</code>: required, method to showTooltip or not.</li>
+</ul>
+<p><strong>MapToggleFullscreen</strong></p>
+<p>A switch to set the map fullscreen or not.</p>
+<p>Props:</p>
+<ul>
+<li><code>isMapFullScreen</code>: required, usually setted in the map itself with a <code>useState</code>.</li>
+<li><code>setIsMapFullScreen</code>: required, method to set into fullscreen or not.</li>
+</ul>
+<p><strong>MapToggleCluster</strong></p>
+<p>A switch to allow clustering or not of marker on the map.
+You should use <code>MarkerClusterGroup</code> from <code>react-leaflet-markercluster</code></p>
+<p>Props:</p>
+<ul>
+<li><code>isClusterActive</code>: required, usually setted in the map itself with a <code>useState</code>.</li>
+<li><code>setIsClusterActive</code>: required, method to enable custering of markers or not.</li>
+</ul>
+<p><strong>MarkerComponent / CircleMarkerComponent</strong><br>
+Components used to display a marker on the map.
+Props:</p>
+<ul>
+<li>see js file for not required props, mainly the same props as <code>Marker</code> from react-leaflet.</li>
+<li><code>PopupComponent</code>: not required, Popup used while clicking on the marker</li>
+<li><code>TooltipComponent</code>: not required, Tooltip used while hovering the marker</li>
+<li><code>item</code>: required, an object with <code>latitude</code> an <code>longitude</code> arguments, those are numbers</li>
+</ul>
+<p><strong>MarkersListComponent</strong><br>
+Used to display a list of markers</p>
+<p>Props:</p>
+<ul>
+<li><code>markerProps</code>: not required, props spreaded to the marker</li>
+<li><code>items</code>: required, array of items use by previous component</li>
+<li><code>PopupComponent</code>: not required, Popup used while clicking on the marker</li>
+<li><code>TooltipComponent</code>: not required, Tooltip used while hovering the marker</li>
+<li><code>onMarkerClick</code>: not required, method applied while clicking on the marker on the map</li>
+<li><code>isCircle</code>: not required, display marker as a circle or not</li>
+<li><code>onContextmenu</code>: not required, method applied while right clicking on the marker on the map</li>
+</ul>
+<h3 id="tables">Tables<a class="headerlink" href="#tables" title="Permanent link">#</a></h3>
+<p>Most tables we use need to support filters and deep linking. We have a <code>TableWithDeepLinking</code> component for that purpose, which is a wrapper on the <code>Table</code> from Bluesuare-components.</p>
+<p>The typical props to pass are:</p>
+<ul>
+<li><code>data</code>: the table data. Usually originate s from a <code>react-query</code> hook</li>
+<li><code>page</code>: the current page. Usually returned by the API</li>
+<li><code>pageSize</code>: the amount of rows to display on each page. Also comes from the API</li>
+<li><code>count</code>: the total amount of items in the page. From the API</li>
+<li>`pages: total number of pages. From the API</li>
+<li><code>baseUrl</code>: the baseUrl the table will redirect to</li>
+<li><code>params</code>: the params of the current location. <code>TableWithDeepLink</code> will combine them with <code>baseUrl</code>to redirect to the correct location</li>
+<li><code>extraProps</code>: an object. The <code>loading</code> key will be used to manage the table's loading state. Other values will force a table re-render when they change (similar to <code>useEffect</code> deps array), which can be useful in some situations</li>
+<li><code>columns</code>: an array of objects of type <code>Column</code> (imported from bluesquare-components). It's usually defined in a custom hook in order to easily handle translations.</li>
+</ul>
+<p><strong>Note: <code>useDeleteTableRow</code></strong>
+When performing <code>DELETE</code> operations from the table that will reduce the amount of table rows, we can run into a pagination bug. To avoid it, use <code>useDeleteTableRow</code> in the <code>useDelete&lt;whatever&gt;</code> hook that will return the delete function:</p>
+<pre><code class="language-javascript">export const useDeleteWhatever = (
+    params: Record&lt;string, any&gt;,
+    count: number,
+): UseMutationResult =&gt; {
+    const onSuccess = useDeleteTableRow({
+        params,
+        pageKey: 'whateverPage', // optional, will default to "page"
+        pageSizeKey: 'whateverPageSize', //optional, will default to "pageSize"
+        count,
+        invalidateQueries: ['whatever'], // optional
+        baseUrl: baseUrls.whatever,
+    });
+    return useSnackMutation({
+        mutationFn: deleteWhatever,
+        options: { onSuccess },
+    });
+};
+</code></pre>
+<h3 id="filters">Filters<a class="headerlink" href="#filters" title="Permanent link">#</a></h3>
+<p>Most tables we display come with one or several filters, most commonly a text search and date filters.</p>
+<p>It's a global feature in Iaso that all filter searches performed on pages are deep-linked, i.e.: the parameters of the filters are saved in the url, so users can share the results of their search/filtering. This has an impact on the architecture of Iaso:</p>
+<ul>
+<li>
+<p>All search fields need to be declared in <code>routes.js</code>, under the <code>params</code> key. Important: <code>params</code> is an ordered list. Passing them in the wrong order in the URL will result in a 404.</p>
+</li>
+<li>
+<p>Applying a filter doesn't change the component state per se but results in a redirection. Depending on the use cases, we may or may not want to save consecutive filters/searches in the routers history</p>
+</li>
+</ul>
+<p>We have a few ready-made components for filters:</p>
+<ul>
+<li><code>InputComponent</code>: handles most types of inputs: text, select, checkbox, radio</li>
+<li><code>OrgUnitTreeviewModal</code>: handles searches on org units</li>
+<li><code>DatePicker</code> and <code>DateRange</code>: handle dates</li>
+</ul>
+<p><code>InputComponent</code> takes a <code>keyValue</code> prop, which is a string that corresponds to the url parameter that stores the filter value, and an <code>onChange</code> prop which is a function with the signature (keyValue,value) =&gt; void. <code>DateRange</code> takes a <code>keyDateFrom</code> and a <code>keyDateTo</code> that play the same role for the start and end date respectively.</p>
+<p>We also have a <code>useFilterState</code> hook that handles the state and update methods for filters of a given page:</p>
+<pre><code class="language-typescript">const { filters, handleSearch, handleChange, filtersUpdated } = useFilterState({
+    baseUrl,
+    params,
+    withPagination: false,
+    saveSearchInHistory: false,
+});
+</code></pre>
+<ul>
+<li><code>baseUrl</code>: is the url of the page</li>
+<li><code>params</code>: the parameters passed to the url. <code>useFilterState</code> will generate the state for the filters based on those.</li>
+<li>withPagination: if <code>false</code> the hook will remove parameters related to table pagination (<code>page</code>, <code>pageSize</code> and so on)</li>
+<li><code>saveSearchInHistory</code>: if <code>true</code>, the redirection will use <code>redirect</code> i.o <code>redirectToReplace</code> and the searchg will be saved in the router's history, meaning that using the back arrow will bring the user to the previous search and not the previous page.</li>
+</ul>
+<h2 id="convenience-hooks">Convenience hooks:<a class="headerlink" href="#convenience-hooks" title="Permanent link">#</a></h2>
+<p><code>useAsyncInitialState</code>: used when <code>useState</code>'s initial value is fetched, to avoid having it set to `undefined``</p>
+<p><code>useSkipEffectUntilValue</code>: same idea but with <code>useEffect</code></p>
+<p><code>useObjectState</code>: when we have an object-like state, allows to update a state value using the old class-component syntax: <code>setState(key,value)</code> instead of `setState({...prevState,key:value}). Does not support nested objects</p>
+<p><code>useArrayState</code>: convenience hook for when the state is an array and we want to update elements based on index</p>
+<h2 id="code-style">Code style<a class="headerlink" href="#code-style" title="Permanent link">#</a></h2>
+<ul>
+<li>Prefer <code>type?:string</code> to <code>type: string | undefined</code></li>
+<li>Prefer <code>const</code> to <code>let</code>:</li>
+</ul>
+<pre><code class="language-javascript">// BAD
+let myVar = "placeholder"
+if(otherVAlue) {
+   myVar = otherValue
+}
+
+// GOOD
+const myVar = otherValue ?? "placeholder
+
+</code></pre>
+<ul>
+<li>Function names should include a verb:</li>
+</ul>
+<pre><code class="language-javascript">// BAD
+const username = user =&gt; user.firstname + user.lastname;
+
+// GOOD
+const makeUsername = user =&gt; user.firstname + user.lastname;
+</code></pre>
+<ul>
+<li>Not all functions are hooks. Hooks should either have some sort of internal state or trigger a side-effect:</li>
+</ul>
+<pre><code class="language-typescript">// BAD, we're just returning a value
+const useMyValue = (value: string) =&gt; {
+    return parseInt(value, 10);
+};
+
+// GOOD, because of useSafeIntl, the return value will change with user locale
+const useMyValue = (value: IntlMessage) =&gt; {
+    const { formatMessage } = useSafeIntl();
+    return formatMessage(value);
+};
+
+//GOOD, the returned object is memoized
+const useMyValue = (value: string) =&gt; {
+    return useMemo(() =&gt; {
+        const result = {
+            isNumber: false,
+            value,
+        };
+        if (parseFloat(value)) {
+            result.isNumber = true;
+        }
+        return result;
+    }, [value]);
+};
+
+// GOOD, as side effect will be triggered after the first render
+export const useSkipEffectOnMount = (func: Function, deps: Array&lt;unknown&gt;) =&gt; {
+    const didMount = useRef(false);
+
+    useEffect(() =&gt; {
+        if (didMount.current) {
+            func();
+        } else {
+            didMount.current = true;
+        }
+    }, deps);
+};
+</code></pre>
+<h2 id="react-query-best-practices">React Query Best Practices<a class="headerlink" href="#react-query-best-practices" title="Permanent link">#</a></h2>
+<h3 id="query-key-structure">Query Key Structure<a class="headerlink" href="#query-key-structure" title="Permanent link">#</a></h3>
+<p>Query keys in React Query use hierarchical matching for cache invalidation. Following a consistent structure is critical for maintainability and performance.</p>
+<h4 id="recommended-pattern">Recommended Pattern<a class="headerlink" href="#recommended-pattern" title="Permanent link">#</a></h4>
+<pre><code class="language-typescript">// List queries - plural noun
+['forms']['orgUnits']['users'][
+    // Individual item - [resource, id]
+    ('forms', formId)
+][('orgUnits', orgUnitId)][ // formId as number, not string
+    // Nested data - [resource, id, property]
+    ('forms', formId, 'possible_fields')
+][('forms', formId, 'versions')][('orgUnits', orgUnitId, 'children')];
+</code></pre>
+<p><strong>Key Principles:</strong></p>
+<ol>
+<li><strong>Use raw values, not prefixed strings</strong>: Use <code>['forms', 123]</code> not <code>['forms', 'form-123']</code></li>
+<li><strong>Use numbers directly</strong>: Use <code>formId</code> (number) not <code>`form-${formId}`</code> (string)</li>
+<li><strong>Consistent hierarchy</strong>: Always follow <code>[resource, id, property]</code> pattern</li>
+<li><strong>Plural for lists, singular for instances</strong>: <code>['forms']</code> for list, but nested keys can be singular</li>
+</ol>
+<h4 id="invalidation-scopes">Invalidation Scopes<a class="headerlink" href="#invalidation-scopes" title="Permanent link">#</a></h4>
+<pre><code class="language-typescript">// Invalidate ALL forms-related queries (list, details, dropdowns, all IDs)
+queryClient.invalidateQueries(['forms']);
+
+// Invalidate only form #123 and its nested data
+queryClient.invalidateQueries(['forms', 123]);
+// Matches: ['forms', 123], ['forms', 123, 'possible_fields'], ['forms', 123, 'versions']
+// Does NOT match: ['forms'], ['forms', 456]
+
+// Invalidate specific nested property only
+queryClient.invalidateQueries(['forms', 123, 'possible_fields']);
+// Matches only: ['forms', 123, 'possible_fields']
+</code></pre>
+<h4 id="query-keys-for-filtered-lists">Query Keys for Filtered Lists<a class="headerlink" href="#query-keys-for-filtered-lists" title="Permanent link">#</a></h4>
+<p>When building queries with multiple parameters (pagination, filters, sorting), use the params object directly in the query key:</p>
+<pre><code class="language-typescript">// ✅ GOOD - params object in query key
+const apiParams = useApiParams(tableParams, tableDefaults);
+const queryString = new URLSearchParams(apiParams).toString();
+
+useSnackQuery({
+    queryKey: ['forms', apiParams], // Object handles order automatically
+    queryFn: () =&gt; getRequest(`/api/forms/?${queryString}`),
+});
+
+// ❌ BAD - query string in key (parameter order creates duplicate cache entries)
+useSnackQuery({
+    queryKey: ['forms', queryString], // 'page=1&amp;limit=10' vs 'limit=10&amp;page=1' = different keys!
+    queryFn: () =&gt; getRequest(`/api/forms/?${queryString}`),
+});
+</code></pre>
+<p><strong>Benefits:</strong></p>
+<ul>
+<li>React Query normalizes object keys, preventing duplicate cache entries due to parameter order</li>
+<li>Easier to invalidate selectively (e.g., all pages for a specific filter)</li>
+<li>More readable and maintainable</li>
+</ul>
+<h4 id="common-patterns">Common Patterns<a class="headerlink" href="#common-patterns" title="Permanent link">#</a></h4>
+<p><strong>After mutation, invalidate related queries:</strong></p>
+<pre><code class="language-typescript">// Creating a new form
+useMutation({
+    mutationFn: createForm,
+    onSuccess: () =&gt; {
+        queryClient.invalidateQueries(['forms']); // Refresh the list
+    },
+});
+
+// Updating an existing form
+useMutation({
+    mutationFn: updateForm,
+    onSuccess: (data, variables) =&gt; {
+        // Option 1: Invalidate everything (list + all details)
+        queryClient.invalidateQueries(['forms']);
+
+        // Option 2: Only invalidate this specific form (if list doesn't show form details)
+        // queryClient.invalidateQueries(['forms', variables.id]);
+    },
+});
+
+// Deleting a form
+useMutation({
+    mutationFn: deleteForm,
+    onSuccess: () =&gt; {
+        queryClient.invalidateQueries(['forms']); // Only refresh list
+    },
+});
+</code></pre>
+<p><strong>Using nested query keys:</strong></p>
+<pre><code class="language-typescript">// In your hook
+export const useGetPossibleFields = (formId: number) =&gt; {
+    return useSnackQuery({
+        queryKey: ['forms', formId, 'possible_fields'],
+        queryFn: () =&gt;
+            getRequest(`/api/forms/${formId}/?fields=possible_fields`),
+        options: {
+            enabled: Boolean(formId),
+        },
+    });
+};
+
+// When form is updated, invalidate all its data
+queryClient.invalidateQueries(['forms', formId]);
+// This invalidates 'possible_fields', 'versions', etc.
+</code></pre>
+<h3 id="react-query-devtools">React Query Devtools<a class="headerlink" href="#react-query-devtools" title="Permanent link">#</a></h3>
+<ul>
+<li>To inspect cache, queries, and mutations, use the React Query Devtools browser extension (Chrome Web Store or Firefox Add-ons).</li>
+<li>The extension auto-detects IASO via <code>window.__TANSTACK_QUERY_CLIENT__</code>; open your browser DevTools to access the React Query panel.</li>
+<li>No console commands are needed; toggle the panel from the extension UI.</li>
+</ul>
+<h2 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">#</a></h2>
+<ul>
+<li>order translations by alphanumeric</li>
+<li>spacing is by default theme.spacing(2)</li>
+<li>do not use Grid everywhere or too much</li>
+<li>all the calls to the api without query params should end by '/'</li>
+<li>in routes.js, the <code>params</code> listed are ordered, meaning you can get a 404 when they are not in the right order. Related to this, the <code>paginationPathParams</code> that we spread in most routes should come first, right after the <code>accountId</code> to avoid getting 404 because of automatic redirections</li>
+</ul>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../../..", "features": ["content.action.edit"], "search": "../../../../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.78eede0e.min.js"></script>
+      
+        <script src="../../../../extrajs/html2pdf.bundle.min.js"></script>
+      
+        <script src="../../../../extrajs/pdfDownload.js"></script>
+      
+        <script src="https://plausible.io/js/script.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>

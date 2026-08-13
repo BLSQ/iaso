@@ -28,7 +28,7 @@ from plugins.polio.api.campaigns.campaigns_log import (
     log_campaign_modification,
     serialize_campaign,
 )
-from plugins.polio.api.campaigns.filters.filters import CampaignFilter
+from plugins.polio.api.campaigns.filters.filters import CampaignFilter, filter_queryset_by_campaign_category
 from plugins.polio.api.campaigns.filters.search import SearchFilterBackend
 from plugins.polio.api.campaigns.serializers.anonymous import AnonymousCampaignSerializer
 from plugins.polio.api.campaigns.serializers.calendar import CalendarCampaignSerializer
@@ -477,16 +477,7 @@ class CampaignViewSet(ModelViewSet):
             rounds = rounds.filter(campaign__country_id__in=countries.split(","))
         if campaign_groups:
             rounds = rounds.filter(campaign__group_id__in=campaign_groups.split(","))
-        if campaign_category == "on_hold":
-            rounds = rounds.filter(campaign__on_hold=True)
-        if campaign_category == "preventive":
-            rounds = rounds.filter(campaign__is_preventive=True)
-        if campaign_category == "regular":
-            rounds = (
-                rounds.filter(campaign__is_preventive=False)
-                .filter(campaign__is_test=False)
-                .filter(campaign__on_hold=False)
-            )
+        rounds = filter_queryset_by_campaign_category(rounds, campaign_category, prefix="campaign")
         if search:
             rounds = rounds.filter(Q(campaign__obr_name__icontains=search) | Q(campaign__epid__icontains=search))
         if org_unit_groups:

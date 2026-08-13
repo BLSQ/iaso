@@ -322,6 +322,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Country block',
         id: 'iaso.polio.label.countryBlock',
     },
+    campaignCategory: {
+        id: 'iaso.polio.label.campaignCategory',
+        defaultMessage: 'Campaign category',
+    },
     cancelChanges: {
         id: 'iaso.polio.label.cancelChanges',
         defaultMessage: 'Cancel changes',

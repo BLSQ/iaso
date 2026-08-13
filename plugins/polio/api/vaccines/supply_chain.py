@@ -25,6 +25,7 @@ from iaso.models import OrgUnit
 from iaso.utils.encryption import calculate_md5, file_content_changed
 from iaso.utils.virus_scan.clamav import scan_uploaded_file_for_virus
 from iaso.utils.virus_scan.serializers import ModelWithFileSerializer
+from plugins.polio.api.campaigns.filters.filters import filter_queryset_by_campaign_category
 from plugins.polio.api.vaccines.permissions import VaccineStockPermission, has_vaccine_stock_edit_access
 from plugins.polio.api.vaccines.stock_management import CampaignCategory
 from plugins.polio.models import Campaign, Round, VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
@@ -826,6 +827,7 @@ class NoFormDjangoFilterBackend(DjangoFilterBackend):
 
 class VaccineRequestFormFilterSet(django_filters.FilterSet):
     round_id = django_filters.NumberFilter(field_name="rounds", label=_("Round ID"))
+    campaign_category = django_filters.CharFilter(method="filter_campaign_category", label=_("Campaign category"))
 
     class Meta:
         model = VaccineRequestForm
@@ -836,6 +838,9 @@ class VaccineRequestFormFilterSet(django_filters.FilterSet):
             "rounds__started_at": ["exact", "gte", "lte", "range"],
             "rounds__ended_at": ["exact", "gte", "lte", "range"],
         }
+
+    def filter_campaign_category(self, queryset, _, value):
+        return filter_queryset_by_campaign_category(queryset, value, prefix="campaign")
 
 
 @extend_schema(tags=["Polio - Vaccine request forms"])
@@ -849,6 +854,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
     - rounds__started_at : Use a date in the format YYYY-MM-DD
     - rounds__ended_at : Use a date in the format YYYY-MM-DD
     - round_id : Filter by a specific round ID
+    - campaign_category : regular, is_preventive, on_hold, is_planned
 
     Available ordering:
     - country

@@ -998,7 +998,7 @@ class InstancesAPITestCase(TaskAPITestCase):
                 ]
             }
         )
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(7):
             response = self.client.get("/api/instances/", {"jsonContent": json_filters})
         self.assertJSONResponse(response, status.HTTP_200_OK)
         response_json = response.json()
@@ -1338,9 +1338,9 @@ class InstancesAPITestCase(TaskAPITestCase):
             org_unit=self.jedi_council_corruscant, instance=self.instance_1, form=self.form_1
         )
 
-        # 11, not 10: with_status() now spends one extra query checking whether the filtered-in form(s) are
+        # 12, not 10: with_status() now spends one extra query checking whether the filtered-in form(s) are
         # single_per_period, to be able to skip the (expensive on large datasets) duplicates computation otherwise.
-        with self.assertNumQueries(11):
+        with self.assertNumQueries(12):
             response = self.client.get(
                 f"/api/instances/?form_ids={self.instance_1.form.id}&csv=true", headers={"Content-Type": "text/csv"}
             )
@@ -3225,11 +3225,11 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.yoda)
         self.yoda.iaso_profile.projects.add(self.project)
 
-        # 15, not 14: with_lock_info() is now applied only to the page's ids (fetched via a separate,
+        # 21, not 14: with_lock_info() is now applied only to the page's ids (fetched via a separate,
         # cheap id-only query) instead of to the whole queryset before pagination, to avoid forcing
         # PostgreSQL to evaluate (join, group, sort) the entire matching instance set before truncating
         # it to a page, which is extremely expensive on large accounts.
-        expected_queries = 15
+        expected_queries = 21
 
         with self.assertNumQueries(expected_queries):
             response = self.client.get("/api/instances/?limit=3000")

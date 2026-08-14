@@ -74,6 +74,45 @@ html[lang="es"] .md-header .md-select > .md-header__button.md-icon::after {
     display: inline-block;
 }
 
+#pdf-download-user-guide-container {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    text-align: left;
+    padding-left: 12px;
+    display: flex;
+    align-items: center;
+}
+
+#pdf-download-user-guide {
+    background-color: #fcb900;
+    color: #192041;
+    border-radius: 4px;
+    vertical-align: middle;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#pdf-download-user-guide[disabled] {
+    opacity: 0.6;
+    cursor: default;
+}
+
+#pdf-download-user-guide svg {
+    vertical-align: middle;
+}
+
+#user-guide-button-text {
+    margin-right: 8px;
+    display: inline-block;
+}
+
 /* Doc screenshot helpers — use with attr_list, e.g. ![](shot.png){ .doc-shot }
    mkdocs-glightbox wraps images in <a class="glightbox"> (inline by default),
    so size/layout must target that wrapper too. */

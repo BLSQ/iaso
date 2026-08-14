@@ -101,8 +101,6 @@ edit_uri: edit/main/docs # for the edit on github button
 extra_css:
   - ./stylesheets/extra.css
 extra_javascript:
-  - ./extrajs/html2pdf.bundle.min.js
-  - ./extrajs/pdfDownload.js
   - ./extrajs/external_links.js
   - https://plausible.io/js/script.js
 use_directory_urls: false # IMPORTANT: without this the paths to pictures will break on build

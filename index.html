@@ -435,7 +435,14 @@
     Introduction to IASO
   </a>
   
-    <nav class="md-nav" aria-label="Introduction to IASO">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    Features
+  </a>
+  
+    <nav class="md-nav" aria-label="Features">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -453,35 +460,28 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#geo-enabled-microplanning" class="md-nav__link">
-    Geo-enabled Microplanning
+  <a href="#microplanning" class="md-nav__link">
+    Microplanning
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#entities" class="md-nav__link">
-    Entities
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#widely-deployed" class="md-nav__link">
-    Widely deployed
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#technical-stack" class="md-nav__link">
-    Technical stack
+  <a href="#entities-longitudinal-tracking" class="md-nav__link">
+    Entities (longitudinal tracking)
   </a>
   
 </li>
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technical-stack" class="md-nav__link">
+    Technical stack
+  </a>
   
 </li>
       
@@ -1315,6 +1315,8 @@ For more information and detailed use cases, please visit <a href="https://www.o
 <li>a <strong>matching and scripting interface</strong> to analyze, compare and merge several geographic data sources</li>
 <li>a bi-directional <strong>integration with DHIS2</strong>, the widely used Health Management Information System in Low- and middle-income countries</li>
 </ul>
+<p>The platform has been implemented in Benin, Burkina Faso, Burundi, Cameroon, Central African Republic, the Democratic Republic of Congo, Haiti, Ivory Coast, Mali, Niger, Nigeria and Uganda. It is the official georegistry in Burkina Faso since 2023. IASO has also been implemented at regional level (AFRO region) in support to the Global Polio Eradication Initiative for its geospatial and health facility registries capabilities.</p>
+<h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">#</a></h2>
 <p>In terms of features, IASO can be summarized around <strong>four main components</strong> which are interconnected and expand the powers of one another:</p>
 <h3 id="geospatial-data-management-georegistry">Geospatial data management (Georegistry)<a class="headerlink" href="#geospatial-data-management-georegistry" title="Permanent link">#</a></h3>
 <ul>
@@ -1331,13 +1333,13 @@ For more information and detailed use cases, please visit <a href="https://www.o
 <li>Validate from the web all data collection form submissions sent from IASO mobile application</li>
 <li>Monitor data collection completeness per organization unit level and drill-down to identify where issues happen</li>
 </ul>
-<h3 id="geo-enabled-microplanning">Geo-enabled Microplanning<a class="headerlink" href="#geo-enabled-microplanning" title="Permanent link">#</a></h3>
+<h3 id="microplanning">Microplanning<a class="headerlink" href="#microplanning" title="Permanent link">#</a></h3>
 <ul>
 <li>Manage teams of users and teams of teams</li>
 <li>Assign data collection duties to teams and users using a map interface</li>
 <li>Create plannings with a scope, a time span, and one or several data collection form(s)</li>
 </ul>
-<h3 id="entities">Entities<a class="headerlink" href="#entities" title="Permanent link">#</a></h3>
+<h3 id="entities-longitudinal-tracking">Entities (longitudinal tracking)<a class="headerlink" href="#entities-longitudinal-tracking" title="Permanent link">#</a></h3>
 <p>These can be individuals (e.g. health programme beneficiaries) or physical objects (e.g. vaccines parcel, mosquito net, etc.). Workflows allows the tracking of entities by opening specific forms according to previous answers given to previous forms.</p>
 <ul>
 <li>Create entity types (beneficiaries, stocks, or other)</li>
@@ -1347,9 +1349,7 @@ For more information and detailed use cases, please visit <a href="https://www.o
 <li>Compare and merge entities as needed</li>
 <li>Record entity data in an NFC card</li>
 </ul>
-<h3 id="widely-deployed">Widely deployed<a class="headerlink" href="#widely-deployed" title="Permanent link">#</a></h3>
-<p>The platform has been implemented in Benin, Burkina Faso, Burundi, Cameroon, Central African Republic, the Democratic Republic of Congo, Haiti, Ivory Coast, Mali, Niger, Nigeria and Uganda. It is the official georegistry in Burkina Faso since 2023. IASO has also been implemented at regional level (AFRO region) in support to the Global Polio Eradication Initiative for its geospatial and health facility registries capabilities.</p>
-<h3 id="technical-stack">Technical stack<a class="headerlink" href="#technical-stack" title="Permanent link">#</a></h3>
+<h2 id="technical-stack">Technical stack<a class="headerlink" href="#technical-stack" title="Permanent link">#</a></h2>
 <p>IASO is made of a white labeled Android application using Java/Kotlin, reusing large parts of the ODK projects, and a web platform programmed using Python/GeoDjango on top of PostGIS. 
 Frontend is mainly React/Leaflet. 
 The API is implemented via Django rest framework, all data is stored in Postgresql or the media/ directory. One of the aims is the ease of integration with other platforms. We already have csv and geopackage imports and exports and target easy integration with OSM.</p>

@@ -437,7 +437,14 @@
     Introduction à IASO
   </a>
   
-    <nav class="md-nav" aria-label="Introduction à IASO">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fonctionnalites" class="md-nav__link">
+    Fonctionnalités
+  </a>
+  
+    <nav class="md-nav" aria-label="Fonctionnalités">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -462,28 +469,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#entites" class="md-nav__link">
-    Entités
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#largement-deploye" class="md-nav__link">
-    Largement déployé
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#technologies-utilisees" class="md-nav__link">
-    Technologies utilisées
+  <a href="#entites-suivi-longitudinal" class="md-nav__link">
+    Entités (suivi longitudinal)
   </a>
   
 </li>
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technologies-utilisees" class="md-nav__link">
+    Technologies utilisées
+  </a>
   
 </li>
       
@@ -1316,6 +1316,8 @@
 <li>une <strong>interface de correspondance et de script</strong> pour analyser, comparer et fusionner plusieurs sources de données géographiques</li>
 <li>une <strong>intégration bidirectionnelle avec DHIS2</strong>, le système d'information de gestion de la santé largement utilisé dans les PRFI</li>
 </ul>
+<p>La plateforme a été mise en œuvre au Bénin, au Burkina Faso, au Burundi, au Cameroun, en République Centrafricaine, en République Démocratique du Congo, en Haïti, en Côte d'Ivoire, au Mali, au Niger, au Nigéria et en Ouganda. Elle est le registre géographique officiel au Burkina Faso depuis 2023. IASO a également été mise en œuvre au niveau régional (région AFRO) pour soutenir l'Initiative Mondiale pour l'Eradication de la Polio grâce à ses capacités de registres géospatiaux et d'établissements de santé.</p>
+<h2 id="fonctionnalites">Fonctionnalités<a class="headerlink" href="#fonctionnalites" title="Permanent link">#</a></h2>
 <p>En termes de fonctionnalités, IASO peut être résumé autour de <strong>quatre composantes principales</strong> qui sont interconnectées et renforcent leurs capacités mutuelles :</p>
 <h3 id="gestion-des-donnees-geospatiales-georegistre">Gestion des données géospatiales (Géoregistre)<a class="headerlink" href="#gestion-des-donnees-geospatiales-georegistre" title="Permanent link">#</a></h3>
 <ul>
@@ -1338,7 +1340,7 @@
 <li>Attribuer des tâches de collecte de données aux équipes et aux utilisateurs en utilisant une carte interactive</li>
 <li>Créer des plannings avec un périmètre, une durée et un ou plusieurs formulaires de collecte de données</li>
 </ul>
-<h3 id="entites">Entités<a class="headerlink" href="#entites" title="Permanent link">#</a></h3>
+<h3 id="entites-suivi-longitudinal">Entités (suivi longitudinal)<a class="headerlink" href="#entites-suivi-longitudinal" title="Permanent link">#</a></h3>
 <p>Celles-ci peuvent consister en des individus (par exemple, les bénéficiaires de programmes de santé) ou des objets physiques (par exemple, des lots de vaccins, des moustiquaires, etc.). Les workflows permettent de suivre les entités en ouvrant des formulaires spécifiques en fonction des réponses données à des formulaires précédents.</p>
 <ul>
 <li>Créer des types d'entités (bénéficiaires, stocks ou autres)</li>
@@ -1348,9 +1350,7 @@
 <li>Comparer et fusionner des entités si nécessaire</li>
 <li>Enregistrer les données des entités sur une carte NFC</li>
 </ul>
-<h3 id="largement-deploye">Largement déployé<a class="headerlink" href="#largement-deploye" title="Permanent link">#</a></h3>
-<p>La plateforme a été mise en œuvre au Bénin, au Burkina Faso, au Burundi, au Cameroun, en République Centrafricaine, en République Démocratique du Congo, en Haïti, en Côte d'Ivoire, au Mali, au Niger, au Nigéria et en Ouganda. Elle est le registre géographique officiel au Burkina Faso depuis 2023. IASO a également été mise en œuvre au niveau régional (région AFRO) pour soutenir l'Initiative Mondiale pour l'Eradication de la Polio grâce à ses capacités de registres géospatiaux et d'établissements de santé.</p>
-<h3 id="technologies-utilisees">Technologies utilisées<a class="headerlink" href="#technologies-utilisees" title="Permanent link">#</a></h3>
+<h2 id="technologies-utilisees">Technologies utilisées<a class="headerlink" href="#technologies-utilisees" title="Permanent link">#</a></h2>
 <p>IASO est composée d'une application Android white labeled utilisant Java/Kotlin, réutilisant une grande partie des projets ODK, et d'une plateforme web programmée en Python/GeoDjango sur PostGIS. Le frontend est principalement en React/Leaflet. L'API est implémentée via Django Rest Framework, et toutes les données sont stockées dans PostgreSQL ou le répertoire media/. L'un des objectifs est la facilité d'intégration avec d'autres plateformes. Nous avons déjà des imports et exports en formats CSV et GeoPackage, et nous visons une intégration facile avec OSM.</p>
 <p>L'application mobile pour Android permet la soumission de formulaires et la création d'unités d'organisation. Les formulaires peuvent également être remplis dans une interface web via le service compagnon Enketo.</p>
 

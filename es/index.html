@@ -398,6 +398,17 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Inicio
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="index.html" class="md-nav__link md-nav__link--active">
         
   
@@ -407,6 +418,80 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#introduccion-a-iaso" class="md-nav__link">
+    Introducción a IASO
+  </a>
+  
+    <nav class="md-nav" aria-label="Introducción a IASO">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gestion-de-datos-geoespaciales-georegister" class="md-nav__link">
+    Gestión de datos geoespaciales (Georegister)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recoleccion-de-datos-geo-estructurados" class="md-nav__link">
+    Recolección de datos geo-estructurados
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#microplanificacion" class="md-nav__link">
+    Microplanificación
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entidades" class="md-nav__link">
+    Entidades
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ampliamente-implementado" class="md-nav__link">
+    Ampliamente implementado
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tecnologias-utilizadas" class="md-nav__link">
+    Tecnologías utilizadas
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1220,7 +1305,7 @@
 
 
 <h1 id="bienvenido-a-la-documentacion-de-iaso">Bienvenido a la documentación de IASO<a class="headerlink" href="#bienvenido-a-la-documentacion-de-iaso" title="Permanent link">#</a></h1>
-<h1 id="introduccion-a-iaso">Introducción a IASO<a class="headerlink" href="#introduccion-a-iaso" title="Permanent link">#</a></h1>
+<h2 id="introduccion-a-iaso">Introducción a IASO<a class="headerlink" href="#introduccion-a-iaso" title="Permanent link">#</a></h2>
 <p>IASO es una plataforma innovadora, de código abierto, trilingüe (EN/FR/ES) de <strong>recolección de datos con funcionalidades geoespaciales avanzadas</strong> para planificar, monitorear y evaluar programas de salud, ambientales o sociales en países de ingresos bajos y medios (PIBM). IASO es reconocido como un <strong>Bien Público Digital</strong> por la Alianza de Bienes Públicos Digitales y figura entre los software <strong>Global Goods</strong> de Digital Square, testimoniando su utilidad pública.</p>
 <div class="admonition tip">
 <p class="admonition-title">¿Nuevo en IASO?</p>
@@ -1234,18 +1319,14 @@
 <li>una <strong>integración bidireccional con DHIS2</strong>, el sistema de información de gestión de salud ampliamente utilizado en los PIBM</li>
 </ul>
 <p>En términos de funcionalidades, IASO puede resumirse en torno a <strong>cuatro componentes principales</strong> que están interconectados y refuerzan sus capacidades mutuas:</p>
-<ul>
-<li>
-<p><strong>Gestión de datos geoespaciales (Georegister)</strong></p>
+<h3 id="gestion-de-datos-geoespaciales-georegister">Gestión de datos geoespaciales (Georegister)<a class="headerlink" href="#gestion-de-datos-geoespaciales-georegister" title="Permanent link">#</a></h3>
 <ul>
 <li>Gestionar múltiples listas de unidades organizacionales (por ejemplo, zonas de salud, distritos, establecimientos de salud o escuelas) incluyendo sus coordenadas GPS y fronteras</li>
 <li>Rastrear las modificaciones realizadas a las unidades organizacionales</li>
 <li>Comparar múltiples fuentes de datos geográficos</li>
 <li>Proponer modificaciones a las unidades organizacionales desde la aplicación móvil IASO y validarlas en la web</li>
 </ul>
-</li>
-<li>
-<p><strong>Recolección de datos geo-estructurados</strong></p>
+<h3 id="recoleccion-de-datos-geo-estructurados">Recolección de datos geo-estructurados<a class="headerlink" href="#recoleccion-de-datos-geo-estructurados" title="Permanent link">#</a></h3>
 <ul>
 <li>Crear formularios de recolección de datos utilizando el popular formato XLS e importarlos en IASO</li>
 <li>Vincular sus formularios a uno o varios tipos de unidades organizacionales (por ejemplo, Nacional/Regional/Distrito/Establecimiento de salud) para estructurar geográficamente su recolección de datos</li>
@@ -1253,17 +1334,14 @@
 <li>Validar desde la web todas las presentaciones de formularios enviadas por la aplicación móvil IASO</li>
 <li>Rastrear la completitud de la recolección de datos por nivel de unidades organizacionales e identificar dónde se encuentran los problemas</li>
 </ul>
-</li>
-<li>
-<p><strong>Microplanificación</strong></p>
+<h3 id="microplanificacion">Microplanificación<a class="headerlink" href="#microplanificacion" title="Permanent link">#</a></h3>
 <ul>
 <li>Gestionar equipos de usuarios y equipos de equipos</li>
 <li>Asignar tareas de recolección de datos a equipos y usuarios utilizando un mapa interactivo</li>
 <li>Crear calendarios con un perímetro, duración y uno o más formularios de recolección de datos</li>
 </ul>
-</li>
-<li>
-<p><strong>Entidades</strong> - estas pueden consistir en individuos (por ejemplo, beneficiarios de programas de salud) u objetos físicos (por ejemplo, lotes de vacunas, mosquiteros, etc.). Los flujos de trabajo permiten rastrear las entidades abriendo formularios específicos en función de las respuestas dadas a formularios anteriores.</p>
+<h3 id="entidades">Entidades<a class="headerlink" href="#entidades" title="Permanent link">#</a></h3>
+<p>Estas pueden consistir en individuos (por ejemplo, beneficiarios de programas de salud) u objetos físicos (por ejemplo, lotes de vacunas, mosquiteros, etc.). Los flujos de trabajo permiten rastrear las entidades abriendo formularios específicos en función de las respuestas dadas a formularios anteriores.</p>
 <ul>
 <li>Crear tipos de entidades (beneficiarios, stocks u otros)</li>
 <li>Asignar flujos de trabajo a tipos de entidades</li>
@@ -1272,10 +1350,9 @@
 <li>Comparar y fusionar entidades si es necesario</li>
 <li>Registrar los datos de las entidades en una tarjeta NFC</li>
 </ul>
-</li>
-</ul>
+<h3 id="ampliamente-implementado">Ampliamente implementado<a class="headerlink" href="#ampliamente-implementado" title="Permanent link">#</a></h3>
 <p>La plataforma ha sido implementada en Benín, Burkina Faso, Burundi, Camerún, República Centroafricana, República Democrática del Congo, Haití, Costa de Marfil, Mali, Níger, Nigeria y Uganda. Es el registro geográfico oficial en Burkina Faso desde 2023. IASO también ha sido implementado a nivel regional (región AFRO) para apoyar la Iniciativa Global para la Erradicación de la Polio gracias a sus capacidades de registros geoespaciales y de establecimientos de salud.</p>
-<h1 id="tecnologias-utilizadas">Tecnologías utilizadas<a class="headerlink" href="#tecnologias-utilizadas" title="Permanent link">#</a></h1>
+<h3 id="tecnologias-utilizadas">Tecnologías utilizadas<a class="headerlink" href="#tecnologias-utilizadas" title="Permanent link">#</a></h3>
 <p>IASO está compuesto por una aplicación Android white labeled utilizando Java/Kotlin, reutilizando una gran parte de los proyectos ODK, y una plataforma web programada en Python/GeoDjango sobre PostGIS. El frontend es principalmente en React/Leaflet. La API está implementada a través de Django Rest Framework, y todos los datos se almacenan en PostgreSQL o el directorio media/. Uno de los objetivos es la facilidad de integración con otras plataformas. Ya tenemos importaciones y exportaciones en formatos CSV y GeoPackage, y apuntamos a una fácil integración con OSM.</p>
 <p>La aplicación móvil para Android permite la presentación de formularios y la creación de unidades organizacionales. Los formularios también pueden completarse en una interfaz web a través del servicio complementario Enketo.</p>
 

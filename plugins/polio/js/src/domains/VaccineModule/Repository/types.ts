@@ -14,6 +14,7 @@ export type ReportParams = {
 export type FormsParams = {
     countries?: string;
     campaignType?: string;
+    campaignCategory?: string;
     country_block?: string;
     campaignGroups?: string;
     file_type?: string;

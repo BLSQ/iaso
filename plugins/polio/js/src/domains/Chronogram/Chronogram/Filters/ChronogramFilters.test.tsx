@@ -57,7 +57,7 @@ const defaultFilters = {
     country: '',
     campaign: '',
     on_time: '',
-    on_hold: '',
+    campaign_category: '',
 };
 
 const renderFilters = (params = {}) =>
@@ -118,7 +118,7 @@ describe('ChronogramFilters', () => {
             ).toBeInTheDocument();
             expect(
                 screen.getByRole('combobox', {
-                    name: MESSAGES.labelIsOnHold.defaultMessage,
+                    name: MESSAGES.filterLabelCampaignCategory.defaultMessage,
                 }),
             ).toBeInTheDocument();
         });

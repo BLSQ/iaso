@@ -17,7 +17,8 @@ type FieldType =
     | 'datetime';
 
 type Props = {
-    value: JSONValue;
+    // Date can appear at runtime from the query builder before serialization
+    value: JSONValue | Date;
     parent?: JSONValue;
     fields: QueryBuilderFields;
 };
@@ -29,6 +30,11 @@ interface JSONObject {
 }
 
 type JSONArray = Array<JSONValue>;
+
+type QueryBuilderFieldWithSubfields = {
+    type?: string;
+    subfields?: QueryBuilderFields;
+};
 
 const objectLoop = (
     obj: JSONObject,
@@ -45,12 +51,59 @@ const arrayLoop = (arr: JSONArray, fields: QueryBuilderFields): JSONArray => {
     return arr.map(value => parseJson({ value, parent: arr, fields }));
 };
 
+const findField = (
+    fields: QueryBuilderFields,
+    fieldName: string,
+): QueryBuilderFieldWithSubfields | undefined => {
+    const directField = fields[fieldName] as
+        | QueryBuilderFieldWithSubfields
+        | undefined;
+    if (directField) {
+        return directField;
+    }
+    return Object.values(fields).reduce<
+        QueryBuilderFieldWithSubfields | undefined
+    >((found, field) => {
+        if (found) {
+            return found;
+        }
+        const fieldWithSubfields = field as QueryBuilderFieldWithSubfields;
+        if (fieldWithSubfields?.subfields) {
+            return findField(fieldWithSubfields.subfields, fieldName);
+        }
+        return undefined;
+    }, undefined);
+};
+
 const getFieldType = (
     fields: QueryBuilderFields,
     parent?: JSONValue,
-): FieldType => parent && parent[0]?.var && fields[parent[0].var]?.type;
+): FieldType | undefined => {
+    const varName = Array.isArray(parent)
+        ? (parent[0] as { var?: string } | undefined)?.var
+        : undefined;
+    if (!varName) {
+        return undefined;
+    }
+    return findField(fields, varName)?.type as FieldType | undefined;
+};
+
+const formatDateValue = (
+    value: MomentInput,
+    fieldType: FieldType | undefined,
+): string => {
+    if (fieldType === 'datetime') {
+        return moment(value).format(apiDateTimeFormat);
+    }
+    return moment(value).format(apiDateFormat);
+};
 
 export const parseJson = ({ value, parent, fields }: Props): JSONValue => {
+    // Date objects must be handled before the generic object loop, otherwise
+    // Object.entries(date) yields {} and the value is lost.
+    if (value instanceof Date) {
+        return formatDateValue(value, getFieldType(fields, parent));
+    }
     // @ts-ignore
     if (value && !value.var) {
         const fieldType = getFieldType(fields, parent);
@@ -58,13 +111,13 @@ export const parseJson = ({ value, parent, fields }: Props): JSONValue => {
             if (value === 'current_time') {
                 return value;
             }
-            return moment(value as MomentInput).format(apiDateFormat);
+            return formatDateValue(value as MomentInput, 'date');
         }
         if (fieldType === 'datetime') {
             if (value === 'current_time') {
                 return value;
             }
-            return moment(value as MomentInput).format(apiDateTimeFormat);
+            return formatDateValue(value as MomentInput, 'datetime');
         }
         if (fieldType === 'time') {
             return `${moment
@@ -77,11 +130,11 @@ export const parseJson = ({ value, parent, fields }: Props): JSONValue => {
         }
     }
     if (Array.isArray(value)) {
-        return arrayLoop(value, fields);
+        return arrayLoop(value as JSONArray, fields);
     }
     if (value && typeof value === 'object') {
-        return objectLoop(value, fields);
+        return objectLoop(value as JSONObject, fields);
     }
 
-    return value;
+    return value as JSONValue;
 };

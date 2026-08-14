@@ -126,7 +126,7 @@ Si aucun formulaire n'est encore chargé :
 
 Depuis la liste des formulaires, vous pouvez rechercher parmi les formulaires disponibles du compte IASO auquel vous êtes connecté en utilisant les filtres suivants :
 
-![alt text](./user_guide_attachments/formsmanagement2fr.png)
+![alt text](./user_guide_attachments/formsmanagement2fr.jpg)
 
 Les boutons ci-dessous vous permettent de gérer les formulaires de collecte de données :
 
@@ -179,7 +179,7 @@ Vous pouvez également vérifier les soumissions dans la vue cartographique. Les
 
 L'onglet "Fichier" vous permet de visualiser les fichiers soumis avec les formulaires, tels que des photos. En cliquant sur un fichier donné, vous serez redirigé vers la soumission de formulaire correspondante. 
 
-![alt text](./user_guide_attachments/formsubmissionsfilesfr.png)
+![alt text](./user_guide_attachments/formsubmissionsfiles.png)
 
 ### Gérer les soumissions de formulaires
 

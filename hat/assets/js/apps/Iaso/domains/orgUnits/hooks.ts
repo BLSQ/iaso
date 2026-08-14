@@ -215,7 +215,7 @@ export const useOrgUnitDetailData = (
 };
 
 export type SaveOrgUnitPayload = Omit<Partial<OrgUnit>, 'groups'> & {
-    groups: number[];
+    groups?: number[];
 };
 
 export const useSaveOrgUnit = (
@@ -237,7 +237,7 @@ export const useSaveOrgUnit = (
 
 export const useRefreshOrgUnit = () => {
     const queryClient = useQueryClient();
-    return data => {
+    return (data: OrgUnit) => {
         queryClient.invalidateQueries('currentOrgUnit');
         queryClient.invalidateQueries('logs');
         return queryClient.setQueryData(['forms', data.id], data);

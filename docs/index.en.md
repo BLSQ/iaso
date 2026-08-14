@@ -18,32 +18,40 @@ IASO comprises:
 
 In terms of features, IASO can be summarized around **four main components** which are interconnected and expand the powers of one another:
 
--  **Geospatial data management (Georegistry)**
-    -  Manage multiple master lists of organizational units (e.g. health areas, districts, facilities, or schools) including their GPS coordinates and boundaries
-    -  Keep track of changes made to the organization units
-    -   Map multiple geographic data sources
-    -   Propose changes to org units from IASO mobile application and validate them on the web
+### Geospatial data management (Georegistry)
 
-- **Geo-structured data collection**
-    -   Create data collection forms using the widely known XLS form format and upload them to IASO
-    -   Link your form to one or several organization unit type (e.g. National/Regional/District/Health facility) to geo-structure your data collection
-    -   Keep track of changes with versioning of your data collection forms
-    -   Validate from the web all data collection form submissions sent from IASO mobile application
-    -   Monitor data collection completeness per organization unit level and drill-down to identify where issues happen
+-  Manage multiple master lists of organizational units (e.g. health areas, districts, facilities, or schools) including their GPS coordinates and boundaries
+-  Keep track of changes made to the organization units
+-   Map multiple geographic data sources
+-   Propose changes to org units from IASO mobile application and validate them on the web
 
--   **Geo-enabled Microplanning**
-    - Manage teams of users and teams of teams
-    - Assign data collection duties to teams and users using a map interface
-    - Create plannings with a scope, a time span, and one or several data collection form(s)
- 
--   **Entities** - these can be individuals (e.g. health programme beneficiaries) or physical objects (e.g. vaccines parcel, mosquito net, etc.). Workflows allows the tracking of entities by opening specific forms according to previous answers given to previous forms.
-    - Create entity types (beneficiaries, stocks, or other)
-    - Assign workflows to entity types
-    - Register entities via mobile app (offline)
-    - Synchronize mobile and web applications
-    - Compare and merge entities as needed
-    - Record entity data in an NFC card
-  
+### Geo-structured data collection
+
+-   Create data collection forms using the widely known XLS form format and upload them to IASO
+-   Link your form to one or several organization unit type (e.g. National/Regional/District/Health facility) to geo-structure your data collection
+-   Keep track of changes with versioning of your data collection forms
+-   Validate from the web all data collection form submissions sent from IASO mobile application
+-   Monitor data collection completeness per organization unit level and drill-down to identify where issues happen
+
+### Geo-enabled Microplanning
+
+- Manage teams of users and teams of teams
+- Assign data collection duties to teams and users using a map interface
+- Create plannings with a scope, a time span, and one or several data collection form(s)
+
+### Entities
+
+These can be individuals (e.g. health programme beneficiaries) or physical objects (e.g. vaccines parcel, mosquito net, etc.). Workflows allows the tracking of entities by opening specific forms according to previous answers given to previous forms.
+
+- Create entity types (beneficiaries, stocks, or other)
+- Assign workflows to entity types
+- Register entities via mobile app (offline)
+- Synchronize mobile and web applications
+- Compare and merge entities as needed
+- Record entity data in an NFC card
+
+### Widely deployed
+
 The platform has been implemented in Benin, Burkina Faso, Burundi, Cameroon, Central African Republic, the Democratic Republic of Congo, Haiti, Ivory Coast, Mali, Niger, Nigeria and Uganda. It is the official georegistry in Burkina Faso since 2023. IASO has also been implemented at regional level (AFRO region) in support to the Global Polio Eradication Initiative for its geospatial and health facility registries capabilities.
 
 

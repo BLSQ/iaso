@@ -52,6 +52,8 @@ plugins:
             References: Références
             Models: Modèles
             How to: Guides
+            Advanced configuration: Configuration avancée
+            IASO and DHIS2: IASO et DHIS2
             More about IASO: En savoir plus sur IASO
             IASO website: Demander une démo
             Bluesquare website: Bluesquare
@@ -67,6 +69,8 @@ plugins:
             References: Referencias
             Models: Modelos
             How to: Guías
+            Advanced configuration: Configuración avanzada
+            IASO and DHIS2: IASO y DHIS2
             More about IASO: Más sobre IASO
             IASO website: Sitio web de IASO
             Release notes: Notas de versión
@@ -107,13 +111,14 @@ nav: # nav configures the side bar menu - this is the ONLY place the nav tree is
   - Home: index.md
   - Users:
      - ./pages/users/how_to/get_started_with_iaso.md
-     - ./pages/users/how_to/setup_dhis2_login_in_iaso.md
      - ./pages/users/reference/iaso_concepts.md
      - ./pages/users/reference/iaso_modules.md
      - ./pages/users/reference/user_guide.md
-     - ./pages/users/how_to/run_ETL.md
      - ./pages/users/reference/iaso_mobile.md
-     - FAQ: ./pages/users/FAQ/faq.md
+     - Advanced configuration:
+       - IASO and DHIS2:
+         - ./pages/users/how_to/setup_dhis2_login_in_iaso.md
+       - FAQ: ./pages/users/FAQ/faq.md
   - Developers:
     - References:
       # - Data model glossary:

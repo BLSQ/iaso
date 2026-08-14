@@ -3,6 +3,29 @@
     --md-accent-fg-color: #fcb900;
 }
 
+/* Language switcher: by default this is a bare globe icon with no visible
+   label, easy to miss in the header. Show the current language as text
+   next to the icon - html[lang] is set correctly per built locale. */
+.md-header .md-select > .md-header__button.md-icon {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: auto;
+    padding-inline-end: 0.2rem;
+}
+.md-header .md-select > .md-header__button.md-icon::after {
+    content: "EN";
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+html[lang="fr"] .md-header .md-select > .md-header__button.md-icon::after {
+    content: "FR";
+}
+html[lang="es"] .md-header .md-select > .md-header__button.md-icon::after {
+    content: "ES";
+}
+
 .md-footer {
     display: none !important;
 }

@@ -44,6 +44,7 @@ export default defineConfig({
                     include: [
                         'hat/assets/js/**/*.test.{ts,tsx}',
                         'plugins/polio/js/**/*.test.{ts,tsx}',
+                        'plugins/snt_malaria/js/**/*.test.{ts,tsx}',
                     ],
                     exclude: [
                         ...configDefaults.exclude,
@@ -63,6 +64,7 @@ export default defineConfig({
                     include: [
                         'hat/assets/js/**/*.a11y.test.{ts,tsx}',
                         'plugins/polio/js/**/*.a11y.test.{ts,tsx}',
+                        'plugins/snt_malaria/js/**/*.a11y.test.{ts,tsx}',
                     ],
                     exclude: [
                         ...configDefaults.exclude, '**/build/', '**/dist/', '**/*.min.js', '**/playwright/**', 'hat/assets/js/__tests__/**',

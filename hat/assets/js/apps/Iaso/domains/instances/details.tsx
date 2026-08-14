@@ -97,7 +97,7 @@ const InstanceDetails: FunctionComponent = () => {
             />
             {isLoading && <LoadingSpinner />}
             {currentInstance && !isLoading && (
-                <MainWrapper sx={{ p: 4 }}>
+                <>
                     {currentInstance.can_user_modify && showDial && (
                         <SpeedDialInstance
                             currentInstance={currentInstance}
@@ -105,47 +105,53 @@ const InstanceDetails: FunctionComponent = () => {
                             reassignInstance={reassignInstance}
                         />
                     )}
-                    <Grid container spacing={3}>
-                        <Grid xs={12} md={8} lg={9} item>
-                            <SubmissionContent
-                                formDescriptor={
-                                    currentInstance.form_descriptor as Descriptor
-                                }
-                                instanceData={currentInstance.file_content}
-                                files={currentInstance.files ?? []}
-                            />
-                        </Grid>
-
-                        <Grid xs={12} md={4} lg={3} item>
-                            {currentInstance.deleted && (
-                                <Alert severity="warning" sx={{ mb: 4 }}>
-                                    {formatMessage(MESSAGES.warningSoftDeleted)}
-                                    <br />
-                                    {formatMessage(
-                                        MESSAGES.warningSoftDeletedExport,
-                                    )}
-                                    <br />
-                                    {formatMessage(
-                                        MESSAGES.warningSoftDeletedDerived,
-                                    )}
-                                    <br />
-                                </Alert>
-                            )}
-                            {currentInstance && currentInstance.entity && (
-                                <EntityCard
-                                    entity={currentInstance.entity}
-                                    fields={entityFields}
-                                    withLinkToEntity
+                    <MainWrapper sx={{ p: 4 }}>
+                        <Grid container spacing={3}>
+                            <Grid xs={12} md={8} lg={9} item>
+                                <SubmissionContent
+                                    formDescriptor={
+                                        currentInstance.form_descriptor as Descriptor
+                                    }
+                                    instanceData={currentInstance.file_content}
+                                    files={currentInstance.files ?? []}
                                 />
-                            )}
-                            <SubmissionRail
-                                currentInstance={currentInstance}
-                                showHistoryLink={showHistoryLink}
-                                onLightBoxToggled={open => setShowDial(!open)}
-                            />
+                            </Grid>
+
+                            <Grid xs={12} md={4} lg={3} item>
+                                {currentInstance.deleted && (
+                                    <Alert severity="warning" sx={{ mb: 4 }}>
+                                        {formatMessage(
+                                            MESSAGES.warningSoftDeleted,
+                                        )}
+                                        <br />
+                                        {formatMessage(
+                                            MESSAGES.warningSoftDeletedExport,
+                                        )}
+                                        <br />
+                                        {formatMessage(
+                                            MESSAGES.warningSoftDeletedDerived,
+                                        )}
+                                        <br />
+                                    </Alert>
+                                )}
+                                {currentInstance && currentInstance.entity && (
+                                    <EntityCard
+                                        entity={currentInstance.entity}
+                                        fields={entityFields}
+                                        withLinkToEntity
+                                    />
+                                )}
+                                <SubmissionRail
+                                    currentInstance={currentInstance}
+                                    showHistoryLink={showHistoryLink}
+                                    onLightBoxToggled={open =>
+                                        setShowDial(!open)
+                                    }
+                                />
+                            </Grid>
                         </Grid>
-                    </Grid>
-                </MainWrapper>
+                    </MainWrapper>
+                </>
             )}
         </Box>
     );

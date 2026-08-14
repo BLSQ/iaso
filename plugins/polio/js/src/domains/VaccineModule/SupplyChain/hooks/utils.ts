@@ -52,7 +52,7 @@ const canSaveArrayTab = (
     }
     const newElements = values[tab]
         ? // @ts-ignore we check that values[tab] is not undefined, so the ts error is wrong
-          values[tab].slice(initialValues[tab].length - 1)
+          values[tab].slice((initialValues[tab]?.length ?? 0) - 1)
         : [];
     // If an element has been added, we check that it's not empty
     return areArrayElementsChanged(newElements);

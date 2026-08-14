@@ -11,11 +11,21 @@ site (verified empirically while doing this restructure). Writing the
 (correct, verified) redirect files ourselves in on_post_build sidesteps that
 entirely, with no extra dependency.
 
-Each tuple is (old_dir, new_dir, old_html_name, new_html_name), all relative
-to a docs_dir "root" that then gets a locale prefix ("", "fr", "es") applied
-uniformly - mkdocs-static-i18n builds a full page tree per locale (falling
-back to the default-locale content where no translation exists), so a page
-that moved has the same old->new URL shape under every locale prefix.
+Each tuple is (old_dir, new_dir, old_html_name, new_html_name[, anchor]), all
+relative to a docs_dir "root" that then gets a locale prefix ("", "fr", "es")
+applied uniformly - mkdocs-static-i18n builds a full page tree per locale
+(falling back to the default-locale content where no translation exists), so
+a page that moved has the same old->new URL shape under every locale prefix.
+
+The optional 5th element is a same-page anchor to append to the redirect
+target - used when a whole page got merged into a *section* of another page
+rather than getting a page of its own (e.g. use_form_ai.html merged into a
+subsection of user_guide.html). Headings translate, so their anchor slugs
+differ per locale (accents/apostrophes get stripped differently) - pass
+either a plain string (same anchor for every locale) or a dict keyed by
+locale prefix ("" for the default/en build, "fr", "es") when they differ.
+A locale missing from the dict gets no anchor (plain page redirect) - use
+this for a locale where the merged-into section doesn't exist yet.
 """
 
 import posixpath
@@ -190,6 +200,17 @@ MOVED_PAGES = [
         "setup_dhis2_login_in_iaso.html",
     ),
     ("pages/users/how_to/use_form_ai", "pages/users/how_to", "use_form_ai.html", "use_form_ai.html"),
+    # merged into a subsection of user_guide.html rather than getting its own page:
+    (
+        "pages/users/how_to",
+        "pages/users/reference",
+        "use_form_ai.html",
+        "user_guide.html",
+        {"": "create-your-form-with-ai", "fr": "creer-votre-formulaire-avec-lia"},
+        # no "es" entry: the ES user_guide.html has no Form AI section yet (there
+        # was never an ES use_form_ai.es.md to move), so ES gets a plain redirect
+        # to the top of user_guide.html instead of a (nonexistent) anchor.
+    ),
     ("pages/users/reference/how_we_work", "pages/users/reference", "how_we_work.html", "how_we_work.html"),
     ("pages/users/reference/iaso_concepts", "pages/users/reference", "iaso_concepts.html", "iaso_concepts.html"),
     ("pages/users/reference/iaso_mobile", "pages/users/reference", "iaso_mobile.html", "iaso_mobile.html"),
@@ -217,7 +238,9 @@ You're being redirected to a <a href="{target}">new destination</a>.
 def on_post_build(config, **kwargs):
     site_dir = Path(config["site_dir"])
     written = 0
-    for old_dir, new_dir, old_name, new_name in MOVED_PAGES:
+    for entry in MOVED_PAGES:
+        old_dir, new_dir, old_name, new_name = entry[:4]
+        anchor_spec = entry[4] if len(entry) > 4 else None
         for prefix in LOCALE_PREFIXES:
             old_path = site_dir / prefix / old_dir / old_name
             new_path = site_dir / prefix / new_dir / new_name
@@ -229,6 +252,9 @@ def on_post_build(config, **kwargs):
                 (prefix + "/" + new_dir + "/" + new_name).strip("/"),
                 start=(prefix + "/" + old_dir).strip("/"),
             )
+            anchor = anchor_spec.get(prefix) if isinstance(anchor_spec, dict) else anchor_spec
+            if anchor:
+                target += "#" + anchor
             old_path.parent.mkdir(parents=True, exist_ok=True)
             old_path.write_text(REDIRECT_TEMPLATE.format(target=target), encoding="utf-8")
             written += 1

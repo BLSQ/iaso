@@ -111,7 +111,6 @@ nav: # nav configures the side bar menu - this is the ONLY place the nav tree is
      - ./pages/users/reference/iaso_modules.md
      - ./pages/users/reference/user_guide.md
      - ./pages/users/reference/iaso_mobile.md
-     - ./pages/users/how_to/use_form_ai.md
   - Developers:
     - References:
       # - Data model glossary:

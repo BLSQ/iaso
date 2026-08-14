@@ -513,14 +513,6 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/get_started_with_iaso.html"/>
     </url>
     <url>
-        <loc>Nonepages/users/how_to/run_ETL.html</loc>
-        <lastmod>2026-08-14</lastmod>
-        <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/run_ETL.html"/>
-        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/run_ETL.html"/>
-        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/run_ETL.html"/>
-    </url>
-    <url>
         <loc>Nonepages/users/how_to/setup_an_empty_iaso_account.html</loc>
         <lastmod>2026-08-14</lastmod>
         <changefreq>daily</changefreq>
@@ -1097,14 +1089,6 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/get_started_with_iaso.html"/>
     </url>
     <url>
-        <loc>Nonefr/pages/users/how_to/run_ETL.html</loc>
-        <lastmod>2026-08-14</lastmod>
-        <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/run_ETL.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/run_ETL.html"/>
-        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/run_ETL.html"/>
-    </url>
-    <url>
         <loc>Nonefr/pages/users/how_to/setup_an_empty_iaso_account.html</loc>
         <lastmod>2026-08-14</lastmod>
         <changefreq>daily</changefreq>
@@ -1679,14 +1663,6 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/get_started_with_iaso.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/get_started_with_iaso.html"/>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/get_started_with_iaso.html"/>
-    </url>
-    <url>
-        <loc>Nonees/pages/users/how_to/run_ETL.html</loc>
-        <lastmod>2026-08-14</lastmod>
-        <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/run_ETL.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/run_ETL.html"/>
-        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/run_ETL.html"/>
     </url>
     <url>
         <loc>Nonees/pages/users/how_to/setup_an_empty_iaso_account.html</loc>

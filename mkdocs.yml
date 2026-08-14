@@ -107,10 +107,13 @@ nav: # nav configures the side bar menu - this is the ONLY place the nav tree is
   - Home: index.md
   - Users:
      - ./pages/users/how_to/get_started_with_iaso.md
+     - ./pages/users/how_to/setup_dhis2_login_in_iaso.md
      - ./pages/users/reference/iaso_concepts.md
      - ./pages/users/reference/iaso_modules.md
      - ./pages/users/reference/user_guide.md
+     - ./pages/users/how_to/run_ETL.md
      - ./pages/users/reference/iaso_mobile.md
+     - FAQ: ./pages/users/FAQ/faq.md
   - Developers:
     - References:
       # - Data model glossary:

@@ -12,7 +12,11 @@ IASO incluye:
 - una **aplicación móvil** que también funciona **sin conexión** - destinada a usuarios de campo para completar formularios y enviar datos cuando la red esté disponible
 - una **interfaz de correspondencia y script** para analizar, comparar y fusionar múltiples fuentes de datos geográficos
 - una **integración bidireccional con DHIS2**, el sistema de información de gestión de salud ampliamente utilizado en los PIBM
-  
+
+La plataforma ha sido implementada en Benín, Burkina Faso, Burundi, Camerún, República Centroafricana, República Democrática del Congo, Haití, Costa de Marfil, Mali, Níger, Nigeria y Uganda. Es el registro geográfico oficial en Burkina Faso desde 2023. IASO también ha sido implementado a nivel regional (región AFRO) para apoyar la Iniciativa Global para la Erradicación de la Polio gracias a sus capacidades de registros geoespaciales y de establecimientos de salud.
+
+## Funcionalidades
+
 En términos de funcionalidades, IASO puede resumirse en torno a **cuatro componentes principales** que están interconectados y refuerzan sus capacidades mutuas:
 
 ### Gestión de datos geoespaciales (Georegister)
@@ -36,7 +40,7 @@ En términos de funcionalidades, IASO puede resumirse en torno a **cuatro compon
 - Asignar tareas de recolección de datos a equipos y usuarios utilizando un mapa interactivo
 - Crear calendarios con un perímetro, duración y uno o más formularios de recolección de datos
 
-### Entidades
+### Entidades (seguimiento longitudinal)
 
 Estas pueden consistir en individuos (por ejemplo, beneficiarios de programas de salud) u objetos físicos (por ejemplo, lotes de vacunas, mosquiteros, etc.). Los flujos de trabajo permiten rastrear las entidades abriendo formularios específicos en función de las respuestas dadas a formularios anteriores.
 
@@ -47,11 +51,7 @@ Estas pueden consistir en individuos (por ejemplo, beneficiarios de programas de
 - Comparar y fusionar entidades si es necesario
 - Registrar los datos de las entidades en una tarjeta NFC
 
-### Ampliamente implementado
-
-La plataforma ha sido implementada en Benín, Burkina Faso, Burundi, Camerún, República Centroafricana, República Democrática del Congo, Haití, Costa de Marfil, Mali, Níger, Nigeria y Uganda. Es el registro geográfico oficial en Burkina Faso desde 2023. IASO también ha sido implementado a nivel regional (región AFRO) para apoyar la Iniciativa Global para la Erradicación de la Polio gracias a sus capacidades de registros geoespaciales y de establecimientos de salud.
-
-### Tecnologías utilizadas
+## Tecnologías utilizadas
 IASO está compuesto por una aplicación Android white labeled utilizando Java/Kotlin, reutilizando una gran parte de los proyectos ODK, y una plataforma web programada en Python/GeoDjango sobre PostGIS. El frontend es principalmente en React/Leaflet. La API está implementada a través de Django Rest Framework, y todos los datos se almacenan en PostgreSQL o el directorio media/. Uno de los objetivos es la facilidad de integración con otras plataformas. Ya tenemos importaciones y exportaciones en formatos CSV y GeoPackage, y apuntamos a una fácil integración con OSM.
 
 La aplicación móvil para Android permite la presentación de formularios y la creación de unidades organizacionales. Los formularios también pueden completarse en una interfaz web a través del servicio complementario Enketo.

@@ -7,9 +7,7 @@ de IASO por primera vez. Cubre la suscripción a un plan, el inicio de sesión, 
 de sus datos geográficos, la creación de su primer formulario de recolección de datos y la
 conexión de la aplicación móvil.
 
-## 1. Suscribirse a un plan SaaS
-
-IASO ya está disponible como producto SaaS.
+## 1. Suscribirse a IASO
 
 Si aún no se ha suscrito, vaya a [openiaso.com/pricing](https://www.openiaso.com/pricing/) y
 elija un plan. Si todavía no está seguro, puede comenzar con una prueba gratuita para probar
@@ -79,8 +77,6 @@ Obtenga la aplicación móvil de IASO en Google Play Store: [play.google.com](ht
 
 ## 6. Escanear el código QR y comenzar
 
-Antes de escanear, asegúrese de que los indicadores de funcionalidad necesarios estén
-activados para su proyecto.
-
-Luego, en la aplicación web de IASO, vaya a "Projects" (Proyectos) y haga clic en el código QR
+En la aplicación web de IASO, vaya a "Projects" (Proyectos). Asegúrese de que los indicadores
+de funcionalidad necesarios estén activados para su proyecto. Luego, haga clic en el código QR
 de su proyecto. Escanéelo desde la aplicación móvil para finalizar la configuración.

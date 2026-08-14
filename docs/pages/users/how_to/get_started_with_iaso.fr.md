@@ -7,9 +7,7 @@ pour la première fois. Il couvre l'abonnement à une offre, la connexion, la co
 vos données géographiques, la création de votre premier formulaire de collecte de données, et
 la connexion de l'application mobile.
 
-## 1. S'abonner à une offre SaaS
-
-IASO est désormais disponible en tant que produit SaaS.
+## 1. S'abonner à IASO
 
 Si vous n'êtes pas encore abonné, rendez-vous sur [openiaso.com/pricing](https://www.openiaso.com/pricing/)
 et choisissez une offre. Si vous n'êtes pas encore sûr, vous pouvez commencer par un essai
@@ -22,6 +20,8 @@ Vous recevrez ensuite un email avec les instructions pour créer votre compte.
 Rendez-vous sur [app.openiaso.com](https://app.openiaso.com/).
 
 Saisissez vos identifiants et cliquez sur "Login".
+
+![Se connecter à IASO](./get_started_with_iaso_attachments/login_screen_fr.png){ .doc-shot }
 
 ## 3. Configurer vos données géographiques
 
@@ -52,6 +52,9 @@ Allez dans le menu "Forms" (Formulaires). Vous pouvez créer un formulaire de de
 **Option A — Générer un formulaire avec Form AI**
 
 - Allez dans "Forms" > "Form AI"
+
+![Panneau Form AI](./get_started_with_iaso_attachments/form_ai_panel_fr.png){ .doc-shot }
+
 - Décrivez le formulaire souhaité dans une requête : listez les questions dont vous avez
   besoin, précisez si chacune doit être une question ouverte ou fermée avec des choix
   prédéfinis, et mentionnez toute logique de saut.
@@ -80,8 +83,6 @@ Téléchargez l'application mobile IASO sur le Google Play Store : [play.google.
 
 ## 6. Scanner le code QR et démarrer
 
-Avant de scanner, assurez-vous que les indicateurs de fonctionnalité requis sont activés pour
-votre projet.
-
-Ensuite, sur l'application web IASO, allez dans "Projects" (Projets) et cliquez sur le code QR
-de votre projet. Scannez-le depuis l'application mobile pour terminer la configuration.
+Sur l'application web IASO, allez dans "Projects" (Projets). Assurez-vous que les indicateurs
+de fonctionnalité requis sont activés pour votre projet. Cliquez ensuite sur le code QR de
+votre projet. Scannez-le depuis l'application mobile pour terminer la configuration.

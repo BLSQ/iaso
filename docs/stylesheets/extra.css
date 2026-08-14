@@ -29,6 +29,20 @@ html[lang="es"] .md-header .md-select > .md-header__button.md-icon::after {
 .md-footer {
     display: none !important;
 }
+
+/* toc.integrate merges each page's own headings into its left-sidebar nav
+   entry, but shows them unconditionally (Material's own CSS: plain
+   `.md-nav--secondary{display:block}`, no gating on the #__toc checkbox).
+   That makes every page look "pre-expanded" the moment you land on it.
+   Piggyback on the checkbox/label Material already renders for this
+   element (originally meant for the mobile drawer) so it behaves like
+   every other collapsible section: closed until clicked. */
+.md-nav__item--active > .md-nav--secondary {
+    display: none !important;
+}
+.md-nav__item--active > .md-nav__toggle:checked ~ .md-nav--secondary {
+    display: block !important;
+}
 #pdf-download-container {
     padding-top: 20px;
     text-align: left;

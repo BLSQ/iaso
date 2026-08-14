@@ -15,6 +15,9 @@ IASO comprises:
 - a **matching and scripting interface** to analyze, compare and merge several geographic data sources
 - a bi-directional **integration with DHIS2**, the widely used Health Management Information System in Low- and middle-income countries
 
+The platform has been implemented in Benin, Burkina Faso, Burundi, Cameroon, Central African Republic, the Democratic Republic of Congo, Haiti, Ivory Coast, Mali, Niger, Nigeria and Uganda. It is the official georegistry in Burkina Faso since 2023. IASO has also been implemented at regional level (AFRO region) in support to the Global Polio Eradication Initiative for its geospatial and health facility registries capabilities.
+
+## Features
 
 In terms of features, IASO can be summarized around **four main components** which are interconnected and expand the powers of one another:
 
@@ -33,13 +36,13 @@ In terms of features, IASO can be summarized around **four main components** whi
 -   Validate from the web all data collection form submissions sent from IASO mobile application
 -   Monitor data collection completeness per organization unit level and drill-down to identify where issues happen
 
-### Geo-enabled Microplanning
+### Microplanning
 
 - Manage teams of users and teams of teams
 - Assign data collection duties to teams and users using a map interface
 - Create plannings with a scope, a time span, and one or several data collection form(s)
 
-### Entities
+### Entities (longitudinal tracking)
 
 These can be individuals (e.g. health programme beneficiaries) or physical objects (e.g. vaccines parcel, mosquito net, etc.). Workflows allows the tracking of entities by opening specific forms according to previous answers given to previous forms.
 
@@ -50,12 +53,7 @@ These can be individuals (e.g. health programme beneficiaries) or physical objec
 - Compare and merge entities as needed
 - Record entity data in an NFC card
 
-### Widely deployed
-
-The platform has been implemented in Benin, Burkina Faso, Burundi, Cameroon, Central African Republic, the Democratic Republic of Congo, Haiti, Ivory Coast, Mali, Niger, Nigeria and Uganda. It is the official georegistry in Burkina Faso since 2023. IASO has also been implemented at regional level (AFRO region) in support to the Global Polio Eradication Initiative for its geospatial and health facility registries capabilities.
-
-
-### Technical stack
+## Technical stack
 
 IASO is made of a white labeled Android application using Java/Kotlin, reusing large parts of the ODK projects, and a web platform programmed using Python/GeoDjango on top of PostGIS. 
 Frontend is mainly React/Leaflet. 

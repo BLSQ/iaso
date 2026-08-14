@@ -10,9 +10,9 @@ import { ProjectChips } from 'Iaso/domains/projects/components/ProjectChips';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { baseUrls } from '../../../constants/urls';
 import * as Permission from '../../../utils/permissions';
-import { useCurrentUser, User } from '../../../utils/usersUtils';
+import { CurrentUser, useCurrentUser } from '../../../utils/usersUtils';
 import {
-    userHasAccessToModule,
+    useCurrentUserHasAccessToModule,
     userHasOneOfPermissions,
     userHasPermission,
 } from '../../users/utils';
@@ -117,7 +117,7 @@ export const useFormVersionsTableColumns = ({
     );
 };
 
-const getActionsColWidth = (user: User): number => {
+const getActionsColWidth = (user?: CurrentUser): number => {
     const baseWidth = 50;
     let width = baseWidth * 2;
     if (
@@ -155,7 +155,7 @@ export const useFormsTableColumns = ({
     count,
 }: FormsTableColumnsProps): Column[] => {
     const user = useCurrentUser();
-    const hasDhis2Module = userHasAccessToModule('DHIS2_MAPPING', user);
+    const hasDhis2Module = useCurrentUserHasAccessToModule('DHIS2_MAPPING');
 
     const { formatMessage } = useSafeIntl();
 

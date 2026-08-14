@@ -1,8 +1,8 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { Table, TableBody } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import { WidgetPaperRow as Row } from '../../../components/papers/WidgetPaperRow';
-import { useCurrentUser } from '../../../utils/usersUtils';
 import { DataSource } from '../types/dataSources';
 import { getLabelsAndValues } from '../utils';
 
@@ -11,13 +11,17 @@ type Props = {
 };
 export const DataSourceInfo: FunctionComponent<Props> = ({ dataSource }) => {
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
+    const currentAccount = useCurrentAccount();
     const dataSourceDetailFields = useMemo(() => {
         if (dataSource) {
-            return getLabelsAndValues(dataSource, formatMessage, currentUser);
+            return getLabelsAndValues(
+                dataSource,
+                formatMessage,
+                currentAccount,
+            );
         }
         return [];
-    }, [dataSource, formatMessage, currentUser]);
+    }, [dataSource, formatMessage, currentAccount]);
 
     return (
         <Table size="small">

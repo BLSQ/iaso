@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { DefaultVersion } from 'Iaso/utils/usersUtils';
+import { AccountRetrieveCurrent } from 'Iaso/api/accounts';
 import { Search } from '../../types/search';
 
 /**
@@ -10,7 +10,7 @@ import { Search } from '../../types/search';
  */
 export const useSourceVersionIds = (
     searches: Search[],
-    defaultVersion?: DefaultVersion,
+    defaultVersion?: AccountRetrieveCurrent['default_version'],
 ): string | undefined => {
     return useMemo(() => {
         let versions: number[] = [];

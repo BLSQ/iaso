@@ -11,6 +11,7 @@ import { Box } from '@mui/material';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 
 import Color from 'color';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import { ProjectChips } from 'Iaso/domains/projects/components/ProjectChips';
 import { BreakWordCell } from '../../../../components/Cells/BreakWordCell';
 import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
@@ -19,7 +20,6 @@ import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLi
 import { baseUrls } from '../../../../constants/urls';
 import { ColumnCell } from '../../../../types/general';
 import { useTableSelection } from '../../../../utils/table';
-import { useCurrentUser } from '../../../../utils/usersUtils';
 import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
 import { BulkDeleteDialog } from '../Components/BulkDeleteDialog';
 import { MultiActionsDialog } from '../Components/MultiActionsDialog';
@@ -36,8 +36,8 @@ import {
 
 const useColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
-    const { modules } = currentUser.account;
+    const account = useCurrentAccount();
+    const modules = account?.modules;
 
     return useMemo(() => {
         const columns = [
@@ -172,7 +172,7 @@ const useColumns = (): Column[] => {
         ];
 
         // Remove payment status column when the current account has no payments module
-        if (!modules.includes(PAYMENTS_MODULE)) {
+        if (!modules?.includes(PAYMENTS_MODULE)) {
             return columns.filter(column => column.id !== 'payment_status');
         }
 

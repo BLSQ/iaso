@@ -1,11 +1,12 @@
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
+import { AccountRetrieveCurrent } from 'Iaso/api/accounts';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import { getLocaleDateFormat } from '../../utils/dates';
 import {
     hasFeatureFlag,
     HIDE_PERIOD_QUARTER_NAME,
 } from '../../utils/featureFlags';
-import { useCurrentUser } from '../../utils/usersUtils';
 import {
     PERIOD_TYPE_DAY,
     PERIOD_TYPE_MONTH,
@@ -215,8 +216,8 @@ function getISOWeek(date: Date): number {
 export const getPrettyPeriod = (
     period: string,
     formatMessage: any,
-    currentUser: any,
-) => {
+    currentAccount?: AccountRetrieveCurrent,
+): string => {
     if (!period) return textPlaceholder;
     const periodClass = new Period(period);
 
@@ -256,7 +257,7 @@ export const getPrettyPeriod = (
                 periodClass.monthRange,
                 formatMessage,
             );
-            if (hasFeatureFlag(currentUser, HIDE_PERIOD_QUARTER_NAME)) {
+            if (hasFeatureFlag(HIDE_PERIOD_QUARTER_NAME, currentAccount)) {
                 return `${monthRangeString} ${periodClass.year}`;
             }
             return `${prettyPeriod} (${monthRangeString})`;
@@ -268,6 +269,7 @@ export const getPrettyPeriod = (
 
 export const usePrettyPeriod = () => {
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
-    return period => getPrettyPeriod(period, formatMessage, currentUser);
+    const currentAccount = useCurrentAccount();
+    return (period: string) =>
+        getPrettyPeriod(period, formatMessage, currentAccount);
 };

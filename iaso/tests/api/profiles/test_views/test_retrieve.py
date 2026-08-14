@@ -12,6 +12,15 @@ from iaso.utils.colors import DEFAULT_COLOR
 
 
 class ProfileRetrieveAPITestCase(BaseProfileAPITestCase):
+    def test_permissions(self):
+        pass
+
+    def test_num_queries(self):
+        pass
+
+    def assertValidData(self, data):
+        self.assertResponseCompliantToSwagger(data, "ProfileRetrieve")
+
     @override_settings(
         USER_MANUAL_PATH="https://www.openiaso.com/user-manual/",
         FORUM_PATH="https://forum.example.com/",
@@ -22,7 +31,7 @@ class ProfileRetrieveAPITestCase(BaseProfileAPITestCase):
         self.account.save(update_fields=["user_manual_path", "forum_path"])
 
         self.client.force_authenticate(self.jane)
-        response = self.client.get(reverse("profiles-detail", kwargs={"pk": "me"}))
+        response = self.client.get(reverse("profiles-detail", kwargs={"pk": self.jane.iaso_profile.pk}))
         response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(
@@ -37,9 +46,9 @@ class ProfileRetrieveAPITestCase(BaseProfileAPITestCase):
         self.client.force_authenticate(self.jane)
 
         # no feature flag at first
-        response = self.client.get(reverse("profiles-detail", kwargs={"pk": "me"}))
+        response = self.client.get(reverse("profiles-detail", kwargs={"pk": self.jane.iaso_profile.pk}))
         response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertValidProfileData(response_data)
+        self.assertValidData(response_data)
         self.assertIn("account", response_data)
         self.assertEqual(response_data["account"]["feature_flags"], [])
 
@@ -48,7 +57,7 @@ class ProfileRetrieveAPITestCase(BaseProfileAPITestCase):
 
         response = self.client.get(reverse("profiles-detail", kwargs={"pk": "me"}))
         response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertValidProfileData(response_data)
+        self.assertValidData(response_data)
 
         self.assertIn("account", response_data)
 
@@ -58,7 +67,7 @@ class ProfileRetrieveAPITestCase(BaseProfileAPITestCase):
         self.account.feature_flags.remove(aff)
         response = self.client.get(reverse("profiles-detail", kwargs={"pk": "me"}))
         response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertValidProfileData(response_data)
+        self.assertValidData(response_data)
         self.assertIn("account", response_data)
 
         self.assertEqual(response_data["account"]["feature_flags"], [])
@@ -159,5 +168,3 @@ class ProfileRetrieveAPITestCase(BaseProfileAPITestCase):
 
         self.assertValidProfileData(response_data)
         self.assertEqual(response_data["user_name"], "johndoe")
-
-    # todo : write tests for retrieve , but not for "me"

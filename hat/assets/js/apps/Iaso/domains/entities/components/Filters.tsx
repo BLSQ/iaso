@@ -18,13 +18,13 @@ import {
 import DatesRange from 'Iaso/components/filters/DatesRange';
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import {
     SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
     hasFeatureFlag,
 } from 'Iaso/utils/featureFlags';
 import { LocationLimit } from 'Iaso/utils/map/LocationLimit';
 
-import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 
@@ -61,7 +61,7 @@ const Filters: FunctionComponent<Props> = ({
     isSearchActive,
 }) => {
     const getParams = useFiltersParams();
-    const currentUser = useCurrentUser();
+    const currentAccount = useCurrentAccount();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const redirectTo = useRedirectTo();
@@ -104,8 +104,8 @@ const Filters: FunctionComponent<Props> = ({
     const { data: selectedTeam } = useGetTeam(
         filters?.submitterTeamId ? parseInt(filters.submitterTeamId, 10) : 0,
     );
-    const dataSourceId = currentUser?.account?.default_version?.data_source?.id;
-    const sourceVersionId = currentUser?.account?.default_version?.id;
+    const dataSourceId = currentAccount?.default_version?.data_source?.id;
+    const sourceVersionId = currentAccount?.default_version?.id;
     const { data: groups, isFetching: isFetchingGroups } = useGetGroupDropdown({
         dataSourceId,
         sourceVersionId,
@@ -168,8 +168,8 @@ const Filters: FunctionComponent<Props> = ({
                         onErrorChange={setTextSearchError}
                     />
                     {!hasFeatureFlag(
-                        currentUser,
                         SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
+                        currentAccount,
                     ) && (
                         <InputComponent
                             keyValue="entityTypeIds"
@@ -184,8 +184,8 @@ const Filters: FunctionComponent<Props> = ({
                     )}
 
                     {hasFeatureFlag(
-                        currentUser,
                         SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
+                        currentAccount,
                     ) && (
                         <InputComponent
                             type="select"
@@ -235,8 +235,8 @@ const Filters: FunctionComponent<Props> = ({
                         dateTo={filters.dateTo}
                     />
                     {!hasFeatureFlag(
-                        currentUser,
                         SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
+                        currentAccount,
                     ) && (
                         <InputComponent
                             type="select"

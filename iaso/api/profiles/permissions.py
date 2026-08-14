@@ -11,7 +11,10 @@ class HasProfilePermission(permissions.BasePermission):
     def has_permission(self, request, view):
         pk = view.kwargs.get("pk")
 
-        if view.action in ("retrieve", "partial_update", "update") and pk == PK_ME:
+        if view.action == "retrieve_current":
+            return True
+
+        if view.action in ("partial_update", "update") and pk == PK_ME:
             return True
 
         if request.user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()):

@@ -2,7 +2,8 @@ import React from 'react';
 import { act, screen, waitFor } from '@testing-library/react';
 import moment from 'moment/moment';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, expect } from 'vitest';
+import { describe, expect, vi } from 'vitest';
+import { getApiAccountsMeRetrieveResponseMock } from 'Iaso/api/accounts/endpoints/account/account.msw';
 import { ValidationWorkflowInstances } from 'Iaso/domains/validationWorkflowInstances';
 import { apiDateTimeFormat } from 'Iaso/utils/dates';
 import { VALIDATION_WORKFLOW_MODULE } from 'Iaso/utils/modules';
@@ -10,19 +11,19 @@ import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
 import { renderWithThemeAndIntlProvider } from '../../../tests/helpers';
 import { currentUserFactory } from '../../factories/users';
 
-const { mockUseGetValidationWorkflowInstanceSearch } = vi.hoisted(() => {
-    return { mockUseGetValidationWorkflowInstanceSearch: vi.fn() };
-});
-
-const { mockCurrentUser } = vi.hoisted(() => {
-    return { mockCurrentUser: vi.fn() };
-});
-const { mockUseGetFormsDropdownOptions } = vi.hoisted(() => {
-    return { mockUseGetFormsDropdownOptions: vi.fn() };
-});
-const { mockUseGetWorkflowOptions } = vi.hoisted(() => {
-    return { mockUseGetWorkflowOptions: vi.fn() };
-});
+const {
+    mockUseGetValidationWorkflowInstanceSearch,
+    mockCurrentUser,
+    mockUseGetFormsDropdownOptions,
+    mockUseGetWorkflowOptions,
+    mockCurrentAccount,
+} = vi.hoisted(() => ({
+    mockUseGetValidationWorkflowInstanceSearch: vi.fn(),
+    mockCurrentUser: vi.fn(),
+    mockUseGetFormsDropdownOptions: vi.fn(),
+    mockUseGetWorkflowOptions: vi.fn(),
+    mockCurrentAccount: vi.fn(),
+}));
 
 vi.mock('Iaso/domains/forms/hooks/useGetFormsDropdownOptions', () => ({
     useGetFormsDropdownOptions: mockUseGetFormsDropdownOptions,
@@ -45,6 +46,13 @@ vi.mock('Iaso/utils/usersUtils', async () => {
         useCurrentUser: mockCurrentUser,
     };
 });
+vi.mock('Iaso/domains/accounts/hooks', async () => {
+    const actual = await vi.importActual('Iaso/domains/accounts/hooks');
+    return {
+        ...actual,
+        useCurrentAccount: mockCurrentAccount,
+    };
+});
 
 describe('Validation workflow list UI integration test', () => {
     beforeEach(() => {
@@ -52,12 +60,14 @@ describe('Validation workflow list UI integration test', () => {
         const currentUser = currentUserFactory.build({
             is_superuser: false,
             permissions: [VALIDATION_WORKFLOWS],
-            account: {
-                id: 22,
-                modules: [VALIDATION_WORKFLOW_MODULE],
-            },
         });
         mockCurrentUser.mockReturnValue(currentUser);
+        mockCurrentAccount.mockReturnValue(
+            getApiAccountsMeRetrieveResponseMock({
+                id: 22,
+                modules: [VALIDATION_WORKFLOW_MODULE],
+            }),
+        );
         mockUseGetFormsDropdownOptions.mockReturnValue({
             data: [],
             isFetching: false,

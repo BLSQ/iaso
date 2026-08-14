@@ -5,8 +5,8 @@ import { Table, TableBody, TableRow, TableCell } from '@mui/material';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import { textPlaceholder } from 'bluesquare-components';
 import moment from 'moment';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
-import { useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../messages';
 import { OrgUnit } from '../types/orgUnit';
 
@@ -51,7 +51,7 @@ export const OrgUnitCreationDetails: FunctionComponent<Props> = ({
         ? moment.unix(orgUnit.updated_at).format('LTS')
         : '-';
     const isNewOrgunit = params.orgUnitId === '0';
-    const { account } = useCurrentUser();
+    const account = useCurrentAccount();
     return (
         <>
             {!orgUnit && <LoadingSpinner absolute />}
@@ -68,7 +68,7 @@ export const OrgUnitCreationDetails: FunctionComponent<Props> = ({
                             label={formatMessage(MESSAGES.source)}
                             value={
                                 orgUnit.source ??
-                                account.default_version?.data_source.name
+                                account?.default_version?.data_source.name
                             }
                             dataTestId="source"
                         />
@@ -76,7 +76,7 @@ export const OrgUnitCreationDetails: FunctionComponent<Props> = ({
                             label={formatMessage(MESSAGES.sourceVersion)}
                             value={
                                 orgUnit.version ??
-                                account.default_version?.number
+                                account?.default_version?.number
                             }
                             dataTestId="source"
                         />

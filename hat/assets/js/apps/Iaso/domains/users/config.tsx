@@ -131,7 +131,7 @@ export const useUsersTableColumns = ({
                                 canBypassProjectRestrictions
                             }
                         />
-                        {currentUser.id !== settings.row.original.id &&
+                        {currentUser?.id !== settings.row.original.id &&
                             userHasOneOfPermissions(
                                 [
                                     Permission.USERS_ADMIN,

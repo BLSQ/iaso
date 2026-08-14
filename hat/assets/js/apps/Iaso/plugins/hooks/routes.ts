@@ -3,15 +3,16 @@ import { last } from 'lodash';
 
 import { HomeOnline } from '../../domains/home/HomeOnline';
 import { RouteCustom } from '../../routing/types';
-import { SHOW_HOME_ONLINE, hasFeatureFlag } from '../../utils/featureFlags';
-import { useCurrentUser } from '../../utils/usersUtils';
+import {
+    SHOW_HOME_ONLINE,
+    useCurrentUserHasFeatureFlag,
+} from '../../utils/featureFlags';
 import { PluginsContext } from '../context';
 import { Plugins } from '../types';
 
 export const useHomeOnlineComponent = (): ElementType | undefined => {
     const { plugins }: Plugins = useContext(PluginsContext);
-    const currentUser = useCurrentUser();
-    const canShowHome = hasFeatureFlag(currentUser, SHOW_HOME_ONLINE);
+    const canShowHome = useCurrentUserHasFeatureFlag(SHOW_HOME_ONLINE);
     const PluginHome = last(
         plugins
             .filter(plugin => plugin.homeOnline)

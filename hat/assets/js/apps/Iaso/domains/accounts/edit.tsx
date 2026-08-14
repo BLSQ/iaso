@@ -13,6 +13,7 @@ import { useApiAccountFeatureFlagsDropdownList } from 'Iaso/api/accountFeatureFl
 import {
     ApiAccountsUpdateBody,
     getApiAccountsAiApiKeyRetrieveQueryKey,
+    getApiAccountsMeRetrieveQueryKey,
     useApiAccountsRetrieve,
     useApiAccountsUpdate,
 } from 'Iaso/api/accounts';
@@ -24,15 +25,16 @@ import { baseUrls } from 'Iaso/constants/urls';
 import { FeatureFlagsEditPanel } from 'Iaso/domains/accounts/components/edit/FeatureFlagsEditPanel';
 import { GeneralInfoEditPanel } from 'Iaso/domains/accounts/components/edit/GeneralInfoEditPanel';
 import { ModulesEditPanel } from 'Iaso/domains/accounts/components/edit/ModulesEditPanel';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { withFormikSubmitAsync } from 'Iaso/utils/forms';
-import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import MESSAGES from './messages';
 
 export const AccountsEdit: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const params = useParamsObject(baseUrls.accountsEdit);
-    const currentUser = useCurrentUser();
+    const currentAccount = useCurrentAccount();
+
     const accountId = parseInt(params.id);
 
     const { data: data, isLoading } = useApiAccountsRetrieve(accountId);
@@ -59,11 +61,13 @@ export const AccountsEdit: FunctionComponent = () => {
     const { mutateAsync: save } = useApiAccountsUpdate({
         mutation: {
             onSuccess: (_data, variables) => {
-                if (accountId === currentUser?.account?.id) {
-                    queryClient.invalidateQueries('currentUser');
+                if (accountId === currentAccount?.id) {
+                    queryClient.invalidateQueries(
+                        getApiAccountsMeRetrieveQueryKey(),
+                    );
                 }
                 if (
-                    accountId === currentUser?.account?.id &&
+                    accountId === currentAccount?.id &&
                     variables.data.modules?.includes('FORM_AI') &&
                     !data?.modules?.includes('FORM_AI')
                 ) {

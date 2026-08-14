@@ -26,14 +26,11 @@ import {
 } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import * as Permission from '../../utils/permissions';
-import {
-    useCheckUserHasWritePermissionOnOrgunit,
-    useCurrentUser,
-} from '../../utils/usersUtils';
+import { useCheckUserHasWritePermissionOnOrgunit } from '../../utils/usersUtils';
 import { FormsTable } from '../forms/components/FormsTable';
 import { FormsParams } from '../forms/types/forms';
 import { useGetOrgunitsExtraPath } from '../home/hooks/useGetOrgunitsExtraPath';
-import { userHasPermission } from '../users/utils';
+import { useCurrentUserHasPermission } from '../users/utils';
 import { OrgUnitBreadcrumbs } from './components/breadcrumbs/OrgUnitBreadcrumbs';
 import { OrgUnitForm } from './components/OrgUnitForm';
 import { OrgUnitImages } from './components/OrgUnitImages';
@@ -126,10 +123,8 @@ const OrgUnitDetail: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const refreshOrgUnitQueryCache = useRefreshOrgUnit();
     const redirectToReplace = useRedirectToReplace();
-    const currentUser = useCurrentUser();
-    const hasOrgUnitsHistoryPermission = userHasPermission(
+    const hasOrgUnitsHistoryPermission = useCurrentUserHasPermission(
         Permission.ORG_UNITS_HISTORY,
-        currentUser,
     );
 
     const [currentOrgUnit, setCurrentOrgUnit] =

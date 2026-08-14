@@ -15,8 +15,7 @@ import { baseUrls } from '../../../constants/urls';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
 import { PaginationParams } from '../../../types/general';
 import * as Permission from '../../../utils/permissions';
-import { useCurrentUser } from '../../../utils/usersUtils';
-import { userHasPermission } from '../../users/utils';
+import { useCurrentUserHasPermission } from '../../users/utils';
 import { AddEntityTypesDialog } from './components/EntityTypesDialog';
 import { Filters } from './components/Filters';
 import { useColumns, baseUrl } from './config';
@@ -39,7 +38,9 @@ export const EntityTypes: FunctionComponent = () => {
     const params = useParamsObject(baseUrls.entityTypes) as Params;
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
+    const hasPermission = useCurrentUserHasPermission(
+        Permission.ENTITY_TYPE_WRITE,
+    );
     const redirectTo = useRedirectTo();
 
     const { data, isFetching: fetchingEntities } = useGetTypesPaginated(params);
@@ -67,10 +68,7 @@ export const EntityTypes: FunctionComponent = () => {
                     alignItems="center"
                     className={classes.marginTop}
                 >
-                    {userHasPermission(
-                        Permission.ENTITY_TYPE_WRITE,
-                        currentUser,
-                    ) && (
+                    {hasPermission && (
                         <AddEntityTypesDialog
                             iconProps={{
                                 dataTestId: 'add-entity-button',

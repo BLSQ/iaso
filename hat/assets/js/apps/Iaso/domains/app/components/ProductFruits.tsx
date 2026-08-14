@@ -1,22 +1,24 @@
 import React, { useMemo } from 'react';
 import { ProductFruits } from 'react-product-fruits';
-import { useCurrentUser } from '../../../utils/usersUtils';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 
 const ProductFruitsComponent = () => {
     const currentUser = useCurrentUser();
+    const currentAccount = useCurrentAccount();
 
     const userInfo = useMemo(() => {
-        if (!currentUser || !currentUser.account) {
+        if (!currentUser || !currentAccount) {
             return null;
         }
         return {
-            username: `${currentUser.account.name}-${currentUser.id}`,
+            username: `${currentAccount.name}-${currentUser.id}`,
             props: {
-                account_name: currentUser.account.name,
-                account_id: currentUser.account.id,
+                account_name: currentAccount.name,
+                account_id: currentAccount.id,
             },
         };
-    }, [currentUser]);
+    }, [currentUser, currentAccount]);
 
     if (!window.PRODUCT_FRUITS_WORKSPACE_CODE || !currentUser || !userInfo) {
         return null;

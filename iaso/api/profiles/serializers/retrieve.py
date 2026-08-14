@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.db.models import Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
@@ -201,37 +200,6 @@ class NestedOrgUnitSerializer(ModelSerializer):
         return obj.closed_date.strftime("%d/%m/%Y") if obj.closed_date else None
 
 
-class ProfileUserFallbackRetrieveSerializer(ModelSerializer):
-    user_id = serializers.ReadOnlyField(source="id")
-    projects = serializers.SerializerMethodField()
-    account = serializers.SerializerMethodField()
-    user_name = serializers.ReadOnlyField(source="username", default=None)
-
-    class Meta:
-        model = get_user_model()
-        fields = [
-            "first_name",
-            "user_name",
-            "last_name",
-            "email",
-            "user_id",
-            "projects",
-            "is_staff",
-            "is_superuser",
-            "account",
-        ]
-
-    @extend_schema_field({"type": "array", "items": {}})
-    def get_projects(self, obj):
-        # constant field : intentional
-        return []
-
-    @extend_schema_field(OpenApiTypes.NONE)
-    def get_account(self, obj):
-        # constant field : intentional
-        return None
-
-
 class ProfileRetrieveSerializer(ModelSerializer):
     first_name = serializers.SerializerMethodField()
     user_name = serializers.SerializerMethodField()
@@ -248,7 +216,7 @@ class ProfileRetrieveSerializer(ModelSerializer):
     country_code = serializers.SerializerMethodField()
     phone_number = serializers.CharField(source="phone_number.as_e164", read_only=True, allow_null=True)
 
-    projects = NestedProjectSerializer(many=True, read_only=True, source="get_ordered_projects")
+    projects = NestedProjectSerializer(many=True, read_only=True)
 
     other_accounts = NestedAccountSerializer(
         many=True, read_only=True, source="user.tenant_user.get_other_accounts", allow_null=True
@@ -259,7 +227,7 @@ class ProfileRetrieveSerializer(ModelSerializer):
         source="get_user_roles_editable_org_unit_type_ids", read_only=True
     )
     account = NestedAccountExtendedSerializer(read_only=True)
-    org_units = NestedOrgUnitSerializer(many=True, source="get_ordered_org_units", read_only=True)
+    org_units = NestedOrgUnitSerializer(many=True, read_only=True)
 
     class Meta:
         model = Profile

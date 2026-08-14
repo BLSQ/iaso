@@ -3,15 +3,12 @@ import React, { FunctionComponent } from 'react';
 import { LoadingSpinner } from 'bluesquare-components';
 import { UseMutateAsyncFunction } from 'react-query';
 import {
-    hasFeatureFlag,
     SHOW_LINK_INSTANCE_REFERENCE,
+    useCurrentUserHasFeatureFlag,
 } from '../../../utils/featureFlags';
-import {
-    useCheckUserHasWritePermissionOnOrgunit,
-    useCurrentUser,
-} from '../../../utils/usersUtils';
+import { useCheckUserHasWritePermissionOnOrgunit } from '../../../utils/usersUtils';
 import { useGetEnketoUrl } from '../../registry/hooks/useGetEnketoUrl';
-import { userHasPermission } from '../../users/utils';
+import { useCurrentUserHasPermission } from '../../users/utils';
 import {
     useDeleteInstance,
     useRestoreInstance,
@@ -55,15 +52,12 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         reassignInstance,
     } = props;
     const { data: formDef } = useGetFormDefForInstance(formId);
-    const currentUser = useCurrentUser();
-    const hasfeatureFlag = hasFeatureFlag(
-        currentUser,
+    const hasFeatureFlag = useCurrentUserHasFeatureFlag(
         SHOW_LINK_INSTANCE_REFERENCE,
     );
 
-    const hasUpdateSubmissionPermission = userHasPermission(
+    const hasUpdateSubmissionPermission = useCurrentUserHasPermission(
         'iaso_update_submission',
-        currentUser,
     );
 
     const {
@@ -86,7 +80,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         formAltitude === orgUnit?.altitude;
 
     const isLinkActionEnabled =
-        hasfeatureFlag && isInstanceOfReferenceForm && hasOrgUnitPermission;
+        hasFeatureFlag && isInstanceOfReferenceForm && hasOrgUnitPermission;
 
     const baseActions = useBaseActions(
         currentInstance,

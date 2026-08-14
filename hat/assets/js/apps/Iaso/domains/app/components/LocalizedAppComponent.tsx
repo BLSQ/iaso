@@ -3,13 +3,13 @@ import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { LoadingSpinner } from 'bluesquare-components';
 import { IntlProvider } from 'react-intl';
+import { useApiAccountsCustomTranslationsRetrieve } from 'Iaso/api/accounts';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useGetCurrentUser } from 'Iaso/domains/users/hooks/useGetCurrentUser';
 import { usePluginsRouteConfigs } from 'Iaso/plugins/hooks/routes';
 import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
 import translationsConfig from 'IasoModules/translations/configs';
 import { useLocale } from '../contexts/LocaleContext';
-import { useGetCustomTranslations } from '../hooks/useGetCustomTranslations';
 import { useCurrentRoute, useGetRoutesConfigs } from '../hooks/useRoutes';
 
 type Props = {
@@ -41,9 +41,11 @@ const LocalizedAppComponent: FunctionComponent<Props> = ({
             false,
         );
     const {
-        data: customTranslations,
+        data: customTranslationsData,
         isFetching: isFetchingCustomTranslations,
-    } = useGetCustomTranslations(currentUser?.account?.id);
+    } = useApiAccountsCustomTranslationsRetrieve(
+        currentUser?.account?.id as number,
+    );
     const allowDisplay =
         currentRoute?.allowAnonymous ||
         (!isFetchingCurrentUser &&
@@ -60,20 +62,27 @@ const LocalizedAppComponent: FunctionComponent<Props> = ({
             currentUser &&
             !isFetchingCustomTranslations
         ) {
-            if (customTranslations) {
-                Object.keys(customTranslations).forEach(lang => {
-                    baseMessages[lang] = {
-                        ...baseMessages[lang],
-                        ...customTranslations[lang],
-                    };
-                });
+            if (customTranslationsData?.custom_translations) {
+                Object.keys(customTranslationsData.custom_translations).forEach(
+                    lang => {
+                        baseMessages[lang] = {
+                            ...baseMessages[lang],
+                            ...(
+                                customTranslationsData.custom_translations as Record<
+                                    string,
+                                    any
+                                >
+                            )?.[lang],
+                        };
+                    },
+                );
             }
         }
         return baseMessages;
     }, [
         currentUser,
         currentRoute?.allowAnonymous,
-        customTranslations,
+        customTranslationsData?.custom_translations,
         isFetchingCustomTranslations,
     ]);
 

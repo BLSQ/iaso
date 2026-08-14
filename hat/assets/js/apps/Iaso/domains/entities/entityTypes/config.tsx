@@ -10,8 +10,7 @@ import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import Workflow from '../../../components/svg/Workflow';
 import { baseUrls } from '../../../constants/urls';
 import * as Permission from '../../../utils/permissions';
-import { useCurrentUser } from '../../../utils/usersUtils';
-import { userHasPermission } from '../../users/utils';
+import { useCurrentUserHasPermission } from '../../users/utils';
 import { EditEntityTypesDialog } from './components/EntityTypesDialog';
 
 import MESSAGES from './messages';
@@ -30,7 +29,9 @@ export const useColumns = ({
     saveEntityType,
 }: Props): Array<Column> => {
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
+    const hasPermission = useCurrentUserHasPermission(
+        Permission.ENTITY_TYPE_WRITE,
+    );
 
     return useMemo(
         () => [
@@ -64,10 +65,7 @@ export const useColumns = ({
                     const type = settings.row.original as EntityType;
                     return (
                         <section>
-                            {userHasPermission(
-                                Permission.ENTITY_TYPE_WRITE,
-                                currentUser,
-                            ) && (
+                            {hasPermission && (
                                 <EditEntityTypesDialog
                                     initialData={type}
                                     iconProps={{}}
@@ -90,19 +88,15 @@ export const useColumns = ({
                                     tooltipMessage={MESSAGES.viewForm}
                                 />
                             )}
-                            {userHasPermission(
-                                Permission.ENTITY_TYPE_WRITE,
-                                currentUser,
-                            ) &&
-                                type.entities_count === 0 && (
-                                    <DeleteDialog
-                                        keyName={`entityType-${type.id}`}
-                                        disabled={type.instances_count > 0}
-                                        titleMessage={MESSAGES.deleteTitle}
-                                        message={MESSAGES.deleteText}
-                                        onConfirm={() => deleteEntityType(type)}
-                                    />
-                                )}
+                            {hasPermission && type.entities_count === 0 && (
+                                <DeleteDialog
+                                    keyName={`entityType-${type.id}`}
+                                    disabled={type.instances_count > 0}
+                                    titleMessage={MESSAGES.deleteTitle}
+                                    message={MESSAGES.deleteText}
+                                    onConfirm={() => deleteEntityType(type)}
+                                />
+                            )}
                             <IconButtonComponent
                                 id={`workflow-link-${type.id}`}
                                 url={`/${baseUrls.workflows}/entityTypeId/${type.id}`}
@@ -114,6 +108,6 @@ export const useColumns = ({
                 },
             },
         ],
-        [currentUser, deleteEntityType, formatMessage, saveEntityType],
+        [hasPermission, deleteEntityType, formatMessage, saveEntityType],
     );
 };

@@ -11,7 +11,7 @@ from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Min, Prefetch, QuerySet
 from django.db.transaction import atomic
-from django.http import Http404, HttpResponse, StreamingHttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import translation
@@ -46,6 +46,7 @@ from iaso.api.profiles.policies import (
 from iaso.api.profiles.serializers import (
     ProfileCreateSerializer,
     ProfileListSerializer,
+    ProfileRetrieveCurrentSerializer,
     ProfileRetrieveSerializer,
     ProfileUpdateSerializer,
     ProfileUserFallbackRetrieveSerializer,
@@ -53,7 +54,7 @@ from iaso.api.profiles.serializers import (
 from iaso.api.profiles.serializers.dropdown import ProfileDropdownSerializer
 from iaso.api.profiles.serializers.update import BaseProfileUpdateSerializer, ProfileUpdatePasswordSerializer
 from iaso.mail.branding import core_email_branding_context
-from iaso.models import OrgUnit, Profile, TenantUser, UserRole
+from iaso.models import OrgUnit, Profile, Project, TenantUser, UserRole
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
 from iaso.utils import is_mobile_request
 
@@ -105,6 +106,8 @@ class ProfilesViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.action == "retrieve":
             return ProfileRetrieveSerializer
+        if self.action == "retrieve_current":
+            return ProfileRetrieveCurrentSerializer
         if self.action == "create":
             return ProfileCreateSerializer
         if self.action == "list":
@@ -123,6 +126,30 @@ class ProfilesViewSet(ModelViewSet):
     def get_queryset(self):
         account = self.request.user.iaso_profile.account
         qs = Profile.objects.filter(account=account)
+
+        if self.action == "retrieve_current":
+            qs = qs.prefetch_related(
+                Prefetch("projects", Project.objects.all().order_by("name")),
+                Prefetch(
+                    "org_units",
+                    OrgUnit.objects.select_related("version", "version__data_source", "org_unit_type")
+                    .all()
+                    .order_by("name"),
+                ),
+            ).select_related("user", "user__tenant_user", "user__tenant_user__main_user", "account")
+            return qs
+
+        if self.action == "retrieve":
+            qs = qs.prefetch_related(
+                Prefetch("projects", Project.objects.all().order_by("name")),
+                Prefetch(
+                    "org_units",
+                    OrgUnit.objects.select_related("version", "version__data_source", "org_unit_type")
+                    .all()
+                    .order_by("name"),
+                ),
+            ).select_related("user", "user__tenant_user", "user__tenant_user__main_user", "account")
+            return qs
 
         if self.action == "dropdown":
             # ProfileDropdownSerializer only reads obj.user_id and obj.user.username/first_name/last_name,
@@ -166,18 +193,17 @@ class ProfilesViewSet(ModelViewSet):
         return qs
 
     def get_object(self):
-        if self.kwargs.get(self.lookup_field, "") == PK_ME:
+        if self.kwargs.get(self.lookup_field, "") == PK_ME or self.action == "retrieve_current":
             return self.filter_queryset(self.get_queryset()).get(user=self.request.user)
         return super().get_object()
 
-    def retrieve(self, request, *args, **kwargs):
+    @action(detail=False, methods=["get"], url_path="me")
+    def retrieve_current(self, request, *args, **kwargs):
         try:
             return super().retrieve(request, *args, **kwargs)
         except Profile.DoesNotExist:
-            if kwargs.get(self.lookup_field, "") == PK_ME:
-                serializer = ProfileUserFallbackRetrieveSerializer(instance=self.request.user)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            raise Http404
+            serializer = ProfileUserFallbackRetrieveSerializer(instance=self.request.user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=["get"], url_path="export-csv", url_name="export-csv")
     def export_csv(self, request, *args, **kwargs):

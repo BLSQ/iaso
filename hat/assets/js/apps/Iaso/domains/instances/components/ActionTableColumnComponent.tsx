@@ -7,6 +7,7 @@ import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import omit from 'lodash/omit';
 import { FormattedMessage } from 'react-intl';
 import { baseUrls } from 'Iaso/constants/urls';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import { useFormState } from 'Iaso/hooks/form';
 import {
     hasFeatureFlag,
@@ -56,6 +57,7 @@ const getUrlInstance = data => {
 
 export const ActionTableColumnComponent = ({ settings }) => {
     const user = useCurrentUser();
+    const account = useCurrentAccount();
     const [, , setFieldErrors] = useFormState(
         initialFormState(
             settings.row.original.org_unit,
@@ -99,7 +101,7 @@ export const ActionTableColumnComponent = ({ settings }) => {
     );
     const showLinkOrgUnitInstanceReferenceButton =
         settings.row.original.is_instance_of_reference_form &&
-        hasFeatureFlag(user, SHOW_LINK_INSTANCE_REFERENCE) &&
+        hasFeatureFlag(SHOW_LINK_INSTANCE_REFERENCE, account) &&
         userHasWritePermission &&
         userHasPermission(Permission.SUBMISSIONS_UPDATE, user);
 
@@ -107,13 +109,13 @@ export const ActionTableColumnComponent = ({ settings }) => {
         !settings.row.original.is_reference_instance &&
         userHasPermission(Permission.ORG_UNITS, user);
 
-    const confirmCancelTitleMessage = isItLinked => {
+    const confirmCancelTitleMessage = (isItLinked: boolean) => {
         return !isItLinked
             ? MESSAGES.linkOffOrgUnitToInstanceReferenceTitle
             : MESSAGES.linkOrgUnitToInstanceReferenceTitle;
     };
 
-    const confirmLinkOrUnlink = isItLinked => {
+    const confirmLinkOrUnlink = (isItLinked: boolean) => {
         return !isItLinked
             ? linkOrgUnitToReferenceSubmission(
                   settings.row.original.id,
@@ -125,7 +127,7 @@ export const ActionTableColumnComponent = ({ settings }) => {
               );
     };
 
-    const confirmCancelToolTipMessage = isItLinked => {
+    const confirmCancelToolTipMessage = (isItLinked: boolean) => {
         return !isItLinked
             ? MESSAGES.linkOffOrgUnitReferenceSubmission
             : MESSAGES.linkOrgUnitReferenceSubmission;

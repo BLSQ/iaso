@@ -13,8 +13,8 @@ import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { WidgetPaperRow as Row } from 'Iaso/components/papers/WidgetPaperRow';
 import { textPlaceholder } from 'Iaso/constants/uiConstants';
 import { EditAIApiKey } from 'Iaso/domains/accounts/components/modals/EditAIApiKeyModal';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import { userHasAccessToModule } from 'Iaso/domains/users/utils';
-import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import MESSAGES from '../../messages';
 
 type Props = {
@@ -28,7 +28,7 @@ export const GeneralInfoPanel: FunctionComponent<Props> = ({
     AIApiKey,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const user = useCurrentUser();
+    const currentAccount = useCurrentAccount();
     const { mutateAsync: deleteAIApiKey } = useApiAccountsAiApiKeyDestroy();
     return (
         <WidgetPaper
@@ -63,8 +63,8 @@ export const GeneralInfoPanel: FunctionComponent<Props> = ({
                             value: account?.forum_path,
                         }}
                     />
-                    {/* TODO: Fix this is not correct, we need to diplay key only if the module is active */}
-                    {userHasAccessToModule('FORM_AI', user) && (
+                    {/* TODO: Fix this is not correct, we need to display key only if the module is active */}
+                    {userHasAccessToModule('FORM_AI', currentAccount) && (
                         <Row
                             field={{
                                 label: formatMessage(MESSAGES.anthropicAPIKey),

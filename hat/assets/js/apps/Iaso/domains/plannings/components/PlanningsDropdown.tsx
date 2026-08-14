@@ -1,8 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import InputComponent from 'Iaso/components/forms/InputComponent';
-import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
+import { useCurrentUserHasOneOfPermissions } from 'Iaso/domains/users/utils';
 import { PLANNING_READ, PLANNING_WRITE } from 'Iaso/utils/permissions';
-import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { useGetPlanningsOptions } from '../hooks/requests/useGetPlannings';
 import MESSAGES from '../messages';
 
@@ -21,11 +20,10 @@ export const PlanningsDropdown: FunctionComponent<Props> = ({
     formIds,
     keyValue,
 }) => {
-    const currentUser = useCurrentUser();
-    const hasPermissions = userHasOneOfPermissions(
-        [PLANNING_READ, PLANNING_WRITE],
-        currentUser,
-    );
+    const hasPermissions = useCurrentUserHasOneOfPermissions([
+        PLANNING_READ,
+        PLANNING_WRITE,
+    ]);
     const { data: availablePlannings, isFetching: fetchingPlannings } =
         useGetPlanningsOptions(formIds, hasPermissions);
 

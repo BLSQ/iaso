@@ -6,22 +6,22 @@ import { useGetEntityFields } from './useGetEntityFields';
 
 const {
     mockCurrentUser,
-    mockUserHasPermission,
-    mockUserHasAccessToModule,
+    mockUseCurrentUserHasPermission,
     mockUseGetEntityTypesDropdown,
     mockUseGetPossibleFields,
     mockUseGetFormDescriptor,
     mockUseGetFields,
     mockFormatMessage,
+    mockUseCurrentUserHasAccessToModule,
 } = vi.hoisted(() => ({
     mockCurrentUser: vi.fn(),
-    mockUserHasPermission: vi.fn(),
-    mockUserHasAccessToModule: vi.fn(),
+    mockUseCurrentUserHasPermission: vi.fn(),
     mockUseGetEntityTypesDropdown: vi.fn(),
     mockUseGetPossibleFields: vi.fn(),
     mockUseGetFormDescriptor: vi.fn(),
     mockUseGetFields: vi.fn(),
     mockFormatMessage: vi.fn(msg => msg.id || msg),
+    mockUseCurrentUserHasAccessToModule: vi.fn(),
 }));
 
 vi.mock('bluesquare-components', () => ({
@@ -35,8 +35,8 @@ vi.mock('Iaso/utils/usersUtils', () => ({
 }));
 
 vi.mock('Iaso/domains/users/utils', () => ({
-    userHasAccessToModule: mockUserHasAccessToModule,
-    userHasPermission: mockUserHasPermission,
+    useCurrentUserHasAccessToModule: mockUseCurrentUserHasAccessToModule,
+    useCurrentUserHasPermission: mockUseCurrentUserHasPermission,
 }));
 
 vi.mock('./requests', () => ({
@@ -76,8 +76,8 @@ describe('useGetEntityFields hook', () => {
         vi.clearAllMocks();
 
         mockCurrentUser.mockReturnValue({ id: 1, username: 'yoda' });
-        mockUserHasPermission.mockReturnValue(true);
-        mockUserHasAccessToModule.mockReturnValue(true);
+        mockUseCurrentUserHasPermission.mockReturnValue(true);
+        mockUseCurrentUserHasAccessToModule.mockReturnValue(true);
 
         mockUseGetEntityTypesDropdown.mockReturnValue({
             data: [
@@ -116,14 +116,10 @@ describe('useGetEntityFields hook', () => {
     it('includes nfcCards field when user has both permission and module access', () => {
         const { result } = renderHook(() => useGetEntityFields(mockEntity));
 
-        expect(mockUserHasAccessToModule).toHaveBeenCalledWith(
+        expect(mockUseCurrentUserHasAccessToModule).toHaveBeenCalledWith(
             MODULE_EXTERNAL_STORAGE,
-            { id: 1, username: 'yoda' },
         );
-        expect(mockUserHasPermission).toHaveBeenCalledWith(STORAGES, {
-            id: 1,
-            username: 'yoda',
-        });
+        expect(mockUseCurrentUserHasPermission).toHaveBeenCalledWith(STORAGES);
 
         const nfcField = result.current.fields.find(f => f.key === 'nfcCards');
         expect(nfcField).toBeDefined();
@@ -131,7 +127,7 @@ describe('useGetEntityFields hook', () => {
     });
 
     it('excludes nfcCards field when user lacks module access', () => {
-        mockUserHasAccessToModule.mockReturnValue(false);
+        mockUseCurrentUserHasAccessToModule.mockReturnValue(false);
 
         const { result } = renderHook(() => useGetEntityFields(mockEntity));
 
@@ -140,7 +136,7 @@ describe('useGetEntityFields hook', () => {
     });
 
     it('excludes nfcCards field when user lacks permission', () => {
-        mockUserHasPermission.mockReturnValue(false);
+        mockUseCurrentUserHasPermission.mockReturnValue(false);
 
         const { result } = renderHook(() => useGetEntityFields(mockEntity));
 

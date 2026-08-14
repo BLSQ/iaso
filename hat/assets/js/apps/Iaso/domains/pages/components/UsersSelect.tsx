@@ -32,10 +32,10 @@ export const UsersSelect = ({
     const rawFieldIds = field?.value;
     const effectiveUserIds = useMemo(() => {
         if (isNewPage && (!rawFieldIds || rawFieldIds.length === 0)) {
-            return [currentUser.user_id];
+            return [currentUser?.user_id];
         }
         return rawFieldIds ?? [];
-    }, [currentUser.user_id, isNewPage, rawFieldIds]);
+    }, [currentUser?.user_id, isNewPage, rawFieldIds]);
 
     const filterUsers = useMemo(
         () =>
@@ -71,7 +71,7 @@ export const UsersSelect = ({
                     index,
                 });
                 const { onDelete, ...restTagProps } = tagProps;
-                const isCurrentUser = option.value === currentUser.user_id;
+                const isCurrentUser = option.value === currentUser?.user_id;
                 return (
                     <Chip
                         {...restTagProps}
@@ -83,7 +83,7 @@ export const UsersSelect = ({
                     />
                 );
             }),
-        [currentUser.user_id],
+        [currentUser?.user_id],
     );
 
     return (

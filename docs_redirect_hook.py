@@ -186,7 +186,6 @@ MOVED_PAGES = [
         "edit_documentation.html",
         "edit_documentation.html",
     ),
-    ("pages/users/how_to/run_ETL", "pages/users/how_to", "run_ETL.html", "run_ETL.html"),
     (
         "pages/users/how_to/setup_an_empty_iaso_account",
         "pages/users/how_to",
@@ -210,6 +209,14 @@ MOVED_PAGES = [
         # no "es" entry: the ES user_guide.html has no Form AI section yet (there
         # was never an ES use_form_ai.es.md to move), so ES gets a plain redirect
         # to the top of user_guide.html instead of a (nonexistent) anchor.
+    ),
+    # merged into a subsection of faq.html rather than getting its own page:
+    (
+        "pages/users/how_to",
+        "pages/users/FAQ",
+        "run_ETL.html",
+        "faq.html",
+        {"": "how-to-setup-a-iaso-etl", "fr": "comment-configurer-un-etl-iaso", "es": "como-configurar-un-etl-de-iaso"},
     ),
     ("pages/users/reference/how_we_work", "pages/users/reference", "how_we_work.html", "how_we_work.html"),
     ("pages/users/reference/iaso_concepts", "pages/users/reference", "iaso_concepts.html", "iaso_concepts.html"),

@@ -528,29 +528,43 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
       
         <li class="md-nav__item">
-  <a href="#data-collection-functionalities" class="md-nav__link">
-    Data collection functionalities
+  <a href="#data-collection-forms" class="md-nav__link">
+    Data collection - Forms
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#georegistry" class="md-nav__link">
-    Georegistry
+  <a href="#change-requests" class="md-nav__link">
+    Change requests
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#payments" class="md-nav__link">
-    Payments
+  <a href="#completeness-per-period" class="md-nav__link">
+    Completeness per Period
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#dhis2-bi-directional-integration" class="md-nav__link">
-    DHIS2 bi-directional integration
+  <a href="#validation-workflow" class="md-nav__link">
+    Validation workflow
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#entities" class="md-nav__link">
+    Entities
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#external-storage" class="md-nav__link">
+    External storage
   </a>
   
 </li>
@@ -563,8 +577,36 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#entities" class="md-nav__link">
-    Entities
+  <a href="#stock-management" class="md-nav__link">
+    Stock management
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#payments" class="md-nav__link">
+    Payments
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#form-ai" class="md-nav__link">
+    Form AI
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dhis2-mapping" class="md-nav__link">
+    DHIS2 mapping
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#embedded-links" class="md-nav__link">
+    Embedded links
   </a>
   
 </li>
@@ -1283,44 +1325,37 @@
 
 
 <h1 id="modules">Modules<a class="headerlink" href="#modules" title="Permanent link">#</a></h1>
-<p>IASO is organized according to Modules, which are groups of functionalities which can be added up depending on the use case to cover. Here are the Modules available in IASO:</p>
-<h2 id="data-collection-functionalities">Data collection functionalities<a class="headerlink" href="#data-collection-functionalities" title="Permanent link">#</a></h2>
-<ul>
-<li>Manage data collection forms (XLS forms) and their related data submissions</li>
-<li>Manage geographic data (import/export of geo data from Excel, DHIS2 or Geopackages, manage the Organizations Units and their hierarchy)</li>
-<li>Monitor the data collection process with the completeness statistics table and map</li>
-<li>Manage users and their permissions and geographies, user roles and teams</li>
-<li>Create mobile application(s) IDs and manage related features options</li>
-</ul>
-<h2 id="georegistry">Georegistry<a class="headerlink" href="#georegistry" title="Permanent link">#</a></h2>
-<ul>
-<li>Import several data sources from Excel, DHIS2 or Geopackages, compare and merge them as needed</li>
-<li>Visualize on a dynamic map data collected at the different levels of the hierarchy (e.g. Country, Region, District, facility)</li>
-<li>Validate changes on Organization Units (Name, Type, GPS coordinates, opening/closing dates) submitted from the field via the mobile application</li>
-<li>Validate data submitted via data collection forms that are linked to specific Organization Units types, called "Reference forms"</li>
-</ul>
-<h2 id="payments">Payments<a class="headerlink" href="#payments" title="Permanent link">#</a></h2>
-<ul>
-<li>Based on the validated proposed changes per user, generate payment lots to send to Mobile Money provider</li>
-<li>Indicate the status of the payments lots (pending, sent to Mobile Money provider, etc.)</li>
-</ul>
-<h2 id="dhis2-bi-directional-integration">DHIS2 bi-directional integration<a class="headerlink" href="#dhis2-bi-directional-integration" title="Permanent link">#</a></h2>
-<ul>
-<li>Manage the mappings with DHIS2 data elements for import/export of data</li>
-</ul>
-<h2 id="planning">Planning<a class="headerlink" href="#planning" title="Permanent link">#</a></h2>
-<ul>
-<li>Plan ahead your data collection activities by creating a planning with a set timeframe, geography, data collection forms and teams</li>
-<li>Assign data collection tasks to teams and users from the map-based interface available on the web</li>
-<li>Once tasks have been assigned, the mobile application users on the field will only see the forms that have been assigned to them</li>
-</ul>
+<p>IASO is organized according to Modules, which are groups of functionalities that can be activated depending on the use case to cover. Here are the Modules available in IASO:</p>
+<h2 id="data-collection-forms">Data collection - Forms<a class="headerlink" href="#data-collection-forms" title="Permanent link">#</a></h2>
+<p>Create and upload data collection forms using the widely known XLS form format. Forms are versioned, so every time a new version is created, the previous one stays available in the system. Submissions sent from the mobile application can be validated from the web, and data collection completeness can be monitored per organization unit, with drill-down to identify where issues happen.</p>
+<h2 id="change-requests">Change requests<a class="headerlink" href="#change-requests" title="Permanent link">#</a></h2>
+<p>A core Georegistry feature that keeps geographic data up to date. From the mobile application, users can submit change requests to an organization unit - including the creation of a brand-new one. Once submitted, the request appears on the web for a manager to review, shown side by side with the previous version so what changed is easy to spot.</p>
+<p>Which organization unit fields are open to change requests (Name, Organization unit type, Parent, Group, GPS coordinates, opening and closing date, or whether users can create new organization units at all) is configurable ahead of data collection from the IASO web platform.</p>
+<p>Change requests also support <strong>reference forms</strong>: a specific XLS form can be flagged as the reference form for an organization unit type, letting you attach fully custom "data attributes" to organization units - typically used for things like population figures or equipment inventories.</p>
+<h2 id="completeness-per-period">Completeness per Period<a class="headerlink" href="#completeness-per-period" title="Permanent link">#</a></h2>
+<p>Used for Performance-Based Financing (PBF) schemes, which IASO also supports as a data collection tool.</p>
+<h2 id="validation-workflow">Validation workflow<a class="headerlink" href="#validation-workflow" title="Permanent link">#</a></h2>
+<p>Enables "cascade validation" of submitted forms. Data managers define which user roles are responsible for approving data at each level of the hierarchy - for example, a "district manager" role approves first, then "region manager", then "country manager". The number of levels and who approves at each one is entirely configurable to match the hierarchy needed.</p>
 <h2 id="entities">Entities<a class="headerlink" href="#entities" title="Permanent link">#</a></h2>
+<p>Entities are items that can move from one geography to another - a person, a pallet of goods, or anything else worth tracking over time. They can be created from the mobile application and then managed from the web.</p>
 <ul>
-<li>Entities are items that can move from a geography to another, for instance a person, a pallet of goods, or other</li>
-<li>Entities can be created from the mobile application and then managed from the web application</li>
-<li>Find the entities duplicates by using the web application interface and make the decision to merge two similar entities or not</li>
-<li>Assign workflows to entity types, enabling specific data collection forms to open according to previously given answers</li>
+<li>Find likely duplicate entities from the web interface and decide whether to merge them</li>
+<li>Assign <strong>workflows</strong> to entity types, so that specific data collection forms open automatically depending on answers already given</li>
 </ul>
+<h2 id="external-storage">External storage<a class="headerlink" href="#external-storage" title="Permanent link">#</a></h2>
+<p>Lets IASO work with NFC cards as a storage medium, enabling entity data to be read from and written to a physical card in the field.</p>
+<h2 id="planning">Planning<a class="headerlink" href="#planning" title="Permanent link">#</a></h2>
+<p>Using a dynamic, map-based interface, data managers assign specific places to specific users, with a defined timeframe and one or more data collection forms. Field users then see their assigned "missions" on the mobile application and can navigate directly to the points where they need to collect data.</p>
+<h2 id="stock-management">Stock management<a class="headerlink" href="#stock-management" title="Permanent link">#</a></h2>
+<p>Tracks quantities of items available at organization unit level, based on stock-related questions built into data collection forms. Every "plus" or "minus" movement of an item at an organization unit is recorded, and the mobile application shows a real-time view of how many items remain at a given location.</p>
+<h2 id="payments">Payments<a class="headerlink" href="#payments" title="Permanent link">#</a></h2>
+<p>Linked to change requests. Based on the change requests a manager has approved, users can generate payment lots and download an Excel file summarizing, per user, how many approved change requests they're owed payment for.</p>
+<h2 id="form-ai">Form AI<a class="headerlink" href="#form-ai" title="Permanent link">#</a></h2>
+<p>Lets users create or edit data collection forms with AI as an assistant, rather than building the XLS form by hand.</p>
+<h2 id="dhis2-mapping">DHIS2 mapping<a class="headerlink" href="#dhis2-mapping" title="Permanent link">#</a></h2>
+<p>Activated when IASO is used alongside DHIS2, the most widely used open-source Health Management Information System. IASO's integration with DHIS2 is bi-directional: geographic data can be imported from DHIS2, then IASO's advanced geospatial tools take over for field data collection, and the updated data is sent back to DHIS2.</p>
+<h2 id="embedded-links">Embedded links<a class="headerlink" href="#embedded-links" title="Permanent link">#</a></h2>
+<p>Lets users embed external links - such as dashboards - directly into their IASO account, each with its own dedicated, personalized URL slug. IASO's user management (per user or via user roles) controls access to these embedded links, which support raw HTML, plain text, iframes, and Superset dashboards.</p>
 
 
 

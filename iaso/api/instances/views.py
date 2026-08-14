@@ -645,7 +645,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 "org_unit__parent",
                 "org_unit__org_unit_type",
                 "org_unit__version__data_source__credentials",
-                "project"
+                "project",
             )
             .with_status(form_ids=resolve_status_form_ids(form_id))
         )
@@ -675,8 +675,8 @@ class InstancesViewSet(viewsets.ViewSet):
         response["is_locked"] = any(lock.unlocked_by is None for lock in all_instance_locks)
 
         response["is_instance_of_reference_form"] = instance._is_instance_of_reference_form
-        response["project_id"]= instance.project.id
-        response["project_name"]= instance.project.name
+        response["project_id"] = instance.project.id
+        response["project_name"] = instance.project.name
         response["is_reference_instance"] = instance._is_reference_instance
 
         return Response(response)

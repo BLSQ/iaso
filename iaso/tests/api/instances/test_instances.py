@@ -1859,6 +1859,8 @@ class InstancesAPITestCase(TaskAPITestCase):
         json_instance = list(filter(lambda x: x["id"] == instance.id, j["instances"]))[0]
         self.assertEqual(json_instance["is_locked"], is_locked)
         self.assertEqual(json_instance["can_user_modify"], can_user_modify)
+        self.assertEqual(json_instance["project_id"], self.project.id)
+        self.assertEqual(json_instance["project_name"], self.project.name)
         # Try to modify the instance
         response = self.client.patch(
             f"/api/instances/{instance.pk}/",

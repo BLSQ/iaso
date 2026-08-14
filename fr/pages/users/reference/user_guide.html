@@ -572,6 +572,95 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#creer-votre-formulaire-avec-lia" class="md-nav__link">
+    Créer votre formulaire avec l'IA
+  </a>
+  
+    <nav class="md-nav" aria-label="Créer votre formulaire avec l'IA">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequis" class="md-nav__link">
+    Prérequis
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#acceder-au-form-ai" class="md-nav__link">
+    Accéder au Form AI
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#creer-un-nouveau-formulaire" class="md-nav__link">
+    Créer un nouveau formulaire
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#charger-un-formulaire-existant-pour-le-modifier" class="md-nav__link">
+    Charger un formulaire existant pour le modifier
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enregistrer-le-formulaire-genere" class="md-nav__link">
+    Enregistrer le formulaire généré
+  </a>
+  
+    <nav class="md-nav" aria-label="Enregistrer le formulaire généré">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enregistrer-comme-nouvelle-version-dun-formulaire-existant" class="md-nav__link">
+    Enregistrer comme nouvelle version d'un formulaire existant
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enregistrer-comme-tout-nouveau-formulaire" class="md-nav__link">
+    Enregistrer comme tout nouveau formulaire
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#telecharger-le-xlsform" class="md-nav__link">
+    Télécharger le XLSForm
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#conseils-pour-rediger-de-bonnes-requetes" class="md-nav__link">
+    Conseils pour rédiger de bonnes requêtes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limitations" class="md-nav__link">
+    Limitations
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#liste-des-formulaires" class="md-nav__link">
     Liste des formulaires
   </a>
@@ -997,26 +1086,6 @@
   
   <span class="md-ellipsis">
     Mobile
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../how_to/use_form_ai.html" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Utiliser IA pour formulaires
   </span>
   
 
@@ -1591,6 +1660,107 @@ Voici quelques atouts clés d'IASO :</p>
 <h2 id="navigation-dans-iaso">Navigation dans IASO<a class="headerlink" href="#navigation-dans-iaso" title="Permanent link">#</a></h2>
 <p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../../../../pages/users/reference/user_guide_attachments/Webinterfaceintrofr.png" data-desc-position="bottom"><img alt="alt text" src="../../../../pages/users/reference/user_guide_attachments/Webinterfaceintrofr.png"></a></p>
 <h2 id="gerer-les-formulaires-de-collecte-de-donnees">Gérer les formulaires de collecte de données<a class="headerlink" href="#gerer-les-formulaires-de-collecte-de-donnees" title="Permanent link">#</a></h2>
+<h3 id="creer-votre-formulaire-avec-lia">Créer votre formulaire avec l'IA<a class="headerlink" href="#creer-votre-formulaire-avec-lia" title="Permanent link">#</a></h3>
+<p>Le <strong>IA pour formulaires</strong> est un assistant alimenté par l'IA qui vous permet de créer et de modifier des formulaires ODK XLSForm en langage naturel. Au lieu de construire un formulaire manuellement dans un tableur, vous décrivez vos besoins dans un chat, et IA pour formulaires génère un XLSForm prêt à l'emploi.</p>
+<h4 id="prerequis">Prérequis<a class="headerlink" href="#prerequis" title="Permanent link">#</a></h4>
+<p>Avant d'utiliser le Form AI, les conditions suivantes doivent être remplies :</p>
+<ul>
+<li>Le module <strong>IA pour formulaires</strong> doit être activé pour votre organisation par un administrateur (via <strong>Paramètres → Modules</strong>).</li>
+<li>Votre compte utilisateur doit disposer de la permission <strong>Gestion des formulaires</strong> (<code>iaso_forms</code>).</li>
+<li>Votre compte IASO doit disposer d'une <strong>clé API Anthropic</strong> configurée par un administrateur. Si la clé est absente, Form AI retournera un message d'erreur vous invitant à contacter votre administrateur.</li>
+</ul>
+<h4 id="acceder-au-form-ai">Accéder au Form AI<a class="headerlink" href="#acceder-au-form-ai" title="Permanent link">#</a></h4>
+<p>Dans le menu de navigation à gauche, allez dans <strong>Formulaires → Form AI</strong>.</p>
+<p>La page est divisée en deux panneaux :</p>
+<table>
+<thead>
+<tr>
+<th>Panneau</th>
+<th>Utilité</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Gauche – Chat</strong></td>
+<td>Saisissez vos requêtes et consultez l'historique de la conversation.</td>
+</tr>
+<tr>
+<td><strong>Droite – Aperçu</strong></td>
+<td>Visualisez en temps réel le formulaire généré, rendu comme un formulaire ODK Web.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="creer-un-nouveau-formulaire">Créer un nouveau formulaire<a class="headerlink" href="#creer-un-nouveau-formulaire" title="Permanent link">#</a></h4>
+<ol>
+<li>Assurez-vous qu'aucun formulaire existant n'est chargé (la liste déroulante "Charger un formulaire existant" est vide).</li>
+<li>Saisissez une description du formulaire souhaité dans le champ de saisie du chat en bas du panneau gauche.<br>
+<em>Exemple :</em> <code>Crée une enquête ménage avec les champs : nom, âge, sexe et localisation GPS.</code></li>
+<li>Cliquez sur <strong>Envoyer</strong> (ou appuyez sur Entrée).</li>
+<li>Le Copilote génère le formulaire et affiche :</li>
+<li>Une courte explication de ce qui a été créé dans le chat.</li>
+<li>Un aperçu en direct du formulaire dans le panneau de droite.</li>
+<li>Vous pouvez continuer à affiner le formulaire en envoyant des messages de suivi.<br>
+<em>Exemple :</em> <code>Rends le champ âge obligatoire et ajoute une question numéro de téléphone après le nom.</code></li>
+</ol>
+<p>Chaque message est envoyé avec l'historique complet de la conversation, de sorte que Form AI conserve toujours le contexte de ce qui a déjà été créé.</p>
+<h4 id="charger-un-formulaire-existant-pour-le-modifier">Charger un formulaire existant pour le modifier<a class="headerlink" href="#charger-un-formulaire-existant-pour-le-modifier" title="Permanent link">#</a></h4>
+<p>Vous pouvez charger un formulaire IASO existant dans Form AI pour le modifier avec l'aide de l'IA.</p>
+<ol>
+<li>Cliquez sur la liste déroulante <strong>"Charger un formulaire existant"</strong> en haut du panneau gauche.</li>
+<li>Recherchez et sélectionnez le formulaire à modifier. Seuls les formulaires disposant d'au moins une version XLSForm sont listés.</li>
+<li>Le Copilote charge la structure actuelle du formulaire dans le contexte de la conversation et affiche un message de confirmation.</li>
+<li>Demandez des modifications dans le chat comme pour un nouveau formulaire.<br>
+<em>Exemple :</em> <code>Ajoute une section sur les biens du ménage et rends la question GPS facultative.</code></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lors de la modification d'un formulaire existant, Form AI préserve toujours l'<code>form_id</code> ODK d'origine du formulaire. Cela garantit que l'enregistrement du résultat comme nouvelle version passe les contrôles de cohérence d'IASO.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>La modification d'un formulaire via Form AI entraîne la perte de la mise en forme (couleurs des cellules, par exemple) du XLSForm d'origine.</p>
+</div>
+<h4 id="enregistrer-le-formulaire-genere">Enregistrer le formulaire généré<a class="headerlink" href="#enregistrer-le-formulaire-genere" title="Permanent link">#</a></h4>
+<p>Lorsque vous êtes satisfait du résultat, un bouton <strong>Enregistrer le formulaire</strong> apparaît en bas à droite de l'écran.</p>
+<h5 id="enregistrer-comme-nouvelle-version-dun-formulaire-existant">Enregistrer comme nouvelle version d'un formulaire existant<a class="headerlink" href="#enregistrer-comme-nouvelle-version-dun-formulaire-existant" title="Permanent link">#</a></h5>
+<p>Si un formulaire a été chargé ou précédemment enregistré :</p>
+<ol>
+<li>Cliquez sur <strong>Enregistrer le formulaire</strong>.</li>
+<li>La boîte de dialogue affiche le nom du formulaire actuellement chargé. Confirmez en cliquant sur <strong>Enregistrer</strong>.</li>
+<li>Une nouvelle version du formulaire est créée dans IASO. Vous la trouverez dans <strong>Formulaires → Liste des formulaires</strong> sous l'historique des versions du formulaire, ou via le bouton "Voir les propriétés".</li>
+</ol>
+<h5 id="enregistrer-comme-tout-nouveau-formulaire">Enregistrer comme tout nouveau formulaire<a class="headerlink" href="#enregistrer-comme-tout-nouveau-formulaire" title="Permanent link">#</a></h5>
+<p>Si aucun formulaire n'est encore chargé :</p>
+<ol>
+<li>Cliquez sur <strong>Enregistrer le formulaire</strong>.</li>
+<li>Remplissez les champs requis :</li>
+<li><strong>Nom du formulaire</strong> – le nom d'affichage du nouveau formulaire dans IASO.</li>
+<li><strong>Projets</strong> – associez le formulaire à un ou plusieurs projets.</li>
+<li><strong>Identifiant du formulaire (ODK)</strong> <em>(facultatif)</em> – un identifiant unique en snake_case écrit dans les paramètres XLS. Laissez vide pour utiliser l'identifiant généré par l'IA.</li>
+<li>Cliquez sur <strong>Enregistrer</strong>.</li>
+<li>Le nouveau formulaire apparaît dans <strong>Formulaires → Liste des formulaires</strong>.</li>
+</ol>
+<h4 id="telecharger-le-xlsform">Télécharger le XLSForm<a class="headerlink" href="#telecharger-le-xlsform" title="Permanent link">#</a></h4>
+<p>À tout moment après la génération d'un formulaire, vous pouvez télécharger le fichier Excel XLSForm brut :</p>
+<ol>
+<li>Dans le panneau de droite, cliquez sur le bouton <strong>Télécharger le XLSForm</strong>.</li>
+<li>Un fichier <code>.xlsx</code> est enregistré sur votre ordinateur.</li>
+<li>Vous pouvez ouvrir ce fichier dans Excel ou LibreOffice Calc pour l'inspecter ou le modifier davantage avant de le téléverser manuellement via <strong>Formulaires → Liste des formulaires → Créer</strong>.</li>
+</ol>
+<h4 id="conseils-pour-rediger-de-bonnes-requetes">Conseils pour rédiger de bonnes requêtes<a class="headerlink" href="#conseils-pour-rediger-de-bonnes-requetes" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Précisez le type de champ.</strong> Au lieu de "ajouter une question sur les vaccins", écrivez "ajouter une question <code>select_multiple</code> listant les vaccins reçus : OPV, VPI, Penta, MenA".</li>
+<li><strong>Demandez explicitement la logique de saut.</strong> Exemple : "Afficher la section grossesse uniquement si le sexe est féminin".</li>
+<li><strong>Demandez des regroupements.</strong> Exemple : "Regrouper les questions sur les informations du ménage sous une section appelée 'Informations du ménage'".</li>
+<li><strong>Itérez étape par étape.</strong> Faites un changement à la fois plutôt que de demander plusieurs modifications à la fois — cela donne des résultats plus prévisibles.</li>
+<li><strong>Vérifiez l'aperçu.</strong> Le panneau de droite affiche le formulaire en temps réel ; utilisez-le pour vérifier la structure et l'ordre des questions avant d'enregistrer.</li>
+</ul>
+<h4 id="limitations">Limitations<a class="headerlink" href="#limitations" title="Permanent link">#</a></h4>
+<ul>
+<li>Le Copilote génère des formulaires basés sur la spécification standard ODK XLSForm. Les fonctionnalités XLSForm très personnalisées ou non standard peuvent ne pas être gérées correctement.</li>
+<li>L'historique de conversation est géré côté client. Rafraîchir la page effacera le chat et le brouillon du formulaire en cours. Téléchargez ou enregistrez votre formulaire avant de quitter la page.</li>
+<li>Seul le formulaire généré le plus récent est disponible au téléchargement ou à l'enregistrement. Les brouillons antérieurs de la même session ne sont pas conservés.</li>
+</ul>
 <h3 id="liste-des-formulaires">Liste des formulaires<a class="headerlink" href="#liste-des-formulaires" title="Permanent link">#</a></h3>
 <p>Depuis la liste des formulaires, vous pouvez rechercher parmi les formulaires disponibles du compte IASO auquel vous êtes connecté en utilisant les filtres suivants :</p>
 <p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="./user_guide_attachments/formsmanagement2fr.png" data-desc-position="bottom"><img alt="alt text" src="./user_guide_attachments/formsmanagement2fr.png"></a></p>

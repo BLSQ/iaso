@@ -5,8 +5,7 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer
-from iaso.api.profiles.serializers import ProfileRetrieveSerializer
-from iaso.models import OrgUnit, Project
+from iaso.models import OrgUnit, Profile, Project
 
 
 class NestedProjectSerializer(ModelSerializer):
@@ -47,7 +46,8 @@ class ProfileRetrieveCurrentSerializer(ModelSerializer):
     projects = NestedProjectSerializer(many=True, read_only=True)
     org_units = NestedOrgUnitSerializer(many=True, read_only=True)
 
-    class Meta(ProfileRetrieveSerializer.Meta):
+    class Meta:
+        model = Profile
         fields = [
             "id",
             "first_name",

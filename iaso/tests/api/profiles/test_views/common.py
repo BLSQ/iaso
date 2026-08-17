@@ -108,6 +108,7 @@ class BaseProfileAPITestCase(SwaggerTestCaseMixin, APITestCase):
             permissions=[CORE_FORMS_PERMISSION],
             projects=[self.project],
             org_units=[self.child_org_unit],
+            language="en",
         )
         self.john = self.create_user_with_profile(username="johndoe", account=self.account, is_superuser=True)
         self.jim = self.create_user_with_profile(

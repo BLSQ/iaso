@@ -62,12 +62,12 @@ class NestedAccountSerializer(ModelSerializer):
     Mimic account as_dict method
     """
 
-    created_at = TimestampField(read_only=True)
-    updated_at = TimestampField(read_only=True)
-    feature_flags = serializers.SlugRelatedField(many=True, read_only=True, slug_field="code")
+    created_at = TimestampField()
+    updated_at = TimestampField()
+    feature_flags = serializers.SlugRelatedField(many=True, slug_field="code", read_only=True)
     user_manual_path = serializers.SerializerMethodField()
     forum_path = serializers.SerializerMethodField()
-    default_version = NestedDefaultVersionSerializer(read_only=True)
+    default_version = NestedDefaultVersionSerializer(allow_null=True)
 
     @extend_schema_field(OpenApiTypes.STR)
     def get_user_manual_path(self, obj):
@@ -90,11 +90,13 @@ class NestedAccountSerializer(ModelSerializer):
             "forum_path",
             "analytics_script",
         ]
+        read_only_fields = fields
 
 
 class NestedAccountExtendedSerializer(NestedAccountSerializer):
     class Meta(NestedAccountSerializer.Meta):
         fields = NestedAccountSerializer.Meta.fields + ["modules"]
+        read_only_fields = fields
 
 
 class NestedUserRoleSerializer(ModelSerializer):
@@ -102,16 +104,15 @@ class NestedUserRoleSerializer(ModelSerializer):
     Mimic UserRole as_dict method
     """
 
-    name = UserRoleNameField(source="group.name", read_only=True)
-    permissions = serializers.SlugRelatedField(
-        many=True, read_only=True, slug_field="codename", source="get_iaso_permissions"
-    )
-    created_at = TimestampField(read_only=True)
-    updated_at = TimestampField(read_only=True)
+    name = UserRoleNameField(source="group.name")
+    permissions = serializers.SlugRelatedField(many=True, slug_field="codename", read_only=True)
+    created_at = TimestampField()
+    updated_at = TimestampField()
 
     class Meta:
         model = UserRole
         fields = ["id", "name", "group_id", "permissions", "created_at", "updated_at"]
+        read_only_fields = fields
 
 
 class NestedProjectSerializer(ModelSerializer):
@@ -190,6 +191,7 @@ class NestedOrgUnitSerializer(ModelSerializer):
             "opening_date",
             "closed_date",
         ]
+        read_only_fields = fields
 
     @extend_schema_field({"type": "string", "nullable": True, "example": "31/12/2026"})
     def get_opening_date(self, obj):
@@ -210,19 +212,20 @@ class ProfileRetrieveSerializer(ModelSerializer):
     user_permissions = serializers.SerializerMethodField()
     is_staff = serializers.BooleanField(source="user.is_staff", read_only=True)
     is_superuser = serializers.BooleanField(source="user.is_superuser", read_only=True)
-    user_roles = serializers.PrimaryKeyRelatedField(source="get_ordered_user_roles", many=True, read_only=True)
-    user_roles_permissions = NestedUserRoleSerializer(many=True, read_only=True, source="get_ordered_user_roles")
+    user_roles = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    user_roles_permissions = NestedUserRoleSerializer(many=True, read_only=True, source="user_roles")
 
     country_code = serializers.SerializerMethodField()
     phone_number = serializers.CharField(source="phone_number.as_e164", read_only=True, allow_null=True)
 
     projects = NestedProjectSerializer(many=True, read_only=True)
 
-    other_accounts = NestedAccountSerializer(
-        many=True, read_only=True, source="user.tenant_user.get_other_accounts", allow_null=True
-    )
+    other_accounts = serializers.SerializerMethodField()
 
-    editable_org_unit_types = serializers.SerializerMethodField()
+    editable_org_unit_types = NestedEditableOrgUnitTypeSerializer(
+        many=True,
+        read_only=True,
+    )
     user_roles_editable_org_unit_type_ids = serializers.ListField(
         source="get_user_roles_editable_org_unit_type_ids", read_only=True
     )
@@ -259,6 +262,7 @@ class ProfileRetrieveSerializer(ModelSerializer):
             "account",
             "org_units",
         ]
+        read_only_fields = fields
 
     # todo : cache this ?
     def _get_user_infos(self, obj):
@@ -316,11 +320,20 @@ class ProfileRetrieveSerializer(ModelSerializer):
     def get_country_code(self, obj):
         return region_code_for_number(obj.phone_number).lower() if obj.phone_number else None
 
-    @extend_schema_field(NestedEditableOrgUnitTypeSerializer(many=True))
-    def get_editable_org_unit_types(self, obj):
-        editable_org_unit_types = [out for out in obj.editable_org_unit_types.all()]
+    @extend_schema_field(NestedAccountSerializer(many=True, allow_empty=True))
+    def get_other_accounts(self, obj):
+        tenant_user = getattr(obj.user, "tenant_user", None)
 
-        return [
-            NestedEditableOrgUnitTypeSerializer(instance=editable_org_unit_type).data
-            for editable_org_unit_type in editable_org_unit_types
-        ]
+        if not tenant_user:
+            return []
+
+        accounts = (
+            tenant_user.get_other_accounts()
+            .select_related(
+                "default_version",
+                "default_version__data_source",
+            )
+            .prefetch_related("feature_flags")
+        )
+
+        return NestedAccountSerializer(accounts, many=True).data

@@ -82,7 +82,7 @@ class ProfileRetrieveCurrentAPITestCase(BaseProfileAPITestCase):
                 "permissions": ["iaso_forms"],
                 "is_staff": False,
                 "is_superuser": False,
-                "language": None,
+                "language": "en",
                 "organization": None,
                 "user_id": self.jane.pk,
                 "phone_number": "",

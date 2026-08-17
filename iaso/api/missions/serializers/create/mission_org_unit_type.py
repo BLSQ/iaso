@@ -5,7 +5,7 @@ from rest_framework import serializers
 from iaso.api.common import ModelSerializer
 from iaso.api.common.serializer_fields import CurrentAccountDefault
 from iaso.models import Form, OrgUnitType
-from iaso.models.missions import MissionOrgUnitType, MissionOrgUnitTypeThroughForm, MissionType
+from iaso.models.missions import MissionFormThroughForm, MissionOrgUnitType, MissionType
 
 
 class OrgUnitTypeScopedFormField(serializers.PrimaryKeyRelatedField):
@@ -23,11 +23,11 @@ class OrgUnitTypeScopedFormField(serializers.PrimaryKeyRelatedField):
         )
 
 
-class NestedMissionOrgUnitTypeThroughFormCreateSerializer(ModelSerializer):
+class NestedMissionFormThroughFormCreateSerializer(ModelSerializer):
     form = OrgUnitTypeScopedFormField(queryset=Form.objects.none(), write_only=True)
 
     class Meta:
-        model = MissionOrgUnitTypeThroughForm
+        model = MissionFormThroughForm
         fields = ["form", "min_cardinality", "max_cardinality"]
         extra_kwargs = {
             "min_cardinality": {"write_only": True, "required": True},
@@ -50,9 +50,7 @@ class MissionOrgUnitTypeCreateSerializer(ModelSerializer):
     org_unit_type = serializers.PrimaryKeyRelatedField(
         queryset=OrgUnitType.objects.none(), write_only=True, required=True
     )
-    forms = NestedMissionOrgUnitTypeThroughFormCreateSerializer(
-        many=True, required=True, allow_empty=False, write_only=True
-    )
+    forms = NestedMissionFormThroughFormCreateSerializer(many=True, required=True, allow_empty=False, write_only=True)
     mission_type = serializers.ChoiceField(
         choices=[MissionType.ORG_UNIT_AND_FORM.value], write_only=True, required=True
     )
@@ -114,9 +112,9 @@ class MissionOrgUnitTypeCreateSerializer(ModelSerializer):
         through_instances = []
 
         for item_data in through_data:
-            instance = MissionOrgUnitTypeThroughForm(mission_org_unit_type=mission, **item_data)
+            instance = MissionFormThroughForm(mission_form=mission, **item_data)
             through_instances.append(instance)
 
-        MissionOrgUnitTypeThroughForm.objects.bulk_create(through_instances)
+        MissionFormThroughForm.objects.bulk_create(through_instances)
 
         return mission

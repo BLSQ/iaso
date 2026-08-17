@@ -7,11 +7,9 @@ from iaso.models import (
     EntityType,
     Form,
     MissionEntityType,
-    MissionEntityTypeThroughForm,
     MissionForm,
     MissionFormThroughForm,
     MissionOrgUnitType,
-    MissionOrgUnitTypeThroughForm,
     OrgUnitType,
     Project,
 )
@@ -131,16 +129,16 @@ class MissionAPIListTestCase(SwaggerTestCaseMixin, APITestCase):
             name="mission_out_3", account=cls.other_account, org_unit_type=cls.out_other_account
         )
 
-        MissionOrgUnitTypeThroughForm.objects.bulk_create(
+        MissionFormThroughForm.objects.bulk_create(
             [
-                MissionOrgUnitTypeThroughForm(
-                    mission_org_unit_type=cls.mission_out_1, form=cls.form_1, min_cardinality=1, max_cardinality=3
+                MissionFormThroughForm(
+                    mission_form=cls.mission_out_1, form=cls.form_1, min_cardinality=1, max_cardinality=3
                 ),
-                MissionOrgUnitTypeThroughForm(
-                    mission_org_unit_type=cls.mission_out_1, form=cls.form_2, min_cardinality=2, max_cardinality=3
+                MissionFormThroughForm(
+                    mission_form=cls.mission_out_1, form=cls.form_2, min_cardinality=2, max_cardinality=3
                 ),
-                MissionOrgUnitTypeThroughForm(
-                    mission_org_unit_type=cls.mission_out_2, form=cls.form_3, min_cardinality=3, max_cardinality=3
+                MissionFormThroughForm(
+                    mission_form=cls.mission_out_2, form=cls.form_3, min_cardinality=3, max_cardinality=3
                 ),
             ]
         )
@@ -155,16 +153,16 @@ class MissionAPIListTestCase(SwaggerTestCaseMixin, APITestCase):
             name="mission_et_3", account=cls.other_account, entity_type=cls.et_other_account
         )
 
-        MissionEntityTypeThroughForm.objects.bulk_create(
+        MissionFormThroughForm.objects.bulk_create(
             [
-                MissionEntityTypeThroughForm(
-                    mission_entity_type=cls.mission_et_1, form=cls.form_1, min_cardinality=1, max_cardinality=3
+                MissionFormThroughForm(
+                    mission_form=cls.mission_et_1, form=cls.form_1, min_cardinality=1, max_cardinality=3
                 ),
-                MissionEntityTypeThroughForm(
-                    mission_entity_type=cls.mission_et_1, form=cls.form_2, min_cardinality=2, max_cardinality=3
+                MissionFormThroughForm(
+                    mission_form=cls.mission_et_1, form=cls.form_2, min_cardinality=2, max_cardinality=3
                 ),
-                MissionEntityTypeThroughForm(
-                    mission_entity_type=cls.mission_et_2, form=cls.form_3, min_cardinality=3, max_cardinality=3
+                MissionFormThroughForm(
+                    mission_form=cls.mission_et_2, form=cls.form_3, min_cardinality=3, max_cardinality=3
                 ),
             ]
         )

@@ -258,6 +258,9 @@ export const useApiMicroplanningMissionsCreateMutationOptions = <
             queryClient.invalidateQueries({
                 queryKey: getApiMicroplanningMissionsListQueryKey(),
             });
+            queryClient.invalidateQueries({
+                queryKey: getApiMicroplanningMissionsDropdownListQueryKey(),
+            });
         }
         mutationOptions?.onSuccess?.(data, variables, context);
     };
@@ -490,6 +493,9 @@ export const useApiMicroplanningMissionsUpdateMutationOptions = <
                 queryKey: getApiMicroplanningMissionsListQueryKey(),
             });
             queryClient.invalidateQueries({
+                queryKey: getApiMicroplanningMissionsDropdownListQueryKey(),
+            });
+            queryClient.invalidateQueries({
                 queryKey: getApiMicroplanningMissionsRetrieveQueryKey(
                     variables.id,
                 ),
@@ -617,6 +623,9 @@ export const useApiMicroplanningMissionsPartialUpdateMutationOptions = <
                 queryKey: getApiMicroplanningMissionsListQueryKey(),
             });
             queryClient.invalidateQueries({
+                queryKey: getApiMicroplanningMissionsDropdownListQueryKey(),
+            });
+            queryClient.invalidateQueries({
                 queryKey: getApiMicroplanningMissionsRetrieveQueryKey(
                     variables.id,
                 ),
@@ -733,6 +742,9 @@ export const useApiMicroplanningMissionsDestroyMutationOptions = <
         if (!options?.skipInvalidation) {
             queryClient.invalidateQueries({
                 queryKey: getApiMicroplanningMissionsListQueryKey(),
+            });
+            queryClient.invalidateQueries({
+                queryKey: getApiMicroplanningMissionsDropdownListQueryKey(),
             });
             queryClient.invalidateQueries({
                 queryKey: getApiMicroplanningMissionsRetrieveQueryKey(

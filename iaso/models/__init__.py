@@ -16,11 +16,10 @@ from .microplanning import Planning
 from .missions import (
     Mission,
     MissionEntityType,
-    MissionEntityTypeThroughForm,
     MissionForm,
     MissionFormThroughForm,
     MissionOrgUnitType,
-    MissionOrgUnitTypeThroughForm,
+    MissionWithForms,
 )
 from .openhexa import OpenHEXAInstance, OpenHEXAWorkspace
 from .org_unit import OrgUnit, OrgUnitChangeRequest, OrgUnitReferenceInstance, OrgUnitType
@@ -82,12 +81,11 @@ __all__ = [
     "MetricType",
     "MetricValue",
     "Mission",
+    "MissionWithForms",
     "MissionForm",
     "MissionFormThroughForm",
     "MissionEntityType",
-    "MissionEntityTypeThroughForm",
     "MissionOrgUnitType",
-    "MissionOrgUnitTypeThroughForm",
     "OpenHEXAInstance",
     "OpenHEXAWorkspace",
     "OrgUnit",

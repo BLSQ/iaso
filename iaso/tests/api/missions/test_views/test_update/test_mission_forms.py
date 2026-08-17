@@ -214,7 +214,7 @@ class MissionFormAPIUpdateTestCase(SwaggerTestCaseMixin, APITestCase):
 
         ContentType.objects.clear_cache()
 
-        with self.assertNumQueries(15):
+        with self.assertNumQueries(18):
             res = self.client.put(
                 reverse("missions-detail", kwargs={"pk": self.mission_form_1.pk}),
                 data=body,

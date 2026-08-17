@@ -291,7 +291,7 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
         self.client.force_authenticate(user=self.user_account_write_perm)
 
         ContentType.objects.clear_cache()
-        with self.assertNumQueries(11):
+        with self.assertNumQueries(13):
             res = self.client.post(
                 reverse("missions-list"),
                 data={
@@ -342,8 +342,6 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(mission_et.forms.count(), 1)
 
         self.assertCountEqual(
-            list(
-                mission_et.missionentitytypethroughform_set.values_list("min_cardinality", "max_cardinality", "form_id")
-            ),
+            list(mission_et.missionformthroughform_set.values_list("min_cardinality", "max_cardinality", "form_id")),
             [(1, 2, self.form_1.pk)],
         )

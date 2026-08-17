@@ -8,7 +8,7 @@ from iaso.api.common import (
 from iaso.api.permission_checks import ReadOnly
 from iaso.models.microplanning import Assignment, Planning
 
-from ...models.missions import Mission, MissionType
+from ...models.missions import MissionType, MissionWithForms
 from .serializers import MobilePlanningSerializer, MobilePlanningV2Serializer
 
 
@@ -45,7 +45,7 @@ class MobilePlanningViewSet(ModelViewSet):
                 # We have to filter on FORM_FILLING only because this was the only type of missions before
                 Prefetch(
                     lookup="missions",
-                    queryset=Mission.objects.filter(mission_type=MissionType.FORM_FILLING).prefetch_related(
+                    queryset=MissionWithForms.objects.filter(mission_type=MissionType.FORM_FILLING).prefetch_related(
                         "mission_forms"
                     ),
                 ),
@@ -87,7 +87,7 @@ class MobilePlanningV2ViewSet(ModelViewSet):
                 ),
                 Prefetch(
                     "missions",
-                    queryset=Mission.objects.all()
+                    queryset=MissionWithForms.objects.all()
                     .select_related("org_unit_type", "entity_type")
                     .prefetch_related("mission_forms", "forms"),
                 ),

@@ -1,7 +1,7 @@
 import React from 'react';
 import { faker } from '@faker-js/faker';
 import { screen } from '@testing-library/react';
-import { MissionTypeDropdownValueEnum } from 'Iaso/api/missions';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions';
 import { getApiMicroplanningMissionsRetrieveResponseMissionEntityTypeRetrieveTypedMock } from 'Iaso/api/missions/endpoints/missions/missions.msw';
 import { renderWithThemeAndIntlProvider } from '../../../../../../../tests/helpers';
 import { GeneralInfoWidgetPaper } from './GeneralInfoWidgetPaper';
@@ -21,8 +21,7 @@ describe('GeneralInfoWidgetPaper test', () => {
                         // @ts-ignore
                         mission_type: {
                             label: 'Entity',
-                            value: MissionTypeDropdownValueEnum.enum
-                                .ENTITY_AND_FORM,
+                            value: MissionTypeDa2Enum.enum.ENTITY_AND_FORM,
                         },
                     },
                 )}
@@ -41,8 +40,7 @@ describe('GeneralInfoWidgetPaper test', () => {
                         // @ts-ignore
                         mission_type: {
                             label: 'Entity',
-                            value: MissionTypeDropdownValueEnum.enum
-                                .ENTITY_AND_FORM,
+                            value: MissionTypeDa2Enum.enum.ENTITY_AND_FORM,
                         },
                     },
                 )}

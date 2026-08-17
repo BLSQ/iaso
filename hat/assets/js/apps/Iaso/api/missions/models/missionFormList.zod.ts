@@ -10,7 +10,11 @@ import { z as zod } from 'zod';
 export const MissionFormList = zod.strictObject({
     id: zod.number(),
     name: zod.string(),
-    mission_type: zod.string(),
+    mission_type: zod
+        .enum(['FORM_FILLING', 'ORG_UNIT_AND_FORM', 'ENTITY_AND_FORM'])
+        .describe(
+            '\* `FORM_FILLING` - Form Filling\n\* `ORG_UNIT_AND_FORM` - Org Unit and Form\n\* `ENTITY_AND_FORM` - Entity and Form',
+        ),
     forms_count: zod.number(),
     created_at: zod.iso.datetime({ offset: true }),
 });

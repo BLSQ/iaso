@@ -4,7 +4,7 @@ import type { FormikProps } from 'formik';
 import type { FieldInputProps } from 'formik/dist/types';
 import { axe } from 'jest-axe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { MissionTypeDropdownValueEnum } from 'Iaso/api/missions';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions';
 import { renderWithThemeAndIntlProvider } from '../../../../../tests/helpers';
 import {
     MissionTypeCardsInput,
@@ -12,7 +12,7 @@ import {
 } from './MissionTypeCardsInput';
 
 type MissionTypeValue =
-    (typeof MissionTypeDropdownValueEnum.enum)[keyof typeof MissionTypeDropdownValueEnum.enum];
+    (typeof MissionTypeDa2Enum.enum)[keyof typeof MissionTypeDa2Enum.enum];
 
 type FormValues = {
     mission_type: MissionTypeValue;
@@ -26,7 +26,7 @@ const createProps = (overrides: Record<string, unknown> = {}): Props =>
         required: true,
         field: {
             name: 'mission_type',
-            value: MissionTypeDropdownValueEnum.enum.FORM_FILLING,
+            value: MissionTypeDa2Enum.enum.FORM_FILLING,
             onBlur: vi.fn(),
             onChange: vi.fn(),
         } as FieldInputProps<MissionTypeValue>,
@@ -59,8 +59,7 @@ describe('MissionTypeCardsInput a11y', () => {
                 {...createProps({
                     field: {
                         name: 'mission_type',
-                        value: MissionTypeDropdownValueEnum.enum
-                            .ORG_UNIT_AND_FORM,
+                        value: MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM,
                         onBlur: vi.fn(),
                         onChange: vi.fn(),
                     },

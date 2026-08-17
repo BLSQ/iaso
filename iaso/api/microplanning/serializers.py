@@ -16,6 +16,7 @@ from iaso.models import (
     MissionEntityType,
     MissionForm,
     MissionOrgUnitType,
+    MissionWithForms,
     OrgUnit,
     OrgUnitType,
     Planning,
@@ -100,7 +101,7 @@ class MissionReadSerializer(serializers.ModelSerializer):
     entity_max_cardinality = serializers.IntegerField(read_only=True, source="entity_type.max_cardinality")
 
     class Meta:
-        model = Mission
+        model = MissionWithForms
         fields = [
             "id",
             "name",
@@ -135,7 +136,7 @@ class MissionWriteSerializer(serializers.ModelSerializer):
     entity_max_cardinality = serializers.IntegerField(required=False, source="entity_type.max_cardinality")
 
     class Meta:
-        model = Mission
+        model = MissionWithForms
         fields = [
             "id",
             "name",
@@ -248,7 +249,7 @@ class MissionWriteSerializer(serializers.ModelSerializer):
 
 class AuditMissionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Mission
+        model = MissionWithForms
         fields = "__all__"
 
 
@@ -264,7 +265,7 @@ class NestedMissionSerializer(serializers.ModelSerializer):
     entity_max_cardinality = serializers.IntegerField(read_only=True, source="entity_type.max_cardinality")
 
     class Meta:
-        model = Mission
+        model = MissionWithForms
         fields = [
             "id",
             "name",

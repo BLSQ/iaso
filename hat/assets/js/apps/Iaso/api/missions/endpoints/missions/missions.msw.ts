@@ -11,8 +11,9 @@ import { HttpResponse, delay, http } from 'msw';
 import type { RequestHandlerOptions } from 'msw';
 
 import {
-    MissionTypeDropdownValueEnum,
+    MissionTypeDa2Enum,
     MissionTypeValueEnum,
+    ValueDa2Enum,
 } from '../../models';
 import type {
     MissionDropdown,
@@ -48,9 +49,9 @@ export const getApiMicroplanningMissionsListResponseMissionFormListTypedMock = (
             ...{
                 id: faker.number.int(),
                 name: faker.string.alpha({ length: { min: 10, max: 20 } }),
-                mission_type: faker.string.alpha({
-                    length: { min: 10, max: 20 },
-                }),
+                mission_type: faker.helpers.arrayElement(
+                    Object.values(MissionTypeDa2Enum),
+                ),
                 forms_count: faker.number.int(),
                 created_at: faker.date.past().toISOString().slice(0, 19) + 'Z',
             },
@@ -74,9 +75,9 @@ export const getApiMicroplanningMissionsListResponseMissionOrgUnitTypeListTypedM
                 ...{
                     id: faker.number.int(),
                     name: faker.string.alpha({ length: { min: 10, max: 20 } }),
-                    mission_type: faker.string.alpha({
-                        length: { min: 10, max: 20 },
-                    }),
+                    mission_type: faker.helpers.arrayElement(
+                        Object.values(MissionTypeDa2Enum),
+                    ),
                     org_unit_type: {
                         ...{
                             id: faker.number.int(),
@@ -111,9 +112,9 @@ export const getApiMicroplanningMissionsListResponseMissionEntityTypeListTypedMo
                 ...{
                     id: faker.number.int(),
                     name: faker.string.alpha({ length: { min: 10, max: 20 } }),
-                    mission_type: faker.string.alpha({
-                        length: { min: 10, max: 20 },
-                    }),
+                    mission_type: faker.helpers.arrayElement(
+                        Object.values(MissionTypeDa2Enum),
+                    ),
                     entity_type: {
                         ...{
                             id: faker.number.int(),
@@ -558,9 +559,7 @@ export const getApiMicroplanningMissionsMissionTypesDropdownListResponseMock =
             { length: faker.number.int({ min: 1, max: 10 }) },
             (_, i) => i + 1,
         ).map(() => ({
-            value: faker.helpers.arrayElement(
-                Object.values(MissionTypeDropdownValueEnum),
-            ),
+            value: faker.helpers.arrayElement(Object.values(ValueDa2Enum)),
             label: faker.string.alpha({ length: { min: 10, max: 20 } }),
         }));
 

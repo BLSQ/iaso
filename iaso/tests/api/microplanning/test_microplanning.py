@@ -20,8 +20,8 @@ from iaso.models import (
     DataSource,
     Form,
     Group,
-    Mission,
     MissionForm,
+    MissionFormThroughForm,
     OrgUnit,
     OrgUnitType,
     SourceVersion,
@@ -63,19 +63,21 @@ class PlanningTestCase(APITestCase):
         cls.form2 = Form.objects.create(name="form2")
         cls.form1.projects.add(project1)
         cls.form2.projects.add(project1)
-        cls.mission1 = Mission.objects.create(
+        cls.mission1 = MissionForm.objects.create(
             name="mission1",
             account=account,
-            mission_type=MissionType.FORM_FILLING,
         )
-        MissionForm.objects.create(mission=cls.mission1, form=cls.form1, min_cardinality=1, max_cardinality=1)
-        cls.mission2 = Mission.objects.create(
+        MissionFormThroughForm.objects.create(
+            mission=cls.mission1, form=cls.form1, min_cardinality=1, max_cardinality=1
+        )
+        cls.mission2 = MissionForm.objects.create(
             name="mission2",
             description="description2",
             account=account,
-            mission_type=MissionType.FORM_FILLING,
         )
-        MissionForm.objects.create(mission=cls.mission2, form=cls.form2, min_cardinality=1, max_cardinality=1)
+        MissionFormThroughForm.objects.create(
+            mission=cls.mission2, form=cls.form2, min_cardinality=1, max_cardinality=1
+        )
         cls.planning = Planning.objects.create(
             project=project1,
             name="planning1",
@@ -1666,18 +1668,21 @@ class AssignmentAPITestCase(APITestCase):
         cls.form1.org_unit_types.add(org_unit_type)
         cls.form2.projects.add(project1)
         cls.form2.org_unit_types.add(org_unit_type)
-        cls.mission1 = Mission.objects.create(
+        cls.mission1 = MissionForm.objects.create(
             name="mission1",
             account=account,
-            mission_type=MissionType.FORM_FILLING,
         )
-        MissionForm.objects.create(mission=cls.mission1, form=cls.form1, min_cardinality=1, max_cardinality=1)
-        cls.mission2 = Mission.objects.create(
+        MissionFormThroughForm.objects.create(
+            mission=cls.mission1, form=cls.form1, min_cardinality=1, max_cardinality=1
+        )
+        cls.mission2 = MissionForm.objects.create(
             name="mission2",
             account=account,
             mission_type=MissionType.FORM_FILLING,
         )
-        MissionForm.objects.create(mission=cls.mission2, form=cls.form2, min_cardinality=1, max_cardinality=1)
+        MissionFormThroughForm.objects.create(
+            mission=cls.mission2, form=cls.form2, min_cardinality=1, max_cardinality=1
+        )
 
         cls.planning = Planning.objects.create(
             project=project1,
@@ -2378,16 +2383,13 @@ class AssignmentAPITestCase(APITestCase):
             ended_at="2025-01-10",
         )
         p6.assignment_set.create(org_unit=self.child1, user=self.user)
-        mission = Mission.objects.create(
+        mission = MissionOrgUnitType.objects.create(
             name="mission3",
             description="description3",
             account=self.account,
-            mission_type=MissionType.ORG_UNIT_AND_FORM,
-            org_unit_type=MissionOrgUnitType.objects.create(
-                org_unit_type=self.org_unit_type,
-                min_cardinality=2,
-                max_cardinality=4,
-            ),
+            org_unit_type=self.org_unit_type,
+            min_cardinality=2,
+            max_cardinality=4,
         )
         p6.missions.set([mission])
 

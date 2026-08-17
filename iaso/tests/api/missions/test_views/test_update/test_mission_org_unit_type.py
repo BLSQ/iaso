@@ -3,8 +3,8 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.settings import api_settings
 
-from iaso.models import Account, Form, OrgUnitType, Project
-from iaso.models.missions import MissionOrgUnitType, MissionOrgUnitTypeThroughForm
+from iaso.models import Account, Form, MissionFormThroughForm, OrgUnitType, Project
+from iaso.models.missions import MissionOrgUnitType
 from iaso.permissions.core_permissions import CORE_MISSION_READ_PERMISSION, CORE_MISSION_WRITE_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
@@ -98,16 +98,16 @@ class MissionOrgUnitTypeAPIUpdateTestCase(SwaggerTestCaseMixin, APITestCase):
             name="mission_out_3", account=self.other_account, org_unit_type=self.out_other_account
         )
 
-        MissionOrgUnitTypeThroughForm.objects.bulk_create(
+        MissionFormThroughForm.objects.bulk_create(
             [
-                MissionOrgUnitTypeThroughForm(
-                    mission_org_unit_type=self.mission_out_1, form=self.form_1, min_cardinality=1, max_cardinality=3
+                MissionFormThroughForm(
+                    mission_form=self.mission_out_1, form=self.form_1, min_cardinality=1, max_cardinality=3
                 ),
-                MissionOrgUnitTypeThroughForm(
-                    mission_org_unit_type=self.mission_out_1, form=self.form_2, min_cardinality=2, max_cardinality=3
+                MissionFormThroughForm(
+                    mission_form=self.mission_out_1, form=self.form_2, min_cardinality=2, max_cardinality=3
                 ),
-                MissionOrgUnitTypeThroughForm(
-                    mission_org_unit_type=self.mission_out_2, form=self.form_3, min_cardinality=3, max_cardinality=3
+                MissionFormThroughForm(
+                    mission_form=self.mission_out_2, form=self.form_3, min_cardinality=3, max_cardinality=3
                 ),
             ]
         )
@@ -320,7 +320,7 @@ class MissionOrgUnitTypeAPIUpdateTestCase(SwaggerTestCaseMixin, APITestCase):
 
         ContentType.objects.clear_cache()
 
-        with self.assertNumQueries(16):
+        with self.assertNumQueries(19):
             res = self.client.put(
                 reverse("missions-detail", kwargs={"pk": self.mission_out_1.pk}),
                 data=body,
@@ -360,7 +360,7 @@ class MissionOrgUnitTypeAPIUpdateTestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(self.mission_out_1.max_cardinality, 8)
         self.assertEqual(
             list(
-                self.mission_out_1.missionorgunittypethroughform_set.values_list(
+                self.mission_out_1.missionformthroughform_set.values_list(
                     "form_id", "min_cardinality", "max_cardinality"
                 )
             ),

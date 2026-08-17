@@ -1,40 +1,33 @@
 :root {
     --md-primary-fg-color: #192041;
-    --md-accent-fg-color: #ffc200;
+    --md-accent-fg-color: #fcb900;
+}
+
+/* Language switcher: by default this is a bare globe icon with no visible
+   label, easy to miss in the header. Show the current language as text
+   next to the icon - html[lang] is set correctly per built locale. */
+.md-header .md-select > .md-header__button.md-icon {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: auto;
+    padding-inline-end: 0.2rem;
+}
+.md-header .md-select > .md-header__button.md-icon::after {
+    content: "EN";
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+html[lang="fr"] .md-header .md-select > .md-header__button.md-icon::after {
+    content: "FR";
+}
+html[lang="es"] .md-header .md-select > .md-header__button.md-icon::after {
+    content: "ES";
 }
 
 .md-footer {
     display: none !important;
-}
-#pdf-download-container {
-    padding-top: 20px;
-    text-align: left;
-    padding-left: 12px;
-    display: flex;
-    align-items: center;
-}
-#pdf-download {
-    background-color: #ffc200;
-    color: #192041;
-    border-radius: 4px;
-    vertical-align: middle;
-    padding-left: 8px;
-    padding-right: 8px;
-    padding-top: 8px;
-    padding-bottom: 8px;
-    font-size: 0.7rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-#pdf-download svg {
-    vertical-align: middle;
-}
-
-#button-text {
-    margin-right: 8px;
-    display: inline-block;
 }
 
 /* Doc screenshot helpers — use with attr_list, e.g. ![](shot.png){ .doc-shot }

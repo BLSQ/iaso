@@ -5,11 +5,30 @@ theme:
   logo: ./assets/iaso.png
   favicon: ./assets/iaso-favicon.png
   custom_dir: ./docs/overrides # here we need to specify /docs in the path. That's just how it is
+  font:
+    text: Inter
+    code: JetBrains Mono
   palette:
-    primary: 'custom'
-    secondary: 'custom'
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
   features:
     - content.action.edit
+    - navigation.tabs # top-level nav (Home/Users/Developers/More about IASO) as tabs instead of one long sidebar
+    - navigation.tabs.sticky # tabs stay visible while scrolling
+    - navigation.top # "back to top" button
+    - toc.integrate # page headings nest under the active page in the LEFT sidebar, no separate right-hand rail
 hooks:
   - docs_redirect_hook.py # writes redirects for pages moved by the 2026 pages/ flatten
 plugins:
@@ -33,7 +52,10 @@ plugins:
             References: Références
             Models: Modèles
             How to: Guides
+            Advanced configuration: Configuration avancée
+            IASO and DHIS2: IASO et DHIS2
             More about IASO: En savoir plus sur IASO
+            Overview: Aperçu
             IASO website: Demander une démo
             Bluesquare website: Bluesquare
 
@@ -48,7 +70,10 @@ plugins:
             References: Referencias
             Models: Modelos
             How to: Guías
+            Advanced configuration: Configuración avanzada
+            IASO and DHIS2: IASO y DHIS2
             More about IASO: Más sobre IASO
+            Overview: Resumen
             IASO website: Sitio web de IASO
             Release notes: Notas de versión
             Bluesquare website: Sitio web de Bluesquare
@@ -76,8 +101,7 @@ edit_uri: edit/main/docs # for the edit on github button
 extra_css:
   - ./stylesheets/extra.css
 extra_javascript:
-  - ./extrajs/html2pdf.bundle.min.js
-  - ./extrajs/pdfDownload.js
+  - ./extrajs/external_links.js
   - https://plausible.io/js/script.js
 use_directory_urls: false # IMPORTANT: without this the paths to pictures will break on build
 nav: # nav configures the side bar menu - this is the ONLY place the nav tree is defined.
@@ -86,11 +110,15 @@ nav: # nav configures the side bar menu - this is the ONLY place the nav tree is
   # (mkdocs-static-i18n swaps in the .fr.md/.es.md version of each file for you).
   - Home: index.md
   - Users:
+     - ./pages/users/how_to/get_started_with_iaso.md
      - ./pages/users/reference/iaso_concepts.md
      - ./pages/users/reference/iaso_modules.md
      - ./pages/users/reference/user_guide.md
      - ./pages/users/reference/iaso_mobile.md
-     - ./pages/users/how_to/use_form_ai.md
+     - Advanced configuration:
+       - IASO and DHIS2:
+         - ./pages/users/how_to/setup_dhis2_login_in_iaso.md
+       - FAQ: ./pages/users/FAQ/faq.md
   - Developers:
     - References:
       # - Data model glossary:
@@ -128,6 +156,7 @@ nav: # nav configures the side bar menu - this is the ONLY place the nav tree is
       - ./pages/dev/how_to/build_odk_preview.md
 
   - More about IASO:
+    - Overview: ./pages/more_about_iaso.md
     - IASO website: https://www.openiaso.com/
     - Digital Public Goods Registry: https://www.digitalpublicgoods.net/r/iaso
     - Release notes: https://github.com/BLSQ/iaso/releases

@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderWithThemeAndIntlProvider } from '../../../../../tests/helpers';
 import * as useGetInstancesModule from '../hooks/useGetInstances';
-import { FormsFilterComponent, newForms } from './FormsFilterComponent';
+import { FormsFilterComponent, NewForms } from './FormsFilterComponent';
 
 // Form ids are numeric (Form["id"] / Instance["form_id"])
 
@@ -328,7 +328,7 @@ describe('FormsFilterComponent', () => {
                 isLoading: false,
             });
 
-            const selectedForms: newForms[] = [
+            const selectedForms: NewForms[] = [
                 {
                     id: 1,
                     name: 'Form A',
@@ -374,7 +374,7 @@ describe('FormsFilterComponent', () => {
                 isLoading: false,
             });
 
-            const selectedForms: newForms[] = [
+            const selectedForms: NewForms[] = [
                 {
                     id: 1,
                     name: 'Form A',
@@ -421,7 +421,7 @@ describe('FormsFilterComponent', () => {
                 isLoading: false,
             });
 
-            const selectedForms: newForms[] = [
+            const selectedForms: NewForms[] = [
                 {
                     id: 1,
                     name: 'Form A',
@@ -478,7 +478,7 @@ describe('FormsFilterComponent', () => {
                 isLoading: false,
             });
 
-            const selectedForms: newForms[] = [
+            const selectedForms: NewForms[] = [
                 {
                     id: 1,
                     name: 'Form A',

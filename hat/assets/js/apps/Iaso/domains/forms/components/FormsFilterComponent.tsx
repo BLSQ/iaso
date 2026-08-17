@@ -21,7 +21,7 @@ type instance = {
     longitude?: Instance['longitude'];
 };
 
-export type newForms = {
+export type NewForms = {
     id: Form['id'];
     name: Form['name'];
     color: string;
@@ -29,7 +29,7 @@ export type newForms = {
 };
 
 type Props = {
-    formsSelected: newForms[];
+    formsSelected: NewForms[];
     setFormsSelected: React.Dispatch<React.SetStateAction<any>>;
     currentOrgUnit: Record<string, any>;
     map: Record<string, any>;
@@ -48,7 +48,7 @@ export const FormsFilterComponent: FunctionComponent<Props> = ({
 
     const { data: colors } = useGetColors(true);
     const forms = useMemo(() => {
-        const newForms: newForms[] = [];
+        const newForms: NewForms[] = [];
         if (data?.instances) {
             const uniqueFormIds = new Set(
                 data.instances.map((i: instance) => i.form_id),
@@ -77,7 +77,7 @@ export const FormsFilterComponent: FunctionComponent<Props> = ({
 
     const computedBounds = useMemo(() => {
         const latLngs = formsSelected
-            .flatMap((form: newForms) => form.instances || [])
+            .flatMap((form: NewForms) => form.instances || [])
             .filter((i: instance) => i.latitude && i.longitude)
             .map((i: instance) =>
                 L.latLng(i.latitude as number, i.longitude as number),
@@ -114,12 +114,12 @@ export const FormsFilterComponent: FunctionComponent<Props> = ({
                         clearable
                         multi
                         value={formsSelected}
-                        getOptionLabel={(option: newForms) =>
+                        getOptionLabel={(option: NewForms) =>
                             option && option.name
                         }
                         getOptionSelected={(
-                            option: newForms,
-                            val: newForms,
+                            option: NewForms,
+                            val: NewForms,
                         ) => {
                             return val && option.id === val.id;
                         }}
@@ -128,7 +128,7 @@ export const FormsFilterComponent: FunctionComponent<Props> = ({
                         onChange={newValue => {
                             setFormsSelected(newValue || []);
                         }}
-                        renderTags={renderTags((o: newForms) => o.name)}
+                        renderTags={renderTags((o: NewForms) => o.name)}
                     />
                 </Grid>
                 <Grid

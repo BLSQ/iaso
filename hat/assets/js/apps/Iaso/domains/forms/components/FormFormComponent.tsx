@@ -48,11 +48,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
 }));
 
-const formatBooleanForRadio = (value: boolean) => {
-    if (value === true) return 'true';
-    if (value === false) return 'false';
-    return null;
-};
+const formatBooleanForRadio = (value: boolean) => (value ? 'true' : 'false');
 
 type FormFormProps = {
     currentForm: FormDataType;

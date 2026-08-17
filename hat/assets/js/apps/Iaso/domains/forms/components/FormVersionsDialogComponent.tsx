@@ -11,7 +11,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
-import { DjangoError } from 'Iaso/types/general';
+import { isApiError400 } from 'Iaso/libs/Api';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { ErrorsPopper } from '../../../components/forms/ErrorsPopper';
 import FileInputComponent from '../../../components/forms/FileInputComponent';
@@ -123,23 +123,22 @@ const FormVersionsDialogComponent: FunctionComponent<Props> = ({
                 queryClient.invalidateQueries(['formVersions', formId]);
             } catch (error: unknown) {
                 setIsLoading(false);
-                if ((error as DjangoError).status === 400) {
-                    Object.entries((error as DjangoError).details).forEach(
-                        entry => {
-                            const entryKey = entry[0];
-                            const entryValue: any = entry[1];
-                            if (entryKey === 'xls_file_validation_errors') {
-                                setXlsFileErrors(
-                                    entryValue.map(
-                                        (err: DjangoError) => err.message,
-                                    ),
-                                );
-                            } else {
-                                setFieldErrors(entryKey, entryValue);
-                            }
-                        },
-                    );
+                if (!isApiError400(error)) {
+                    return;
                 }
+                Object.entries(error.details).forEach(entry => {
+                    const entryKey = entry[0];
+                    const entryValue: any = entry[1];
+                    if (entryKey === 'xls_file_validation_errors') {
+                        setXlsFileErrors(
+                            entryValue.map(
+                                (err: { message: string }) => err.message,
+                            ),
+                        );
+                    } else {
+                        setFieldErrors(entryKey, entryValue);
+                    }
+                });
             }
         },
         [
@@ -183,23 +182,7 @@ const FormVersionsDialogComponent: FunctionComponent<Props> = ({
                     }
                 } catch (error: unknown) {
                     setIsLoading(false);
-                    if ((error as DjangoError).status === 400) {
-                        Object.entries(
-                            (error as DjangoError).details ?? {},
-                        ).forEach(entry => {
-                            const entryKey = entry[0];
-                            const entryValue: any = entry[1];
-                            if (entryKey === 'xls_file_validation_errors') {
-                                setXlsFileErrors(
-                                    entryValue.map(
-                                        (err: DjangoError) => err.message,
-                                    ),
-                                );
-                            } else {
-                                setFieldErrors(entryKey, entryValue);
-                            }
-                        });
-                    } else {
+                    if (!isApiError400(error)) {
                         openSnackBar(
                             errorSnackBar(
                                 'previewFormVersionError',
@@ -207,7 +190,21 @@ const FormVersionsDialogComponent: FunctionComponent<Props> = ({
                                 error,
                             ),
                         );
+                        return;
                     }
+                    Object.entries(error.details).forEach(entry => {
+                        const entryKey = entry[0];
+                        const entryValue: any = entry[1];
+                        if (entryKey === 'xls_file_validation_errors') {
+                            setXlsFileErrors(
+                                entryValue.map(
+                                    (err: { message: string }) => err.message,
+                                ),
+                            );
+                        } else {
+                            setFieldErrors(entryKey, entryValue);
+                        }
+                    });
                     return;
                 }
                 // Preview passed with no removed questions — proceed to save (isLoading already true)

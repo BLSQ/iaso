@@ -9,7 +9,7 @@ import {
     putRequest,
 } from '../../libs/Api';
 import { useSnackQuery } from '../../libs/apiHooks';
-import { Form } from './types/forms';
+import { Form, FormWritePayload } from './types/forms';
 
 export const useGetForm = (
     formId: number | string | undefined,
@@ -44,14 +44,19 @@ export const useGetForm = (
     });
 };
 
-export const createForm = (formData: Form) =>
+export const createForm = (formData: FormWritePayload): Promise<Form> =>
     postRequest('/api/forms/', formData).catch(error => {
         openSnackBar(errorSnackBar('createFormError', null, error));
+        throw error;
     });
 
-export const updateForm = (formId: number, formData: Form) =>
+export const updateForm = (
+    formId: number,
+    formData: FormWritePayload,
+): Promise<Form> =>
     putRequest(`/api/forms/${formId}/`, formData).catch(error => {
         openSnackBar(errorSnackBar('updateFormError', null, error));
+        throw error;
     });
 
 export type FormVersionDiff = {

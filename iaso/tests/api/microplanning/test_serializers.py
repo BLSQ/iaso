@@ -13,16 +13,30 @@ from iaso.tests.api.microplanning.test_setup import PlanningSerializersTestBase
 from iaso.utils.colors import COLOR_CHOICES, DEFAULT_COLOR
 
 
+# todo
+
+
 class PlanningSerializersTestCase(PlanningSerializersTestBase):
     def test_read_serializer(self):
         serializer = PlanningReadSerializer(self.planning)
+        data = serializer.data
+
+        self.assertEqual(data["id"], self.planning.id)
+        self.assertEqual(data["name"], "planning_1")
+        self.assertEqual(data["description"], "A test planning")
+        self.assertIsNone(data["published_at"])
+        self.assertEqual(data["started_at"], "2025-01-01")
+        self.assertEqual(data["ended_at"], "2025-01-10")
+        self.assertEqual(data["pipeline_uuids"], self.planning.pipeline_uuids)
+        self.assertEqual(data["assignments_count"], 0)
 
         self.assertEqual(
             serializer.data,
             {
                 "id": self.planning.id,
                 "name": "planning_1",
-                "forms": [self.form_1.id, self.form_2.id],
+                # "missions": [self.mission_1.id, self.mission_2.id],
+                "missions": [],
                 "description": "A test planning",
                 "published_at": None,
                 "started_at": "2025-01-01",
@@ -65,7 +79,8 @@ class PlanningSerializersTestCase(PlanningSerializersTestBase):
     def test_write_serializer_happy_path(self):
         data = {
             "name": "planning_2",
-            "forms": [self.form_2.id],
+            # "missions": [self.mission_2.id],
+            "missions": [],
             "description": "Another test planning",
             "started_at": "2025-02-01",
             "ended_at": "2025-02-10",

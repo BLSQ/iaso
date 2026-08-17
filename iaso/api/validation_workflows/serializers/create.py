@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from iaso.api.common import ModelSerializer
-from iaso.api.validation_workflows.serializers.common import CurrentAccountDefault
+from iaso.api.common.serializer_fields import CurrentAccountDefault
 from iaso.models import Form, ValidationWorkflow
 
 

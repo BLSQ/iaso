@@ -528,7 +528,7 @@ REST_FRAMEWORK = {
         "rest_framework_csv.renderers.CSVRenderer",
     ),
     "TEST_REQUEST_DEFAULT_FORMAT": "json",  # The default format that should be used when making test requests.
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_SCHEMA_CLASS": "iaso.drf_spectacular_utils.schema.AutoSchemaWithMinItems",
 }
 
 SPECTACULAR_SETTINGS = {
@@ -554,6 +554,7 @@ SPECTACULAR_SETTINGS = {
     },
     "DISABLE_ERRORS_AND_WARNINGS": env.bool("DRF_SPECTACULAR_DISABLE_ERRORS_AND_WARNINGS", default=True),
     "COMPONENT_SPLIT_REQUEST": True,
+    "ENUM_NAME_OVERRIDES": {"MissionTypeEnum": "iaso.models.microplanning.MissionType"},
 }
 
 REST_FRAMEWORK_SERIALIZER_FIELDS_MAPPINGS = {

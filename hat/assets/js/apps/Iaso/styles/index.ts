@@ -24,6 +24,7 @@ export const getOverriddenTheme = (theme, themeConfig) => {
                 warning: theme.palette.warning.main,
                 error: theme.palette.error.main,
                 success: theme.palette.success.main,
+                blueGrey: '#edf1f4',
             },
             primary: {
                 contrastText: primaryContrastText,

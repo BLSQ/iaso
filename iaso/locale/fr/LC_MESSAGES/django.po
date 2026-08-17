@@ -225,6 +225,24 @@ msgstr "Aucune assignation à effacer"
 msgid "Successfully deleted %(count)s assignments"
 msgstr "%(count)s assignations ont été supprimées avec succès"
 
+#: iaso/api/missions/serializers/create/mission_entity_type.py
+#: iaso/api/missions/serializers/create/mission_form.py
+#: iaso/api/missions/serializers/create/mission_org_unit_type.py
+#: iaso/api/missions/serializers/update/mission_entity_type.py
+#: iaso/api/missions/serializers/update/mission_form.py
+#: iaso/api/missions/serializers/update/mission_org_unit_type.py
+msgid "Minimum cardinality must be inferior than the maximum cardinality"
+msgstr "La cardinalité minimale doit être inférieure à la cardinalité maximale"
+
+#: iaso/api/missions/serializers/create/mission_entity_type.py
+#: iaso/api/missions/serializers/create/mission_form.py
+#: iaso/api/missions/serializers/create/mission_org_unit_type.py
+#: iaso/api/missions/serializers/update/mission_entity_type.py
+#: iaso/api/missions/serializers/update/mission_form.py
+#: iaso/api/missions/serializers/update/mission_org_unit_type.py
+msgid "Each form may only be specified once."
+msgstr "Chaque formulaire ne peut être spécifié qu'une seule fois."
+
 #: iaso/api/notifications/views.py
 #, python-format
 msgid "There is %(count)d failing import needing your attention."
@@ -886,6 +904,18 @@ msgstr "Population"
 msgid "Any"
 msgstr "Quelconque"
 
+#: iaso/models/missions.py
+msgid "Form Filling"
+msgstr "Remplissage de formulaires"
+
+#: iaso/models/missions.py
+msgid "Org Unit and Form"
+msgstr "Unité organisationnelle et formulaire"
+
+#: iaso/models/missions.py
+msgid "Entity and Form"
+msgstr "Entité et formulaire"
+
 #: iaso/models/org_unit.py
 msgid "Country"
 msgstr "Pays"
@@ -1233,6 +1263,14 @@ msgstr "Gestion du compte"
 #: iaso/permissions/core_permissions.py
 msgid "Pipeline management"
 msgstr "Gestion des pipelines"
+
+#: iaso/permissions/core_permissions.py
+msgid "Edit mission"
+msgstr "Editer la mission"
+
+#: iaso/permissions/core_permissions.py
+msgid "Read mission"
+msgstr "Lire la mission"
 
 #: iaso/tasks/copy_version.py iaso/tasks/export_mobile_app_setup_for_user.py
 #: iaso/tasks/process_mobile_bulk_upload.py

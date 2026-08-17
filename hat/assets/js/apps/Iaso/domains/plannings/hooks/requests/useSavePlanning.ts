@@ -1,11 +1,11 @@
 import moment from 'moment';
 import { UseMutationResult } from 'react-query';
-import { patchRequest, postRequest } from '../../../../libs/Api';
-import { useSnackMutation } from '../../../../libs/apiHooks';
+import { patchRequest, postRequest } from 'Iaso/libs/Api';
+import { useSnackMutation } from 'Iaso/libs/apiHooks';
 import {
     dateRangePickerToDateApi,
     getApiParamDateTimeString,
-} from '../../../../utils/dates';
+} from 'Iaso/utils/dates';
 import { PLANNINGS_API_URL } from '../../constants';
 import { Planning } from '../../types';
 
@@ -14,7 +14,7 @@ export type SavePlanningQuery = {
     name: string;
     startDate: string;
     endDate: string;
-    forms: number[];
+    missions: number[];
     selectedOrgUnit: number;
     selectedTeam: number;
     description?: string;

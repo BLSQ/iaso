@@ -29,8 +29,19 @@ export async function loadZodLocale(locale: keyof typeof zodLocales) {
 
     z.config({
         ...importLocale(),
-        customError: ({ code, expected, input }) => {
-            if (code === 'invalid_type' && expected === 'string' && !input) {
+        customError: issue => {
+            if (
+                issue.code === 'invalid_type' &&
+                issue.expected === 'string' &&
+                !issue.input
+            ) {
+                return zodMessages.required?.[locale];
+            }
+            if (
+                issue.code === 'too_small' &&
+                issue.origin === 'array' &&
+                issue.minimum === 1
+            ) {
                 return zodMessages.required?.[locale];
             }
             return undefined;

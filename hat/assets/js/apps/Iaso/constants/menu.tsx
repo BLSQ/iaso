@@ -2,6 +2,7 @@ import React, { useContext, useMemo } from 'react';
 import { InventoryOutlined } from '@mui/icons-material';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
+import AdsClickIcon from '@mui/icons-material/AdsClick';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
@@ -375,6 +376,12 @@ const menuItems = (
                     permissions: paths.planningPath.permissions,
                     key: 'list',
                     icon: props => <FormatListBulleted {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.missions),
+                    permissions: paths.missionsPath.permissions,
+                    key: 'missions',
+                    icon: props => <AdsClickIcon {...props} />,
                 },
             ],
         },

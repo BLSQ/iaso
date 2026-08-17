@@ -24,7 +24,7 @@ from django.utils import timezone
 from django_test_migrations.contrib.unittest_case import MigratorTestCase
 from django_test_migrations.migrator import Migrator
 from jinja2 import Environment, FileSystemLoader
-from jsonschema import Draft202012Validator
+from openapi_schema_validator import validate
 from rest_framework.test import APIClient, APITestCase as BaseAPITestCase
 
 from hat.api_import.models import APIImport
@@ -236,13 +236,17 @@ class SwaggerTestCaseMixin(BaseAPITestCase):
         resolved = self.resolve_refs(openapi)
 
         # extract schema AFTER resolution
-        schema = self.get_component_schema(resolved, schema_name, as_array=as_array)
+        schema = self.get_component_schema(resolved, schema_name)
 
         # normalize OpenAPI quirks
         schema = self.normalize_schema(schema)
 
         # validate
-        Draft202012Validator(schema).validate(data)
+        if as_array:
+            for d in data:
+                validate(schema, d)
+        else:
+            validate(schema, data)
 
     def assertResponseCompliantToSwagger(self, data, schema, as_array=False):
         try:

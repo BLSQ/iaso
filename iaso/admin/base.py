@@ -724,7 +724,7 @@ class PlanningAdmin(admin.ModelAdmin):
                     "name",
                     "description",
                     "project",
-                    "forms",
+                    "missions",
                     "org_unit",
                     "team",
                     "started_at",

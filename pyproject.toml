@@ -33,6 +33,7 @@ dependencies = [
     "django-phonenumber-field[phonenumberslite]==7.3.0", # https://django-phonenumber-field.readthedocs.io/en/latest/
     "django-qr-code==4.0.1", # https://django-qr-code.readthedocs.io/en/latest/
     "django-redis==4.12.1", # https://github.com/jazzband/django-redis/tags
+    "django-rest-polymorphic>=0.1.10",
     "django-ses==2.6.1", # trypelim - https://github.com/django-ses/django-ses/releases/
     "django-simple-captcha==0.6.3", # https://github.com/mbi/django-simple-captcha/tags
     "django-sql-dashboard==1.2", # https://github.com/simonw/django-sql-dashboard/tags
@@ -331,6 +332,7 @@ dev = [
     "types-mock==4.0.15", # https://pypi.org/project/types-mock/
     "types-requests==2.31.0.6", # https://pypi.org/project/types-requests/
     "vcrpy==4.1.1", # trypelim - https://github.com/kevin1024/vcrpy
+    "openapi-schema-validator>=0.6.3",
 ]
 prod = [
     "gunicorn==23.0.0", # https://github.com/benoitc/gunicorn/tags

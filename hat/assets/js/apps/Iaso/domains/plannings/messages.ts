@@ -81,9 +81,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.createPlanning',
         defaultMessage: 'Create planning',
     },
-    forms: {
-        defaultMessage: 'Forms',
-        id: 'iaso.forms.title',
+    missions: {
+        defaultMessage: 'Missions',
+        id: 'iaso.missions.title',
     },
     edit: {
         id: 'iaso.label.edit',

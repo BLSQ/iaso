@@ -85,7 +85,8 @@ from .api.microplanning.views import (
     PlanningSamplingResultViewSet,
     PlanningViewSet,
 )
-from .api.microplanning.views_mobile import MobilePlanningViewSet
+from .api.microplanning.views_mobile import MobilePlanningV2ViewSet, MobilePlanningViewSet
+from .api.missions.views import MissionViewSet
 from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
 from .api.mobile.entity import MobileEntityDeletedViewSet, MobileEntityViewSet
 from .api.mobile.entity_type import MobileEntityTypesViewSet
@@ -233,6 +234,7 @@ router.register(r"entityduplicates", EntityDuplicateViewSet, basename="entitydup
 router.register(r"entityduplicates_analyzes", EntityDuplicateAnalyzisViewSet, basename="entityduplicates_analyzes")
 router.register(r"bulkcreateuser", BulkCreateUserFromCsvViewSet, basename="bulkcreateuser")
 router.register(r"teams", TeamViewSet, basename="teams")
+router.register(r"microplanning/missions", MissionViewSet, basename="missions")
 router.register(r"microplanning/plannings", PlanningViewSet, basename="planning").register(
     r"orgunits",
     PlanningOrgunitsViewSet,
@@ -242,6 +244,7 @@ router.register(r"microplanning/plannings", PlanningViewSet, basename="planning"
 router.register(r"microplanning/assignments", AssignmentViewSet, basename="assignments")
 router.register(r"microplanning/samplings", PlanningSamplingResultViewSet, basename="planning-sampling-results")
 router.register(r"mobile/plannings", MobilePlanningViewSet, basename="mobileplanning")
+router.register(r"v2/mobile/plannings", MobilePlanningV2ViewSet, basename="mobileplanning")
 router.register(r"storages", StorageViewSet, basename="storage")
 router.register(r"mobile/storages?/logs", StorageLogViewSet, basename="storagelogs")
 router.register(r"mobile/storages?/blacklisted", StorageBlacklistedViewSet, basename="storageblacklisted")

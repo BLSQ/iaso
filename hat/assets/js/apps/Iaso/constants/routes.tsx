@@ -2,6 +2,9 @@ import React, { ReactElement } from 'react';
 
 import { ApiImports } from 'Iaso/domains/apiimports';
 import { ValidateInstance } from 'Iaso/domains/instances/validate';
+import { MissionCreate } from 'Iaso/domains/missions/create';
+import { MissionDetail } from 'Iaso/domains/missions/details';
+import { MissionEdit } from 'Iaso/domains/missions/edit';
 import { PipelineList } from 'Iaso/domains/openHexa';
 import { PipelineDetails } from 'Iaso/domains/openHexa/details';
 import { StockKeepingUnits } from 'Iaso/domains/stock';
@@ -40,6 +43,7 @@ import InstanceDetail from '../domains/instances/details';
 import { Links } from '../domains/links';
 import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
+import { Missions } from '../domains/missions';
 import { Modules } from '../domains/modules';
 import { OrgUnits } from '../domains/orgUnits';
 import { OrgUnitChangeRequestConfigs } from '../domains/orgUnits/configuration/OrgUnitChangeRequestConfigs';
@@ -424,6 +428,34 @@ export const planningDetailsPath = {
     permissions: [Permission.PLANNING_READ, Permission.PLANNING_WRITE],
     element: <PlanningDetails />,
 };
+export const missionsPath = {
+    baseUrl: baseUrls.missions,
+    routerUrl: `${baseUrls.missions}/*`,
+    permissions: [Permission.MISSION_READ],
+    element: <Missions />,
+};
+
+export const missionsCreatePath = {
+    baseUrl: baseUrls.missionsCreate,
+    routerUrl: `${baseUrls.missionsCreate}/*`,
+    permissions: [Permission.MISSION_READ, Permission.MISSION_WRITE],
+    element: <MissionCreate />,
+};
+
+export const missionsDetailPath = {
+    baseUrl: baseUrls.missionsDetails,
+    routerUrl: `${baseUrls.missionsDetails}/*`,
+    permissions: [Permission.MISSION_READ],
+    element: <MissionDetail />,
+};
+
+export const missionsEditPath = {
+    baseUrl: baseUrls.missionsEdit,
+    routerUrl: `${baseUrls.missionsEdit}/*`,
+    permissions: [Permission.MISSION_READ, Permission.MISSION_WRITE],
+    element: <MissionEdit />,
+};
+
 export const assignmentsPath = {
     baseUrl: baseUrls.assignments,
     routerUrl: `${baseUrls.assignments}/*`,
@@ -629,6 +661,10 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     teamsPath,
     planningPath,
     planningDetailsPath,
+    missionsPath,
+    missionsCreatePath,
+    missionsDetailPath,
+    missionsEditPath,
     assignmentsPath,
     entitiesPath,
     entityDetailsPath,

@@ -8,7 +8,7 @@ from iaso.models import (
     EntityType,
     Form,
     MissionEntityType,
-    MissionEntityTypeThroughForm,
+    MissionFormThroughForm,
     Project,
     Workflow,
     WorkflowVersion,
@@ -115,16 +115,16 @@ class MissionEntityTypeAPIUpdateTestCase(SwaggerTestCaseMixin, APITestCase):
             name="mission_et_3", account=self.other_account, entity_type=self.et_other_account
         )
 
-        MissionEntityTypeThroughForm.objects.bulk_create(
+        MissionFormThroughForm.objects.bulk_create(
             [
-                MissionEntityTypeThroughForm(
-                    mission_entity_type=self.mission_et_1, form=self.form_1, min_cardinality=1, max_cardinality=3
+                MissionFormThroughForm(
+                    mission_form=self.mission_et_1, form=self.form_1, min_cardinality=1, max_cardinality=3
                 ),
-                MissionEntityTypeThroughForm(
-                    mission_entity_type=self.mission_et_1, form=self.form_2, min_cardinality=2, max_cardinality=3
+                MissionFormThroughForm(
+                    mission_form=self.mission_et_1, form=self.form_2, min_cardinality=2, max_cardinality=3
                 ),
-                MissionEntityTypeThroughForm(
-                    mission_entity_type=self.mission_et_2, form=self.form_3, min_cardinality=3, max_cardinality=3
+                MissionFormThroughForm(
+                    mission_form=self.mission_et_2, form=self.form_3, min_cardinality=3, max_cardinality=3
                 ),
             ]
         )
@@ -327,7 +327,7 @@ class MissionEntityTypeAPIUpdateTestCase(SwaggerTestCaseMixin, APITestCase):
 
         ContentType.objects.clear_cache()
 
-        with self.assertNumQueries(16):
+        with self.assertNumQueries(19):
             res = self.client.put(
                 reverse("missions-detail", kwargs={"pk": self.mission_et_1.pk}),
                 data=body,
@@ -364,7 +364,7 @@ class MissionEntityTypeAPIUpdateTestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(self.mission_et_1.max_cardinality, 2)
         self.assertEqual(
             list(
-                self.mission_et_1.missionentitytypethroughform_set.values_list(
+                self.mission_et_1.missionformthroughform_set.values_list(
                     "form_id", "min_cardinality", "max_cardinality"
                 )
             ),

@@ -21,17 +21,13 @@ from iaso.api.common import (
 )
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.models.microplanning import Assignment, Planning
+from iaso.models.missions import MissionWithForms
 from iaso.models.org_unit import OrgUnit
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
 
 from ...models import (
-    Mission,
     MissionEntityType,
-    MissionEntityTypeThroughForm,
-    MissionForm,
-    MissionFormThroughForm,
     MissionOrgUnitType,
-    MissionOrgUnitTypeThroughForm,
 )
 from .filters import (
     PlanningOrgUnitChildrenFilter,
@@ -179,29 +175,10 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
                 "target_org_unit_types",
                 Prefetch(
                     "missions",
-                    queryset=Mission.objects.all()
+                    queryset=MissionWithForms.objects.all()
+                    .prefetch_related("forms")
                     .select_polymorphic_related(MissionOrgUnitType, "org_unit_type")
-                    .select_polymorphic_related(MissionEntityType, "entity_type")
-                    .prefetch_polymorphic_related(
-                        MissionForm,
-                        Prefetch(
-                            "missionformthroughform_set", queryset=MissionFormThroughForm.objects.select_related("form")
-                        ),
-                    )
-                    .prefetch_polymorphic_related(
-                        MissionOrgUnitType,
-                        Prefetch(
-                            "missionorgunittypethroughform_set",
-                            queryset=MissionOrgUnitTypeThroughForm.objects.select_related("form"),
-                        ),
-                    )
-                    .prefetch_polymorphic_related(
-                        MissionEntityType,
-                        Prefetch(
-                            "missionentitytypethroughform_set",
-                            queryset=MissionEntityTypeThroughForm.objects.select_related("form"),
-                        ),
-                    ),
+                    .select_polymorphic_related(MissionEntityType, "entity_type"),
                 ),
             )
             .annotate(assignments_count=Count("assignment", filter=Q(assignment__deleted_at__isnull=True)))

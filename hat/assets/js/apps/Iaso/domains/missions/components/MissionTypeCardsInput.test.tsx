@@ -3,7 +3,7 @@ import { fireEvent, screen } from '@testing-library/react';
 import type { FormikProps } from 'formik';
 import type { FieldInputProps } from 'formik/dist/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { MissionTypeDropdownValueEnum } from 'Iaso/api/missions';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions';
 import { renderWithThemeAndIntlProvider } from '../../../../../tests/helpers';
 import {
     MissionTypeCardsInput,
@@ -11,7 +11,7 @@ import {
 } from './MissionTypeCardsInput';
 
 type MissionTypeValue =
-    (typeof MissionTypeDropdownValueEnum.enum)[keyof typeof MissionTypeDropdownValueEnum.enum];
+    (typeof MissionTypeDa2Enum.enum)[keyof typeof MissionTypeDa2Enum.enum];
 
 type FormValues = {
     mission_type: MissionTypeValue;
@@ -25,7 +25,7 @@ const createProps = (overrides: Record<string, unknown> = {}): Props =>
         required: false,
         field: {
             name: 'mission_type',
-            value: MissionTypeDropdownValueEnum.enum.FORM_FILLING,
+            value: MissionTypeDa2Enum.enum.FORM_FILLING,
             onBlur: vi.fn(),
             onChange: vi.fn(),
         } as FieldInputProps<MissionTypeValue>,
@@ -73,8 +73,7 @@ describe('MissionTypeCardsInput', () => {
                 {...createProps({
                     field: {
                         name: 'mission_type',
-                        value: MissionTypeDropdownValueEnum.enum
-                            .ENTITY_AND_FORM,
+                        value: MissionTypeDa2Enum.enum.ENTITY_AND_FORM,
                         onBlur: vi.fn(),
                         onChange: vi.fn(),
                     },
@@ -102,7 +101,7 @@ describe('MissionTypeCardsInput', () => {
 
         expect(onChange).toHaveBeenCalledWith(
             'mission_type',
-            MissionTypeDropdownValueEnum.enum.ORG_UNIT_AND_FORM,
+            MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM,
         );
         expect(props.form.setFieldTouched).toHaveBeenCalledWith(
             'mission_type',
@@ -110,7 +109,7 @@ describe('MissionTypeCardsInput', () => {
         );
         expect(props.form.setFieldValue).toHaveBeenCalledWith(
             'mission_type',
-            MissionTypeDropdownValueEnum.enum.ORG_UNIT_AND_FORM,
+            MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM,
         );
     });
 

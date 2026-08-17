@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.models import Account, Form, MissionForm, Project
-from iaso.models.missions import Mission, MissionFormThroughForm
+from iaso.models.missions import MissionFormThroughForm
 from iaso.permissions.core_permissions import CORE_MISSION_READ_PERMISSION, CORE_MISSION_WRITE_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
@@ -109,13 +109,13 @@ class MissionAPIDeleteTestCase(SwaggerTestCaseMixin, APITestCase):
 
         self.client.force_authenticate(user=self.user_account_write_perm)
         res = self.client.delete(
-            reverse("missions-detail", kwargs={"pk": Mission.objects.order_by("-id").first().pk + 1})
+            reverse("missions-detail", kwargs={"pk": MissionForm.objects.order_by("-id").first().pk + 1})
         )
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
 
         self.client.force_authenticate(user=self.superuser)
         res = self.client.delete(
-            reverse("missions-detail", kwargs={"pk": Mission.objects.order_by("-id").first().pk + 1})
+            reverse("missions-detail", kwargs={"pk": MissionForm.objects.order_by("-id").first().pk + 1})
         )
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -132,7 +132,7 @@ class MissionAPIDeleteTestCase(SwaggerTestCaseMixin, APITestCase):
     def test_num_queries(self):
         self.client.force_authenticate(user=self.user_account_write_perm)
         ContentType.objects.clear_cache()
-        with self.assertNumQueries(9):
+        with self.assertNumQueries(12):
             res = self.client.delete(reverse("missions-detail", kwargs={"pk": self.mission_form_2.pk}))
 
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
@@ -146,5 +146,5 @@ class MissionAPIDeleteTestCase(SwaggerTestCaseMixin, APITestCase):
         self.mission_form_1.refresh_from_db()
 
         self.assertIsNotNone(self.mission_form_1.deleted_at)
-
+        self.assertIsNotNone(self.mission_form_1.missionwithforms.deleted_at)
         self.assertIsNotNone(self.mission_form_1.mission_ptr.deleted_at)

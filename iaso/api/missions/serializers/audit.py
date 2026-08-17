@@ -1,8 +1,8 @@
 from iaso.api.common import ModelSerializer
-from iaso.models import Mission
+from iaso.models import MissionWithForms
 
 
 class AuditMissionSerializer(ModelSerializer):
     class Meta:
-        model = Mission
+        model = MissionWithForms
         fields = "__all__"

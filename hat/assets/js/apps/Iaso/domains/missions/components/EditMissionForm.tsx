@@ -6,7 +6,7 @@ import {
     MissionEntityTypeUpdateRequest,
     MissionFormUpdateRequest,
     MissionOrgUnitTypeUpdateRequest,
-    MissionTypeDropdownValueEnum,
+    MissionTypeDa2Enum,
 } from 'Iaso/api/missions';
 import { MissionEntityTypeInput } from 'Iaso/domains/missions/components/forms/MissionEntityTypeInput';
 import { MissionFormsBaseInput } from 'Iaso/domains/missions/components/forms/MissionFormsBaseInput';
@@ -25,13 +25,13 @@ type Base<T> = {
 
 type EditMissionFormProps =
     | (Base<MissionOrgUnitTypeUpdateRequest> & {
-          missionType: typeof MissionTypeDropdownValueEnum.enum.ORG_UNIT_AND_FORM;
+          missionType: typeof MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM;
       })
     | (Base<MissionFormUpdateRequest> & {
-          missionType: typeof MissionTypeDropdownValueEnum.enum.FORM_FILLING;
+          missionType: typeof MissionTypeDa2Enum.enum.FORM_FILLING;
       })
     | (Base<MissionEntityTypeUpdateRequest> & {
-          missionType: typeof MissionTypeDropdownValueEnum.enum.ENTITY_AND_FORM;
+          missionType: typeof MissionTypeDa2Enum.enum.ENTITY_AND_FORM;
       });
 
 export const EditMissionForm = ({
@@ -59,33 +59,27 @@ export const EditMissionForm = ({
                 />
 
                 <MissionsTitle />
-                {missionType ===
-                    MissionTypeDropdownValueEnum.enum.FORM_FILLING && (
+                {missionType === MissionTypeDa2Enum.enum.FORM_FILLING && (
                     <FormsChip />
                 )}
-                {missionType ===
-                    MissionTypeDropdownValueEnum.enum.ORG_UNIT_AND_FORM && (
+                {missionType === MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM && (
                     <OrgUnitAndFormChip />
                 )}
-                {missionType ===
-                    MissionTypeDropdownValueEnum.enum.ENTITY_AND_FORM && (
+                {missionType === MissionTypeDa2Enum.enum.ENTITY_AND_FORM && (
                     <EntityAndFormChip />
                 )}
 
-                {missionType ===
-                    MissionTypeDropdownValueEnum.enum.FORM_FILLING && (
+                {missionType === MissionTypeDa2Enum.enum.FORM_FILLING && (
                     <MissionFormsBaseInput formik={formik} />
                 )}
-                {missionType ===
-                    MissionTypeDropdownValueEnum.enum.ORG_UNIT_AND_FORM && (
+                {missionType === MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM && (
                     <MissionOrgUnitTypeInput
                         formik={
                             formik as FormikProps<MissionOrgUnitTypeUpdateRequest>
                         }
                     />
                 )}
-                {missionType ===
-                    MissionTypeDropdownValueEnum.enum.ENTITY_AND_FORM && (
+                {missionType === MissionTypeDa2Enum.enum.ENTITY_AND_FORM && (
                     <MissionEntityTypeInput
                         formik={
                             formik as FormikProps<MissionEntityTypeUpdateRequest>

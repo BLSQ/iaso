@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models import Case, Count, IntegerField, OuterRef, Subquery, Value, When
+from django.db.models import Count
 from django.utils.translation import gettext_lazy as _
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
@@ -24,41 +24,6 @@ class MissionType(models.TextChoices):
 
 
 class MissionQuerySet(RelatedPolymorphicQuerySet):
-    def annotate_with_form_count(self):
-        form_count_sq = (
-            MissionFormThroughForm.objects.filter(mission_form_id=OuterRef("missionform__mission_ptr_id"))
-            .values("mission_form_id")
-            .annotate(c=Count("form_id"))
-            .values("c")[:1]
-        )
-
-        out_count_sq = (
-            MissionOrgUnitTypeThroughForm.objects.filter(
-                mission_org_unit_type_id=OuterRef("missionorgunittype__mission_ptr_id")
-            )
-            .values("mission_org_unit_type_id")
-            .annotate(c=Count("form_id"))
-            .values("c")[:1]
-        )
-
-        et_count_sq = (
-            MissionEntityTypeThroughForm.objects.filter(
-                mission_entity_type_id=OuterRef("missionentitytype__mission_ptr_id")
-            )
-            .values("mission_entity_type_id")
-            .annotate(c=Count("form_id"))
-            .values("c")[:1]
-        )
-        return self.annotate(
-            forms_count=Case(
-                When(mission_type=MissionType.FORM_FILLING, then=Subquery(form_count_sq)),
-                When(mission_type=MissionType.ORG_UNIT_AND_FORM, then=Subquery(out_count_sq)),
-                When(mission_type=MissionType.ENTITY_AND_FORM, then=Subquery(et_count_sq)),
-                output_field=IntegerField(),
-                default=Value(0),
-            )
-        )
-
     def filter_for_user(self, user: User):
         iaso_profile = getattr(user, "iaso_profile", None)
         account = getattr(iaso_profile, "account", None)
@@ -73,10 +38,10 @@ class MissionManager(PolymorphicManager.from_queryset(MissionQuerySet)):
 
 
 class Mission(SoftDeletableModel, CreatedAndUpdatedModel, PolymorphicModel):
-    MISSION_TYPE = None
-
     class Meta:
-        ordering = ("name",)
+        ordering = ("id",)
+
+    MISSION_TYPE = None
 
     objects = MissionManager()
 
@@ -84,7 +49,6 @@ class Mission(SoftDeletableModel, CreatedAndUpdatedModel, PolymorphicModel):
     description = models.CharField(max_length=500, blank=True)
     account = models.ForeignKey("Account", on_delete=models.CASCADE, related_name="missions")
     mission_type = models.CharField(max_length=30, choices=MissionType.choices)
-
     created_by = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
 
     def get_form_assignments(self, org_unit: "OrgUnit"):
@@ -98,8 +62,40 @@ class Mission(SoftDeletableModel, CreatedAndUpdatedModel, PolymorphicModel):
         return self.name
 
 
+class MissionWithFormsQuerySet(RelatedPolymorphicQuerySet):
+    def annotate_with_form_count(self):
+        return self.annotate(forms_count=Count("forms"))
+
+    def filter_for_user(self, user: User):
+        iaso_profile = getattr(user, "iaso_profile", None)
+        account = getattr(iaso_profile, "account", None)
+        if not account:
+            return self.none()
+        return self.filter(account=account)
+
+
+class MissionWithFormsManager(PolymorphicManager.from_queryset(MissionWithFormsQuerySet)):
+    def get_queryset(self):
+        return super().get_queryset().filter(deleted_at__isnull=True)
+
+
+class MissionWithForms(Mission):
+    """
+    Represents a mission that has forms as M2M to avoid duplication of table
+    """
+
+    forms = models.ManyToManyField("Form", related_name="mission_forms", through="MissionFormThroughForm")
+
+    objects = MissionWithFormsManager()
+
+    class Meta:
+        ordering = ("id",)
+        verbose_name_plural = "Missions with forms"
+        verbose_name = "Mission with forms"
+
+
 class MissionFormThroughForm(models.Model):
-    mission_form = models.ForeignKey("MissionForm", on_delete=models.CASCADE)
+    mission_form = models.ForeignKey("MissionWithForms", on_delete=models.CASCADE)
     form = models.ForeignKey("Form", on_delete=models.CASCADE)
     min_cardinality = models.PositiveIntegerField(
         default=1, help_text="Minimum number of times this form should be filled"
@@ -111,8 +107,11 @@ class MissionFormThroughForm(models.Model):
     class Meta:
         unique_together = (("mission_form", "form"),)
 
+    def get_form_assignments(self):
+        raise NotImplementedError
 
-class MissionForm(Mission):
+
+class MissionForm(MissionWithForms):
     """Contains the information for the FORM_FILLING mission type"""
 
     class Meta:
@@ -120,38 +119,18 @@ class MissionForm(Mission):
 
     MISSION_TYPE = MissionType.FORM_FILLING
 
-    forms = models.ManyToManyField("Form", related_name="mission_forms", through=MissionFormThroughForm)
-
     def get_form_assignments(self, org_unit: "OrgUnit") -> list[MissionFormThroughForm]:
         out_forms = {f.id for f in org_unit.org_unit_type.form_set.all()}
 
         return [tf for tf in self.missionformthroughform_set.all() if tf.form_id in out_forms]
 
 
-class MissionOrgUnitTypeThroughForm(models.Model):
-    mission_org_unit_type = models.ForeignKey("MissionOrgUnitType", on_delete=models.CASCADE)
-    form = models.ForeignKey("Form", on_delete=models.CASCADE)
-    min_cardinality = models.PositiveIntegerField(
-        default=1, help_text="Minimum number of times this form should be filled"
-    )
-    max_cardinality = models.PositiveIntegerField(
-        null=True, blank=True, help_text="Maximum number of times this form can be filled (null = unlimited)"
-    )
-
-    class Meta:
-        unique_together = (("mission_org_unit_type", "form"),)
-
-
-class MissionOrgUnitType(Mission):
+class MissionOrgUnitType(MissionWithForms):
     """Contains the information for the ORG_UNIT_AND_FORM mission type"""
-
-    class Meta:
-        ordering = ("id",)
 
     MISSION_TYPE = MissionType.ORG_UNIT_AND_FORM
 
     org_unit_type = models.ForeignKey("OrgUnitType", on_delete=models.PROTECT, related_name="mission_org_unit_type")
-    forms = models.ManyToManyField("Form", related_name="mission_org_unit_types", through=MissionOrgUnitTypeThroughForm)
     min_cardinality = models.PositiveIntegerField(
         default=1, help_text="Minimum number of times this form should be filled"
     )
@@ -169,30 +148,12 @@ class MissionOrgUnitType(Mission):
         return related_out == assignment_out or related_out in sub_unit_type_ids
 
 
-class MissionEntityTypeThroughForm(models.Model):
-    mission_entity_type = models.ForeignKey("MissionEntityType", on_delete=models.CASCADE)
-    form = models.ForeignKey("Form", on_delete=models.CASCADE)
-    min_cardinality = models.PositiveIntegerField(
-        default=1, help_text="Minimum number of times this form should be filled"
-    )
-    max_cardinality = models.PositiveIntegerField(
-        null=True, blank=True, help_text="Maximum number of times this form can be filled (null = unlimited)"
-    )
-
-    class Meta:
-        unique_together = (("mission_entity_type", "form"),)
-
-
-class MissionEntityType(Mission):
+class MissionEntityType(MissionWithForms):
     """Contains the information for the ENTITY_AND_FORM mission type"""
-
-    class Meta:
-        ordering = ("id",)
 
     MISSION_TYPE = MissionType.ENTITY_AND_FORM
 
     entity_type = models.ForeignKey("EntityType", on_delete=models.PROTECT, related_name="mission_entity_type")
-    forms = models.ManyToManyField("Form", related_name="mission_entities", through=MissionEntityTypeThroughForm)
     min_cardinality = models.PositiveIntegerField(
         default=1, help_text="Minimum number of times this form should be filled"
     )

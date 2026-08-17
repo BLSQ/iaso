@@ -5,7 +5,7 @@ import { Field, FormikProps } from 'formik';
 import {
     MissionEntityTypeCreateRequest,
     MissionOrgUnitTypeCreateRequest,
-    MissionTypeDropdownValueEnum,
+    MissionTypeDa2Enum,
 } from 'Iaso/api/missions';
 import { MissionEntityTypeInput } from 'Iaso/domains/missions/components/forms/MissionEntityTypeInput';
 import { MissionFormsBaseInput } from 'Iaso/domains/missions/components/forms/MissionFormsBaseInput';
@@ -70,11 +70,11 @@ export const CreateMissionForm: FunctionComponent<CreateMissionFormProps> = ({
                 </Alert>
             )}
             {formik.values?.mission_type ===
-                MissionTypeDropdownValueEnum.enum.FORM_FILLING && (
+                MissionTypeDa2Enum.enum.FORM_FILLING && (
                 <MissionFormsBaseInput formik={formik} />
             )}
             {formik.values?.mission_type ===
-                MissionTypeDropdownValueEnum.enum.ORG_UNIT_AND_FORM && (
+                MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM && (
                 <MissionOrgUnitTypeInput
                     formik={
                         formik as FormikProps<MissionOrgUnitTypeCreateRequest>
@@ -82,7 +82,7 @@ export const CreateMissionForm: FunctionComponent<CreateMissionFormProps> = ({
                 />
             )}
             {formik.values?.mission_type ===
-                MissionTypeDropdownValueEnum.enum.ENTITY_AND_FORM && (
+                MissionTypeDa2Enum.enum.ENTITY_AND_FORM && (
                 <MissionEntityTypeInput
                     formik={
                         formik as FormikProps<MissionEntityTypeCreateRequest>

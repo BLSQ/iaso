@@ -66,7 +66,7 @@ class PlanningTestCase(APITestCase):
             account=account,
         )
         MissionFormThroughForm.objects.create(
-            mission_form=cls.mission1, form=cls.form1, min_cardinality=1, max_cardinality=1
+            mission=cls.mission1, form=cls.form1, min_cardinality=1, max_cardinality=1
         )
         cls.mission2 = MissionForm.objects.create(
             name="mission2",
@@ -74,7 +74,7 @@ class PlanningTestCase(APITestCase):
             account=account,
         )
         MissionFormThroughForm.objects.create(
-            mission_form=cls.mission2, form=cls.form2, min_cardinality=1, max_cardinality=1
+            mission=cls.mission2, form=cls.form2, min_cardinality=1, max_cardinality=1
         )
         cls.planning = Planning.objects.create(
             project=project1,
@@ -1670,7 +1670,7 @@ class AssignmentAPITestCase(APITestCase):
             account=account,
         )
         MissionFormThroughForm.objects.create(
-            mission_form=cls.mission1, form=cls.form1, min_cardinality=1, max_cardinality=1
+            mission=cls.mission1, form=cls.form1, min_cardinality=1, max_cardinality=1
         )
         cls.mission2 = MissionForm.objects.create(
             name="mission2",

@@ -4,10 +4,10 @@ from django.utils.timezone import now
 from iaso.test import IasoMigratorTestCase
 
 
-class Test0390DirectMigration(IasoMigratorTestCase):
+class Test0395DirectMigration(IasoMigratorTestCase):
     migrate_from = ("iaso", "0394_remove_show_pages_feature_flag")
-    migrate_to = ("iaso", "0395_mission_alter_corepermissionsupport_options_and_more")
-    num_queries = 72
+    migrate_to = ("iaso", "0395_missionform_alter_corepermissionsupport_options_and_more")
+    num_queries = 65
 
     def prepare(self):
         Account = self.old_state.apps.get_model("iaso", "Account")
@@ -71,7 +71,7 @@ class Test0390DirectMigration(IasoMigratorTestCase):
 
         self.assertEqual(MissionForm.objects.count(), 3)
 
-        planning_1_first_mission = planning_1.missions.all()[0].missionform
+        planning_1_first_mission = planning_1.missions.all()[0].missionwithforms.missionform
 
         self.assertEqual(planning_1_first_mission.forms.count(), 1)
         self.assertEqual(planning_1_first_mission.forms.first().name, "form1")
@@ -84,7 +84,7 @@ class Test0390DirectMigration(IasoMigratorTestCase):
             [(self.form1.pk, 1, 1)],
         )
 
-        planning_1_second_mission = planning_1.missions.all()[1].missionform
+        planning_1_second_mission = planning_1.missions.all()[1].missionwithforms.missionform
 
         self.assertEqual(planning_1_second_mission.forms.count(), 1)
         self.assertEqual(planning_1_second_mission.forms.first().name, "form2")
@@ -96,7 +96,7 @@ class Test0390DirectMigration(IasoMigratorTestCase):
             ),
             [(self.form2.pk, 1, 1)],
         )
-        planning_2_first_mission = planning_2.missions.all()[0].missionform
+        planning_2_first_mission = planning_2.missions.all()[0].missionwithforms.missionform
 
         self.assertEqual(planning_2_first_mission.forms.count(), 1)
         self.assertEqual(planning_2_first_mission.forms.first().name, "form2")
@@ -110,25 +110,17 @@ class Test0390DirectMigration(IasoMigratorTestCase):
         )
 
 
-class Test0390ReverseMigration(IasoMigratorTestCase):
-    num_queries = 44
+class Test0395ReverseMigration(IasoMigratorTestCase):
+    num_queries = 46
 
-    migrate_from = ("iaso", "0395_mission_alter_corepermissionsupport_options_and_more")
+    migrate_from = ("iaso", "0395_missionform_alter_corepermissionsupport_options_and_more")
     migrate_to = ("iaso", "0394_remove_show_pages_feature_flag")
 
     def create_mission_form_with_form(self, name, account, user, *forms):
-        Mission = self.old_state.apps.get_model("iaso", "Mission")
         MissionForm = self.old_state.apps.get_model("iaso", "MissionForm")
         MissionFormThroughForm = self.old_state.apps.get_model("iaso", "MissionFormThroughForm")
-        ContentType = self.old_state.apps.get_model("contenttypes", "ContentType")
-        mission_form_ct = ContentType.objects.get_for_model(MissionForm)
-
-        mission_base = Mission.objects.create(
-            name=name, account=account, mission_type="FORM_FILLING", created_by=user, polymorphic_ctype=mission_form_ct
-        )
 
         mission_form = MissionForm.objects.create(
-            mission_ptr=mission_base,
             created_at=now(),
             name=name,
             account=account,
@@ -145,20 +137,13 @@ class Test0390ReverseMigration(IasoMigratorTestCase):
         return mission_form
 
     def create_mission_out_with_form(self, name, account, user, *forms):
-        Mission = self.old_state.apps.get_model("iaso", "Mission")
         MissionOrgUnitType = self.old_state.apps.get_model("iaso", "MissionOrgUnitType")
-        MissionOrgUnitTypeThroughForm = self.old_state.apps.get_model("iaso", "MissionOrgUnitTypeThroughForm")
-        ContentType = self.old_state.apps.get_model("contenttypes", "ContentType")
-        mission_out_ct = ContentType.objects.get_for_model(MissionOrgUnitType)
+        MissionFormThroughForm = self.old_state.apps.get_model("iaso", "MissionFormThroughForm")
         OrgUnitType = self.old_state.apps.get_model("iaso", "OrgUnitType")
-        mission_base = Mission.objects.create(
-            name=name, account=account, mission_type="FORM_FILLING", created_by=user, polymorphic_ctype=mission_out_ct
-        )
 
         out = OrgUnitType.objects.create(name=name)
 
         mission_form = MissionOrgUnitType.objects.create(
-            mission_ptr=mission_base,
             created_at=now(),
             name=name,
             account=account,
@@ -167,11 +152,9 @@ class Test0390ReverseMigration(IasoMigratorTestCase):
             org_unit_type=out,
         )
 
-        MissionOrgUnitTypeThroughForm.objects.bulk_create(
+        MissionFormThroughForm.objects.bulk_create(
             [
-                MissionOrgUnitTypeThroughForm(
-                    mission_org_unit_type_id=mission_form.id, form_id=form.id, min_cardinality=1
-                )
+                MissionFormThroughForm(mission_form_id=mission_form.id, form_id=form.id, min_cardinality=1)
                 for form in forms
             ]
         )

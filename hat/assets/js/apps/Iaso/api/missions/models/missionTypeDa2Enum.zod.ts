@@ -7,15 +7,11 @@
  */
 import { z as zod } from 'zod';
 
-export const MissionTypeDropdownValueEnum = zod
+export const MissionTypeDa2Enum = zod
     .enum(['FORM_FILLING', 'ORG_UNIT_AND_FORM', 'ENTITY_AND_FORM'])
     .describe(
         '\* `FORM_FILLING` - Form Filling\n\* `ORG_UNIT_AND_FORM` - Org Unit and Form\n\* `ENTITY_AND_FORM` - Entity and Form',
     );
 
-export type MissionTypeDropdownValueEnum = zod.input<
-    typeof MissionTypeDropdownValueEnum
->;
-export type MissionTypeDropdownValueEnumOutput = zod.output<
-    typeof MissionTypeDropdownValueEnum
->;
+export type MissionTypeDa2Enum = zod.input<typeof MissionTypeDa2Enum>;
+export type MissionTypeDa2EnumOutput = zod.output<typeof MissionTypeDa2Enum>;

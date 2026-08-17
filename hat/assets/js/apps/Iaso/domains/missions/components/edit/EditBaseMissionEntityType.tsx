@@ -7,7 +7,7 @@ import { toFormikValidationSchema } from 'zod-formik-adapter';
 import {
     MissionEntityTypeRetrieve,
     MissionEntityTypeUpdateRequest,
-    MissionTypeDropdownValueEnum,
+    MissionTypeDa2Enum,
     useApiMicroplanningMissionsUpdate,
 } from 'Iaso/api/missions';
 import { DetailsWrapper } from 'Iaso/domains/missions/components/DetailsWrapper';
@@ -89,9 +89,7 @@ export const EditBaseMissionEntityType: React.FunctionComponent<
                 )}
                 <EditMissionForm
                     formik={formik}
-                    missionType={
-                        MissionTypeDropdownValueEnum.enum.ENTITY_AND_FORM
-                    }
+                    missionType={MissionTypeDa2Enum.enum.ENTITY_AND_FORM}
                 />
             </FormikProvider>
         </DetailsWrapper>

@@ -118,6 +118,7 @@ nav: # nav configures the side bar menu - this is the ONLY place the nav tree is
      - Advanced configuration:
        - IASO and DHIS2:
          - ./pages/users/how_to/setup_dhis2_login_in_iaso.md
+         - ./pages/users/how_to/deduce_form_from_another_form.md
        - FAQ: ./pages/users/FAQ/faq.md
   - Developers:
     - References:

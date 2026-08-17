@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Box, LinearProgress, Typography } from '@mui/material';
+import { Box, LinearProgress, Typography, Theme } from '@mui/material';
 
 type Props = {
     value: number;
@@ -26,8 +26,8 @@ const styles = {
     progressBar: (color?: string) => ({
         backgroundColor: 'white',
         height: '8px',
-        boxShadow: theme =>
-            `0px 0px 0px 1px ${theme.palette.ligthGray.border} inset`,
+        boxShadow: (theme: Theme) =>
+            `0px 0px 0px 1px ${theme.palette.lightGray.border} inset`,
         '& .MuiLinearProgress-bar': {
             backgroundColor: color || 'primary.main',
         },

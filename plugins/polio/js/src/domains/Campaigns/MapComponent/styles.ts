@@ -21,7 +21,7 @@ export const useStyles = makeStyles(theme => {
             borderRadius: theme.spacing(3),
             height: theme.spacing(3),
             width: theme.spacing(3),
-            border: `2px solid ${theme.palette.ligthGray.border}`,
+            border: `2px solid ${theme.palette.lightGray.border}`,
         },
     };
 });

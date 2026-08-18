@@ -356,7 +356,7 @@ const QuickReplyForm: FC<QuickReplyFormProps> = ({ groups, onConfirm }) => {
                 const pick = pickFor(group, groupIndex);
                 return (
                     <FormControl
-                        key={group.question}
+                        key={groupIndex}
                         sx={defaultStyles.quickReplyGroup as SxProps<Theme>}
                     >
                         <FormLabel
@@ -385,7 +385,7 @@ const QuickReplyForm: FC<QuickReplyFormProps> = ({ groups, onConfirm }) => {
                         >
                             {group.options.map((option, optionIndex) => (
                                 <FormControlLabel
-                                    key={option}
+                                    key={optionIndex}
                                     value={optionIndex}
                                     control={
                                         <Radio

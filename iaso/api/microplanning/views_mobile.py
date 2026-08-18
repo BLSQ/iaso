@@ -1,7 +1,9 @@
 from django.db.models import Prefetch
 from drf_spectacular.utils import extend_schema
+from rest_framework import status
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from iaso.models.microplanning import Assignment, Planning
@@ -55,6 +57,12 @@ class MobilePlanningViewSet(CustomPaginationListModelMixin, GenericViewSet):
                 ),
             )
             .distinct()
+        )
+
+    def list(self, request):
+        return Response(
+            status=status.HTTP_426_UPGRADE_REQUIRED,
+            data="""{"error": "Planning V1 has been deprecated. Please update your mobile application."}""",
         )
 
 

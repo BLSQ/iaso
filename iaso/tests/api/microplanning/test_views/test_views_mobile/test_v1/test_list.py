@@ -1,3 +1,5 @@
+import unittest
+
 from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from django.utils.timezone import now
@@ -19,6 +21,7 @@ from iaso.models import (
 from iaso.test import APITestCase
 
 
+@unittest.skip("V1 has been disabled")
 class V1MobilePlanningListAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):

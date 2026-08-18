@@ -174,6 +174,12 @@ class V2MobilePlanningListAPITestCase(APITestCase):
             list_data=data, expected_length=expected_length, paginated=True, results_key="plannings"
         )
 
+    def test_v1_upgrade_required(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(reverse("mobileplanning-list"))
+        self.assertJSONResponse(response, status.HTTP_426_UPGRADE_REQUIRED)
+
     def test_permissions(self):
         res = self.client.get(reverse("v2_mobileplanning-list"))
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)

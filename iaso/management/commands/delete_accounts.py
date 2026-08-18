@@ -63,7 +63,7 @@ from django.contrib.sessions.models import Session
 from django.core.management.base import BaseCommand
 from django.db import connection
 from django.db.models import ForeignKey, ManyToManyRel, OneToOneField, Q, QuerySet, TextField
-from django.db.models.deletion import SET_NULL, Collector, ProtectedError
+from django.db.models.deletion import PROTECT, SET_NULL, Collector, ProtectedError
 from django.db.models.functions import Cast
 
 from hat.audit.models import Modification
@@ -465,6 +465,55 @@ class Command(BaseCommand):
 
         return total
 
+    def _delete_with_protect_retries(self, queryset, label):
+        """
+        Deletes `queryset`, auto-resolving ProtectedError by deleting the blocking rows
+        first — recursively, so a PROTECT chain deeper than one level (e.g. a multi-level
+        Team.parent hierarchy, where unblocking a parent uncovers a grandparent still
+        blocked by it) doesn't escape as an uncaught exception. Each level reuses this
+        same retry logic instead of a bare, non-retried delete.
+        """
+        deleted_count = 0
+        for attempt in range(_MAX_PROTECT_UNBLOCK_ATTEMPTS):
+            try:
+                deleted_count += self._delete_qs_in_chunks(queryset, label=label)
+                return deleted_count
+            except ProtectedError as exc:
+                blocking_pks_by_model = defaultdict(list)
+                for obj in exc.protected_objects:
+                    blocking_pks_by_model[type(obj)].append(obj.pk)
+                for blocker_model, pks in blocking_pks_by_model.items():
+                    self._log(f"  [auto-unblock] {blocker_model.__name__} ×{len(pks)} blocking {label}")
+                    self._delete_with_protect_retries(
+                        blocker_model.objects.filter(pk__in=pks),
+                        label=f"{blocker_model.__name__}[unblock]",
+                    )
+        raise RuntimeError(
+            f"Could not delete {label} after {_MAX_PROTECT_UNBLOCK_ATTEMPTS} attempts — PROTECT cycle not resolved"
+        )
+
+    def _null_self_referential_fks(self, model, qs, label):
+        """
+        Nulls any nullable, self-referential PROTECT FK on `qs` (e.g. Team.parent,
+        Entity.merged_to) before it gets deleted. Mirrors the OrgUnit.parent handling
+        above: on_delete=PROTECT raises as soon as ANY row references the one being
+        deleted, whether or not that row is also part of the same delete — so a tree
+        deleted in one batch always trips over itself unless the self-reference is
+        broken first.
+
+        Scoped to on_delete=PROTECT specifically (not e.g. CommentIaso's self-ref
+        CASCADE) — CASCADE already deletes the whole subtree without our help, so
+        nulling it first would just be unnecessary writes on rows about to disappear.
+        """
+        for field in model._meta.local_fields:
+            if (
+                isinstance(field, ForeignKey)
+                and field.related_model is model
+                and field.null
+                and field.remote_field.on_delete is PROTECT
+            ):
+                self._update_qs(qs, label=f"{label}.{field.name}=NULL[self-ref]", **{field.name: None})
+
     def _update_qs(self, queryset, label=None, **fields):
         """Dry-run-aware wrapper around queryset.update(**fields)."""
         label = label or queryset.model.__name__
@@ -512,7 +561,7 @@ class Command(BaseCommand):
                     blocking_pks_by_model[type(obj)].append(obj.pk)
                 for blocker_model, pks in blocking_pks_by_model.items():
                     self._log(f"  [auto-unblock] {blocker_model.__name__} ×{len(pks)} blocking {label} (collect phase)")
-                    self._delete_qs_in_chunks(
+                    self._delete_with_protect_retries(
                         blocker_model.objects.filter(pk__in=pks), label=f"{blocker_model.__name__}[unblock]"
                     )
         else:
@@ -1003,6 +1052,21 @@ class Command(BaseCommand):
             devices = Device.objects.filter(pk__in=device_ids)
             self._delete_qs(devices, label="Device")
 
+        # ---- Step 4g: Out-of-graph — Dashboard.owned_by (third-party, no FK to Account) ----
+        # django_sql_dashboard is only installed in some environments (see the _Dashboard
+        # import guard above) and isn't part of the auto-discovered graph (no FK to
+        # Account). Its FK to User must be cleared explicitly before Users are deleted
+        # below, or Postgres raises an IntegrityError — Django's on_delete is enforced by
+        # the ORM Collector, not a DB-level constraint, so a plain User.delete() only
+        # cascades relations the auto-discovery step actually walked.
+        if _Dashboard is not None:
+            with self._doing(f"account={account.id} Dashboard.owned_by=NULL"):
+                self._update_qs(
+                    _Dashboard.objects.filter(owned_by_id__in=user_ids),
+                    label="Dashboard.owned_by=NULL",
+                    owned_by=None,
+                )
+
         # ---- Step 5: Out-of-graph — User (upstream from Profile, not in reverse FK graph) ----
         # Profile was deleted in the auto step; use the user_ids collected at the top.
         with self._doing(f"account={account.id} User"):
@@ -1077,30 +1141,21 @@ class Command(BaseCommand):
             if info.is_partial_coverage:
                 label += " ⚠ partial"
 
+            # Self-referential PROTECT FKs (e.g. Team.parent, same idea as OrgUnit.parent
+            # above) always raise ProtectedError on delete, even when both ends of the
+            # reference are in the same batch — Collector's PROTECT check fires on any
+            # existing referencing row regardless of it also being staged for deletion.
+            # Null it upfront so the whole tree deletes in one shot, correct order.
+            self._null_self_referential_fks(model, qs, label)
+
             if self.dry_run:
                 self._log(f"  [DRY RUN] would delete {label}")
                 continue
 
-            deleted_count = 0
-            for attempt in range(_MAX_PROTECT_UNBLOCK_ATTEMPTS):
-                try:
-                    deleted_count += self._delete_qs_in_chunks(qs, label=label)
-                    break
-                except ProtectedError as exc:
-                    # Auto-clear blocking objects (e.g. nullable PROTECT FKs from partial-coverage models)
-                    blocking_pks_by_model = defaultdict(list)
-                    for obj in exc.protected_objects:
-                        blocking_pks_by_model[type(obj)].append(obj.pk)
-                    for blocker_model, pks in blocking_pks_by_model.items():
-                        self._log(f"  [auto-unblock] {blocker_model.__name__} ×{len(pks)} blocking {label}")
-                        self._delete_qs_in_chunks(
-                            blocker_model.objects.filter(pk__in=pks),
-                            label=f"{blocker_model.__name__}[unblock]",
-                        )
-            else:
-                raise RuntimeError(
-                    f"Could not delete {label} after {_MAX_PROTECT_UNBLOCK_ATTEMPTS} attempts — PROTECT cycle not resolved"
-                )
+            # Belt-and-braces: auto-clears any remaining blocking objects (e.g. nullable
+            # PROTECT FKs from partial-coverage models), recursively resolving PROTECT
+            # chains deeper than one level.
+            deleted_count = self._delete_with_protect_retries(qs, label=label)
 
             if deleted_count:
                 self._log(f"  {label}: {deleted_count:,} deleted")
@@ -1235,10 +1290,12 @@ class Command(BaseCommand):
         if mode == MODE_SHOW_GRAPH:
             return self._mode_show_graph(options, discovered_models, deletion_order)
         if mode == MODE_DELETE_ACCOUNTS:
-            return self._mode_delete_accounts(options, discovered_models, deletion_order)
-        if mode == MODE_KEEP_SINGLE_ACCOUNT:
-            return self._mode_keep_single_account(options, discovered_models, deletion_order)
+            result = self._mode_delete_accounts(options, discovered_models, deletion_order)
+        elif mode == MODE_KEEP_SINGLE_ACCOUNT:
+            result = self._mode_keep_single_account(options, discovered_models, deletion_order)
+        else:
+            raise ValueError(f"unknown mode, please fix parameters: {mode!r}")
 
         self._log("Done!")
         self._print_model_stats()
-        return 0
+        return result

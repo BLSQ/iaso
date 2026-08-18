@@ -1,4 +1,5 @@
 from decimal import Decimal
+from io import StringIO
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group as AuthGroup
@@ -7,8 +8,9 @@ from django.contrib.gis.geos import Point
 from django.contrib.sessions.models import Session
 from django.contrib.sites.models import Site
 from django.core import management
-from django.test import TransactionTestCase
+from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
+from django_sql_dashboard.models import Dashboard as SqlDashboard
 
 from hat.api_import.models import APIImport
 from hat.audit.models import Modification
@@ -65,7 +67,19 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         user = self.create_user_with_profile(username=f"user_{suffix}", account=account)
         profile = user.iaso_profile
 
-        team = m.Team.objects.create(project=project, name=f"team_{suffix}", manager=user)
+        # 3-level parent hierarchy (Team.parent is a self-referential PROTECT FK) with
+        # `users` M2M set on every level, so a batch delete of the whole team set both
+        # hits the raw_delete IntegrityError fallback (team_users join table) and a
+        # multi-level ProtectedError chain (IA-5268 regression: only 1 level was
+        # auto-unblocked, deeper hierarchies crashed the whole account deletion).
+        team_grandparent = m.Team.objects.create(project=project, name=f"team_grandparent_{suffix}", manager=user)
+        team_grandparent.users.set([user])
+        team_parent = m.Team.objects.create(
+            project=project, name=f"team_parent_{suffix}", manager=user, parent=team_grandparent
+        )
+        team_parent.users.set([user])
+        team = m.Team.objects.create(project=project, name=f"team_{suffix}", manager=user, parent=team_parent)
+        team.users.set([user])
         planning = m.Planning.objects.create(
             project=project, name=f"planning_{suffix}", team=team, org_unit=org_unit_parent
         )
@@ -96,6 +110,10 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         feature_flag = m.FeatureFlag.objects.create(name=f"ff_{suffix}", code=f"ff_{suffix}")
         project_feature_flags = m.ProjectFeatureFlags.objects.create(featureflag=feature_flag, project=project)
         config = Config.objects.create(slug=f"config-{suffix}", content={})
+        # django_sql_dashboard is a third-party app with no FK to Account at all — its FK
+        # to User must still be cleared before that user is deleted (IA-5268 regression:
+        # Postgres raised an IntegrityError on commit because that FK wasn't nulled first).
+        sql_dashboard = SqlDashboard.objects.create(slug=f"dashboard-{suffix}", owned_by=user)
         openhexa_instance = m.OpenHEXAInstance.objects.create(
             name=f"openhexa_instance_{suffix}", url="https://openhexa.example.test", token="tok"
         )
@@ -273,6 +291,8 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
             "user": user,
             "profile": profile,
             "team": team,
+            "team_parent": team_parent,
+            "team_grandparent": team_grandparent,
             "planning": planning,
             "sampling_result": sampling_result,
             "assignment": assignment,
@@ -286,6 +306,7 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
             "config": config,
             "openhexa_instance": openhexa_instance,
             "openhexa_workspace": openhexa_workspace,
+            "sql_dashboard": sql_dashboard,
             "device": device,
             "device_ownership": device_ownership,
             "device_position": device_position,
@@ -494,7 +515,15 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self.assertFalse(m.StoragePassword.objects.filter(pk=other_models["storage_password"].pk).exists())
         self.assertFalse(m.Task.objects.filter(pk=other_models["task"].pk).exists())
         self.assertFalse(m.TaskLog.objects.filter(pk=other_models["task_log"].pk).exists())
-        self.assertFalse(m.Team.objects.filter(pk=other_models["team"].pk).exists())
+        self.assertFalse(
+            m.Team.objects.filter(
+                pk__in=[
+                    other_models["team"].pk,
+                    other_models["team_parent"].pk,
+                    other_models["team_grandparent"].pk,
+                ]
+            ).exists()
+        )
         self.assertFalse(m.TemporaryForm.objects.filter(pk=other_models["temporary_form"].pk).exists())
         self.assertFalse(m.TenantUser.objects.filter(pk=other_models["tenant_user"].pk).exists())
         self.assertFalse(m.User.objects.filter(pk=other_models["user"].pk).exists())
@@ -513,6 +542,13 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         # exclusive to --account-to-keep mode.
         post_deletion_cleanup_ran = mode == MODE_KEEP_SINGLE_ACCOUNT
         assertion = self.assertFalse if post_deletion_cleanup_ran else self.assertTrue
+
+        if post_deletion_cleanup_ran:
+            # `_post_deletion_clean_up` wipes every Dashboard row (no FK to Account at all).
+            self.assertFalse(SqlDashboard.objects.filter(pk=other_models["sql_dashboard"].pk).exists())
+        else:
+            # Not wiped in this mode, but its FK to the now-deleted user must be null (IA-5268).
+            self.assertIsNone(SqlDashboard.objects.get(pk=other_models["sql_dashboard"].pk).owned_by_id)
 
         if pre_deletion_orphans is not None:
             self.assertFalse(m.Instance.objects.filter(pk=pre_deletion_orphans["instance_no_form"].pk).exists())
@@ -639,7 +675,16 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self.assertTrue(m.StoragePassword.objects.filter(pk=other_models["storage_password"].pk).exists())
         self.assertTrue(m.Task.objects.filter(pk=other_models["task"].pk).exists())
         self.assertTrue(m.TaskLog.objects.filter(pk=other_models["task_log"].pk).exists())
-        self.assertTrue(m.Team.objects.filter(pk=other_models["team"].pk).exists())
+        self.assertEqual(
+            m.Team.objects.filter(
+                pk__in=[
+                    other_models["team"].pk,
+                    other_models["team_parent"].pk,
+                    other_models["team_grandparent"].pk,
+                ]
+            ).count(),
+            3,
+        )
         self.assertTrue(m.TemporaryForm.objects.filter(pk=other_models["temporary_form"].pk).exists())
         self.assertTrue(m.TenantUser.objects.filter(pk=other_models["tenant_user"].pk).exists())
         self.assertTrue(m.User.objects.filter(pk=other_models["user"].pk).exists())
@@ -660,6 +705,13 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         post_deletion_cleanup_ran = mode == MODE_KEEP_SINGLE_ACCOUNT
         assertion = self.assertFalse if post_deletion_cleanup_ran else self.assertTrue
         assertion(Config.objects.filter(pk=other_models["config"].pk).exists())
+
+        if post_deletion_cleanup_ran:
+            self.assertFalse(SqlDashboard.objects.filter(pk=other_models["sql_dashboard"].pk).exists())
+        else:
+            self.assertTrue(
+                SqlDashboard.objects.filter(pk=other_models["sql_dashboard"].pk, owned_by=other_models["user"]).exists()
+            )
 
         if pre_deletion_orphans is not None:
             self.assertTrue(m.Instance.objects.filter(pk=pre_deletion_orphans["instance_no_form"].pk).exists())
@@ -902,4 +954,176 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
             self.project_to_keep,
             extra_models_to_keep,
             mode=MODE_KEEP_SINGLE_ACCOUNT,
+        )
+
+    def test_keep_single_account_prints_stats_and_remaining_credentials(self):
+        """
+        `handle()` used to `return` straight out of each mode branch, making the trailing
+        `_log("Done!")` / `_print_model_stats()` unreachable dead code for every mode —
+        the "Row counts after deletion" / "Remaining accounts" / "Remaining credentials"
+        summary never actually printed. Verifies it's reachable again.
+        """
+        self._populate_account(self.account_to_keep, self.version_to_keep, self.project_to_keep, suffix="kept")
+        self._populate_account(self.account_to_delete, self.version_to_delete, self.project_to_delete, suffix="deleted")
+
+        out = StringIO()
+        management.call_command(
+            "delete_accounts",
+            account_to_keep=self.account_to_keep.pk,
+            verbosity=1,
+            stdout=out,
+        )
+        output = out.getvalue()
+
+        self.assertIn("Done!", output)
+        self.assertIn("Row counts after deletion:", output)
+        self.assertIn(f"{m.Team._meta.label:<55s}", output)  # a row-count line for a real model
+
+        # `account_to_delete`'s name legitimately appears earlier in the log (it's being
+        # deleted) — scope these checks to the final "Remaining ..." sections specifically.
+        self.assertIn("Remaining accounts:", output)
+        remaining_accounts_section = output.split("Remaining accounts:", 1)[1].split("Remaining credentials:", 1)[0]
+        self.assertIn(self.account_to_keep.name, remaining_accounts_section)
+        self.assertNotIn(self.account_to_delete.name, remaining_accounts_section)
+
+        self.assertIn("Remaining credentials:", output)
+        remaining_credentials_section = output.split("Remaining credentials:", 1)[1]
+        self.assertIn("cred_kept", remaining_credentials_section)  # kept account's credentials survive
+        self.assertNotIn("cred_deleted", remaining_credentials_section)  # deleted account's are gone
+
+
+class DeleteAccountsModelCoverageTestCase(TestCase):
+    """
+    Drift guard: fails as soon as a model is added to (or removed from) the `iaso` app,
+    so it can't silently go unhandled by delete_accounts.py / uncovered by
+    DeleteAccountsCommandTestCase above.
+
+    Uses the exact same "project model" filter (`_is_project_model`) the command itself
+    uses to decide which models the FK-graph BFS may auto-discover — see that function's
+    docstring in delete_accounts.py.
+
+    Limitation: plugin apps (polio, wfp, registry, wfp_auth) are NOT loaded in this test
+    environment ("Enabled plugins: []" — no `PLUGINS` env var set here), so
+    `apps.get_models()` never returns their models and this snapshot can't cover them.
+    Only `iaso` app models are checked.
+    """
+
+    # Snapshot of every managed `iaso`-app model as of the last time DeleteAccountsCommandTestCase's
+    # fixtures (_populate_account + both assertion helpers) were updated. When this test fails:
+    #   1. Read delete_accounts.py's module docstring ("What is automatic" / "What's out of graph")
+    #      to see whether the new model needs dedicated out-of-graph handling.
+    #   2. Add it to _populate_account and to both _assert_account_and_related_data_*  helpers.
+    #   3. Update KNOWN_IASO_MODELS below to match.
+    KNOWN_IASO_MODELS = frozenset(
+        {
+            "iaso.Account",
+            "iaso.AccountFeatureFlag",
+            "iaso.AlgorithmRun",
+            "iaso.Assignment",
+            "iaso.BulkCreateUserFile",
+            "iaso.CommentIaso",
+            "iaso.Config",
+            "iaso.DataSource",
+            "iaso.DataSourceVersionsSynchronization",
+            "iaso.Device",
+            "iaso.DeviceOwnership",
+            "iaso.DevicePosition",
+            "iaso.Entity",
+            "iaso.EntityDuplicate",
+            "iaso.EntityDuplicateAnalyzis",
+            "iaso.EntityType",
+            "iaso.ExportLog",
+            "iaso.ExportRequest",
+            "iaso.ExportStatus",
+            "iaso.ExternalCredentials",
+            "iaso.FeatureFlag",
+            "iaso.Form",
+            "iaso.FormAttachment",
+            "iaso.FormPredefinedFilter",
+            "iaso.FormVersion",
+            "iaso.Group",
+            "iaso.GroupSet",
+            "iaso.ImportGPKG",
+            "iaso.Instance",
+            "iaso.InstanceFile",
+            "iaso.InstanceLock",
+            "iaso.JsonDataStore",
+            "iaso.Link",
+            "iaso.Mapping",
+            "iaso.MappingVersion",
+            "iaso.MatchingAlgorithm",
+            "iaso.MetricType",
+            "iaso.MetricValue",
+            "iaso.OpenHEXAInstance",
+            "iaso.OpenHEXAWorkspace",
+            "iaso.OrgUnit",
+            "iaso.OrgUnitChangeRequest",
+            "iaso.OrgUnitChangeRequestConfiguration",
+            "iaso.OrgUnitReferenceInstance",
+            "iaso.OrgUnitType",
+            "iaso.Page",
+            "iaso.Payment",
+            "iaso.PaymentLot",
+            "iaso.Planning",
+            "iaso.PlanningSamplingResult",
+            "iaso.PotentialPayment",
+            "iaso.Profile",
+            "iaso.Project",
+            "iaso.ProjectFeatureFlags",
+            "iaso.Record",
+            "iaso.RecordType",
+            "iaso.Report",
+            "iaso.ReportVersion",
+            "iaso.SourceVersion",
+            "iaso.StockItem",
+            "iaso.StockItemRule",
+            "iaso.StockKeepingUnit",
+            "iaso.StockKeepingUnitChildren",
+            "iaso.StockLedgerItem",
+            "iaso.StockRulesVersion",
+            "iaso.StorageDevice",
+            "iaso.StorageLogEntry",
+            "iaso.StoragePassword",
+            "iaso.Task",
+            "iaso.TaskLog",
+            "iaso.Team",
+            "iaso.TemporaryForm",
+            "iaso.TenantUser",
+            "iaso.UserRole",
+            "iaso.ValidationNode",
+            "iaso.ValidationNodeTemplate",
+            "iaso.ValidationWorkflow",
+            "iaso.Workflow",
+            "iaso.WorkflowChange",
+            "iaso.WorkflowFollowup",
+            "iaso.WorkflowVersion",
+        }
+    )
+
+    def test_iaso_models_match_known_snapshot(self):
+        from django.apps import apps
+
+        from iaso.management.commands.delete_accounts import _is_project_model
+
+        current_models = {
+            model._meta.label
+            for model in apps.get_models()
+            if model._meta.managed and _is_project_model(model) and model._meta.app_label == "iaso"
+        }
+
+        new_models = current_models - self.KNOWN_IASO_MODELS
+        self.assertFalse(
+            new_models,
+            f"New iaso model(s) found: {sorted(new_models)}. Before adding to KNOWN_IASO_MODELS: "
+            "check whether delete_accounts.py needs dedicated out-of-graph handling for them "
+            "(see its module docstring), then add fixtures/assertions to "
+            "DeleteAccountsCommandTestCase covering them.",
+        )
+
+        removed_models = self.KNOWN_IASO_MODELS - current_models
+        self.assertFalse(
+            removed_models,
+            f"iaso model(s) removed since this snapshot was taken: {sorted(removed_models)}. "
+            "Remove them from KNOWN_IASO_MODELS here, and from DeleteAccountsCommandTestCase's "
+            "fixtures/assertions if still referenced there.",
         )

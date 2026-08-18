@@ -11,7 +11,7 @@ import { Box, Divider, Paper, Typography } from '@mui/material';
 import { MENU_HEIGHT_WITHOUT_TABS, useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../messages';
-import { ACTIONS_HEIGHT } from './Actions';
+import { ACTIONS_HEIGHT, ACTIONS_HEIGHT_MOBILE } from './Actions';
 
 type Props = {
     xformXml: string | null;
@@ -27,7 +27,10 @@ const WELCOME_STEPS = [
 
 const styles: SxStyles = {
     root: {
-        height: `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px - ${ACTIONS_HEIGHT}px)`,
+        height: {
+            xs: `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px - ${ACTIONS_HEIGHT_MOBILE}px)`,
+            lg: `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px - ${ACTIONS_HEIGHT}px)`,
+        },
         overflow: 'hidden',
         flex: 1,
         position: 'relative',

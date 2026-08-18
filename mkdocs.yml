@@ -129,6 +129,7 @@ nav: # nav configures the side bar menu - this is the ONLY place the nav tree is
       - ./pages/dev/reference/docker.md
       - ./pages/dev/reference/background_tasks.md
       - ./pages/dev/reference/env_variables.md
+      - ./pages/dev/reference/fhir_api.md
       # - Entities:
       #   - ./pages/dev/reference/entities_in_iaso/entities_in_iaso.md
       # - Front-end:

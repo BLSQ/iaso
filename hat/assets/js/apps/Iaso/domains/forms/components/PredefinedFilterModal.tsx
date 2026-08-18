@@ -91,7 +91,7 @@ const PredefinedfilterModal: FunctionComponent<Props> = ({
         },
     });
     const onChange = useCallback(
-        (keyValue, value) => {
+        (keyValue: string, value: any) => {
             setFieldTouched(keyValue, true);
             setFieldValue(keyValue, value);
         },
@@ -188,7 +188,7 @@ const PredefinedfilterModal: FunctionComponent<Props> = ({
                 {tab === 'json' && (
                     <JsonLogicEditor
                         initialLogic={values.json_logic}
-                        changeLogic={(newLogic: JSONValue) => {
+                        changeLogic={newLogic => {
                             setFieldTouched('json_logic');
                             setFieldValue('json_logic', newLogic);
                         }}

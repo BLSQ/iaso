@@ -21,7 +21,7 @@ export const FormAttachments: FunctionComponent<Props> = ({ params }) => {
         useGetAttachments(params);
 
     const { mutateAsync: upload, isLoading: isUploading } = useUploadAttachment(
-        params.formId,
+        Number(params.formId),
     );
     const columns = useGetColumns(params, attachments?.count ?? 0);
     return (

@@ -24,6 +24,11 @@ export const makeInstance = (overrides: Partial<Instance> = {}): Instance =>
         export_statuses: [],
         deleted: false,
         org_unit: { id: 7, name: 'Kinshasa' } as Instance['org_unit'],
+        project: {
+            id: 320,
+            name: 'Test',
+            color: '#FFCA28',
+        },
         period: '2024Q1',
         file_content: {},
         form_descriptor: {},

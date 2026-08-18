@@ -22,9 +22,7 @@ const styles: SxStyles = {
         elevation: 2,
     },
     tableContainer: {
-        borderTop: theme =>
-            // @ts-ignore
-            `1px solid ${theme.palette.ligthGray.border}`,
+        borderTop: theme => `1px solid ${theme.palette.lightGray.border}`,
         ...getStickyTableHeadStyles(tableScrollMaxHeight),
     },
 };

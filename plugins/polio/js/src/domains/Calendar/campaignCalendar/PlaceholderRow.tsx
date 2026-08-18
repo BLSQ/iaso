@@ -17,15 +17,12 @@ interface PlaceholderRowProps {
 const styles: SxStyles = {
     noCampaign: {
         textAlign: 'center',
-        borderLeft: theme =>
-            // @ts-ignore
-            `1px solid ${theme.palette.ligthGray.border}`,
+        borderLeft: theme => `1px solid ${theme.palette.lightGray.border}`,
     },
     tableRow: {
         height: cellHeight,
         '& th:last-child, & td:last-child': {
-            // @ts-ignore
-            borderRight: theme => `1px solid ${theme.palette.ligthGray.border}`,
+            borderRight: theme => `1px solid ${theme.palette.lightGray.border}`,
         },
     },
 };

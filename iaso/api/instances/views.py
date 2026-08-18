@@ -429,7 +429,7 @@ class InstancesViewSet(viewsets.ViewSet):
         # 2. Prepare queryset (common part between searches and exports)
         queryset = self.get_queryset()
         queryset = queryset.exclude(file="").exclude(device__test_device=True)
-        queryset = queryset.select_related("org_unit__version__data_source", "project")
+        queryset = queryset.select_related("org_unit__version__data_source")
         queryset = queryset.prefetch_related(
             "created_by", "form", "org_unit__reference_instances", "org_unit__org_unit_type__reference_forms"
         )
@@ -645,6 +645,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 "org_unit__parent",
                 "org_unit__org_unit_type",
                 "org_unit__version__data_source__credentials",
+                "project",
             )
             .with_status(form_ids=resolve_status_form_ids(form_id))
         )

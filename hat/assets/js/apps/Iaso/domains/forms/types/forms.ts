@@ -194,6 +194,12 @@ export type FormDataType = {
     change_request_mode: FieldError<ChangeRequestModeType>;
     validation_workflow?: FieldError<number>;
 };
+
+export type FormValues = {
+    [K in keyof FormDataType]: NonNullable<FormDataType[K]>['value'];
+};
+
+export type FormWritePayload = Omit<FormValues, 'possible_fields'>;
 export type FormsParams = {
     pageSize: string;
     order: string;

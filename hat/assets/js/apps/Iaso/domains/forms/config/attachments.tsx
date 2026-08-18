@@ -7,7 +7,10 @@ import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { useDeleteAttachment } from '../hooks/useDeleteAttachment';
 import MESSAGES from '../messages';
 
-export const useGetColumns = (params, count): Column[] => {
+export const useGetColumns = (
+    params: Record<string, any>,
+    count: number,
+): Column[] => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: deleteAttachment } = useDeleteAttachment(
         params,

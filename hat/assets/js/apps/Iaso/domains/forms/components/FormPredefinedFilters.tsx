@@ -27,7 +27,7 @@ export const FormPredefinedFilters: FunctionComponent<Props> = ({ params }) => {
         useSaveFormPredefinedFilter();
 
     const getHumanReadableJsonLogic = useHumanReadableJsonLogicForForm(
-        params.formId,
+        Number(params.formId),
     );
     const mainColumns = useGetMainColumns(getHumanReadableJsonLogic);
     const actionColumns = useGetActionColumns(
@@ -52,7 +52,7 @@ export const FormPredefinedFilters: FunctionComponent<Props> = ({ params }) => {
                     iconProps={{}}
                     save={save}
                     isSaving={isSaving}
-                    form_id={params.formId}
+                    form_id={Number(params.formId)}
                 />
             </Box>
             <TableWithDeepLink

@@ -20,7 +20,7 @@ const useGetApiParams = (params: FormParams): ApiParams => ({
     limit: params.predefinedFiltersPageSize || '20',
     page: params.predefinedFiltersPage || '1',
     order: params.predefinedFiltersOrder || 'name',
-    form_id: params.formId,
+    form_id: Number(params.formId),
 });
 
 export const useGetPredefinedFilters = (

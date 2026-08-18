@@ -48,11 +48,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
 }));
 
-const formatBooleanForRadio = value => {
-    if (value === true) return 'true';
-    if (value === false) return 'false';
-    return null;
-};
+const formatBooleanForRadio = (value: boolean) => (value ? 'true' : 'false');
 
 type FormFormProps = {
     currentForm: FormDataType;
@@ -72,7 +68,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
 
-    const setPeriodType = value => {
+    const setPeriodType = (value: string | null) => {
         let periodTypeValue = value;
         if (value === null || value === NO_PERIOD) {
             periodTypeValue = null;
@@ -226,7 +222,8 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                                             );
                                         }}
                                         value={formatBooleanForRadio(
-                                            currentForm.single_per_period.value,
+                                            currentForm.single_per_period
+                                                .value ?? false,
                                         )}
                                         errors={
                                             currentForm.single_per_period

@@ -65,11 +65,11 @@ export type SendMessageOptions = {
 // Applies a confirmed quick-reply answer onto the message it belongs to, setting each question's
 // `selectedOptionIndex`. Exported so every `ChatPanel` consumer applies answers the same way,
 // instead of each reimplementing the id lookup and per-question merge.
-export function applyQuickReplyAnswer(
+export const applyQuickReplyAnswer = (
     messages: ChatMessage[],
     answer: QuickReplyAnswer,
-): ChatMessage[] {
-    return messages.map(message =>
+): ChatMessage[] =>
+    messages.map(message =>
         message.id === answer.messageId && message.quickReplies
             ? {
                   ...message,
@@ -80,7 +80,6 @@ export function applyQuickReplyAnswer(
               }
             : message,
     );
-}
 
 const messageRow = (role: ChatMessageRole): SxProps<Theme> => ({
     display: 'flex',
@@ -356,7 +355,7 @@ const QuickReplyForm: FC<QuickReplyFormProps> = ({ groups, onConfirm }) => {
                 const pick = pickFor(group, groupIndex);
                 return (
                     <FormControl
-                        key={groupIndex}
+                        key={group.question}
                         sx={defaultStyles.quickReplyGroup as SxProps<Theme>}
                     >
                         <FormLabel
@@ -385,7 +384,7 @@ const QuickReplyForm: FC<QuickReplyFormProps> = ({ groups, onConfirm }) => {
                         >
                             {group.options.map((option, optionIndex) => (
                                 <FormControlLabel
-                                    key={optionIndex}
+                                    key={option}
                                     value={optionIndex}
                                     control={
                                         <Radio
@@ -424,6 +423,51 @@ const QuickReplyForm: FC<QuickReplyFormProps> = ({ groups, onConfirm }) => {
                 </Button>
             )}
         </Box>
+    );
+};
+
+type MessageQuickRepliesProps = {
+    message: ChatMessage;
+    isLast: boolean;
+    isLoading: boolean;
+    onSendMessage: (message: string, options?: SendMessageOptions) => void;
+};
+
+// A message's quick-reply form stays visible once answered (so the picked answers remain readable
+// on the original bubble), but is only interactive on the last message while nothing is loading.
+const MessageQuickReplies: FC<MessageQuickRepliesProps> = ({
+    message,
+    isLast,
+    isLoading,
+    onSendMessage,
+}) => {
+    const { formatMessage } = useSafeIntl();
+    if (
+        message.role !== 'assistant' ||
+        !message.quickReplies ||
+        message.quickReplies.length === 0
+    ) {
+        return null;
+    }
+    const isAnswered = message.quickReplies.every(
+        group => group.selectedOptionIndex !== undefined,
+    );
+    if (!isAnswered && !(isLast && !isLoading)) {
+        return null;
+    }
+    return (
+        <QuickReplyForm
+            groups={message.quickReplies}
+            onConfirm={(summary, selections) => {
+                onSendMessage(summary, {
+                    displayContent: formatMessage(MESSAGES.answeredQuestions),
+                    quickReplyAnswer: {
+                        messageId: message.id,
+                        selections,
+                    },
+                });
+            }}
+        />
     );
 };
 
@@ -564,30 +608,12 @@ export const ChatPanel: FC<Props> = ({
                                     {msg.content}
                                 </Typography>
                             )}
-                            {msg.role === 'assistant' &&
-                                msg.quickReplies &&
-                                msg.quickReplies.length > 0 &&
-                                (msg.quickReplies.every(
-                                    group =>
-                                        group.selectedOptionIndex !== undefined,
-                                ) ||
-                                    (messageIndex === messages.length - 1 &&
-                                        !isLoading)) && (
-                                    <QuickReplyForm
-                                        groups={msg.quickReplies}
-                                        onConfirm={(summary, selections) => {
-                                            onSendMessage(summary, {
-                                                displayContent: formatMessage(
-                                                    MESSAGES.answeredQuestions,
-                                                ),
-                                                quickReplyAnswer: {
-                                                    messageId: msg.id,
-                                                    selections,
-                                                },
-                                            });
-                                        }}
-                                    />
-                                )}
+                            <MessageQuickReplies
+                                message={msg}
+                                isLast={messageIndex === messages.length - 1}
+                                isLoading={isLoading}
+                                onSendMessage={onSendMessage}
+                            />
                         </Paper>
                     </Box>
                 ))}

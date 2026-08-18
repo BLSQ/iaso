@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="fr" class="no-js"><head>
+<!DOCTYPE html><html lang="es" class="no-js"><head>
     
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -6,6 +6,10 @@
       
       
       
+        <link rel="prev" href="env_variables.html">
+      
+      
+        <link rel="next" href="API/entity.html">
       
       
       <link rel="icon" href="../../../../assets/iaso-favicon.png">
@@ -13,7 +17,7 @@
     
     
       
-        <title>How we work - IASO</title>
+        <title>FHIR API - Organization Units - IASO</title>
       
     
     
@@ -38,6 +42,8 @@
         <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
       
     
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
     
       <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
     
@@ -84,8 +90,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#how-we-work" class="md-skip">
-          Aller au contenu
+        <a href="#fhir-api-organization-units" class="md-skip">
+          Saltar a contenido
         </a>
       
     </div>
@@ -99,7 +105,7 @@
   
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="En-tête">
+  <nav class="md-header__inner md-grid" aria-label="Cabecera">
     <a href="../../../index.html" title="IASO" class="md-header__button md-logo" aria-label="IASO" data-md-component="logo">
       
   <img src="../../../../assets/iaso.png" alt="logo">
@@ -119,7 +125,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              How we work
+              FHIR API - Organization Units
             
           </span>
         </div>
@@ -156,26 +162,26 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="Sélectionner la langue">
+    <button class="md-header__button md-icon" aria-label="Seleccionar idioma">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24Z"></path></svg>
     </button>
     <div class="md-select__inner">
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="../../../../pages/users/reference/how_we_work.html" hreflang="en" class="md-select__link">
+            <a href="../../../../pages/dev/reference/fhir_api.html" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="how_we_work.html" hreflang="fr" class="md-select__link">
+            <a href="../../../../fr/pages/dev/reference/fhir_api.html" hreflang="fr" class="md-select__link">
               Français
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="../../../../es/pages/users/reference/how_we_work.html" hreflang="es" class="md-select__link">
+            <a href="fhir_api.html" hreflang="es" class="md-select__link">
               Español
             </a>
           </li>
@@ -194,16 +200,16 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="Rechercher" placeholder="Rechercher" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required="">
+      <input type="text" class="md-search__input" name="query" aria-label="Búsqueda" placeholder="Búsqueda" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required="">
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"></path></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"></path></svg>
       </label>
-      <nav class="md-search__options" aria-label="Recherche">
+      <nav class="md-search__options" aria-label="Buscar">
         
-        <button type="reset" class="md-search__icon md-icon" title="Effacer" aria-label="Effacer" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="Limpiar" aria-label="Limpiar" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"></path></svg>
         </button>
@@ -214,7 +220,7 @@
       <div class="md-search__scrollwrap" data-md-scrollfix="">
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            Initialisation de la recherche
+            Inicializando búsqueda
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -225,7 +231,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/BLSQ/iaso" title="Aller au dépôt" class="md-source" data-md-component="source">
+        <a href="https://github.com/BLSQ/iaso" title="Ir al repositorio" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
@@ -240,7 +246,7 @@
   
     
       
-<nav class="md-tabs" aria-label="Onglets" data-md-component="tabs">
+<nav class="md-tabs" aria-label="Pestañas" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
       
@@ -254,7 +260,7 @@
   
     
   
-  Accueil
+  Inicio
 
       </a>
     </li>
@@ -268,10 +274,10 @@
     
     
       <li class="md-tabs__item">
-        <a href="../how_to/get_started_with_iaso.html" class="md-tabs__link">
+        <a href="../../users/how_to/get_started_with_iaso.html" class="md-tabs__link">
           
   
-  Guide d'utilisateur
+  Guía de usuario
 
         </a>
       </li>
@@ -282,20 +288,24 @@
         
   
   
+    
+  
   
     
     
       
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../dev/reference/data_model_glossary.html" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="data_model_glossary.html" class="md-tabs__link">
           
   
-  Développeurs
+  Desarrolladores
 
         </a>
       </li>
@@ -316,7 +326,7 @@
         <a href="../../more_about_iaso.html" class="md-tabs__link">
           
   
-  En savoir plus sur IASO
+  Más sobre IASO
 
         </a>
       </li>
@@ -353,7 +363,7 @@
 
   
 
-<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navegación" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="../../../index.html" title="IASO" class="md-nav__button md-logo" aria-label="IASO" data-md-component="logo">
       
@@ -364,7 +374,7 @@
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/BLSQ/iaso" title="Aller au dépôt" class="md-source" data-md-component="source">
+      <a href="https://github.com/BLSQ/iaso" title="Ir al repositorio" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
@@ -387,7 +397,7 @@
         
   
   <span class="md-ellipsis">
-    Accueil
+    Inicio
   </span>
   
 
@@ -416,7 +426,7 @@
             
   
   <span class="md-ellipsis">
-    Guide d'utilisateur
+    Guía de usuario
   </span>
   
 
@@ -426,7 +436,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
-            Guide d'utilisateur
+            Guía de usuario
           </label>
           <ul class="md-nav__list" data-md-scrollfix="">
             
@@ -436,11 +446,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../how_to/get_started_with_iaso.html" class="md-nav__link">
+      <a href="../../users/how_to/get_started_with_iaso.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Bien démarrer avec IASO
+    Primeros pasos con IASO
   </span>
   
 
@@ -456,11 +466,11 @@
   
   
     <li class="md-nav__item">
-      <a href="iaso_concepts.html" class="md-nav__link">
+      <a href="../../users/reference/iaso_concepts.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Concepts
+    Conceptos
   </span>
   
 
@@ -476,11 +486,11 @@
   
   
     <li class="md-nav__item">
-      <a href="iaso_modules.html" class="md-nav__link">
+      <a href="../../users/reference/iaso_modules.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Modules
+    Módulos
   </span>
   
 
@@ -496,11 +506,11 @@
   
   
     <li class="md-nav__item">
-      <a href="user_guide.html" class="md-nav__link">
+      <a href="../../users/reference/user_guide.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Plateforme Web
+    Plataforma Web
   </span>
   
 
@@ -516,11 +526,11 @@
   
   
     <li class="md-nav__item">
-      <a href="iaso_mobile.html" class="md-nav__link">
+      <a href="../../users/reference/iaso_mobile.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Mobile
+    Aplicación Móvil
   </span>
   
 
@@ -550,7 +560,7 @@
             
   
   <span class="md-ellipsis">
-    Configuration avancée
+    Configuración avanzada
   </span>
   
 
@@ -560,7 +570,7 @@
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2_6">
             <span class="md-nav__icon md-icon"></span>
-            Configuration avancée
+            Configuración avanzada
           </label>
           <ul class="md-nav__list" data-md-scrollfix="">
             
@@ -584,7 +594,7 @@
             
   
   <span class="md-ellipsis">
-    IASO et DHIS2
+    IASO y DHIS2
   </span>
   
 
@@ -594,7 +604,7 @@
         <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_6_1_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2_6_1">
             <span class="md-nav__icon md-icon"></span>
-            IASO et DHIS2
+            IASO y DHIS2
           </label>
           <ul class="md-nav__list" data-md-scrollfix="">
             
@@ -604,11 +614,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../how_to/setup_dhis2_login_in_iaso.html" class="md-nav__link">
+      <a href="../../users/how_to/setup_dhis2_login_in_iaso.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Setup dhis2 login in iaso
+    Configurar inicio de sesión con DHIS2 para IASO
   </span>
   
 
@@ -624,11 +634,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../how_to/deduce_form_from_another_form.html" class="md-nav__link">
+      <a href="../../users/how_to/deduce_form_from_another_form.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Déduire un formulaire à partir d'un autre formulaire (statistiques agrégées)
+    Deducir un formulario a partir de otro formulario (estadísticas agregadas)
   </span>
   
 
@@ -652,7 +662,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../FAQ/faq.html" class="md-nav__link">
+      <a href="../../users/FAQ/faq.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -685,33 +695,35 @@
       
   
   
+    
+  
   
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3">
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked="">
         
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
             
   
   <span class="md-ellipsis">
-    Développeurs
+    Desarrolladores
   </span>
   
 
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
-            Développeurs
+            Desarrolladores
           </label>
           <ul class="md-nav__list" data-md-scrollfix="">
             
@@ -719,33 +731,35 @@
                 
   
   
+    
+  
   
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1">
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" checked="">
         
           <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
             
   
   <span class="md-ellipsis">
-    Références
+    Referencias
   </span>
   
 
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3_1">
             <span class="md-nav__icon md-icon"></span>
-            Références
+            Referencias
           </label>
           <ul class="md-nav__list" data-md-scrollfix="">
             
@@ -755,7 +769,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../dev/reference/data_model_glossary.html" class="md-nav__link">
+      <a href="data_model_glossary.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -775,7 +789,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../dev/reference/SQL_Dashboard_feature.html" class="md-nav__link">
+      <a href="SQL_Dashboard_feature.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -795,7 +809,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../dev/reference/docker.html" class="md-nav__link">
+      <a href="docker.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -815,11 +829,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../dev/reference/background_tasks.html" class="md-nav__link">
+      <a href="background_tasks.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Background tasks
+    Background tasks &amp; worker
   </span>
   
 
@@ -835,11 +849,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../dev/reference/env_variables.html" class="md-nav__link">
+      <a href="env_variables.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Variables d'environnement
+    Environnement variables
   </span>
   
 
@@ -853,17 +867,99 @@
                 
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../../dev/reference/fhir_api.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    FHIR API - Organization Units
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="fhir_api.html" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
-    API FHIR - Unités d'organisation
+    FHIR API - Organization Units
   </span>
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    Authentication
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpoints" class="md-nav__link">
+    Endpoints
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#field-mapping" class="md-nav__link">
+    Field mapping
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#searching" class="md-nav__link">
+    Searching
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    Example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#errors" class="md-nav__link">
+    Errors
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -889,7 +985,7 @@
             
   
   <span class="md-ellipsis">
-    Modèles
+    Modelos
   </span>
   
 
@@ -899,7 +995,7 @@
         <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_7_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_1_7">
             <span class="md-nav__icon md-icon"></span>
-            Modèles
+            Modelos
           </label>
           <ul class="md-nav__list" data-md-scrollfix="">
             
@@ -909,7 +1005,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../dev/reference/API/entity.html" class="md-nav__link">
+      <a href="API/entity.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -959,7 +1055,7 @@
             
   
   <span class="md-ellipsis">
-    Guides
+    Guías
   </span>
   
 
@@ -969,7 +1065,7 @@
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_2">
             <span class="md-nav__icon md-icon"></span>
-            Guides
+            Guías
           </label>
           <ul class="md-nav__list" data-md-scrollfix="">
             
@@ -979,7 +1075,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../dev/how_to/contribute.html" class="md-nav__link">
+      <a href="../how_to/contribute.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -999,11 +1095,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../dev/how_to/setup_dev_env.html" class="md-nav__link">
+      <a href="../how_to/setup_dev_env.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Setup dev env
+    Setup a dev environment
   </span>
   
 
@@ -1019,7 +1115,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../dev/how_to/use_iaso_apis.html" class="md-nav__link">
+      <a href="../how_to/use_iaso_apis.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1039,7 +1135,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../dev/how_to/build_odk_preview.html" class="md-nav__link">
+      <a href="../how_to/build_odk_preview.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1088,7 +1184,7 @@
             
   
   <span class="md-ellipsis">
-    En savoir plus sur IASO
+    Más sobre IASO
   </span>
   
 
@@ -1098,7 +1194,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
-            En savoir plus sur IASO
+            Más sobre IASO
           </label>
           <ul class="md-nav__list" data-md-scrollfix="">
             
@@ -1112,7 +1208,7 @@
         
   
   <span class="md-ellipsis">
-    Aperçu
+    Resumen
   </span>
   
 
@@ -1132,7 +1228,7 @@
         
   
   <span class="md-ellipsis">
-    Demander une démo
+    Sitio web de IASO
   </span>
   
 
@@ -1172,7 +1268,7 @@
         
   
   <span class="md-ellipsis">
-    Release notes
+    Notas de versión
   </span>
   
 
@@ -1192,7 +1288,7 @@
         
   
   <span class="md-ellipsis">
-    Bluesquare
+    Sitio web de Bluesquare
   </span>
   
 
@@ -1226,7 +1322,7 @@
                   
 
   
-    <a href="https://github.com/BLSQ/iaso/edit/main/docs/pages/users/reference/how_we_work.md" title="Editer cette page" class="md-content__button md-icon">
+    <a href="https://github.com/BLSQ/iaso/edit/main/docs/pages/dev/reference/fhir_api.en.md" title="Editar esta página" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"></path></svg>
     </a>
@@ -1234,59 +1330,139 @@
   
 
 
-<h1 id="how-we-work">How we work<a class="headerlink" href="#how-we-work" title="Permanent link">#</a></h1>
-<h2 id="agile-methodology-in-iaso-implementations">Agile methodology in IASO implementations<a class="headerlink" href="#agile-methodology-in-iaso-implementations" title="Permanent link">#</a></h2>
-<p>Bluesquare's implementation of IASO follows an agile methodology, ensuring continuous communication with our clients and partners. Our approach typically involves creating a project roadmap that includes a timeline for deliverables and identification of external dependencies, such as integration with external systems (e.g., DHIS2). Our flexible team adapts work plans (e.g., backlogs) and deliverables (e.g., epics, features, and user stories) as contexts evolve, recognizing the dynamic nature of each project's context, may it be health campaign digitalization, georegistry implementation, or other. This ensures that IASO remains responsive and effective in meeting our partners' evolving needs.</p>
-<p>IASO development follows continuous software enhancement through iteration, ensuring that improvements are deployed in a structured and phased manner. By integrating user feedback loops at each stage, we ensure the solution evolves in line with real-world needs.</p>
-<p>Bluesquare employs the SCRUM methodology, using two-week sprints to manage IASO development. Within each sprint:</p>
-<ul>
-<li>Deliverables are regularly discussed to prioritize cost-effective features.</li>
-<li>Potential delays are identified early.</li>
-<li>The most impactful features are developed first, ensuring an efficient use of resources.</li>
-<li>Status meetings help unblock tasks and ensure smooth development cycles.</li>
-<li>Regular updates are shared with key stakeholders, ensuring transparency and continuous alignment with the projects' objectives.</li>
-</ul>
-<p>IASO is part of Bluesquare's open-source solutions ecosystem. Agile methodology allows us to incorporate client feedback into IASO's development efficiently, ensuring that features align with real-world needs. This iterative approach supports customization and enhances the platform’s performance and productivity.</p>
-<h2 id="user-engagement-and-user-centric-design">User engagement and user-centric design<a class="headerlink" href="#user-engagement-and-user-centric-design" title="Permanent link">#</a></h2>
-<p>The IASO development process actively engages users and key stakeholders to adopt a patient or user-centric and people-centered systems design. This approach ensures that solutions address the actual needs of frontline health workers, program managers, and policymakers. </p>
-<p>Bluesquare integrates user input through:</p>
-<ul>
-<li>Co-design workshops with implementing partners.</li>
-<li>Iterative user acceptance testing (UAT) sessions to validate features before deployment.</li>
-<li>Regular feedback mechanisms embedded in the platform to capture insights from end users.</li>
-</ul>
-<p>This participatory approach ensures that IASO is not only technically robust but also intuitive and aligned with local system workflows.</p>
-<h2 id="project-co-construction">Project co-construction<a class="headerlink" href="#project-co-construction" title="Permanent link">#</a></h2>
-<p>Bluesquare's approach to IASO implementation is based on co-construction, ensuring collaboration with partners at every stage. This principle has been applied in large-scale health initiatives, including immunization campaigns and disease surveillance. Our adaptability enables us to navigate complex governance settings, from WHO data standards to UNICEF’s digital health frameworks. While we adhere to established design methodologies, we continuously seek to refine user experience and are open to collaborations with design experts.</p>
-<h2 id="quality-assurance-in-iaso-development">Quality assurance in IASO development<a class="headerlink" href="#quality-assurance-in-iaso-development" title="Permanent link">#</a></h2>
-<p>Quality assurance is integral to IASO’s development and is implemented through:</p>
-<ul>
-<li><strong>Test-driven development (TDD)</strong>: Ensuring all new features are built and validated through automated test cases before deployment.</li>
-<li><strong>Specification documents and visual mockups</strong>: Ensuring shared understanding of complex features before development.</li>
-<li><strong>Automated testing</strong>: Preventing regressions in existing functionalities.</li>
-<li><strong>User acceptance testing (UAT)</strong>: Involving end users in validating new features to guarantee usability and alignment with real-world needs.</li>
-<li><strong>Automated security and quality scans</strong>: Maintaining high standards in code development.</li>
-<li><strong>Manual quality assurance testing</strong>: Conducted for each new feature before deployment.</li>
-</ul>
-<h2 id="continuous-user-feedback-mechanisms">Continuous user feedback mechanisms<a class="headerlink" href="#continuous-user-feedback-mechanisms" title="Permanent link">#</a></h2>
-<p>IASO development includes structured mechanisms for gathering and incorporating user feedback for continuous improvement:</p>
-<ul>
-<li>Periodic stakeholder workshops to review feature requests and usability enhancements.</li>
-<li>Iterative release cycles that incorporate new user-driven refinements in each version.</li>
-</ul>
-<h2 id="backstopping-support">Backstopping support<a class="headerlink" href="#backstopping-support" title="Permanent link">#</a></h2>
-<p>IASO implementations benefit from robust backstopping support via a dedicated single point of contact overseeing:</p>
-<ul>
-<li><strong>Technical relevance</strong>: Continuous support from in-house experts to ensure high technical standards and timely issue resolution.</li>
-<li><strong>Project resource allocation</strong>: Ensuring adequate staffing and resource distribution to meet project demands.</li>
-<li><strong>Quality assurance</strong>: Conducting regular quality checks to align with client expectations.</li>
-</ul>
-<p>IASO support services vary based on project criticality:</p>
-<ul>
-<li>Routine projects have a <strong>service desk with response times under 8 hours</strong> during business hours.</li>
-<li>Technical and program support is available in <strong>English and French</strong>, with additional languages spoken by field-based staff.</li>
-</ul>
-<p>Bluesquare has supported high-stakes projects where data analysis is needed daily for rapid decision-making. For these critical operations, IASO’s on-call support ensures that digital solutions remain an enabler rather than a bottleneck for public health interventions.</p>
+<h1 id="fhir-api-organization-units">FHIR API - Organization Units<a class="headerlink" href="#fhir-api-organization-units" title="Permanent link">#</a></h1>
+<p>IASO exposes Organization Units through a <a href="https://build.fhir.org/location.html">FHIR R4</a>-compliant API, mapping them to the standard FHIR <code>Location</code> resource. This lets external systems that support FHIR - health information exchanges, national facility registries, EHRs - read IASO's organizational structure without a custom integration.</p>
+<p>This API is <strong>read-only</strong>.</p>
+<h2 id="authentication">Authentication<a class="headerlink" href="#authentication" title="Permanent link">#</a></h2>
+<p>All endpoints require authentication and the <code>iaso_org_units</code> permission.</p>
+<h2 id="endpoints">Endpoints<a class="headerlink" href="#endpoints" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/fhir/Location/</code></td>
+<td>List locations (returns a FHIR <code>Bundle</code>)</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/fhir/Location/{id}/</code></td>
+<td>Get a specific location</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/fhir/Location/{id}/children/</code></td>
+<td>Get the children of a location</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/fhir/Location/metadata/</code></td>
+<td>FHIR <code>CapabilityStatement</code> describing this API</td>
+</tr>
+</tbody>
+</table>
+<h2 id="field-mapping">Field mapping<a class="headerlink" href="#field-mapping" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>IASO Organization Unit</th>
+<th>FHIR Location field</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td><code>id</code></td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td><code>name</code></td>
+</tr>
+<tr>
+<td><code>validation_status</code> (NEW / VALID / REJECTED)</td>
+<td><code>status</code> (suspended / active / inactive)</td>
+</tr>
+<tr>
+<td><code>source_ref</code>, <code>uuid</code>, <code>aliases</code></td>
+<td><code>identifier</code></td>
+</tr>
+<tr>
+<td><code>org_unit_type</code></td>
+<td><code>type</code></td>
+</tr>
+<tr>
+<td><code>org_unit_type.category</code></td>
+<td><code>physicalType</code></td>
+</tr>
+<tr>
+<td><code>location</code> (GPS)</td>
+<td><code>position</code></td>
+</tr>
+<tr>
+<td><code>parent</code></td>
+<td><code>partOf</code></td>
+</tr>
+<tr>
+<td><code>version.data_source</code></td>
+<td><code>managingOrganization</code></td>
+</tr>
+</tbody>
+</table>
+<p>IASO-specific data without a native FHIR field - validation status, org unit type depth, source version, opening/closing dates - is carried as custom extensions under the <code>http://openiaso.com/fhir/StructureDefinition/...</code> namespace.</p>
+<h2 id="searching">Searching<a class="headerlink" href="#searching" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td>Case-insensitive name search</td>
+<td><code>?name=hospital</code></td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td><code>active</code>, <code>suspended</code>, or <code>inactive</code></td>
+<td><code>?status=active</code></td>
+</tr>
+<tr>
+<td><code>identifier</code></td>
+<td>Matches source_ref, uuid, or alias</td>
+<td><code>?identifier=HF001</code></td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td>Organization unit type</td>
+<td><code>?type=HF</code></td>
+</tr>
+<tr>
+<td><code>_count</code></td>
+<td>Page size (max 100)</td>
+<td><code>?_count=50</code></td>
+</tr>
+<tr>
+<td><code>_skip</code></td>
+<td>Pagination offset</td>
+<td><code>?_skip=20</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="example">Example<a class="headerlink" href="#example" title="Permanent link">#</a></h2>
+<pre><code class="language-http">GET /fhir/Location/?name=hospital&amp;status=active&amp;_count=25
+</code></pre>
+<p>Returns a FHIR <code>Bundle</code> of matching <code>Location</code> resources - see the <a href="https://build.fhir.org/location.html">FHIR Location</a> and <a href="https://build.fhir.org/search.html">FHIR Search</a> specs for the full resource and query shape.</p>
+<h2 id="errors">Errors<a class="headerlink" href="#errors" title="Permanent link">#</a></h2>
+<p>Errors follow the FHIR <code>OperationOutcome</code> format rather than IASO's usual API error shape.</p>
 
 
 
@@ -1302,7 +1478,7 @@
           <button type="button" class="md-top md-icon" data-md-component="top" hidden="">
             
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"></path></svg>
-            Retour en haut de la page
+            Volver al principio
           </button>
         
       </main>
@@ -1330,7 +1506,7 @@
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../../../..", "features": ["content.action.edit", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "toc.integrate"], "search": "../../../../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copi\u00e9 dans le presse-papier", "clipboard.copy": "Copier dans le presse-papier", "search.result.more.one": "1 de plus sur cette page", "search.result.more.other": "# de plus sur cette page", "search.result.none": "Aucun document trouv\u00e9", "search.result.one": "1 document trouv\u00e9", "search.result.other": "# documents trouv\u00e9s", "search.result.placeholder": "Taper pour d\u00e9marrer la recherche", "search.result.term.missing": "Non trouv\u00e9", "select.version": "S\u00e9lectionner la version"}}</script>
+    <script id="__config" type="application/json">{"base": "../../../..", "features": ["content.action.edit", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "toc.integrate"], "search": "../../../../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}}</script>
     
     
       <script src="../../../../assets/javascripts/bundle.78eede0e.min.js"></script>

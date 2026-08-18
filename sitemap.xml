@@ -345,6 +345,14 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/env_variables.html"/>
     </url>
     <url>
+        <loc>Nonepages/dev/reference/fhir_api.html</loc>
+        <lastmod>2026-08-18</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/fhir_api.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/fhir_api.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/fhir_api.html"/>
+    </url>
+    <url>
         <loc>Nonepages/dev/reference/front-end_reference.html</loc>
         <lastmod>2026-08-18</lastmod>
         <changefreq>daily</changefreq>
@@ -929,6 +937,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/env_variables.html"/>
     </url>
     <url>
+        <loc>Nonefr/pages/dev/reference/fhir_api.html</loc>
+        <lastmod>2026-08-18</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/fhir_api.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/fhir_api.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/fhir_api.html"/>
+    </url>
+    <url>
         <loc>Nonefr/pages/dev/reference/front-end_reference.html</loc>
         <lastmod>2026-08-18</lastmod>
         <changefreq>daily</changefreq>
@@ -1511,6 +1527,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/env_variables.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/env_variables.html"/>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/env_variables.html"/>
+    </url>
+    <url>
+        <loc>Nonees/pages/dev/reference/fhir_api.html</loc>
+        <lastmod>2026-08-18</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/fhir_api.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/fhir_api.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/fhir_api.html"/>
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/front-end_reference.html</loc>

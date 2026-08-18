@@ -6,7 +6,13 @@ from rest_framework.viewsets import GenericViewSet
 
 from iaso.models.microplanning import Assignment, Planning
 
-from ...models.missions import MissionEntityType, MissionOrgUnitType, MissionType, MissionWithForms
+from ...models.missions import (
+    MissionEntityType,
+    MissionForm,
+    MissionFormThroughForm,
+    MissionOrgUnitType,
+    MissionWithForms,
+)
 from ..common.mixin import CustomPaginationListModelMixin
 from .pagination import MobilePagination
 from .serializers import MobilePlanningSerializer, MobilePlanningV2Serializer
@@ -45,9 +51,7 @@ class MobilePlanningViewSet(CustomPaginationListModelMixin, GenericViewSet):
                 # We have to filter on FORM_FILLING only because this was the only type of missions before
                 Prefetch(
                     lookup="missions",
-                    queryset=MissionWithForms.objects.filter(mission_type=MissionType.FORM_FILLING).prefetch_related(
-                        "mission_forms"
-                    ),
+                    queryset=MissionForm.objects.prefetch_related("forms"),
                 ),
             )
             .distinct()
@@ -90,7 +94,12 @@ class MobilePlanningV2ViewSet(CustomPaginationListModelMixin, GenericViewSet):
                 Prefetch(
                     "missions",
                     queryset=MissionWithForms.objects.all()
-                    .prefetch_related("forms")
+                    .prefetch_related(
+                        Prefetch(
+                            lookup="missionformthroughform_set",
+                            queryset=MissionFormThroughForm.objects.select_related("form"),
+                        )
+                    )
                     .select_polymorphic_related(MissionOrgUnitType, "org_unit_type")
                     .select_polymorphic_related(MissionEntityType, "entity_type"),
                 ),

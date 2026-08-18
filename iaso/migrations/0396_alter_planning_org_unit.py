@@ -7,7 +7,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0395_mission_alter_corepermissionsupport_options_and_more"),
+        ("iaso", "0395_missionform_alter_corepermissionsupport_options_and_more"),
     ]
 
     operations = [

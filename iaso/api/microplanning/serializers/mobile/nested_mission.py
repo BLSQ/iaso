@@ -8,11 +8,9 @@ from iaso.models import (
     EntityType,
     Form,
     MissionEntityType,
-    MissionEntityTypeThroughForm,
     MissionForm,
     MissionFormThroughForm,
     MissionOrgUnitType,
-    MissionOrgUnitTypeThroughForm,
     OrgUnitType,
 )
 
@@ -24,7 +22,7 @@ class NestedFormSerializer(ModelSerializer):
         read_only_fields = fields
 
 
-class NestedMissionFormThroughFormSerializer(ModelSerializer):
+class NestedMissionWithFormThroughFormSerializer(ModelSerializer):
     form = NestedFormSerializer(read_only=True)
 
     class Meta:
@@ -34,46 +32,10 @@ class NestedMissionFormThroughFormSerializer(ModelSerializer):
             "min_cardinality",
             "max_cardinality",
         ]
-
-        extra_kwargs = {
-            "min_cardinality": {"read_only": True},
-            "max_cardinality": {"read_only": True},
-        }
-
-
-class NestedMissionOrgUnitTypeThroughFormSerializer(ModelSerializer):
-    form = NestedFormSerializer(read_only=True)
-
-    class Meta:
-        model = MissionOrgUnitTypeThroughForm
-        fields = [
-            "form",
+        read_only_fields = [
             "min_cardinality",
             "max_cardinality",
         ]
-
-        extra_kwargs = {
-            "min_cardinality": {"read_only": True},
-            "max_cardinality": {"read_only": True},
-        }
-
-
-class NestedMissionEntityTypeThroughFormSerializer(ModelSerializer):
-    form = NestedFormSerializer(read_only=True)
-
-    class Meta:
-        model = MissionEntityTypeThroughForm
-        fields = [
-            "form",
-            "min_cardinality",
-            "max_cardinality",
-        ]
-
-        extra_kwargs = {
-            "form": {"read_only": True},
-            "min_cardinality": {"read_only": True},
-            "max_cardinality": {"read_only": True},
-        }
 
 
 class NestedOrgUnitTypeSerializer(ModelSerializer):
@@ -103,13 +65,11 @@ class NestedMissionFormSerializer(ModelSerializer):
         read_only_fields = fields
 
     def get_mission_forms(self, _obj):
-        return NestedMissionFormThroughFormSerializer(self.context["form_assignments"], many=True).data
+        return NestedMissionWithFormThroughFormSerializer(self.context["form_assignments"], many=True).data
 
 
 class NestedMissionOrgUnitTypeSerializer(ModelSerializer):
-    mission_forms = NestedMissionOrgUnitTypeThroughFormSerializer(
-        source="missionorgunittypethroughform_set", read_only=True, many=True
-    )
+    mission_forms = NestedMissionWithFormThroughFormSerializer(source="forms", read_only=True, many=True)
     org_unit_type = NestedOrgUnitTypeSerializer(read_only=True)
 
     class Meta:
@@ -128,9 +88,7 @@ class NestedMissionOrgUnitTypeSerializer(ModelSerializer):
 
 
 class NestedMissionEntityTypeSerializer(ModelSerializer):
-    mission_forms = NestedMissionEntityTypeThroughFormSerializer(
-        source="missionentitytypethroughform_set", read_only=True, many=True
-    )
+    mission_forms = NestedMissionWithFormThroughFormSerializer(source="forms", read_only=True, many=True)
     entity_type = NestedEntityTypeSerializer(read_only=True)
 
     class Meta:

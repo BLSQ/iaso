@@ -934,8 +934,8 @@ class FormsAPITestCase(APITestCase):
         mission_2 = m.MissionOrgUnitType.objects.create(
             name="Mission 1", account=self.account, org_unit_type=self.jedi_council
         )
-        m.MissionOrgUnitTypeThroughForm.objects.create(
-            mission_org_unit_type=mission_2,
+        m.MissionFormThroughForm.objects.create(
+            mission_form=mission_2,
             form=form_1,
             min_cardinality=1,
             max_cardinality=1,
@@ -943,8 +943,8 @@ class FormsAPITestCase(APITestCase):
 
         entity_type = m.EntityType.objects.create(name="Entity Type")
         mission_3 = m.MissionEntityType.objects.create(name="Mission 1", account=self.account, entity_type=entity_type)
-        m.MissionEntityTypeThroughForm.objects.create(
-            mission_entity_type=mission_3,
+        m.MissionFormThroughForm.objects.create(
+            mission_form=mission_3,
             form=form_1,
             min_cardinality=1,
             max_cardinality=1,

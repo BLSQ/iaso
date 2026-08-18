@@ -215,16 +215,16 @@ class V2MobilePlanningListAPITestCase(APITestCase):
                     "missions": [
                         {
                             "id": self.mission.id,
-                            "mission_forms": [],
-                            "mission_type": "ORG_UNIT_AND_FORM",
                             "name": self.mission.name,
                             "description": self.mission.description,
+                            "mission_type": "ORG_UNIT_AND_FORM",
                             "org_unit_type": {
                                 "id": self.org_unit_type.id,
                                 "name": "test type",
                             },
                             "min_cardinality": 2,
                             "max_cardinality": 4,
+                            "mission_forms": [],
                         }
                     ],
                 }
@@ -243,29 +243,29 @@ class V2MobilePlanningListAPITestCase(APITestCase):
                     "missions": [
                         {
                             "id": self.mission1.id,
+                            "name": self.mission1.name,
+                            "description": self.mission1.description,
+                            "mission_type": "FORM_FILLING",
                             "mission_forms": [
                                 {
                                     "form": {"id": self.form1.id, "name": self.form1.name},
-                                    "max_cardinality": 1,
                                     "min_cardinality": 1,
+                                    "max_cardinality": 1,
                                 }
                             ],
-                            "mission_type": "FORM_FILLING",
-                            "name": self.mission1.name,
-                            "description": self.mission1.description,
                         },
                         {
                             "id": self.mission2.id,
+                            "name": self.mission2.name,
+                            "description": self.mission2.description,
+                            "mission_type": "FORM_FILLING",
                             "mission_forms": [
                                 {
                                     "form": {"id": self.form2.id, "name": self.form2.name},
-                                    "max_cardinality": 1,
                                     "min_cardinality": 1,
+                                    "max_cardinality": 1,
                                 }
                             ],
-                            "mission_type": "FORM_FILLING",
-                            "name": self.mission2.name,
-                            "description": self.mission2.description,
                         },
                     ],
                 },
@@ -274,29 +274,29 @@ class V2MobilePlanningListAPITestCase(APITestCase):
                     "missions": [
                         {
                             "id": self.mission1.id,
+                            "name": self.mission1.name,
+                            "description": self.mission1.description,
+                            "mission_type": "FORM_FILLING",
                             "mission_forms": [
                                 {
                                     "form": {"id": self.form1.id, "name": self.form1.name},
-                                    "max_cardinality": 1,
                                     "min_cardinality": 1,
+                                    "max_cardinality": 1,
                                 }
                             ],
-                            "mission_type": "FORM_FILLING",
-                            "name": self.mission1.name,
-                            "description": self.mission1.description,
                         },
                         {
                             "id": self.mission2.id,
+                            "name": self.mission2.name,
+                            "description": self.mission2.description,
+                            "mission_type": "FORM_FILLING",
                             "mission_forms": [
                                 {
                                     "form": {"id": self.form2.id, "name": self.form2.name},
-                                    "max_cardinality": 1,
                                     "min_cardinality": 1,
+                                    "max_cardinality": 1,
                                 }
                             ],
-                            "mission_type": "FORM_FILLING",
-                            "name": self.mission2.name,
-                            "description": self.mission2.description,
                         },
                     ],
                 },

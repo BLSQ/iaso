@@ -5,7 +5,11 @@ from django.db import models
 from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.models.project import Project
 from iaso.models.team import Team
-from iaso.utils.models.soft_deletable import SoftDeletableModel
+from iaso.utils.models.soft_deletable import (
+    IncludeDeletedSoftDeletableManager,
+    OnlyDeletedSoftDeletableManager,
+    SoftDeletableModel,
+)
 
 
 class PlanningSamplingResult(models.Model):
@@ -39,7 +43,12 @@ class PlanningQuerySet(models.QuerySet):
 
 
 class Planning(SoftDeletableModel):
+    # Currently, does the same thing as `objects_include_deleted`, we should as some point,
+    # filter out the deleted plannings. `objects_include_deleted` and `objects_only_deleted` have been added to be
+    # explicit about what we want when we use them for when/if we'll change `objects`'s behavior.
     objects = PlanningQuerySet.as_manager()
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(PlanningQuerySet)()
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(PlanningQuerySet)()
 
     class Meta:
         ordering = ("name",)
@@ -102,6 +111,3 @@ class Planning(SoftDeletableModel):
     def get_pipeline_uuids(self) -> list:
         """Get the list of pipeline UUIDs for this planning."""
         return self.pipeline_uuids or []
-
-    def get_possible_org_units(self):
-        pass

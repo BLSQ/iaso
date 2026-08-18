@@ -1,6 +1,7 @@
 import React, {
     ChangeEvent,
     FC,
+    ReactElement,
     ReactNode,
     useCallback,
     useEffect,
@@ -30,50 +31,17 @@ import ReactMarkdown from 'react-markdown';
 import { SxStyles } from 'Iaso/types/general';
 import { MessageQuickReplies } from './MessageQuickReplies';
 import MESSAGES from './messages';
+import {
+    ChatMessage,
+    ChatMessageRole,
+    ChatQuickReplyQuestion,
+    PendingAttachment,
+    PendingAttachmentStatus,
+    QuickReplyAnswer,
+    SendMessageOptions,
+} from './types';
 
-export type ChatMessageRole = 'user' | 'assistant';
-
-export type ChatQuickReplyQuestion = {
-    question: string;
-    options: string[];
-    selectedOptionIndex?: number;
-};
-
-export type ChatMessageAttachment = {
-    id: string;
-    filename: string;
-};
-
-export type ChatMessage = {
-    role: ChatMessageRole;
-    content: string;
-    id: string;
-    quickReplies?: ChatQuickReplyQuestion[];
-    attachments?: ChatMessageAttachment[];
-};
-
-export type QuickReplyAnswer = {
-    messageId: string;
-    // Group index -> selected option index.
-    selections: Record<number, number>;
-};
-
-export type PendingAttachmentStatus = 'uploading' | 'ready' | 'error';
-
-export type PendingAttachment = ChatMessageAttachment & {
-    status: PendingAttachmentStatus;
-};
-
-export type SendMessageOptions = {
-    // `message` is always what's sent to the conversation; `displayContent` overrides what's
-    // shown in the resulting user bubble (used for a quick-reply confirmation, whose picked
-    // answers are already visible in the question's own bubble).
-    displayContent?: string;
-    // Present when this send confirms a quick-reply form - pass to `applyQuickReplyAnswer` to
-    // record it on the originating message.
-    quickReplyAnswer?: QuickReplyAnswer;
-    attachments?: ChatMessageAttachment[];
-};
+export * from './types';
 
 // Applies a confirmed quick-reply answer onto the message it belongs to, setting each question's
 // `selectedOptionIndex`. Exported so every `ChatPanel` consumer applies answers the same way,
@@ -120,6 +88,22 @@ const bubble = (role: ChatMessageRole): SxProps<Theme> => ({
     color: role === 'user' ? 'primary.contrastText' : 'text.primary',
     borderRadius: 2,
 });
+
+const attachmentStatusIcon = (
+    status: PendingAttachmentStatus,
+): ReactElement => {
+    if (status === 'uploading') {
+        return (
+            <Box>
+                <CircularProgress size={16} sx={{ color: 'common.white' }} />
+            </Box>
+        );
+    }
+    if (status === 'error') {
+        return <ReportIcon fontSize="small" />;
+    }
+    return <InsertDriveFileIcon fontSize="small" />;
+};
 
 type Props = {
     messages: ChatMessage[];
@@ -276,11 +260,11 @@ const defaultStyles: SxStyles = {
     },
     attachmentChip: {
         border: 'none',
-        height: 32,
+        height: theme => theme.spacing(4),
         '& .MuiChip-icon': {
             color: 'common.white',
             margin: 0,
-            width: 32,
+            width: theme => theme.spacing(4),
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -570,20 +554,7 @@ export const ChatPanel: FC<Props> = ({
                         {pendingAttachments.map(attachment => (
                             <Chip
                                 key={attachment.id}
-                                icon={
-                                    attachment.status === 'uploading' ? (
-                                        <Box>
-                                            <CircularProgress
-                                                size={16}
-                                                sx={{ color: 'common.white' }}
-                                            />
-                                        </Box>
-                                    ) : attachment.status === 'error' ? (
-                                        <ReportIcon fontSize="small" />
-                                    ) : (
-                                        <InsertDriveFileIcon fontSize="small" />
-                                    )
-                                }
+                                icon={attachmentStatusIcon(attachment.status)}
                                 label={attachment.filename}
                                 onDelete={
                                     onRemoveAttachment

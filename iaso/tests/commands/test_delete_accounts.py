@@ -1108,7 +1108,14 @@ class DeleteAccountsModelCoverageTestCase(TestCase):
         current_models = {
             model._meta.label
             for model in apps.get_models()
-            if model._meta.managed and _is_project_model(model) and model._meta.app_label == "iaso"
+            if model._meta.managed
+            and _is_project_model(model)
+            and model._meta.app_label == "iaso"
+            # Dummy models declared inline in test modules (e.g. to exercise a custom field or
+            # serializer) get registered under the "iaso" app label too, but they're test
+            # scaffolding only — never present outside of running that test, irrelevant to
+            # delete_accounts.py's scope. Exclude anything defined under iaso/tests/.
+            and not model.__module__.startswith("iaso.tests.")
         }
 
         new_models = current_models - self.KNOWN_IASO_MODELS

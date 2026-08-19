@@ -124,7 +124,7 @@ const OrgUnitTypeFilterComponent: FunctionComponent<Props> = ({
                 setIsLoading(false);
             });
         },
-        [currentOrgUnit.id, fetchSubOrgUnitsByType],
+        [currentOrgUnit.id, setOrgUnitTypesSelected],
     );
 
     const hanldeOnChange = selection => {

@@ -34,7 +34,6 @@ import MESSAGES from './messages';
 import {
     ChatMessage,
     ChatMessageRole,
-    ChatQuickReplyQuestion,
     PendingAttachment,
     PendingAttachmentStatus,
     QuickReplyAnswer,

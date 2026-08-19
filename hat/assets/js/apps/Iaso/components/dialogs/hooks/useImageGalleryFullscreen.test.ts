@@ -1,3 +1,4 @@
+import { MutableRefObject, RefObject } from 'react';
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -12,6 +13,13 @@ const ZOOM_STEP = 0.25;
 const mockRequestFullscreen = vi.fn().mockResolvedValue(undefined);
 const mockExitFullscreen = vi.fn().mockResolvedValue(undefined);
 
+type HookResult = ReturnType<typeof useImageGalleryFullscreen>;
+
+const setRef = <T>(ref: RefObject<T | null>, value: T): T => {
+    (ref as MutableRefObject<T | null>).current = value;
+    return value;
+};
+
 const setFullscreenElement = (element: Element | null) => {
     Object.defineProperty(document, 'fullscreenElement', {
         configurable: true,
@@ -21,32 +29,23 @@ const setFullscreenElement = (element: Element | null) => {
 
 const renderFullscreenHook = () => {
     const closeLightbox = vi.fn();
-    const hook = renderHook(() =>
-        useImageGalleryFullscreen({ closeLightbox }),
-    );
+    const hook = renderHook(() => useImageGalleryFullscreen({ closeLightbox }));
     return { ...hook, closeLightbox };
 };
 
-const attachOverlay = (
-    result: { current: ReturnType<typeof useImageGalleryFullscreen> },
-): HTMLDivElement => {
+const attachOverlay = (result: { current: HookResult }): HTMLDivElement => {
     const overlay = document.createElement('div');
     overlay.requestFullscreen = mockRequestFullscreen;
-    result.current.overlayRef.current = overlay;
-    return overlay;
+    return setRef(result.current.overlayRef, overlay);
 };
 
-const attachViewport = (
-    result: { current: ReturnType<typeof useImageGalleryFullscreen> },
-): HTMLDivElement => {
-    const viewport = document.createElement('div');
-    result.current.viewportRef.current = viewport;
-    return viewport;
+const attachViewport = (result: { current: HookResult }): HTMLDivElement => {
+    return setRef(result.current.viewportRef, document.createElement('div'));
 };
 
-const enterFullscreen = (
-    result: { current: ReturnType<typeof useImageGalleryFullscreen> },
-): { overlay: HTMLDivElement; viewport: HTMLDivElement } => {
+const enterFullscreen = (result: {
+    current: ReturnType<typeof useImageGalleryFullscreen>;
+}): { overlay: HTMLDivElement; viewport: HTMLDivElement } => {
     const viewport = attachViewport(result);
     const overlay = attachOverlay(result);
     act(() => {
@@ -166,7 +165,9 @@ describe('useImageGalleryFullscreen', () => {
         const { closeLightbox } = renderFullscreenHook();
 
         act(() => {
-            window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+            window.dispatchEvent(
+                new KeyboardEvent('keydown', { key: 'Escape' }),
+            );
         });
 
         expect(closeLightbox).toHaveBeenCalledTimes(1);
@@ -180,7 +181,9 @@ describe('useImageGalleryFullscreen', () => {
             result.current.toggleFullScreen();
         });
         act(() => {
-            window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+            window.dispatchEvent(
+                new KeyboardEvent('keydown', { key: 'Escape' }),
+            );
         });
 
         expect(result.current.isFullScreen).toBe(false);
@@ -196,7 +199,9 @@ describe('useImageGalleryFullscreen', () => {
         });
         setFullscreenElement(overlay);
         act(() => {
-            window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+            window.dispatchEvent(
+                new KeyboardEvent('keydown', { key: 'Escape' }),
+            );
         });
 
         expect(result.current.isFullScreen).toBe(true);
@@ -268,7 +273,7 @@ describe('useImageGalleryFullscreen', () => {
         expect(result.current.offset).toEqual({ x: 0, y: 0 });
     });
 
-    it('double-clicks to default zoom and back to min while fullscreen', () => {
+    it('reset to min when double-click in fullscreen', () => {
         const { result } = renderFullscreenHook();
         attachOverlay(result);
 
@@ -298,8 +303,7 @@ describe('useImageGalleryFullscreen', () => {
 
     it('zooms with the wheel once the viewport is attached', () => {
         const { result } = renderFullscreenHook();
-        const viewport = document.createElement('div');
-        result.current.viewportRef.current = viewport;
+        const viewport = attachViewport(result);
         attachOverlay(result);
 
         act(() => {

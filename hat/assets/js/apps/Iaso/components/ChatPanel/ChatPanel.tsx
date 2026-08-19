@@ -22,15 +22,58 @@ import {
 import { useSafeIntl } from 'bluesquare-components';
 import ReactMarkdown from 'react-markdown';
 import { SxStyles } from 'Iaso/types/general';
+import { MessageQuickReplies } from './MessageQuickReplies';
 import MESSAGES from './messages';
 
 export type ChatMessageRole = 'user' | 'assistant';
+
+export type ChatQuickReplyQuestion = {
+    question: string;
+    options: string[];
+    selectedOptionIndex?: number;
+};
 
 export type ChatMessage = {
     role: ChatMessageRole;
     content: string;
     id: string;
+    quickReplies?: ChatQuickReplyQuestion[];
 };
+
+export type QuickReplyAnswer = {
+    messageId: string;
+    // Group index -> selected option index.
+    selections: Record<number, number>;
+};
+
+export type SendMessageOptions = {
+    // `message` is always what's sent to the conversation; `displayContent` overrides what's
+    // shown in the resulting user bubble (used for a quick-reply confirmation, whose picked
+    // answers are already visible in the question's own bubble).
+    displayContent?: string;
+    // Present when this send confirms a quick-reply form - pass to `applyQuickReplyAnswer` to
+    // record it on the originating message.
+    quickReplyAnswer?: QuickReplyAnswer;
+};
+
+// Applies a confirmed quick-reply answer onto the message it belongs to, setting each question's
+// `selectedOptionIndex`. Exported so every `ChatPanel` consumer applies answers the same way,
+// instead of each reimplementing the id lookup and per-question merge.
+export const applyQuickReplyAnswer = (
+    messages: ChatMessage[],
+    answer: QuickReplyAnswer,
+): ChatMessage[] =>
+    messages.map(message =>
+        message.id === answer.messageId && message.quickReplies
+            ? {
+                  ...message,
+                  quickReplies: message.quickReplies.map((question, index) => ({
+                      ...question,
+                      selectedOptionIndex: answer.selections[index],
+                  })),
+              }
+            : message,
+    );
 
 const messageRow = (role: ChatMessageRole): SxProps<Theme> => ({
     display: 'flex',
@@ -62,7 +105,7 @@ const bubble = (role: ChatMessageRole): SxProps<Theme> => ({
 type Props = {
     messages: ChatMessage[];
     isLoading: boolean;
-    onSendMessage: (message: string) => void;
+    onSendMessage: (message: string, options?: SendMessageOptions) => void;
     // Content shown in place of the message list when there are no messages yet.
     emptyState: ReactNode;
     title: ReactNode;
@@ -328,7 +371,7 @@ export const ChatPanel: FC<Props> = ({
                         {emptyState}
                     </Box>
                 )}
-                {messages.map(msg => (
+                {messages.map((msg, messageIndex) => (
                     <Box key={msg.id} sx={messageRow(msg.role)}>
                         <Box sx={avatar(msg.role)}>
                             {msg.role === 'user' ? (
@@ -354,6 +397,12 @@ export const ChatPanel: FC<Props> = ({
                                     {msg.content}
                                 </Typography>
                             )}
+                            <MessageQuickReplies
+                                message={msg}
+                                isLast={messageIndex === messages.length - 1}
+                                isLoading={isLoading}
+                                onSendMessage={onSendMessage}
+                            />
                         </Paper>
                     </Box>
                 ))}

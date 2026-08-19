@@ -103,6 +103,13 @@ class MissionEntityTypeAPIUpdateTestCase(SwaggerTestCaseMixin, APITestCase):
         )
         followup.forms.set(forms)
 
+        followup_2 = WorkflowFollowup.objects.create(
+            order=2,
+            condition={"==": [2, 2]},
+            workflow_version=workflow_et_version,
+        )
+        followup_2.forms.set(forms)
+
     def setUp(self):
         super().setUp()
         self.mission_et_1 = MissionEntityType.objects.create(

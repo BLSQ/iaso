@@ -18,8 +18,10 @@ class EntityTypeScopedFormField(serializers.PrimaryKeyRelatedField):
         if not entity_type_pk:
             return Form.objects.none()
 
-        return Form.objects.filter_for_user_and_app_id(self.context["request"].user).filter_on_entity_type(
-            entity_type_pk
+        return (
+            Form.objects.filter_for_user_and_app_id(self.context["request"].user)
+            .filter_on_entity_type(entity_type_pk)
+            .distinct()
         )
 
 

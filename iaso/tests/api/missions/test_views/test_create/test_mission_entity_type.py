@@ -88,6 +88,13 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
         )
         followup.forms.set(forms)
 
+        followup_2 = WorkflowFollowup.objects.create(
+            order=2,
+            condition={"==": [2, 2]},
+            workflow_version=workflow_et_version,
+        )
+        followup_2.forms.set(forms)
+
     def assertValidBodyData(self, data):
         self.assertResponseCompliantToSwagger(data, "MissionPolymorphicCreateRequest")
 

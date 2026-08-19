@@ -886,6 +886,87 @@ class WebEntityAPITestCase(EntityAPITestCase):
         the_result = response.json()["result"][0]
         self.assertEqual(the_result["id"], ent2.id)
 
+    def test_list_entities_fields_search_like_and_empty_operators(self):
+        """Query-builder like / not_like / is_empty / is_not_empty inside fields_search."""
+        self.client.force_authenticate(self.yoda)
+
+        matching_instance = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"responsable_fosa": "Jean Beau"},
+        )
+        matching = Entity.objects.create(
+            name="Matching",
+            entity_type=self.entity_type,
+            attributes=matching_instance,
+            account=self.account,
+        )
+        matching_instance.entity = matching
+        matching_instance.save()
+
+        empty_instance = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"responsable_fosa": ""},
+        )
+        empty = Entity.objects.create(
+            name="Empty",
+            entity_type=self.entity_type,
+            attributes=empty_instance,
+            account=self.account,
+        )
+        empty_instance.entity = empty
+        empty_instance.save()
+
+        other_instance = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"responsable_fosa": "Alice"},
+        )
+        other = Entity.objects.create(
+            name="Other",
+            entity_type=self.entity_type,
+            attributes=other_instance,
+            account=self.account,
+        )
+        other_instance.entity = other
+        other_instance.save()
+
+        like_filter = json.dumps(
+            {"some": [{"var": self.form_1.form_id}, {"in": ["Beau", {"var": "responsable_fosa"}]}]}
+        )
+        response = self.client.get("/api/entities/", {"fields_search": like_filter})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        result_ids = [r["id"] for r in response.json()["result"]]
+        self.assertIn(matching.id, result_ids)
+        self.assertNotIn(empty.id, result_ids)
+        self.assertNotIn(other.id, result_ids)
+
+        not_like_filter = json.dumps(
+            {"some": [{"var": self.form_1.form_id}, {"!": {"in": ["Beau", {"var": "responsable_fosa"}]}}]}
+        )
+        response = self.client.get("/api/entities/", {"fields_search": not_like_filter})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        result_ids = [r["id"] for r in response.json()["result"]]
+        self.assertIn(other.id, result_ids)
+        self.assertNotIn(matching.id, result_ids)
+
+        empty_filter = json.dumps({"some": [{"var": self.form_1.form_id}, {"!": {"var": "responsable_fosa"}}]})
+        response = self.client.get("/api/entities/", {"fields_search": empty_filter})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        result_ids = [r["id"] for r in response.json()["result"]]
+        self.assertIn(empty.id, result_ids)
+        self.assertNotIn(matching.id, result_ids)
+        self.assertNotIn(other.id, result_ids)
+
+        not_empty_filter = json.dumps({"some": [{"var": self.form_1.form_id}, {"!!": {"var": "responsable_fosa"}}]})
+        response = self.client.get("/api/entities/", {"fields_search": not_empty_filter})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        result_ids = [r["id"] for r in response.json()["result"]]
+        self.assertIn(matching.id, result_ids)
+        self.assertIn(other.id, result_ids)
+        self.assertNotIn(empty.id, result_ids)
+
     def _generate_json_filter(self, operator, some_or_all, gender, residence):
         return json.dumps(
             {

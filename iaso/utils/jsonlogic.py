@@ -3,7 +3,7 @@
 import operator
 import re
 
-from typing import Any, Callable, Dict, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 from django.db.models import Exists, OuterRef, Q, QuerySet, Transform
 from django.db.models.expressions import NegatedExpression
@@ -27,6 +27,42 @@ EXTENDED_OPERATOR_LOOKUPS = {
     "in": "icontains",
 }
 JSON_ANNOTATED_FIELD_ALIAS = "json_annotated_field"
+
+
+def _extract_unary_var(operand: Any) -> Optional[str]:
+    """Return the field name when operand is a bare JsonLogic var (query-builder is_empty / is_not_empty)."""
+    if isinstance(operand, dict) and set(operand.keys()) == {"var"}:
+        return operand["var"]
+    if (
+        isinstance(operand, list)
+        and len(operand) == 1
+        and isinstance(operand[0], dict)
+        and set(operand[0].keys()) == {"var"}
+    ):
+        return operand[0]["var"]
+    return None
+
+
+def _resolve_lookup_field_name(field_name: str, field_prefix: str, index: int) -> tuple[str, int]:
+    """Map a JsonLogic var to a Django lookup, annotating keys that contain `__`."""
+    if "__" in field_name:
+        return f"{JSON_ANNOTATED_FIELD_ALIAS}_{index}", index + 1
+    return f"{field_prefix}{field_name}", index
+
+
+def _annotate_json_key(queryset: QuerySet, field_name: str, json_field: str, index: int) -> tuple[QuerySet, int]:
+    if "__" in field_name:
+        queryset = queryset.annotate(**{f"{JSON_ANNOTATED_FIELD_ALIAS}_{index}": KeyTransform(field_name, json_field)})
+        return queryset, index + 1
+    return queryset, index
+
+
+def _build_emptiness_query(field_name: str, field_prefix: str, index: int, is_empty: bool) -> tuple[Q, int]:
+    """Match missing / JSON-null / empty-string values (query-builder is_empty / is_not_empty)."""
+    lookup_field, index = _resolve_lookup_field_name(field_name, field_prefix, index)
+    empty_q = Q(**{f"{lookup_field}__isnull": True}) | Q(**{lookup_field: ""})
+    return (empty_q if is_empty else ~empty_q), index
+
 
 # This is used to cast a json value from string into a float.
 # Didn't find a simple way to do that.
@@ -85,8 +121,12 @@ def annotate_suffixed_json_fields(
     Keys in JSONField with `__` in their names cannot be used as is. We first have to annotate the key to a temporary
     field to reference that temporary field later.
     """
-    if "!" in jsonlogic:
-        return annotate_suffixed_json_fields(queryset, jsonlogic["!"], json_field, index)
+    if "!" in jsonlogic or "!!" in jsonlogic:
+        inner = jsonlogic["!"] if "!" in jsonlogic else jsonlogic["!!"]
+        var_name = _extract_unary_var(inner)
+        if var_name is not None:
+            return _annotate_json_key(queryset, var_name, json_field, index)
+        return annotate_suffixed_json_fields(queryset, inner, json_field, index)
 
     if "and" in jsonlogic:
         for lookup in jsonlogic["and"]:
@@ -148,8 +188,18 @@ def jsonlogic_to_q(
             sub_query = operator.or_(sub_query, query)
         return sub_query, index
     if "!" in jsonlogic:
-        query, index = func(jsonlogic["!"], field_prefix, index)
+        inner = jsonlogic["!"]
+        var_name = _extract_unary_var(inner)
+        if var_name is not None:
+            return _build_emptiness_query(var_name, field_prefix, index, is_empty=True)
+        query, index = func(inner, field_prefix, index)
         return ~query, index
+    if "!!" in jsonlogic:
+        inner = jsonlogic["!!"]
+        var_name = _extract_unary_var(inner)
+        if var_name is not None:
+            return _build_emptiness_query(var_name, field_prefix, index, is_empty=False)
+        raise ValueError(f"Unsupported JsonLogic for '!!': {jsonlogic}")
 
     if not jsonlogic.keys():
         return Q(), index
@@ -249,24 +299,44 @@ def instance_jsonlogic_to_q(
         q = instance_jsonlogic_to_q(filters, field_prefix="json__")
         # Result: Q(json__status__in=["active", "pending"])
 
+        # Query-builder "like" (contains): needle first
+        filters = {"in": ["Beau", {"var": "name"}]}
+        q = instance_jsonlogic_to_q(filters, field_prefix="json__")
+        # Result: Q(json__name__icontains="Beau")
+
+        # Query-builder "is_empty" / "is_not_empty"
+        filters = {"!": {"var": "name"}}
+        q = instance_jsonlogic_to_q(filters, field_prefix="json__")
+        # Result: Q(json__name__isnull=True) | Q(json__name="")
+
     Supported Operators:
         - Comparison: ==, !=, >, >=, <, <=
-        - Logical: and, or, ! (not)
-        - Array: in, some, all
+        - Logical: and, or, ! (not), !! (truthy / is_not_empty)
+        - Array: in (field-first or needle-first), some, all
         - Field prefix handling for JSONField lookups
         - Automatic type casting for numeric values in JSON fields
     """
 
     recursion_function = instance_jsonlogic_to_q if recursion_func is None else recursion_func
 
-    # Handle logical group operators (AND/OR/NOT)
+    # Handle logical group operators (AND/OR/NOT) and query-builder emptiness checks
     if "and" in jsonlogic:
         return _handle_and_operator(jsonlogic["and"], field_prefix, index, recursion_function)
     if "or" in jsonlogic:
         return _handle_or_operator(jsonlogic["or"], field_prefix, index, recursion_function)
     if "!" in jsonlogic:
-        queryset, index = recursion_function(jsonlogic["!"], field_prefix, index)
-        return ~queryset, index
+        inner = jsonlogic["!"]
+        var_name = _extract_unary_var(inner)
+        if var_name is not None:
+            return _build_emptiness_query(var_name, field_prefix, index, is_empty=True)
+        query, index = recursion_function(inner, field_prefix, index)
+        return ~query, index
+    if "!!" in jsonlogic:
+        inner = jsonlogic["!!"]
+        var_name = _extract_unary_var(inner)
+        if var_name is not None:
+            return _build_emptiness_query(var_name, field_prefix, index, is_empty=False)
+        raise ValueError(f"Unsupported JsonLogic for '!!': {jsonlogic}")
 
     # Handle array field operations (some/all)
     if "some" in jsonlogic or "all" in jsonlogic:
@@ -412,29 +482,30 @@ def _handle_binary_operators(jsonlogic: Dict[str, Any], field_prefix: str, index
 def _handle_in_operator(params: list, field_prefix: str, index: int) -> tuple[Q, int]:
     """Handle 'in' operator for field in array or string containment.
 
-    Supports two patterns:
+    Supports:
     1. field in array: {"in": [{"var": "status"}, ["active", "pending"]]}
-    2. string containment: {"in": [{"var": "name"}, "john"]}
+    2. string containment (field first): {"in": [{"var": "name"}, "john"]}
+    3. substring / query-builder `like` (needle first): {"in": ["Beau", {"var": "name"}]}
     """
-    field, value = params[0], params[1]
+    left, right = params[0], params[1]
 
-    if "var" not in field:
+    # Query-builder `like`: {"in": [needle, {"var": "field"}]}
+    if isinstance(left, str) and isinstance(right, dict) and "var" in right:
+        field_name, index = _resolve_lookup_field_name(right["var"], field_prefix, index)
+        return Q(**{f"{field_name}__icontains": left.strip()}), index
+
+    if not isinstance(left, dict) or "var" not in left:
         raise ValueError("Unsupported 'in' usage: field must be a variable")
 
-    field_name = field["var"]
-    if "__" in field_name:
-        field_name = f"{JSON_ANNOTATED_FIELD_ALIAS}_{index}"
-        index = index + 1
-    else:
-        field_name = f"{field_prefix}{field_name}"
+    field_name, index = _resolve_lookup_field_name(left["var"], field_prefix, index)
 
-    if isinstance(value, list):
+    if isinstance(right, list):
         # Field in array: {"in": [{"var": "status"}, ["active", "pending"]]}
-        return Q(**{f"{field_name}__in": value}), index
+        return Q(**{f"{field_name}__in": right}), index
 
-    if isinstance(value, str):
+    if isinstance(right, str):
         # String containment: {"in": [{"var": "name"}, "john"]}
-        return Q(**{f"{field_name}__icontains": value}), index
+        return Q(**{f"{field_name}__icontains": right.strip()}), index
 
     raise ValueError(f"Unsupported 'in' usage: {params}")
 

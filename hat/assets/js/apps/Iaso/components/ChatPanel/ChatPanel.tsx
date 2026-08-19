@@ -1,18 +1,25 @@
 import React, {
+    ChangeEvent,
     FC,
+    ReactElement,
     ReactNode,
     useCallback,
     useEffect,
     useRef,
     useState,
 } from 'react';
+import AddIcon from '@mui/icons-material/Add';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import PersonIcon from '@mui/icons-material/Person';
+import ReportIcon from '@mui/icons-material/Report';
 import SendIcon from '@mui/icons-material/Send';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import {
     Box,
     Button,
+    Chip,
     CircularProgress,
+    IconButton,
     Paper,
     SxProps,
     TextField,
@@ -24,37 +31,16 @@ import ReactMarkdown from 'react-markdown';
 import { SxStyles } from 'Iaso/types/general';
 import { MessageQuickReplies } from './MessageQuickReplies';
 import MESSAGES from './messages';
+import {
+    ChatMessage,
+    ChatMessageRole,
+    PendingAttachment,
+    PendingAttachmentStatus,
+    QuickReplyAnswer,
+    SendMessageOptions,
+} from './types';
 
-export type ChatMessageRole = 'user' | 'assistant';
-
-export type ChatQuickReplyQuestion = {
-    question: string;
-    options: string[];
-    selectedOptionIndex?: number;
-};
-
-export type ChatMessage = {
-    role: ChatMessageRole;
-    content: string;
-    id: string;
-    quickReplies?: ChatQuickReplyQuestion[];
-};
-
-export type QuickReplyAnswer = {
-    messageId: string;
-    // Group index -> selected option index.
-    selections: Record<number, number>;
-};
-
-export type SendMessageOptions = {
-    // `message` is always what's sent to the conversation; `displayContent` overrides what's
-    // shown in the resulting user bubble (used for a quick-reply confirmation, whose picked
-    // answers are already visible in the question's own bubble).
-    displayContent?: string;
-    // Present when this send confirms a quick-reply form - pass to `applyQuickReplyAnswer` to
-    // record it on the originating message.
-    quickReplyAnswer?: QuickReplyAnswer;
-};
+export * from './types';
 
 // Applies a confirmed quick-reply answer onto the message it belongs to, setting each question's
 // `selectedOptionIndex`. Exported so every `ChatPanel` consumer applies answers the same way,
@@ -102,6 +88,22 @@ const bubble = (role: ChatMessageRole): SxProps<Theme> => ({
     borderRadius: 2,
 });
 
+const attachmentStatusIcon = (
+    status: PendingAttachmentStatus,
+): ReactElement => {
+    if (status === 'uploading') {
+        return (
+            <Box>
+                <CircularProgress size={16} sx={{ color: 'common.white' }} />
+            </Box>
+        );
+    }
+    if (status === 'error') {
+        return <ReportIcon fontSize="small" />;
+    }
+    return <InsertDriveFileIcon fontSize="small" />;
+};
+
 type Props = {
     messages: ChatMessage[];
     isLoading: boolean;
@@ -116,6 +118,9 @@ type Props = {
     placeholder?: string;
     // When true, message content is rendered as markdown instead of plain text.
     interpretMarkdown?: boolean;
+    pendingAttachments?: PendingAttachment[];
+    onAttachFiles?: (files: File[]) => void;
+    onRemoveAttachment?: (id: string) => void;
     sx?: SxStyles;
 };
 
@@ -238,6 +243,44 @@ const defaultStyles: SxStyles = {
         flexShrink: 0,
         boxShadow: '0 2px 6px rgba(0, 0, 0, 0.12)',
     },
+    attachButton: {
+        width: 40,
+        height: 40,
+        flexShrink: 0,
+    },
+    attachmentsRow: {
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 0.75,
+    },
+    pendingAttachmentsRow: {
+        mb: 1,
+        px: 0.5,
+    },
+    attachmentChip: {
+        border: 'none',
+        height: theme => theme.spacing(4),
+        '& .MuiChip-icon': {
+            color: 'common.white',
+            margin: 0,
+            width: theme => theme.spacing(4),
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        '& .MuiChip-label': {
+            pl: 0,
+            ml: -0.25,
+            fontWeight: 500,
+        },
+    },
+    pendingAttachmentChipError: {
+        bgcolor: 'error.light',
+        color: 'error.contrastText',
+    },
+    messageAttachmentsRow: {
+        mt: 1,
+    },
     markdownContent: {
         typography: 'body2',
         '& > :first-of-type': { mt: 0 },
@@ -271,23 +314,53 @@ export const ChatPanel: FC<Props> = ({
     titleIcon,
     placeholder,
     interpretMarkdown = false,
+    pendingAttachments = [],
+    onAttachFiles,
+    onRemoveAttachment,
     sx = {},
 }) => {
     const { formatMessage } = useSafeIntl();
     const [inputValue, setInputValue] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
+    const hasUploadingAttachment = pendingAttachments.some(
+        attachment => attachment.status === 'uploading',
+    );
+    const hasReadyAttachment = pendingAttachments.some(
+        attachment => attachment.status === 'ready',
+    );
+
     const handleSend = useCallback(() => {
         const trimmed = inputValue.trim();
-        if (trimmed && !isLoading) {
-            onSendMessage(trimmed);
+        const readyAttachments = pendingAttachments
+            .filter(attachment => attachment.status === 'ready')
+            .map(({ id, filename }) => ({ id, filename }));
+        if (
+            (trimmed || readyAttachments.length > 0) &&
+            !isLoading &&
+            !hasUploadingAttachment
+        ) {
+            onSendMessage(
+                trimmed || formatMessage(MESSAGES.defaultAttachmentMessage),
+                readyAttachments.length
+                    ? { attachments: readyAttachments }
+                    : undefined,
+            );
             setInputValue('');
         }
-    }, [inputValue, isLoading, onSendMessage]);
+    }, [
+        inputValue,
+        isLoading,
+        hasUploadingAttachment,
+        pendingAttachments,
+        onSendMessage,
+        formatMessage,
+    ]);
 
     const handleKeyDown = useCallback(
         (e: React.KeyboardEvent) => {
@@ -297,6 +370,18 @@ export const ChatPanel: FC<Props> = ({
             }
         },
         [handleSend],
+    );
+
+    const handleFileInputChange = useCallback(
+        (e: ChangeEvent<HTMLInputElement>) => {
+            const files = e.target.files ? Array.from(e.target.files) : [];
+            // Reset so picking the exact same file again still fires a change event.
+            e.target.value = '';
+            if (files.length > 0) {
+                onAttachFiles?.(files);
+            }
+        },
+        [onAttachFiles],
     );
 
     const showEmptyState = messages.length === 0;
@@ -397,6 +482,30 @@ export const ChatPanel: FC<Props> = ({
                                     {msg.content}
                                 </Typography>
                             )}
+                            {msg.attachments && msg.attachments.length > 0 && (
+                                <Box
+                                    sx={
+                                        [
+                                            defaultStyles.attachmentsRow,
+                                            defaultStyles.messageAttachmentsRow,
+                                        ] as SxProps<Theme>
+                                    }
+                                >
+                                    {msg.attachments.map(attachment => (
+                                        <Chip
+                                            key={attachment.id}
+                                            variant="outlined"
+                                            icon={
+                                                <InsertDriveFileIcon fontSize="small" />
+                                            }
+                                            label={attachment.filename}
+                                            sx={
+                                                defaultStyles.attachmentChip as SxProps<Theme>
+                                            }
+                                        />
+                                    ))}
+                                </Box>
+                            )}
                             <MessageQuickReplies
                                 message={msg}
                                 isLast={messageIndex === messages.length - 1}
@@ -432,6 +541,37 @@ export const ChatPanel: FC<Props> = ({
             </Box>
 
             <Box sx={[defaultStyles.inputArea, sx.inputArea] as SxProps<Theme>}>
+                {onAttachFiles && pendingAttachments.length > 0 && (
+                    <Box
+                        sx={
+                            [
+                                defaultStyles.attachmentsRow,
+                                defaultStyles.pendingAttachmentsRow,
+                            ] as SxProps<Theme>
+                        }
+                    >
+                        {pendingAttachments.map(attachment => (
+                            <Chip
+                                key={attachment.id}
+                                icon={attachmentStatusIcon(attachment.status)}
+                                label={attachment.filename}
+                                onDelete={
+                                    onRemoveAttachment
+                                        ? () =>
+                                              onRemoveAttachment(attachment.id)
+                                        : undefined
+                                }
+                                sx={
+                                    [
+                                        defaultStyles.attachmentChip,
+                                        attachment.status === 'error' &&
+                                            defaultStyles.pendingAttachmentChipError,
+                                    ] as SxProps<Theme>
+                                }
+                            />
+                        ))}
+                    </Box>
+                )}
                 <Box
                     sx={
                         [
@@ -440,6 +580,28 @@ export const ChatPanel: FC<Props> = ({
                         ] as SxProps<Theme>
                     }
                 >
+                    {onAttachFiles && (
+                        <>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="application/pdf"
+                                multiple
+                                hidden
+                                onChange={handleFileInputChange}
+                            />
+                            <IconButton
+                                aria-label={formatMessage(MESSAGES.attachFile)}
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isLoading}
+                                sx={
+                                    defaultStyles.attachButton as SxProps<Theme>
+                                }
+                            >
+                                <AddIcon />
+                            </IconButton>
+                        </>
+                    )}
                     <TextField
                         fullWidth
                         multiline
@@ -463,7 +625,11 @@ export const ChatPanel: FC<Props> = ({
                         variant="contained"
                         color="primary"
                         onClick={handleSend}
-                        disabled={isLoading || !inputValue.trim()}
+                        disabled={
+                            isLoading ||
+                            hasUploadingAttachment ||
+                            (!inputValue.trim() && !hasReadyAttachment)
+                        }
                         sx={
                             [
                                 defaultStyles.sendButton,

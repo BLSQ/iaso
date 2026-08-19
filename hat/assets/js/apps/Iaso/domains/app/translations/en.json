@@ -118,6 +118,8 @@
     "iaso.changeRequest.seeRejectedChanges": "See rejected change(s)",
     "iaso.changeRequest.showValuesAtCreation": "Show values at creation",
     "iaso.chatPanel.answeredQuestions": "Sent selected answers",
+    "iaso.chatPanel.attachFile": "Attach a file",
+    "iaso.chatPanel.defaultAttachmentMessage": "Please review the attached file(s).",
     "iaso.chatPanel.placeholder": "Type a message...",
     "iaso.chatPanel.sendAnswers": "Send answers",
     "iaso.completeness.chooseParent": "Select a form or a parent org unit to enable",

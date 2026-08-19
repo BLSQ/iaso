@@ -66,6 +66,8 @@
     "iaso.changeRequest.seeRejectedChanges": "Ver cambio(s) rechazado(s)",
     "iaso.changeRequest.showValuesAtCreation": "Mostrar valores al crear",
     "iaso.chatPanel.answeredQuestions": "Respuestas seleccionadas enviadas",
+    "iaso.chatPanel.attachFile": "Adjuntar un archivo",
+    "iaso.chatPanel.defaultAttachmentMessage": "Por favor revise el/los archivo(s) adjunto(s).",
     "iaso.chatPanel.placeholder": "Escriba un mensaje...",
     "iaso.chatPanel.sendAnswers": "Enviar respuestas",
     "iaso.completeness.chooseParent": "Seleccione un formulario o una unidad organizativa padre para habilitar",

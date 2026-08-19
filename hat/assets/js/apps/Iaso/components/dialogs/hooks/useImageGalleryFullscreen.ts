@@ -30,9 +30,12 @@ type ImageZoomPan = {
 };
 
 const useImageZoomPan = (isEnabled: boolean): ImageZoomPan => {
-    const [zoom, setZoom] = useState(MIN_ZOOM);
-    const [offset, setOffset] = useState({ x: 0, y: 0 });
-    const [isDragging, setIsDragging] = useState(false);
+    const [zoom, setZoom] = useState<number>(MIN_ZOOM);
+    const [offset, setOffset] = useState<{ x: number; y: number }>({
+        x: 0,
+        y: 0,
+    });
+    const [isDragging, setIsDragging] = useState<boolean>(false);
     const viewportRef = useRef<HTMLDivElement>(null);
     const dragStartRef = useRef({ x: 0, y: 0, offsetX: 0, offsetY: 0 });
     const pinchRef = useRef<{ distance: number; zoom: number } | null>(null);

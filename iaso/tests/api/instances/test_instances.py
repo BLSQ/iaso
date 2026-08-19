@@ -1122,6 +1122,107 @@ class InstancesAPITestCase(TaskAPITestCase):
         for instance in response_json["instances"]:
             self.assertIn(instance["id"], [a.id, b.id])
 
+    def test_instance_list_by_json_content_like_operator(self):
+        """Query-builder `like` emits needle-first JsonLogic `in`."""
+        matching = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"responsable_fosa": "Jean Beau"},
+        )
+        other = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"responsable_fosa": "Alice"},
+        )
+
+        self.client.force_authenticate(self.yoda)
+        json_filters = json.dumps({"and": [{"in": ["Beau", {"var": "responsable_fosa"}]}]})
+        response = self.client.get("/api/instances/", {"jsonContent": json_filters})
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        received_ids = [instance["id"] for instance in response.json()["instances"]]
+        self.assertIn(matching.id, received_ids)
+        self.assertNotIn(other.id, received_ids)
+
+    def test_instance_list_by_json_content_not_like_operator(self):
+        matching = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"responsable_fosa": "Alice"},
+        )
+        excluded = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"responsable_fosa": "Jean Beau"},
+        )
+
+        self.client.force_authenticate(self.yoda)
+        json_filters = json.dumps({"!": {"in": ["Beau", {"var": "responsable_fosa"}]}})
+        response = self.client.get("/api/instances/", {"jsonContent": json_filters})
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        received_ids = [instance["id"] for instance in response.json()["instances"]]
+        self.assertIn(matching.id, received_ids)
+        self.assertNotIn(excluded.id, received_ids)
+
+    def test_instance_list_by_json_content_is_empty(self):
+        empty = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"responsable_fosa": ""},
+        )
+        filled = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"responsable_fosa": "Beau"},
+        )
+
+        self.client.force_authenticate(self.yoda)
+        json_filters = json.dumps({"!": {"var": "responsable_fosa"}})
+        response = self.client.get("/api/instances/", {"jsonContent": json_filters})
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        received_ids = [instance["id"] for instance in response.json()["instances"]]
+        self.assertIn(empty.id, received_ids)
+        self.assertNotIn(filled.id, received_ids)
+
+    def test_instance_list_by_json_content_is_not_empty(self):
+        empty = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"responsable_fosa": ""},
+        )
+        filled = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"responsable_fosa": "Beau"},
+        )
+
+        self.client.force_authenticate(self.yoda)
+        json_filters = json.dumps({"!!": {"var": "responsable_fosa"}})
+        response = self.client.get("/api/instances/", {"jsonContent": json_filters})
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        received_ids = [instance["id"] for instance in response.json()["instances"]]
+        self.assertIn(filled.id, received_ids)
+        self.assertNotIn(empty.id, received_ids)
+
     def test_instance_list_by_form_id_and_status_ok(self):
         """GET /instances/?form_id=form_id&status="""
         self.client.force_authenticate(self.yoda)

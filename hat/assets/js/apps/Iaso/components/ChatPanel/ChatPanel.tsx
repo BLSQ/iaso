@@ -6,21 +6,14 @@ import React, {
     useRef,
     useState,
 } from 'react';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PersonIcon from '@mui/icons-material/Person';
-import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import SendIcon from '@mui/icons-material/Send';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import {
     Box,
     Button,
     CircularProgress,
-    FormControl,
-    FormControlLabel,
-    FormLabel,
     Paper,
-    Radio,
-    RadioGroup,
     SxProps,
     TextField,
     Theme,
@@ -29,6 +22,7 @@ import {
 import { useSafeIntl } from 'bluesquare-components';
 import ReactMarkdown from 'react-markdown';
 import { SxStyles } from 'Iaso/types/general';
+import { MessageQuickReplies } from './MessageQuickReplies';
 import MESSAGES from './messages';
 
 export type ChatMessageRole = 'user' | 'assistant';
@@ -244,47 +238,6 @@ const defaultStyles: SxStyles = {
         flexShrink: 0,
         boxShadow: '0 2px 6px rgba(0, 0, 0, 0.12)',
     },
-    quickReplyForm: {
-        mt: 1.5,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 1.5,
-    },
-    quickReplyGroup: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 0.25,
-    },
-    quickReplyQuestion: {
-        fontWeight: 700,
-        fontSize: '0.875rem',
-        color: 'text.primary',
-        mb: 0.25,
-        // MUI's FormLabel switches to the primary color when a child Radio is focused; pin it to
-        // a static color instead, since focus/selection here shouldn't recolor the question text.
-        '&.Mui-focused': {
-            color: 'text.primary',
-        },
-    },
-    quickReplyOption: {
-        m: 0,
-        px: 1,
-        py: 0.25,
-        borderRadius: 1.5,
-        '& .MuiFormControlLabel-label': {
-            fontSize: '0.875rem',
-        },
-    },
-    quickReplyOptionSelected: {
-        bgcolor: 'primary.light',
-        fontWeight: 600,
-    },
-    quickReplySendButton: {
-        borderRadius: '24px',
-        fontWeight: 700,
-        py: 1.25,
-        textTransform: 'none',
-    },
     markdownContent: {
         typography: 'body2',
         '& > :first-of-type': { mt: 0 },
@@ -305,170 +258,6 @@ const defaultStyles: SxStyles = {
             fontSize: 'inherit',
         },
     },
-};
-
-type QuickReplyFormProps = {
-    groups: ChatQuickReplyQuestion[];
-    onConfirm: (summary: string, selections: Record<number, number>) => void;
-};
-
-// Renders inside the assistant's own bubble. Confirming sends a synthesized "question -> answer"
-// summary through the same onSendMessage path as typed text - there's no structured "form
-// submission" turn in the underlying chat API, so a deterministic text summary is the simplest way
-// to carry the answers forward.
-const QuickReplyForm: FC<QuickReplyFormProps> = ({ groups, onConfirm }) => {
-    const { formatMessage } = useSafeIntl();
-    // Only holds in-progress picks, keyed by group index, before they're confirmed onto `groups`
-    // itself (via `group.selectedOptionIndex`) - once a group already carries an answer, its value
-    // always wins over anything here.
-    const [selections, setSelections] = useState<Record<number, number>>({});
-    // Local fallback so the form freezes on click even if the caller doesn't apply the answer to
-    // `groups` synchronously.
-    const [submitted, setSubmitted] = useState(false);
-    const frozen =
-        groups.every(group => group.selectedOptionIndex !== undefined) ||
-        submitted;
-    const pickFor = (group: ChatQuickReplyQuestion, groupIndex: number) =>
-        group.selectedOptionIndex ?? selections[groupIndex];
-    const allAnswered = groups.every(
-        (group, groupIndex) => pickFor(group, groupIndex) !== undefined,
-    );
-
-    const handleConfirm = useCallback(() => {
-        // Only reachable while not frozen (the button is hidden once frozen), so no group has
-        // `selectedOptionIndex` set yet - every pick comes from `selections`.
-        setSubmitted(true);
-        onConfirm(
-            groups
-                .map(
-                    (group, groupIndex) =>
-                        `${group.question} → ${group.options[selections[groupIndex]]}`,
-                )
-                .join('\n'),
-            selections,
-        );
-    }, [groups, onConfirm, selections]);
-
-    return (
-        <Box sx={defaultStyles.quickReplyForm as SxProps<Theme>}>
-            {groups.map((group, groupIndex) => {
-                const pick = pickFor(group, groupIndex);
-                return (
-                    <FormControl
-                        key={group.question}
-                        sx={defaultStyles.quickReplyGroup as SxProps<Theme>}
-                    >
-                        <FormLabel
-                            sx={
-                                defaultStyles.quickReplyQuestion as SxProps<Theme>
-                            }
-                        >
-                            {groups.length > 1
-                                ? `${groupIndex + 1}. ${group.question}`
-                                : group.question}
-                        </FormLabel>
-                        <RadioGroup
-                            value={pick ?? ''}
-                            onChange={e => {
-                                // Frozen rows stay visually "normal" (not the greyed-out MUI
-                                // disabled look) - this guard is what actually stops them from
-                                // changing, since pointerEvents below only blocks mouse clicks,
-                                // not keyboard input.
-                                if (frozen) return;
-                                setSelections(prev => ({
-                                    ...prev,
-                                    [groupIndex]: Number(e.target.value),
-                                }));
-                            }}
-                            sx={frozen ? { pointerEvents: 'none' } : undefined}
-                        >
-                            {group.options.map((option, optionIndex) => (
-                                <FormControlLabel
-                                    key={option}
-                                    value={optionIndex}
-                                    control={
-                                        <Radio
-                                            size="small"
-                                            icon={<RadioButtonUncheckedIcon />}
-                                            checkedIcon={
-                                                <CheckCircleIcon color="primary" />
-                                            }
-                                        />
-                                    }
-                                    label={option}
-                                    sx={
-                                        [
-                                            defaultStyles.quickReplyOption,
-                                            pick === optionIndex &&
-                                                defaultStyles.quickReplyOptionSelected,
-                                        ] as SxProps<Theme>
-                                    }
-                                />
-                            ))}
-                        </RadioGroup>
-                    </FormControl>
-                );
-            })}
-            {!frozen && (
-                <Button
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                    startIcon={<SendIcon sx={{ fontSize: 18 }} />}
-                    disabled={!allAnswered}
-                    onClick={handleConfirm}
-                    sx={defaultStyles.quickReplySendButton as SxProps<Theme>}
-                >
-                    {formatMessage(MESSAGES.sendAnswers)}
-                </Button>
-            )}
-        </Box>
-    );
-};
-
-type MessageQuickRepliesProps = {
-    message: ChatMessage;
-    isLast: boolean;
-    isLoading: boolean;
-    onSendMessage: (message: string, options?: SendMessageOptions) => void;
-};
-
-// A message's quick-reply form stays visible once answered (so the picked answers remain readable
-// on the original bubble), but is only interactive on the last message while nothing is loading.
-const MessageQuickReplies: FC<MessageQuickRepliesProps> = ({
-    message,
-    isLast,
-    isLoading,
-    onSendMessage,
-}) => {
-    const { formatMessage } = useSafeIntl();
-    if (
-        message.role !== 'assistant' ||
-        !message.quickReplies ||
-        message.quickReplies.length === 0
-    ) {
-        return null;
-    }
-    const isAnswered = message.quickReplies.every(
-        group => group.selectedOptionIndex !== undefined,
-    );
-    if (!isAnswered && !(isLast && !isLoading)) {
-        return null;
-    }
-    return (
-        <QuickReplyForm
-            groups={message.quickReplies}
-            onConfirm={(summary, selections) => {
-                onSendMessage(summary, {
-                    displayContent: formatMessage(MESSAGES.answeredQuestions),
-                    quickReplyAnswer: {
-                        messageId: message.id,
-                        selections,
-                    },
-                });
-            }}
-        />
-    );
 };
 
 export const ChatPanel: FC<Props> = ({

@@ -30,7 +30,13 @@ const ExtraInfoComponent: React.FC<ExtraInfoComponentProps> = ({
     instanceDetail,
 }) => <InstancePopover instanceDetail={instanceDetail} />;
 
-const InfoComponent = ({ filePath, instanceDetail }) => {
+const InfoComponent = ({
+    filePath,
+    instanceDetail,
+}: {
+    filePath: string;
+    instanceDetail?: Instance;
+}): React.ReactNode => {
     if (instanceDetail == null) {
         return null;
     }
@@ -180,7 +186,7 @@ export const PaginatedInstancesFilesList: FunctionComponent<
 
     const handleDocumentsClicked = useCallback(
         (filePath: string) => {
-            const file = displayedFiles.find(f => {
+            const file = displayedFiles.find((f: ShortFile) => {
                 return f.path == filePath;
             });
             if (file != null) {

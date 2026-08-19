@@ -92,7 +92,17 @@ type PdfItemProps = {
     getInfos?: (filePath: string) => React.ReactNode;
     getExtraInfos?: (filePath: string) => React.ReactNode;
 };
-export const OpenButtonComponent = ({ onClick, disabled, ...buttonProps }) => (
+type OpenButtonProps = {
+    onClick: () => void;
+    disabled: boolean;
+    label?: React.ReactNode;
+};
+
+export const OpenButtonComponent: FunctionComponent<OpenButtonProps> = ({
+    onClick,
+    disabled,
+    label,
+}) => (
     <Box
         role="button"
         onClick={disabled ? undefined : onClick}
@@ -106,7 +116,7 @@ export const OpenButtonComponent = ({ onClick, disabled, ...buttonProps }) => (
     >
         <Paper sx={styles.paper}>
             <PdfSvg color="secondary" sx={styles.icon} />
-            <Box sx={styles.fileInfo}>{buttonProps.label}</Box>
+            <Box sx={styles.fileInfo}>{label}</Box>
         </Paper>
     </Box>
 );

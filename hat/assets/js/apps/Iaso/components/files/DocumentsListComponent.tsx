@@ -4,10 +4,11 @@ import { displayDateFromTimestamp } from 'bluesquare-components';
 
 import moment from 'moment/moment';
 import { ShortFile } from 'Iaso/domains/instances/types/instance';
+import { SxStyles } from 'Iaso/types/general';
 import { getFileName } from 'Iaso/utils/filesUtils';
 import DocumentsItem from './DocumentsItemComponent';
 
-const styles = {
+const styles: SxStyles = {
     root: {
         marginTop: theme => theme.spacing(2),
         marginBottom: theme => theme.spacing(2),

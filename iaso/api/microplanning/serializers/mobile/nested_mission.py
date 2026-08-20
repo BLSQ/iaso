@@ -69,7 +69,9 @@ class NestedMissionFormSerializer(ModelSerializer):
 
 
 class NestedMissionOrgUnitTypeSerializer(ModelSerializer):
-    mission_forms = NestedMissionWithFormThroughFormSerializer(source="forms", read_only=True, many=True)
+    mission_forms = NestedMissionWithFormThroughFormSerializer(
+        source="missionformthroughform_set", read_only=True, many=True
+    )
     org_unit_type = NestedOrgUnitTypeSerializer(read_only=True)
 
     class Meta:
@@ -88,7 +90,9 @@ class NestedMissionOrgUnitTypeSerializer(ModelSerializer):
 
 
 class NestedMissionEntityTypeSerializer(ModelSerializer):
-    mission_forms = NestedMissionWithFormThroughFormSerializer(source="forms", read_only=True, many=True)
+    mission_forms = NestedMissionWithFormThroughFormSerializer(
+        source="missionformthroughform_set", read_only=True, many=True
+    )
     entity_type = NestedEntityTypeSerializer(read_only=True)
 
     class Meta:

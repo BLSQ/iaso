@@ -164,6 +164,9 @@ class V2MobilePlanningListAPITestCase(APITestCase):
             min_cardinality=2,
             max_cardinality=4,
         )
+        MissionFormThroughForm.objects.create(
+            mission_form=cls.mission, form=cls.form1, min_cardinality=1, max_cardinality=1
+        )
         p6.missions.set([mission])
 
         Planning.objects.filter(assignment__user=user).distinct()
@@ -192,7 +195,7 @@ class V2MobilePlanningListAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
         ContentType.objects.clear_cache()
 
-        with self.assertNumQueries(14):
+        with self.assertNumQueries(13):
             res = self.client.get(reverse("v2_mobileplanning-list"))
             res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
 
@@ -230,7 +233,13 @@ class V2MobilePlanningListAPITestCase(APITestCase):
                             },
                             "min_cardinality": 2,
                             "max_cardinality": 4,
-                            "mission_forms": [],
+                            "mission_forms": [
+                                {
+                                    "form": {"id": self.form1.id, "name": self.form1.name},
+                                    "min_cardinality": 1,
+                                    "max_cardinality": 1,
+                                }
+                            ],
                         }
                     ],
                 }

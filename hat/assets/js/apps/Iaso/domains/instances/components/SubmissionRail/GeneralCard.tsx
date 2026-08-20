@@ -158,6 +158,13 @@ export const GeneralCard: FunctionComponent<Props> = ({
             {currentInstance.device_id || textPlaceholder}
         </InfoRow>,
         <InfoRow
+            key="device_app_version"
+            mono
+            label={formatMessage(MESSAGES.device_app_version)}
+        >
+            {currentInstance.device_app_version || textPlaceholder}
+        </InfoRow>,
+        <InfoRow
             key="project_name"
             label={formatMessage(MESSAGES.project_name)}
         >

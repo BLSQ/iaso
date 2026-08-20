@@ -620,8 +620,8 @@ class InstancesViewSet(viewsets.ViewSet):
         lock.save()
 
     @safe_api_import("instance")
-    def create(self, _, request):
-        import_data(request.data, request.user, request.query_params.get("app_id"))
+    def create(self, api_import, request):
+        import_data(request.data, request.user, request.query_params.get("app_id"), api_import=api_import)
 
         return Response({"res": "ok"})
 
@@ -646,6 +646,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 "org_unit__org_unit_type",
                 "org_unit__version__data_source__credentials",
                 "project",
+                "api_import",
             )
             .with_status(form_ids=resolve_status_form_ids(form_id))
         )
@@ -980,7 +981,7 @@ def find_entity(account: Account, entity_uuid: str, entity_type_id: Optional[int
     return sorted(existing_entities, key=_entity_correctness_score, reverse=True)[0]
 
 
-def import_data(instances, user, app_id):
+def import_data(instances, user, app_id, api_import):
     """
     This function creates empty instances (without files) and should be called first when uploading new instances.
     Sometimes, due to some network issues, this function might not properly be called and the instances are created by
@@ -1011,6 +1012,7 @@ def import_data(instances, user, app_id):
 
         instance.uuid = uuid
         instance.project = project
+        instance.api_import = api_import
         instance.name = instance_data.get("name", None)
         instance.period = instance_data.get("period", None)
         accuracy_raw = instance_data.get("accuracy", None)

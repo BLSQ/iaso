@@ -187,11 +187,13 @@ class ProcessMobileBulkUploadTest(TestCase):
         reg_instance = m.Instance.objects.get(uuid=DISASI_MAKULO_REGISTRATION)
         self.assertEqual(reg_instance.json.get("_full_name"), "Disasi Makulo")
         self.assertEqual(reg_instance.entity, ent_disasi)
+        self.assertEqual(reg_instance.api_import, self.api_import)
         self.assertEqual(reg_instance.instancefile_set.count(), 0)
 
         catt_instance = m.Instance.objects.get(uuid=DISASI_MAKULO_CATT)
         self.assertEqual(catt_instance.json.get("result"), "positive")
         self.assertEqual(catt_instance.entity, ent_disasi)
+        self.assertEqual(catt_instance.api_import, self.api_import)
         self.assertEqual(catt_instance.instancefile_set.count(), 1)
         image = catt_instance.instancefile_set.first()
         self.assertEqual(image.name, "1712326156339.webp")

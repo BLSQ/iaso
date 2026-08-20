@@ -318,6 +318,7 @@ class InstanceFileAdminInline(admin.TabularInline):
 @admin.register(Instance)
 @admin_attr_decorator
 class InstanceAdmin(admin.GeoModelAdmin):
+    raw_id_fields = ("api_import",)
     search_fields = ("file_name", "uuid", "form__name", "form__form_id")
     list_display = (
         "id",
@@ -364,6 +365,7 @@ class InstanceAdmin(admin.GeoModelAdmin):
                     "created_by",
                     "form_version",
                     "planning",
+                    "api_import",
                     "general_validation_status",
                 )
             },

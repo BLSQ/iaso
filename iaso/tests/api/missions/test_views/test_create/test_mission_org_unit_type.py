@@ -45,13 +45,14 @@ class MissionOrgUnitTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
         )
 
         cls.project = Project.objects.create(name="project", account=cls.account)
+        cls.project_2 = Project.objects.create(name="project_2", account=cls.account)
         cls.project_other_account = Project.objects.create(name="project", account=cls.other_account)
 
         cls.out = OrgUnitType.objects.create(name="out")
         cls.out_2 = OrgUnitType.objects.create(name="out2")
         cls.out_other_account = OrgUnitType.objects.create(name="out_other_account")
 
-        cls.out.projects.add(cls.project)
+        cls.out.projects.add(cls.project, cls.project_2)
         cls.out_2.projects.add(cls.project)
         cls.out_other_account.projects.add(cls.project_other_account)
 

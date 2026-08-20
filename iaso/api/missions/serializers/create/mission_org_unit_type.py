@@ -18,8 +18,10 @@ class OrgUnitTypeScopedFormField(serializers.PrimaryKeyRelatedField):
         if not org_unit_type_pk:
             return Form.objects.none()
 
-        return Form.objects.filter_for_user_and_app_id(self.context["request"].user).filter(
-            org_unit_types__id=org_unit_type_pk
+        return (
+            Form.objects.filter_for_user_and_app_id(self.context["request"].user)
+            .filter(org_unit_types__id=org_unit_type_pk)
+            .distinct()
         )
 
 
@@ -84,7 +86,7 @@ class MissionOrgUnitTypeCreateSerializer(ModelSerializer):
         account = getattr(iaso_profile, "account", None)
 
         if account:
-            self.fields["org_unit_type"].queryset = OrgUnitType.objects.filter(projects__account=account)
+            self.fields["org_unit_type"].queryset = OrgUnitType.objects.filter(projects__account=account).distinct()
 
     def validate(self, attrs):
         min_val = attrs.get("min_cardinality")

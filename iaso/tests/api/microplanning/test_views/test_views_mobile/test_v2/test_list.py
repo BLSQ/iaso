@@ -7,7 +7,9 @@ from iaso.models import (
     Account,
     Assignment,
     DataSource,
+    EntityType,
     Form,
+    MissionEntityType,
     MissionForm,
     MissionFormThroughForm,
     MissionOrgUnitType,
@@ -167,7 +169,19 @@ class V2MobilePlanningListAPITestCase(APITestCase):
         MissionFormThroughForm.objects.create(
             mission_form=cls.mission, form=cls.form1, min_cardinality=1, max_cardinality=1
         )
-        p6.missions.set([mission])
+        cls.entity_type_model = EntityType.objects.create(name="entity_type_1", account=account)
+        cls.mission_entity = MissionEntityType.objects.create(
+            name="mission_entity_type_1",
+            description="desc_et_1",
+            account=account,
+            entity_type=cls.entity_type_model,
+            min_cardinality=1,
+            max_cardinality=3,
+        )
+        MissionFormThroughForm.objects.create(
+            mission_form=cls.mission_entity, form=cls.form2, min_cardinality=1, max_cardinality=2
+        )
+        p6.missions.set([mission, cls.mission_entity])
 
         Planning.objects.filter(assignment__user=user).distinct()
         Planning.objects.update(published_at=now())
@@ -195,7 +209,7 @@ class V2MobilePlanningListAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
         ContentType.objects.clear_cache()
 
-        with self.assertNumQueries(13):
+        with self.assertNumQueries(15):
             res = self.client.get(reverse("v2_mobileplanning-list"))
             res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
 
@@ -240,7 +254,26 @@ class V2MobilePlanningListAPITestCase(APITestCase):
                                     "max_cardinality": 1,
                                 }
                             ],
-                        }
+                        },
+                        {
+                            "id": self.mission_entity.id,
+                            "name": self.mission_entity.name,
+                            "description": self.mission_entity.description,
+                            "mission_type": "ENTITY_AND_FORM",
+                            "entity_type": {
+                                "id": self.entity_type_model.id,
+                                "name": "entity_type_1",
+                            },
+                            "min_cardinality": 1,
+                            "max_cardinality": 3,
+                            "mission_forms": [
+                                {
+                                    "form": {"id": self.form2.id, "name": self.form2.name},
+                                    "min_cardinality": 1,
+                                    "max_cardinality": 2,
+                                }
+                            ],
+                        },
                     ],
                 }
             ],

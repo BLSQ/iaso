@@ -52,6 +52,7 @@ from iaso.models.entity import Entity, EntityType
 from iaso.models.microplanning import Planning
 from iaso.models.pages import Page
 from iaso.models.team import Team
+from iaso.modules import MODULES
 
 
 """
@@ -86,6 +87,9 @@ class Command(BaseCommand):
 
         for feat in AccountFeatureFlag.objects.all():
             account.feature_flags.add(feat)
+
+        account.modules = [module.codename for module in MODULES]
+        account.save()
 
         user, user_created = User.objects.get_or_create(
             username="testemail" + dhis2_version, email="testemail" + dhis2_version + "@bluesquarehub.com"

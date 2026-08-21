@@ -17,7 +17,8 @@ from iaso.models import (
     Account,
     KilledException,
 )
-
+import re
+from urllib.parse import unquote
 
 logger = getLogger(__name__)
 
@@ -140,6 +141,9 @@ class Task(models.Model):
         self.create_log_entry_if_needed(message)
         self.save()
 
+    def decode_dhis2_url(self, message: str) -> str:
+        return re.sub(r"https?://[^\s,]+", lambda match: unquote(match.group(0)), message)
+
     def report_failure(self, e: Exception):
         self.status = ERRORED
         self.ended_at = timezone.now()
@@ -150,6 +154,9 @@ class Task(models.Model):
             "last_progress_message": self.progress_message,
         }
         self.progress_message = e.message if hasattr(e, "message") else str(e)
+        if self.name == "dhis2_ou_importer":
+            self.progress_message = self.decode_dhis2_url(self.result.get("message", ""))
+
         # Extra debug info
         if hasattr(e, "extra"):
             self.result["extra"] = e.extra

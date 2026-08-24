@@ -1,5 +1,12 @@
 import React, { FunctionComponent, ReactNode } from 'react';
-import { Table, TableBody, TableRow, TableCell, Button } from '@mui/material';
+import {
+    Table,
+    TableBody,
+    TableRow,
+    TableCell,
+    Button,
+    Box,
+} from '@mui/material';
 import { TablePropsSizeOverrides } from '@mui/material/Table/Table';
 import { makeStyles } from '@mui/styles';
 import { OverridableStringUnion } from '@mui/types/esm';
@@ -24,14 +31,28 @@ const useStyles = makeStyles(theme => ({
 type RowProps = {
     label: string;
     value?: string | ReactNode;
+    isPreformatted?: boolean;
 };
 
-const Row: FunctionComponent<RowProps> = ({ label, value }) => {
+const Row: FunctionComponent<RowProps> = ({ label, value, isPreformatted }) => {
     const classes = useStyles();
     return (
         <TableRow>
             <TableCell className={classes.leftCell}>{label}</TableCell>
-            <TableCell>{value}</TableCell>
+            <TableCell>
+                {(isPreformatted && (
+                    <Box
+                        component="pre"
+                        sx={{
+                            whiteSpace: 'pre-wrap',
+                            wordBreak: 'break-all',
+                        }}
+                    >
+                        {value}
+                    </Box>
+                )) ||
+                    value}
+            </TableCell>
         </TableRow>
     );
 };
@@ -53,6 +74,8 @@ export const TaskBaseInfo: FunctionComponent<Props> = ({ task, size }) => {
         () => getRequest(`/api/tasks/${task.id}/presigned-url/`),
         { enabled: Boolean(taskHasDownloadableFile) },
     );
+    const hasUrlInProgressMessage = task.progress_message?.includes('url');
+
     return (
         <>
             <Table size={size} data-test="task-base-info">
@@ -87,6 +110,7 @@ export const TaskBaseInfo: FunctionComponent<Props> = ({ task, size }) => {
                         <Row
                             label={formatMessage(MESSAGES.result_message)}
                             value={task.progress_message}
+                            isPreformatted={hasUrlInProgressMessage}
                         />
                     )}
                 </TableBody>

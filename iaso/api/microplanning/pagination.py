@@ -7,3 +7,7 @@ class PlanningOrgUnitChildrenPagination(Paginator):
     page_query_param = PAGE
     page_size = 50
     max_page_size = 500
+
+
+class MobilePagination(Paginator):
+    page_size = 20

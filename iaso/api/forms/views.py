@@ -77,7 +77,7 @@ class FormsViewSet(ModelViewSet):
 
         mission_ids = self.request.query_params.get("mission", None)
         if mission_ids:
-            queryset = queryset.filter(missions__id__in=mission_ids.split(","))
+            queryset = queryset.filter(mission_forms__id__in=mission_ids.split(","))
 
         org_unit_type_ids = self.request.query_params.get("orgUnitTypeIds")
         if org_unit_type_ids:

@@ -9,11 +9,8 @@ from iaso.api.microplanning.serializers import (
     PlanningWriteSerializer,
 )
 from iaso.models import OrgUnit
-from iaso.tests.api.microplanning.test_setup import PlanningSerializersTestBase
+from iaso.tests.api.microplanning.base import PlanningSerializersTestBase
 from iaso.utils.colors import COLOR_CHOICES, DEFAULT_COLOR
-
-
-# todo
 
 
 class PlanningSerializersTestCase(PlanningSerializersTestBase):
@@ -35,8 +32,7 @@ class PlanningSerializersTestCase(PlanningSerializersTestBase):
             {
                 "id": self.planning.id,
                 "name": "planning_1",
-                # "missions": [self.mission_1.id, self.mission_2.id],
-                "missions": [],
+                "missions": [self.mission_1.id, self.mission_2.id],
                 "description": "A test planning",
                 "published_at": None,
                 "started_at": "2025-01-01",
@@ -79,8 +75,7 @@ class PlanningSerializersTestCase(PlanningSerializersTestBase):
     def test_write_serializer_happy_path(self):
         data = {
             "name": "planning_2",
-            # "missions": [self.mission_2.id],
-            "missions": [],
+            "missions": [self.mission_2.id],
             "description": "Another test planning",
             "started_at": "2025-02-01",
             "ended_at": "2025-02-10",

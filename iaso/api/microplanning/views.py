@@ -1,5 +1,5 @@
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Count, Prefetch, Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -25,6 +25,10 @@ from iaso.models.missions import MissionWithForms
 from iaso.models.org_unit import OrgUnit
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
 
+from ...models import (
+    MissionEntityType,
+    MissionOrgUnitType,
+)
 from .filters import (
     PlanningOrgUnitChildrenFilter,
     PlanningOrgUnitChildrenFilterBackend,
@@ -37,13 +41,10 @@ from .pagination import PlanningOrgUnitChildrenPagination
 from .serializers import (
     AssignmentSerializer,
     AuditAssignmentSerializer,
-    AuditMissionSerializer,
     AuditPlanningSerializer,
     BulkAssignmentSerializer,
     BulkDeleteAssignmentResponseSerializer,
     BulkDeleteAssignmentSerializer,
-    MissionReadSerializer,
-    MissionWriteSerializer,
     PlanningOrgUnitSerializer,
     PlanningOrgUnitTableSerializer,
     PlanningReadSerializer,
@@ -172,10 +173,13 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             .select_related("project", "org_unit", "team", "selected_sampling_result")
             .prefetch_related(
                 "target_org_unit_types",
-                "missions",
-                "missions__mission_forms__form",
-                "missions__org_unit_type",
-                "missions__entity_type",
+                Prefetch(
+                    "missions",
+                    queryset=MissionWithForms.objects.all()
+                    .prefetch_related("forms")
+                    .select_polymorphic_related(MissionOrgUnitType, "org_unit_type")
+                    .select_polymorphic_related(MissionEntityType, "entity_type"),
+                ),
             )
             .annotate(assignments_count=Count("assignment", filter=Q(assignment__deleted_at__isnull=True)))
         )
@@ -447,50 +451,3 @@ class AssignmentViewSet(PlanningOrgUnitChildrenQuerysetMixin, AuditMixin, ModelV
                 "user": user.id if user else None,
             }
         )
-
-
-class MissionViewSet(AuditMixin, ModelViewSet):
-    remove_results_key_if_paginated = True
-    permission_classes = [AuthenticationEnforcedPermission, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]  # type: ignore
-    queryset = MissionWithForms.objects.all()
-    filter_backends = [
-        filters.OrderingFilter,
-        DjangoFilterBackend,
-        DeletionFilterBackend,
-    ]
-    ordering_fields = ["id", "name", "mission_type", "created_at"]
-    filterset_fields = {
-        "mission_type": ["exact"],
-        "name": ["icontains"],
-    }
-    audit_serializer = AuditMissionSerializer  # type: ignore
-
-    def get_serializer_class(self):
-        if self.action in ["create", "update", "partial_update"]:
-            return MissionWriteSerializer
-        return MissionReadSerializer
-
-    def get_queryset(self):
-        user = self.request.user
-        return (
-            self.queryset.filter_for_user(user)
-            .select_related("org_unit_type", "entity_type")
-            .prefetch_related("mission_forms__form")
-        )
-
-    def _read_response(self, instance, status_code=status.HTTP_200_OK):
-        read_serializer = MissionReadSerializer(instance, context=self.get_serializer_context())
-        return Response(read_serializer.data, status=status_code)
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        return self._read_response(serializer.instance, status_code=status.HTTP_201_CREATED)
-
-    def partial_update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return self._read_response(instance)

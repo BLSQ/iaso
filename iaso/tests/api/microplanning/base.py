@@ -1,4 +1,4 @@
-from iaso.models import Form, OrgUnit, OrgUnitType, Planning, Project, Team
+from iaso.models import Form, MissionForm, MissionFormThroughForm, OrgUnit, OrgUnitType, Planning, Project, Team
 from iaso.models.microplanning import PlanningSamplingResult
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
 from iaso.test import APITestCase
@@ -47,26 +47,23 @@ class PlanningSerializersTestBase(APITestCase):
             pipeline_uuids=["111e4567-e89b-12d3-a456-426614174000", "222e4567-e89b-12d3-a456-426614174000"],
         )
 
-        # todo
-        # self.mission_1 = Mission.objects.create(
-        #     name="mission_form_1",
-        #     account=self.account_1,
-        #     mission_type=MissionType.FORM_FILLING,
-        #     created_by=self.user_1,
-        # )
-        # self.mission_form_1 = MissionForm.objects.create(
-        #     mission=self.mission_1, form=self.form_1, min_cardinality=1, max_cardinality=1
-        # )
-        # self.mission_2 = Mission.objects.create(
-        #     name="mission_form_2",
-        #     account=self.account_1,
-        #     mission_type=MissionType.FORM_FILLING,
-        #     created_by=self.user_1,
-        # )
-        # self.mission_form_2 = MissionForm.objects.create(
-        #     mission=self.mission_2, form=self.form_2, min_cardinality=1, max_cardinality=1
-        # )
-        # self.planning.missions.set([self.mission_1, self.mission_2])
+        self.mission_1 = MissionForm.objects.create(
+            name="mission_form_1",
+            account=self.account_1,
+            created_by=self.user_1,
+        )
+        self.mission_form_1 = MissionFormThroughForm.objects.create(
+            mission_form=self.mission_1, form=self.form_1, min_cardinality=1, max_cardinality=1
+        )
+        self.mission_2 = MissionForm.objects.create(
+            name="mission_form_2",
+            account=self.account_1,
+            created_by=self.user_1,
+        )
+        self.mission_form_2 = MissionFormThroughForm.objects.create(
+            mission_form=self.mission_2, form=self.form_2, min_cardinality=1, max_cardinality=1
+        )
+        self.planning.missions.set([self.mission_1, self.mission_2])
 
         self.planning.target_org_unit_types.set([self.org_unit_type_child])
         self.planning_sampling_result = PlanningSamplingResult.objects.create(

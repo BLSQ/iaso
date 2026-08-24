@@ -35,7 +35,6 @@ COLOR_CHOICES = (
     ("#5c6bc0", "Indigo 400"),
     ("#42a5f5", "Light Blue 400"),
     (DEFAULT_COLOR, "Default color"),
-    ("#78909c", "Blue grey 400"),
     ("#26c6da", "Cyan 400"),
     ("#00838f", "Cyan 800"),
     ("#26a69a", "Teal 400"),
@@ -54,45 +53,43 @@ COLOR_CHOICES = (
     ("#d84315", "Deep Orange 800"),
     ("#8d6e63", "Brown 400"),
     ("#5d4037", "Brown 700"),
-    ("#78909c", "Blue Grey 400"),
-    ("#37474f", "Blue Grey 800"),
-    ("#424242", "Grey 800"),
+    # No greys here on purpose: grey is the colour the map falls back to for an org unit that has
+    # no assignee, so offering a near-identical grey as a pickable colour makes assigned and
+    # unassigned org units indistinguishable. Black is dark enough to stay legible against it.
     ("#000000", "Black"),
 )
 
+# Indices into COLOR_CHOICES. Must stay a permutation of range(len(COLOR_CHOICES)) — the API
+# builds the whole dispersed palette from it, so a missing index silently drops a colour.
 DISPERSED_COLOR_ORDER = [
     9,  # Light Blue 400
-    19,  # Lime 400
-    28,  # Brown 400
+    18,  # Lime 400
+    27,  # Brown 400
     5,  # Purple 700
-    12,  # Cyan 400
-    22,  # Amber 400
+    11,  # Cyan 400
+    21,  # Amber 400
     0,  # Red 400
-    31,  # Blue Grey 800
     2,  # Pink 400
-    15,  # Teal 800
-    20,  # Lime 900
-    26,  # Deep Orange 600
+    14,  # Teal 800
+    19,  # Lime 900
+    25,  # Deep Orange 600
     6,  # Purple 900
     10,  # Default color
-    23,  # Amber 800
-    30,  # Blue Grey 400
+    22,  # Amber 800
     1,  # Red 900
-    14,  # Teal 400
-    24,  # Orange 500
-    29,  # Brown 700
+    13,  # Teal 400
+    23,  # Orange 500
+    28,  # Brown 700
     7,  # Deep Purple 800
-    11,  # Blue grey 400
-    16,  # Green 400
-    32,  # Grey 800
+    15,  # Green 400
     3,  # Pink 600
-    13,  # Cyan 800
-    25,  # Orange 700
-    21,  # Yellow 700
+    12,  # Cyan 800
+    24,  # Orange 700
+    20,  # Yellow 700
     8,  # Indigo 400
-    17,  # Green 800
+    16,  # Green 800
     4,  # Pink 700
-    18,  # Light Green 800
-    27,  # Deep Orange 800
-    33,  # Black
+    17,  # Light Green 800
+    26,  # Deep Orange 800
+    29,  # Black
 ]

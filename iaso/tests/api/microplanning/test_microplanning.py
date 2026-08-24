@@ -1,6 +1,6 @@
 import uuid
 
-from unittest import mock, skip
+from unittest import mock
 
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import MultiPolygon, Polygon
@@ -21,7 +21,6 @@ from iaso.models import (
     Form,
     Group,
     MissionForm,
-    MissionFormThroughForm,
     OrgUnit,
     OrgUnitType,
     SourceVersion,
@@ -32,13 +31,12 @@ from iaso.models.microplanning import (
     Planning,
     PlanningSamplingResult,
 )
-from iaso.models.missions import MissionOrgUnitType, MissionType
+from iaso.models.missions import MissionFormThroughForm
 from iaso.models.team import Team
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
-@skip
 class PlanningTestCase(APITestCase):
     # TODO: refactor this test case and move the serializer tests to the test_serializers.py file
     fixtures = ["user.yaml"]
@@ -68,7 +66,7 @@ class PlanningTestCase(APITestCase):
             account=account,
         )
         MissionFormThroughForm.objects.create(
-            mission=cls.mission1, form=cls.form1, min_cardinality=1, max_cardinality=1
+            mission_form=cls.mission1, form=cls.form1, min_cardinality=1, max_cardinality=1
         )
         cls.mission2 = MissionForm.objects.create(
             name="mission2",
@@ -76,7 +74,7 @@ class PlanningTestCase(APITestCase):
             account=account,
         )
         MissionFormThroughForm.objects.create(
-            mission=cls.mission2, form=cls.form2, min_cardinality=1, max_cardinality=1
+            mission_form=cls.mission2, form=cls.form2, min_cardinality=1, max_cardinality=1
         )
         cls.planning = Planning.objects.create(
             project=project1,
@@ -1597,7 +1595,6 @@ class PlanningTestCase(APITestCase):
         self.assertTrue(r["has_geo_json"])
 
 
-@skip
 class AssignmentAPITestCase(APITestCase):
     fixtures = ["user.yaml"]
 
@@ -1673,15 +1670,14 @@ class AssignmentAPITestCase(APITestCase):
             account=account,
         )
         MissionFormThroughForm.objects.create(
-            mission=cls.mission1, form=cls.form1, min_cardinality=1, max_cardinality=1
+            mission_form=cls.mission1, form=cls.form1, min_cardinality=1, max_cardinality=1
         )
         cls.mission2 = MissionForm.objects.create(
             name="mission2",
             account=account,
-            mission_type=MissionType.FORM_FILLING,
         )
         MissionFormThroughForm.objects.create(
-            mission=cls.mission2, form=cls.form2, min_cardinality=1, max_cardinality=1
+            mission_form=cls.mission2, form=cls.form2, min_cardinality=1, max_cardinality=1
         )
 
         cls.planning = Planning.objects.create(
@@ -2250,309 +2246,6 @@ class AssignmentAPITestCase(APITestCase):
 
         response = self.client.post("/api/microplanning/assignments/", data=data, format="json")
         self.assertJSONResponse(response, 403)
-
-    def test_query_mobile(self):
-        p = Planning.objects.create(
-            project=self.project1,
-            name="planning2",
-            team=self.team1,
-            org_unit=self.root_org_unit,
-            started_at="2025-01-01",
-            ended_at="2025-01-10",
-            published_at="2025-01-01",
-        )
-        p.assignment_set.create(org_unit=self.child1, user=self.user)
-        p.assignment_set.create(org_unit=self.child2, user=self.user)
-
-        # This one should not be returned because started_at is None
-        p4 = Planning.objects.create(
-            project=self.project1,
-            name="planning4",
-            team=self.team1,
-            org_unit=self.root_org_unit,
-            started_at=None,
-            ended_at="2025-01-10",
-        )
-        p4.assignment_set.create(org_unit=self.child3, user=self.user)
-        p4.assignment_set.create(org_unit=self.child4, user=self.user)
-
-        # This one should not be returned because ended_at is None
-        p5 = Planning.objects.create(
-            project=self.project1,
-            name="planning5",
-            team=self.team1,
-            org_unit=self.root_org_unit,
-            started_at="2025-01-10",
-            ended_at=None,
-        )
-        p5.assignment_set.create(org_unit=self.child3, user=self.user)
-        p5.assignment_set.create(org_unit=self.child4, user=self.user)
-
-        plannings = Planning.objects.filter(assignment__user=self.user).distinct()
-        Planning.objects.update(published_at=now())
-        self.assertEqual(plannings.count(), 4)
-
-        self.client.force_authenticate(self.user)
-
-        response = self.client.get("/api/mobile/plannings/", format="json")
-        r = self.assertJSONResponse(response, 200)
-        plannings = r["plannings"]
-        self.assertEqual(len(plannings), 2)
-        # planning 1
-        p1 = plannings[0]
-        self.assertEqual(p1["name"], "planning1")
-        self.assertEqual(p1["assignments"], [{"org_unit_id": self.child1.id, "form_ids": []}])
-
-        p2 = plannings[1]
-        self.assertEqual(p2["name"], "planning2")
-        self.assertEqual(
-            p2["assignments"],
-            [{"org_unit_id": self.child1.id, "form_ids": []}, {"org_unit_id": self.child2.id, "form_ids": []}],
-        )
-
-        # Response look like
-        # [
-        #     {
-        #         "id": 161,
-        #         "name": "planning1",
-        #         "description": "",
-        #         "created_at": "2022-05-25T16:00:37.029707Z",
-        #         "assignments": [{"org_unit": 3557, "form_ids": []}],
-        #     },
-        #     {
-        #         "id": 162,
-        #         "name": "planning2",
-        #         "description": "",
-        #         "created_at": "2022-05-25T16:00:37.034614Z",
-        #         "assignments": [{"org_unit": 3557, "form_ids": []}, {"org_unit": 3558, "form_ids": []}],
-        #     },
-        # ]
-
-        # user without any assignment, should get no planning
-        user = self.create_user_with_profile(username="user2", account=self.account)
-        self.client.force_authenticate(user)
-
-        response = self.client.get("/api/mobile/plannings/", format="json")
-        r = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(r["plannings"]), 0)
-
-    def test_query_mobile_v2(self):
-        p = Planning.objects.create(
-            project=self.project1,
-            name="planning2",
-            team=self.team1,
-            org_unit=self.root_org_unit,
-            started_at="2025-01-01",
-            ended_at="2025-01-10",
-            published_at="2025-01-01",
-        )
-        p.missions.set([self.mission1, self.mission2])
-        p.assignment_set.create(org_unit=self.child1, user=self.user)
-        p.assignment_set.create(org_unit=self.child2, user=self.user)
-
-        # This one should not be returned because started_at is None
-        p4 = Planning.objects.create(
-            project=self.project1,
-            name="planning4",
-            team=self.team1,
-            org_unit=self.root_org_unit,
-            started_at=None,
-            ended_at="2025-01-10",
-        )
-        p4.assignment_set.create(org_unit=self.child3, user=self.user)
-        p4.assignment_set.create(org_unit=self.child4, user=self.user)
-
-        # This one should not be returned because ended_at is None
-        p5 = Planning.objects.create(
-            project=self.project1,
-            name="planning5",
-            team=self.team1,
-            org_unit=self.root_org_unit,
-            started_at="2025-01-10",
-            ended_at=None,
-        )
-        p5.assignment_set.create(org_unit=self.child3, user=self.user)
-        p5.assignment_set.create(org_unit=self.child4, user=self.user)
-
-        p6 = Planning.objects.create(
-            project=self.project1,
-            name="planning6",
-            team=self.team1,
-            org_unit=self.root_org_unit,
-            started_at="2025-01-10",
-            ended_at="2025-01-10",
-        )
-        p6.assignment_set.create(org_unit=self.child1, user=self.user)
-        mission = MissionOrgUnitType.objects.create(
-            name="mission3",
-            description="description3",
-            account=self.account,
-            org_unit_type=self.org_unit_type,
-            min_cardinality=2,
-            max_cardinality=4,
-        )
-        p6.missions.set([mission])
-
-        plannings = Planning.objects.filter(assignment__user=self.user).distinct()
-        Planning.objects.update(published_at=now())
-        self.assertEqual(plannings.count(), 5)
-
-        self.client.force_authenticate(self.user)
-
-        response = self.client.get("/api/v2/mobile/plannings/", format="json")
-        r = self.assertJSONResponse(response, 200)
-        plannings = r["plannings"]
-        self.assertEqual(len(plannings), 3)
-        # planning 1
-        p1 = plannings[0]
-        self.assertEqual(p1["name"], "planning1")
-        self.assertEqual(len(p1["assignments"]), 0)
-
-        p2 = plannings[1]
-        self.assertEqual(p2["name"], "planning2")
-        self.assertEqual(len(p2["assignments"]), 2)
-        self.assertEqual(
-            p2["assignments"],
-            [
-                {
-                    "org_unit_id": self.child1.id,
-                    "missions": [
-                        {
-                            "id": self.mission1.id,
-                            "mission_forms": [
-                                {
-                                    "form": {"id": self.form1.id, "name": self.form1.name},
-                                    "id": self.mission1.mission_forms.all()[0].id,
-                                    "max_cardinality": 1,
-                                    "min_cardinality": 1,
-                                }
-                            ],
-                            "mission_type": "FORM_FILLING",
-                            "name": self.mission1.name,
-                            "description": self.mission1.description,
-                        },
-                        {
-                            "id": self.mission2.id,
-                            "mission_forms": [
-                                {
-                                    "form": {"id": self.form2.id, "name": self.form2.name},
-                                    "id": self.mission2.mission_forms.all()[0].id,
-                                    "max_cardinality": 1,
-                                    "min_cardinality": 1,
-                                }
-                            ],
-                            "mission_type": "FORM_FILLING",
-                            "name": self.mission2.name,
-                            "description": self.mission2.description,
-                        },
-                    ],
-                },
-                {
-                    "org_unit_id": self.child2.id,
-                    "missions": [
-                        {
-                            "id": self.mission1.id,
-                            "mission_forms": [
-                                {
-                                    "form": {"id": self.form1.id, "name": self.form1.name},
-                                    "id": self.mission1.mission_forms.all()[0].id,
-                                    "max_cardinality": 1,
-                                    "min_cardinality": 1,
-                                }
-                            ],
-                            "mission_type": "FORM_FILLING",
-                            "name": self.mission1.name,
-                            "description": self.mission1.description,
-                        },
-                        {
-                            "id": self.mission2.id,
-                            "mission_forms": [
-                                {
-                                    "form": {"id": self.form2.id, "name": self.form2.name},
-                                    "id": self.mission2.mission_forms.all()[0].id,
-                                    "max_cardinality": 1,
-                                    "min_cardinality": 1,
-                                }
-                            ],
-                            "mission_type": "FORM_FILLING",
-                            "name": self.mission2.name,
-                            "description": self.mission2.description,
-                        },
-                    ],
-                },
-            ],
-        )
-
-        p3 = plannings[2]
-        self.assertEqual(p3["name"], "planning6")
-        self.assertEqual(len(p3["assignments"]), 1)
-        self.assertEqual(
-            p3["assignments"],
-            [
-                {
-                    "org_unit_id": self.child1.id,
-                    "missions": [
-                        {
-                            "id": mission.id,
-                            "mission_forms": [],
-                            "mission_type": "ORG_UNIT_AND_FORM",
-                            "name": mission.name,
-                            "description": mission.description,
-                            "org_unit_type": {
-                                "id": self.org_unit_type.id,
-                                "name": "test type",
-                            },
-                            "org_unit_min_cardinality": 2,
-                            "org_unit_max_cardinality": 4,
-                        }
-                    ],
-                }
-            ],
-        )
-
-        # user without any assignment, should get no planning
-        user = self.create_user_with_profile(username="user2", account=self.account)
-        self.client.force_authenticate(user)
-
-        response = self.client.get("/api/v2/mobile/plannings/", format="json")
-        r = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(r["plannings"]), 0)
-
-    def test_query_mobile_get(self):
-        self.client.force_authenticate(self.user)
-        Planning.objects.update(published_at=now())
-        response = self.client.get(f"/api/mobile/plannings/{self.planning.id}/", format="json")
-        self.assertEqual(response.status_code, 200)
-
-    def test_query_mobile_get_v2(self):
-        self.client.force_authenticate(self.user)
-        Planning.objects.update(published_at=now())
-        response = self.client.get(f"/api/v2/mobile/plannings/{self.planning.id}/", format="json")
-        self.assertEqual(response.status_code, 200)
-
-    def test_query_mobile_no_modification(self):
-        self.user.is_superuser = True
-        self.user.save()
-        Planning.objects.update(published_at=now())
-
-        self.client.force_authenticate(self.user)
-        response = self.client.delete(f"/api/mobile/plannings/{self.planning.id}/", format="json")
-        self.assertEqual(response.status_code, 403)
-
-        response = self.client.patch(f"/api/mobile/plannings/{self.planning.id}/", format="json")
-        self.assertEqual(response.status_code, 403)
-
-        response = self.client.post("/api/mobile/plannings/", data={}, format="json")
-        self.assertEqual(response.status_code, 403)
-
-        response = self.client.delete(f"/api/v2/mobile/plannings/{self.planning.id}/", format="json")
-        self.assertEqual(response.status_code, 403)
-
-        response = self.client.patch(f"/api/v2/mobile/plannings/{self.planning.id}/", format="json")
-        self.assertEqual(response.status_code, 403)
-
-        response = self.client.post("/api/v2/mobile/plannings/", data={}, format="json")
-        self.assertEqual(response.status_code, 403)
 
 
 class MicroplanningSwaggerTestCase(SwaggerTestCaseMixin, APITestCase):

@@ -29,13 +29,24 @@ const styles: SxStyles = {
             borderColor: 'divider',
         },
     },
-    accordionSummary: { px: 2, '& .MuiAccordionSummary-content': { my: 1.25 } },
+    accordionSummary: {
+        px: 2,
+        minWidth: 0,
+        // flex items default to min-width: auto and won't shrink below
+        // their text, which blocks text-overflow: ellipsis on the state
+        '& .MuiAccordionSummary-content': {
+            my: 1.25,
+            minWidth: 0,
+            overflow: 'hidden',
+        },
+    },
     accordionSummaryContainer: {
         display: 'flex',
         alignItems: 'center',
         gap: 1.4,
         width: '100%',
         minWidth: 0,
+        overflow: 'hidden',
     },
     iconContainer: {
         width: 32,
@@ -46,20 +57,15 @@ const styles: SxStyles = {
         flex: '0 0 auto',
     },
     label: {
-        flex: '1 1 auto',
-        minWidth: 0,
+        flex: '0 0 auto',
         fontSize: 14,
         fontWeight: 500,
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
     },
     state: {
         fontSize: 13,
         fontWeight: 500,
-        // shrink before the label does, and truncate
-        // rather than push the row past the card
-        flex: '0 1 auto',
+        // leftover space, not content width — otherwise the row grows instead of truncating
+        flex: '1 1 0%',
         minWidth: 0,
         overflow: 'hidden',
         textOverflow: 'ellipsis',

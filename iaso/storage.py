@@ -29,8 +29,13 @@ class AzureStaticStorage(AzureStorage):
     expiration_secs = None
     default_acl = "public-read"
 
+    def _is_compressible(self, name):
+        return name.lower().endswith(COMPRESSIBLE_EXTENSIONS)
+
     def _save(self, name, content):
-        if name.lower().endswith(COMPRESSIBLE_EXTENSIONS):
+        # get_object_parameters() below sets Content-Encoding: gzip based on the same
+        # check, so the two can never disagree about whether `content` was compressed.
+        if self._is_compressible(name):
             content.seek(0)
             buffer = BytesIO()
             with gzip.GzipFile(filename="", mode="wb", fileobj=buffer, mtime=0) as gzip_file:
@@ -40,7 +45,7 @@ class AzureStaticStorage(AzureStorage):
 
     def get_object_parameters(self, name):
         params = super().get_object_parameters(name).copy()
-        if name.lower().endswith(COMPRESSIBLE_EXTENSIONS):
+        if self._is_compressible(name):
             params["content_encoding"] = "gzip"
         if _HASHED_ASSET_RE.search(name):
             params["cache_control"] = "public, max-age=31536000, immutable"

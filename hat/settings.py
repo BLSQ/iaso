@@ -902,7 +902,6 @@ if SSO_WHO_CLIENT_ID:
         "callback_path": "polio/login/callback",
         "token_path": "polio/token/",
         "account_id": sso_who_account,
-        "email_recipients_new_account": env.list("SSO_WHO_EMAIL_RECIPIENTS_NEW_ACCOUNT", default=[], delimiter=","),
     }
 
 # Derive allauth SOCIALACCOUNT_PROVIDERS from SSO_PROVIDERS so there is a single config dict per provider.

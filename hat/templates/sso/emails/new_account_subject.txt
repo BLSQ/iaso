@@ -1,3 +1,0 @@
-{% load i18n %}{% autoescape off %}
-{% blocktranslate  with  username=user.get_username %}New User Account {{ username }} Awaiting Access Permissions{% endblocktranslate %}
-{% endautoescape %}

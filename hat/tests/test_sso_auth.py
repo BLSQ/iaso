@@ -46,7 +46,6 @@ SSO_TEST_CONFIG = {
         "login_path": "polio/login/",
         "callback_path": "polio/login/callback/",
         "token_path": "polio/token/",
-        "email_recipients_new_account": [],
     },
 }
 
@@ -68,7 +67,8 @@ class SSOAuthTestCase(APITestCase):
         self.addCleanup(override.disable)
 
     @patch("requests.get")
-    def test_complete_login_ok(self, mock_get):
+    def test_complete_login_unknown_user_fails(self, mock_get):
+        """SSO never provisions accounts: an email with no matching user must be rejected."""
         extra_data: ExtraData = {
             "email": "jane@who.int",
             "sub": "abc-123-def",
@@ -83,21 +83,17 @@ class SSOAuthTestCase(APITestCase):
             format="json",
             data={"token": make_test_token()},
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(
+            response.json()["message"],
+            "No account found for this email address. Accounts must be created by an "
+            "administrator before you can sign in.",
+        )
 
-        self.assertEqual(m.User.objects.count(), 1)
-        new_user = m.User.objects.get(email="jane@who.int")
-        self.assertEqual(new_user.username, "jane@who.int")
-        self.assertEqual(new_user.first_name, "Jane")
-        self.assertEqual(new_user.last_name, "Doe")
-
-        new_profile = m.Profile.objects.get(user=new_user)
-        self.assertEqual(new_profile.account, self.account)
-
-        new_social_account = SocialAccount.objects.get(uid="abc-123-def")
-        self.assertEqual(new_social_account.provider, "who")
-        self.assertEqual(new_social_account.extra_data, extra_data)
-        self.assertEqual(new_social_account.user, new_user)
+        # Nothing should be provisioned for an unknown email.
+        self.assertEqual(m.User.objects.count(), 0)
+        self.assertEqual(m.Profile.objects.count(), 0)
+        self.assertEqual(SocialAccount.objects.count(), 0)
 
     @patch("requests.get")
     def test_complete_login_existing_user(self, mock_get):
@@ -176,7 +172,6 @@ class SSOAuthTestCase(APITestCase):
                 "callback_path": "polio/login/callback/",
                 "token_path": "polio/token/",
                 "account_id": 100000,
-                "email_recipients_new_account": [],
             },
         }
     )

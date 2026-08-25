@@ -28,11 +28,8 @@ class SSOLoginView(OAuth2LoginView):
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied
-from django.core.mail import EmailMultiAlternatives
-from django.http import HttpRequest, JsonResponse
-from django.template import loader
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from oauthlib.oauth2 import OAuth2Error
 from requests import HTTPError, RequestException
@@ -40,8 +37,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework_simplejwt.tokens import RefreshToken  # type: ignore
 
 from iaso.api.query_params import APP_ID
-from iaso.models import Account, Profile, Project, TenantUser
-from iaso.models.tenant_users import UserCreationData, UsernameAlreadyExistsError
+from iaso.models import Account, Project
 
 
 logger = getLogger(__name__)
@@ -52,19 +48,6 @@ class ExtraData(typing.TypedDict):
     sub: str
     given_name: typing.Optional[str]
     family_name: typing.Optional[str]
-
-
-def send_mail(subject_template_name, email_template_name, context, from_email, to_email, html_email_template_name=None):
-    subject = loader.render_to_string(subject_template_name, context)
-    subject = "".join(subject.splitlines())
-    body = loader.render_to_string(email_template_name, context)
-
-    email_message = EmailMultiAlternatives(subject, body, from_email, [to_email])
-    if html_email_template_name is not None:
-        html_email = loader.render_to_string(html_email_template_name, context)
-        email_message.attach_alternative(html_email, "text/html")
-
-    email_message.send()
 
 
 class InvalidAppIdException(Exception):
@@ -88,6 +71,15 @@ class InvalidTokenException(Exception):
 class MultipleUsersWithSameEmailException(Exception):
     def __init__(self, email: str):
         message = _("Multiple users found with email {}").format(email)
+        super().__init__(message)
+
+
+class UnknownUserException(Exception):
+    def __init__(self):
+        message = _(
+            "No account found for this email address. Accounts must be created by an "
+            "administrator before you can sign in."
+        )
         super().__init__(message)
 
 
@@ -118,40 +110,6 @@ class SSOBaseAdapter(OAuth2Adapter):
     @property
     def sso_config(self):
         return settings.SSO_PROVIDERS[self.provider_id]
-
-    def send_new_account_email(self, request: HttpRequest, user):
-        to_emails = self.sso_config.get("email_recipients_new_account", [])
-        if not to_emails:
-            logger.warning(
-                "no 'email_recipients_new_account' configured for SSO provider %s, not sending new account mail",
-                self.provider_id,
-            )
-            return
-
-        current_site = get_current_site(request=request)
-        site_name = current_site.name
-        domain = current_site.domain
-        profile_url = request.build_absolute_uri(
-            f"/dashboard/settings/users/management/accountId/1/search/{user.username}/order/user__username/pageSize/20/page/1"
-        )
-        context = {
-            "new_user": user,
-            "profile_url": profile_url,
-            "domain": domain,
-            "site_name": site_name,
-            "user": user,
-        }
-        for email in to_emails:
-            email = email.strip()
-            if not email:
-                continue
-            send_mail(
-                subject_template_name="sso/emails/new_account_subject.txt",
-                email_template_name="sso/emails/new_account_email.html",
-                from_email=None,
-                to_email=email,
-                context=context,
-            )
 
     def complete_login(self, request, app, token: str, response) -> SocialAccount:
         # Ensure the presented access token was issued for our own app registration
@@ -217,19 +175,9 @@ class SSOBaseAdapter(OAuth2Adapter):
                 user = account_users.filter(iaso_profile__account=account).first()
 
             if not user:
-                new_user, tenant_main_user, tenant_account_user = TenantUser.objects.create_user_or_tenant_user(
-                    data=UserCreationData(
-                        username=email,
-                        email=email,
-                        first_name=extra_data.get("given_name"),
-                        last_name=extra_data.get("family_name"),
-                        account=account,
-                    )
-                )
-                user = new_user or tenant_account_user
-                user.set_unusable_password()
-                Profile.objects.create(account=account, user=user)
-                self.send_new_account_email(request, user)
+                # SSO never provisions accounts: they must already exist, created ahead of
+                # time by an administrator. Reject rather than silently creating one.
+                raise UnknownUserException()
 
             social_account = SocialAccount(uid=uid, provider=self.provider_id, extra_data=extra_data, user=user)
 
@@ -267,6 +215,7 @@ class SSOCallbackView(OAuth2View):
             ProviderException,
             InvalidTokenException,
             MultipleUsersWithSameEmailException,
+            UnknownUserException,
         ) as e:
             return render_authentication_error(request, self.adapter.provider_id, exception=e)
 
@@ -350,15 +299,13 @@ def make_token_view(provider_id):
             logger.warning("SSO login rejected: %s", e)
             message = _("Could not log you in. Please contact the administrator")
             return JsonResponse({"result": "error", "message": message, "details": message}, status=409)
-        except UsernameAlreadyExistsError:
-            return JsonResponse(
-                {
-                    "result": "error",
-                    "message": _("Username already exists for this account."),
-                    "details": _("Username already exists for this account."),
-                },
-                status=409,
+        except UnknownUserException as e:
+            logger.warning("SSO login rejected: %s", e)
+            message = _(
+                "No account found for this email address. Accounts must be created by an "
+                "administrator before you can sign in."
             )
+            return JsonResponse({"result": "error", "message": message, "details": message}, status=404)
         except Exception as e:
             logger.exception(str(e))
             return JsonResponse(

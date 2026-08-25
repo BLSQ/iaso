@@ -15,8 +15,7 @@ type RowProps = {
 const styles: SxStyles = {
     label: (theme: Theme) => ({
         fontWeight: 'bold',
-        // @ts-ignore
-        borderRight: `1px solid ${theme.palette.ligthGray.border}`,
+        borderRight: `1px solid ${theme.palette.lightGray.border}`,
     }),
     cellNoPadding: {
         padding: 0,

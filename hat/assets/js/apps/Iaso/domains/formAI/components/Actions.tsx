@@ -7,7 +7,7 @@ import React, {
 import DownloadIcon from '@mui/icons-material/Download';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
-import { Autocomplete, Box, Button, Grid, TextField } from '@mui/material';
+import { Autocomplete, Box, Button, TextField } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { baseUrls } from 'Iaso/constants/urls';
 import { FormOption } from 'Iaso/domains/formAI';
@@ -20,17 +20,38 @@ import { SxStyles } from 'Iaso/types/general';
 import { SaveVersionResponse } from '../types';
 import { SaveFormDialog } from './SaveFormDialog';
 export const ACTIONS_HEIGHT = 80;
+export const ACTIONS_HEIGHT_MOBILE = 144;
 
 const styles: SxStyles = {
     root: {
-        height: ACTIONS_HEIGHT,
+        height: {
+            xs: ACTIONS_HEIGHT_MOBILE,
+            lg: ACTIONS_HEIGHT,
+        },
         borderBottom: theme => `1px solid ${theme.palette.divider}`,
         display: 'flex',
         boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
         position: 'relative',
         zIndex: 1,
+        width: '100%',
+        justifyContent: 'space-between',
+        flexDirection: {
+            xs: 'column',
+            lg: 'row',
+        },
     },
     item: {
+        padding: theme => theme.spacing(2),
+        width: {
+            xs: '100%',
+            lg: '350px',
+        },
+    },
+    itemRight: {
+        borderTop: theme => ({
+            xs: `1px solid ${theme.palette.lightGray.border}`,
+            lg: 'none',
+        }),
         padding: theme => theme.spacing(2),
     },
     buttonsContainer: {
@@ -104,8 +125,8 @@ export const Actions: FunctionComponent<Props> = ({
         );
     }, [forms]);
     return (
-        <Grid container spacing={0} sx={styles.root}>
-            <Grid item md={4} sx={styles.item}>
+        <Box sx={styles.root}>
+            <Box sx={styles.item}>
                 <Autocomplete
                     size="small"
                     options={formOptions}
@@ -124,8 +145,8 @@ export const Actions: FunctionComponent<Props> = ({
                     }
                     loading={isLoadingForm || isLoadingForms}
                 />
-            </Grid>
-            <Grid item md={8} sx={styles.item}>
+            </Box>
+            <Box sx={styles.itemRight}>
                 <Box sx={styles.buttonsContainer}>
                     {selectedFormOption && (
                         <Button
@@ -161,7 +182,7 @@ export const Actions: FunctionComponent<Props> = ({
                         </Button>
                     )}
                 </Box>
-            </Grid>
+            </Box>
             {xlsformUuid && (
                 <SaveFormDialog
                     open={saveDialogOpen}
@@ -173,6 +194,6 @@ export const Actions: FunctionComponent<Props> = ({
                     onSaveNewVersion={handleSaveNewVersion}
                 />
             )}
-        </Grid>
+        </Box>
     );
 };

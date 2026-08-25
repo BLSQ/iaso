@@ -6,10 +6,12 @@ from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.db.models.aggregates import Extent
 from django.contrib.gis.db.models.functions import GeomOutputGeoFunc
 from django.core.cache import cache
+from django.db.models import F
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Cast
 from django.http import Http404, HttpResponseNotFound
 from django.shortcuts import get_object_or_404
+from django.utils.functional import cached_property
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
 from rest_framework.decorators import action
@@ -124,17 +126,47 @@ class MobileOrgUnitSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_org_unit_type_name(org_unit: OrgUnit):
+        name_annotated = getattr(org_unit, "org_unit_type_name_annotated", None)
+        if name_annotated is not None:
+            return name_annotated
         return org_unit.org_unit_type.name if org_unit.org_unit_type else None
 
+    @cached_property
+    def valid_org_unit_type_ids(self):
+        valid_ids = set()
+        project = self.context.get("project")
+        if project is not None:
+            valid_ids = set(project.unit_types.values_list("id", flat=True))
+        return valid_ids
+
     def get_parent_id(self, org_unit: OrgUnit):
-        parent = org_unit.parent
-        return (
-            org_unit.parent_id
-            if parent is None
-            or parent.validation_status == OrgUnit.VALIDATION_VALID
-            and (self.app_id is None or any(p.app_id == self.app_id for p in parent.org_unit_type.projects.all()))
-            else None
-        )
+        parent_id = org_unit.parent_id
+        if parent_id is None:
+            return None
+
+        # Retrieve annotated values if present
+        parent_validation_status = getattr(org_unit, "parent_validation_status", None)
+        parent_org_unit_type_id = getattr(org_unit, "parent_org_unit_type_id", None)
+
+        if parent_validation_status is None or parent_org_unit_type_id is None:
+            parent = org_unit.parent
+            if parent is None:
+                return None
+            parent_validation_status = parent.validation_status
+            parent_org_unit_type_id = parent.org_unit_type_id
+
+        if parent_validation_status != OrgUnit.VALIDATION_VALID:
+            return None
+
+        if self.app_id is not None:
+            project = self.context.get("project")
+            if project is not None:
+                if parent_org_unit_type_id not in self.valid_org_unit_type_ids:
+                    return None
+            else:
+                raise NotImplementedError("The serializer requires a valid project in its context.")
+
+        return parent_id
 
     @staticmethod
     def get_latitude(org_unit: OrgUnit):
@@ -225,16 +257,24 @@ class MobileOrgUnitViewSet(ModelViewSet):
             return "instances"
         return "orgUnits"
 
-    def get_queryset(self):
+    @cached_property
+    def project(self):
+        if not hasattr(self, "request") or self.request is None:
+            return None
         user = self.request.user
         app_id = self.get_app_id()
+        try:
+            return Project.objects.get_for_user_and_app_id(user, app_id)
+        except Project.DoesNotExist:
+            return None
+
+    def get_queryset(self):
+        user = self.request.user
+        project = self.project
+        if project is None:
+            return OrgUnit.objects.none()
 
         limit_download_to_roots = False
-
-        try:
-            project = Project.objects.get_for_user_and_app_id(user, app_id)
-        except Project.DoesNotExist:
-            return OrgUnit.objects.none()
 
         if user and not user.is_anonymous:
             limit_download_to_roots = project.has_feature(FeatureFlag.LIMIT_OU_DOWNLOAD_TO_ROOTS)
@@ -246,8 +286,12 @@ class MobileOrgUnitViewSet(ModelViewSet):
         queryset = (
             org_units.filter(validation_status=OrgUnit.VALIDATION_VALID)
             .order_by("path")
-            .prefetch_related("parent__org_unit_type__projects", "groups")
-            .select_related("org_unit_type", "parent", "parent__org_unit_type")
+            .annotate(
+                parent_validation_status=F("parent__validation_status"),
+                parent_org_unit_type_id=F("parent__org_unit_type_id"),
+                org_unit_type_name_annotated=F("org_unit_type__name"),
+            )
+            .prefetch_related("groups")
         )
         include_geo_json = self.check_include_geo_json()
         if include_geo_json:
@@ -261,6 +305,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
         context = super().get_serializer_context()
         context["include_geo_json"] = self.check_include_geo_json()
         context["app_id"] = self.get_app_id()
+        context["project"] = self.project
         return context
 
     def check_include_geo_json(self):
@@ -280,8 +325,12 @@ class MobileOrgUnitViewSet(ModelViewSet):
             queryset = (
                 OrgUnit.objects.filter_for_user_and_app_id(None, app_id)
                 .order_by("path")
-                .prefetch_related("parent__org_unit_type__projects", "groups")
-                .select_related("org_unit_type", "parent", "parent__org_unit_type")
+                .annotate(
+                    parent_validation_status=F("parent__validation_status"),
+                    parent_org_unit_type_id=F("parent__org_unit_type_id"),
+                    org_unit_type_name_annotated=F("org_unit_type__name"),
+                )
+                .prefetch_related("groups")
                 .filter(id__in=ids)
             )
             if len(queryset) != len(ids):

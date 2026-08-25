@@ -33,7 +33,7 @@ class ChronogramFiltersTestCase(APITestCase):
             permissions=[POLIO_CHRONOGRAM_PERMISSION],
         )
 
-        # Campaign not on hold.
+        # Campaign regular.
         cls.campaign = Campaign.objects.create(obr_name="Regular Campaign", account=cls.account)
         cls.polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
         cls.campaign.campaign_types.add(cls.polio_type)
@@ -57,13 +57,13 @@ class ChronogramFiltersTestCase(APITestCase):
             round=cls.round_on_hold_campaign, created_by=cls.user
         )
 
-        # Round on hold (campaign not on hold).
-        cls.campaign_round_on_hold = Campaign.objects.create(obr_name="Round On Hold Campaign", account=cls.account)
-        cls.campaign_round_on_hold.campaign_types.add(cls.polio_type)
-        cls.round_on_hold = Round.objects.create(
-            number=1, campaign=cls.campaign_round_on_hold, started_at=TODAY.date(), on_hold=True
+        # Preventive campaign.
+        cls.campaign_preventive = Campaign.objects.create(
+            obr_name="Preventive Campaign", account=cls.account, is_preventive=True
         )
-        cls.chronogram_round_on_hold = Chronogram.objects.create(round=cls.round_on_hold, created_by=cls.user)
+        cls.campaign_preventive.campaign_types.add(cls.polio_type)
+        cls.round_preventive = Round.objects.create(number=1, campaign=cls.campaign_preventive, started_at=TODAY.date())
+        cls.chronogram_preventive = Chronogram.objects.create(round=cls.round_preventive, created_by=cls.user)
 
     def test_filter_for_power_bi(self):
         queryset = filter_for_power_bi(Chronogram.objects.all())
@@ -73,29 +73,38 @@ class ChronogramFiltersTestCase(APITestCase):
 
         self.assertIn(f'"created_at" >= {three_months_ago}', sql_query)
 
-    def test_filter_on_hold_true_returns_on_hold_chronograms(self):
+    def test_filter_campaign_category_on_hold(self):
         self.client.force_authenticate(self.user)
-        response = self.client.get("/api/polio/chronograms/?on_hold=true")
+        response = self.client.get("/api/polio/chronograms/?campaign_category=on_hold")
         self.assertEqual(response.status_code, 200)
         ids = [item["id"] for item in response.data["results"]]
         self.assertIn(self.chronogram_campaign_on_hold.pk, ids)
-        self.assertIn(self.chronogram_round_on_hold.pk, ids)
         self.assertNotIn(self.chronogram.pk, ids)
+        self.assertNotIn(self.chronogram_preventive.pk, ids)
 
-    def test_filter_on_hold_false_excludes_on_hold_chronograms(self):
+    def test_filter_campaign_category_preventive(self):
         self.client.force_authenticate(self.user)
-        response = self.client.get("/api/polio/chronograms/?on_hold=false")
+        response = self.client.get("/api/polio/chronograms/?campaign_category=is_preventive")
+        self.assertEqual(response.status_code, 200)
+        ids = [item["id"] for item in response.data["results"]]
+        self.assertIn(self.chronogram_preventive.pk, ids)
+        self.assertNotIn(self.chronogram.pk, ids)
+        self.assertNotIn(self.chronogram_campaign_on_hold.pk, ids)
+
+    def test_filter_campaign_category_regular(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get("/api/polio/chronograms/?campaign_category=regular")
         self.assertEqual(response.status_code, 200)
         ids = [item["id"] for item in response.data["results"]]
         self.assertIn(self.chronogram.pk, ids)
         self.assertNotIn(self.chronogram_campaign_on_hold.pk, ids)
-        self.assertNotIn(self.chronogram_round_on_hold.pk, ids)
+        self.assertNotIn(self.chronogram_preventive.pk, ids)
 
-    def test_no_on_hold_filter_returns_all(self):
+    def test_no_campaign_category_filter_returns_all(self):
         self.client.force_authenticate(self.user)
         response = self.client.get("/api/polio/chronograms/")
         self.assertEqual(response.status_code, 200)
         ids = [item["id"] for item in response.data["results"]]
         self.assertIn(self.chronogram.pk, ids)
         self.assertIn(self.chronogram_campaign_on_hold.pk, ids)
-        self.assertIn(self.chronogram_round_on_hold.pk, ids)
+        self.assertIn(self.chronogram_preventive.pk, ids)

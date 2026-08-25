@@ -42,8 +42,7 @@ const styles: SxStyles = {
         height: theme => theme.spacing(3),
         width: theme => theme.spacing(3),
         opacity: vaccineOpacity,
-        // @ts-ignore
-        border: theme => `2px solid ${theme.palette.ligthGray.border}`,
+        border: theme => `2px solid ${theme.palette.lightGray.border}`,
     },
     label: {
         overflow: 'hidden',

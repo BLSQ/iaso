@@ -3,7 +3,7 @@ import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { File, ShortFile } from '../../instances/types/instance';
 
-const getFiles = params => {
+const getFiles = (params: Record<string, any>) => {
     const queryString = new URLSearchParams({
         ...params,
         image_only: 'true',
@@ -11,7 +11,9 @@ const getFiles = params => {
     return getRequest(`/api/instances/attachments/?${queryString}`);
 };
 
-export const useGetImages = (params): UseQueryResult<ShortFile[], Error> => {
+export const useGetImages = (
+    params: Record<string, any>,
+): UseQueryResult<ShortFile[], Error> => {
     return useSnackQuery({
         queryKey: ['files', params],
         queryFn: () => getFiles(params),

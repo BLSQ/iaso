@@ -23,8 +23,7 @@ const useStyles = makeStyles(theme => ({
         },
     },
     icon: {
-        //@ts-ignore
-        color: theme.palette.ligthGray.border,
+        color: theme.palette.lightGray.border,
         fontWeight: 'light',
         fontSize: 150,
     },

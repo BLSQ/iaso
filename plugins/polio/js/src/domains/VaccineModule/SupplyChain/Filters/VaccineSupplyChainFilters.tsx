@@ -7,6 +7,7 @@ import { useGetGroupDropdown } from '../../../../../../../../hat/assets/js/apps/
 import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import { apiDateFormat } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
 import { baseUrls } from '../../../../constants/urls';
+import { useCampaignCategoryOptions } from '../../../Campaigns/hooks/useCampaignCategoryOptions';
 import { singleVaccinesList } from '../constants';
 import { useGetCountriesOptions } from '../hooks/api/vrf';
 import MESSAGES from '../messages';
@@ -22,6 +23,7 @@ export const VaccineSupplyChainFilters: FunctionComponent<Props> = ({
     const { data: countries, isFetching } = useGetCountriesOptions();
     const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =
         useGetGroupDropdown({ blockOfCountries: 'true' });
+    const campaignCategoryOptions = useCampaignCategoryOptions();
     return (
         <Grid container spacing={2}>
             <Grid item xs={6} md={3} lg={3}>
@@ -99,20 +101,27 @@ export const VaccineSupplyChainFilters: FunctionComponent<Props> = ({
                 />
             </Grid>
             <Grid container item xs={12} md={3} lg={3}>
-                <Box
-                    display="flex"
-                    justifyContent="flex-end"
-                    alignItems="end"
-                    flexDirection="column"
-                    width="100%"
+                <Grid item xs={12}>
+                    <InputComponent
+                        type="select"
+                        clearable
+                        keyValue="campaign_category"
+                        value={filters.campaign_category}
+                        onChange={handleChange}
+                        options={campaignCategoryOptions}
+                        labelString={formatMessage(MESSAGES.campaignCategory)}
+                    />
+                </Grid>
+                <Grid
+                    item
+                    xs={12}
+                    sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}
                 >
-                    <Box mt={2}>
-                        <SearchButton
-                            disabled={!filtersUpdated}
-                            onSearch={handleSearch}
-                        />
-                    </Box>
-                </Box>
+                    <SearchButton
+                        disabled={!filtersUpdated}
+                        onSearch={handleSearch}
+                    />
+                </Grid>
             </Grid>
         </Grid>
     );

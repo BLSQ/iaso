@@ -3,6 +3,7 @@ import { User } from '../../../utils/usersUtils';
 import { Entity } from '../../entities/types/entity';
 import { OrgUnitChangeRequest } from '../../orgUnits/reviewChanges/types';
 import { OrgUnit, ShortOrgUnit } from '../../orgUnits/types/orgUnit';
+import { Project } from '../../projects/types/project';
 
 type Lock = {
     id: number;
@@ -69,6 +70,7 @@ export type Instance = {
     entity: Entity;
     source_created_at: number;
     change_requests: Array<OrgUnitChangeRequest>;
+    project: Pick<Project, 'name' | 'color'>;
 };
 
 export type InstanceLogDetail = {

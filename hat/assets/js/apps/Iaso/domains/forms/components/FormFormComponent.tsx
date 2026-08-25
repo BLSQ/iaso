@@ -17,6 +17,7 @@ import {
     commaSeparatedIdsToStringArray,
 } from '../../../utils/forms';
 import { SUBMISSIONS, SUBMISSIONS_UPDATE } from '../../../utils/permissions';
+import { useCurrentUser } from '../../../utils/usersUtils';
 import { formatLabel } from '../../instances/utils';
 import { useGetGroupDropdown } from '../../orgUnits/hooks/requests/useGetGroups';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
@@ -25,6 +26,7 @@ import {
     periodTypeOptionsWithNoPeriod,
 } from '../../periods/constants';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
+import { userHasAccessToModule } from '../../users/utils';
 import { CR_MODE_NONE, changeRequestModeOptions } from '../constants';
 import MESSAGES from '../messages';
 import { FormDataType } from '../types/forms';
@@ -48,11 +50,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
 }));
 
-const formatBooleanForRadio = value => {
-    if (value === true) return 'true';
-    if (value === false) return 'false';
-    return null;
-};
+const formatBooleanForRadio = (value: boolean) => (value ? 'true' : 'false');
 
 type FormFormProps = {
     currentForm: FormDataType;
@@ -71,8 +69,12 @@ const FormForm: FunctionComponent<FormFormProps> = ({
     const [showAdvancedSettings, setshowAdvancedSettings] = useState(false);
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
+    const hasDhis2Module = userHasAccessToModule(
+        'DHIS2_MAPPING',
+        useCurrentUser(),
+    );
 
-    const setPeriodType = value => {
+    const setPeriodType = (value: string | null) => {
         let periodTypeValue = value;
         if (value === null || value === NO_PERIOD) {
             periodTypeValue = null;
@@ -109,6 +111,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
     if (currentForm.project_ids.value.length > 0) {
         projects = currentForm.project_ids.value;
     }
+
     const { validation_workflow } = currentForm;
     const { data: allOrgUnitTypes, isFetching: isOuTypeLoading } =
         useGetOrgUnitTypesDropdownOptions({
@@ -226,7 +229,8 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                                             );
                                         }}
                                         value={formatBooleanForRadio(
-                                            currentForm.single_per_period.value,
+                                            currentForm.single_per_period
+                                                .value ?? false,
                                         )}
                                         errors={
                                             currentForm.single_per_period
@@ -395,23 +399,26 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                                 options={changeRequestModeOptions}
                                 label={MESSAGES.changeRequestMode}
                             />
+
                             <Box
                                 style={{
                                     display: 'inline-flex',
                                     width: '100%',
                                 }}
                             >
-                                <InputComponent
-                                    keyValue="derived"
-                                    onChange={(key, value) =>
-                                        setFieldValue(key, value)
-                                    }
-                                    value={currentForm.derived.value}
-                                    errors={currentForm.derived.errors}
-                                    type="checkbox"
-                                    required
-                                    label={MESSAGES.derived}
-                                />
+                                {hasDhis2Module && (
+                                    <InputComponent
+                                        keyValue="derived"
+                                        onChange={(key, value) =>
+                                            setFieldValue(key, value)
+                                        }
+                                        value={currentForm.derived.value}
+                                        errors={currentForm.derived.errors}
+                                        type="checkbox"
+                                        required
+                                        label={MESSAGES.derived}
+                                    />
+                                )}
                                 {/* Splitting the Typography to be able to align it with the checkbox */}
                                 <Typography
                                     className={classes.advancedSettings}

@@ -1,5 +1,6 @@
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 const webpack = require('webpack');
 const { ModuleFederationPlugin } = require('webpack').container;
 const BundleTracker = require('webpack-bundle-tracker');
@@ -28,6 +29,33 @@ const combinedTranslationsPath = generateCombinedTranslations(__dirname);
 // Generate the language configs file
 const languageConfigsPath = generateLanguageConfigs(__dirname);
 
+// Samsung Tizen / native TV browser is roughly Chrome 55. Keep these
+// targets even though package.json browserslist is newer.
+const babelEnvOptions = {
+    targets: {
+        node: '12',
+        chrome: '55',
+        ie: '11',
+    },
+    include: [
+        '@babel/plugin-transform-optional-chaining',
+        '@babel/plugin-transform-nullish-coalescing-operator',
+        '@babel/plugin-transform-numeric-separator',
+        '@babel/plugin-transform-logical-assignment-operators',
+        '@babel/plugin-transform-destructuring',
+    ],
+};
+
+const babelPlugins = [
+    '@babel/transform-runtime',
+    [
+        'formatjs',
+        {
+            messagesDir: path.join(__dirname, '/assets/messages'),
+        },
+    ],
+];
+
 module.exports = {
     // fail the entire build on 'module not found'
     bail: true,
@@ -35,8 +63,13 @@ module.exports = {
     mode: 'production',
     target: ['web', 'es2015'],
     entry: {
-        common: ['react', 'react-dom', 'react-intl', 'typescript'],
-        iaso: './assets/js/apps/Iaso/index',
+        // Do not put `typescript` here: it ships the compiler (~2MB minified)
+        // to every browser. Babel already compiles .ts/.tsx.
+        common: ['react', 'react-dom', 'react-intl'],
+        iaso: {
+            dependOn: 'common',
+            import: './assets/js/apps/Iaso/index',
+        },
         superset: './assets/js/supersetSDK',
     },
 
@@ -69,8 +102,10 @@ module.exports = {
             },
             __LOCALE: JSON.stringify(LOCALE),
         }),
-        // Minification
-        new webpack.LoaderOptionsPlugin({ minimize: true }),
+        new webpack.IgnorePlugin({ resourceRegExp: /cptable/ }),
+        new webpack.IgnorePlugin({
+            resourceRegExp: /^perf_hooks$/,
+        }),
         new webpack.WatchIgnorePlugin({
             paths: [/\.d\.ts$/],
         }),
@@ -116,19 +151,22 @@ module.exports = {
     ],
 
     optimization: {
-        minimize: true, // old UglifyJsPlugin
-        splitChunks: {
-            // old CommonsChunkPlugin
-            cacheGroups: {
-                commons: {
-                    // name: 'commons',
-                    // chunks: 'initial',
-                    minChunks: 3,
+        minimize: true,
+        minimizer: [
+            new TerserPlugin({
+                parallel: true,
+                terserOptions: {
+                    compress: { passes: 2 },
                 },
-            },
+            }),
+        ],
+        // Default webpack 5 async splitting. Initial React sharing is
+        // handled by entry.dependOn — do not split initial chunks or the
+        // HTML load order (common then iaso) breaks.
+        splitChunks: {
+            chunks: 'async',
         },
-        // runtimeChunk: true,
-        // concatenateModules: true // old ModuleConcatenationPlugin
+        concatenateModules: true,
     },
     module: {
         rules: [
@@ -146,36 +184,10 @@ module.exports = {
                         loader: 'babel-loader',
                         options: {
                             presets: [
-                                [
-                                    '@babel/preset-env',
-                                    {
-                                        targets: {
-                                            node: '12',
-                                            chrome: '55',
-                                            ie: '11',
-                                        },
-                                        include: [
-                                            '@babel/plugin-transform-optional-chaining',
-                                            '@babel/plugin-transform-nullish-coalescing-operator',
-                                            '@babel/plugin-transform-numeric-separator',
-                                            '@babel/plugin-transform-logical-assignment-operators',
-                                            '@babel/plugin-transform-destructuring',
-                                        ],
-                                    },
-                                ],
+                                ['@babel/preset-env', babelEnvOptions],
                                 '@babel/preset-react',
                             ],
-                            plugins: [
-                                [
-                                    'formatjs',
-                                    {
-                                        messagesDir: path.join(
-                                            __dirname,
-                                            '/assets/messages',
-                                        ),
-                                    },
-                                ],
-                            ],
+                            plugins: babelPlugins,
                         },
                     },
                 ],
@@ -189,40 +201,14 @@ module.exports = {
                         options: {
                             cacheDirectory: true,
                             presets: [
-                                [
-                                    '@babel/preset-env',
-                                    {
-                                        targets: {
-                                            node: '12',
-                                            chrome: '55',
-                                            ie: '11',
-                                        },
-                                        include: [
-                                            '@babel/plugin-transform-optional-chaining',
-                                            '@babel/plugin-transform-nullish-coalescing-operator',
-                                            '@babel/plugin-transform-numeric-separator',
-                                            '@babel/plugin-transform-logical-assignment-operators',
-                                            '@babel/plugin-transform-destructuring',
-                                        ],
-                                    },
-                                ],
+                                ['@babel/preset-env', babelEnvOptions],
                                 [
                                     '@babel/preset-typescript',
                                     { isTSX: true, allExtensions: true },
                                 ],
                                 '@babel/preset-react',
                             ],
-                            plugins: [
-                                [
-                                    'formatjs',
-                                    {
-                                        messagesDir: path.join(
-                                            __dirname,
-                                            '/assets/messages',
-                                        ),
-                                    },
-                                ],
-                            ],
+                            plugins: babelPlugins,
                         },
                     },
                 ],

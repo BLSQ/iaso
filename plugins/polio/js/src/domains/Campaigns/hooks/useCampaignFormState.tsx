@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRedirectToReplace } from 'bluesquare-components';
 import { useFormik } from 'formik';
+import { FormikHelpers } from 'formik';
 import { isEqual, merge } from 'lodash';
 import { useQueryClient } from 'react-query';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
@@ -101,7 +102,10 @@ export const useCampaignFormState = ({
     } = formik;
 
     const handleSubmit = useCallback(
-        (values, helpers) => {
+        (
+            values: CampaignFormValues,
+            helpers: FormikHelpers<CampaignFormValues>,
+        ) => {
             saveCampaign(convertEmptyStringToNull(values), {
                 onSuccess: (result: Campaign) => {
                     setIsUpdated(true);

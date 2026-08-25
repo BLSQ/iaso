@@ -41,6 +41,40 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Separate scope per round',
         id: 'iaso.polio.label.scope_per_round',
     },
+    scopeChangeDescription: {
+        defaultMessage:
+            'The campaign scope holds {count} districts. Choose what happens to it before the scope is split per round.',
+        id: 'iaso.polio.label.scopeChangeDescription',
+    },
+    scopeChangeCopyAllRounds: {
+        defaultMessage: 'Copy the current scope to every round (recommended)',
+        id: 'iaso.polio.label.scopeChangeCopyAllRounds',
+    },
+    scopeChangeCopySelectedRounds: {
+        defaultMessage: 'Copy it to selected rounds only',
+        id: 'iaso.polio.label.scopeChangeCopySelectedRounds',
+    },
+    scopeChangeEmptyRounds: {
+        defaultMessage: 'Start every round from an empty scope',
+        id: 'iaso.polio.label.scopeChangeEmptyRounds',
+    },
+    scopeChangeEmptyWarning: {
+        defaultMessage:
+            'Districts not carried over lose their vaccine assignment and the sub-activities attached to them. This cannot be undone after saving.',
+        id: 'iaso.polio.label.scopeChangeEmptyWarning',
+    },
+    scopeChangeUncheckedRoundsEmpty: {
+        defaultMessage: 'Unchecked rounds start from an empty scope.',
+        id: 'iaso.polio.label.scopeChangeUncheckedRoundsEmpty',
+    },
+    scopeChangeNotSavedYet: {
+        defaultMessage: 'Nothing is written until you save the campaign.',
+        id: 'iaso.polio.label.scopeChangeNotSavedYet',
+    },
+    scopeChangeRoundDateRange: {
+        defaultMessage: 'Round {number} — {dateRange}',
+        id: 'iaso.polio.label.scopeChangeRoundDateRange',
+    },
     preparedness_spreadsheet_url: {
         defaultMessage: 'Preparedness spreadsheet url',
         id: 'iaso.polio.label.preparednesSpreadsheetUrl',
@@ -109,6 +143,10 @@ const MESSAGES = defineMessages({
     cancel: {
         defaultMessage: 'Cancel',
         id: 'iaso.label.cancel',
+    },
+    apply: {
+        defaultMessage: 'Apply',
+        id: 'iaso.label.apply',
     },
     configuration: {
         defaultMessage: 'Configuration',
@@ -2179,6 +2217,10 @@ const MESSAGES = defineMessages({
     dateRangeTitle: {
         id: 'iaso.polio.label.dateRangeTitle',
         defaultMessage: 'Enter date range',
+    },
+    dateRangeTo: {
+        id: 'iaso.polio.label.dateRangeTo',
+        defaultMessage: 'to',
     },
     notifications: {
         id: 'iaso.polio.label.notifications',

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useMemo, useState } from 'react';
+import React, { FunctionComponent, useMemo, useState, useEffect } from 'react';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Grid, Tab } from '@mui/material';
 import {
@@ -17,6 +17,7 @@ import { useStyles } from '../../../styles/theme';
 import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
 import { useGetGeoJson } from './hooks/useGetGeoJson';
 import { useGetParentOrgUnit } from './hooks/useGetParentOrgUnit';
+import { ScopeChangeDialog } from './ScopeChangeDialog';
 import { ScopeField } from './ScopeField';
 import { FilteredDistricts, Round } from './Scopes/types';
 import { useFilteredDistricts } from './Scopes/utils';
@@ -24,7 +25,8 @@ import { useFilteredDistricts } from './Scopes/utils';
 export const scopeFormFields = ['separate_scopes_per_round', 'scopes'];
 
 export const ScopeForm: FunctionComponent = () => {
-    const { values } = useFormikContext<CampaignFormValues>();
+    const { values, initialValues, setValues } =
+        useFormikContext<CampaignFormValues>();
     const isPolio = useIsPolioCampaign(values);
     const { formatMessage } = useSafeIntl();
     const { separate_scopes_per_round: scopePerRound, rounds } = values;
@@ -33,11 +35,45 @@ export const ScopeForm: FunctionComponent = () => {
     const [searchScope, setSearchScope] = useState<boolean>(true);
     const [search, setSearch] = useState('');
     const [debouncedSearch] = useDebounce(search, 500);
+    const [displayScopeChangeDialog, setDisplayScopeChangeDialog] =
+        useState(false);
+    const districtCount = useMemo(() => {
+        const orgUnitIds = new Set<number>();
+        values.scopes?.forEach(scope => {
+            scope.group?.org_units?.forEach(id => orgUnitIds.add(id));
+        });
+        return orgUnitIds.size;
+    }, [values.scopes]);
+
+    const handleCancelScopeChangeDialog = () => {
+        setDisplayScopeChangeDialog(false);
+        setValues({
+            ...values,
+            separate_scopes_per_round: initialValues.separate_scopes_per_round,
+        });
+    };
+    const handleConfirmScopeChangeDialog = () => {
+        setDisplayScopeChangeDialog(false);
+    };
+    useEffect(() => {
+        return () => {
+            if (
+                !initialValues.separate_scopes_per_round &&
+                !scopePerRound &&
+                !displayScopeChangeDialog &&
+                districtCount > 0
+            ) {
+                setDisplayScopeChangeDialog(true);
+            }
+        };
+        // Only change the dialog display when the scope per round changes
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [scopePerRound]);
 
     const [currentTab, setCurrentTab] = useState<string>(
         rounds?.[0] ? `${rounds[0].number}` : '1',
     );
-    const handleChangeTab = (event, newValue) => {
+    const handleChangeTab = (_event: any, newValue: string) => {
         setCurrentTab(newValue);
     };
     const sortedRounds: Round[] = useMemo(
@@ -92,80 +128,91 @@ export const ScopeForm: FunctionComponent = () => {
     }, [filteredDistricts]);
 
     return (
-        <Box width="100%">
-            <Grid container spacing={4} justifyContent="space-between">
-                <Grid xs={12} md={6} item>
-                    <Field
-                        name="separate_scopes_per_round"
-                        component={BooleanInput}
-                        label={formatMessage(MESSAGES.scope_per_round)}
-                    />
+        <>
+            <ScopeChangeDialog
+                open={displayScopeChangeDialog}
+                rounds={rounds ?? []}
+                districtCount={districtCount}
+                onClose={handleCancelScopeChangeDialog}
+                onConfirm={handleConfirmScopeChangeDialog}
+            />
+            <Box width="100%">
+                <Grid container spacing={4} justifyContent="space-between">
+                    <Grid xs={12} md={6} item>
+                        <Field
+                            name="separate_scopes_per_round"
+                            component={BooleanInput}
+                            label={formatMessage(MESSAGES.scope_per_round)}
+                        />
+                    </Grid>
                 </Grid>
-            </Grid>
-            <TabContext value={currentTab}>
-                {scopePerRound && (
-                    <TabList onChange={handleChangeTab}>
-                        {sortedRounds.map(round => (
-                            <Tab
-                                key={round.number}
-                                label={`${formatMessage(MESSAGES.round)} ${
-                                    round.number
-                                }`}
+                <TabContext value={currentTab}>
+                    {scopePerRound && (
+                        <TabList onChange={handleChangeTab}>
+                            {sortedRounds.map(round => (
+                                <Tab
+                                    key={round.number}
+                                    label={`${formatMessage(MESSAGES.round)} ${
+                                        round.number
+                                    }`}
+                                    value={`${round.number}`}
+                                />
+                            ))}
+                        </TabList>
+                    )}
+                    {!scopePerRound && (
+                        <ScopeField
+                            name="scopes"
+                            search={search}
+                            filteredDistricts={filteredDistricts}
+                            searchScope={searchScope}
+                            setSearchScope={setSearchScope}
+                            isFetchingDistricts={
+                                isFetchingDistrictsShapes || !filteredDistricts
+                            }
+                            isFetchingRegions={
+                                isFetchingRegions || !regionShapes
+                            }
+                            districtShapes={districtShapes}
+                            regionShapes={regionShapes}
+                            setSearch={setSearch}
+                            page={page}
+                            setPage={setPage}
+                            campaign={values}
+                        />
+                    )}
+                    {scopePerRound &&
+                        sortedRounds.map(round => (
+                            <TabPanel
                                 value={`${round.number}`}
-                            />
+                                key={round.number}
+                                sx={{ p: 0 }}
+                                className={classes.tabPanel}
+                            >
+                                <ScopeField
+                                    name={`rounds[${round.originalIndex}].scopes`}
+                                    search={search}
+                                    filteredDistricts={filteredDistricts}
+                                    searchScope={searchScope}
+                                    setSearchScope={setSearchScope}
+                                    isFetchingDistricts={
+                                        isFetchingDistrictsShapes ||
+                                        !filteredDistricts
+                                    }
+                                    isFetchingRegions={
+                                        isFetchingRegions || !regionShapes
+                                    }
+                                    districtShapes={districtShapes}
+                                    regionShapes={regionShapes}
+                                    setSearch={setSearch}
+                                    page={page}
+                                    setPage={setPage}
+                                    campaign={values}
+                                />
+                            </TabPanel>
                         ))}
-                    </TabList>
-                )}
-                {!scopePerRound && (
-                    <ScopeField
-                        name="scopes"
-                        search={search}
-                        filteredDistricts={filteredDistricts}
-                        searchScope={searchScope}
-                        setSearchScope={setSearchScope}
-                        isFetchingDistricts={
-                            isFetchingDistrictsShapes || !filteredDistricts
-                        }
-                        isFetchingRegions={isFetchingRegions || !regionShapes}
-                        districtShapes={districtShapes}
-                        regionShapes={regionShapes}
-                        setSearch={setSearch}
-                        page={page}
-                        setPage={setPage}
-                        campaign={values}
-                    />
-                )}
-                {scopePerRound &&
-                    sortedRounds.map(round => (
-                        <TabPanel
-                            value={`${round.number}`}
-                            key={round.number}
-                            sx={{ p: 0 }}
-                            className={classes.tabPanel}
-                        >
-                            <ScopeField
-                                name={`rounds[${round.originalIndex}].scopes`}
-                                search={search}
-                                filteredDistricts={filteredDistricts}
-                                searchScope={searchScope}
-                                setSearchScope={setSearchScope}
-                                isFetchingDistricts={
-                                    isFetchingDistrictsShapes ||
-                                    !filteredDistricts
-                                }
-                                isFetchingRegions={
-                                    isFetchingRegions || !regionShapes
-                                }
-                                districtShapes={districtShapes}
-                                regionShapes={regionShapes}
-                                setSearch={setSearch}
-                                page={page}
-                                setPage={setPage}
-                                campaign={values}
-                            />
-                        </TabPanel>
-                    ))}
-            </TabContext>
-        </Box>
+                </TabContext>
+            </Box>
+        </>
     );
 };

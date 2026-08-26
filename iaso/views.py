@@ -109,7 +109,12 @@ def page(request, page_slug):
         if analytics_script and raw_html is not None:
             raw_html = addTag(raw_html, analytics_script)
         response = HttpResponse(raw_html)
-    return set_frame_ancestors_csp(response, page.embed_allowed_origins)
+    if page.embed_allowed_origins:
+        # Only restrict framing for pages that explicitly opted in: existing pages default to an
+        # empty list and must keep behaving exactly as before (no CSP header, embeddable anywhere),
+        # since we don't know which external sites already embed them.
+        response = set_frame_ancestors_csp(response, page.embed_allowed_origins)
+    return response
 
 
 def user_can_access_page(user, page):

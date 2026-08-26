@@ -67,10 +67,12 @@ class XFrameOptionsTestCase(TestCase):
         )
 
     def test_pages_view_is_exempt(self):
+        # A page with no embed_allowed_origins configured (the default for every existing page)
+        # must keep its pre-existing, unrestricted behaviour: no CSP header at all.
         response = self.client.get(f"/pages/{self.public_page.slug}/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsNone(response.get("X-Frame-Options"))
-        self.assertEqual(response.get("Content-Security-Policy"), "frame-ancestors 'self'")
+        self.assertIsNone(response.get("Content-Security-Policy"))
 
     def test_pages_view_uses_page_embed_allowed_origins(self):
         response = self.client.get(f"/pages/{self.public_page_with_embed_origins.slug}/")

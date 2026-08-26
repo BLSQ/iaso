@@ -35,9 +35,10 @@ class Page(models.Model):
         models.CharField(max_length=255),
         default=list,
         blank=True,
-        help_text="Origins allowed to embed this page in an <iframe>, in addition to this site itself "
-        "(e.g. https://afro-rrt-who.hub.arcgis.com). Used to build the "
-        "Content-Security-Policy: frame-ancestors header.",
+        help_text="Opt-in: origins allowed to embed this page in an <iframe>, in addition to this site "
+        "itself (e.g. https://afro-rrt-who.hub.arcgis.com), used to build a "
+        "Content-Security-Policy: frame-ancestors header. Leave empty to keep the page embeddable "
+        "anywhere (the default, unrestricted behaviour).",
     )
 
     created_at = models.DateTimeField(auto_now_add=True)

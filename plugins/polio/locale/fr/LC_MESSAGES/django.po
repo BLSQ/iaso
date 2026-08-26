@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-27 11:25+0000\n"
+"POT-Creation-Date: 2026-08-26 08:44+0000\n"
 "PO-Revision-Date: 2025-02-05 14:43+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -28,11 +28,13 @@ msgstr "Préparation de campagne"
 
 #: plugins/polio/api/calendar/serializers.py
 #: plugins/polio/api/campaigns/serializers/campaigns.py
+#, python-brace-format
 msgid "Round {} ended"
 msgstr "Round {} terminé"
 
 #: plugins/polio/api/calendar/serializers.py
 #: plugins/polio/api/campaigns/serializers/campaigns.py
+#, python-brace-format
 msgid "Round {} started"
 msgstr "Round {} commencé"
 
@@ -75,11 +77,12 @@ msgid "Preventive"
 msgstr "Préventive"
 
 #: plugins/polio/api/campaigns/filters/campaign_dashboards_filters.py
-#: plugins/polio/api/chronogram/filters.py
 msgid "On hold"
 msgstr "En pause"
 
 #: plugins/polio/api/campaigns/filters/filters.py
+#: plugins/polio/api/chronogram/filters.py
+#: plugins/polio/api/vaccines/supply_chain.py
 msgid "Campaign category"
 msgstr "Catégorie de campagne"
 

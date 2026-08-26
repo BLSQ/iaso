@@ -36,6 +36,14 @@ def _backfill_model(Model, model_name):
     )
 
     for instance in queryset:
+        # Storage.exists() is implemented consistently across backends (local filesystem,
+        # S3, Azure), unlike the exception a missing file raises on read: Azure's blob
+        # download raises azure.core.exceptions.ResourceNotFoundError, which isn't an
+        # OSError, so it wasn't caught below and crashed the whole migration.
+        if not instance.file.storage.exists(instance.file.name):
+            print(f"skipping {model_name} pk={instance.pk}: file {instance.file.name!r} not found in storage")
+            continue
+
         try:
             md5 = calculate_md5(instance.file)
         except (FileNotFoundError, OSError) as e:

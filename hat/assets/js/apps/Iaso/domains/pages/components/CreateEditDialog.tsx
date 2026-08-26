@@ -30,6 +30,7 @@ import MESSAGES from '../messages';
 import Form from './Form';
 import RadioInput from './RadioInput';
 import Rte from './Rte';
+import { SingleSelect } from './SingleSelect';
 import TextInput from './TextInput';
 import { UserRolesSelect } from './UserRolesSelect';
 import { UsersSelect } from './UsersSelect';
@@ -276,10 +277,12 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                                             className={classes.input}
                                         />
                                     </Grid>
-                                    <Grid xs={12} md={12} item>
+                                    <Grid xs={6} md={6} item>
                                         <Field
                                             label={formatMessage(MESSAGES.type)}
                                             name="type"
+                                            required
+                                            clearable={false}
                                             options={availablePagesTypes.map(
                                                 pageType => ({
                                                     value: pageType.value,
@@ -288,19 +291,19 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                                                     ),
                                                 }),
                                             )}
-                                            onChange={(newValue, form) => {
-                                                form.setFieldValue(
+                                            onChange={(_keyValue, newValue) => {
+                                                formik.setFieldValue(
                                                     'type',
                                                     newValue,
                                                 );
                                                 if (newValue === IFRAME) {
-                                                    form.setFieldValue(
+                                                    formik.setFieldValue(
                                                         'content',
                                                         '',
                                                     );
                                                 }
                                             }}
-                                            component={RadioInput}
+                                            component={SingleSelect}
                                             className={classes.input}
                                         />
                                     </Grid>

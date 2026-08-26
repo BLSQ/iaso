@@ -320,14 +320,18 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                                         )}
                                         {type === POWERBI && (
                                             <>
-                                                <Field
-                                                    label={formatMessage(
-                                                        MESSAGES.powerbiGroupId,
-                                                    )}
-                                                    name="powerbi_group_id"
-                                                    component={TextInput}
-                                                    className={classes.input}
-                                                />
+                                                <Box mb={2}>
+                                                    <Field
+                                                        label={formatMessage(
+                                                            MESSAGES.powerbiGroupId,
+                                                        )}
+                                                        name="powerbi_group_id"
+                                                        component={TextInput}
+                                                        className={
+                                                            classes.input
+                                                        }
+                                                    />
+                                                </Box>
                                                 <Field
                                                     label={formatMessage(
                                                         MESSAGES.powerbiReportId,

@@ -263,7 +263,7 @@ class FormAdmin(admin.GeoModelAdmin):
 @admin.register(FormVersion)
 @admin_attr_decorator
 class FormVersionAdmin(admin.GeoModelAdmin):
-    search_fields = ("form__name", "form__form_id")
+    search_fields = ("form__name", "form__form_id", "version_id")
     ordering = ("form__name",)
     autocomplete_fields = ("form", "created_by", "updated_by")
     list_select_related = ("form",)
@@ -318,13 +318,6 @@ class InstanceFileAdminInline(admin.TabularInline):
 @admin.register(Instance)
 @admin_attr_decorator
 class InstanceAdmin(admin.GeoModelAdmin):
-    raw_id_fields = (
-        "org_unit",
-        "entity",
-        "form_version",
-        "last_modified_by",
-        "created_by",
-    )
     search_fields = ("file_name", "uuid", "form__name", "form__form_id")
     list_display = (
         "id",
@@ -337,7 +330,17 @@ class InstanceAdmin(admin.GeoModelAdmin):
         "entity",
         "deleted",
     )
-    autocomplete_fields = ("form", "project")
+    autocomplete_fields = (
+        "form",
+        "project",
+        "device",
+        "org_unit",
+        "entity",
+        "form_version",
+        "last_modified_by",
+        "created_by",
+        "planning",
+    )
     list_filter = (
         "project",
         "deleted",
@@ -412,6 +415,14 @@ class InstanceAdmin(admin.GeoModelAdmin):
                 Entity.objects_include_deleted.all()
             )  # use the manager that includes soft-deleted objects
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+@admin.register(Device)
+@admin_attr_decorator
+class DeviceAdmin(admin.ModelAdmin):
+    list_display = ("id", "imei", "test_device", "created_at")
+    search_fields = ("imei",)
+    list_filter = ("test_device",)
 
 
 @admin.register(InstanceFile)
@@ -1386,7 +1397,6 @@ class TemporaryFormAdmin(admin.ModelAdmin):
 
 admin.site.register(TemporaryForm, TemporaryFormAdmin)
 admin.site.register(AccountFeatureFlag)
-admin.site.register(Device)
 admin.site.register(DeviceOwnership)
 admin.site.register(MatchingAlgorithm)
 admin.site.register(ExternalCredentials)

@@ -300,6 +300,13 @@ if DEBUG:
         "iaso.middlewares.query_count.SafeQueryCountMiddleware",
     ]
 
+# Extra origins (besides 'self') allowed to embed IASO's embeddable views (Page model, polio
+# embedded dashboards) in an <iframe>, e.g. "https://afro-rrt-who.hub.arcgis.com". Used to build
+# the Content-Security-Policy: frame-ancestors header set by iaso.utils.http.frame_ancestors_csp.
+EMBED_FRAME_ANCESTORS = env.list(
+    "EMBED_FRAME_ANCESTORS", default=["https://afro-rrt-who.hub.arcgis.com"], delimiter=","
+)
+
 MIDDLEWARE += [
     "axes.middleware.AxesMiddleware",
 ]

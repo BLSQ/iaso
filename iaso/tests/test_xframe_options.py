@@ -23,6 +23,15 @@ class XFrameOptionsTestCase(TestCase):
             content="<html><body>ok</body></html>",
             account=account,
         )
+        cls.public_page_with_embed_origins = Page.objects.create(
+            type="RAW",
+            needs_authentication=False,
+            name="Public embed page with configured origins",
+            slug="public-embed-page-with-origins",
+            content="<html><body>ok</body></html>",
+            account=account,
+            embed_allowed_origins=["https://afro-rrt-who.hub.arcgis.com"],
+        )
 
     def test_regular_dashboard_home_sets_deny(self):
         # Avoid rendering iaso/index.html (needs webpack-stats.json in CI).
@@ -52,8 +61,22 @@ class XFrameOptionsTestCase(TestCase):
             response = self.client.get("/dashboard/polio/embeddedCalendar/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsNone(response.get("X-Frame-Options"))
+        self.assertEqual(
+            response.get("Content-Security-Policy"),
+            "frame-ancestors 'self' https://afro-rrt-who.hub.arcgis.com",
+        )
 
     def test_pages_view_is_exempt(self):
         response = self.client.get(f"/pages/{self.public_page.slug}/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsNone(response.get("X-Frame-Options"))
+        self.assertEqual(response.get("Content-Security-Policy"), "frame-ancestors 'self'")
+
+    def test_pages_view_uses_page_embed_allowed_origins(self):
+        response = self.client.get(f"/pages/{self.public_page_with_embed_origins.slug}/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIsNone(response.get("X-Frame-Options"))
+        self.assertEqual(
+            response.get("Content-Security-Policy"),
+            "frame-ancestors 'self' https://afro-rrt-who.hub.arcgis.com",
+        )

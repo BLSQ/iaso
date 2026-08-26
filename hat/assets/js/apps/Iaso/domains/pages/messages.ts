@@ -130,6 +130,26 @@ const MESSAGES = defineMessages({
         id: 'iaso.pages.superset_dashboard_id_required',
         defaultMessage: 'Dashboard ID is required',
     },
+    powerbi: {
+        id: 'iaso.pages.powerbi',
+        defaultMessage: 'PowerBI',
+    },
+    powerbiGroupId: {
+        id: 'iaso.pages.powerbi_group_id',
+        defaultMessage: 'Group ID',
+    },
+    powerbiGroupIdRequired: {
+        id: 'iaso.pages.powerbi_group_id_required',
+        defaultMessage: 'Group ID is required',
+    },
+    powerbiReportId: {
+        id: 'iaso.pages.powerbi_report_id',
+        defaultMessage: 'Report ID',
+    },
+    powerbiReportIdRequired: {
+        id: 'iaso.pages.powerbi_report_id_required',
+        defaultMessage: 'Report ID is required',
+    },
     needsAuthentication: {
         id: 'iaso.label.needsAuthentication',
         defaultMessage: 'Authentification required',

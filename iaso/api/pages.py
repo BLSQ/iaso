@@ -3,10 +3,14 @@ from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import BooleanFilter, CharFilter, FilterSet
 from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from iaso.api.common import ModelViewSet, parse_comma_separated_numeric_values
 from iaso.models import Page
+from iaso.models.json_config import Config
 from iaso.permissions.core_permissions import CORE_PAGE_WRITE_PERMISSION, CORE_PAGES_PERMISSION
+from iaso.utils.powerbi import POWERBI_SERVICE_PRINCIPAL_CONFIG_SLUG
 
 
 class PagesSerializer(serializers.ModelSerializer):
@@ -101,3 +105,11 @@ class PagesViewSet(ModelViewSet):
             queryset = Page.objects.none()
 
         return queryset.order_by(*order).distinct()
+
+    @action(detail=False, methods=["get"])
+    def powerbi_available(self, request):
+        """Whether the PowerBI service principal is configured, i.e. whether the POWERBI page
+        type can be used. Deliberately does not expose the Config content itself, which holds
+        PowerBI service principal secrets."""
+        available = Config.objects.filter(slug=POWERBI_SERVICE_PRINCIPAL_CONFIG_SLUG).exists()
+        return Response({"available": available})

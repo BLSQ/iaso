@@ -7,6 +7,8 @@ from django.shortcuts import render
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.http import require_http_methods
 
+from iaso.utils.http import frame_ancestors_csp
+
 
 def _should_enable_analytics(request: HttpRequest) -> bool:
     """Check if analytics should be enabled based on environment variable"""
@@ -63,6 +65,7 @@ def iaso(request: HttpRequest) -> HttpResponse:
 
 
 @xframe_options_exempt
+@frame_ancestors_csp
 @require_http_methods(["GET"])
 def embeddable_iaso(request: HttpRequest) -> HttpResponse:
     """Embeddable iaso page without login requirement and without X-Frame-Options."""

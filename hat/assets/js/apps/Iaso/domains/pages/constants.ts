@@ -4,6 +4,7 @@ export const RAW = 'RAW';
 export const TEXT = 'TEXT';
 export const IFRAME = 'IFRAME';
 export const SUPERSET = 'SUPERSET';
+export const POWERBI = 'POWERBI';
 
 export const PAGES_TYPES = [
     {
@@ -21,5 +22,9 @@ export const PAGES_TYPES = [
     {
         value: 'SUPERSET',
         label: MESSAGES.superset,
+    },
+    {
+        value: 'POWERBI',
+        label: MESSAGES.powerbi,
     },
 ];

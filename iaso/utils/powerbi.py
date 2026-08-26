@@ -16,6 +16,7 @@ from iaso.models.task import Task
 SP_AUTH_URL = "https://login.microsoftonline.com/{tenant_id}/oauth2/token"
 POWERBI_RESOURCE = "https://analysis.windows.net/powerbi/api"
 GRANT_TYPE = "client_credentials"
+POWERBI_SERVICE_PRINCIPAL_CONFIG_SLUG = "powerbi_sp"
 
 
 def get_powerbi_service_principal_token(tenant_id, client_id, secret_value):
@@ -45,7 +46,7 @@ def get_powerbi_report_token(group_id, report_id):
     # FIXME : import is not extra but will do till we move this model
     from iaso.models.json_config import Config
 
-    conf = get_object_or_404(Config, slug="powerbi_sp")
+    conf = get_object_or_404(Config, slug=POWERBI_SERVICE_PRINCIPAL_CONFIG_SLUG)
     config = conf.content
 
     sp_access_token = get_powerbi_service_principal_token(
@@ -112,7 +113,7 @@ def launch_dataset_refresh(group_id, data_set_id):
     from iaso.models.json_config import Config
 
     # Get the config for the powerBI refresh
-    conf = get_object_or_404(Config, slug="powerbi_sp")
+    conf = get_object_or_404(Config, slug=POWERBI_SERVICE_PRINCIPAL_CONFIG_SLUG)
     config = conf.content
     # Get configs to launch associated OH pipelines if any
     dataset_config = get_extra_config_for_data_set_id(data_set_id)

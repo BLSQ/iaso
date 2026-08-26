@@ -4,8 +4,10 @@ from rest_framework import status
 
 from iaso import models as m
 from iaso.models import Page
+from iaso.models.json_config import Config
 from iaso.permissions.core_permissions import CORE_PAGE_WRITE_PERMISSION, CORE_PAGES_PERMISSION
 from iaso.test import APITestCase
+from iaso.utils.powerbi import POWERBI_SERVICE_PRINCIPAL_CONFIG_SLUG
 
 
 class PagesAPITestCase(APITestCase):
@@ -94,6 +96,19 @@ class PagesAPITestCase(APITestCase):
 
         response = self.client.get("/api/pages/")
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
+
+    def test_powerbi_available_false_when_not_configured(self):
+        self.client.force_login(self.first_user)
+        response = self.client.get("/api/pages/powerbi_available/")
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response.json(), {"available": False})
+
+    def test_powerbi_available_true_when_configured(self):
+        Config.objects.create(slug=POWERBI_SERVICE_PRINCIPAL_CONFIG_SLUG, content={})
+        self.client.force_login(self.first_user)
+        response = self.client.get("/api/pages/powerbi_available/")
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response.json(), {"available": True})
 
     def test_pages_list_linked_to_current_user(self):
         """Get /pages/ only pages linked to the current user"""

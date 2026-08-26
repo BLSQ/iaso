@@ -16,7 +16,15 @@ import { get, merge } from 'lodash';
 import isEqual from 'lodash/isEqual';
 import * as yup from 'yup';
 import { useCurrentUser } from '../../../utils/usersUtils';
-import { PAGES_TYPES, IFRAME, TEXT, RAW, SUPERSET } from '../constants';
+import {
+    PAGES_TYPES,
+    IFRAME,
+    TEXT,
+    RAW,
+    SUPERSET,
+    POWERBI,
+} from '../constants';
+import { useIsPowerBiConfigured } from '../hooks/useIsPowerBiConfigured';
 import { useSavePage } from '../hooks/useSavePage';
 import MESSAGES from '../messages';
 import Form from './Form';
@@ -48,6 +56,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
     selectedPage = null,
 }) => {
     const { mutate: savePage } = useSavePage();
+    const isPowerBiConfigured = useIsPowerBiConfigured();
 
     const classes: Record<string, string> = useStyles({});
     const { formatMessage } = useSafeIntl();
@@ -80,7 +89,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                     .string()
                     .trim()
                     .url(formatMessage(MESSAGES.urlNotValid));
-            } else if (type === SUPERSET) {
+            } else if (type === SUPERSET || type === POWERBI) {
                 content = yup.string().trim().nullable();
             } else {
                 content = yup.string().trim();
@@ -103,6 +112,28 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                               .required(
                                   formatMessage(
                                       MESSAGES.supersetDashboardIdRequired,
+                                  ),
+                              )
+                        : yup.string().trim().nullable(),
+                powerbi_group_id:
+                    type === POWERBI
+                        ? yup
+                              .string()
+                              .trim()
+                              .required(
+                                  formatMessage(
+                                      MESSAGES.powerbiGroupIdRequired,
+                                  ),
+                              )
+                        : yup.string().trim().nullable(),
+                powerbi_report_id:
+                    type === POWERBI
+                        ? yup
+                              .string()
+                              .trim()
+                              .required(
+                                  formatMessage(
+                                      MESSAGES.powerbiReportIdRequired,
                                   ),
                               )
                         : yup.string().trim().nullable(),
@@ -131,6 +162,13 @@ const CreateEditDialog: FunctionComponent<Props> = ({
         contentComponent = Rte;
     }
     const isNewPage = !initialValues.id;
+    // Only offer PowerBI as a type when it's configured, unless the page already uses it.
+    const availablePagesTypes = PAGES_TYPES.filter(
+        pageType =>
+            pageType.value !== POWERBI ||
+            isPowerBiConfigured ||
+            type === POWERBI,
+    );
     return (
         <Dialog
             fullWidth
@@ -242,7 +280,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                                         <Field
                                             label={formatMessage(MESSAGES.type)}
                                             name="type"
-                                            options={PAGES_TYPES.map(
+                                            options={availablePagesTypes.map(
                                                 pageType => ({
                                                     value: pageType.value,
                                                     label: formatMessage(
@@ -277,15 +315,36 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                                                 className={classes.input}
                                             />
                                         )}
-                                        {type !== SUPERSET && (
-                                            <Field
-                                                label={contentLabel}
-                                                name="content"
-                                                multiline={type === RAW}
-                                                component={contentComponent}
-                                                className={classes.input}
-                                            />
+                                        {type === POWERBI && (
+                                            <>
+                                                <Field
+                                                    label={formatMessage(
+                                                        MESSAGES.powerbiGroupId,
+                                                    )}
+                                                    name="powerbi_group_id"
+                                                    component={TextInput}
+                                                    className={classes.input}
+                                                />
+                                                <Field
+                                                    label={formatMessage(
+                                                        MESSAGES.powerbiReportId,
+                                                    )}
+                                                    name="powerbi_report_id"
+                                                    component={TextInput}
+                                                    className={classes.input}
+                                                />
+                                            </>
                                         )}
+                                        {type !== SUPERSET &&
+                                            type !== POWERBI && (
+                                                <Field
+                                                    label={contentLabel}
+                                                    name="content"
+                                                    multiline={type === RAW}
+                                                    component={contentComponent}
+                                                    className={classes.input}
+                                                />
+                                            )}
                                     </Grid>
                                 </Grid>
                             </Grid>

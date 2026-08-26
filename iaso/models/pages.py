@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -30,6 +31,14 @@ class Page(models.Model):
     needs_authentication = models.BooleanField(default=True)
     slug = models.SlugField(max_length=1000, unique=True)
     account = models.ForeignKey(Account, on_delete=models.PROTECT, blank=True, null=True)
+    embed_allowed_origins = ArrayField(
+        models.CharField(max_length=255),
+        default=list,
+        blank=True,
+        help_text="Origins allowed to embed this page in an <iframe>, in addition to this site itself "
+        "(e.g. https://afro-rrt-who.hub.arcgis.com). Used to build the "
+        "Content-Security-Policy: frame-ancestors header.",
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

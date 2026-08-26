@@ -12,6 +12,7 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 
 from iaso.models import IFRAME, POWERBI, SUPERSET, TEXT, Account, Page
 from iaso.permissions.core_permissions import CORE_PAGE_WRITE_PERMISSION
+from iaso.utils.http import set_frame_ancestors_csp
 from iaso.utils.powerbi import get_powerbi_report_token
 
 
@@ -108,7 +109,7 @@ def page(request, page_slug):
         if analytics_script and raw_html is not None:
             raw_html = addTag(raw_html, analytics_script)
         response = HttpResponse(raw_html)
-    return response
+    return set_frame_ancestors_csp(response, page.embed_allowed_origins)
 
 
 def user_can_access_page(user, page):

@@ -23,7 +23,7 @@ from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Prefetch, Subquery
+from django.db.models import Exists, OuterRef, Prefetch
 
 from iaso.models import Account, Instance, OrgUnit, Project
 from iaso.models.deduplication import ValidationStatus
@@ -151,7 +151,11 @@ class EntityQuerySet(models.QuerySet):
             except ValidationError:
                 raise InvalidLimitDateError(f"Invalid limit date {limit_date}")
 
-        return self.filter(id__in=Subquery(instances.values("entity_id").distinct()))
+        # Exists(...) with a correlated OuterRef lets Postgres push the entity_id correlation down
+        # (nested loop keyed on the entity's own instances) instead of the id__in=Subquery(...distinct())
+        # shape, which forced Postgres to materialize/sort/dedupe every matching instance row across the
+        # whole table before it could probe entities against it -- the dominant cost of this query in prod.
+        return self.filter(Exists(instances.filter(entity_id=OuterRef("pk"))))
 
     def filter_for_mobile_entity(self, limit_date=None, json_content=None):
         queryset = self

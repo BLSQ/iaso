@@ -34,7 +34,20 @@ def _sso_providers():
 def get_sso_urlpatterns():
     """Generate URL patterns for all configured SSO providers."""
     patterns = []
-    for provider_id, config in getattr(settings, "SSO_PROVIDERS", {}).items():
+    sso_providers = getattr(settings, "SSO_PROVIDERS", {})
+    if sso_providers:
+        # allauth's own error-handling code (render_authentication_error) reverses this
+        # URL name when the user cancels the login on the provider's side. This project
+        # doesn't include allauth's own account/socialaccount urls (it has its own login
+        # system), so without this the cancelled-login case crashes with NoReverseMatch.
+        patterns.append(
+            path(
+                "accounts/login/cancelled/",
+                RedirectView.as_view(url=settings.LOGIN_URL),
+                name="socialaccount_login_cancelled",
+            )
+        )
+    for provider_id, config in sso_providers.items():
         adapter_cls = get_adapter_class(provider_id)
 
         login_path = config.get("login_path", f"{provider_id}/login/")

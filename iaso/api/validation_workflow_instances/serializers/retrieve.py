@@ -46,7 +46,8 @@ class BaseNestedTimelineSerializer(ModelSerializer):
     @extend_schema_field(serializers.IntegerField)
     def get_order(self, obj):
         list_nodes = list(self.context["node_dumps"])
-        return list_nodes.index(self.get_node_slug(obj)) + 1
+        slug = self.get_node_slug(obj)
+        return list_nodes.index(slug) + 1 if slug in list_nodes else 0
 
 
 class NestedTimelineSerializer(BaseNestedTimelineSerializer):

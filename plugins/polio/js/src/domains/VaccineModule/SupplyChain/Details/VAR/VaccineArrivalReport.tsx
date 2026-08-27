@@ -209,8 +209,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                 vials_received: vialsReceived,
             });
         },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [index, setFieldValue, arrival_reports],
+        [arrival_reports, index, handleSetValues],
     );
 
     const onDosesShippedFocused = () => {

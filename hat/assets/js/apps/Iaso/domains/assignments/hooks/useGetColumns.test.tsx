@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { AssignmentCell } from '../components/AssignmentCell';
+import { AssignmentCell } from '../components/table/AssignmentCell';
 import { useGetColumns } from './useGetColumns';
 
 vi.mock('bluesquare-components', async importOriginal => {
@@ -23,12 +23,10 @@ describe('useGetColumns', () => {
         expect(result.current[0]).toMatchObject({
             Header: 'Id',
             accessor: 'id',
-            sortable: false,
         });
         expect(result.current[1]).toMatchObject({
             Header: 'Name',
             accessor: 'name',
-            sortable: false,
         });
         expect(result.current[2]).toMatchObject({
             Header: 'Assignment',

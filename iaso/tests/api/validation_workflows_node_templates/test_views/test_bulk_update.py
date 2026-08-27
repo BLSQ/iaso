@@ -401,3 +401,26 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
 
         self.assertHasError(res_data, api_settings.NON_FIELD_ERRORS_KEY, "Names must be unique.")
+
+    def test_forbidden_if_validation_workflow_is_soft_deleted(self):
+        self.validation_workflow.delete()
+        self.validation_workflow.refresh_from_db()
+        self.assertIsNotNone(self.validation_workflow.deleted_at)
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.put(
+            reverse(
+                "validation_node_templates-bulk",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
+            ),
+            data=[
+                {"slug": self.third_node.slug, "name": "new first node", "roles_required": [self.user_role.pk]},
+                {"slug": self.first_node.slug, "name": "new second node", "can_skip_previous_nodes": True},
+                {
+                    "slug": self.second_node.slug,
+                    "name": "new third node",
+                    "description": "some description",
+                },
+            ],
+        )
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)

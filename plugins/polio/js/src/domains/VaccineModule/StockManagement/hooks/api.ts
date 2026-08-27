@@ -292,7 +292,7 @@ export const useCampaignOptions = (
     const { data, isFetching } = useGetCampaigns(
         // Show on hold and test campaigns to avoid missing forms
         // whose campaign has been changed after creation
-        { show_test: true, on_hold: true },
+        { show_test: true },
         CAMPAIGNS_ENDPOINT,
         undefined,
         queryOptions,

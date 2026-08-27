@@ -179,8 +179,7 @@ export const OrgUnitForm: FunctionComponent<Props> = ({
         if (orgUnit?.id !== formState.id.value) {
             setFormState(initialFormState(orgUnit));
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [orgUnit?.id]);
+    }, [formState.id.value, orgUnit, orgUnit?.id, setFormState]);
     return (
         <Box pt={isNewOrgunit ? 2 : 0}>
             <Grid

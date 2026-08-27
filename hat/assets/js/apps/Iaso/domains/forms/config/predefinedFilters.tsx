@@ -75,7 +75,7 @@ export const useGetActionColumns = (
                                 iconProps={{}}
                                 save={save}
                                 isSaving={isSaving}
-                                form_id={params.formId}
+                                form_id={Number(params.formId)}
                                 id={settings.row.original.id}
                                 predefinedFilter={settings.row.original}
                             />

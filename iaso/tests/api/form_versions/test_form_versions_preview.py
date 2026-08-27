@@ -32,6 +32,7 @@ from django.core.files import File
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile, UploadedFile
 from django.test import override_settings
+from rest_framework import status
 
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
@@ -101,7 +102,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 data={"form_id": self.form_with_version.id, "xls_file": xls_file},
                 format="multipart",
             )
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_preview_no_form_permission(self):
         """Authenticated user without CORE_FORMS_PERMISSION → 403."""
@@ -112,7 +113,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 data={"form_id": self.form_with_version.id, "xls_file": xls_file},
                 format="multipart",
             )
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_preview_wrong_account(self):
         """User from a different account cannot access the form → 400 (serializer ValidationError)."""
@@ -123,7 +124,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 data={"form_id": self.form_with_version.id, "xls_file": xls_file},
                 format="multipart",
             )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     # -------------------------------------------------------------------------
     # Input validation
@@ -138,7 +139,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 data={"form_id": 99999, "xls_file": xls_file},
                 format="multipart",
             )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_preview_missing_form_id(self):
         """Request without form_id → 400."""
@@ -149,7 +150,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 data={"xls_file": xls_file},
                 format="multipart",
             )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_preview_missing_xls_file(self):
         """Request without xls_file → 400."""
@@ -159,7 +160,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
             data={"form_id": self.form_with_version.id},
             format="multipart",
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_preview_invalid_xls(self):
         """Structurally invalid XLS → 400 with an xls_file error key.
@@ -175,7 +176,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 data={"form_id": self.form_with_version.id, "xls_file": xls_file},
                 format="multipart",
             )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         data = response.json()
         self.assertTrue(
             "xls_file_validation_errors" in data or "xls_file" in data,
@@ -203,7 +204,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
             data={"form_id": self.form_with_version.id, "xls_file": xls_file},
             format="multipart",
         )
-        data = self.assertJSONResponse(response, 400)
+        data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("xls_file_validation_errors", data)
         error_messages = [e["message"] for e in data["xls_file_validation_errors"]]
         self.assertTrue(
@@ -224,7 +225,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 data={"form_id": self.form_empty.id, "xls_file": xls_file},
                 format="multipart",
             )
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertIsNone(data["previous_version_id"])
         self.assertEqual(data["removed_questions"], [])
         self.assertEqual(data["added_questions"], [])
@@ -243,7 +244,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 data={"form_id": self.form_with_version.id, "xls_file": xls_file},
                 format="multipart",
             )
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(data["previous_version_id"], "2020010101")
 
     def test_preview_removed_question(self):
@@ -255,7 +256,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 data={"form_id": self.form_with_version.id, "xls_file": xls_file},
                 format="multipart",
             )
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         removed_names = {q["name"] for q in data["removed_questions"]}
         self.assertIn("birth_date", removed_names)
 
@@ -268,7 +269,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 data={"form_id": self.form_with_version.id, "xls_file": xls_file},
                 format="multipart",
             )
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         added_names = {q["name"] for q in data["added_questions"]}
         self.assertIn("phone_number", added_names)
 
@@ -281,7 +282,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 data={"form_id": self.form_with_version.id, "xls_file": xls_file},
                 format="multipart",
             )
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         modified_by_name = {q["name"]: q for q in data["modified_questions"]}
         self.assertIn("age", modified_by_name)
         self.assertEqual(modified_by_name["age"]["old_type"], "integer")
@@ -296,7 +297,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 data={"form_id": self.form_with_version.id, "xls_file": xls_file},
                 format="multipart",
             )
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         all_diff_names = (
             {q["name"] for q in data["removed_questions"]}
             | {q["name"] for q in data["added_questions"]}
@@ -314,7 +315,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 data={"form_id": self.form_with_version.id, "xls_file": xls_file},
                 format="multipart",
             )
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(data["removed_questions"]), 1, data["removed_questions"])
         self.assertEqual(len(data["added_questions"]), 1, data["added_questions"])
         self.assertEqual(len(data["modified_questions"]), 1, data["modified_questions"])
@@ -329,7 +330,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 data={"form_id": self.form_with_version.id, "xls_file": xls_file},
                 format="multipart",
             )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(self.form_with_version.form_versions.count(), count_before)
 
     def test_preview_query_count(self):
@@ -343,7 +344,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
                     data={"form_id": self.form_with_version.id, "xls_file": xls_file},
                     format="multipart",
                 )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     # -------------------------------------------------------------------------
     # IA-5214 — form assigned to multiple projects
@@ -367,4 +368,4 @@ class FormVersionPreviewAPITestCase(APITestCase):
                     data={"form_id": self.form_two_projects.id, "xls_file": xls_file},
                     format="multipart",
                 )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)

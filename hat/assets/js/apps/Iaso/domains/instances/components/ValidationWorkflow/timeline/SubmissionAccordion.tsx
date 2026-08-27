@@ -24,6 +24,7 @@ type SubmissionAccordionProps = {
     createdAt: string;
     createdBy: string;
     instanceId: number;
+    isFirstSubmission: boolean;
 };
 
 const getTextColorFromStatus = (
@@ -60,6 +61,7 @@ export const SubmissionAccordion = ({
     createdAt,
     createdBy,
     instanceId,
+    isFirstSubmission,
 }: SubmissionAccordionProps) => {
     const { formatMessage } = useSafeIntl();
 
@@ -140,6 +142,7 @@ export const SubmissionAccordion = ({
             </AccordionSummary>
             <AccordionDetails>
                 <SubmissionList
+                    isFirstSubmission={isFirstSubmission}
                     timeline={submission.timeline}
                     totalSteps={totalSteps}
                     instanceId={instanceId}

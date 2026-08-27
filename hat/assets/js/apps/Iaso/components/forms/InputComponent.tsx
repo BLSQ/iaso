@@ -47,6 +47,7 @@ export type NumberInputOptions = {
     decimalSeparator?: '.' | ',';
     thousandSeparator?: '.' | ',' | ' ';
     thousandsGroupStyle?: 'thousand' | 'lakh' | 'wan';
+    currency?: string;
 };
 
 export type PhoneInputOptions = {
@@ -95,6 +96,7 @@ export type InputComponentProps = {
     numberInputOptions?: {
         prefix?: string;
         suffix?: string;
+        currency?: string;
         min?: number;
         max?: number;
         decimalScale?: number;
@@ -223,6 +225,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         }}
                         debounceTime={debounceTime}
                         dataTestId={dataTestId}
+                        helperText={helperText}
                     />
                 );
             case 'password':

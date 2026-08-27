@@ -11,10 +11,12 @@ export type OrgUnitTypeHierarchy = {
     category: string;
     sub_unit_types: OrgUnitTypeHierarchy[];
 };
-export type OrgUnitTypeHierarchyDropdownValues = DropdownOptionsWithOriginal<
+export type OrgUnitTypeHierarchyDropdownValue = DropdownOptionsWithOriginal<
     number,
     OrgUnitTypeHierarchy
->[];
+>;
+export type OrgUnitTypeHierarchyDropdownValues =
+    OrgUnitTypeHierarchyDropdownValue[];
 
 /**
  * Fetch org unit types hierarchy as a tree.
@@ -22,7 +24,7 @@ export type OrgUnitTypeHierarchyDropdownValues = DropdownOptionsWithOriginal<
  * For dropdowns, flatten this hierarchy with `flattenOrgUnitTypeHierarchy`.
  */
 export const useGetOrgUnitTypesHierarchy = <TSelected = OrgUnitTypeHierarchy>(
-    orgUnitTypeId?: number,
+    orgUnitTypeId?: number | null,
     select?: (data: OrgUnitTypeHierarchy) => TSelected,
 ): UseQueryResult<TSelected, Error> => {
     const queryKey: QueryKey = ['orgUnitTypeHierarchy', orgUnitTypeId, select];

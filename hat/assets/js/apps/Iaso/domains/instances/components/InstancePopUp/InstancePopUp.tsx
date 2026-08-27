@@ -17,8 +17,9 @@ import ConfirmDialog from '../../../../components/dialogs/ConfirmDialogComponent
 
 import { baseUrls } from '../../../../constants/urls';
 import { usePopupState } from '../../../../utils/map/usePopupState';
-import { useGetInstance } from '../../../registry/hooks/useGetInstances';
+
 import { INSTANCE_MAP_METAS_FIELDS } from '../../constants';
+import { useGetInstance } from '../../hooks/requests/useGetInstance';
 import MESSAGES from '../../messages';
 import { Instance } from '../../types/instance';
 import InstanceDetailsInfos from '../InstanceDetailsInfos';

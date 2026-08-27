@@ -19,11 +19,12 @@ from datetime import timedelta
 from typing import Any, Dict
 from urllib.parse import urlparse
 
+import rtoml
 import sentry_sdk
 
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy as _
-from environs import Env as _Env
+from environs import Env as _Env, EnvError
 from requests.exceptions import HTTPError
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -62,16 +63,21 @@ ENABLE_CORS = env.bool("ENABLE_CORS", default=True)
 # This should be the same as the one set on: `/admin/sites/site/1/change/`
 
 DNS_DOMAIN = env.str("DNS_DOMAIN", default="localhost:8081")
-TESTING = env.bool("TESTING", default=False)
 IN_TESTS = len(sys.argv) > 1 and sys.argv[1] == "test"
 PLUGINS = env.list("PLUGINS", default=[], delimiter=",")
 ROOT_REDIRECT_PATTERN_NAME = env.str("ROOT_REDIRECT_PATTERN_NAME", default="dashboard:home_iaso")
-
+DEFAULT_APP_ID = env.str("DEFAULT_APP_ID", default="")
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env.str("SECRET_KEY", default=None)
+
+# Old secret keys kept for signature verification only (not used to sign new values).
+# Set this to the previous SECRET_KEY(s) when rotating SECRET_KEY so that existing
+# sessions, password reset tokens and other signed data stay valid during the rollover.
+# Comma separated list of keys, e.g. SECRET_KEY_FALLBACKS=old_key_1,old_key_2
+SECRET_KEY_FALLBACKS = env.list("SECRET_KEY_FALLBACKS", default=[], delimiter=",")
 
 # SECURITY WARNING: keep the encryption key used in production secret!
 ENCRYPTED_TEXT_FIELD_KEY = env.str("ENCRYPTED_TEXT_FIELD_KEY", default=None)
@@ -98,6 +104,20 @@ if static_url:
     CDN_URL = urlparse(static_url).hostname
 else:
     CDN_URL = None
+
+# deployment info for /health/
+DEPLOYED_BY = env.str("DEPLOYED_BY", default="unknown")
+DEPLOYED_ON = env.str("DEPLOYED_ON", default="unknown")
+PROD_IMAGE_CREATION = env.str("PROD_IMAGE_CREATION", default="unknown")
+PROD_IMAGE_DIGEST = env.str("PROD_IMAGE_DIGEST", default="unknown")
+PROD_IMAGE_TAG = env.str("PROD_IMAGE_TAG", default="unknown")
+try:
+    with open(os.path.join(BASE_DIR, "pyproject.toml")) as opened_file:
+        pyproject_toml = rtoml.load(opened_file)
+    version = pyproject_toml["project"]["version"]
+except Exception as e:
+    version = "error - unknown version"
+IASO_VERSION = version
 
 DEV_SERVER = env.bool("DEV_SERVER", default=False)
 ENVIRONMENT = env.str("SENTRY_ENVIRONMENT", default="development").lower()
@@ -141,7 +161,8 @@ SITE_ID = 1
 # Logging
 
 LOGGING_LEVEL = env.str("DJANGO_LOGGING_LEVEL", default="INFO")
-if TESTING:
+HAT_LOGGING_LEVEL = env.str("HAT_LOGGING_LEVEL", default="DEBUG")
+if IN_TESTS:
     # We don't want to see log output when running tests
     LOGGING_LEVEL = "CRITICAL"
 
@@ -172,7 +193,7 @@ LOGGING: Dict[str, Any] = {
     "loggers": {
         "django": {"level": LOGGING_LEVEL},
         "rq": {"level": LOGGING_LEVEL},
-        "hat": {"level": LOGGING_LEVEL},
+        "hat": {"level": HAT_LOGGING_LEVEL},
         "iaso": {"level": LOGGING_LEVEL},
         "plugins": {"level": LOGGING_LEVEL},
         "beanstalk_worker": {"level": LOGGING_LEVEL},
@@ -226,6 +247,7 @@ INSTALLED_APPS += [
     "rest_framework_api_key",
     "webpack_loader",
     "django_ltree",
+    "hat",
     "hat.sync",
     "hat.api_import",
     "hat.audit",
@@ -319,6 +341,8 @@ TEMPLATES = [
                 "hat.common.context_processors.product_fruits_config",
                 "hat.common.context_processors.learn_more_url",
                 "hat.common.context_processors.available_languages",
+                "hat.common.context_processors.default_app_id",
+                "hat.common.context_processors.dns_domain",
             ]
         },
     }
@@ -541,11 +565,13 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=3650),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=3651),
     "TOKEN_OBTAIN_SERIALIZER": "iaso.serializers.CustomTokenObtainPairSerializer",
+    "ROTATE_REFRESH_TOKENS": True,
 }
 
 AWS_S3_REGION_NAME = env.str("AWS_S3_REGION_NAME", default="eu-central-1")
 AWS_ACCESS_KEY_ID = env.str("AWS_ACCESS_KEY_ID", default=None)
 AWS_SECRET_ACCESS_KEY = env.str("AWS_SECRET_ACCESS_KEY", default=None)
+AWS_PUBLIC_STORAGE_BUCKET_NAME = env.str("AWS_PUBLIC_STORAGE_BUCKET_NAME", default=None)
 
 MEDIA_URL_PREFIX = "/media/"
 if USE_S3:
@@ -671,12 +697,6 @@ WEBPACK_LOADER = {
 
 AUTH_PROFILE_MODULE = "hat.users.Profile"
 
-try:
-    from hat.__version__ import VERSION
-except Exception as e:
-    print("error importing hat.__version__", e)
-    VERSION = "undetected_version"
-
 
 if SENTRY_URL:
     traces_sample_rate = env.float("SENTRY_TRACES_SAMPLE_RATE", default=0.1)
@@ -733,7 +753,7 @@ if SENTRY_URL:
         error_sampler=sentry_error_sampler,
         integrations=integrations,
         send_default_pii=True,
-        release=VERSION,
+        release=IASO_VERSION,
     )
 
 # Workers configuration
@@ -833,9 +853,9 @@ CODE_CHALLENGE = generate_pkce()
 
 SOCIALACCOUNT_PROVIDERS = {}
 
+
 WFP_AUTH_CLIENT_ID = env.str("WFP_AUTH_CLIENT_ID", default=None)
-# for now, only WFP uses social_accounts
-ACTIVATE_SOCIAL_ACCOUNT = WFP_AUTH_CLIENT_ID is not None
+
 if WFP_AUTH_CLIENT_ID:
     # Activate WFP login
     # activate the wfp_auth plugin only if needed
@@ -855,6 +875,46 @@ if WFP_AUTH_CLIENT_ID:
         "IASO_ACCOUNT_NAME": iaso_account,
         "EMAIL_RECIPIENTS_NEW_ACCOUNT": env.list("WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT", default=[], delimiter=","),
     }
+
+# Generic SSO providers (e.g. WHO via Microsoft Entra ID)
+SSO_PROVIDERS = {}
+
+SSO_WHO_CLIENT_ID = env.str("SSO_WHO_CLIENT_ID", default="")
+if SSO_WHO_CLIENT_ID:
+    SSO_WHO_TENANT_ID = env.str("SSO_WHO_TENANT_ID", default="")
+    if not SSO_WHO_TENANT_ID:
+        raise ImproperlyConfigured("need SSO_WHO_TENANT_ID when SSO_WHO_CLIENT_ID is set")
+    try:
+        sso_who_account = env.int("SSO_WHO_ACCOUNT")
+    except EnvError:
+        raise ImproperlyConfigured("need SSO_WHO_ACCOUNT to associate a tenant to the WHO auth server")
+
+    SSO_PROVIDERS["who"] = {
+        "name": "WHO",
+        "client_id": SSO_WHO_CLIENT_ID,
+        "tenant_id": SSO_WHO_TENANT_ID,
+        "client_secret": env.str("SSO_WHO_CLIENT_SECRET", default=""),
+        "pkce_enabled": True,
+        "scope": ["openid", "profile", "email"],
+        "authorize_url": f"https://login.microsoftonline.com/{SSO_WHO_TENANT_ID}/oauth2/v2.0/authorize",
+        "token_url": f"https://login.microsoftonline.com/{SSO_WHO_TENANT_ID}/oauth2/v2.0/token",
+        "userinfo_url": "https://graph.microsoft.com/oidc/userinfo",
+        "login_path": "polio/login/",
+        "callback_path": "polio/login/callback",
+        "token_path": "polio/token/",
+        "account_id": sso_who_account,
+        "email_recipients_new_account": env.list("SSO_WHO_EMAIL_RECIPIENTS_NEW_ACCOUNT", default=[], delimiter=","),
+    }
+
+# Derive allauth SOCIALACCOUNT_PROVIDERS from SSO_PROVIDERS so there is a single config dict per provider.
+for _provider_id, _config in SSO_PROVIDERS.items():
+    SOCIALACCOUNT_PROVIDERS[_provider_id] = {
+        "APP": {"client_id": _config["client_id"], "secret": _config.get("client_secret", "")},
+        "OAUTH_PKCE_ENABLED": _config.get("pkce_enabled", True),
+        "SCOPE": _config.get("scope", ["openid", "profile", "email"]),
+    }
+
+ACTIVATE_SOCIAL_ACCOUNT = bool(WFP_AUTH_CLIENT_ID) or bool(SSO_PROVIDERS)
 
 CACHES = {
     "default": {
@@ -949,6 +1009,7 @@ SETUPER_SANDBOX_PASSWORD = env.str("SETUPER_SANDBOX_PASSSWORD", default="distric
 
 # Form AI
 FORM_AI_MODEL = env.str("FORM_AI_MODEL", default="claude-opus-4-7")
+FORM_AI_MAX_TOKENS = env.int("FORM_AI_MAX_TOKENS", default=32000)
 
 # TEST MODE
 TEST_MODE = env.bool("TEST_MODE", default=False)

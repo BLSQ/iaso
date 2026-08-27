@@ -4,6 +4,8 @@ import uuid
 from unittest import mock
 
 from django.core.files import File
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from rest_framework import status
 
 from iaso import models as m
@@ -132,7 +134,7 @@ class EntityTypeAPITestCase(APITestCase):
 
         response = self.client.post("/api/entitytypes/", data=payload, format="json")
 
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_create_entity_type_without_permission(self):
         self.client.force_authenticate(self.chewie)
@@ -145,7 +147,7 @@ class EntityTypeAPITestCase(APITestCase):
 
         response = self.client.post("/api/entitytypes/", data=payload, format="json")
 
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_get_entity_type(self):
         self.client.force_authenticate(self.yoda)
@@ -159,7 +161,7 @@ class EntityTypeAPITestCase(APITestCase):
 
         response = self.client.get("/api/entitytypes/", format="json")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_update_entity_type(self):
         self.client.force_authenticate(self.yoda)
@@ -181,7 +183,7 @@ class EntityTypeAPITestCase(APITestCase):
         response = self.client.patch(
             f"/api/entitytypes/{EntityType.objects.last().pk}/", data=patch_payload, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_update_entity_type_without_permission(self):
         self.client.force_authenticate(self.yoda)
@@ -204,7 +206,7 @@ class EntityTypeAPITestCase(APITestCase):
         response = self.client.patch(
             f"/api/entitytypes/{EntityType.objects.last().pk}/", data=patch_payload, format="json"
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_entity_type_are_unique_per_account(self):
         self.client.force_authenticate(self.yoda)
@@ -221,7 +223,7 @@ class EntityTypeAPITestCase(APITestCase):
 
         response = self.client.post("/api/entitytypes/", data=payload, format="json")
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_entity_types_are_multitenancy(self):
         self.client.force_authenticate(self.yoda)
@@ -234,7 +236,7 @@ class EntityTypeAPITestCase(APITestCase):
         response = self.client.post("/api/entitytypes/", data=payload, format="json")
         get_response = self.client.get("/api/entitytypes/")
 
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(len(get_response.json()), 1)
 
     def test_get_mobile_entity_types(self):
@@ -255,7 +257,7 @@ class EntityTypeAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/mobile/entitytypes/?app_id={self.project.app_id}")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()["count"], 1)
         self.assertEqual(response.json()["results"][0]["code"], code)
 
@@ -562,10 +564,17 @@ class EntityTypeAPITestCase(APITestCase):
         deleted_instance_2.save()
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/mobile/entitytypes/{entity_type.pk}/entities/?app_id={self.project.app_id}")
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get(
+                f"/api/mobile/entitytypes/{entity_type.pk}/entities/?app_id={self.project.app_id}"
+            )
         response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(response_json["count"], 0)  # all entities have their reference instance deleted
+        # `filter_for_mobile_entity` must not force early evaluation of an empty
+        # queryset (e.g. via `if queryset:`), which would add an extra query.
+        self.assertEqual(len(ctx.captured_queries), 4)
 
     def test_entity_types_are_account_restricted(self):
         self.client.force_authenticate(self.yoda)
@@ -575,6 +584,6 @@ class EntityTypeAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/mobile/entitytypes/?app_id={self.project.app_id}")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()["count"], 1)
         self.assertEqual(response.json()["results"][0]["name"], "allowed")

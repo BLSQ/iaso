@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 from django.core.files import File
 from django.core.files.uploadedfile import UploadedFile
 from django.utils.timezone import now
+from rest_framework import status
 
 from iaso import models as m
 from iaso.odk import parsing
@@ -94,6 +95,29 @@ class InstanceModelTestCase(TestCase, InstanceBase):
         self.assertStatusIs(self.instance_4, m.Instance.STATUS_EXPORTED)
         self.assertStatusIs(self.instance_5, m.Instance.STATUS_READY)
         self.assertStatusIs(self.instance_6, m.Instance.STATUS_READY)
+
+    def test_with_status_skips_duplicates_query_when_no_single_per_period_form(self):
+        """
+        with_status(form_ids=...) should drop the duplicates GROUP BY/HAVING computation from the
+        generated SQL when none of the given forms are single_per_period, since only single_per_period
+        forms can ever produce STATUS_DUPLICATED instances.
+        """
+        # form_2 alone: not single_per_period -> duplicates computation is skipped from the SQL entirely.
+        sql = str(m.Instance.objects.with_status(form_ids=[self.form_2.id]).query)
+        self.assertNotIn("GROUP BY", sql)
+
+        # form_1 alone: single_per_period -> duplicates computation is kept.
+        sql = str(m.Instance.objects.with_status(form_ids=[self.form_1.id]).query)
+        self.assertIn("GROUP BY", sql)
+
+        # form_1 and form_2: at least one single_per_period form -> duplicates computation is kept.
+        sql = str(m.Instance.objects.with_status(form_ids=[self.form_1.id, self.form_2.id]).query)
+        self.assertIn("GROUP BY", sql)
+
+        # No form_ids given: can't know in advance without an extra query, so duplicates computation is
+        # kept unconditionally, against every single_per_period form (previous behavior).
+        sql = str(m.Instance.objects.with_status().query)
+        self.assertIn("GROUP BY", sql)
 
     def test_instance_status_duplicated_over_exported(self):
         instance_1 = self.create_form_instance(
@@ -593,17 +617,17 @@ class InstanceAPITestCase(APITestCase, InstanceBase):
         # Authenticate & query API endpoint
         self.client.force_authenticate(self.yoda)
         response_1 = self.client.get(f"/api/instances/{self.instance_1.id}/", format="json")
-        json_1 = self.assertJSONResponse(response_1, 200)
+        json_1 = self.assertJSONResponse(response_1, status.HTTP_200_OK)
         response_2 = self.client.get(f"/api/instances/{self.instance_2.id}/", format="json")
-        json_2 = self.assertJSONResponse(response_2, 200)
+        json_2 = self.assertJSONResponse(response_2, status.HTTP_200_OK)
         response_3 = self.client.get(f"/api/instances/{self.instance_3.id}/", format="json")
-        json_3 = self.assertJSONResponse(response_3, 200)
+        json_3 = self.assertJSONResponse(response_3, status.HTTP_200_OK)
         response_4 = self.client.get(f"/api/instances/{self.instance_4.id}/", format="json")
-        json_4 = self.assertJSONResponse(response_4, 200)
+        json_4 = self.assertJSONResponse(response_4, status.HTTP_200_OK)
         response_5 = self.client.get(f"/api/instances/{self.instance_5.id}/", format="json")
-        json_5 = self.assertJSONResponse(response_5, 200)
+        json_5 = self.assertJSONResponse(response_5, status.HTTP_200_OK)
         response_6 = self.client.get(f"/api/instances/{self.instance_6.id}/", format="json")
-        json_6 = self.assertJSONResponse(response_6, 200)
+        json_6 = self.assertJSONResponse(response_6, status.HTTP_200_OK)
 
         # Check results
         self.assertStatusesAreEqual(self.instance_1, json_1["status"], m.Instance.STATUS_READY)

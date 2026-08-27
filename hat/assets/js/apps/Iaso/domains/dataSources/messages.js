@@ -539,6 +539,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.downloadGpkg',
         defaultMessage: 'Download GeoPackage',
     },
+    crossDatasourceSyncWarning: {
+        id: 'iaso.datasources.crossDatasourceSyncWarning',
+        defaultMessage:
+            'The reference version belongs to a different data source. Make sure both sources cover the same geography before synchronising.',
+    },
 });
 
 export default MESSAGES;

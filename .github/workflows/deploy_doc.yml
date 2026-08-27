@@ -27,21 +27,22 @@ jobs:
         with:
           ref: ${{ steps.config.outputs.GIT_REFERENCE }}
           fetch-depth: 0
-      - name: Set up Python 3.9
+      # Must match the Python used to generate docs/requirements.txt (pip-compile)
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: 3.9
+          python-version: "3.12"
       - name: Install mkDocs and dependencies
         uses: actions/cache@v4
         id: cache-venv
         with:
             path: ./venv/
             # The cache key depends on /docs/requirements.txt
-            key: ${{ runner.os }}-venv-${{ hashFiles('**/docs/requirements*.txt') }}
+            key: ${{ runner.os }}-venv-py312-${{ hashFiles('**/docs/requirements*.txt') }}
             restore-keys: |
-                ${{ runner.os }}-venv-
+                ${{ runner.os }}-venv-py312-
             # Build a virtualenv, but only if it doesn't already exist
-      - run: python -v && python -m venv ./venv && . ./venv/bin/activate && pip install -U pip &&
+      - run: python -V && python -m venv ./venv && . ./venv/bin/activate && pip install -U pip &&
             pip install -r docs/requirements.txt
         if: steps.cache-venv.outputs.cache-hit != 'true'
       - name: Environment info

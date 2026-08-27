@@ -3,7 +3,6 @@ import { FormControl, FormLabel } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import isEqual from 'lodash/isEqual';
 import { useQuill } from 'react-quilljs';
-import 'quill/dist/quill.snow.css';
 
 const useStyles = makeStyles(theme => ({
     formControl: {
@@ -79,8 +78,7 @@ const Rte: FunctionComponent<Props> = ({
                 form.setFieldValue(field.name, quill.root.innerHTML);
             });
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [quill]);
+    }, [field.name, form, quill]);
 
     return (
         <FormControl component="fieldset" className={classes.formControl}>

@@ -7,7 +7,7 @@ import React, {
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import EditIcon from '@mui/icons-material/Settings';
-import { Box } from '@mui/material';
+import { Box, Theme } from '@mui/material';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 
 import Color from 'color';
@@ -188,7 +188,7 @@ const getRowProps = (row: { original: OrgUnitChangeRequest }) => {
         return {
             'data-test': 'new-org-unit-row',
             sx: {
-                backgroundColor: theme =>
+                backgroundColor: (theme: Theme) =>
                     `${Color(theme.palette.yellow.main).fade(0.5)} !important`,
             },
         };

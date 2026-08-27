@@ -5,23 +5,22 @@ import {
     ConfirmCancelModal,
     makeFullModal,
     useSafeIntl,
+    IntlMessage,
 } from 'bluesquare-components';
 import { UseMutateAsyncFunction } from 'react-query';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import PeriodPicker from '../../periods/components/PeriodPicker';
 import { Period } from '../../periods/models';
 import { isValidPeriod } from '../../periods/utils';
+import { FormDef } from '../hooks/speeddials';
 import { ReassignInstancePayload } from '../hooks/useReassignInstance';
 import MESSAGES from '../messages';
 
 type CreateReAssignDialogProps = {
-    titleMessage: any;
-    confirmMessage: any;
-    cancelMessage: any;
-    formType: {
-        id: number | string;
-        periodType: string;
-    };
+    titleMessage: IntlMessage;
+    confirmMessage: IntlMessage;
+    cancelMessage?: IntlMessage;
+    formType: FormDef;
     currentInstance?: {
         id: number;
         period?: string;
@@ -65,7 +64,7 @@ export const CreateReAssignDialogComponent: FunctionComponent<
             if (!isOriginalPeriodValid) {
                 initialPeriodErrors.push(
                     formatMessage(MESSAGES.initialPeriodError, {
-                        period: currentInstance.period,
+                        period: currentInstance.period ?? '',
                     }),
                 );
             }
@@ -115,7 +114,7 @@ export const CreateReAssignDialogComponent: FunctionComponent<
             onClose={closeDialog}
             onCancel={closeDialog}
         >
-            {isPeriodRequired && (
+            {isPeriodRequired && formType.periodType && (
                 <PeriodPicker
                     title={formatMessage(MESSAGES.period)}
                     periodType={formType.periodType}

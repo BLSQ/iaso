@@ -70,8 +70,7 @@ const DialogComponent: FunctionComponent<Props> = ({
         setOpen(true);
         onOpen();
         setRenderDialog(true);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [setOpen, setRenderDialog]);
+    }, [setOpen, setRenderDialog, onOpen]);
     const closeDialog = useCallback(() => {
         setOpen(false);
         onClosed();
@@ -80,8 +79,7 @@ const DialogComponent: FunctionComponent<Props> = ({
                 setRenderDialog(false);
             }
         }, 1000);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [setOpen, setRenderDialog, open]);
+    }, [setOpen, setRenderDialog, open, onClosed]);
 
     return (
         <>

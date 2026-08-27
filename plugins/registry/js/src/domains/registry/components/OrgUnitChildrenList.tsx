@@ -1,6 +1,6 @@
+import React, { Dispatch, FunctionComponent, SetStateAction } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { Dispatch, FunctionComponent, SetStateAction } from 'react';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import { OrgUnit } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 import { baseUrls } from '../../../constants/urls';
@@ -21,8 +21,7 @@ const useStyles = makeStyles(theme => ({
         '& .MuiTableContainer-root': {
             maxHeight: `calc(${HEIGHT} - 120px)`, // to fit with map height
             overflow: 'auto',
-            // @ts-ignore
-            borderTop: `1px solid ${theme.palette.ligthGray.border}`,
+            borderTop: `1px solid ${theme.palette.lightGray.border}`,
         },
         '& .pagination-count': {
             position: 'absolute',

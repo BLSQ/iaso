@@ -2,6 +2,7 @@ import React, {
     FunctionComponent,
     useCallback,
     useEffect,
+    useMemo,
     useState,
 } from 'react';
 import FiltersIcon from '@mui/icons-material/FilterList';
@@ -9,11 +10,12 @@ import { Box, Button, Grid } from '@mui/material';
 import { useRedirectToReplace } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { useAppId } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useAppId';
 import { useGetGroupDropdown } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
-import { appId } from '../../../../constants/app';
 import MESSAGES from '../../../../constants/messages';
 import { useGetCountries } from '../../../../hooks/useGetCountries';
 
+import { useCampaignCategoryOptions } from '../../../Campaigns/hooks/useCampaignCategoryOptions';
 import { singleVaccinesList } from '../../SupplyChain/constants';
 import { useGetFileTypes } from '../hooks/useGetFileTypes';
 import { VaccineRepositoryParams } from '../types';
@@ -25,10 +27,14 @@ type Props = {
 };
 
 export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
+    const appId = useAppId();
     const redirectToReplace = useRedirectToReplace();
 
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [countries, setCountries] = useState(params.countries);
+    const [campaignCategory, setCampaignCategory] = useState(
+        params.campaignCategory,
+    );
     const [fileType, setFileType] = useState(
         params.file_type || 'VRF,PRE_ALERT,FORM_A',
     );
@@ -43,6 +49,7 @@ export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
                 countries,
                 page: undefined,
                 country_block: countryBlocks,
+                campaignCategory,
                 file_type: fileType,
                 vaccine_name: vaccineName,
             };
@@ -53,22 +60,31 @@ export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
         params,
         countries,
         countryBlocks,
+        campaignCategory,
         vaccineName,
         fileType,
         redirectToReplace,
         redirectUrl,
     ]);
     const { data, isFetching: isFetchingCountries } = useGetCountries();
+    const campaignCategoryOptions = useCampaignCategoryOptions();
     // Pass the appId to have it works in the embedded vaccine stock where the user is not connected
     const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =
         useGetGroupDropdown({ blockOfCountries: 'true', appId });
 
-    const countriesList = (data && data.orgUnits) || [];
+    const countriesOptions = useMemo(() => {
+        return (data?.orgUnits || []).map(
+            (c: { name: string; id: number }) => ({
+                label: c.name,
+                value: c.id,
+            }),
+        );
+    }, [data?.orgUnits]);
 
     const fileTypes = useGetFileTypes();
     useEffect(() => {
         setFiltersUpdated(true);
-    }, [countries, countryBlocks, fileType, vaccineName]);
+    }, [countries, countryBlocks, campaignCategory, fileType, vaccineName]);
 
     useEffect(() => {
         setFiltersUpdated(false);
@@ -87,10 +103,7 @@ export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
                     }}
                     value={countries}
                     type="select"
-                    options={countriesList.map(c => ({
-                        label: c.name,
-                        value: c.id,
-                    }))}
+                    options={countriesOptions}
                     label={MESSAGES.country}
                 />
                 <InputComponent
@@ -121,6 +134,19 @@ export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
                     label={MESSAGES.countryBlock}
                 />
                 <InputComponent
+                    keyValue="campaignCategory"
+                    clearable
+                    onChange={(_key, value) => {
+                        setCampaignCategory(value);
+                    }}
+                    value={campaignCategory}
+                    type="select"
+                    options={campaignCategoryOptions}
+                    label={MESSAGES.campaignCategory}
+                />
+            </Grid>
+            <Grid item xs={12} md={3}>
+                <InputComponent
                     keyValue="file_type"
                     onChange={(_key, value) => {
                         setFileType(value);
@@ -132,7 +158,7 @@ export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
                     label={MESSAGES.fileType}
                 />
             </Grid>
-            <Grid container item xs={12} md={6} justifyContent="flex-end">
+            <Grid container item xs={12} md={3} justifyContent="flex-end">
                 <Box mt={2}>
                     <Button
                         disabled={!filtersUpdated}

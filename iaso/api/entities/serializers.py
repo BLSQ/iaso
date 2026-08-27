@@ -9,8 +9,9 @@ class EntityTypeColumnSerializer(serializers.Serializer):
     """Serialize EntityType columns."""
 
     name = serializers.CharField()
-    type = serializers.CharField()
-    label = serializers.CharField()
+    type = serializers.CharField(allow_null=True)
+    # ODK meta fields (start/end) and some calculate questions often have no label.
+    label = serializers.CharField(allow_blank=True, required=False, default="")
 
 
 class EntityExportSerializer(serializers.ModelSerializer):

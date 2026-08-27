@@ -7,6 +7,7 @@ from django.core.files import File
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile, UploadedFile
 from django.test import override_settings
+from rest_framework import status
 
 from iaso import models as m
 from iaso.api.query_params import APP_ID
@@ -167,7 +168,7 @@ class FormsVersionAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         with self.assertNumQueries(2):
             response = self.client.get("/api/formversions/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         form_versions_data = response.json()["form_versions"]
         self.assertEqual(len(form_versions_data), 1)
 
@@ -181,7 +182,7 @@ class FormsVersionAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         with self.assertNumQueries(4):
             response = self.client.get(f"/api/formversions/{self.form_2.form_versions.first().id}/?fields=:all")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         form_version_data = response.json()
         self.assertValidFormVersionData(form_version_data)
         self.assertHasField(form_version_data, "descriptor", dict)
@@ -189,12 +190,12 @@ class FormsVersionAPITestCase(APITestCase):
     def test_form_versions_dynamic_fields(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/formversions/{self.form_2.form_versions.first().id}/?fields=:all")
-        form_version_data = self.assertJSONResponse(response, 200)
+        form_version_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormVersionData(form_version_data)
         self.assertHasField(form_version_data, "descriptor", dict)
 
         response = self.client.get(f"/api/formversions/{self.form_2.form_versions.first().id}/?fields=id,created_at")
-        form_version_data = self.assertJSONResponse(response, 200)
+        form_version_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertCountEqual(form_version_data.keys(), ["id", "created_at"])
 
     def test_form_versions_update(self):
@@ -215,7 +216,7 @@ class FormsVersionAPITestCase(APITestCase):
             format="json",
         )
         response_data = response.json()
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response_data["start_period"], start_period)
         self.assertEqual(response_data["end_period"], end_period)
         # checking what is returned by the serializer
@@ -251,7 +252,7 @@ class FormsVersionAPITestCase(APITestCase):
             format="json",
         )
         response_data = response.json()
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response_data["start_period"], start_period)
         self.assertEqual(response_data["end_period"], end_period)
 
@@ -263,7 +264,7 @@ class FormsVersionAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.delete("/api/formversions/33/")
-        self.assertJSONResponse(response, 405)
+        self.assertJSONResponse(response, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_form_versions_create_ok_first_version(self):
         """POST /form-versions/ happy path (first version)"""
@@ -276,7 +277,7 @@ class FormsVersionAPITestCase(APITestCase):
                 format="multipart",
                 headers={"accept": "application/json"},
             )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         response_data = response.json()
         self.assertValidFormVersionData(response_data, check_annotated_fields=False)
 
@@ -309,7 +310,7 @@ class FormsVersionAPITestCase(APITestCase):
                 format="multipart",
                 headers={"accept": "application/json"},
             )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         response_data = response.json()
         self.assertValidFormVersionData(response_data, check_annotated_fields=False)
 
@@ -354,7 +355,7 @@ class FormsVersionAPITestCase(APITestCase):
                 format="multipart",
                 headers={"accept": "application/json"},
             )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         response_data = response.json()
         self.assertValidFormVersionData(response_data, check_annotated_fields=False)
 
@@ -383,7 +384,7 @@ class FormsVersionAPITestCase(APITestCase):
                 format="multipart",
                 headers={"accept": "application/json"},
             )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(response.json(), "xls_file", "The form_id is already used in another form.")
 
     def test_form_versions_create_invalid_xls_form_id_2(self):
@@ -397,7 +398,7 @@ class FormsVersionAPITestCase(APITestCase):
                 format="multipart",
                 headers={"accept": "application/json"},
             )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(response.json(), "xls_file", "Form id should stay constant across form versions.")
 
     def test_form_versions_create_invalid_xls_version(self):
@@ -411,7 +412,7 @@ class FormsVersionAPITestCase(APITestCase):
                 format="multipart",
                 headers={"accept": "application/json"},
             )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(
             response.json(),
             "xls_file",
@@ -429,7 +430,7 @@ class FormsVersionAPITestCase(APITestCase):
                 format="multipart",
                 headers={"accept": "application/json"},
             )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(
             response.json(),
             "xls_file",
@@ -443,7 +444,7 @@ class FormsVersionAPITestCase(APITestCase):
         response = self.client.post(
             "/api/formversions/", data={}, format="multipart", headers={"accept": "application/json"}
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         response_data = response.json()
         self.assertHasError(response_data, "form_id")
 
@@ -457,7 +458,7 @@ class FormsVersionAPITestCase(APITestCase):
                 format="multipart",
                 headers={"accept": "application/json"},
             )
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_form_versions_create_wrong_form(self):
         """POST /form-versions/ - user has no access to the underlying form"""
@@ -470,27 +471,27 @@ class FormsVersionAPITestCase(APITestCase):
             data={"form_id": self.form_1.id, "version_id": "february_2020", "xls_file": form_file_mock},
             format="multipart",
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_formversions_list_without_auth_for_project_requiring_auth(self):
         """GET /formversions/ without auth for project which requires it: 401"""
 
         response = self.client.get("/api/formversions/", {APP_ID: self.project.app_id})
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_formversions_list_with_wrong_auth_for_project_requiring_auth(self):
         """GET /formversions/ with wrong auth for project which requires it: 401"""
 
         self.client.force_authenticate(user=self.batman)
         response = self.client.get("/api/formversions/", {APP_ID: self.project.app_id})
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_formversions_list_with_auth_for_project_requiring_auth(self):
         """GET /formversions/ with auth for project which requires it: 200"""
 
         self.client.force_authenticate(user=self.yoda)
         response = self.client.get("/api/formversions/", {APP_ID: self.project.app_id})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def assertValidFormVersionData(
         self, form_version_data: typing.Mapping, *, check_annotated_fields: bool = True
@@ -575,7 +576,7 @@ class FormVersionsMultiProjectTest(APITestCase):
         # 2 queries regardless of how many projects the form belongs to — no N+1.
         with self.assertNumQueries(2):
             response = self.client.get("/api/formversions/")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         ids = [fv["id"] for fv in data["form_versions"]]
         self.assertEqual(
             len(ids),
@@ -593,7 +594,7 @@ class FormVersionsMultiProjectTest(APITestCase):
         # Query count must be bounded regardless of the number of projects the form is in.
         with self.assertNumQueries(2):
             response = self.client.get(f"/api/formversions/?form_id={self.form.id}")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         ids = [fv["id"] for fv in data["form_versions"]]
         self.assertEqual(len(ids), 1, f"Expected 1 form version, got {ids}")
 
@@ -611,4 +612,4 @@ class FormVersionsMultiProjectTest(APITestCase):
         #   1 prefetch org_unit_types (+ related)
         with self.assertNumQueries(10):
             response = self.client.get("/api/forms/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)

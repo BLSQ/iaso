@@ -1,8 +1,10 @@
 import React from 'react';
 import { fireEvent, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderWithThemeAndIntlProvider } from '../../../../../tests/helpers';
 import * as useGetGroupsModule from '../../orgUnits/hooks/requests/useGetGroups';
+import { userHasAccessToModule } from '../../users/utils';
 import FormForm from './FormFormComponent';
 
 vi.mock('../../projects/hooks/requests', () => ({
@@ -11,7 +13,6 @@ vi.mock('../../projects/hooks/requests', () => ({
         isFetching: false,
     })),
 }));
-
 vi.mock(
     '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions',
     () => ({
@@ -68,6 +69,15 @@ vi.mock('../../../components/forms/InputComponent', () => ({
         </div>
     ),
 }));
+
+vi.mock('../../users/utils', async () => {
+    const actual = await vi.importActual('../../users/utils');
+
+    return {
+        ...actual,
+        userHasAccessToModule: vi.fn(),
+    };
+});
 
 const mockUseGetGroupDropdown = vi.mocked(
     useGetGroupsModule.useGetGroupDropdown,
@@ -186,5 +196,30 @@ describe('FormFormComponent - org unit groups', () => {
             'org_unit_group_ids',
             [1, 2],
         );
+    });
+});
+
+describe('FormFormComponent - show advanced settings', () => {
+    it('shows the advanced settings and the tick box "deduced from another form" when user belongs to an account without Dhis2 module', async () => {
+        const user = userEvent.setup();
+        vi.mocked(userHasAccessToModule).mockReturnValue(true);
+        renderWithThemeAndIntlProvider(
+            <FormForm currentForm={makeForm()} setFieldValue={vi.fn()} />,
+        );
+        await user.click(screen.getByText('Show advanced settings'));
+        expect(screen.getByText('Hide advanced settings')).toBeInTheDocument();
+        expect(screen.getByTestId('input-field-derived')).toHaveValue('false');
+    });
+
+    it('hides the checkbox when user belongs to an account without Dhis2 module', async () => {
+        const user = userEvent.setup();
+        vi.mocked(userHasAccessToModule).mockReturnValue(false);
+        renderWithThemeAndIntlProvider(
+            <FormForm currentForm={makeForm()} setFieldValue={vi.fn()} />,
+        );
+        await user.click(screen.getByText('Show advanced settings'));
+        expect(
+            screen.queryByTestId('input-field-derived'),
+        ).not.toBeInTheDocument();
     });
 });

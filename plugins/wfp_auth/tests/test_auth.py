@@ -33,7 +33,7 @@ class WFPAuthTestCase(APITestCase):
         mock_response = mock_get.return_value
         mock_response.json.return_value = extra_data
 
-        with patch("plugins.wfp_auth.views.WFP2Adapter.settings", new={"IASO_ACCOUNT_NAME": "foo"}):
+        with patch("plugins.wfp_auth.views.WFP2Adapter.settings", new={"IASO_ACCOUNT_NAME": "Account"}):
             response = self.client.post(
                 f"/wfp_auth/wfp/token/?app_id={self.project.app_id}&app_version=2501",
                 format="json",
@@ -76,7 +76,7 @@ class WFPAuthTestCase(APITestCase):
         mock_response = mock_get.return_value
         mock_response.json.return_value = extra_data
 
-        with patch("plugins.wfp_auth.views.WFP2Adapter.settings", new={"IASO_ACCOUNT_NAME": "foo"}):
+        with patch("plugins.wfp_auth.views.WFP2Adapter.settings", new={"IASO_ACCOUNT_NAME": "Account"}):
             response = self.client.post(
                 f"/wfp_auth/wfp/token/?app_id={self.project.app_id}&app_version=2501",
                 format="json",
@@ -124,7 +124,7 @@ class WFPAuthTestCase(APITestCase):
         mock_response = mock_get.return_value
         mock_response.json.return_value = extra_data
 
-        with patch("plugins.wfp_auth.views.WFP2Adapter.settings", new={"IASO_ACCOUNT_NAME": "foo"}):
+        with patch("plugins.wfp_auth.views.WFP2Adapter.settings", new={"IASO_ACCOUNT_NAME": "Account"}):
             response = self.client.post(
                 f"/wfp_auth/wfp/token/?app_id={self.project.app_id}&app_version=2501",
                 format="json",
@@ -166,7 +166,7 @@ class WFPAuthTestCase(APITestCase):
 
         mock_response = mock_get.return_value
         mock_response.json.return_value = extra_data
-        with patch("plugins.wfp_auth.views.WFP2Adapter.settings", new={"IASO_ACCOUNT_NAME": "foo"}):
+        with patch("plugins.wfp_auth.views.WFP2Adapter.settings", new={"IASO_ACCOUNT_NAME": "Account"}):
             response = self.client.post(
                 f"/wfp_auth/wfp/token/?app_id={self.project.app_id}",
                 format="json",

@@ -18,7 +18,10 @@ export const FormVersionsTable: FunctionComponent<Props> = ({
     periodType,
     defaultPageSize = 20,
 }) => {
-    const columns = useFormVersionsTableColumns(formId, periodType);
+    const columns = useFormVersionsTableColumns({
+        formId,
+        periodType,
+    });
     const { data, isFetching: loading } = useGetFormVersions({
         formId,
         params,

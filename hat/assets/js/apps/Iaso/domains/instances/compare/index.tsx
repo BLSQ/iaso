@@ -16,7 +16,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     ...commonStyles(theme),
 }));
 
-const CompareSubmissions: FunctionComponent = () => {
+export const CompareSubmissions: FunctionComponent = () => {
     const params = useParamsObject(baseUrls.compareInstances) as Params;
     const { formatMessage } = useSafeIntl();
     const goBack = useGoBack(baseUrls.instances);
@@ -53,5 +53,3 @@ const CompareSubmissions: FunctionComponent = () => {
         </>
     );
 };
-
-export default CompareSubmissions;

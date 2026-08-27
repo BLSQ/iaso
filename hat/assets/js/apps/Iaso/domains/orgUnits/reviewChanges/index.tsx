@@ -1,7 +1,12 @@
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent, useEffect, useMemo } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { commonStyles, getTableUrl, useSafeIntl } from 'bluesquare-components';
+import {
+    commonStyles,
+    getTableUrl,
+    useSafeIntl,
+    useRedirectToReplace,
+} from 'bluesquare-components';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
@@ -20,7 +25,20 @@ export const ReviewOrgUnitChanges: FunctionComponent = () => {
     const params = useParamsObject(
         baseUrls.orgUnitsChangeRequest,
     ) as unknown as ApproveOrgUnitParams;
-    const { data, isFetching } = useGetApprovalProposals(params);
+    const redirectToReplace = useRedirectToReplace();
+    const { data, isFetching, isError, error } =
+        useGetApprovalProposals(params);
+
+    // When a delete reduces the total below the current page, DRF returns
+    // 404 "Invalid page." — bounce back to page 1 to recover gracefully.
+    useEffect(() => {
+        if (isError && (error as any)?.status === 404 && params.page !== '1') {
+            redirectToReplace(baseUrls.orgUnitsChangeRequest, {
+                ...params,
+                page: '1',
+            });
+        }
+    }, [isError, error, params, redirectToReplace]);
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const endPointUrl = 'orgunits/changes/export_to_csv';

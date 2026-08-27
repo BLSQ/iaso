@@ -70,3 +70,11 @@ def theme(request: HttpRequest) -> Dict[str, Any]:
             "HIDE_BASIC_NAV_ITEMS": settings.HIDE_BASIC_NAV_ITEMS,
         },
     }
+
+
+def default_app_id(request: HttpRequest) -> Dict[str, Any]:
+    return {"DEFAULT_APP_ID": settings.DEFAULT_APP_ID}
+
+
+def dns_domain(request: HttpRequest) -> Dict[str, Any]:
+    return {"DNS_DOMAIN": settings.DNS_DOMAIN}

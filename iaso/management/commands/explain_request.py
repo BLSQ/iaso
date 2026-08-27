@@ -49,6 +49,12 @@ def enable_capture_queries(executed_queries=[]):
 
 
 def dump_executed_queries(executed_queries, threshold_duration=0.4, auto_explain=False, full_stack=False):
+    explained_count = 0
+    total_hit_blocks = 0
+    total_read_blocks = 0
+    total_io_read_ms = 0.0
+    total_execution_ms = 0.0
+
     for i, q in enumerate(executed_queries):
         if q["duration"] > threshold_duration:
             print(f"\n--- SQL #{i + 1} ---")
@@ -70,11 +76,45 @@ def dump_executed_queries(executed_queries, threshold_duration=0.4, auto_explain
                         cursor.execute("EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) " + q["sql"])
                         result = cursor.fetchone()[0]
                         parsed = json.loads(result) if isinstance(result, str) else result
+                        # The root plan node's Buffers/I-O stats are already cumulative totals for the
+                        # whole query (Postgres rolls child-node usage up into the parent), so this is
+                        # the actual per-execution disk footprint -- print it up front since it's easy to
+                        # miss inside the raw JSON below, and it's the number that matters when many
+                        # copies of a query run concurrently (buffer cache/I-O contention), not just wall time.
+                        plan = parsed[0]["Plan"]
+                        hit_blocks = plan.get("Shared Hit Blocks", 0)
+                        read_blocks = plan.get("Shared Read Blocks", 0)
+                        io_read_ms = plan.get("I/O Read Time", 0.0)
+                        execution_ms = parsed[0].get("Execution Time", 0.0)
+                        print(
+                            f"Explain summary: shared_hit={hit_blocks:,} blocks (~{hit_blocks * 8 / 1024:.1f} MB), "
+                            f"shared_read={read_blocks:,} blocks (~{read_blocks * 8 / 1024:.1f} MB), "
+                            f"io_read_time={io_read_ms:.1f}ms, "
+                            f"execution_time={execution_ms:.1f}ms"
+                        )
                         print("Explain plan: (drop it in https://tatiyants.com/pev/)")
                         # don't pretty print so it's easier to paste in the explain plan app
                         print(json.dumps(parsed))
+
+                        explained_count += 1
+                        total_hit_blocks += hit_blocks
+                        total_read_blocks += read_blocks
+                        total_io_read_ms += io_read_ms
+                        total_execution_ms += execution_ms
                 except Exception as e:
                     print(f"EXPLAIN failed: {e}")
+
+    if auto_explain and explained_count:
+        # Per-query numbers hide what actually saturates the DB under concurrent load: many small
+        # queries each reading a handful of cached blocks look harmless individually, but the sum
+        # across a whole request is the real buffer-cache/I-O pressure it puts on Postgres.
+        print(
+            f"\nExplain totals across {explained_count} explained queries: "
+            f"shared_hit={total_hit_blocks:,} blocks (~{total_hit_blocks * 8 / 1024:.1f} MB), "
+            f"shared_read={total_read_blocks:,} blocks (~{total_read_blocks * 8 / 1024:.1f} MB), "
+            f"io_read_time={total_io_read_ms:.1f}ms, "
+            f"execution_time={total_execution_ms:.1f}ms"
+        )
 
 
 def is_content_type_textual(content_type: str) -> bool:
@@ -97,30 +137,40 @@ def get_filename(response, default="download.bin"):
     return default
 
 
+def save_streaming_content_to_file(response, output_dir):
+    filename = get_filename(response)
+    fullpath_name = output_dir + "/" + filename
+    print(f"saving response in {fullpath_name}")
+    size_bytes = 0
+    with open(fullpath_name, "wb") as f:
+        for chunk in response.streaming_content:
+            if isinstance(chunk, str):
+                chunk = chunk.encode()
+            f.write(chunk)
+            size_bytes += len(chunk)
+    if fullpath_name.endswith(".parquet"):
+        print("to visualize the content :")
+        print(f"    duckdb -c 'select * from \"{fullpath_name}\"'")
+    return f"binary in {filename}", size_bytes / 1024 / 1024
+
+
 def consume_response(response, output_dir):
     content_type = response.get("Content-Type", "")
     is_textual = is_content_type_textual(content_type)
     size_mb = -1
     # ensure we use the response or stream all the response to get the correct sql, duration and content
     if isinstance(response, FileResponse):
-        filename = get_filename(response)
-        fullpath_name = output_dir + "/" + filename
-        print(f"saving response in {fullpath_name}")
-        with open(fullpath_name, "wb") as f:
-            for chunk in response.streaming_content:
-                f.write(chunk)
-            f.flush()
-            f.seek(0)
-            body = f"binary in {filename}"
-        if fullpath_name.endswith(".parquet"):
-            print("to visualize the content :")
-            print(f"    duckdb -c 'select * from \"{fullpath_name}\"'")
+        body, _ = save_streaming_content_to_file(response, output_dir)
         size_mb = float(response.get("Content-Length")) / 1024 / 1024
     elif isinstance(response, StreamingHttpResponse):
-        body = "".join(
-            chunk.decode() if isinstance(chunk, bytes) else str(chunk) for chunk in response.streaming_content
-        )
-        size_mb = len(body) / 1024 / 1024
+        if is_textual:
+            body = "".join(
+                chunk.decode() if isinstance(chunk, bytes) else str(chunk) for chunk in response.streaming_content
+            )
+            size_mb = len(body) / 1024 / 1024
+        else:
+            # e.g. xlsx exports: binary content, can't be decoded/joined as text.
+            body, size_mb = save_streaming_content_to_file(response, output_dir)
 
     else:
         size_mb = len(response.content) / 1024 / 1024

@@ -39,8 +39,7 @@ export const useStyles = makeStyles(theme => ({
     },
     placeholder: {
         height: 15,
-        // @ts-ignore
-        backgroundColor: theme.palette.ligthGray.main,
+        backgroundColor: theme.palette.lightGray.main,
         borderRadius: 5,
         marginRight: theme.spacing(1),
         width: '50%',

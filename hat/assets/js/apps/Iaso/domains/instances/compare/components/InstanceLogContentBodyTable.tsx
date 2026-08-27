@@ -1,10 +1,11 @@
-import React, { memo, useCallback, ReactElement } from 'react';
+import React, { memo, ReactElement } from 'react';
 import { TableBody, TableRow, TableCell } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { ErrorBoundary } from 'bluesquare-components';
 import { InstanceImagePreview } from '../../components/InstanceImagePreview';
 import { FileContent } from '../../types/instance';
 import { formatLabel } from '../../utils';
+import { slugifyValue } from '../../utils/questions';
 
 type TableBodyProps = {
     fileContent: FileContent;
@@ -14,16 +15,13 @@ const useStyles = makeStyles(theme => ({
         backgroundColor: 'transparent',
         borderTop: 'none !important',
         borderLeft: 'none !important',
-        // @ts-ignore
-        borderRight: `1px solid ${theme.palette.ligthGray.border}  !important`,
-        // @ts-ignore
-        borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
+        borderRight: `1px solid ${theme.palette.lightGray.border}  !important`,
+        borderBottom: `1px solid ${theme.palette.lightGray.border}  !important`,
     },
     deletedInfos: {
         color: '#D22B2B !important',
     },
     tableCellLabelName: {
-        // @ts-ignore
         color: theme.palette.mediumGray.main,
     },
     highlightedRow: {
@@ -105,7 +103,6 @@ function QuestionRow({
     fileContent,
 }) {
     const hasLogContent = valueA || valueB;
-
     const field = question;
 
     const isValuesDifferent = valueA !== valueB;
@@ -146,33 +143,38 @@ function QuestionRow({
     );
 }
 
+const getImageUrl = (value, logFiles) => {
+    if (value && logFiles) {
+        const slugifiedValue = slugifyValue(value);
+        if (slugifiedValue.endsWith('jpg')) {
+            return (
+                logFiles[slugifiedValue] ??
+                logFiles[slugifiedValue.replace('.jpg', '.webp')]
+            );
+        }
+
+        return logFiles[value];
+    }
+    return null;
+};
+
+const renderLogContent = (isImg, question: any, answer, logFiles) => {
+    if (isImg) {
+        const imageUrl = getImageUrl(answer, logFiles);
+        return (
+            <InstanceImagePreview imageUrl={imageUrl} altText={question.name} />
+        );
+    }
+
+    if (question.type == 'file') {
+        return <a href={getImageUrl(answer, logFiles)}>{answer}</a>;
+    }
+    return answer;
+};
+
 const InstanceLogContentBodyTable = ({ fileContent }: TableBodyProps) => {
     const classes = useStyles();
-    const getImageUrl = useCallback((value, logFiles) => {
-        if (value && logFiles) {
-            return logFiles[value];
-        }
-        return null;
-    }, []);
 
-    const renderLogContent = useCallback(
-        (isImg, question: any, answer, logFiles) => {
-            if (isImg) {
-                return (
-                    <InstanceImagePreview
-                        imageUrl={getImageUrl(answer, logFiles)}
-                        altText={question.name}
-                    />
-                );
-            }
-
-            if (question.type == 'file') {
-                return <a href={getImageUrl(answer, logFiles)}>{answer}</a>;
-            }
-            return answer;
-        },
-        [getImageUrl],
-    );
     return (
         <ErrorBoundary>
             <TableBody>
@@ -195,7 +197,10 @@ const InstanceLogContentBodyTable = ({ fileContent }: TableBodyProps) => {
 
                         return isRelevantQuestion ? (
                             <QuestionRow
-                                valueA={fileContent.logA.json[question.name]}
+                                key={`${fileContent?.logA?.json?.[question.name]} ${question.name}`}
+                                valueA={
+                                    fileContent?.logA?.json?.[question.name]
+                                }
                                 valueB={fileContent.logB.json[question.name]}
                                 question={question}
                                 classes={classes}

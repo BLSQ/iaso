@@ -63,7 +63,6 @@ export const campaignParams = [
     'campaignCategory',
     'campaignGroups',
     'show_test',
-    'on_hold',
     'filterLaunched',
 ];
 
@@ -108,6 +107,7 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParamsWithPrefix('report'),
             'countries',
             'campaignType',
+            'campaignCategory',
             'file_type',
             'country_block',
             'vaccine_name',
@@ -128,6 +128,7 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             ...campaignParams,
             'orgUnitGroups',
             'periodType',
+            'showIntegrated',
         ],
     },
     embeddedVaccineRepository: {
@@ -137,6 +138,7 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParamsWithPrefix('report'),
             'countries',
             'campaignType',
+            'campaignCategory',
             'file_type',
             'country_block',
             'vaccine_name',
@@ -287,6 +289,7 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             'rounds__started_at__gte',
             'rounds__started_at__lte',
             'country_blocks',
+            'campaign_category',
         ],
     },
     vaccineSupplyChainDetails: {
@@ -379,7 +382,7 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             'campaign',
             'country',
             'on_time',
-            'on_hold',
+            'campaign_category',
         ],
     },
     chronogramTemplateTask: {

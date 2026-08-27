@@ -66,6 +66,7 @@ from iaso.models import (
 )
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.forms import CR_MODE_IF_REFERENCE_FORM
+from iaso.models.instances import resolve_status_form_ids
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_STORAGE_PERMISSION
 from iaso.utils.date_and_time import timestamp_to_datetime
 from iaso.utils.models.common import check_instance_bulk_gps_push, check_instance_reference_bulk_link, get_creator_name
@@ -428,7 +429,7 @@ class InstancesViewSet(viewsets.ViewSet):
         # 2. Prepare queryset (common part between searches and exports)
         queryset = self.get_queryset()
         queryset = queryset.exclude(file="").exclude(device__test_device=True)
-        queryset = queryset.select_related("org_unit__version__data_source", "project")
+        queryset = queryset.select_related("org_unit__version__data_source")
         queryset = queryset.prefetch_related(
             "created_by", "form", "org_unit__reference_instances", "org_unit__org_unit_type__reference_forms"
         )
@@ -455,13 +456,24 @@ class InstancesViewSet(viewsets.ViewSet):
                 limit = int(limit)
                 page_offset = int(page_offset)
 
-                queryset = queryset.with_lock_info(user=request.user)
-
                 paginator = Paginator(queryset, limit)
                 res = {"count": paginator.count}
                 if page_offset > paginator.num_pages:
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
+
+                # with_lock_info has no filters related to it's just "enrichment" of the page, so it can be done after the pagination,
+                # and not on the whole queryset during the count.
+                # its JOIN/GROUP BY is cheap for a handful of rows, but
+                # forces PostgreSQL to evaluate (join, group, sort) the entire matching instance set
+                # before it can be truncated to a page when applied beforehand, which is extremely slow
+                # on large accounts (minutes, on an account with a few million instances).
+                # Fetched via values_list() (rather than iterating page.object_list) to avoid pulling in
+                # the queryset's select_related/prefetch_related for a result we only use for its ids.
+                #
+                #
+                page_ids = list(page.object_list.values_list("id", flat=True))
+                locked_page = queryset.filter(pk__in=page_ids).with_lock_info(user=request.user)
 
                 def as_dict_formatter(instance: Annotated[Instance, LockAnnotation]) -> Dict:
                     d = instance.as_dict_with_descriptor() if with_descriptor == "true" else instance.as_dict()
@@ -471,7 +483,7 @@ class InstancesViewSet(viewsets.ViewSet):
                     d["is_reference_instance"] = instance._is_reference_instance
                     return d
 
-                res["instances"] = map(as_dict_formatter, page.object_list)
+                res["instances"] = map(as_dict_formatter, locked_page)
                 res["has_next"] = page.has_next()
                 res["has_previous"] = page.has_previous()
                 res["page"] = page_offset
@@ -614,6 +626,9 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response({"res": "ok"})
 
     def retrieve(self, request, pk=None):
+        # Cheap lookup by pk to know which form the instance belongs to, so with_status() can skip the
+        # (expensive on large datasets) duplicates computation when that form isn't single_per_period.
+        form_id = Instance.objects.filter(pk=pk).values_list("form_id", flat=True).first()
         queryset = (
             self.get_queryset()
             .prefetch_related(
@@ -630,8 +645,9 @@ class InstancesViewSet(viewsets.ViewSet):
                 "org_unit__parent",
                 "org_unit__org_unit_type",
                 "org_unit__version__data_source__credentials",
+                "project",
             )
-            .with_status()
+            .with_status(form_ids=resolve_status_form_ids(form_id))
         )
         instance: Instance = get_object_or_404(queryset, pk=pk)
         self.check_object_permissions(request, instance)
@@ -673,6 +689,7 @@ class InstancesViewSet(viewsets.ViewSet):
         log_modification(original, instance, INSTANCE_API, user=request.user)
         return Response(instance.as_full_model())
 
+    @transaction.atomic
     def patch(self, request, pk=None):
         original = get_object_or_404(self.get_queryset(), pk=pk)
         instance = get_object_or_404(self.get_queryset(), pk=pk)
@@ -686,7 +703,7 @@ class InstancesViewSet(viewsets.ViewSet):
         access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
         data_org_unit = request.data.get("org_unit", None)
 
-        if instance.org_unit not in access_ou:
+        if instance.org_unit_id is None or not access_ou.filter(pk=instance.org_unit_id).exists():
             raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})
 
         # If the org unit change but the instance was marked as the reference_instance for this org unit,
@@ -1059,7 +1076,6 @@ def import_data(instances, user, app_id):
         if latitude and longitude:
             altitude = instance_data.get("altitude", 0)
             instance.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
-
         instance.save()
 
         if instance.form.change_request_mode == CR_MODE_IF_REFERENCE_FORM:

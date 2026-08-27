@@ -3,8 +3,7 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import moment from 'moment/moment';
-import { getApiModulesListQueryKey, useApiModulesList } from 'Iaso/api/modules';
+import { useApiModulesList } from 'Iaso/api/modules';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
@@ -27,14 +26,7 @@ export const Modules: FunctionComponent = () => {
     );
     const classes: Record<string, string> = useStyles();
 
-    const { data, isFetching } = useApiModulesList(searchParams, {
-        query: {
-            queryKey: [
-                ...getApiModulesListQueryKey(searchParams),
-                moment().locale(),
-            ],
-        },
-    });
+    const { data, isFetching } = useApiModulesList(searchParams);
 
     const { formatMessage } = useSafeIntl();
     const columns = useModulesColumns();

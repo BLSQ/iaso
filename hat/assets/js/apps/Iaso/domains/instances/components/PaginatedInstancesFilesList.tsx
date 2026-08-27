@@ -9,13 +9,14 @@ import { Box, Tab, TablePagination, Tabs } from '@mui/material';
 
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import InstanceFileInfoComponent from 'Iaso/domains/instances/components/InstanceFileInfoComponent';
-import { useGetInstance } from 'Iaso/domains/registry/hooks/useGetInstances';
+
 import { SxStyles } from 'Iaso/types/general';
 import ImageGallery from '../../../components/dialogs/ImageGalleryComponent';
 import DocumentsList from '../../../components/files/DocumentsListComponent';
 import LazyImagesList from '../../../components/files/LazyImagesListComponent';
 import VideosList from '../../../components/files/VideosListComponent';
 
+import { useGetInstance } from '../hooks/requests/useGetInstance';
 import MESSAGES from '../messages';
 import { useGetInstancesFiles, useGetInstancesFilesCount } from '../requests';
 import { Instance, ShortFile } from '../types/instance';
@@ -29,7 +30,13 @@ const ExtraInfoComponent: React.FC<ExtraInfoComponentProps> = ({
     instanceDetail,
 }) => <InstancePopover instanceDetail={instanceDetail} />;
 
-const InfoComponent = ({ filePath, instanceDetail }) => {
+const InfoComponent = ({
+    filePath,
+    instanceDetail,
+}: {
+    filePath: string;
+    instanceDetail?: Instance;
+}): React.ReactNode => {
     if (instanceDetail == null) {
         return null;
     }
@@ -179,7 +186,7 @@ export const PaginatedInstancesFilesList: FunctionComponent<
 
     const handleDocumentsClicked = useCallback(
         (filePath: string) => {
-            const file = displayedFiles.find(f => {
+            const file = displayedFiles.find((f: ShortFile) => {
                 return f.path == filePath;
             });
             if (file != null) {

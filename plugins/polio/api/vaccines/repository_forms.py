@@ -12,6 +12,7 @@ from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
 
 from iaso.api.common import Paginator
+from plugins.polio.api.campaigns.filters.filters import CampaignCategoryFilterBackend
 from plugins.polio.models import (
     CampaignType,
     OutgoingStockMovement,
@@ -155,7 +156,8 @@ class VaccineRepositoryFormsViewSet(GenericViewSet, ListModelMixin):
 
     serializer_class = VaccineRepositorySerializer
     pagination_class = Paginator
-    filter_backends = [OrderingFilter, SearchFilter, VaccineReportingFilterBackend]
+    filter_backends = [OrderingFilter, SearchFilter, CampaignCategoryFilterBackend, VaccineReportingFilterBackend]
+    campaign_category_prefix = "campaign"
     ordering_fields = [
         "campaign__country__name",
         "campaign__obr_name",
@@ -211,6 +213,13 @@ class VaccineRepositoryFormsViewSet(GenericViewSet, ListModelMixin):
         type=OpenApiTypes.STR,
     )
 
+    campaign_category_param = OpenApiParameter(
+        "campaign_category",
+        location=OpenApiParameter.QUERY,
+        description="Filter by campaign category (regular, is_preventive, on_hold, is_planned)",
+        type=OpenApiTypes.STR,
+    )
+
     # @method_decorator(cache_page(60 * 5))  # Cache for 5 minutes
     @extend_schema(
         parameters=[
@@ -220,6 +229,7 @@ class VaccineRepositoryFormsViewSet(GenericViewSet, ListModelMixin):
             campaign_id_param,
             country_block_param,
             country_param,
+            campaign_category_param,
         ]
     )
     def list(self, request, *args, **kwargs):
@@ -236,6 +246,7 @@ class VaccineRepositoryFormsViewSet(GenericViewSet, ListModelMixin):
         - Country block (country_block) comma separated list of org unit group ids
         - Country (countries) comma-separated list of country IDs
         - Campaign ID (campaign) OBR name of campaign
+        - Campaign category (campaign_category) (possible values : regular, is_preventive, on_hold, is_planned)
         - VRF type (vrf_type) (possible values : Normal, Missing, Not Required)
 
         The results can be ordered by:

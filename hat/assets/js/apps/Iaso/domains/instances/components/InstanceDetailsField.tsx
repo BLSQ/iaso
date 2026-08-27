@@ -26,7 +26,7 @@ type Props = {
     label: string;
     value?: any;
     Icon?: any;
-    valueTitle: any;
+    valueTitle?: any;
 };
 
 const InstanceDetailsField: FunctionComponent<Props> = ({

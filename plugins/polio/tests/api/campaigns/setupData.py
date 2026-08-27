@@ -1,5 +1,6 @@
+from datetime import timedelta
+
 from django.utils import timezone
-from rest_framework.status import HTTP_201_CREATED
 from rest_framework.test import APIClient
 
 from iaso import models as m
@@ -100,8 +101,25 @@ class CampaignFiltersTestBase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
             country_ou_type=cls.country_type,
             district_ou_type=cls.district_type,
         )
+        # The "has_round_on_hold" annotation is date-aware: it only flags a campaign whose
+        # *next active* round (earliest round with ended_at >= today) is on hold.
+        # create_campaign() only produces past rounds (2021), so we push this campaign's
+        # on-hold round into the future to make it the next active round on hold.
+        cls.campaign_with_on_hold_rnd1.started_at = cls.now.date() + timedelta(days=5)
+        cls.campaign_with_on_hold_rnd1.ended_at = cls.now.date() + timedelta(days=15)
         cls.campaign_with_on_hold_rnd1.on_hold = True
         cls.campaign_with_on_hold_rnd1.save()
+
+        # Rule 3: finished campaign whose last round (highest `number`) is on hold.
+        cls.finished_last_round_on_hold_campaign, _, _, cls.finished_last_round_on_hold_r3, _, _ = cls.create_campaign(
+            obr_name="finished last round on hold campaign",
+            account=cls.account,
+            source_version=cls.source_version_1,
+            country_ou_type=cls.country_type,
+            district_ou_type=cls.district_type,
+        )
+        cls.finished_last_round_on_hold_r3.on_hold = True
+        cls.finished_last_round_on_hold_r3.save()
 
         # planned preventive
         cls.planned_preventive_campaign, _, _, _, _, _ = cls.create_campaign(
@@ -195,16 +213,16 @@ class CampaignFiltersTestBase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         """Make sure we have a fresh client at the beginning of each test"""
         self.client = APIClient()
 
-    def _create_multiple_campaigns(self, count: int) -> None:
-        self.client.force_authenticate(self.user)
-        created_ids = []
+    def _create_multiple_campaigns(self, count: int) -> list[int]:
+        new_campaigns = []
         for n in range(count):
-            payload = {
-                "account": self.account.pk,
-                "obr_name": f"campaign_{n}",
-                "detection_status": "PENDING",
-            }
-            response = self.client.post("/api/polio/campaigns/", payload, format="json")
-            result = self.assertJSONResponse(response, HTTP_201_CREATED)
-            created_ids.append(result["id"])
-        return created_ids
+            new_campaign = Campaign(
+                obr_name=f"campaign_{n}",
+                account=self.account,
+                detection_status="PENDING",
+            )
+            new_campaigns.append(new_campaign)
+
+        result = Campaign.objects.bulk_create(new_campaigns)
+
+        return [campaign.id for campaign in result]

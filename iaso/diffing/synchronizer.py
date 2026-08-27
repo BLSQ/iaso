@@ -7,6 +7,9 @@ from dataclasses import dataclass
 from itertools import islice
 from typing import Optional
 
+from django.conf import settings
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point
+
 from iaso.diffing import Differ
 from iaso.models import DataSourceVersionsSynchronization, Group, OrgUnit, OrgUnitChangeRequest
 
@@ -99,6 +102,21 @@ class DataSourceVersionsSynchronizer:
 
         self._bulk_create_change_request_groups()
         self._report_progress("Bulk created change request groups")
+
+        if self.task:
+            domain = settings.DNS_DOMAIN
+            scheme = "http" if domain.startswith("localhost") else "https"
+            account_id = self.data_source_sync.account_id
+            sync_id = self.data_source_sync.pk
+            version_id = self.data_source_sync.source_version_to_update_id
+            url = (
+                f"{scheme}://{domain}/dashboard/validation/changeRequest"
+                f"/accountId/{account_id}"
+                f"/data_source_synchronization_id/{sync_id}"
+                f"/source_version_id/{version_id}"
+                f"/page/1"
+            )
+            self._report_progress(f"Review change requests: {url}")
 
     @staticmethod
     def sort_by_path(diffs: list[dict]) -> list:
@@ -355,15 +373,17 @@ class DataSourceVersionsSynchronizer:
             comparison["field"]: comparison["after"]
             for comparison in diff["comparisons"]
             if comparison["status"] in [Differ.STATUS_MODIFIED, Differ.STATUS_NEW, Differ.STATUS_NOT_IN_ORIGIN]
-            and comparison["field"] in ["name", "parent", "opening_date", "closed_date"]
+            and comparison["field"] in ["name", "parent", "opening_date", "closed_date", "geometry", "code"]
         }
 
-        org_unit = diff["orgunit_dhis2"]
         requested_fields = []
         new_parent_id = None
         new_name = ""
         new_opening_date = None
         new_closed_date = None
+        new_location = None
+        new_geom = None
+        new_code = ""
 
         if "parent" in changes:
             parent_source_ref = changes["parent"]
@@ -394,6 +414,31 @@ class DataSourceVersionsSynchronizer:
             new_closed_date = self.parse_date_str(new_closed_date_value) if new_closed_date_value else None
             requested_fields.append("new_closed_date")
 
+        if "geometry" in changes:
+            after_wkt = changes["geometry"]
+            if after_wkt:
+                geom = GEOSGeometry(after_wkt)
+                if geom.geom_type == "Point":
+                    if not geom.hasz:
+                        geom = Point(geom.x, geom.y, 0, srid=4326)
+                    new_location = geom
+                    requested_fields.append("new_location")
+                else:
+                    if geom.geom_type == "Polygon":
+                        geom = MultiPolygon(geom, srid=4326)
+                    new_geom = geom
+                    requested_fields.append("new_geom")
+            else:
+                # Geometry is being cleared: the reference version has no geometry.
+                if org_unit.get("location"):
+                    requested_fields.append("new_location")  # new_location stays None = clear
+                if org_unit.get("geom"):
+                    requested_fields.append("new_geom")  # new_geom stays None = clear
+
+        if "code" in changes:
+            new_code = changes["code"] or ""
+            requested_fields.append("new_code")
+
         group_changes = []
         if self.has_group_changes(diff["comparisons"]):
             requested_fields.append("new_groups")
@@ -408,16 +453,21 @@ class DataSourceVersionsSynchronizer:
             requested_fields=requested_fields,
             data_source_synchronization=self.data_source_sync,
             org_unit_id=org_unit["id"],
-            # Old values.
+            # Old values (set explicitly because bulk_create bypasses save()).
             old_parent_id=org_unit.get("parent"),
             old_name=org_unit.get("name", ""),
             old_org_unit_type_id=org_unit.get("org_unit_type"),
             old_location=org_unit.get("location"),
+            old_geom=org_unit.get("geom"),
+            old_code=org_unit.get("code", ""),
             old_opening_date=org_unit.get("opening_date"),
             old_closed_date=org_unit.get("closed_date"),
             # New values.
             new_parent_id=new_parent_id,
             new_name=new_name,
+            new_location=new_location,
+            new_geom=new_geom,
+            new_code=new_code,
             new_opening_date=new_opening_date,
             new_closed_date=new_closed_date,
         )

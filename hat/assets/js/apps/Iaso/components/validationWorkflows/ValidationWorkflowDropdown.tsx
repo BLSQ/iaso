@@ -1,4 +1,5 @@
 import React from 'react';
+import { useApiValidationWorkflowsDropdownList } from 'Iaso/api/validationWorkflows';
 import InputComponent, {
     InputComponentProps,
 } from 'Iaso/components/forms/InputComponent';
@@ -6,12 +7,11 @@ import {
     userHasAccessToModule,
     userHasPermission,
 } from 'Iaso/domains/users/utils';
-import { useGetWorkflowOptions } from 'Iaso/domains/validationWorkflowsConfiguration/api/Get';
 import { VALIDATION_WORKFLOW_MODULE } from 'Iaso/utils/modules';
 import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 
-type ValidationWorkflowDropdownProps = {} & Omit<
+type ValidationWorkflowDropdownProps = Omit<
     InputComponentProps,
     'type' | 'options'
 >;
@@ -27,7 +27,9 @@ export const ValidationWorkflowDropdown = ({
     );
 
     const { data: workflowOptions, isFetching: isFetchingWorkflows } =
-        useGetWorkflowOptions(hasPermission && userHasModule);
+        useApiValidationWorkflowsDropdownList(undefined, {
+            query: { enabled: hasPermission && userHasModule },
+        });
     const { loading, disabled, ...newProps } = props;
 
     const isLoading = loading || isFetchingWorkflows;

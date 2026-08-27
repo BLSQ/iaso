@@ -1,6 +1,7 @@
 import json
 
 from django.urls import reverse
+from rest_framework import status
 from rest_framework.test import APIClient
 
 from iaso.test import APITestCase
@@ -86,7 +87,7 @@ class MultiTenantTestCase(APITestCase):
         response = yoda_client.post(
             "/api/orgunits/?app_id=stars.empire.agriculture.hydroponics", data=[unit_body], format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         json_response = json.loads(response.content)
         coruscant_id = json_response[0]["id"]
@@ -98,10 +99,12 @@ class MultiTenantTestCase(APITestCase):
         self.assertEqual(len(units), 0)
 
         response = raccoon_client.get("/api/orgunits/%s/" % coruscant_id, accept="application/json")
-        self.assertEqual(response.status_code, 404)  # raccoon not authorized to see Star Wars data
+        self.assertEqual(
+            response.status_code, status.HTTP_404_NOT_FOUND
+        )  # raccoon not authorized to see Star Wars data
 
         response = yoda_client.get("/api/orgunits/%s/" % coruscant_id, accept="application/json")
-        self.assertEqual(response.status_code, 200)  # yoda authorized to see Star Wars data
+        self.assertEqual(response.status_code, status.HTTP_200_OK)  # yoda authorized to see Star Wars data
 
     def test_instance_access(self):
         """Checking access to org units based on account"""
@@ -153,14 +156,16 @@ class MultiTenantTestCase(APITestCase):
         # if you don't provide an app id, the instances will not be added to a project, and consequently, not be shown to anybody
         # notice that the instance won't appear in the /instances/ endpoint until a file is uploaded. You can access it directly through its id, though.
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         instance = Instance.objects.get(uuid=instance_uuid)
 
         response = yoda_client.get("/api/instances/%s/" % instance.id, accept="application/json")
-        self.assertEqual(response.status_code, 200)  # yoda authorized to see Star Wars data
+        self.assertEqual(response.status_code, status.HTTP_200_OK)  # yoda authorized to see Star Wars data
 
         response = raccoon_client.get("/api/instances/%s/" % instance.id, accept="application/json")
-        self.assertEqual(response.status_code, 404)  # raccoon not authorized to see Star Wars data
+        self.assertEqual(
+            response.status_code, status.HTTP_404_NOT_FOUND
+        )  # raccoon not authorized to see Star Wars data
 
         # now uploading the file content, so that it will appear in /instances/ for the Star Wars account
         with open("iaso/tests/fixtures/hydroponics_test_upload.xml") as fp:
@@ -171,7 +176,7 @@ class MultiTenantTestCase(APITestCase):
             )
 
         response = yoda_client.get("/api/instances/", accept="application/json")
-        self.assertEqual(response.status_code, 200)  # yoda authorized to see Star Wars data
+        self.assertEqual(response.status_code, status.HTTP_200_OK)  # yoda authorized to see Star Wars data
         content = json.loads(response.content)
         instances = content["instances"]
         found = False
@@ -193,7 +198,7 @@ class MultiTenantTestCase(APITestCase):
         self.assertFalse(found)  # raccoon not supposed to see Star Wars data
 
         response = yoda_client.get("/api/devices/", accept="application/json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         content = json.loads(response.content)
 
@@ -202,7 +207,7 @@ class MultiTenantTestCase(APITestCase):
         self.assertEqual(content["devices"][0]["imei"], "358544083104930")
 
         response = raccoon_client.get("/api/devices/", accept="application/json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         content = json.loads(response.content)
 
@@ -214,13 +219,13 @@ class MultiTenantTestCase(APITestCase):
             '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1","hasInstances":"true","orgUnitParentId":null}]&limit=50'
         )
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response.json()["orgunits"][0]["name"], "Kashyyyk")
 
         response = yoda_client.get(
             '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1","hasInstances":"false","orgUnitParentId":null}]&limit=50'
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response.json()["count"], 0)
 
     def test_source_access(self):
@@ -242,7 +247,7 @@ class MultiTenantTestCase(APITestCase):
 
     def test_version_access(self):
         response = APIClient().get("/api/sourceversions/", accept="application/json")
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         response = self.raccoon_client.get("/api/sourceversions/", accept="application/json")
 

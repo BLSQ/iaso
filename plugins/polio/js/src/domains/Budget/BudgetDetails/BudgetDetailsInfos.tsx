@@ -45,10 +45,8 @@ const useStyles = makeStyles(theme => ({
         marginBottom: theme.spacing(2),
     },
     buttonContainer: {
-        // @ts-ignore
-        borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
-        // @ts-ignore
-        borderBottom: `1px solid ${theme.palette.ligthGray.border}`,
+        borderLeft: `1px solid ${theme.palette.lightGray.border}`,
+        borderBottom: `1px solid ${theme.palette.lightGray.border}`,
     },
     buttonGrid: {
         paddingTop: theme.spacing(2),
@@ -59,8 +57,7 @@ const useStyles = makeStyles(theme => ({
         },
     },
     leftCell: {
-        // @ts-ignore
-        borderRight: `1px solid ${theme.palette.ligthGray.border}`,
+        borderRight: `1px solid ${theme.palette.lightGray.border}`,
         fontWeight: 'bold',
     },
 }));
@@ -156,15 +153,14 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
                                 {nextSteps.regular &&
                                     nextSteps.regular
                                         .filter(step => step.allowed)
-                                        .map((step, index) => {
+                                        .map(step => {
                                             const isQuickTransition =
                                                 step.key === quickTransition;
 
                                             return (
                                                 <Grid
                                                     item
-                                                    // eslint-disable-next-line react/no-array-index-key
-                                                    key={`${step.key}-${index}`}
+                                                    key={`${step.key}-${budgetProcess.id}`}
                                                 >
                                                     <CreateBudgetStep
                                                         isMobileLayout={

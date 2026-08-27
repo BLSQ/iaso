@@ -22,8 +22,8 @@ const { mockUseGetWorkflowOptions } = vi.hoisted(() => {
     return { mockUseGetWorkflowOptions: vi.fn() };
 });
 
-vi.mock('Iaso/domains/validationWorkflowsConfiguration/api/Get', () => ({
-    useGetWorkflowOptions: mockUseGetWorkflowOptions,
+vi.mock('Iaso/api/validationWorkflows', () => ({
+    useApiValidationWorkflowsDropdownList: mockUseGetWorkflowOptions,
 }));
 
 const { mockUserHasAccessToModule } = vi.hoisted(() => {
@@ -73,7 +73,11 @@ describe('ValidationWorkflowDropdown', () => {
             ),
         ).not.toBeInTheDocument();
         expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
-        expect(mockUseGetWorkflowOptions).toHaveBeenCalledWith(true);
+        expect(mockUseGetWorkflowOptions).toHaveBeenCalledWith(undefined, {
+            query: {
+                enabled: true,
+            },
+        });
     });
 
     it('does not render input when user lacks permission', () => {
@@ -160,7 +164,11 @@ describe('ValidationWorkflowDropdown', () => {
             <ValidationWorkflowDropdown keyValue={'vf'} />,
         );
 
-        expect(mockUseGetWorkflowOptions).toHaveBeenCalledWith(false);
+        expect(mockUseGetWorkflowOptions).toHaveBeenCalledWith(undefined, {
+            query: {
+                enabled: false,
+            },
+        });
     });
 
     it('does not pass initialValue when user has no permissions', () => {
@@ -186,7 +194,11 @@ describe('ValidationWorkflowDropdown', () => {
             <ValidationWorkflowDropdown keyValue={'vf'} />,
         );
 
-        expect(mockUseGetWorkflowOptions).toHaveBeenCalledWith(false);
+        expect(mockUseGetWorkflowOptions).toHaveBeenCalledWith(undefined, {
+            query: {
+                enabled: false,
+            },
+        });
     });
 
     it('does not pass initialValue when user has no module', () => {

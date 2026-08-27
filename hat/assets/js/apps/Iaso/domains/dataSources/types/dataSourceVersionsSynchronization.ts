@@ -36,4 +36,5 @@ export type DataSourceVersionsSynchronization = {
 export type DataSourceVersionsSynchronizationDropdown = {
     value: string;
     label: string;
+    sourceVersionToUpdateId?: number;
 };

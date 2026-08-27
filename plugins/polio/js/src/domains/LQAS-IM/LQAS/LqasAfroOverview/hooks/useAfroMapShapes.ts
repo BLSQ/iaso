@@ -1,8 +1,8 @@
 import { UseQueryResult } from 'react-query';
+import { useAppId } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/app/hooks/useAppId';
 import { getRequest } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackQuery } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { makeUrlWithParams } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/utils';
-import { appId } from '../../../../../constants/app';
 import { Side } from '../../../../../constants/types';
 import { AfroMapParams, MapCategory, RoundSelection } from '../types';
 
@@ -11,12 +11,14 @@ type GetAfroMapDataArgs = {
     params: Partial<AfroMapParams> & { accountId: string };
     selectedRound: RoundSelection;
     isEmbedded: boolean;
+    appId: string;
 };
 const getAfroMapData = ({
     category,
     params,
     selectedRound,
     isEmbedded,
+    appId,
 }: GetAfroMapDataArgs) => {
     const { accountId: _accountId, ...apiParams } = params;
     (apiParams as Record<string, string | number>).category = category;
@@ -44,6 +46,7 @@ export const useAfroMapShapes = ({
     side,
     isEmbedded,
 }: UseAfroMapShapesArgs): UseQueryResult<any, any> => {
+    const appId = useAppId();
     const queryKeyParams = {
         rounds: params.rounds,
         startDate: params.startDate,
@@ -58,6 +61,7 @@ export const useAfroMapShapes = ({
                 params: queryKeyParams,
                 selectedRound,
                 isEmbedded,
+                appId,
             }),
         queryKey: [
             'lqasim-afro-map',
@@ -85,6 +89,7 @@ type GetZoomedInShapesArgs = {
     selectedRound: RoundSelection;
     bounds: string; // stringified object : {_northEast:{lat:number,lng:number},_southWest:{lat:number,lng:number}}
     isEmbedded: boolean;
+    appId: string;
 };
 
 const getZoomedInShapes = ({
@@ -93,6 +98,7 @@ const getZoomedInShapes = ({
     params,
     selectedRound,
     isEmbedded,
+    appId,
 }: GetZoomedInShapesArgs) => {
     const { accountId: _accountId, ...apiParams } = params;
     (apiParams as Record<string, string | number>).category = category;
@@ -124,6 +130,7 @@ export const useGetZoomedInShapes = ({
     side,
     isEmbedded,
 }: UseGetZoomedInShapesArgs): UseQueryResult<any, any> => {
+    const appId = useAppId();
     const queryKeyParams = {
         rounds: params.rounds,
         startDate: params.startDate,
@@ -139,6 +146,7 @@ export const useGetZoomedInShapes = ({
                 params: queryKeyParams,
                 selectedRound,
                 isEmbedded,
+                appId,
             }),
         queryKey: [
             'lqasim-zoomin-map',
@@ -164,11 +172,13 @@ export const useGetZoomedInShapes = ({
 type GetZoomedInBackgoundShapesArgs = {
     bounds: string; // stringified object : {_northEast:{lat:number,lng:number},_southWest:{lat:number,lng:number}}
     isEmbedded: boolean;
+    appId: string;
 };
 
 const getZoomedInBackgoundShapes = ({
     bounds,
     isEmbedded,
+    appId,
 }: GetZoomedInBackgoundShapesArgs) => {
     const url = isEmbedded
         ? `/api/polio/lqasmap/zoominbackground/?bounds=${bounds}&app_id=${appId}`
@@ -187,8 +197,10 @@ export const useGetZoomedInBackgroundShapes = ({
     isEmbedded,
     enabled,
 }: UseGetZoomedInBackgoundShapesArgs): UseQueryResult<any, any> => {
+    const appId = useAppId();
     return useSnackQuery({
-        queryFn: () => getZoomedInBackgoundShapes({ bounds, isEmbedded }),
+        queryFn: () =>
+            getZoomedInBackgoundShapes({ bounds, isEmbedded, appId }),
         queryKey: ['lqasim-zoomin-map-bckgnd', bounds],
         options: {
             select: data => {

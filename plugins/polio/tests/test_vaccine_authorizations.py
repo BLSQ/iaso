@@ -1,6 +1,7 @@
 import datetime
 
 from datetime import date
+from unittest import skip
 
 from django.contrib.auth.models import User
 from django.core import mail
@@ -31,6 +32,36 @@ from plugins.polio.tasks.vaccine_authorizations_mail_alerts import (
 )
 
 
+class VaccineAuthorizationDeprecatedAPITestCase(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.data_source = m.DataSource.objects.create(name="Default source")
+        cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
+        cls.account = Account.objects.create(name="polio", default_version=cls.source_version_1)
+        cls.user = cls.create_user_with_profile(
+            username="vaccine_auth_user",
+            account=cls.account,
+            permissions=[
+                POLIO_VACCINE_AUTHORIZATIONS_ADMIN_PERMISSION,
+                POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY_PERMISSION,
+            ],
+        )
+
+    def test_deprecated_endpoint_returns_410_gone(self):
+        self.client.force_authenticate(self.user)
+
+        for method, url, kwargs in [
+            ("get", "/api/polio/vaccineauthorizations/", {}),
+            ("post", "/api/polio/vaccineauthorizations/", {"data": {}, "format": "json"}),
+            ("get", "/api/polio/vaccineauthorizations/get_most_recent_authorizations/", {}),
+        ]:
+            with self.subTest(method=method, url=url):
+                response = getattr(self.client, method)(url, **kwargs)
+                self.assertJSONResponse(response, status.HTTP_410_GONE)
+                self.assertEqual(response.json(), {"detail": "This endpoint is deprecated."})
+
+
+@skip("deprecated vaccine authorization API")
 class VaccineAuthorizationAPITestCase(APITestCase):
     data_source: m.DataSource
     source_version_1: m.SourceVersion

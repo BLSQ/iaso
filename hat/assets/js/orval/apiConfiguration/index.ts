@@ -1,12 +1,16 @@
-import { acccountFeatureFlagsOperations } from './accountFeatureFlags/configuration';
-import { acccountsOperations } from './accounts/configuration';
+import { accountFeatureFlagsOperations } from './accountFeatureFlags/configuration';
+import { accountsOperations } from './accounts/configuration';
+import { apiImportsOperations } from './apiImports/configuration';
+import { instanceDiffOperations } from './instanceDiff/configuration';
 import { modulesOperations } from './modules/configuration';
 import { workflowsOperations } from './validationWorkflows/configuration';
 
 export const OperationConfig: Record<string, any> = {
     operations: {
-        ...acccountsOperations,
-        ...acccountFeatureFlagsOperations,
+        ...accountsOperations,
+        ...accountFeatureFlagsOperations,
+        ...apiImportsOperations,
+        ...instanceDiffOperations,
         ...modulesOperations,
         ...workflowsOperations,
     },

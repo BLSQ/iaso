@@ -1,5 +1,7 @@
 import datetime
 
+from unittest.mock import MagicMock
+
 import time_machine
 
 from iaso import models as m
@@ -101,7 +103,7 @@ class DataSourceVersionsSynchronizationSerializerTestCase(TestCase):
         self.assertEqual(data_source_versions_sync.account, self.account)
         self.assertEqual(data_source_versions_sync.created_by, self.user)
 
-    def test_validate_that_data_source_is_the_same_for_both_versions(self):
+    def test_validate_that_cross_datasource_versions_are_allowed(self):
         other_data_source = m.DataSource.objects.create(name="Other data source")
         other_source_version = m.SourceVersion.objects.create(
             data_source=other_data_source, number=3, description="Source X"
@@ -112,11 +114,41 @@ class DataSourceVersionsSynchronizationSerializerTestCase(TestCase):
             "source_version_to_compare_with": other_source_version.pk,
         }
         serializer = DataSourceVersionsSynchronizationSerializer(data=data)
+        # Cross-datasource comparison is now allowed.
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_validate_rejects_cross_account_datasource_with_request_context(self):
+        other_account = m.Account.objects.create(name="Other account")
+        other_project = m.Project.objects.create(name="Other project", account=other_account, app_id="other.app")
+        foreign_datasource = m.DataSource.objects.create(name="Foreign data source")
+        foreign_datasource.projects.add(other_project)
+        foreign_version = m.SourceVersion.objects.create(data_source=foreign_datasource, number=1)
+
+        data = {
+            "name": "Bad sync",
+            "source_version_to_update": self.source_version_to_update.pk,
+            "source_version_to_compare_with": foreign_version.pk,
+        }
+        mock_request = MagicMock()
+        mock_request.user.iaso_profile.account = self.account
+        serializer = DataSourceVersionsSynchronizationSerializer(data=data, context={"request": mock_request})
         self.assertFalse(serializer.is_valid())
-        self.assertIn(
-            "The two versions to compare must be linked to the same data source.",
-            serializer.errors["non_field_errors"][0],
-        )
+        self.assertIn("The data sources are not linked to the account of this synchronization.", str(serializer.errors))
+
+    def test_validate_rejects_cross_account_datasource_with_request_context_one_orphan_datasource(self):
+        foreign_datasource = m.DataSource.objects.create(name="Foreign data source")
+        foreign_version = m.SourceVersion.objects.create(data_source=foreign_datasource, number=1)
+
+        data = {
+            "name": "Bad sync",
+            "source_version_to_update": self.source_version_to_update.pk,
+            "source_version_to_compare_with": foreign_version.pk,
+        }
+        mock_request = MagicMock()
+        mock_request.user.iaso_profile.account = self.account
+        serializer = DataSourceVersionsSynchronizationSerializer(data=data, context={"request": mock_request})
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("The data sources are not linked to the account of this synchronization.", str(serializer.errors))
 
     def test_validate_that_versions_to_compare_are_different(self):
         data = {
@@ -220,7 +252,7 @@ class CreateJsonDiffParametersSerializerTestCase(TestCase):
             # Options.
             "ignore_groups": True,
             "show_deleted_org_units": False,
-            "field_names": ["name", "parent", "opening_date", "closed_date"],
+            "field_names": ["name", "parent", "opening_date", "closed_date", "code"],
         }
         serializer = CreateJsonDiffParametersSerializer(
             data=json_diff_params, context={"data_source_versions_synchronization": self.data_source_sync}
@@ -248,13 +280,14 @@ class CreateJsonDiffParametersSerializerTestCase(TestCase):
         # Options.
         self.assertEqual(data["ignore_groups"], True)
         self.assertEqual(data["show_deleted_org_units"], False)
-        self.assertEqual(len(data["field_names"]), 4)
+        self.assertEqual(len(data["field_names"]), 5)
         self.assertIn("name", data["field_names"])
         self.assertIn("parent", data["field_names"])
         self.assertIn("opening_date", data["field_names"])
         self.assertIn("closed_date", data["field_names"])
+        self.assertIn("code", data["field_names"])
 
-    def test_deserialize_error_code_in_field_names(self):
+    def test_deserialize_error_unknown_field_in_field_names(self):
         json_diff_params = {
             # Version to update.
             "source_version_to_update_validation_status": OrgUnit.VALIDATION_NEW,
@@ -277,7 +310,8 @@ class CreateJsonDiffParametersSerializerTestCase(TestCase):
                 "parent",
                 "opening_date",
                 "closed_date",
-                "code",  # code is not allowed in pyramid syncs
+                "code",
+                "unknown_field",  # this one is invalid
             ],
         }
         serializer = CreateJsonDiffParametersSerializer(
@@ -285,7 +319,7 @@ class CreateJsonDiffParametersSerializerTestCase(TestCase):
         )
 
         self.assertFalse(serializer.is_valid())
-        self.assertIn("code", serializer.errors["field_names"][0])
+        self.assertIn("unknown_field", serializer.errors["field_names"][0])
 
     def test_validate_source_version_to_update_top_org_unit(self):
         json_diff_params = {

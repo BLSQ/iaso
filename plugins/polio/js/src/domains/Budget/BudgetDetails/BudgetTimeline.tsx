@@ -86,13 +86,12 @@ export const BudgetTimeline: FunctionComponent<Props> = ({
                                 {/* </Box> */}
 
                                 <Box>
-                                    {category.items.map((item, index) => {
+                                    {category.items.map(item => {
                                         return (
                                             <Box
-                                                // eslint-disable-next-line react/no-array-index-key
                                                 key={`${
                                                     item.step_id || item.label
-                                                }-${index}`}
+                                                }-${category.key}`}
                                                 mb={1}
                                             >
                                                 <Box

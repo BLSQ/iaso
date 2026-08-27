@@ -22,7 +22,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
             "last_name": "unittest_last_name",
         }
         response = self.client.post(reverse("profiles-list"), data=data, format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_create_profile_no_perm(self):
         self.client.force_authenticate(self.jane)
@@ -34,7 +34,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
         }
         response = self.client.post(reverse("profiles-list"), data=data, format="json")
 
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_create_user_with_user_roles_and_permissions(self):
         self.client.force_authenticate(self.jim)
@@ -49,7 +49,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
         }
 
         response = self.client.post(reverse("profiles-list"), data=data, format="json")
-        response_data = self.assertJSONResponse(response, 201)
+        response_data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         user_user_role = UserRole.objects.get(pk=response_data["user_roles"][0])
         self.assertEqual(user_user_role.id, self.user_role.id)
@@ -71,7 +71,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
             "user_roles": [self.user_role.id, self.user_role_another_account.id],
         }
         response = self.client.post(reverse("profiles-list"), data=data, format="json")
-        response_data = self.assertJSONResponse(response, 400)
+        response_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(
             response_data, "user_roles", "One or more user roles do not belong to the provided account."
         )
@@ -85,7 +85,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
             "last_name": "unittest_last_name",
         }
         response = self.client.post(reverse("profiles-list"), data=data, format="json")
-        response_data = self.assertJSONResponse(response, 400)
+        response_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response_data["user_name"], ["Username already exists for this account."])
 
     def test_create_profile_duplicate_user_with_capital_letters(self):
@@ -97,7 +97,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
             "last_name": "janedoe@test.com",
         }
         response = self.client.post(reverse("profiles-list"), data=data, format="json")
-        response_data = self.assertJSONResponse(response, 400)
+        response_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response_data["user_name"], ["Username already exists for this account."])
 
     def test_create_profile_with_org_units_and_perms(self):
@@ -113,7 +113,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
             "editable_org_unit_type_ids": [self.sub_unit_type.id],
         }
         response = self.client.post(reverse("profiles-list"), data=data, format="json")
-        response_data = self.assertJSONResponse(response, 201)
+        response_data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         profile = Profile.objects.get(pk=response_data["id"])
         self.assertEqual(profile.editable_org_unit_types.count(), 1)
@@ -148,7 +148,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
         }
 
         response = self.client.post(reverse("profiles-list"), data=data, format="json")
-        response_data = self.assertJSONResponse(response, 201)
+        response_data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         self.assertEqual(response_data["color"], color.upper())
 
@@ -170,7 +170,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
         with self.captureOnCommitCallbacks(execute=True) as callbacks:
             response = self.client.post(reverse("profiles-list"), data=data, format="json")
 
-        response_data = self.assertJSONResponse(response, 201)
+        response_data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertEqual(len(callbacks), 1)
         self.assertEqual(len(mail.outbox), 1)
         email = mail.outbox[0]
@@ -229,7 +229,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
         with self.captureOnCommitCallbacks(execute=True) as callbacks:
             response = self.client.post(reverse("profiles-list"), data=data, format="json")
 
-        result = self.assertJSONResponse(response, 201)
+        result = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertEqual(len(callbacks), 1)
         self.assertEqual(len(mail.outbox), 1)
         email = mail.outbox[0]
@@ -281,7 +281,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
         }
 
         response = self.client.post(reverse("profiles-list"), data=data, format="json")
-        result = self.assertJSONResponse(response, 400)
+        result = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
         self.assertHasError(result, "password", "This field is required.")
 
@@ -322,7 +322,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
         }
 
         response = self.client.post(reverse("profiles-list"), data=data, format="json")
-        response_data = self.assertJSONResponse(response, 201)
+        response_data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         profile = Profile.objects.get(pk=response_data["id"])
         user = profile.user
@@ -353,7 +353,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
         }
         response = self.client.post(reverse("profiles-list"), data=data, format="json")
 
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_create_user_is_atomic(self):
         project_1 = Project.objects.create(name="Project 1", app_id="project.1", account=self.account)
@@ -379,7 +379,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
         }
         response = self.client.post(reverse("profiles-list"), data=data, format="json")
 
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
         self.assertEqual(
             response.data["detail"],
@@ -406,7 +406,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
         with self.captureOnCommitCallbacks(execute=True) as callbacks:
             response = self.client.post(reverse("profiles-list"), data=data, format="json")
         self.assertEqual(len(callbacks), 1)
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         user = get_user_model().objects.get(username="invited_user_empty_password")
         self.assertTrue(user.has_usable_password(), "Invited user should have a usable password")
@@ -422,7 +422,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
         with self.captureOnCommitCallbacks(execute=True) as callbacks:
             response = self.client.post(reverse("profiles-list"), data=data, format="json")
         self.assertEqual(len(callbacks), 1)
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         user = get_user_model().objects.get(username="invited_user_missing_password")
         self.assertTrue(user.has_usable_password())
@@ -439,7 +439,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
         with self.captureOnCommitCallbacks(execute=True) as callbacks:
             response = self.client.post(reverse("profiles-list"), data=data, format="json")
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertEqual(len(callbacks), 1)
 
         user = get_user_model().objects.get(username="invited_user_password_is_none")
@@ -455,7 +455,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
 
         data = self.get_new_user_data()
         response = self.client.post(reverse("profiles-list"), data=data, format="json")
-        response_data = self.assertJSONResponse(response, 201)
+        response_data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         new_profile_id = response_data["id"]
 
         new_user_id = Profile.objects.get(pk=new_profile_id).user_id
@@ -468,7 +468,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
                 "object_id": new_profile_id,
             },
         )
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         logs = response_data["list"]
         log = logs[0]
 
@@ -512,7 +512,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
             "email": "jane.doe@test.com",
         }
         response = self.client.post(reverse("profiles-list"), data=data, format="json")
-        response_data = self.assertJSONResponse(response, 201)
+        response_data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         profile = Profile.objects.get(pk=response_data["id"])
         user = profile.user
@@ -527,6 +527,6 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
         user_id = user.id
         response = self.client.delete(reverse("profiles-detail", kwargs={"pk": profile_id}))
 
-        self.assertJSONResponse(response, 204)
+        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
         self.assertQuerySetEqual(get_user_model().objects.filter(id=user_id), [])
         self.assertQuerySetEqual(Profile.objects.filter(id=profile_id), [])

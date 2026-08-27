@@ -1,7 +1,7 @@
 # How Iaso is deployed on AWS
 
 on ElasticBeanstalk + RDS
-![schema archi iaso.svg](schema%20archi%20iaso.svg)
+![schema archi iaso.svg](./schema%20archi%20iaso.svg)
 ---
 ## Main parts 
 - Creation of the HOST environment where the Iaso code will be deployed as well as the related services
@@ -25,8 +25,8 @@ The technical term for this is "Provisioning" if you want to look it up.
 See  
 https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create-deploy-python-django.html
 
-We have custom commands and configuration in [.ebextensions/](.ebextensions/) and in 
-and in [.platform/](.platform/) to extend the nginx config.
+We have custom commands and configuration in [.ebextensions/](.ebextensions) and in 
+and in [.platform/](.platform) to extend the nginx config.
 
 ## Running Django 3 on Elastic Beanstalk / Custom AMI
 

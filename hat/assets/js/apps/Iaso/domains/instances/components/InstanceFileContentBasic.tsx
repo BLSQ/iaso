@@ -22,16 +22,14 @@ const useStyles = makeStyles(theme => ({
         borderTop: 'none !important',
         borderLeft: 'none !important',
         borderRight: 'none !important',
-        // @ts-ignore
-        borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
+        borderBottom: `1px solid ${theme.palette.lightGray.border}  !important`,
     },
     tableCell: {
         backgroundColor: 'transparent',
         borderTop: 'none !important',
         borderLeft: 'none !important',
         borderRight: 'none !important',
-        // @ts-ignore
-        borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
+        borderBottom: `1px solid ${theme.palette.lightGray.border}  !important`,
     },
 }));
 

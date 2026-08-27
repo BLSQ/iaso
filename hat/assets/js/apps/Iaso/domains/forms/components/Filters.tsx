@@ -54,7 +54,7 @@ const Filters = ({ params, forms, isLoadingForms }: Props) => {
         currentUser,
     );
     const handleOnlyDeleted = useCallback(
-        (key, value) => {
+        (key: string, value: boolean) => {
             const valueForParam = value ? '1' : undefined;
             handleChange(key, valueForParam);
         },

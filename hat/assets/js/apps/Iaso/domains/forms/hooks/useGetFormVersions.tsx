@@ -9,7 +9,13 @@ const defaultTableParams = {
 };
 
 const apiUrl = '/api/formversions';
-export const useGetFormVersions = ({ formId, params }) => {
+export const useGetFormVersions = ({
+    formId,
+    params,
+}: {
+    formId: number;
+    params: Record<string, any>;
+}) => {
     const { order, page, pageSize } = params;
     const apiParams = useApiParams(
         { form_id: formId, order, page, pageSize },

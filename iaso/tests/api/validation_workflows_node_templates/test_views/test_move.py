@@ -199,3 +199,19 @@ class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
                 data={"position": PositionChoices.child_of, "parent_node_templates": [self.first_node.slug]},
             )
             self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_forbid_if_validation_workflow_is_soft_deleted(self):
+        self.client.force_authenticate(self.john_wick)
+
+        self.validation_workflow.delete()
+        self.validation_workflow.refresh_from_db()
+        self.assertIsNotNone(self.validation_workflow.deleted_at)
+
+        res = self.client.put(
+            reverse(
+                "validation_node_templates-move",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.second_node.slug},
+            ),
+            data={"position": PositionChoices.first},
+        )
+        self.assertJSONResponse(res, status.HTTP_404_NOT_FOUND)

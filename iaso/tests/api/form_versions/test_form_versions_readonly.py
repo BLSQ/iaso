@@ -7,6 +7,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.core.files import File
 from django.core.files.uploadedfile import UploadedFile
 from django.test import override_settings
+from rest_framework import status
 
 from iaso import models as m
 from iaso.models.org_unit import OrgUnitType
@@ -89,13 +90,13 @@ class ReadOnlyFormsVersionAPITestCase(APITestCase):
         """GET /mobile/formversions/: without auth should return 401"""
 
         response = self.client.get(BASE_URL)
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_form_versions_list_without_auth_with_appid(self):
         """GET /mobile/formversions/: without auth"""
 
         response = self.client.get(f"{BASE_URL}?app_id={self.blue_project_no_need_auth.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         form_versions_data = response.json()["form_versions"]
 
         assert len(form_versions_data) == 1
@@ -109,7 +110,7 @@ class ReadOnlyFormsVersionAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.red_no_perms)
         response = self.client.get(BASE_URL)
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         response_data = response.json()
         assert response_data["form_versions"] == []
 
@@ -118,7 +119,7 @@ class ReadOnlyFormsVersionAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.blue_with_perms)
         response = self.client.get(BASE_URL)
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         form_versions_data = response.json()["form_versions"]
 
         assert len(form_versions_data) == 2
@@ -138,8 +139,8 @@ class ReadOnlyFormsVersionAPITestCase(APITestCase):
             f"{BASE_URL}{self.form_need_auth.latest_version.id}/?app_id={self.blue_project_need_auth.app_id}"
         )
 
-        self.assertJSONResponse(response_1, 200)
-        self.assertJSONResponse(response_2, 200)
+        self.assertJSONResponse(response_1, status.HTTP_200_OK)
+        self.assertJSONResponse(response_2, status.HTTP_200_OK)
 
         self.assertValidFormVersionData(response_1.json())
         self.assertValidFormVersionData(response_2.json())
@@ -152,8 +153,8 @@ class ReadOnlyFormsVersionAPITestCase(APITestCase):
         )
 
         # Should fail in both cases as the project needs authentication and the user is not authenticated
-        self.assertJSONResponse(response_3, 401)
-        self.assertJSONResponse(response_4, 401)
+        self.assertJSONResponse(response_3, status.HTTP_401_UNAUTHORIZED)
+        self.assertJSONResponse(response_4, status.HTTP_401_UNAUTHORIZED)
 
     def test_form_no_need_auth(self):
         self.client.force_authenticate(self.blue_with_perms)
@@ -161,7 +162,7 @@ class ReadOnlyFormsVersionAPITestCase(APITestCase):
             f"{BASE_URL}{self.form_no_need_auth.latest_version.id}/"
         )  # should work without app id as the user is authenticated
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormVersionData(response.json())
 
     def test_form_no_need_auth_should_fail_without_app_id(self):
@@ -169,12 +170,12 @@ class ReadOnlyFormsVersionAPITestCase(APITestCase):
         response_1 = self.client.get(
             f"{BASE_URL}{self.form_no_need_auth.latest_version.id}/"
         )  # should fail without app id
-        self.assertJSONResponse(response_1, 401)
+        self.assertJSONResponse(response_1, status.HTTP_401_UNAUTHORIZED)
 
         response_2 = self.client.get(
             f"{BASE_URL}{self.form_no_need_auth.latest_version.id}/?app_id={self.blue_project_no_need_auth.app_id}"
         )  # should work with app id
-        self.assertJSONResponse(response_2, 200)
+        self.assertJSONResponse(response_2, status.HTTP_200_OK)
         self.assertValidFormVersionData(response_2.json())
 
     def test_form_versions_search_by_version_id_with_search_name(self):
@@ -200,7 +201,7 @@ class ReadOnlyFormsVersionAPITestCase(APITestCase):
 
         # Search for the form version by version_id using search_name
         response = self.client.get(f"{BASE_URL}?search_name={version_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         form_versions_data = response.json()["form_versions"]
         # Should only return the form version with the unique version_id and not the other_version_id
         assert any(fv["version_id"] == version_id for fv in form_versions_data)

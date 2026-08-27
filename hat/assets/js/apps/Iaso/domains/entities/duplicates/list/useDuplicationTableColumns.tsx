@@ -1,4 +1,3 @@
-/* eslint-disable react/no-array-index-key */
 import React, { ReactElement, useMemo } from 'react';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import MergeIcon from '@mui/icons-material/Merge';
@@ -45,11 +44,14 @@ export const useDuplicationTableColumns = (): Column[] => {
                 resizable: false,
                 sortable: false,
                 Cell: settings => {
-                    const { the_fields } = settings.row.original;
+                    const { the_fields, entity1, entity2 } =
+                        settings.row.original;
                     return (
                         <>
-                            {the_fields.map((field, index) => (
-                                <p key={`${field.field}- ${index}`}>
+                            {the_fields.map(field => (
+                                <p
+                                    key={`${field.field}-${entity1.id}-${entity2.id}`}
+                                >
                                     {formatLabel(field)}
                                 </p>
                             ))}

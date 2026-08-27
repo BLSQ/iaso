@@ -7,7 +7,7 @@ import { VaccineAuthParams } from '../types';
 import { useNopv2AuthTableColumns } from './useNopv2AuthTableColumns';
 
 type Props = { params: VaccineAuthParams & Partial<UrlParams> };
-
+/** @deprecated at clients request. Code kept because the business need may arise again*/
 export const Nopv2AuthorisationsTable: FunctionComponent<Props> = ({
     params,
 }) => {

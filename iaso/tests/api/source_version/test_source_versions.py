@@ -49,12 +49,12 @@ class SourceVersionAPITestCase(APITestCase):
 
     def test_list_unauthorized_without_auth(self):
         response = self.client.get(self.BASE_URL)
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_list_unauthorized_without_perms(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.BASE_URL)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data["detail"], "You do not have permission to perform this action.")
 
     def test_list_ok_with_right_perms(self):
@@ -64,7 +64,7 @@ class SourceVersionAPITestCase(APITestCase):
         self.assertEqual(1, self.user.user_permissions.count())
         self.assertTrue(self.user.has_perm(CORE_MAPPINGS_PERMISSION.full_name()))
         response = self.client.get(self.BASE_URL)
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         del self.user._perm_cache
         del self.user._user_perm_cache
@@ -72,7 +72,7 @@ class SourceVersionAPITestCase(APITestCase):
         self.assertEqual(1, self.user.user_permissions.count())
         self.assertTrue(self.user.has_perm(CORE_ORG_UNITS_PERMISSION.full_name()))
         response = self.client.get(self.BASE_URL)
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         del self.user._perm_cache
         del self.user._user_perm_cache
@@ -80,7 +80,7 @@ class SourceVersionAPITestCase(APITestCase):
         self.assertEqual(1, self.user.user_permissions.count())
         self.assertTrue(self.user.has_perm(CORE_ORG_UNITS_READ_PERMISSION.full_name()))
         response = self.client.get(self.BASE_URL)
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         del self.user._perm_cache
         del self.user._user_perm_cache
@@ -88,7 +88,7 @@ class SourceVersionAPITestCase(APITestCase):
         self.assertEqual(1, self.user.user_permissions.count())
         self.assertTrue(self.user.has_perm(CORE_LINKS_PERMISSION.full_name()))
         response = self.client.get(self.BASE_URL)
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         del self.user._perm_cache
         del self.user._user_perm_cache
@@ -96,14 +96,14 @@ class SourceVersionAPITestCase(APITestCase):
         self.assertEqual(1, self.user.user_permissions.count())
         self.assertTrue(self.user.has_perm(CORE_SOURCE_PERMISSION.full_name()))
         response = self.client.get(self.BASE_URL)
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_list(self):
         self.user.user_permissions.set([Permission.objects.get(codename=CORE_SOURCE_PERMISSION.codename)])
         self.client.force_authenticate(self.user)
 
         response = self.client.get(self.BASE_URL)
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.data["versions"]
         self.assertEqual(1, len(data))
@@ -122,7 +122,7 @@ class SourceVersionAPITestCase(APITestCase):
         self.user.user_permissions.set([Permission.objects.get(codename=CORE_SOURCE_PERMISSION.codename)])
         self.client.force_authenticate(self.user)
         response = self.client.get(f"{self.BASE_URL}dropdown/")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(data), 1)
         version = data[0]
         self.assertEqual(version["id"], self.version.pk)
@@ -132,18 +132,18 @@ class SourceVersionAPITestCase(APITestCase):
 
     def test_dropdown_sourceversions_without_user_authentication(self):
         response = self.client.get(f"{self.BASE_URL}dropdown/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_dropdown_sourceversions_with_user_without_permission(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(f"{self.BASE_URL}dropdown/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_dropdown_sourceversions_with_user_from_another_account(self):
         self.user2.user_permissions.set([Permission.objects.get(codename=CORE_SOURCE_PERMISSION.codename)])
         self.client.force_authenticate(self.user2)
         response = self.client.get(f"{self.BASE_URL}dropdown/")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(data), 1)
         version = data[0]
         self.assertEqual(version["id"], self.version2.pk)

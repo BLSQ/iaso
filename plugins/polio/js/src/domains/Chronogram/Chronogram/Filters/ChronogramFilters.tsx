@@ -11,6 +11,7 @@ import * as Permission from '../../../../../../../../hat/assets/js/apps/Iaso/uti
 
 import { baseUrls } from '../../../../constants/urls';
 import { useGetCountries } from '../../../../hooks/useGetCountries';
+import { useCampaignCategoryOptions } from '../../../Campaigns/hooks/useCampaignCategoryOptions';
 import { useOptionChronogram } from '../../api/useOptionChronogram';
 import MESSAGES from '../messages';
 import { CreateChronogramModal } from '../Modals/CreateChronogramModal';
@@ -33,6 +34,7 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
 
     const { data, isFetching: isFetchingCountries } = useGetCountries();
     const countriesOptions = (data && data.orgUnits) || [];
+    const campaignCategoryOptions = useCampaignCategoryOptions();
 
     const onTimeOptions = [
         {
@@ -104,11 +106,11 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                     <InputComponent
                         type="select"
                         clearable
-                        keyValue="on_hold"
-                        value={filters.on_hold}
+                        keyValue="campaign_category"
+                        value={filters.campaign_category}
                         onChange={handleChange}
-                        options={onTimeOptions}
-                        label={MESSAGES.labelIsOnHold}
+                        options={campaignCategoryOptions}
+                        label={MESSAGES.filterLabelCampaignCategory}
                     />
                 </Grid>
                 <Grid item xs={12} md={6} lg={6}>

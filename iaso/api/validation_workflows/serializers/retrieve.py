@@ -9,10 +9,11 @@ from iaso.models import Form, ValidationNodeTemplate, ValidationWorkflow
 
 class NestedValidationNodeTemplateSerializer(ModelSerializer):
     roles_required = UserRoleNameSerializer(read_only=True, many=True, allow_null=True)
+    order = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = ValidationNodeTemplate
-        fields = ["slug", "name", "description", "roles_required", "can_skip_previous_nodes"]
+        fields = ["id", "order", "slug", "name", "description", "roles_required", "can_skip_previous_nodes"]
 
 
 class NestedFormSerializer(ModelSerializer):
@@ -29,6 +30,9 @@ class ValidationWorkflowRetrieveSerializer(ModelSerializer):
 
     forms = NestedFormSerializer(many=True, read_only=True, source="form_set", allow_null=True)
     node_templates = serializers.SerializerMethodField(read_only=True, allow_null=True)
+    has_processes = serializers.BooleanField(
+        read_only=True, help_text="True if the workflow has past or ongoing validation processes"
+    )
 
     class Meta:
         model = ValidationWorkflow
@@ -42,6 +46,7 @@ class ValidationWorkflowRetrieveSerializer(ModelSerializer):
             "created_at",
             "updated_at",
             "node_templates",
+            "has_processes",
         ]
 
     @extend_schema_field(NestedValidationNodeTemplateSerializer(many=True, allow_null=True))
@@ -81,5 +86,8 @@ class ValidationWorkflowRetrieveSerializer(ModelSerializer):
                 break
 
             current = next_nodes[0]
+
+        for ind, data in enumerate(ordered):
+            data.order = ind + 1
 
         return [NestedValidationNodeTemplateSerializer(instance=data).data for data in ordered]

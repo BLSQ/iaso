@@ -5,7 +5,12 @@ import { findDescriptorInChildren } from '../../../../utils';
 import { formatLabel } from '../../../instances/utils';
 
 import MESSAGES from '../../../workflows/messages';
-import { FieldType, FormDescriptor, PossibleField } from '../../types/forms';
+import {
+    ChildrenDescriptor,
+    FieldType,
+    FormDescriptor,
+    PossibleField,
+} from '../../types/forms';
 
 import { Field, iasoFields } from '../constants';
 
@@ -113,10 +118,12 @@ export const getQueryBuildersFields = (
                     );
                     if (descriptor?.children) {
                         const listValues = Object.fromEntries(
-                            (descriptor.children || []).map(child => [
-                                child.name,
-                                formatLabel(child),
-                            ]),
+                            (descriptor.children || []).map(
+                                (child: ChildrenDescriptor) => [
+                                    child.name,
+                                    formatLabel(child),
+                                ],
+                            ),
                         );
                         // @ts-ignore
                         fields[fieldCopy.fieldKey].fieldSettings = {

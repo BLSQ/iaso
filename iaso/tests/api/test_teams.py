@@ -2,6 +2,7 @@ from unittest import mock
 
 from django.contrib.auth.models import User
 from django_ltree.fields import PathValue  # type: ignore
+from rest_framework import status
 
 from hat.audit.models import Modification
 from iaso.api.teams.serializers import TeamSerializer
@@ -327,7 +328,7 @@ class TeamAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
         with self.assertNumQueries(5):
             response = self.client.get("/api/teams/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 2)
 
     def test_query_ancestor(self):
@@ -343,24 +344,24 @@ class TeamAPITestCase(APITestCase):
         )
 
         response = self.client.get("/api/teams/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 8)
 
         response = self.client.get(f"/api/teams/?ancestor={team_a.id}", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 1)
         response = self.client.get(f"/api/teams/?ancestor={team_b.id}", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 5)
         ids = sorted([row["id"] for row in r])
         self.assertEqual(ids, [team_b.id, team_b_c.id, team_b_d.id, team_b_c_e.id, team_b_c_f.id])
         response = self.client.get(f"/api/teams/?ancestor={team_b.id}&search=hello", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 1)
         ids = sorted([row["id"] for row in r])
         self.assertEqual(ids, [team_b_c_f.id])
         response = self.client.get(f"/api/teams/?ancestor={team_b_c.id}", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 3)
         ids = sorted([row["id"] for row in r])
         self.assertEqual(ids, [team_b_c.id, team_b_c_e.id, team_b_c_f.id])
@@ -384,7 +385,7 @@ class TeamAPITestCase(APITestCase):
         team_of_teams.sub_teams.set([sub_team])
 
         response = self.client.get("/api/teams/?fields=id,members_count", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         team_of_users_data = next(t for t in r if t["id"] == team_of_users.id)
         team_of_teams_data = next(t for t in r if t["id"] == team_of_teams.id)
@@ -399,7 +400,7 @@ class TeamAPITestCase(APITestCase):
         self.assertEqual(team1_data["members_count"], 0)
 
         response_default = self.client.get("/api/teams/", format="json")
-        r_default = self.assertJSONResponse(response_default, 200)
+        r_default = self.assertJSONResponse(response_default, status.HTTP_200_OK)
 
         default_team_data = next(t for t in r_default if t["id"] == team_of_users.id)
 
@@ -422,7 +423,7 @@ class TeamAPITestCase(APITestCase):
         }
 
         response = self.client.post("/api/teams/", data=data, format="json")
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertTrue(Team.objects.filter(name="hello").exists())
         team = Team.objects.get(name="hello")
         self.assertEqual(team.created_by, user_with_perms)
@@ -442,7 +443,7 @@ class TeamAPITestCase(APITestCase):
         }
 
         response = self.client.post("/api/teams/", data=data, format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         self.assertFalse(Team.objects.filter(name="hello").exists())
 
     def test_patch(self):
@@ -459,7 +460,7 @@ class TeamAPITestCase(APITestCase):
         }
 
         response = self.client.post("/api/teams/", data=data, format="json")
-        r = self.assertJSONResponse(response, 201)
+        r = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertTrue(Team.objects.filter(name="hello").exists())
         team_id = r["id"]
         self.assertEqual(Team.objects.get(id=team_id).path, PathValue((team_id,)))
@@ -469,7 +470,7 @@ class TeamAPITestCase(APITestCase):
         update_data = {"sub_teams": [sub_team1.pk]}
 
         response = self.client.patch(f"/api/teams/{team_id}/", data=update_data, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertTrue(Team.objects.filter(name="hello").exists())
         self.assertQuerySetEqual(Team.objects.get(name="hello").sub_teams.all(), [sub_team1])
         sub_team1.refresh_from_db()
@@ -481,7 +482,7 @@ class TeamAPITestCase(APITestCase):
 
         response = self.client.patch(f"/api/teams/{team_id}/", data=update_data, format="json")
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertTrue(Team.objects.filter(name="hello").exists())
         team = Team.objects.get(name="hello")
         self.assertQuerySetEqual(team.sub_teams.all(), [])
@@ -498,11 +499,11 @@ class TeamAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
         # can read
         response = self.client.get(f"/api/teams/{self.team1.pk}/", format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         data = {"name": "test2"}
         # cannot edit
         response = self.client.patch(f"/api/teams/{self.team1.pk}/", data=data, format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_soft_delete(self):
         user_with_perms = self.create_user_with_profile(
@@ -511,12 +512,12 @@ class TeamAPITestCase(APITestCase):
         self.client.force_authenticate(user_with_perms)
         team = self.team1
         response = self.client.get("/api/teams/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 2)
 
         # DELETE IT
         response = self.client.delete(f"/api/teams/{team.id}/", format="json")
-        self.assertJSONResponse(response, 204)
+        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
 
         team.refresh_from_db()
         self.assertIsNotNone(team.deleted_at)
@@ -527,30 +528,30 @@ class TeamAPITestCase(APITestCase):
 
         # we don't see it anymore
         response = self.client.get("/api/teams/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 1)
 
         # we see deleted and not deleted
         response = self.client.get("/api/teams/?deletion_status=all", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 2)
 
         # see with deletion status
         response = self.client.get("/api/teams/?deletion_status=deleted", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 1)
         self.assertEqual(r[0]["id"], team.id)
 
         # Undelete
         response = self.client.patch(f"/api/teams/{team.id}/", format="json", data={"deleted_at": None})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         team.refresh_from_db()
         team = Team.objects.get(id=team.id)
         self.assertIsNone(team.deleted_at)
 
         # we see it again from the API
         response = self.client.get("/api/teams/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 2)
         # one for delete, one for undelete
         self.assertEqual(Modification.objects.count(), 2)
@@ -574,14 +575,14 @@ class TeamAPITestCase(APITestCase):
 
         # Fetch the list of teams with a filter on a single manager
         response = self.client.get(f"/api/teams/?order=id&managers={ash_ketchum.id}", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 2)
         self.assertEqual(r[0]["name"], team_fire_pokemons.name)
         self.assertEqual(r[1]["name"], team_electric_pokemons.name)
 
         # Fetch the list of teams with a filter on multiple managers
         response = self.client.get(f"/api/teams/?managers={ash_ketchum.id},{misty.id}", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 3)
 
     def test_list_filter_by_type(self):
@@ -605,19 +606,19 @@ class TeamAPITestCase(APITestCase):
 
         # Fetch the list of teams without any type filter
         response = self.client.get("/api/teams/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 6)  # 2 from happy path (set up) + 4 new ones
 
         # Fetch the list of teams with a single type
         response = self.client.get(f"/api/teams/?order=id&types={TeamType.TEAM_OF_USERS}", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 3)
         self.assertEqual(r[0]["name"], team_fire_pokemons.name)
         self.assertEqual(r[1]["name"], team_electric_pokemons.name)
         self.assertEqual(r[2]["name"], team_water_pokemons.name)
 
         response = self.client.get(f"/api/teams/?order=id&types={TeamType.TEAM_OF_TEAMS}", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 1)
         self.assertEqual(r[0]["name"], team_pokemons.name)
 
@@ -625,7 +626,7 @@ class TeamAPITestCase(APITestCase):
         response = self.client.get(
             f"/api/teams/?types={TeamType.TEAM_OF_TEAMS},{TeamType.TEAM_OF_USERS}", format="json"
         )
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 4)
 
     def test_list_filter_by_project(self):
@@ -639,24 +640,24 @@ class TeamAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
         # Fetch the list of teams without any project filter
         response = self.client.get("/api/teams/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 3)  # 2 from happy path (set up) + 1 new one
 
         # Fetch the list of teams with a single project
         response = self.client.get(f"/api/teams/?order=id&projects={self.project1.id}", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 2)
         self.assertEqual(r[0]["name"], self.team1.name)
         self.assertEqual(r[1]["name"], team_electric_pokemons.name)
 
         response = self.client.get(f"/api/teams/?order=id&projects={self.project2.id}", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 1)
         self.assertEqual(r[0]["name"], self.team2.name)
 
         # Fetch the list of teams with a filter on multiple projects
         response = self.client.get(f"/api/teams/?projects={self.project2.id},{self.project1.id}", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 3)
 
     def test_create_team_with_valid_color(self):
@@ -676,7 +677,7 @@ class TeamAPITestCase(APITestCase):
         }
 
         response = self.client.post("/api/teams/", data=data, format="json")
-        r = self.assertJSONResponse(response, 201)
+        r = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertEqual(r["color"], "#FF5733")  # Normalized to uppercase
 
     def test_create_team_with_invalid_color_no_hash(self):
@@ -696,7 +697,7 @@ class TeamAPITestCase(APITestCase):
         }
 
         response = self.client.post("/api/teams/", data=data, format="json")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("color", response.json())
 
     def test_create_team_with_invalid_color_wrong_length(self):
@@ -716,7 +717,7 @@ class TeamAPITestCase(APITestCase):
         }
 
         response = self.client.post("/api/teams/", data=data, format="json")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("color", response.json())
 
     def test_create_team_with_invalid_color_characters(self):
@@ -736,7 +737,7 @@ class TeamAPITestCase(APITestCase):
         }
 
         response = self.client.post("/api/teams/", data=data, format="json")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("color", response.json())
 
     def test_patch_team_color(self):
@@ -748,14 +749,14 @@ class TeamAPITestCase(APITestCase):
 
         update_data = {"color": "#00ff00"}
         response = self.client.patch(f"/api/teams/{self.team1.id}/", data=update_data, format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(r["color"], "#00FF00")  # Normalized to uppercase
 
     def test_dropdown_endpoint_basic(self):
         """Test the dropdown endpoint returns minimal data"""
         self.client.force_authenticate(self.user)
         response = self.client.get("/api/teams/dropdown/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(len(r), 2)
 
@@ -785,7 +786,7 @@ class TeamAPITestCase(APITestCase):
         Team.objects.create(project=self.project1, name="another_team", manager=self.user)
 
         response = self.client.get("/api/teams/dropdown/?search=searchable", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(len(r), 1)
         self.assertEqual(r[0]["name"], "searchable_team")
@@ -795,7 +796,7 @@ class TeamAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get(f"/api/teams/dropdown/?projects={self.project1.id}", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(len(r), 1)
         self.assertEqual(r[0]["project"], self.project1.id)
@@ -815,7 +816,7 @@ class TeamAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get(f"/api/teams/dropdown/?types={TeamType.TEAM_OF_USERS}", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         # Should only return TEAM_OF_USERS
         team_ids = [team["id"] for team in r]
@@ -832,7 +833,7 @@ class TeamAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get(f"/api/teams/dropdown/?managers={ash_ketchum.id}", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(len(r), 1)
         self.assertEqual(r[0]["id"], team_ash.id)
@@ -851,7 +852,7 @@ class TeamAPITestCase(APITestCase):
         other_team = Team.objects.create(project=self.project1, name="other_team", manager=self.user)
 
         response = self.client.get(f"/api/teams/dropdown/?ancestor={parent_team.id}", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         team_ids = sorted([team["id"] for team in r])
         expected_ids = sorted([parent_team.id, child_team.id, grandchild_team.id])
@@ -869,23 +870,23 @@ class TeamAPITestCase(APITestCase):
 
         # Team should appear in dropdown
         response = self.client.get("/api/teams/dropdown/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         team_ids = [t["id"] for t in r]
         self.assertIn(team.id, team_ids)
 
         # Delete the team
         response = self.client.delete(f"/api/teams/{team.id}/", format="json")
-        self.assertJSONResponse(response, 204)
+        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
 
         # Team should not appear in dropdown by default
         response = self.client.get("/api/teams/dropdown/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         team_ids = [t["id"] for t in r]
         self.assertNotIn(team.id, team_ids)
 
         # Team should appear when using deletion_status=all
         response = self.client.get("/api/teams/dropdown/?deletion_status=all", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         team_ids = [t["id"] for t in r]
         self.assertIn(team.id, team_ids)
 
@@ -898,7 +899,7 @@ class TeamAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get("/api/teams/dropdown/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         colored_team_data = next(team for team in r if team["id"] == team_with_color.id)
         self.assertEqual(colored_team_data["color"], "#FF5733")
@@ -906,4 +907,4 @@ class TeamAPITestCase(APITestCase):
     def test_dropdown_endpoint_unauthorized(self):
         """Test dropdown endpoint requires authentication"""
         response = self.client.get("/api/teams/dropdown/", format="json")
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

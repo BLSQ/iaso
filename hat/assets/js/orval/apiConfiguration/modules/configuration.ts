@@ -1,6 +1,9 @@
 export const modulesOperations = {
     apiModulesList: {
         query: {
+            meta: {
+                localeAware: true,
+            },
             options: {
                 retry: false,
                 staleTime: Infinity,
@@ -11,6 +14,9 @@ export const modulesOperations = {
     },
     apiModulesDropdownList: {
         query: {
+            meta: {
+                localeAware: true,
+            },
             options: {
                 retry: false,
                 staleTime: Infinity,

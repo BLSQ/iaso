@@ -68,12 +68,16 @@ export const UserAsyncSelect = ({
         },
         [handleChange, multi],
     );
+    const currentUsers = useMemo(() => {
+        if (!filterUsers || filterUsers === '') return [];
+        return selectedUsers ?? [];
+    }, [filterUsers, selectedUsers]);
 
     return (
         <AsyncSelect
             keyValue={keyValue}
             label={label}
-            value={selectedUsers ?? ''}
+            value={currentUsers}
             onChange={handleChangeUsers}
             debounceTime={500}
             multi={multi}

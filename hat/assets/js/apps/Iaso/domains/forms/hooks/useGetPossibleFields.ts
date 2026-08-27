@@ -25,10 +25,18 @@ type AllResults = {
     isFetchingForms: boolean;
 };
 
+type FormWithPossibleFields = Form & {
+    possible_fields_with_latest_version?: PossibleField[];
+};
+
+type PossibleFieldsKey =
+    | 'possible_fields'
+    | 'possible_fields_with_latest_version';
+
 export const usePossibleFields = (
     isFetchingForm: boolean,
-    form?: Form,
-    possible_fields_key = 'possible_fields',
+    form?: FormWithPossibleFields,
+    possible_fields_key: PossibleFieldsKey = 'possible_fields',
 ): Result => {
     return useMemo(() => {
         const possibleFields =

@@ -1,3 +1,5 @@
+from rest_framework import status
+
 from iaso import models as m
 from iaso.test import APITestCase
 
@@ -12,12 +14,12 @@ class APITokenTestCase(APITestCase):
         """GET /api/apitoken/ without auth should result in a 401"""
 
         response = self.client.get("/api/apitoken/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_api_token_with_auth(self):
         """GET  /api/apitoken/ with auth should result in a 200 and a token"""
         self.client.force_authenticate(self.jane)
 
         response = self.client.get("/api/apitoken/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertIsNotNone(response.json().get("token"))

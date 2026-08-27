@@ -44,7 +44,8 @@ export const CreateEditNode: FunctionComponent<Props> = ({
     const { data: node } = useGetNode({ nodeSlug, workflowSlug });
     const { data: userRoles, isFetching: isLoadingRoles } =
         useGetUserRolesDropDown();
-    const { mutateAsync: save } = useSaveNode();
+
+    const { mutateAsync: save } = useSaveNode(workflowSlug);
     const validationSchema = useNodeValidation();
     const formik = useFormik<NodeFormValues>({
         initialValues: {
@@ -61,8 +62,7 @@ export const CreateEditNode: FunctionComponent<Props> = ({
     });
     const handleChangeUserRoles = useCallback(
         (_: string, newValue: string) => {
-            const value =
-                newValue && newValue.length > 0 ? newValue : undefined;
+            const value = newValue && newValue.length > 0 ? newValue : [];
             formik.setFieldTouched('roles_required', true);
             formik.setFieldValue('roles_required', value);
         },

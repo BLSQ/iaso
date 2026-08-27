@@ -1,9 +1,36 @@
 import React from 'react';
 import { axe } from 'jest-axe';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { Timeline } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodes';
 import { renderWithThemeAndIntlProvider } from '../../../../../../../tests/helpers';
 import { ListItemSecondaryText } from './ListItemSecondaryText';
+
+vi.mock('bluesquare-components', async importOriginal => {
+    const actual =
+        await importOriginal<typeof import('bluesquare-components')>();
+    return {
+        ...actual,
+        useRedirectTo: () => vi.fn(),
+    };
+});
+
+vi.mock(
+    'Iaso/domains/instances/components/ValidationWorkflow/ValidationModal',
+    () => ({
+        ValidateNodeApproveModal: ({ iconProps }: any) => (
+            <button>{iconProps.buttonText}</button>
+        ),
+        ValidateNodeRejectModal: ({ iconProps }: any) => (
+            <button>{iconProps.buttonText}</button>
+        ),
+        ValidateNodeApproveByPassModal: ({ iconProps }: any) => (
+            <button>{iconProps.buttonText}</button>
+        ),
+        ValidateNodeRejectByPassModal: ({ iconProps }: any) => (
+            <button>{iconProps.buttonText}</button>
+        ),
+    }),
+);
 
 describe('ListItemSecondaryText accessibility', () => {
     const baseTimelineItem = {
@@ -21,7 +48,7 @@ describe('ListItemSecondaryText accessibility', () => {
         const { container } = renderWithThemeAndIntlProvider(
             <ListItemSecondaryText
                 timelineItem={baseTimelineItem as Timeline}
-                isMostRecent={false}
+                isFirstSubmission
                 instanceId={123}
             />,
         );
@@ -40,7 +67,7 @@ describe('ListItemSecondaryText accessibility', () => {
                         comment: '',
                     } as Timeline
                 }
-                isMostRecent={false}
+                isFirstSubmission
                 instanceId={123}
             />,
         );
@@ -59,7 +86,7 @@ describe('ListItemSecondaryText accessibility', () => {
                         status: 'SKIPPED',
                     } as Timeline
                 }
-                isMostRecent={false}
+                isFirstSubmission
                 instanceId={123}
             />,
         );
@@ -79,7 +106,7 @@ describe('ListItemSecondaryText accessibility', () => {
                         user_can_do_actions: false,
                     } as Timeline
                 }
-                isMostRecent={true}
+                isFirstSubmission
                 instanceId={123}
             />,
         );
@@ -99,7 +126,7 @@ describe('ListItemSecondaryText accessibility', () => {
                         user_can_do_actions: true,
                     } as Timeline
                 }
-                isMostRecent={true}
+                isFirstSubmission
                 instanceId={123}
             />,
         );
@@ -120,7 +147,7 @@ describe('ListItemSecondaryText accessibility', () => {
                         user_can_do_actions: false,
                     } as Timeline
                 }
-                isMostRecent={true}
+                isFirstSubmission
                 instanceId={123}
             />,
         );
@@ -141,7 +168,7 @@ describe('ListItemSecondaryText accessibility', () => {
                         user_can_do_actions: true,
                     } as Timeline
                 }
-                isMostRecent={true}
+                isFirstSubmission
                 instanceId={123}
             />,
         );
@@ -160,7 +187,7 @@ describe('ListItemSecondaryText accessibility', () => {
                         status: 'UNKNOWN',
                     } as Timeline
                 }
-                isMostRecent={false}
+                isFirstSubmission
                 instanceId={123}
             />,
         );

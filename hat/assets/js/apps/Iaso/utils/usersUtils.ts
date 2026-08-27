@@ -91,7 +91,7 @@ export type User = {
 };
 
 export const getDisplayName = (
-    user: Partial<User> | Partial<Profile>,
+    user: Partial<User> | Partial<Profile> | undefined,
 ): string => {
     if (!user) {
         return textPlaceholder;

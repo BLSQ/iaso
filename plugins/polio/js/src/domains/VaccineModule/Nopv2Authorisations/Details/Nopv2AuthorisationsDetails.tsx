@@ -21,6 +21,7 @@ type Params = {
     page?: string;
 };
 
+/** @deprecated at clients request. Code kept because the business need may arise again*/
 export const Nopv2AuthorisationsDetails: FunctionComponent = () => {
     const params = useParamsObject(baseUrls.nopv2AuthDetails) as Params;
     const { formatMessage } = useSafeIntl();

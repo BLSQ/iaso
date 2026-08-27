@@ -49,6 +49,23 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
         self.assertEqual(len(res), 2)
         self.assertEqual(res[0]["obr_name"], self.vaccine_request_form_rdc_1.campaign.obr_name)
 
+    def test_filter_by_campaign_category(self):
+        self.client.force_authenticate(user=self.user_rw_perm)
+        self.campaign_chad_1.is_preventive = True
+        self.campaign_chad_1.save()
+
+        response = self.client.get(f"{self.BASE_URL}?campaign_category=is_preventive")
+        self.assertEqual(response.status_code, 200)
+        res = response.data["results"]
+        self.assertEqual(len(res), 1)
+        self.assertEqual(res[0]["obr_name"], self.campaign_chad_1.obr_name)
+
+        response = self.client.get(f"{self.BASE_URL}?campaign_category=regular")
+        self.assertEqual(response.status_code, 200)
+        res = response.data["results"]
+        self.assertEqual(len(res), 2)
+        self.assertTrue(all(item["obr_name"] != self.campaign_chad_1.obr_name for item in res))
+
     def test_user_without_read_rights_cannot_see_detail(self):
         self.client.force_authenticate(user=self.user_no_perms)
         response = self.client.get(self.BASE_URL + str(self.vaccine_request_form_rdc_1.id) + "/")

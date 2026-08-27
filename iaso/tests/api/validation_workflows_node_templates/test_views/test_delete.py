@@ -152,3 +152,17 @@ class ValidationNodeTemplateAPIDeleteTestCase(BaseApiTestCase):
         self.assertEqual(
             list(self.third_node.previous_node_templates.values_list("pk", flat=True)), [self.first_node.pk]
         )
+
+    def test_forbidden_if_validation_workflow_is_soft_deleted(self):
+        self.validation_workflow.delete()
+        self.validation_workflow.refresh_from_db()
+        self.assertIsNotNone(self.validation_workflow.deleted_at)
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.delete(
+            reverse(
+                "validation_node_templates-detail",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.second_node.slug},
+            )
+        )
+
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)

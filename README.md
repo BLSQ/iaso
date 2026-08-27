@@ -108,7 +108,76 @@ They are usually generated via `AlgorithmRun`, or the matching is done in a Note
 
 # Development environment
 
-## Setup
+## Local setup with uv (without Docker)
+
+[uv](https://docs.astral.sh/uv/) is a fast Python package manager that can replace pip/virtualenv. Use it to run the backend locally without Docker.
+
+### Install uv
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Or via Homebrew on macOS:
+
+```bash
+brew install uv
+```
+
+### Create a virtual environment and sync dependencies
+
+```bash
+# Create a venv pinned to the project's Python version
+uv venv
+
+# Activate it
+source .venv/bin/activate
+
+# Install all dependencies from pyproject.toml (and lock file if present)
+uv sync
+```
+
+`uv sync` reads `pyproject.toml` (and `uv.lock` if it exists), resolves dependencies and installs them into the active venv. Run it again whenever `pyproject.toml` changes.
+
+### Running the Django server locally
+
+Once dependencies are synced, you can run Django commands directly:
+
+```bash
+uv run ./manage.py migrate
+uv run ./manage.py runserver
+```
+
+> **Note:** You still need a running PostgreSQL (with PostGIS) database. You can either use the Docker `db` service (`docker compose up db`) or a locally installed PostgreSQL.
+
+### Node.js and npm (native frontend)
+
+Frontend tooling is pinned to the same versions as Docker/CI (`node:22.18.0`, `npm@11.19.0`) via `package.json` (`engines` + `packageManager`), `.nvmrc`, and `.npmrc` (`engine-strict=true`). Wrong versions will fail `npm ci` / `npm install`.
+
+```bash
+# Node (nvm, fnm, or asdf all read .nvmrc)
+nvm install   # or: fnm use / asdf install
+nvm use
+
+# npm via Corepack (ships with Node 22) — do not add npm as a dependency
+corepack enable
+corepack prepare npm@11.19.0 --activate
+
+node -v   # v22.18.0
+npm -v    # 11.19.0
+npm ci
+```
+
+## Transition from `pip` to `uv`
+IASO transitioned from `pip` to `uv` in July 2026. If you installed IASO before that, there are some things you might need to do to pull the latest changes and make your project work with `uv`:
+- if you are using a docker image: rebuild the latest image with `docker compose build iaso`
+- if you are using a local installation (no docker):
+  - install `uv`: https://docs.astral.sh/uv/getting-started/installation/
+  - run `uv sync` to generate a virtual environment and install dependencies (at the root of the project, in `.venv`)
+      - if you already have a virtual environment, you can `uv sync --active` to let `uv` recreate the virtual environment in the same place
+
+
+## Setup (Docker)
 
 A running local instance for development can be spin up via docker compose which will install and
 configure all dep in separate container. As such your computer should only need:
@@ -804,7 +873,7 @@ python manage.py shell_plus --notebook
 
 You will need to populate at least these environment variables with your own values in a `.env` file:
 
-```
+```bash
 # PostgreSQL Database connection details
 RDS_DB_NAME=
 RDS_HOSTNAME=
@@ -812,17 +881,18 @@ RDS_PASSWORD=
 RDS_USERNAME=
 DB_READONLY_PASSWORD=
 DB_READONLY_USERNAME=
-
 # Used for encryption and authorisation
 ENCRYPTED_TEXT_FIELD_KEY=
 SECRET_KEY=
+# Old secret key(s) kept valid for signature verification while rotating SECRET_KEY
+# (comma separated). See "Rotating SECRET_KEY" below.
+SECRET_KEY_FALLBACKS=
 
 # To interact with Enketo/ODK
 ENKETO_API_TOKEN=
 ENKETO_SIGNING_SECRET=
-
-# Docker image tag (defaults to "latest" if not set)
-IMAGE_TAG=
+# Docker image tag (defaults to "develop" if not set)
+PROD_IMAGE_TAG=
 ```
 
 Docker Compose automatically reads a `.env` file in the project root, so no `source` command is needed.
@@ -833,11 +903,55 @@ Note: for production deployments you need an external PostgreSQL database. The `
 
 Proceed to run docker compose on your server:
 
-```
+```bash
 docker compose -f docker-compose.prod.yml up
 ```
 
 This will pull the necessary containers (iaso & nginx) and spin up the service at port 80.
+
+### Rotating SECRET_KEY
+
+`SECRET_KEY` signs sessions, password reset tokens and other signed data. Changing it
+naively logs every user out and invalidates outstanding tokens. To rotate it gracefully,
+use `SECRET_KEY_FALLBACKS`, which lists old keys Django still uses to *verify* (but not
+*sign*) signatures:
+
+1. Move the current `SECRET_KEY` value into `SECRET_KEY_FALLBACKS` (comma separated if
+   several old keys are kept).
+2. Set `SECRET_KEY` to the new value.
+3. Deploy. Existing sessions and tokens keep working because they are validated against
+   the fallback key, while new data is signed with the new key.
+4. Once the oldest signed data has expired (e.g. past `SESSION_COOKIE_AGE` /
+   `PASSWORD_RESET_TIMEOUT`), remove the old key from `SECRET_KEY_FALLBACKS`.
+
+
+## Building locally
+
+The production image uses a multi-stage Dockerfile at `docker/prod/Dockerfile`.
+
+Log in to Docker Hub first:
+
+```bash
+docker login
+```
+
+Build and push:
+
+```bash
+docker build -f ./docker/prod/Dockerfile -t blsq/iaso:latest --push .
+```
+
+To tag a specific version instead of `latest`:
+
+```bash
+docker build -f ./docker/prod/Dockerfile -t blsq/iaso:your-tag-here --push .
+```
+
+Build locally only (no push):
+
+```bash
+docker build -f ./docker/prod/Dockerfile -t blsq/iaso:latest .
+```
 
 
 ## System requirements
@@ -857,6 +971,8 @@ External service dependencies:
 - Access to an SMTP server to send e-mail.
 
 Currently supported version of Python is 3.9.
+
+Frontend: Node.js **22.18.0** and npm **11.19.0** (see `.nvmrc` / `package.json` `engines`; required for `npm ci` with the versioned lockfile).
 
 The PostgreSQL database server and Enketo server can both be deployed in Docker on the same physical machine, it is advised to double the recommended values in that case.
 

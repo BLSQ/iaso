@@ -1,5 +1,7 @@
 import jsonschema
 
+from rest_framework import status
+
 from iaso.tests.api.workflows.base import BaseWorkflowsAPITestCase
 
 
@@ -12,7 +14,7 @@ class WorkflowsMobileAPITestCase(BaseWorkflowsAPITestCase):
 
         response = self.client.get(BASE_API)
 
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
         assert response.data == "No app_id provided"
 
@@ -21,7 +23,7 @@ class WorkflowsMobileAPITestCase(BaseWorkflowsAPITestCase):
 
         response = self.client.get(f"{BASE_API}?app_id=wrong_app_id")
 
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
         assert response.data == "User not found in Projects for this app id or project not found"
 
@@ -30,7 +32,7 @@ class WorkflowsMobileAPITestCase(BaseWorkflowsAPITestCase):
 
         response = self.client.get(f"{BASE_API}?app_id=red.adults.project")
 
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
         assert response.data == "User not found in Projects for this app id or project not found"
 
@@ -64,7 +66,7 @@ class WorkflowsMobileAPITestCase(BaseWorkflowsAPITestCase):
 
         response = self.client.get(f"{BASE_API}?app_id=blue.adults.project")
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         try:
             jsonschema.validate(instance=response.data, schema=set_tl_schema)
@@ -82,7 +84,7 @@ class WorkflowsMobileAPITestCase(BaseWorkflowsAPITestCase):
 
         response = self.client.get(f"{BASE_API}?app_id=blue.adults.project")
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         by_version_id = {wf["version_id"]: wf for wf in response.data["workflows"]}
         self.assertTrue(by_version_id[self.workflow_version_full_published.pk]["auto_first_step"])

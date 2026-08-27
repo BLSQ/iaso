@@ -1,4 +1,5 @@
 from django.urls import reverse
+from rest_framework import status
 
 from iaso.permissions.core_permissions import (
     CORE_FORMS_PERMISSION,
@@ -11,14 +12,22 @@ from iaso.tests.api.profiles.test_views.common import BaseProfileAPITestCase
 class ProfileListExportAPITestCase(BaseProfileAPITestCase):
     maxDiff = None
 
+    def test_profile_list_export_denied_without_users_permissions(self):
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(reverse("profiles-export-csv"))
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
+
+        response = self.client.get(reverse("profiles-export-xlsx"))
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
+
     def test_profile_list_export_as_csv_multiple_teams(self):
         multi_user = self.create_user_with_profile(username="multiteam", account=self.account)
 
         multi_user.teams.set([self.team1, self.team2])
 
-        self.client.force_authenticate(self.jane)
+        self.client.force_authenticate(self.jim)
         response = self.client.get(reverse("profiles-export-csv"))
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         csv_rows = self.assertCsvFileResponse(response, expected_name="users.csv", streaming=True, return_as_lists=True)
 
@@ -38,9 +47,9 @@ class ProfileListExportAPITestCase(BaseProfileAPITestCase):
         self.john.iaso_profile.org_units.set([self.org_unit_from_sub_type, self.org_unit_from_parent_type])
         self.jum.iaso_profile.editable_org_unit_types.set([self.sub_unit_type])
 
-        self.client.force_authenticate(self.jane)
+        self.client.force_authenticate(self.jim)
         response = self.client.get(reverse("profiles-export-csv"))
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response["Content-Type"], "text/csv")
 
         response_csv = response.getvalue().decode("utf-8")
@@ -82,7 +91,7 @@ class ProfileListExportAPITestCase(BaseProfileAPITestCase):
         self.john.iaso_profile.org_units.set([self.org_unit_from_sub_type, self.org_unit_from_parent_type])
         self.jum.iaso_profile.editable_org_unit_types.set([self.sub_unit_type])
 
-        self.client.force_authenticate(self.jane)
+        self.client.force_authenticate(self.jim)
         response = self.client.get(reverse("profiles-export-xlsx"))
         excel_columns, excel_data = self.assertXlsxFileResponse(response)
 

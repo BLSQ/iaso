@@ -3,12 +3,11 @@ import React, { FunctionComponent } from 'react';
 import { Box, TableCell, TableHead, TableRow, Typography } from '@mui/material';
 import classnames from 'classnames';
 
-import { CalendarOrdering } from '../hooks/useMergedCampaigns/useMergedCampaigns';
 import { useStaticFields } from '../hooks/useStaticFields';
 import { HeadStaticFieldsCells } from './cells/HeadStaticFields';
 import { colSpanTitle } from './constants';
 import { useStyles } from './Styles';
-import { CalendarData } from './types';
+import { CalendarData, CalendarOrdering } from './types';
 
 type Props = {
     headers: CalendarData['headers'];
@@ -19,6 +18,16 @@ type Props = {
     isLogged: boolean;
     params: Record<string, string>;
 };
+
+const DAYS_OF_WEEK = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+];
 
 export const Head: FunctionComponent<Props> = ({
     headers,
@@ -147,20 +156,17 @@ export const Head: FunctionComponent<Props> = ({
                     />
                 ))}
                 {headers.weeks.map(week => {
-                    return Array(7)
-                        .fill(null)
-                        .map((_, i) => (
-                            <TableCell
-                                className={classnames([
-                                    classes.tableCellHead,
-                                    classes.tableCellHidden,
-                                ])}
-                                // eslint-disable-next-line react/no-array-index-key
-                                key={`day-${week.year}-${week.month}-${week.value}-${i}`}
-                                align="center"
-                                colSpan={1}
-                            />
-                        ));
+                    return DAYS_OF_WEEK.map(day => (
+                        <TableCell
+                            className={classnames([
+                                classes.tableCellHead,
+                                classes.tableCellHidden,
+                            ])}
+                            key={`day-${week.year}-${week.month}-${week.value}-${day}`}
+                            align="center"
+                            colSpan={1}
+                        />
+                    ));
                 })}
             </TableRow>
         </TableHead>

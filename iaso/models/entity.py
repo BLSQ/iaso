@@ -23,7 +23,7 @@ from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Prefetch, Subquery
+from django.db.models import Exists, OuterRef, Prefetch
 
 from iaso.models import Account, Instance, OrgUnit, Project
 from iaso.models.deduplication import ValidationStatus
@@ -114,7 +114,10 @@ class EntityType(models.Model):
         for field_data in self.reference_form.possible_fields:
             name = field_data.get("name")
             if name in selected_fields:
-                fields[name] = field_data
+                # ODK start/end/calculate often have an empty label; fall back to name
+                # so list/export columns remain displayable and serializer-valid.
+                label = field_data.get("label") or name
+                fields[name] = {**field_data, "label": label}
 
         return list(fields.values())
 
@@ -137,7 +140,7 @@ class ProjectNotFoundError(ValidationError):
 
 class EntityQuerySet(models.QuerySet):
     def _filter_entities_with_instances(self, *, limit_date=None, org_units_qs=None):
-        instances = Instance.objects.all()
+        instances = Instance.non_deleted_objects.all()
 
         if org_units_qs is not None:
             instances = instances.filter(org_unit__in=org_units_qs)
@@ -148,7 +151,11 @@ class EntityQuerySet(models.QuerySet):
             except ValidationError:
                 raise InvalidLimitDateError(f"Invalid limit date {limit_date}")
 
-        return self.filter(id__in=Subquery(instances.values("entity_id").distinct()))
+        # Exists(...) with a correlated OuterRef lets Postgres push the entity_id correlation down
+        # (nested loop keyed on the entity's own instances) instead of the id__in=Subquery(...distinct())
+        # shape, which forced Postgres to materialize/sort/dedupe every matching instance row across the
+        # whole table before it could probe entities against it -- the dominant cost of this query in prod.
+        return self.filter(Exists(instances.filter(entity_id=OuterRef("pk"))))
 
     def filter_for_mobile_entity(self, limit_date=None, json_content=None):
         queryset = self

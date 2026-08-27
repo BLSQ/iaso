@@ -9,6 +9,7 @@ import pytz
 
 from django.contrib.gis.geos import Point
 from django.core.files import File
+from rest_framework import status
 
 from iaso import models as m
 from iaso.models import OrgUnitReferenceInstance
@@ -267,12 +268,14 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
         )
         instances = [self.instance_1, self.instance_2, self.instance_3, self.instance_4]
 
-        with self.assertNumQueries(8):
+        # 9, not 8: with_status() now spends one extra query checking whether the filtered-in form(s) are
+        # single_per_period, to be able to skip the (expensive on large datasets) duplicates computation otherwise.
+        with self.assertNumQueries(9):
             response = self.client.get(
                 f"/api/instances/?form_ids={self.instance_1.form.id}&parquet=true&order=id",
                 headers={"Content-Type": "text/csv"},
             )
-            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
 
             self.assert_parquet_content_type(response)
 
@@ -294,7 +297,7 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
         response = self.client.get(
             f"/api/instances/?form_ids={self.instance_1.form.id}&parquet=true&unknown_unsupported_filter=bad_param"
         )
-        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         self.assertEqual(
             response.json(),
             {

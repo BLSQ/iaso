@@ -27,6 +27,11 @@ export const useGetQueryBuilderListToReplace =
                     '<',
                     '>=',
                     '<=',
+                    'Contains',
+                    'Not Contains',
+                    'Not contains',
+                    'IS EMPTY',
+                    'IS NOT EMPTY',
                 ],
             },
         ];

@@ -1,11 +1,23 @@
-import { PaginationParams } from 'Iaso/types/general';
+type PaginationParams = {
+    pageSize: number;
+    order: string;
+    page: number;
+};
 
 export type Filters = {
-    createdBy?: string;
-    importType?: string;
+    importType?:
+        | 'bulk'
+        | 'instance'
+        | 'orgUnit'
+        | 'storageLog'
+        | null
+        | undefined;
     hasProblem?: boolean;
     appId?: string;
     appVersion?: string;
+    fromDate?: string;
+    toDate?: string;
+    userId?: number;
 };
 
 export type Params = Filters & PaginationParams;

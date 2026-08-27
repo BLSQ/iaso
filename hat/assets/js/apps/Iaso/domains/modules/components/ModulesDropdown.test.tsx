@@ -1,5 +1,4 @@
 import React from 'react';
-import moment from 'moment';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 vi.mock('Iaso/utils/usersUtils', () => ({
@@ -42,52 +41,6 @@ describe('ModulesDropdown', () => {
         } as any);
     });
 
-    it('includes locale in query key', () => {
-        moment.locale('fr');
-
-        renderWithThemeAndIntlProvider(
-            <ModulesDropdown keyValue={'modules'} />,
-        );
-
-        expect(useApiModulesDropdownList).toHaveBeenCalledWith(
-            undefined,
-            expect.objectContaining({
-                query: expect.objectContaining({
-                    queryKey: ['modules', 'fr'],
-                }),
-            }),
-        );
-    });
-
-    it('changes query key when locale changes', () => {
-        moment.locale('fr');
-
-        const { rerender } = renderWithThemeAndIntlProvider(
-            <ModulesDropdown keyValue={'modules'} />,
-        );
-
-        expect(useApiModulesDropdownList).toHaveBeenLastCalledWith(
-            undefined,
-            expect.objectContaining({
-                query: expect.objectContaining({
-                    queryKey: ['modules', 'fr'],
-                }),
-            }),
-        );
-
-        moment.locale('en');
-
-        rerender(<ModulesDropdown keyValue={'modules'} />);
-
-        expect(useApiModulesDropdownList).toHaveBeenLastCalledWith(
-            undefined,
-            expect.objectContaining({
-                query: expect.objectContaining({
-                    queryKey: ['modules', 'en'],
-                }),
-            }),
-        );
-    });
     it('renders nothing when user does not have permission', () => {
         vi.mocked(userHasOneOfPermissions).mockReturnValue(false);
 

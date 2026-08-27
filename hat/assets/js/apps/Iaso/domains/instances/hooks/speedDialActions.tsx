@@ -37,12 +37,11 @@ export const useBaseActions = (
     formDef?: FormDef,
 ): SpeedDialAction[] => {
     return useMemo(() => {
-        return [
+        const baseActions = [
             {
                 id: 'instanceExportAction',
                 icon: (
                     <ExportInstancesDialogComponent
-                        // @ts-ignore
                         renderTrigger={openDialog => (
                             <ExportButton
                                 onClick={openDialog}
@@ -57,21 +56,24 @@ export const useBaseActions = (
                 ),
                 disabled: currentInstance && currentInstance.deleted,
             },
-            {
+        ];
+        if (formDef) {
+            baseActions.push({
                 id: 'instanceReAssignAction',
                 icon: (
                     <ReAssignDialog
                         titleMessage={MESSAGES.reAssignInstance}
                         confirmMessage={MESSAGES.reAssignInstanceAction}
                         currentInstance={currentInstance}
-                        orgUnitTypes={formDef?.orgUnitTypeIds}
+                        orgUnitTypes={formDef?.orgUnitTypeIds || []}
                         formType={formDef}
                         onCreateOrReAssign={reassignInstance}
                     />
                 ),
                 disabled: currentInstance && currentInstance.deleted,
-            },
-        ];
+            });
+        }
+        return baseActions;
     }, [currentInstance, formDef, reassignInstance]);
 };
 
@@ -101,7 +103,6 @@ export const useEditLocationWithGpsAction = (
         () => ({
             id: 'editLocationWithInstanceGps',
             icon: (
-                // @ts-ignore
                 <ConfirmCancelDialogComponent
                     titleMessage={MESSAGES.editGpsFromInstanceTitle}
                     onConfirm={() => saveOrgUnit(payload)}
@@ -152,14 +153,12 @@ export const useLockAction = (currentInstance: Instance): SpeedDialAction => {
             id: 'lockActionTooltip', // used by translation
             disabled: currentInstance?.deleted,
             icon: (
-                // @ts-ignore
                 <ConfirmCancelDialogComponent
                     titleMessage={MESSAGES.lockAction}
                     onConfirm={closeDialog => {
                         switchInstanceLock(currentInstance).then(() => {
                             closeDialog();
-                            // @ts-ignore
-                            window.location.reload(false);
+                            window.location.reload();
                         });
                     }}
                     renderTrigger={({ openDialog }) => (

@@ -75,6 +75,7 @@ const Dhis2Search = props => {
                     setOptions(finalOptions);
                 });
             }, 200),
+        // I guess we only want to run this once, so eslint disable is fine
         // eslint-disable-next-line react-hooks/exhaustive-deps
         [],
     );

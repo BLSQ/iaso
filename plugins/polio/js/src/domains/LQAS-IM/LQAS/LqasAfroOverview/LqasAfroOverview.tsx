@@ -42,8 +42,7 @@ export const LqasAfroOverview: FunctionComponent = () => {
                 rounds: `${updatedSelection}`,
             });
         },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [params, redirectToReplace, selectedRounds],
+        [currentUrl, params, redirectToReplace, selectedRounds],
     );
     const onDisplayedShapeChange = useCallback(
         (value, side) => {
@@ -58,8 +57,7 @@ export const LqasAfroOverview: FunctionComponent = () => {
             }
             redirectToReplace(currentUrl, tempParams as AfroMapParams);
         },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [params, redirectToReplace],
+        [currentUrl, params, redirectToReplace],
     );
 
     return (

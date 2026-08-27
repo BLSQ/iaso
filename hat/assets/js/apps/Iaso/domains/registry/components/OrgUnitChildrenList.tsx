@@ -22,8 +22,7 @@ const useStyles = makeStyles(theme => ({
         '& .MuiTableContainer-root': {
             maxHeight: `calc(${HEIGHT} - 120px)`, // to fit with map height
             overflow: 'auto',
-            // @ts-ignore
-            borderTop: `1px solid ${theme.palette.ligthGray.border}`,
+            borderTop: `1px solid ${theme.palette.lightGray.border}`,
         },
         '& .pagination-count': {
             position: 'absolute',

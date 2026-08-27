@@ -3,9 +3,10 @@ import datetime
 from logging import getLogger
 
 from django.db.models import Q
+from django.utils import timezone
 from rest_framework import filters
 
-from plugins.polio.api.campaigns.filters.filters import CampaignFilterV2
+from plugins.polio.api.campaigns.filters.filters import CampaignFilter
 
 
 logger = getLogger(__name__)
@@ -41,11 +42,11 @@ class CalendarPeriodFilterBackend(filters.BaseFilterBackend):
             reference_date = (
                 datetime.datetime.strptime(reference_date, "%Y-%m-%d").date()
                 if reference_date
-                else datetime.datetime.now().date()
+                else timezone.localdate()
             )
         except Exception:
             logger.warning("Error parsing reference date, defaulting to current date")
-            reference_date = datetime.datetime.now()
+            reference_date = timezone.localdate()
         if period_type not in [QUARTER, SEMESTER, YEAR]:
             logger.warning(f"Invalid period type: {period_type}, defaulting to {QUARTER}")
             period_type = QUARTER
@@ -58,7 +59,7 @@ class CalendarPeriodFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
-class CalendarFilter(CampaignFilterV2):
+class CalendarFilter(CampaignFilter):
     pass
 
 

@@ -28,7 +28,7 @@ import {
     TestingQueryClient,
 } from '../../../tests/helpers';
 
-// todo : remove this once modules api and user api is switched to orval
+// todo : remove this once user api is switched to orval
 
 const { mockUserHasAccessToModule } = vi.hoisted(() => {
     return { mockUserHasAccessToModule: vi.fn() };
@@ -119,7 +119,7 @@ describe('Account detail integration test', () => {
         expect(screen.getByText('404')).toBeVisible();
     });
     it('renders data', async () => {
-        faker.seed(3);
+        faker.seed(5);
         const data = getApiAccountsAiApiKeyRetrieveResponseMock();
         expect(data.anthropic_api_key).not.toBeNull();
 
@@ -183,7 +183,7 @@ describe('Account detail integration test', () => {
     });
     it('does not call the retrieve AI API key query if user has not access to module', async () => {
         mockUserHasAccessToModule.mockReturnValue(false);
-        faker.seed(3);
+        faker.seed(5);
         const data = getApiAccountsAiApiKeyRetrieveResponseMock();
         expect(data.anthropic_api_key).not.toBeNull();
         const mockRetrieve = vi.fn();
@@ -204,7 +204,7 @@ describe('Account detail integration test', () => {
         expect(mockRetrieve).not.toHaveBeenCalled();
     });
     it('allows editing AI API key', async () => {
-        faker.seed(3);
+        faker.seed(5);
         const data = getApiAccountsAiApiKeyRetrieveResponseMock();
         expect(data.anthropic_api_key).not.toBeNull();
 
@@ -274,7 +274,7 @@ describe('Account detail integration test', () => {
         expect(mockRetrieve).toHaveBeenCalledTimes(2);
     });
     it('allows deleting AI API key', async () => {
-        faker.seed(3);
+        faker.seed(5);
         const data = getApiAccountsAiApiKeyRetrieveResponseMock();
         expect(data.anthropic_api_key).not.toBeNull();
 

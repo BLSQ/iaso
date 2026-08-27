@@ -108,7 +108,6 @@ export const useGroupSetsTableColumns = (
                 ),
             },
         ],
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [],
+        [classes.groupChip, deleteGroupSet, formatMessage],
     );
 };

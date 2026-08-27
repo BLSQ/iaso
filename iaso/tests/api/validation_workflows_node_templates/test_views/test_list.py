@@ -164,3 +164,28 @@ class ValidationNodeTemplateAPIListTestCase(BaseApiTestCase):
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
 
         self.assertValidListData(list_data=res_data, results_key="results", expected_length=1)
+
+    def test_exclude_if_validation_workflow_is_soft_deleted(self):
+        self.client.force_authenticate(self.john_wick)
+
+        res = self.client.get(
+            reverse(
+                "validation_node_templates-list", kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug}
+            )
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertValidListData(list_data=res_data, results_key="results", expected_length=3)
+
+        self.validation_workflow.delete()
+        self.validation_workflow.refresh_from_db()
+        self.assertIsNotNone(self.validation_workflow.deleted_at)
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.get(
+            reverse(
+                "validation_node_templates-list", kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug}
+            )
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertValidListData(list_data=res_data, results_key="results", expected_length=0)

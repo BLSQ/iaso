@@ -85,7 +85,7 @@ jobs:
                   node-version: '20.13.1'
             - name: upgrade npm
               run: |
-                  npm install --global npm@11.13.0
+                  npm install --global npm@11.19.0
             - name: Set up Python 3.9
               uses: actions/setup-python@v1
               with:
@@ -111,9 +111,6 @@ jobs:
                   npm run webpack-prod
                   git add -f hat/assets/webpack/
 
-                  # add version in python
-                  scripts/set_version.sh
-                  git add -f hat/__version__.py
               env:
                   VERSION_NAME: ${{ steps.version.outputs.VERSION_NAME }}
                   CI: false

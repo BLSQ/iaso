@@ -133,8 +133,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
         if (taskLogs && taskLogs.status !== taskStatus) {
             setTaskStatus(taskLogs.status);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [taskLogs]);
+    }, [taskLogs, taskStatus]);
     const handleSubmit = useCallback(() => {
         setIsSubmitting(true);
         setCurrentStep(2);

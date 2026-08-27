@@ -1,4 +1,4 @@
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework.filters import OrderingFilter
@@ -53,6 +53,7 @@ class ETLInstanceViewSet(CustomPaginationListModelMixin, GenericViewSet):
                     to_attr="prefeteched_validationnode_set",
                 )
             )
+            .annotate(workflow_deprecated=Q(form__validation_workflow__deleted_at__isnull=False))
             .only(
                 "id",
                 "json",

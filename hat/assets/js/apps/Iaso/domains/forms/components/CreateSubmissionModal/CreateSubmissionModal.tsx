@@ -7,7 +7,7 @@ import { CreateSubmissionModalButton } from './CreateSubmissionModalButton';
 
 type ButtonProps = {
     onClick: () => void;
-    disabled: boolean;
+    disabled?: boolean;
 };
 
 export const CreateSubmissionModal = makeFullModal<

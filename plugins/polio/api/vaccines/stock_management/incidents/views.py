@@ -11,7 +11,7 @@ from plugins.polio.permissions import (
 )
 
 
-@extend_schema(tags=["Polio - Inicdent reports"])
+@extend_schema(tags=["Polio - Incident reports"])
 class IncidentReportViewSet(VaccineStockSubitemBase):
     serializer_class = IncidentReportSerializer
     model_class = IncidentReport

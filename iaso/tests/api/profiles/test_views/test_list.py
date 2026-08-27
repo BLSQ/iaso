@@ -1,5 +1,6 @@
 from django.contrib.auth.models import Group
 from django.urls import reverse
+from rest_framework import status
 
 from iaso.models import OrgUnit, Profile, UserRole
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION
@@ -11,30 +12,28 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
         """GET /profiles/ without auth -> 401"""
 
         response = self.client.get(reverse("profiles-list"))
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_profile_list_number_queries_without_read_only_permissions(self):
-        """GET /profiles/ with auth (user has read only permissions)"""
+        """GET /profiles/ with auth (user without users admin/managed permissions)"""
         self.client.force_authenticate(self.jane)
-        with self.assertNumQueries(13):
-            response = self.client.get(reverse("profiles-list"), data={"fields": ":all"})
-        self.assertJSONResponse(response, 200)
+        response = self.client.get(reverse("profiles-list"), data={"fields": ":all"})
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
-    def test_profile_list_ok(self):
-        """GET /profiles/ with auth"""
+    def test_profile_list_denied_without_users_permissions(self):
+        """GET /profiles/ with auth (user without users admin/managed permissions)"""
         self.client.force_authenticate(self.jane)
         response = self.client.get(reverse("profiles-list"))
-        response_data = self.assertJSONResponse(response, 200)
-        self.assertValidProfileListData(response_data, 7)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_profile_list_user_roles_do_not_include_account_prefix(self):
         group = Group.objects.create(name=f"{self.account.id}_Data manager")
         user_role = UserRole.objects.create(group=group, account=self.account)
         self.jane.iaso_profile.user_roles.set([user_role])
 
-        self.client.force_authenticate(self.jane)
+        self.client.force_authenticate(self.jim)
         response = self.client.get(reverse("profiles-list"), {"fields": ":all", "search": self.jane.username})
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(response_data["results"][0]["user_roles"], [{"id": user_role.id, "name": "Data manager"}])
 
@@ -42,21 +41,21 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
         """GET /profiles/ with auth (user has user admin permissions)"""
         self.client.force_authenticate(self.jim)
         response = self.client.get(reverse("profiles-list"))
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileListData(response_data, 7)
 
     def test_profile_list_superuser_ok(self):
         """GET /profiles/ with auth (superuser)"""
         self.client.force_authenticate(self.john)
         response = self.client.get(reverse("profiles-list"))
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileListData(response_data, 7)
 
     def test_profile_list_user_manager_ok(self):
         """GET /profiles/ with auth (superuser)"""
         self.client.force_authenticate(self.jam)
         response = self.client.get(reverse("profiles-list"))
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response_data["count"], 7)
         self.assertEqual(len(response_data["results"]), 7)
         self.assertValidProfileListData(response_data, 7)
@@ -65,21 +64,21 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
         """GET /profiles/ with auth (superuser)"""
         self.client.force_authenticate(self.john)
         response = self.client.get(reverse("profiles-list"), {"managedUsersOnly": True})
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileListData(response_data, 7)
 
     def test_profile_list_managed_user_only_user_admin(self):
         """GET /profiles/ with auth (superuser)"""
         self.client.force_authenticate(self.john)
         response = self.client.get(reverse("profiles-list"), {"managedUsersOnly": True})
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileListData(response_data, 7)
 
     def test_profile_list_managed_user_only_user_manager_no_org_unit(self):
         """GET /profiles/ with auth (superuser)"""
         self.client.force_authenticate(self.jam)
         response = self.client.get(reverse("profiles-list"), {"managedUsersOnly": True})
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileListData(response_data, 6)
 
     def test_profile_list_managed_user_only_user_manager_with_org_unit(self):
@@ -88,39 +87,38 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
         self.jum.iaso_profile.org_units.set([self.child_org_unit.id])
         self.client.force_authenticate(self.jam)
         response = self.client.get(reverse("profiles-list"), {"managedUsersOnly": True, "fields": ":all"})
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileListData(response_data, 2)
 
     def test_profile_list_managed_user_only_user_regular_user(self):
-        """GET /profiles/ with auth (superuser)"""
+        """GET /profiles/ with auth (user without users admin/managed permissions)"""
         self.client.force_authenticate(self.jane)
         response = self.client.get(reverse("profiles-list"), {"managedUsersOnly": True, "fields": ":all"})
-        response_data = self.assertJSONResponse(response, 200)
-        self.assertValidProfileListData(response_data, 0)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_search_user_by_has_email(self):
-        self.client.force_authenticate(self.jane)
+        self.client.force_authenticate(self.jim)
 
         response = self.client.get(reverse("profiles-list"), {"has_email": True, "fields": ":all"})
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response_data["results"]), 0)
         self.assertTrue(all(x["email"] for x in response_data["results"]))
 
         response = self.client.get(reverse("profiles-list"), {"has_email": False, "fields": ":all"})
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response_data["results"]), 7)
         self.assertFalse(all(x["email"] for x in response_data["results"]))
 
     def test_search_user_by_permissions(self):
-        self.client.force_authenticate(self.jane)
+        self.client.force_authenticate(self.jim)
 
         response = self.client.get(reverse("profiles-list"), {"permissions": "iaso_users", "fields": ":all"})
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response_data["results"]), 1)
         self.assertEqual(response_data["results"][0]["user_name"], "jim")
 
     def test_search_user_by_org_units(self):
-        self.client.force_authenticate(self.jane)
+        self.client.force_authenticate(self.jim)
         self.jane.iaso_profile.org_units.set([self.org_unit_from_parent_type])
 
         response = self.client.get(
@@ -128,12 +126,12 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
             {"location": self.org_unit_from_parent_type.pk, "limit": 100, "fields": ":all"},
         )
 
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileListData(response_data, 2)
         self.assertEqual(response_data["results"][0]["user_name"], "janedoe")
 
     def test_search_user_by_org_units_type(self):
-        self.client.force_authenticate(self.jane)
+        self.client.force_authenticate(self.jim)
         self.jane.iaso_profile.org_units.set([self.org_unit_from_parent_type])
 
         response = self.client.get(
@@ -141,12 +139,12 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
             {"org_unit_types": self.parent_org_unit_type.pk, "limit": 100, "fields": ":all"},
         )
 
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileListData(response_data, 2)
         self.assertEqual(response_data["results"][0]["user_name"], "janedoe")
 
     def test_search_user_by_children_ou(self):
-        self.client.force_authenticate(self.jane)
+        self.client.force_authenticate(self.jim)
         self.jane.iaso_profile.org_units.set([self.child_org_unit])
 
         response = self.client.get(
@@ -154,60 +152,60 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
             {"location": self.org_unit_from_parent_type.pk, "ouParent": False, "ouChildren": True, "fields": ":all"},
         )
 
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileListData(response_data, 2)
 
         self.assertEqual(response_data["results"][0]["user_name"], "janedoe")
 
     def test_search_user_by_parent_ou(self):
-        self.client.force_authenticate(self.jane)
+        self.client.force_authenticate(self.jim)
         self.jane.iaso_profile.org_units.set([self.org_unit_from_parent_type])
 
         response = self.client.get(
             reverse("profiles-list"),
             {"location": self.child_org_unit.pk, "ouParent": True, "ouChildren": False, "limit": 100, "fields": ":all"},
         )
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileListData(response_data, 2)
         self.assertEqual(response_data["results"][0]["user_name"], "janedoe")
 
     def test_list_by_ids(self):
-        self.client.force_authenticate(self.jane)
+        self.client.force_authenticate(self.jim)
         response = self.client.get(reverse("profiles-list"), {"ids": f"{self.jane.id},{self.jim.id}", "fields": ":all"})
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileListData(response_data, 2)
         self.assertEqual(response_data["results"][0]["user_name"], "janedoe")
         self.assertEqual(response_data["results"][1]["user_name"], "jim")
 
     def test_search_by_profile_ids(self):
-        self.client.force_authenticate(self.jane)
+        self.client.force_authenticate(self.jim)
         response = self.client.get(
             reverse("profiles-list"),
             {"search": f"ids:{self.jane.iaso_profile.id},{self.jim.iaso_profile.id}", "order": "id", "fields": ":all"},
         )
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileListData(response_data, 2)
         self.assertEqual(response_data["results"][0]["user_name"], "janedoe")
         self.assertEqual(response_data["results"][1]["user_name"], "jim")
 
     def test_search_by_dhis2_id(self):
-        self.client.force_authenticate(self.jane)
+        self.client.force_authenticate(self.jim)
         mydhis2_id = "mydhis2id"
 
         self.jim.iaso_profile.dhis2_id = mydhis2_id
         self.jim.iaso_profile.save()
 
         response = self.client.get(reverse("profiles-list"), {"search": f"refs:{mydhis2_id}", "fields": ":all"})
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileListData(response_data, 1)
         self.assertEqual(response_data["results"][0]["user_name"], "jim")
 
     def test_search_by_teams(self):
-        self.client.force_authenticate(self.jane)
+        self.client.force_authenticate(self.jim)
         response = self.client.get(
             reverse("profiles-list"), {"teams": f"{self.team1.pk},{self.team2.pk}", "fields": ":all"}
         )
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileListData(response_data, 2)
         user_names = [item["user_name"] for item in response_data["results"]]
         self.assertIn("janedoe", user_names)
@@ -217,27 +215,27 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
         self.jane.iaso_profile.organization = "Some organization"
         self.jane.iaso_profile.save()
 
-        self.client.force_authenticate(self.jane)
+        self.client.force_authenticate(self.jim)
         response = self.client.get(reverse("profiles-list"), {"limit": 100, "fields": ":all"})
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileListData(response_data, 7)
 
         for parameter in ["so", "some org", "Some organization"]:
             with self.subTest(f"Searching with {parameter}"):
                 response = self.client.get(reverse("profiles-list"), {"limit": 100, "search": parameter})
-                response_data = self.assertJSONResponse(response, 200)
+                response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
                 self.assertValidProfileListData(response_data, 1)
 
         response = self.client.get(reverse("profiles-list"), {"limit": 100, "search": "wrong search", "fields": ":all"})
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileListData(response_data, 0)
 
     def test_search_parameters_default(self):
-        self.client.force_authenticate(self.jane)
+        self.client.force_authenticate(self.jim)
         self.jane.iaso_profile.org_units.set([self.org_unit_from_parent_type])
 
         response = self.client.get(reverse("profiles-list"), {"limit": 100, "fields": ":all"})
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response_data["count"], 7)
 
         response = self.client.get(
@@ -245,7 +243,7 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
             {"org_unit_types": self.parent_org_unit_type.pk, "limit": 100, "fields": ":all"},
         )
 
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response_data["count"], 2)
         self.assertEqual(response_data["results"][0]["user_name"], "janedoe")
 
@@ -254,16 +252,16 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
             {"orgUnitTypes": self.parent_org_unit_type.pk, "limit": 100, "fields": ":all"},
         )
 
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response_data["count"], 7)
         self.assertEqual(response_data["results"][0]["user_name"], "janedoe")
 
     def test_search_parameters(self):
-        self.client.force_authenticate(self.jane)
+        self.client.force_authenticate(self.jim)
         self.jane.iaso_profile.org_units.set([self.org_unit_from_parent_type])
 
         response = self.client.get(reverse("profiles-list"), {"limit": 100, "fields": ":all"})
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response_data["count"], 7)
 
         response = self.client.get(
@@ -271,7 +269,7 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
             {"org_unit_types": self.parent_org_unit_type.pk, "limit": 100, "fields": ":all"},
         )
 
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response_data["count"], 2)
         self.assertEqual(response_data["results"][0]["user_name"], "janedoe")
 
@@ -280,7 +278,7 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
             {"orgUnitTypes": self.parent_org_unit_type.pk, "limit": 100, "fields": ":all"},
         )
 
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response_data["count"], 7)
         self.assertEqual(response_data["results"][0]["user_name"], "janedoe")
 
@@ -329,7 +327,7 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
         response = self.client.get(
             reverse("profiles-list"), {"order": "annotated_first_user_role", "limit": 10, "fields": ":all"}
         )
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         actual_order = []
         for profile in response_data["results"]:
@@ -359,7 +357,7 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
         response = self.client.get(
             reverse("profiles-list"), {"order": "-annotated_first_user_role", "limit": 10, "fields": ":all"}
         )
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         actual_order = []
         for profile in response_data["results"]:
@@ -404,7 +402,7 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
 
         # Search for "jim" without ouChildren - should return both `jim` and `jim_outside`.
         response = self.client.get(reverse("profiles-list"), {"search": "jim", "fields": ":all"})
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileListData(response_data, 2)
         profiles = response_data["results"]
         self.assertEqual(profiles[0]["user_name"], "jim")
@@ -415,7 +413,7 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
             reverse("profiles-list"),
             {"search": "jim", "location": self.org_unit_from_parent_type.pk, "ouChildren": True, "fields": ":all"},
         )
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileListData(response_data, 1)
         profiles = response_data["results"]
         self.assertEqual(profiles[0]["user_name"], "jim")
@@ -435,13 +433,13 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
             ]
         )
 
-        self.client.force_authenticate(self.jane)
+        self.client.force_authenticate(self.jim)
         response = self.client.get(
             reverse("profiles-list"),
             {"location": self.org_unit_from_parent_type.pk, "ouChildren": True, "fields": ":all"},
         )
 
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileListData(response_data, 1)
 
         # Should only include the user once despite being in multiple levels
@@ -467,13 +465,13 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
         self.jim.iaso_profile.org_units.set([self.org_unit_from_parent_type])  # Current
         self.jam.iaso_profile.org_units.set([self.child_org_unit])  # Child
 
-        self.client.force_authenticate(self.jane)
+        self.client.force_authenticate(self.jim)
         response = self.client.get(
             reverse("profiles-list"),
             {"location": self.org_unit_from_parent_type.pk, "ouParent": True, "ouChildren": True, "fields": ":all"},
         )
 
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileListData(response_data, 3)
         profiles = response_data["results"]
         usernames = [p["user_name"] for p in profiles]
@@ -510,13 +508,13 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
         self.jam.iaso_profile.org_units.set([child_of_child])  # Child of child
         self.jom.iaso_profile.org_units.set([grand_child])  # Grand child
 
-        self.client.force_authenticate(self.jane)
+        self.client.force_authenticate(self.jim)
         response = self.client.get(
             reverse("profiles-list"),
             {"location": self.org_unit_from_parent_type.pk, "ouChildren": True, "fields": ":all"},
         )
 
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidProfileListData(response_data, 4)
         profiles = response_data["results"]
         usernames = [p["user_name"] for p in profiles]
@@ -537,7 +535,7 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
             profile.save()
 
         response = self.client.get(reverse("profiles-list"), data={"fields": ":all"})
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         # self.assertValidProfileListData(response_data, 7)
 
         for item in response_data["results"]:
@@ -558,14 +556,14 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
             )
 
         response = self.client.get(reverse("profiles-list"), data={"fields": ":default"})
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         # self.assertValidProfileListData(response_data, 7)
 
         for item in response_data["results"]:
             self.assertCountEqual(item.keys(), ["id", "user_id", "user_display"])
 
         response = self.client.get(reverse("profiles-list"), data={"fields": ",".join(["email", "last_name"])})
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         # self.assertValidProfileListData(response_data, 7)
 
         for item in response_data["results"]:

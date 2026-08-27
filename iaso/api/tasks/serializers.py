@@ -55,6 +55,31 @@ class TaskSerializer(serializers.ModelSerializer):
         return task
 
 
+class DeploymentStatusTaskSerializer(serializers.ModelSerializer):
+    launcher = serializers.CharField(source="launcher.username", allow_null=True)
+    created_at = TimestampField(read_only=True)
+    started_at = TimestampField(read_only=True)
+
+    class Meta:
+        model = Task
+        fields = ["id", "name", "status", "created_at", "started_at", "launcher"]
+        read_only_fields = fields
+
+
+class DeploymentStatusTaskGroupSerializer(serializers.Serializer):
+    name = serializers.CharField(read_only=True)
+    QUEUED = serializers.IntegerField(read_only=True)
+    RUNNING = serializers.IntegerField(read_only=True)
+    tasks = DeploymentStatusTaskSerializer(many=True, read_only=True)
+
+
+class DeploymentStatusSerializer(serializers.Serializer):
+    can_deploy = serializers.BooleanField(read_only=True)
+    blocking_tasks_count = serializers.IntegerField(read_only=True)
+    statuses = serializers.DictField(child=serializers.IntegerField(), read_only=True)
+    blocking_tasks = DeploymentStatusTaskGroupSerializer(many=True, read_only=True)
+
+
 class ExternalTaskSerializer(TaskSerializer):
     def update(self, task, validated_data):
         has_progress_message = validated_data.get("progress_message", None) is not None

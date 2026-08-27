@@ -25,6 +25,8 @@ export const InstanceValidation = ({ instanceId, data }: Props) => {
             }}
         >
             {data?.submissions?.map((submission, idx, list) => {
+                const isFirstSubmission =
+                    idx === (data?.submissions ?? []).length - 1;
                 return (
                     <SubmissionAccordion
                         instanceId={instanceId}
@@ -35,6 +37,7 @@ export const InstanceValidation = ({ instanceId, data }: Props) => {
                         createdAt={submission.created_at}
                         createdBy={submission.created_by}
                         key={`submission-${submission?.created_at}`}
+                        isFirstSubmission={isFirstSubmission}
                     />
                 );
             })}

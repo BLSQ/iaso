@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import override_settings
 from django.urls import reverse
+from rest_framework import status
 
 from iaso.test import TestCase
 
@@ -48,7 +49,7 @@ class IasoLogoutViewTestCase(TestCase):
         self.client.get(self.logout_url, {"next": "/example/allowed-target"})
         # Subsequent request to a login-required endpoint should not show the user as authenticated.
         response = self.client.get("/api/profiles/me/")
-        self.assertIn(response.status_code, (401, 403))
+        self.assertIn(response.status_code, (status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN))
 
     # Edge cases: paths are normalized before matching.
     def test_trailing_slash_normalized(self):

@@ -4,6 +4,7 @@ from django.db import models
 from django.utils import timezone
 
 from iaso.models import DataSource
+from iaso.utils.models.sized_file_field import SizedFileField
 
 
 def import_gpkg_upload_to(import_gpkg: "ImportGPKG", filename: str):
@@ -31,7 +32,7 @@ class ImportGPKG(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    file = models.FileField(upload_to=import_gpkg_upload_to)
+    file = SizedFileField(upload_to=import_gpkg_upload_to)
     data_source = models.ForeignKey(DataSource, on_delete=models.CASCADE)
     version_number = models.IntegerField(blank=True, null=True)
     description = models.CharField(max_length=200, blank=True, null=True)

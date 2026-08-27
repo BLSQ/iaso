@@ -75,7 +75,7 @@ class BulkCreateFromCsvTestCase(BulkCreateAPITestCase, APITestCase):
 
         response = self.client.get(reverse("bulkcreateuser-download-sample-csv"))
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response["Content-Type"], "text/csv")
 
         csv_content = b"".join(response.streaming_content)

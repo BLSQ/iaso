@@ -52,7 +52,6 @@ export const useMergedCampaigns = ({
                 ? params.orgUnitGroups.split(',').map(Number)
                 : undefined,
             show_test: false,
-            on_hold: false,
             reference_date: currentDateString,
         };
 

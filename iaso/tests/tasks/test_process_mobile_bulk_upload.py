@@ -16,7 +16,7 @@ from django.test import TestCase
 
 from beanstalk_worker.services import TestTaskService
 from hat.api_import.models import APIImport
-from hat.audit.models import BULK_UPLOAD, BULK_UPLOAD_MERGED_ENTITY, Modification
+from hat.audit.models import BULK_UPLOAD, Modification
 from iaso import models as m
 from iaso.api.deduplication.entity_duplicate import merge_entities
 from iaso.models.instances import instance_file_upload_to, instance_upload_to
@@ -452,15 +452,15 @@ class ProcessMobileBulkUploadTest(TestCase):
         # folder. Make sure they are not processed.
         self.assertEqual(instance_disasi.instancefile_set.count(), 0)
 
-        # Verify we leave an audit trail of the update
+        # Verify we leave an audit trail of the update (one per bulk import pass)
         content_type = ContentType.objects.get_by_natural_key("iaso", "instance")
         modifications = Modification.objects.filter(
             object_id=instance_disasi.id,
             content_type=content_type,
+            source=BULK_UPLOAD,
         )
-        self.assertEqual(len(modifications), 1)
-        modif = modifications[0]
-        self.assertEqual(modif.source, BULK_UPLOAD)
+        self.assertEqual(len(modifications), 2)
+        modif = modifications.order_by("created_at").last()
         self.assertEqual(modif.past_value[0]["fields"]["source_updated_at"].split("T")[0], "2024-04-05")
         self.assertEqual(modif.new_value[0]["fields"]["source_updated_at"].split("T")[0], "2024-04-17")
 
@@ -571,15 +571,16 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(catt_disasi_C.uuid, DISASI_MAKULO_CATT)
         self.assertFalse(catt_disasi_C.deleted)
 
-        # Verify we leave an audit trail of the update
+        # Audit trail is logged on the uploaded instance (soft-deleted merged source)
         content_type = ContentType.objects.get_by_natural_key("iaso", "instance")
+        reg_disasi_A = ent_disasi_A.attributes
         modifications = Modification.objects.filter(
-            object_id=reg_disasi_C.id,
+            object_id=reg_disasi_A.id,
             content_type=content_type,
+            source=BULK_UPLOAD,
         )
         self.assertEqual(len(modifications), 1)
         modif = modifications[0]
-        self.assertEqual(modif.source, BULK_UPLOAD_MERGED_ENTITY)
         self.assertEqual(modif.past_value[0]["fields"]["source_updated_at"].split("T")[0], DEFAULT_CREATED_AT_STR)
         self.assertEqual(modif.new_value[0]["fields"]["source_updated_at"].split("T")[0], "2024-04-05")
 
@@ -661,15 +662,16 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(catt_disasi_merged_2.uuid, DISASI_MAKULO_CATT)
         self.assertFalse(catt_disasi_merged_2.deleted)
 
-        # Verify we leave an audit trail of the update
+        # Audit trail is logged on the uploaded instance (soft-deleted merged source)
         content_type = ContentType.objects.get_by_natural_key("iaso", "instance")
+        reg_disasi_A = ent_disasi_A.attributes
         modifications = Modification.objects.filter(
-            object_id=reg_disasi_merged_2.id,
+            object_id=reg_disasi_A.id,
             content_type=content_type,
+            source=BULK_UPLOAD,
         )
         self.assertEqual(len(modifications), 1)
         modif = modifications[0]
-        self.assertEqual(modif.source, BULK_UPLOAD_MERGED_ENTITY)
         self.assertEqual(modif.past_value[0]["fields"]["source_updated_at"].split("T")[0], DEFAULT_CREATED_AT_STR)
         self.assertEqual(modif.new_value[0]["fields"]["source_updated_at"].split("T")[0], "2024-04-05")
 

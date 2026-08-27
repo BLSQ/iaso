@@ -58,7 +58,7 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
             with self.subTest(f"with user {user}"):
                 self.client.force_authenticate(user)
                 res = self.client.get(reverse("validation_workflows-list"), data={"name": "multiple-forms"})
-                res_json = self.assertJSONResponse(res, 200)
+                res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
 
                 item = res_json["results"][0]
 
@@ -72,7 +72,7 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
         """
         self.client.force_authenticate(self.john_wick)
         res = self.client.get(reverse("validation_workflows-list"), data={"limit": 100})
-        res_json = self.assertJSONResponse(res, 200)
+        res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertFalse(any(item["name"] == "out-of-account" for item in res_json["results"]))
 
         self.assertTrue(any(item["name"] == "name-1" for item in res_json["results"]))
@@ -81,59 +81,59 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
         self.client.force_authenticate(self.john_wick)
 
         res = self.client.get(reverse("validation_workflows-list"))
-        res_json = self.assertJSONResponse(res, 200)
+        res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidValidationWorkflowListData(res_json, 17)
 
         with self.subTest("Search by name"):
             res = self.client.get(reverse("validation_workflows-list"), data={"name": "name"})
-            res_json = self.assertJSONResponse(res, 200)
+            res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidValidationWorkflowListData(res_json, 15)
 
             res = self.client.get(reverse("validation_workflows-list"), data={"name": "NAME"})
-            res_json = self.assertJSONResponse(res, 200)
+            res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidValidationWorkflowListData(res_json, 15)
 
             res = self.client.get(reverse("validation_workflows-list"), data={"name": "NAME-14"})
-            res_json = self.assertJSONResponse(res, 200)
+            res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidValidationWorkflowListData(res_json, 1)
 
             res = self.client.get(reverse("validation_workflows-list"), data={"name": "wrong"})
-            res_json = self.assertJSONResponse(res, 200)
+            res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidValidationWorkflowListData(res_json, 0)
 
         with self.subTest("Search by forms"):
             res = self.client.get(
                 reverse("validation_workflows-list"), data={"forms": [Form.objects.order_by("-pk").first().pk + 1]}
             )
-            res_json = self.assertJSONResponse(res, 200)
+            res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidValidationWorkflowListData(res_json, 0)
 
             res = self.client.get(
                 reverse("validation_workflows-list"),
                 data={"forms": [Form.objects.order_by("-pk").first().pk + 1, self.form.pk]},
             )
-            res_json = self.assertJSONResponse(res, 200)
+            res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidValidationWorkflowListData(res_json, 1)
 
             res = self.client.get(
                 reverse("validation_workflows-list"),
                 data={"forms": [Form.objects.order_by("-pk").first().pk + 1, self.form.pk, self.form_2.pk]},
             )
-            res_json = self.assertJSONResponse(res, 200)
+            res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidValidationWorkflowListData(res_json, 1)
 
             res = self.client.get(
                 reverse("validation_workflows-list"),
                 data={"forms": [Form.objects.order_by("-pk").first().pk + 1, self.form_2.pk]},
             )
-            res_json = self.assertJSONResponse(res, 200)
+            res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidValidationWorkflowListData(res_json, 1)
 
             res = self.client.get(
                 reverse("validation_workflows-list"),
                 data={"forms": [Form.objects.order_by("-pk").first().pk + 1, self.form_2.pk, self.form_3.pk]},
             )
-            res_json = self.assertJSONResponse(res, 200)
+            res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidValidationWorkflowListData(res_json, 1)
 
             # testing with forms=x,y,z
@@ -142,25 +142,25 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
                 reverse("validation_workflows-list"),
                 data={"forms": ",".join(map(str, [Form.objects.order_by("-pk").first().pk + 1]))},
             )
-            res_json = self.assertJSONResponse(res, 200)
+            res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidValidationWorkflowListData(res_json, 0)
 
             res = self.client.get(
                 reverse("validation_workflows-list"),
                 data={"forms": ",".join(map(str, [Form.objects.order_by("-pk").first().pk + 1, self.form.pk]))},
             )
-            res_json = self.assertJSONResponse(res, 200)
+            res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidValidationWorkflowListData(res_json, 1)
 
     def test_search_is_paginated(self):
         self.client.force_authenticate(self.john_wick)
 
         res = self.client.get(reverse("validation_workflows-list"))
-        res_json = self.assertJSONResponse(res, 200)
+        res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidValidationWorkflowListData(res_json, 17)
 
         res = self.client.get(reverse("validation_workflows-list"), data={"limit": 2})
-        res_json = self.assertJSONResponse(res, 200)
+        res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidValidationWorkflowListData(res_json, 2)
 
     def test_search_num_queries_with_parameters_and_one_search_result(self):
@@ -170,7 +170,7 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
             res = self.client.get(
                 reverse("validation_workflows-list"), data={"name": "name", "forms": [self.form.pk, self.form_3.pk]}
             )
-            res_json = self.assertJSONResponse(res, 200)
+            res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidValidationWorkflowListData(res_json, 1)
 
     def test_search_num_queries_without_parameters_and_multiple_search_results(self):
@@ -179,7 +179,7 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
         with self.assertNumQueries(5):
             self.client.force_authenticate(self.john_wick)
             res = self.client.get(reverse("validation_workflows-list"))
-            res_json = self.assertJSONResponse(res, 200)
+            res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidValidationWorkflowListData(res_json, 17)
 
     def test_permissions(self):
@@ -230,7 +230,7 @@ class ValidationWorkflowAPISwaggerListTestCase(SwaggerTestCaseMixin, BaseValidat
     def test_response_is_compliant(self):
         self.client.force_authenticate(self.john_wick)
         res = self.client.get(reverse("validation_workflows-list"))
-        res_json = self.assertJSONResponse(res, 200)
+        res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidValidationWorkflowListData(res_json, 15)
 
         # res_json["results"][0]["slug"] = 1

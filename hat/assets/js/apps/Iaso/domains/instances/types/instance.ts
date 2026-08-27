@@ -3,6 +3,7 @@ import { User } from '../../../utils/usersUtils';
 import { Entity } from '../../entities/types/entity';
 import { OrgUnitChangeRequest } from '../../orgUnits/reviewChanges/types';
 import { OrgUnit, ShortOrgUnit } from '../../orgUnits/types/orgUnit';
+import { Project } from '../../projects/types/project';
 
 type Lock = {
     id: number;
@@ -69,6 +70,7 @@ export type Instance = {
     entity: Entity;
     source_created_at: number;
     change_requests: Array<OrgUnitChangeRequest>;
+    project: Pick<Project, 'name' | 'color'>;
 };
 
 export type InstanceLogDetail = {
@@ -87,12 +89,14 @@ export type InstanceLogsDetail = PaginationType & {
 type NewValue = {
     fields: Record<string, any>;
 };
+type PastValue = NewValue;
 
 export type InstanceLogData = {
     id: number;
     content_type: string;
     object_id: string;
     new_value: NewValue[];
+    past_value?: PastValue[];
     source: string;
     user: User;
     possible_fields: Record<string, any>[];

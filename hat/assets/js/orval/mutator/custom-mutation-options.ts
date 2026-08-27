@@ -13,7 +13,7 @@ const isApiError = (error: unknown): error is ApiError => {
     return typeof error === 'object' && error !== null && 'status' in error;
 };
 
-type ExtraMutationOptions = {
+type MutationMeta = {
     snackSuccessMessage?: IntlMessage;
     snackErrorMsg?: IntlMessage;
     showSuccessSnackBar?: boolean;
@@ -29,40 +29,37 @@ type ExtraMutationOptions = {
     };
 };
 
-type UseMutationOptionsWithExtra<TData, TError, TVariables, TContext> =
-    UseMutationOptions<TData, TError, TVariables, TContext> &
-        ExtraMutationOptions;
-
 export const useCustomMutationOptions = <
-    TData = unknown, // All unknown because this is function is used across all mutations.
+    TData = unknown,
     TError = unknown,
     TVariables = void,
     TContext = unknown,
 >(
-    mutationOptions: UseMutationOptionsWithExtra<
-        TData,
-        TError,
-        TVariables,
-        TContext
-    >,
+    mutationOptions: UseMutationOptions<TData, TError, TVariables, TContext>,
 ): UseMutationOptions<TData, TError, TVariables, TContext> => {
     const { formatMessage } = useSafeIntl();
+
+    const meta = (mutationOptions.meta ?? {}) as MutationMeta;
+
     const {
         snackSuccessMessage = MESSAGES.defaultMutationApiSuccess,
         snackErrorMsg = MESSAGES.defaultMutationApiError,
         showSuccessSnackBar = true,
         ignoreErrorCodes = [],
         useApiErrorMessage = false,
+        successSnackBar = msg => succesfullSnackBar(undefined, msg),
+    } = meta;
+
+    const {
         onSuccess: optionsOnSuccess,
         onError: optionsOnError,
-        successSnackBar = msg => succesfullSnackBar(undefined, msg),
         ...newMutationOptions
     } = mutationOptions;
 
     return {
         onError: (error, variables, context) => {
             if (isApiError(error) && !ignoreErrorCodes.includes(error.status)) {
-                let errorMsg = snackErrorMsg;
+                let errorMsg = formatMessage(snackErrorMsg);
 
                 if (error.status === 403) {
                     if (error.details.detail) {
@@ -76,20 +73,18 @@ export const useCustomMutationOptions = <
 
                 openSnackBar(errorSnackBar(undefined, errorMsg, error));
             }
-            if (optionsOnError) {
-                return optionsOnError(error, variables, context);
-            }
-            return undefined;
+
+            return optionsOnError?.(error, variables, context);
         },
+
         onSuccess: (data, variables, context) => {
             if (snackSuccessMessage && showSuccessSnackBar) {
                 openSnackBar(successSnackBar(snackSuccessMessage));
             }
-            if (optionsOnSuccess) {
-                return optionsOnSuccess(data, variables, context);
-            }
-            return undefined;
+
+            return optionsOnSuccess?.(data, variables, context);
         },
+
         ...newMutationOptions,
     };
 };

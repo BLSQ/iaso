@@ -1,5 +1,7 @@
 from copy import deepcopy
 
+from rest_framework import status
+
 from hat.audit.models import log_modification
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_SUBMISSIONS_PERMISSION
@@ -39,7 +41,7 @@ class LogsAPITestCase(APITestCase):
         """GET /logs/ without auth or app id should result in a 403 requiring authentication"""
 
         response = self.client.get("/api/logs/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_logs_list_with_auth_no_params(self):
         """GET /logs/ with a normal user and no object instance specified should return a 400 explaining the
@@ -48,7 +50,7 @@ class LogsAPITestCase(APITestCase):
         self.client.force_authenticate(self.jane)
 
         response = self.client.get("/api/logs/")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_logs_list_with_superuser_but_no_logs(self):
         """GET /logs/ with a superuser should return an empty paginated list if no modification in db"""
@@ -58,7 +60,7 @@ class LogsAPITestCase(APITestCase):
         self.client.force_authenticate(self.jane)
 
         response = self.client.get("/api/logs/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(
             response.json(),
             {"count": 0, "list": [], "has_next": False, "has_previous": False, "page": 1, "pages": 1, "limit": 50},
@@ -76,7 +78,7 @@ class LogsAPITestCase(APITestCase):
         log_modification(copy, self.reference_form, user=self.jane, source="myunittest")
 
         response = self.client.get("/api/logs/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         log_entry = response.json()["list"][0]
 
@@ -99,7 +101,7 @@ class LogsAPITestCase(APITestCase):
                 "objectId": self.reference_form.id,
             },
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         log_entry = response.json()["list"][0]
 
@@ -123,7 +125,7 @@ class LogsAPITestCase(APITestCase):
                 "objectId": self.reference_form.id,
             },
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         log_entry = response.json()["list"][0]
 
@@ -145,7 +147,7 @@ class LogsAPITestCase(APITestCase):
                 "objectId": self.reference_form.id,
             },
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         log_entry = response.json()["list"][0]
 
@@ -157,7 +159,7 @@ class LogsAPITestCase(APITestCase):
         modification = log_modification(None, self.reference_form, user=self.jane, source="myunittest")
 
         response = self.client.get(f"/api/logs/{modification.id}/")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(r["id"], modification.id)
         self.assertEqual(r["content_type"], "iaso")
         self.assertEqual(r["object_id"], str(self.reference_form.id))
@@ -168,7 +170,7 @@ class LogsAPITestCase(APITestCase):
 
         self.client.force_authenticate(jim)
         response = self.client.get(f"/api/logs/{modification.id}/")
-        r = self.assertJSONResponse(response, 401)
+        r = self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(r, {"error": "Unauthorized"})
 
     def test_perm_instance(self):
@@ -183,13 +185,13 @@ class LogsAPITestCase(APITestCase):
 
         self.client.force_authenticate(user_with_instance_perm)
         response = self.client.get(f"/api/logs/{modification.id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.client.force_authenticate(user_no_instance_perm)
         response = self.client.get(f"/api/logs/{modification.id}/")
-        r = self.assertJSONResponse(response, 401)
+        r = self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(r, {"error": "Unauthorized"})
 
         self.client.force_authenticate(user_superuser)
         response = self.client.get(f"/api/logs/{modification.id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)

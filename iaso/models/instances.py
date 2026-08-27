@@ -30,6 +30,7 @@ from iaso.utils import extract_form_version_id, flat_parse_xml_soup
 from iaso.utils.emoji import fix_emoji
 from iaso.utils.file_utils import get_file_type
 from iaso.utils.jsonlogic import annotate_suffixed_json_fields, instance_jsonlogic_to_q
+from iaso.utils.models.sized_file_field import SizedFileField
 from iaso.utils.models.upload_to import get_account_name_based_on_user
 
 from ..utils.dhis2 import generate_id_for_dhis_2
@@ -71,6 +72,19 @@ def instance_file_upload_to(instance_file: "InstanceFile", filename: str):
     )
 
 
+def resolve_status_form_ids(form_id=None, form_ids=None):
+    """
+    Combine the `form_id` / `form_ids` (comma-separated string) filter params into a single list of ids
+    suitable for `InstanceQuerySet.with_status(form_ids=...)`, or None if neither is set.
+    """
+    resolved = []
+    if form_id:
+        resolved.append(form_id)
+    if form_ids:
+        resolved.extend(form_ids.split(","))
+    return resolved or None
+
+
 class InstanceQuerySet(django_cte.CTEQuerySet):
     def with_lock_info(self, user):
         """
@@ -98,9 +112,36 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
             .annotate(count_active_lock=Count("instancelock", Q(instancelock__unlocked_by__isnull=True)))
         )
 
-    def with_status(self):
+    def with_status(self, form_ids=None):
+        """
+        form_ids: ids of the forms already applied as a filter on this queryset, if any. When given, and
+        none of those forms are single_per_period (instances can only be STATUS_DUPLICATED for a
+        single_per_period form), skip the duplicates computation entirely: it costs one small query against
+        Form but avoids an expensive query/join against the (potentially huge) Instance queryset.
+        When form_ids is not given, we can't know in advance whether any form is single_per_period without
+        an extra query, so we keep computing duplicates unconditionally like before.
+        """
+        single_per_period_forms = Form.objects.filter(single_per_period=True)
+        if form_ids is not None:
+            single_per_period_forms = single_per_period_forms.filter(id__in=form_ids)
+            if not single_per_period_forms.exists():
+                return self.annotate(
+                    status=models.Case(
+                        models.When(
+                            last_export_success_at__isnull=False,
+                            then=models.Value(Instance.STATUS_EXPORTED),
+                        ),
+                        default=models.Value(Instance.STATUS_READY),
+                        output_field=models.CharField(),
+                    )
+                )
+
         duplicates_subquery = (
-            self.values("period", "form", "org_unit")
+            # A null/empty period can't be a "single per period" duplicate, and SQL groups NULLs together,
+            # so leaving them in would flag unrelated periodless instances as duplicates of each other.
+            self.exclude(period__isnull=True)
+            .exclude(period="")
+            .values("period", "form", "org_unit")
             .annotate(ids=ArrayAgg("id"))
             .annotate(
                 c=models.Func(
@@ -110,7 +151,7 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
                     output_field=models.IntegerField(),
                 )
             )
-            .filter(form__in=Form.objects.filter(single_per_period=True))
+            .filter(form__in=single_per_period_forms)
             .filter(c__gt=1)
             .annotate(id=models.Func("ids", function="unnest"))
             .values("id")
@@ -323,7 +364,7 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
                     Q(org_unit__name__icontains=search) | Q(org_unit__aliases__contains=[search])
                 )
         # add status annotation
-        queryset = queryset.with_status()
+        queryset = queryset.with_status(form_ids=resolve_status_form_ids(form_id, form_ids))
 
         if modification_from:
             queryset = queryset.filter(updated_at__gte=get_beginning_of_day(modification_from, "modification_from"))
@@ -460,7 +501,7 @@ class Instance(ValidationWorkflowArtefact):
     export_id = models.TextField(null=True, blank=True, default=generate_id_for_dhis_2)
     correlation_id = models.BigIntegerField(null=True, blank=True)
     name = models.TextField(null=True, blank=True)  # form.name
-    file = models.FileField(upload_to=instance_upload_to, null=True, blank=True)
+    file = SizedFileField(upload_to=instance_upload_to, null=True, blank=True)
     file_name = models.TextField(null=True, blank=True)
     location = PointField(null=True, blank=True, dim=3, srid=4326)
     org_unit = models.ForeignKey("OrgUnit", on_delete=models.DO_NOTHING, null=True, blank=True)
@@ -753,6 +794,11 @@ class Instance(ValidationWorkflowArtefact):
             "period": self.period,
             "planning_id": self.planning.id if self.planning else None,
             "planning_name": self.planning.name if self.planning else None,
+            "project": {
+                "id": self.project.id if self.project else None,
+                "name": self.project.name if self.project else None,
+                "color": self.project.color if self.project else None,
+            },
             "team_id": self.planning.team_id if self.planning else None,
             "file_content": file_content,
             "files": [f.file.url if f.file else None for f in self.instancefile_set.filter(deleted=False)],
@@ -945,7 +991,7 @@ class InstanceFile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     name = models.TextField(null=True, blank=True)
-    file = models.FileField(upload_to=instance_file_upload_to, null=True, blank=True)
+    file = SizedFileField(upload_to=instance_file_upload_to, null=True, blank=True)
     deleted = models.BooleanField(default=False)
 
     objects = models.Manager()

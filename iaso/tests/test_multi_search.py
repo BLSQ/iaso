@@ -3,6 +3,7 @@ import json
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.test import TestCase
+from rest_framework import status
 from rest_framework.test import APIClient
 
 from ..models import Account, DataSource, OrgUnit, OrgUnitType, Profile, Project, SourceVersion
@@ -79,7 +80,7 @@ class MultiSearchTestCase(TestCase):
         response = link_client.get(
             '/api/orgunits/?limit=20&searches=[{"search":"akka"},{"search":"riko"}]&asLocation=True', format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         json_response = json.loads(response.content)
 
@@ -90,7 +91,7 @@ class MultiSearchTestCase(TestCase):
         link_client = self.link_client
 
         response = link_client.get("/api/orgunits/?limit=20", format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         json_response = json.loads(response.content)
 
@@ -103,7 +104,7 @@ class MultiSearchTestCase(TestCase):
         response = link_client.get(
             '/api/orgunits/?limit=20&searches=[{"search":"akka"},{"search":"riko"}]', format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         json_response = json.loads(response.content)
 
@@ -114,7 +115,7 @@ class MultiSearchTestCase(TestCase):
         link_client = self.link_client
 
         response = link_client.get('/api/orgunits/?limit=20&searches=[{"defaultVersion":"true"}]', format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         json_response = json.loads(response.content)
 

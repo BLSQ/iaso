@@ -153,6 +153,5 @@ export const useAvailablePresentations = (
             });
         }
         return availableOptions;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dosesOptions, formData?.doses_per_vial]);
+    }, [dosesOptions, formData?.doses_per_vial, usable]);
 };

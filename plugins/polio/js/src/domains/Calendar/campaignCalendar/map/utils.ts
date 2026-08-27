@@ -5,7 +5,6 @@ import {
     DropdownOptions,
     Nullable,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { appId } from '../../../../constants/app';
 import { polioVaccines } from '../../../../constants/virus';
 import { vaccineOpacity } from '../Styles';
 import { CalendarRound, MappedCampaign, Query } from '../types';
@@ -30,6 +29,7 @@ type ShapeQueryArgs = {
     campaign: MappedCampaign;
     vaccine?: string;
     round?: CalendarRound;
+    appId: string;
 };
 
 export const getShapeQuery = ({
@@ -38,6 +38,7 @@ export const getShapeQuery = ({
     campaign,
     vaccine,
     round,
+    appId,
 }: ShapeQueryArgs): Query => {
     const baseParams = {
         asLocation: 'true',
@@ -140,6 +141,7 @@ export const findLatestRounds = (
 export const makeQueriesForCampaigns = (
     campaigns: MappedCampaign[],
     loadingCampaigns: boolean,
+    appId: string,
 ): Query[] => {
     const queries: Query[] = [];
     if (!campaigns || campaigns.length === 0) return queries;
@@ -154,6 +156,7 @@ export const makeQueriesForCampaigns = (
                             campaign,
                             vaccine: scope.vaccine,
                             round,
+                            appId,
                         }),
                     );
                 });
@@ -166,6 +169,7 @@ export const makeQueriesForCampaigns = (
                         groupId: `${scope.group.id}`,
                         campaign,
                         vaccine: scope.vaccine,
+                        appId,
                     }) as never,
                 );
             });

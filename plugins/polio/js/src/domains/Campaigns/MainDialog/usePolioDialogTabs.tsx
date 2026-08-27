@@ -118,14 +118,14 @@ export const usePolioDialogTabs = (
             return [...defaultTabs, ...polioTabs];
         }
         return defaultTabs;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         formatMessage,
         formik.errors,
         formik.initialValues.separate_scopes_per_round,
         formik.values.id,
         formik.values.initial_org_unit,
-        formik.values.rounds.length,
+        formik.values.is_planned,
+        formik.values.rounds,
         formik.values.separate_scopes_per_round,
         isPolio,
         selectedCampaign?.rounds,

@@ -12,6 +12,7 @@ export const useBoundState = <T>(
         if (!isEqual(value, boundValue)) {
             setValue(boundValue);
         }
+        // not including value is intentional, the hook would not have the required behaviour
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [boundValue]);
     return [value, setValue];

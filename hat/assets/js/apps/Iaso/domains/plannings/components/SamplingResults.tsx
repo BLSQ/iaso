@@ -27,9 +27,7 @@ const styles: SxStyles = {
     paper: {
         px: 0,
         mt: 2,
-        border: theme =>
-            // @ts-ignore
-            `1px solid ${theme.palette.border.main}`,
+        border: theme => `1px solid ${theme.palette.border.main}`,
         borderRadius: 1,
         '& .MuiSpeedDial-root': {
             display: 'none',

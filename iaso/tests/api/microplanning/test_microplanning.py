@@ -19,7 +19,7 @@ from iaso.models import Account, DataSource, Form, Group, OrgUnit, OrgUnitType, 
 from iaso.models.microplanning import Assignment, Planning, PlanningSamplingResult
 from iaso.models.team import Team
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
-from iaso.test import APITestCase
+from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
 class PlanningTestCase(APITestCase):
@@ -63,7 +63,7 @@ class PlanningTestCase(APITestCase):
         self.client.force_authenticate(self.user_with_perms)
         with self.assertNumQueries(5):
             response = self.client.get("/api/microplanning/plannings/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 1)
 
     maxDiff = None
@@ -80,7 +80,7 @@ class PlanningTestCase(APITestCase):
         self.client.force_authenticate(self.user_with_perms)
         id = self.planning.id
         response = self.client.get(f"/api/microplanning/plannings/{id}/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(r["name"], self.planning.name)
         self.assertEqual(
             r,
@@ -121,7 +121,7 @@ class PlanningTestCase(APITestCase):
         self.client.force_authenticate(self.user_with_perms)
         # Planning has no assignments by default
         response = self.client.get(f"/api/microplanning/plannings/{self.planning.id}/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertIn("assignments_count", r)
         self.assertEqual(r["assignments_count"], 0)
 
@@ -131,7 +131,7 @@ class PlanningTestCase(APITestCase):
         Assignment.objects.create(planning=self.planning, user=self.user, org_unit=child_ou)
 
         response = self.client.get(f"/api/microplanning/plannings/{self.planning.id}/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(r["assignments_count"], 2)
 
     def test_serializer(self):
@@ -201,7 +201,7 @@ class PlanningTestCase(APITestCase):
             "ended_at": "2022-03-03",
         }
         response = self.client.patch(f"/api/microplanning/plannings/{planning.id}/", data=data, format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         planning_id = r["id"]
         self.assertTrue(Planning.objects.get(id=planning_id))
         self.assertEqual(Modification.objects.all().count(), 1)
@@ -230,7 +230,7 @@ class PlanningTestCase(APITestCase):
             "ended_at": "2022-03-03",
         }
         response = self.client.patch(f"/api/microplanning/plannings/{planning.id}/", data=data, format="json")
-        r = self.assertJSONResponse(response, 400)
+        r = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIsNotNone(r["started_at"])
         self.assertEqual(r["started_at"][0], "publishedWithoutStartDate")
 
@@ -251,7 +251,7 @@ class PlanningTestCase(APITestCase):
             "started_at": "2022-03-03",
         }
         response = self.client.patch(f"/api/microplanning/plannings/{planning.id}/", data=data, format="json")
-        r = self.assertJSONResponse(response, 400)
+        r = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIsNotNone(r["ended_at"])
         self.assertEqual(r["ended_at"][0], "publishedWithoutEndDate")
 
@@ -268,7 +268,7 @@ class PlanningTestCase(APITestCase):
             "ended_at": "2022-03-03",
         }
         response = self.client.post("/api/microplanning/plannings/", data=data, format="json")
-        r = self.assertJSONResponse(response, 201)
+        r = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         planning_id = r["id"]
         self.assertTrue(Planning.objects.get(id=planning_id))
         self.assertEqual(Modification.objects.all().count(), 1)
@@ -351,7 +351,7 @@ class PlanningTestCase(APITestCase):
         # Authenticate user and test GET request
         self.client.force_authenticate(self.user_with_perms)
         response = self.client.get(f"/api/microplanning/plannings/{self.planning.id}/", format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         r = response.json()
         self.assertIn("pipeline_uuids", r)
         self.assertEqual(r["pipeline_uuids"], test_uuids)
@@ -372,7 +372,7 @@ class PlanningTestCase(APITestCase):
         }
 
         response = self.client.post("/api/microplanning/plannings/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         r = response.json()
         self.assertIn("pipeline_uuids", r)
         self.assertEqual(r["pipeline_uuids"], test_uuids)
@@ -392,7 +392,7 @@ class PlanningTestCase(APITestCase):
         }
 
         response = self.client.patch(f"/api/microplanning/plannings/{self.planning.id}/", data=data, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         r = response.json()
         self.assertIn("pipeline_uuids", r)
         self.assertEqual(r["pipeline_uuids"], test_uuids)
@@ -426,7 +426,7 @@ class PlanningTestCase(APITestCase):
         }
 
         response = self.client.post("/api/microplanning/plannings/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         r = response.json()
 
         self.assertIsNotNone(r["target_org_unit_type_details"])
@@ -438,7 +438,7 @@ class PlanningTestCase(APITestCase):
         self.assertIn(org_unit_type, planning.target_org_unit_types.all())
 
         response = self.client.get(f"/api/microplanning/plannings/{planning.id}/", format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         r = response.json()
         self.assertEqual(r["target_org_unit_type_details"][0]["id"], org_unit_type.id)
         self.assertEqual(r["target_org_unit_type_details"][0]["name"], "Health Post")
@@ -501,7 +501,7 @@ class PlanningTestCase(APITestCase):
         }
 
         response = self.client.patch(f"/api/microplanning/plannings/{planning.id}/", data=data, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         r = response.json()
         self.assertEqual(r["target_org_unit_type_details"][0]["id"], org_unit_type.id)
         self.assertEqual(r["target_org_unit_type_details"][0]["name"], "Clinic")
@@ -526,7 +526,7 @@ class PlanningTestCase(APITestCase):
         }
 
         response = self.client.post("/api/microplanning/plannings/", data=data, format="json")
-        r = self.assertJSONResponse(response, 400)
+        r = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("target_org_unit_types", r)
         self.assertEqual(r["target_org_unit_types"][0], "planningAndTargetOrgUnitType")
 
@@ -552,7 +552,7 @@ class PlanningTestCase(APITestCase):
         response = self.client.get(
             f"/api/microplanning/samplings/?planning_id={self.planning.id}&order=-id", format="json"
         )
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         results = data["results"] if isinstance(data, dict) and "results" in data else data
         self.assertEqual(len(results), 1)
         result = results[0]
@@ -566,7 +566,7 @@ class PlanningTestCase(APITestCase):
         response = self.client.get(
             f"/api/microplanning/samplings/?planning_id={self.planning.id}&order=-id", format="json"
         )
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_planning_sampling_results_create(self):
         self.client.force_authenticate(self.user_with_perms)
@@ -588,7 +588,7 @@ class PlanningTestCase(APITestCase):
         }
 
         response = self.client.post("/api/microplanning/samplings/", data=payload, format="json")
-        data = self.assertJSONResponse(response, 201)
+        data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         sampling = PlanningSamplingResult.objects.get(id=data["id"])
         self.assertEqual(sampling.pipeline_id, "pipeline-2")
         self.assertEqual(sampling.created_by, self.user_with_perms)
@@ -615,7 +615,7 @@ class PlanningTestCase(APITestCase):
         }
 
         response = self.client.post("/api/microplanning/samplings/", data=payload, format="json")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_planning_sampling_results_create_requires_permission(self):
         user_no_perms = self.create_user_with_profile(username="sampling_no_perm", account=self.account, permissions=[])
@@ -638,7 +638,7 @@ class PlanningTestCase(APITestCase):
         }
 
         response = self.client.post("/api/microplanning/samplings/", data=payload, format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_planning_patch_sets_selected_sampling_result(self):
         self.client.force_authenticate(self.user_with_perms)
@@ -656,7 +656,7 @@ class PlanningTestCase(APITestCase):
             data={"selected_sampling_result": sampling.id},
             format="json",
         )
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.planning.refresh_from_db()
 
         self.assertEqual(self.planning.selected_sampling_result, sampling)
@@ -681,7 +681,7 @@ class PlanningTestCase(APITestCase):
             data={"name": "updated name"},
             format="json",
         )
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.planning.refresh_from_db()
 
         self.assertEqual(self.planning.selected_sampling_result, sampling)
@@ -705,7 +705,7 @@ class PlanningTestCase(APITestCase):
             data={"selected_sampling_result": None},
             format="json",
         )
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.planning.refresh_from_db()
 
         self.assertIsNone(self.planning.selected_sampling_result)
@@ -730,7 +730,7 @@ class PlanningTestCase(APITestCase):
             data={"selected_sampling_result": sampling.id},
             format="json",
         )
-        r = self.assertJSONResponse(response, 400)
+        r = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("selected_sampling_result", r)
         self.assertEqual(r["selected_sampling_result"][0], "samplingNotForPlanning")
 
@@ -753,7 +753,7 @@ class PlanningTestCase(APITestCase):
         self.planning.save()
 
         response = self.client.get(f"/api/microplanning/plannings/{self.planning.id}/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         selected = r["selected_sampling_result"]
         self.assertEqual(selected["id"], sampling.id)
         self.assertEqual(selected["pipeline_id"], "pipeline-detail")
@@ -796,7 +796,7 @@ class PlanningTestCase(APITestCase):
         }
 
         response = self.client.patch(f"/api/microplanning/plannings/{self.planning.id}/", data=data, format="json")
-        r = self.assertJSONResponse(response, 400)
+        r = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("target_org_unit_types", r)
         self.assertEqual(r["target_org_unit_types"][0], "planningAndTargetOrgUnitType")
 
@@ -823,7 +823,7 @@ class PlanningTestCase(APITestCase):
         }
 
         response = self.client.post("/api/microplanning/plannings/", data=data, format="json")
-        r = self.assertJSONResponse(response, 400)
+        r = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("target_org_unit_types", r)
         self.assertEqual(r["target_org_unit_types"][0], "noOrgUnitsOfTypeInHierarchy")
 
@@ -854,7 +854,7 @@ class PlanningTestCase(APITestCase):
         }
 
         response = self.client.post("/api/microplanning/plannings/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         r = response.json()
         self.assertEqual(len(r["target_org_unit_type_details"]), 1)
         self.assertEqual(r["target_org_unit_type_details"][0]["id"], target_type.id)
@@ -864,7 +864,7 @@ class PlanningTestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get("/api/microplanning/plannings/999999999/orgunits/children/", format="json")
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_planning_orgunits_children_missing_scope_raises_error(self):
         """A planning without sampling group or target org unit type should error."""
@@ -879,7 +879,7 @@ class PlanningTestCase(APITestCase):
         )
 
         response = self.client.get(f"/api/microplanning/plannings/{planning.id}/orgunits/children/", format="json")
-        r = self.assertJSONResponse(response, 400)
+        r = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("planning", r)
         self.assertEqual(r["planning"][0], "Planning is missing sampling group or target org unit scope")
 
@@ -920,10 +920,206 @@ class PlanningTestCase(APITestCase):
         planning.target_org_unit_types.set([child_type])
 
         response = self.client.get(f"/api/microplanning/plannings/{planning.id}/orgunits/children/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         ids = [ou["id"] for ou in r]
         self.assertEqual(ids, [child.id])
         self.assertTrue(r[0]["has_geo_json"])
+
+    def test_planning_orgunits_children_filter_by_org_unit_parent_id(self):
+        """orgUnitParentId returns planning org units that are direct or indirect descendants of the parent."""
+        self.client.force_authenticate(self.user)
+        parent_type = OrgUnitType.objects.create(name="Region type")
+        parent_type.projects.add(self.project1)
+        district_type = OrgUnitType.objects.create(name="District type")
+        district_type.projects.add(self.project1)
+        child_type = OrgUnitType.objects.create(name="Health post type")
+        child_type.projects.add(self.project1)
+
+        polygon = Polygon(((0, 0), (0, 1), (1, 1), (0, 0)), srid=4326)
+        multipolygon = MultiPolygon(polygon, srid=4326)
+
+        root = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="root-ou",
+            org_unit_type=parent_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        district_a = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="district-a",
+            parent=root,
+            org_unit_type=district_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        district_b = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="district-b",
+            parent=root,
+            org_unit_type=district_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        child_a1 = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="child-a1",
+            parent=district_a,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        child_a2 = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="child-a2",
+            parent=district_a,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        child_b1 = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="child-b1",
+            parent=district_b,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+
+        planning = Planning.objects.create(
+            project=self.project1,
+            name="planning-orgunits-parent-filter",
+            team=self.team1,
+            org_unit=root,
+            started_at="2025-01-01",
+            ended_at="2025-01-02",
+        )
+        planning.target_org_unit_types.set([child_type])
+
+        base = f"/api/microplanning/plannings/{planning.id}/orgunits/children/"
+        unfiltered = self.assertJSONResponse(self.client.get(base, format="json"), status.HTTP_200_OK)
+        self.assertCountEqual(
+            [ou["id"] for ou in unfiltered],
+            [child_a1.id, child_a2.id, child_b1.id],
+        )
+
+        filtered_a = self.assertJSONResponse(
+            self.client.get(f"{base}?orgUnitParentId={district_a.id}", format="json"),
+            status.HTTP_200_OK,
+        )
+        self.assertCountEqual([ou["id"] for ou in filtered_a], [child_a1.id, child_a2.id])
+
+        filtered_b = self.assertJSONResponse(
+            self.client.get(f"{base}?orgUnitParentId={district_b.id}", format="json"),
+            status.HTTP_200_OK,
+        )
+        self.assertEqual([ou["id"] for ou in filtered_b], [child_b1.id])
+
+        paginated_url = (
+            f"/api/microplanning/plannings/{planning.id}/orgunits/children-paginated/"
+            f"?limit=50&page=1&orgUnitParentId={district_a.id}"
+        )
+        paginated = self.assertJSONResponse(self.client.get(paginated_url, format="json"), status.HTTP_200_OK)
+        self.assertCountEqual(
+            [ou["id"] for ou in paginated["results"]],
+            [child_a1.id, child_a2.id],
+        )
+
+    def test_planning_orgunits_children_filter_by_org_unit_type_ids(self):
+        self.client.force_authenticate(self.user)
+        parent_type = OrgUnitType.objects.create(name="Region type multi")
+        parent_type.projects.add(self.project1)
+        aire_type = OrgUnitType.objects.create(name="Aire type")
+        aire_type.projects.add(self.project1)
+        centre_type = OrgUnitType.objects.create(name="Centre type")
+        centre_type.projects.add(self.project1)
+
+        polygon = Polygon(((0, 0), (0, 1), (1, 1), (0, 0)), srid=4326)
+        multipolygon = MultiPolygon(polygon, srid=4326)
+
+        root = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="root-multi-type",
+            org_unit_type=parent_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        aire = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="aire-1",
+            parent=root,
+            org_unit_type=aire_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        centre = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="centre-1",
+            parent=aire,
+            org_unit_type=centre_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+
+        planning = Planning.objects.create(
+            project=self.project1,
+            name="planning-orgunits-type-filter",
+            team=self.team1,
+            org_unit=root,
+            started_at="2025-01-01",
+            ended_at="2025-01-02",
+        )
+        planning.target_org_unit_types.set([aire_type, centre_type])
+
+        base = f"/api/microplanning/plannings/{planning.id}/orgunits/children/"
+        unfiltered = self.assertJSONResponse(self.client.get(base, format="json"), status.HTTP_200_OK)
+        self.assertCountEqual([ou["id"] for ou in unfiltered], [aire.id, centre.id])
+
+        aires_only = self.assertJSONResponse(
+            self.client.get(f"{base}?orgUnitTypeIds={aire_type.id}", format="json"),
+            status.HTTP_200_OK,
+        )
+        self.assertEqual([ou["id"] for ou in aires_only], [aire.id])
+
+        centres_only = self.assertJSONResponse(
+            self.client.get(f"{base}?orgUnitTypeIds={centre_type.id}", format="json"),
+            status.HTTP_200_OK,
+        )
+        self.assertEqual([ou["id"] for ou in centres_only], [centre.id])
+
+        both_types = self.assertJSONResponse(
+            self.client.get(f"{base}?orgUnitTypeIds={aire_type.id},{centre_type.id}", format="json"),
+            status.HTTP_200_OK,
+        )
+        self.assertCountEqual([ou["id"] for ou in both_types], [aire.id, centre.id])
+
+        paginated_base = f"/api/microplanning/plannings/{planning.id}/orgunits/children-paginated/?limit=50&page=1"
+        paginated_all = self.assertJSONResponse(self.client.get(paginated_base, format="json"), status.HTTP_200_OK)
+        self.assertEqual(paginated_all["count"], 2)
+
+        paginated_aires = self.assertJSONResponse(
+            self.client.get(f"{paginated_base}&orgUnitTypeIds={aire_type.id}", format="json"),
+            status.HTTP_200_OK,
+        )
+        self.assertEqual(paginated_aires["count"], 1)
+        self.assertEqual(paginated_aires["results"][0]["id"], aire.id)
+
+        paginated_centres = self.assertJSONResponse(
+            self.client.get(f"{paginated_base}&orgUnitTypeIds={centre_type.id}", format="json"),
+            status.HTTP_200_OK,
+        )
+        self.assertEqual(paginated_centres["count"], 1)
+        self.assertEqual(paginated_centres["results"][0]["id"], centre.id)
+
+        paginated_centres_under_aire = self.assertJSONResponse(
+            self.client.get(
+                f"{paginated_base}&orgUnitParentId={aire.id}&orgUnitTypeIds={centre_type.id}",
+                format="json",
+            ),
+            status.HTTP_200_OK,
+        )
+        self.assertEqual(paginated_centres_under_aire["count"], 1)
+        self.assertEqual(paginated_centres_under_aire["results"][0]["id"], centre.id)
 
     def test_planning_orgunits_children_search_by_name(self):
         self.client.force_authenticate(self.user)
@@ -970,7 +1166,7 @@ class PlanningTestCase(APITestCase):
         planning.target_org_unit_types.set([child_type])
 
         base = f"/api/microplanning/plannings/{planning.id}/orgunits/children/"
-        unfiltered = self.assertJSONResponse(self.client.get(base, format="json"), 200)
+        unfiltered = self.assertJSONResponse(self.client.get(base, format="json"), status.HTTP_200_OK)
         self.assertCountEqual(
             [ou["id"] for ou in unfiltered],
             [child_alpha.id, child_beta.id],
@@ -978,7 +1174,7 @@ class PlanningTestCase(APITestCase):
         )
 
         response = self.client.get(f"{base}?search=alpha", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual([ou["id"] for ou in r], [child_alpha.id])
 
     def test_planning_orgunits_children_only_validation_valid_descendants(self):
@@ -1036,7 +1232,7 @@ class PlanningTestCase(APITestCase):
 
         r_map = self.assertJSONResponse(
             self.client.get(f"/api/microplanning/plannings/{planning.id}/orgunits/children/", format="json"),
-            200,
+            status.HTTP_200_OK,
         )
         self.assertEqual([ou["id"] for ou in r_map], [child_valid.id])
 
@@ -1045,7 +1241,7 @@ class PlanningTestCase(APITestCase):
                 f"/api/microplanning/plannings/{planning.id}/orgunits/children-paginated/?limit=50&page=1",
                 format="json",
             ),
-            200,
+            status.HTTP_200_OK,
         )
         self.assertEqual(r_page["count"], 1)
         self.assertEqual([ou["id"] for ou in r_page["results"]], [child_valid.id])
@@ -1108,7 +1304,7 @@ class PlanningTestCase(APITestCase):
 
         r_map = self.assertJSONResponse(
             self.client.get(f"/api/microplanning/plannings/{planning.id}/orgunits/children/", format="json"),
-            200,
+            status.HTTP_200_OK,
         )
         self.assertEqual([ou["id"] for ou in r_map], [sampled_valid.id])
 
@@ -1117,7 +1313,7 @@ class PlanningTestCase(APITestCase):
                 f"/api/microplanning/plannings/{planning.id}/orgunits/children-paginated/?limit=50&page=1",
                 format="json",
             ),
-            200,
+            status.HTTP_200_OK,
         )
         self.assertEqual(r_page["count"], 1)
         self.assertEqual([ou["id"] for ou in r_page["results"]], [sampled_valid.id])
@@ -1171,7 +1367,7 @@ class PlanningTestCase(APITestCase):
         planning.save()
 
         response = self.client.get(f"/api/microplanning/plannings/{planning.id}/orgunits/children/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         ids = [ou["id"] for ou in r]
         self.assertEqual(ids, [sampled_ou.id])
         self.assertTrue(r[0]["has_geo_json"])
@@ -1225,7 +1421,7 @@ class PlanningTestCase(APITestCase):
 
         url = f"/api/microplanning/plannings/{planning.id}/orgunits/children-paginated/?limit=10&page=1"
         response = self.client.get(url, format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(r["count"], 2)
         rows = {ou["id"]: ou for ou in r["results"]}
         # Expected payloads must use DB-round-tripped rows like the view does; class-level
@@ -1233,6 +1429,7 @@ class PlanningTestCase(APITestCase):
         user_from_db = User.objects.select_related("iaso_profile").get(pk=self.user.pk)
         team_from_db = Team.objects.get(pk=self.team1.pk)
         self.assertEqual(rows[child.id]["assignment"]["assignment_type"], "user")
+        self.assertEqual(rows[child.id]["org_unit_type"], {"id": child_type.id, "name": child_type.name})
         self.assertEqual(
             rows[child.id]["assignment"]["user"],
             PlanningOrgUnitTableAssignmentUserSerializer(user_from_db).data,
@@ -1249,7 +1446,7 @@ class PlanningTestCase(APITestCase):
             f"/api/microplanning/plannings/{planning.id}/orgunits/children-paginated/?search=child-paginated-ou",
             format="json",
         )
-        rf = self.assertJSONResponse(filtered, 200)
+        rf = self.assertJSONResponse(filtered, status.HTTP_200_OK)
         self.assertEqual(rf["count"], 1)
         self.assertEqual(rf["results"][0]["id"], child.id)
 
@@ -1257,7 +1454,7 @@ class PlanningTestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get("/api/microplanning/plannings/999999999/orgunits/root/", format="json")
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_planning_orgunits_root_missing_scope_doesnt_raise_error(self):
         """A planning without sampling group or target org unit type should error."""
@@ -1312,7 +1509,7 @@ class PlanningTestCase(APITestCase):
         planning.target_org_unit_types.set([child_type])
 
         response = self.client.get(f"/api/microplanning/plannings/{planning.id}/orgunits/root/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(r["id"], root.id)
         self.assertTrue(r["has_geo_json"])
 
@@ -1365,7 +1562,7 @@ class PlanningTestCase(APITestCase):
         planning.save()
 
         response = self.client.get(f"/api/microplanning/plannings/{planning.id}/orgunits/root/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(r["id"], root.id)
         self.assertTrue(r["has_geo_json"])
 
@@ -1387,23 +1584,52 @@ class AssignmentAPITestCase(APITestCase):
         org_unit_type = OrgUnitType.objects.create(name="test type")
         project = account.project_set.first()
         org_unit_type.projects.add(project)
-        cls.root_org_unit = root_org_unit = OrgUnit.objects.create(version=version, org_unit_type=org_unit_type)
+        cls.root_org_unit = root_org_unit = OrgUnit.objects.create(
+            version=version,
+            org_unit_type=org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+        )
         cls.child1 = OrgUnit.objects.create(
-            version=version, parent=root_org_unit, name="child1", org_unit_type=org_unit_type
+            version=version,
+            parent=root_org_unit,
+            name="child1",
+            org_unit_type=org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.child2 = OrgUnit.objects.create(
-            version=version, parent=root_org_unit, name="child2", org_unit_type=org_unit_type
+            version=version,
+            parent=root_org_unit,
+            name="child2",
+            org_unit_type=org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.child3 = OrgUnit.objects.create(
-            version=version, parent=root_org_unit, name="child3", org_unit_type=org_unit_type
+            version=version,
+            parent=root_org_unit,
+            name="child3",
+            org_unit_type=org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.child4 = OrgUnit.objects.create(
-            version=version, parent=root_org_unit, name="child4", org_unit_type=org_unit_type
+            version=version,
+            parent=root_org_unit,
+            name="child4",
+            org_unit_type=org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.child5 = OrgUnit.objects.create(
-            version=version, parent=root_org_unit, name="child4", org_unit_type=org_unit_type
+            version=version,
+            parent=root_org_unit,
+            name="child4",
+            org_unit_type=org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
-        OrgUnit.objects.create(version=version, parent=root_org_unit, name="child2")
+        OrgUnit.objects.create(
+            version=version,
+            parent=root_org_unit,
+            name="child2",
+            validation_status=OrgUnit.VALIDATION_VALID,
+        )
 
         cls.planning = Planning.objects.create(
             project=project1,
@@ -1413,6 +1639,7 @@ class AssignmentAPITestCase(APITestCase):
             started_at="2025-01-01",
             ended_at="2025-01-10",
         )
+        cls.planning.target_org_unit_types.set([org_unit_type])
         Assignment.objects.create(
             planning=cls.planning,
             user=cls.user,
@@ -1447,12 +1674,12 @@ class AssignmentAPITestCase(APITestCase):
     def test_query_happy_path(self):
         self.client.force_authenticate(self.user)
         response = self.client.get("/api/microplanning/assignments/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 1)
 
     def test_query_fail_no_auth(self):
         response = self.client.get(f"/api/microplanning/assignments/?planning={self.planning.id}", format="json")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_query_filtering(self):
         p = Planning.objects.create(
@@ -1462,11 +1689,11 @@ class AssignmentAPITestCase(APITestCase):
         p.assignment_set.create(org_unit=self.child2, user=self.user)
         self.client.force_authenticate(self.user)
         response = self.client.get(f"/api/microplanning/assignments/?planning={self.planning.id}", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 1)
 
         response = self.client.get(f"/api/microplanning/assignments/?planning={p.id}", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 2)
 
     def test_create(self):
@@ -1481,7 +1708,7 @@ class AssignmentAPITestCase(APITestCase):
         }
 
         response = self.client.post("/api/microplanning/assignments/", data=data, format="json")
-        r = self.assertJSONResponse(response, 201)
+        r = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertTrue(Assignment.objects.filter(id=r["id"]).exists())
         a = Assignment.objects.get(id=r["id"])
         self.assertEqual(a.created_by, user_with_perms)
@@ -1499,12 +1726,12 @@ class AssignmentAPITestCase(APITestCase):
         self.client.force_authenticate(user_with_perms)
         data = {
             "planning": self.planning.id,
-            "org_units": [self.child3.id, self.child4.id],
+            "selected_ids": [self.child3.id, self.child4.id],
             "team": self.team1.id,
         }
 
         response = self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         assignments = Assignment.objects.filter(planning=self.planning)
         self.assertEqual(assignments.count(), 3)
         self.assertQuerySetEqual(
@@ -1517,12 +1744,12 @@ class AssignmentAPITestCase(APITestCase):
         self.client.force_authenticate(user_no_perms)
         data = {
             "planning": self.planning.id,
-            "org_units": [self.child3.id, self.child4.id],
+            "selected_ids": [self.child3.id, self.child4.id],
             "team": self.team1.id,
         }
 
         response = self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_bulk_no_access_planning(self):
         other_account = Account.objects.create(name="other_account")
@@ -1533,12 +1760,12 @@ class AssignmentAPITestCase(APITestCase):
         self.client.force_authenticate(user)
         data = {
             "planning": self.planning.id,
-            "org_units": [self.child3.id, self.child4.id],
+            "selected_ids": [self.child3.id, self.child4.id],
             "team": self.team1.id,
         }
 
         response = self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
-        r = self.assertJSONResponse(response, 400)
+        r = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("planning", r)
 
     def test_restore_deleted_assignment(self):
@@ -1562,13 +1789,13 @@ class AssignmentAPITestCase(APITestCase):
 
         response = self.client.delete(f"/api/microplanning/assignments/{deleted_assignment.id}/")
 
-        self.assertJSONResponse(response, 204)
+        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
         deleted_assignment.refresh_from_db()
         self.assertNotEqual(deleted_assignment.deleted_at, None)
         self.assertEqual(Modification.objects.count(), 2)
         data = {
             "planning": self.planning.id,
-            "org_units": [self.child2.id],
+            "selected_ids": [self.child2.id],
             "team": self.team1.id,
         }
 
@@ -1579,7 +1806,7 @@ class AssignmentAPITestCase(APITestCase):
         restored_assignment = Assignment.objects.filter(
             planning=self.planning, org_unit=self.child2, deleted_at__isnull=True
         ).first()
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         # The serializer creates a new assignment, not restore the old one
         self.assertNotEqual(restored_assignment.id, deleted_assignment.id)
         self.assertEqual(Modification.objects.count(), 3)
@@ -1597,7 +1824,7 @@ class AssignmentAPITestCase(APITestCase):
         # Create additional assignments for the planning
         data = {
             "planning": self.planning.id,
-            "org_units": [self.child2.id, self.child3.id, self.child4.id],
+            "selected_ids": [self.child2.id, self.child3.id, self.child4.id],
             "team": self.team1.id,
         }
         self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
@@ -1612,7 +1839,7 @@ class AssignmentAPITestCase(APITestCase):
             "/api/microplanning/assignments/bulk_delete_assignments/", data=delete_data, format="json"
         )
 
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(r["deleted_count"], 4)
         self.assertEqual(r["planning_id"], self.planning.id)
         self.assertIn("Successfully deleted 4 assignments", r["message"])
@@ -1642,14 +1869,14 @@ class AssignmentAPITestCase(APITestCase):
 
         data_team1 = {
             "planning": self.planning.id,
-            "org_units": [self.child2.id, self.child3.id],
+            "selected_ids": [self.child2.id, self.child3.id],
             "team": self.team1.id,
         }
         self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data_team1, format="json")
 
         data_team2 = {
             "planning": self.planning.id,
-            "org_units": [self.child4.id, self.child5.id],
+            "selected_ids": [self.child4.id, self.child5.id],
             "team": team2.id,
         }
         self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data_team2, format="json")
@@ -1672,7 +1899,7 @@ class AssignmentAPITestCase(APITestCase):
             "/api/microplanning/assignments/bulk_delete_assignments/", data=delete_data, format="json"
         )
 
-        result = self.assertJSONResponse(response, 200)
+        result = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(result["deleted_count"], 3)
         self.assertEqual(result["planning_id"], self.planning.id)
         self.assertIn("Successfully deleted 3 assignments", result["message"])
@@ -1700,14 +1927,14 @@ class AssignmentAPITestCase(APITestCase):
 
         data_user1 = {
             "planning": self.planning.id,
-            "org_units": [self.child2.id, self.child3.id],
+            "selected_ids": [self.child2.id, self.child3.id],
             "user": self.user.id,
         }
         self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data_user1, format="json")
 
         data_user2 = {
             "planning": self.planning.id,
-            "org_units": [self.child4.id, self.child5.id],
+            "selected_ids": [self.child4.id, self.child5.id],
             "user": user2.id,
         }
         self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data_user2, format="json")
@@ -1730,7 +1957,7 @@ class AssignmentAPITestCase(APITestCase):
             "/api/microplanning/assignments/bulk_delete_assignments/", data=delete_data, format="json"
         )
 
-        result = self.assertJSONResponse(response, 200)
+        result = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(result["deleted_count"], 3)
         self.assertEqual(result["planning_id"], self.planning.id)
         self.assertEqual(result["user"], self.user.id)
@@ -1768,7 +1995,7 @@ class AssignmentAPITestCase(APITestCase):
             "/api/microplanning/assignments/bulk_delete_assignments/", data=delete_data, format="json"
         )
 
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(r["deleted_count"], 0)
         self.assertEqual(r["planning_id"], new_planning.id)
         self.assertIn("No assignments to delete", r["message"])
@@ -1783,7 +2010,7 @@ class AssignmentAPITestCase(APITestCase):
             "/api/microplanning/assignments/bulk_delete_assignments/", data=delete_data, format="json"
         )
 
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_bulk_delete_assignments_invalid_planning(self):
         """Test bulk delete with planning that doesn't exist or user doesn't have access to"""
@@ -1798,7 +2025,7 @@ class AssignmentAPITestCase(APITestCase):
             "/api/microplanning/assignments/bulk_delete_assignments/", data=delete_data, format="json"
         )
 
-        r = self.assertJSONResponse(response, 400)
+        r = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("planning", r)
 
         # Test with planning from different account
@@ -1817,7 +2044,7 @@ class AssignmentAPITestCase(APITestCase):
             "/api/microplanning/assignments/bulk_delete_assignments/", data=delete_data, format="json"
         )
 
-        r = self.assertJSONResponse(response, 400)
+        r = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("planning", r)
 
     def test_bulk_delete_assignments_audit_trail(self):
@@ -1830,7 +2057,7 @@ class AssignmentAPITestCase(APITestCase):
         # Create additional assignments
         data = {
             "planning": self.planning.id,
-            "org_units": [self.child2.id, self.child3.id],
+            "selected_ids": [self.child2.id, self.child3.id],
             "team": self.team1.id,
         }
         self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
@@ -1844,7 +2071,7 @@ class AssignmentAPITestCase(APITestCase):
             "/api/microplanning/assignments/bulk_delete_assignments/", data=delete_data, format="json"
         )
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         # Verify audit entries were created for each deleted assignment
         final_modification_count = Modification.objects.count()
@@ -1873,7 +2100,7 @@ class AssignmentAPITestCase(APITestCase):
         # Create additional assignments
         data = {
             "planning": self.planning.id,
-            "org_units": [self.child2.id, self.child3.id],
+            "selected_ids": [self.child2.id, self.child3.id],
             "team": self.team1.id,
         }
         self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
@@ -1893,7 +2120,7 @@ class AssignmentAPITestCase(APITestCase):
             "/api/microplanning/assignments/bulk_delete_assignments/", data=delete_data, format="json"
         )
 
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(r["deleted_count"], 2)  # Only 2 were actually deleted
 
         # Verify only 2 assignments were soft deleted (the one already deleted should remain unchanged)
@@ -1920,11 +2147,12 @@ class AssignmentAPITestCase(APITestCase):
             started_at="2025-01-01",
             ended_at="2025-01-10",
         )
+        other_planning.target_org_unit_types.set([self.root_org_unit.org_unit_type])
 
         # Create assignments for the other planning
         other_data = {
             "planning": other_planning.id,
-            "org_units": [self.child2.id, self.child3.id, self.child4.id],
+            "selected_ids": [self.child2.id, self.child3.id, self.child4.id],
             "team": self.team1.id,
         }
         self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=other_data, format="json")
@@ -1942,7 +2170,7 @@ class AssignmentAPITestCase(APITestCase):
             "/api/microplanning/assignments/bulk_delete_assignments/", data=delete_data, format="json"
         )
 
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(r["deleted_count"], 1)  # Only 1 assignment from original planning
         self.assertEqual(r["planning_id"], self.planning.id)
 
@@ -1968,7 +2196,7 @@ class AssignmentAPITestCase(APITestCase):
         }
 
         response = self.client.post("/api/microplanning/assignments/", data=data, format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_query_mobile(self):
         p = Planning.objects.create(
@@ -2014,7 +2242,7 @@ class AssignmentAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get("/api/mobile/plannings/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         plannings = r["plannings"]
         self.assertEqual(len(plannings), 2)
         # planning 1
@@ -2052,14 +2280,14 @@ class AssignmentAPITestCase(APITestCase):
         self.client.force_authenticate(user)
 
         response = self.client.get("/api/mobile/plannings/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r["plannings"]), 0)
 
     def test_query_mobile_get(self):
         self.client.force_authenticate(self.user)
         Planning.objects.update(published_at=now())
         response = self.client.get(f"/api/mobile/plannings/{self.planning.id}/", format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_query_mobile_no_modification(self):
         self.user.is_superuser = True
@@ -2068,10 +2296,89 @@ class AssignmentAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
         response = self.client.delete(f"/api/mobile/plannings/{self.planning.id}/", format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
         response = self.client.patch(f"/api/mobile/plannings/{self.planning.id}/", format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
         response = self.client.post("/api/mobile/plannings/", data={}, format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class MicroplanningSwaggerTestCase(SwaggerTestCaseMixin, APITestCase):
+    fixtures = ["user.yaml"]
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.account = Account.objects.get(name="test")
+        cls.user = User.objects.get(username="test")
+        cls.project1 = cls.account.project_set.create(name="swagger-project")
+        cls.team1 = Team.objects.create(project=cls.project1, name="swagger-team", manager=cls.user)
+        source = DataSource.objects.create(name="Swagger source")
+        source.projects.add(cls.project1)
+        version = SourceVersion.objects.create(data_source=source, number=1)
+        parent_type = OrgUnitType.objects.create(name="Swagger parent type")
+        parent_type.projects.add(cls.project1)
+        child_type = OrgUnitType.objects.create(name="Swagger child type")
+        child_type.projects.add(cls.project1)
+        polygon = Polygon(((0, 0), (0, 1), (1, 1), (0, 0)), srid=4326)
+        multipolygon = MultiPolygon(polygon, srid=4326)
+        cls.root = OrgUnit.objects.create(
+            version=version,
+            name="swagger-root",
+            org_unit_type=parent_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        cls.child = OrgUnit.objects.create(
+            version=version,
+            name="swagger-child",
+            parent=cls.root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        cls.planning = Planning.objects.create(
+            project=cls.project1,
+            name="swagger-planning",
+            team=cls.team1,
+            org_unit=cls.root,
+            started_at="2025-01-01",
+            ended_at="2025-01-02",
+        )
+        cls.planning.target_org_unit_types.set([child_type])
+        Assignment.objects.create(planning=cls.planning, org_unit=cls.child, user=cls.user, created_by=cls.user)
+
+    def test_bulk_create_assignments_response_is_compliant(self):
+        user_with_perms = self.create_user_with_profile(
+            username="swagger_bulk_user",
+            account=self.account,
+            permissions=[CORE_PLANNING_WRITE_PERMISSION],
+        )
+        self.client.force_authenticate(user_with_perms)
+        response = self.client.post(
+            "/api/microplanning/assignments/bulk_create_assignments/",
+            data={
+                "planning": self.planning.id,
+                "selected_ids": [self.child.id],
+                "team": self.team1.id,
+            },
+            format="json",
+        )
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertResponseCompliantToSwagger(data, "Assignment", as_array=True)
+
+    def test_bulk_delete_assignments_response_is_compliant(self):
+        user_with_perms = self.create_user_with_profile(
+            username="swagger_delete_user",
+            account=self.account,
+            permissions=[CORE_PLANNING_WRITE_PERMISSION],
+        )
+        self.client.force_authenticate(user_with_perms)
+        response = self.client.post(
+            "/api/microplanning/assignments/bulk_delete_assignments/",
+            data={"planning": self.planning.id, "user": self.user.id},
+            format="json",
+        )
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertResponseCompliantToSwagger(data, "BulkDeleteAssignmentResponse")

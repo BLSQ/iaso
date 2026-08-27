@@ -11,6 +11,7 @@ from rest_framework.response import Response
 
 from iaso.api.common import Paginator
 from iaso.models import OrgUnitType
+from iaso.utils.encryption import calculate_md5
 from iaso.utils.virus_scan.clamav import scan_uploaded_file_for_virus
 from plugins.polio.api.notifications.filters import NotificationFilter
 from plugins.polio.api.notifications.permissions import HasNotificationPermission
@@ -80,9 +81,14 @@ class NotificationViewSet(viewsets.ModelViewSet):
         account = user.iaso_profile.account
         serializer = NotificationImportSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        result, timestamp = scan_uploaded_file_for_virus(serializer.validated_data["file"])
+        uploaded_file = serializer.validated_data["file"]
+        result, timestamp = scan_uploaded_file_for_virus(uploaded_file)
         notification_import = serializer.save(
-            account=account, created_by=user, file_last_scan=timestamp, file_scan_status=result
+            account=account,
+            created_by=user,
+            file_last_scan=timestamp,
+            file_scan_status=result,
+            md5=calculate_md5(uploaded_file),
         )
         # TODO: don't do the async if the file is positive?
         create_polio_notifications_async(pk=notification_import.pk, user=user)

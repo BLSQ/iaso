@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from random import randint
 
 from submissions import (
+    APP_VERSION,
     instance_by_LLIN_campaign_form,
     org_unit_gps_point,
     rename_entity_submission_picture,
@@ -93,7 +94,7 @@ def create_additional_entities(account_name, iaso_client, orgunit, entity_type):
         "file": local_path,
         "name": file_name,
     }
-    iaso_client.post(f"/api/instances/?app_id={account_name}", json=[instance_data])
+    iaso_client.post(f"/api/instances/?app_id={account_name}&app_version={APP_VERSION}", json=[instance_data])
     instance_json = instance_by_LLIN_campaign_form(reference_form, {"instanceID": "uuid:" + the_uuid}, orgunit)
     files = {
         "xml_submission_file": (
@@ -141,7 +142,7 @@ def create_child_entities(account_name, iaso_client, orgunit, entity_type):
         "file": local_path,
         "name": file_name,
     }
-    iaso_client.post(f"/api/instances/?app_id={account_name}", json=[instance_data])
+    iaso_client.post(f"/api/instances/?app_id={account_name}&app_version={APP_VERSION}", json=[instance_data])
 
     instance_json = instance_by_LLIN_campaign_form(reference_form, {"instanceID": "uuid:" + the_uuid}, orgunit)
     image = f"{int(randint(1, 13))}.jpg"
@@ -173,7 +174,7 @@ def create_child_entities(account_name, iaso_client, orgunit, entity_type):
         created_at_to_datetime = int(datetime.timestamp(created_at + timedelta(days=i)))
 
         iaso_client.post(
-            f"/api/instances/?app_id={account_name}",
+            f"/api/instances/?app_id={account_name}&app_version={APP_VERSION}",
             json=[
                 {
                     **org_unit_gps_point(orgunit),

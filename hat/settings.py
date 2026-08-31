@@ -50,6 +50,10 @@ env.read_env()  # env vars in .env are the base value, but if OS-level env vars 
 
 MAINTENANCE_MODE = env.bool("MAINTENANCE_MODE", default=False)
 
+# Optional message shown as a dismissible banner on every page (e.g. to announce planned
+# maintenance) without taking the site down like MAINTENANCE_MODE does. Empty by default.
+SITE_ANNOUNCEMENT_MESSAGE = env.str("SITE_ANNOUNCEMENT_MESSAGE", default="")
+
 # security settings
 CSRF_COOKIE_HTTPONLY = env.bool("CSRF_COOKIE_HTTPONLY", default=False)
 CSRF_COOKIE_SECURE = env.bool("CSRF_COOKIE_SECURE", default=False)
@@ -342,6 +346,7 @@ TEMPLATES = [
                 "hat.common.context_processors.available_languages",
                 "hat.common.context_processors.default_app_id",
                 "hat.common.context_processors.dns_domain",
+                "hat.common.context_processors.site_announcement_message",
             ]
         },
     }

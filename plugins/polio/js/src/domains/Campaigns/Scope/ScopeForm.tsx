@@ -1,4 +1,10 @@
-import React, { FunctionComponent, useMemo, useState, useEffect } from 'react';
+import React, {
+    FunctionComponent,
+    useMemo,
+    useState,
+    useEffect,
+    useCallback,
+} from 'react';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Grid, Tab } from '@mui/material';
 import {
@@ -18,6 +24,7 @@ import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
 import { useGetGeoJson } from './hooks/useGetGeoJson';
 import { useGetParentOrgUnit } from './hooks/useGetParentOrgUnit';
 import { ScopeChangeDialog } from './ScopeChangeDialog';
+import { ScopeChangeResult } from './ScopeChangeDialog';
 import { ScopeField } from './ScopeField';
 import { FilteredDistricts, Round } from './Scopes/types';
 import { useFilteredDistricts } from './Scopes/utils';
@@ -52,9 +59,32 @@ export const ScopeForm: FunctionComponent = () => {
             separate_scopes_per_round: initialValues.separate_scopes_per_round,
         });
     };
-    const handleConfirmScopeChangeDialog = () => {
-        setDisplayScopeChangeDialog(false);
-    };
+    const handleConfirmScopeChangeDialog = useCallback(
+        ({ mode, selectedRoundNumbers }: ScopeChangeResult) => {
+            const newValues: CampaignFormValues = values;
+            if (mode === 'allRounds') {
+                newValues.rounds = rounds.map(round => ({
+                    ...round,
+                    scopes: values.scopes,
+                }));
+            } else if (mode === 'selectedRounds') {
+                newValues.rounds = rounds.map(round => ({
+                    ...round,
+                    scopes: selectedRoundNumbers.includes(round.number)
+                        ? values.scopes
+                        : [],
+                }));
+            } else if (mode === 'empty') {
+                newValues.rounds = rounds.map(round => ({
+                    ...round,
+                    scopes: [],
+                }));
+            }
+            setValues(newValues);
+            setDisplayScopeChangeDialog(false);
+        },
+        [values, rounds, setValues],
+    );
     useEffect(() => {
         return () => {
             if (
@@ -69,7 +99,6 @@ export const ScopeForm: FunctionComponent = () => {
         // Only change the dialog display when the scope per round changes
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [scopePerRound]);
-
     const [currentTab, setCurrentTab] = useState<string>(
         rounds?.[0] ? `${rounds[0].number}` : '1',
     );

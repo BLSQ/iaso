@@ -23,6 +23,7 @@ import {
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import { SxStyles } from 'Iaso/types/general';
+import { getLocaleDateFormat } from 'Iaso/utils/dates';
 
 import MESSAGES from '../../../constants/messages';
 
@@ -79,32 +80,30 @@ const styles: SxStyles = {
     },
 };
 
+const formatRoundDate = (
+    date: string | null | undefined,
+): string | undefined => {
+    if (!date) {
+        return undefined;
+    }
+    const parsed = moment(date);
+    if (!parsed.isValid()) {
+        return undefined;
+    }
+    return parsed.format(getLocaleDateFormat('L'));
+};
+
 const formatRoundDateRange = (
     startedAt: string | null | undefined,
     endedAt: string | null | undefined,
     toLabel: string,
 ): string | undefined => {
-    const start = startedAt ? moment(startedAt) : null;
-    const end = endedAt ? moment(endedAt) : null;
-    const startValid = Boolean(start?.isValid());
-    const endValid = Boolean(end?.isValid());
-
-    if (startValid && endValid && start && end) {
-        if (start.isSame(end, 'month') && start.isSame(end, 'year')) {
-            return `${start.format('D')} ${toLabel} ${end.format('D MMM YYYY')}`;
-        }
-        if (start.isSame(end, 'year')) {
-            return `${start.format('D MMM')} ${toLabel} ${end.format('D MMM YYYY')}`;
-        }
-        return `${start.format('D MMM YYYY')} ${toLabel} ${end.format('D MMM YYYY')}`;
+    const start = formatRoundDate(startedAt);
+    const end = formatRoundDate(endedAt);
+    if (start && end) {
+        return `${start} ${toLabel} ${end}`;
     }
-    if (startValid && start) {
-        return start.format('D MMM YYYY');
-    }
-    if (endValid && end) {
-        return end.format('D MMM YYYY');
-    }
-    return undefined;
+    return start || end;
 };
 
 export const ScopeChangeDialog: FunctionComponent<Props> = ({

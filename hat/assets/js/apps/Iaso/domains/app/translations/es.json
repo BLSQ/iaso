@@ -972,6 +972,8 @@
     "iaso.orgUnits.addSource": "Agregar fuente",
     "iaso.orgUnits.addToGroups": "Agregar a grupo(s)",
     "iaso.orgUnits.bulkChangeCount": "Está a punto de cambiar {count} unidades organizativas",
+    "iaso.orgUnits.bulkChangeTaskHelp": "La modificación se ejecuta en segundo plano y puede tardar unos minutos.",
+    "iaso.orgUnits.modifyAndFollow": "Modificar y seguir",
     "iaso.orgUnits.closingDate": "Fecha de cierre",
     "iaso.orgUnits.confirmMultiChange": "¿Confirmar cambios masivos?",
     "iaso.orgUnits.createdBy": "Creado por",

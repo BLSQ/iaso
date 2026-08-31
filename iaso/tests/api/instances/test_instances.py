@@ -2353,7 +2353,7 @@ class InstancesAPITestCase(TaskAPITestCase):
 
         self.assertInstanceListContainsStrictly(response_with_coma, [instance_2, instance_3])
 
-    def test_instances_api_import_linking_and_filtering(self):
+    def test_instances_api_import_app_version(self):
         self.client.force_authenticate(self.yoda)
         instance_uuid = str(uuid4())
         body = [
@@ -2383,24 +2383,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         instance.save()
         self.assertIsNotNone(instance.api_import)
         self.assertEqual(instance.api_import.app_version, "1.4.2")
-
-        # Query instances using the api_import_id filter
-        response_filtered = self.client.get(
-            "/api/instances/",
-            {"api_import_id": instance.api_import.id},
-            headers={"Content-Type": "application/json"},
-        )
-        self.assertJSONResponse(response_filtered, status.HTTP_200_OK)
-        self.assertInstanceListContainsStrictly(response_filtered, [instance])
-
-        # Query instances using a wrong api_import_id filter, should be empty
-        response_filtered_wrong = self.client.get(
-            "/api/instances/",
-            {"api_import_id": instance.api_import.id + 999},
-            headers={"Content-Type": "application/json"},
-        )
-        self.assertJSONResponse(response_filtered_wrong, status.HTTP_200_OK)
-        self.assertInstanceListContainsStrictly(response_filtered_wrong, [])
+        self.assertEqual(instance.app_version, "1.4.2")
 
         # Retrieve instance details and check that device_app_version is returned
         response_details = self.client.get(
@@ -2409,7 +2392,6 @@ class InstancesAPITestCase(TaskAPITestCase):
         )
         response_json = self.assertJSONResponse(response_details, status.HTTP_200_OK)
         self.assertEqual(response_json.get("device_app_version"), "1.4.2")
-        self.assertEqual(response_json.get("api_import_id"), instance.api_import.id)
 
     def test_instances_bad_sent_date_from(self):
         self.client.force_authenticate(self.yoda)

@@ -5,7 +5,6 @@ from rest_framework import serializers
 
 APP_ID = "app_id"
 APP_VERSION = "app_version"
-API_IMPORT_ID = "api_import_id"
 DATE_FROM = "dateFrom"
 DATE_TO = "dateTo"
 DEVICE_ID = "deviceId"

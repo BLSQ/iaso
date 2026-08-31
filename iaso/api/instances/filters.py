@@ -75,7 +75,6 @@ def parse_instance_filters(req: QueryDict) -> Dict[str, Any]:
         "show_deleted": show_deleted,
         "entity_id": req.get(query.ENTITY_ID, None),
         "user_ids": req.get(query.USER_IDS, None),
-        "api_import_id": req.get(query.API_IMPORT_ID, None),
         "modification_from": req.get(query.MODIFICATION_DATE_FROM, None),
         "modification_to": req.get(query.MODIFICATION_DATE_TO, None),
         "sent_from": req.get(query.SENT_DATE_FROM, None),

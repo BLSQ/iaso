@@ -646,7 +646,6 @@ class InstancesViewSet(viewsets.ViewSet):
                 "org_unit__org_unit_type",
                 "org_unit__version__data_source__credentials",
                 "project",
-                "api_import",
             )
             .with_status(form_ids=resolve_status_form_ids(form_id))
         )
@@ -1013,6 +1012,7 @@ def import_data(instances, user, app_id, api_import):
         instance.uuid = uuid
         instance.project = project
         instance.api_import = api_import
+        instance.app_version = api_import.app_version
         instance.name = instance_data.get("name", None)
         instance.period = instance_data.get("period", None)
         accuracy_raw = instance_data.get("accuracy", None)

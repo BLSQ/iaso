@@ -77,6 +77,7 @@ def build_submission_annotations():
         "deleted",
         "export_id",
         "correlation_id",
+        "app_version",
     ]
     model_prefix = "iaso_subm_"
 

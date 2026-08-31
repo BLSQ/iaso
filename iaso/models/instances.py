@@ -261,7 +261,6 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         project_ids=None,
         only_reference=None,
         reference_instances=None,
-        api_import_id=None,
     ):
         queryset = self
 
@@ -388,9 +387,6 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
             q, _ = instance_jsonlogic_to_q(jsonlogic=json_content, field_prefix="json__")
             queryset, _ = annotate_suffixed_json_fields(queryset, json_content, "json")
             queryset = queryset.filter(q)
-
-        if api_import_id:
-            queryset = queryset.filter(api_import_id=api_import_id)
 
         return queryset
 
@@ -529,6 +525,7 @@ class Instance(ValidationWorkflowArtefact):
     api_import = models.ForeignKey(
         "api_import.APIImport", null=True, blank=True, on_delete=models.SET_NULL, related_name="instances"
     )
+    app_version = models.CharField(max_length=25, blank=True, null=True)
 
     last_export_success_at = models.DateTimeField(null=True, blank=True)
 
@@ -783,8 +780,7 @@ class Instance(ValidationWorkflowArtefact):
             "modification": True,
             "id": self.id,
             "device_id": self.device.imei if self.device else None,
-            "device_app_version": self.api_import.app_version if self.api_import else None,
-            "api_import_id": self.api_import_id,
+            "device_app_version": self.app_version,
             "file_name": self.file_name,
             "file_url": self.file.url if self.file else None,
             "form_id": self.form_id,

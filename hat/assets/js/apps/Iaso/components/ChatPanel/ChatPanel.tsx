@@ -30,6 +30,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import ReactMarkdown from 'react-markdown';
 import { SxStyles } from 'Iaso/types/general';
 import { MessageQuickReplies } from './MessageQuickReplies';
+import { MessageRevertAction } from './MessageRevertAction';
 import MESSAGES from './messages';
 import {
     ChatMessage,
@@ -108,6 +109,9 @@ type Props = {
     messages: ChatMessage[];
     isLoading: boolean;
     onSendMessage: (message: string, options?: SendMessageOptions) => void;
+    // Undoes the change an assistant message applied. When set, messages flagged `revertable`
+    // render a "Revert this change" action.
+    onRevert?: (messageId: string) => void;
     // Content shown in place of the message list when there are no messages yet.
     emptyState: ReactNode;
     title: ReactNode;
@@ -307,6 +311,7 @@ export const ChatPanel: FC<Props> = ({
     messages,
     isLoading,
     onSendMessage,
+    onRevert,
     emptyState,
     title,
     subtitle,
@@ -512,6 +517,13 @@ export const ChatPanel: FC<Props> = ({
                                 isLoading={isLoading}
                                 onSendMessage={onSendMessage}
                             />
+                            {onRevert && (
+                                <MessageRevertAction
+                                    message={msg}
+                                    isLoading={isLoading}
+                                    onRevert={onRevert}
+                                />
+                            )}
                         </Paper>
                     </Box>
                 ))}

@@ -316,6 +316,107 @@ describe('ChatPanel quick replies', () => {
     });
 });
 
+describe('ChatPanel revert action', () => {
+    it('renders a Revert icon button only on revertable assistant messages', () => {
+        renderWithThemeAndIntlProvider(
+            <ChatPanel
+                {...baseProps}
+                messages={[
+                    { ...assistantMessage('plain') },
+                    { ...assistantMessage('applied'), revertable: true },
+                    userMessage('hi'),
+                ]}
+                onSendMessage={vi.fn()}
+                onRevert={vi.fn()}
+            />,
+        );
+
+        expect(
+            screen.getAllByRole('button', { name: 'Revert this change' }),
+        ).toHaveLength(1);
+    });
+
+    it('confirms before reverting, then calls onRevert with the message id', async () => {
+        const onRevert = vi.fn();
+        const applied = { ...assistantMessage('applied'), revertable: true };
+        renderWithThemeAndIntlProvider(
+            <ChatPanel
+                {...baseProps}
+                messages={[applied]}
+                onSendMessage={vi.fn()}
+                onRevert={onRevert}
+            />,
+        );
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Revert this change' }),
+        );
+        expect(onRevert).not.toHaveBeenCalled();
+
+        fireEvent.click(await screen.findByRole('button', { name: 'Revert' }));
+        expect(onRevert).toHaveBeenCalledWith(applied.id);
+    });
+
+    it('does not revert when the confirmation is cancelled', async () => {
+        const onRevert = vi.fn();
+        renderWithThemeAndIntlProvider(
+            <ChatPanel
+                {...baseProps}
+                messages={[
+                    { ...assistantMessage('applied'), revertable: true },
+                ]}
+                onSendMessage={vi.fn()}
+                onRevert={onRevert}
+            />,
+        );
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Revert this change' }),
+        );
+        fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
+
+        expect(onRevert).not.toHaveBeenCalled();
+    });
+
+    it('shows a discreet Reverted note once the message is reverted', () => {
+        renderWithThemeAndIntlProvider(
+            <ChatPanel
+                {...baseProps}
+                messages={[
+                    {
+                        ...assistantMessage('applied'),
+                        revertable: true,
+                        reverted: true,
+                    },
+                ]}
+                onSendMessage={vi.fn()}
+                onRevert={vi.fn()}
+            />,
+        );
+
+        expect(
+            screen.queryByRole('button', { name: 'Revert this change' }),
+        ).toBeNull();
+        expect(screen.getByText('Reverted')).toBeTruthy();
+    });
+
+    it('renders nothing revert-related without an onRevert handler', () => {
+        renderWithThemeAndIntlProvider(
+            <ChatPanel
+                {...baseProps}
+                messages={[
+                    { ...assistantMessage('applied'), revertable: true },
+                ]}
+                onSendMessage={vi.fn()}
+            />,
+        );
+
+        expect(
+            screen.queryByRole('button', { name: 'Revert this change' }),
+        ).toBeNull();
+    });
+});
+
 describe('applyQuickReplyAnswer', () => {
     it("sets selectedOptionIndex on the matching message's quick replies", () => {
         const question = assistantMessage(

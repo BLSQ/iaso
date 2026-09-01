@@ -57,29 +57,20 @@ steps:
 
 - script: |
     python --version
-    python -m venv ./venv
-    . ./venv/bin/activate && pip install -U pip
-  displayName: 'install pip'
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+  displayName: 'install uv'
 
 - script: |
-    . ./venv/bin/activate && pip install -r requirements.txt  && pip install -r requirements-dev.txt
-    pip install unittest-xml-reporting
+    uv sync --locked
+    uv add unittest-xml-reporting==3.2.0
   displayName: 'install requirements'
 
-- script: pip list
+- script: uv tree --depth 1
   displayName: 'Environment info'
 
 - script: |
-    . ./venv/bin/activate && ruff check .
+    uv run ruff check . && uv run ruff format .
   displayName: 'Check formatting with ruff'
-
-# Setting the details for the health page
-- task: Bash@3
-  inputs:
-    targetType: 'inline'
-    script: |
-      ./scripts/set_version.sh
-  displayName: 'Set Version Info for Health'
 
 
 # The secret key is done with an export because Azure pipelines will
@@ -89,31 +80,27 @@ steps:
     export DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
     export DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USERNAME}
     export DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL}
-    . ./venv/bin/activate &&  python manage.py migrate
-    . ./venv/bin/activate &&  python manage.py createcachetable
-    . ./venv/bin/activate &&  python manage.py test --testrunner xmlrunner.extra.djangotestrunner.XMLTestRunner --no-input
-    . ./venv/bin/activate &&  python manage.py makemigrations --check
-    . ./venv/bin/activate &&  python manage.py createsuperuser --noinput
+    uv run python manage.py migrate
+    uv run python manage.py createcachetable
+    uv run python manage.py createsuperuser --noinput
+    uv run python manage.py makemigrations --check
+    uv run python manage.py test --testrunner xmlrunner.extra.djangotestrunner.XMLTestRunner --no-input
   displayName: 'Django tests'
   condition: succeededOrFailed()
   env:
-    IASO_ENVIRONMENT: development
-    RDS_DB_NAME: does_not_matter
-    SECRETKEY: secret-only-used-in-azure-pipeline
     DEBUG: true
+    DISABLE_PASSWORD_LOGINS: true
     DJANGO_SETTINGS_MODULE: hat.settings
-    RDS_PASSWORD: postgres
-    RDS_HOSTNAME: localhost
-    RDS_PORT: 5432
-    RDS_USERNAME: postgres
-    CACHE: false
-    DEV_SERVER: true
-    VERSION_NAME: test
-    PLUGINS: polio,wfp
-    DJANGO_SUPERUSER_USERNAME: adm
     DJANGO_SUPERUSER_EMAIL: adm@example.com
     DJANGO_SUPERUSER_PASSWORD: $(DJANGO_SUPERUSER_PASSWORD)
-    DISABLE_PASSWORD_LOGINS: true
+    DJANGO_SUPERUSER_USERNAME: adm
+    PLUGINS: polio,wfp,wfp_auth
+    RDS_DB_NAME: does_not_matter
+    RDS_HOSTNAME: localhost
+    RDS_PASSWORD: postgres
+    RDS_PORT: 5432
+    RDS_USERNAME: postgres
+    SECRETKEY: secret-only-used-in-azure-pipeline
     USE_CELERY: true
 
 - task: PublishTestResults@2
@@ -148,9 +135,7 @@ steps:
   displayName: 'Clean up Docker system'
 
 - script: |
-    docker build -t dev-coda2 --target prod -f $(Build.SourcesDirectory)/docker/bundle/Dockerfile .
-  env:
-    VERSION_NAME: test
+    docker build -t dev-coda2 --target prod -f $(Build.SourcesDirectory)/docker/prod/Dockerfile .
   displayName: 'Build docker image'
 
 # Save the Docker image compressed to reduce disk usage

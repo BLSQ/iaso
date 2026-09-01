@@ -20,6 +20,7 @@ export type RouteCustom = {
     allowAnonymous?: boolean;
     isRootUrl?: boolean;
     element: ReactNode;
+    featureFlag?: string;
 };
 
 export type Redirection = {

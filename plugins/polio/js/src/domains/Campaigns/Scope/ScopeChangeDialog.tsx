@@ -26,13 +26,17 @@ import { SxStyles } from 'Iaso/types/general';
 import { getLocaleDateFormat } from 'Iaso/utils/dates';
 
 import MESSAGES from '../../../constants/messages';
+import { Scope } from '../../../constants/types';
+import { countDistricts, countMergedDistricts } from './scopeChangeUtils';
 
+export type ScopeChangeDirection = 'toRounds' | 'toCampaign';
 export type ScopeChangeMode = 'allRounds' | 'selectedRounds' | 'empty';
 
 export type ScopeChangeRound = {
     number: number;
     started_at?: string | null;
     ended_at?: string | null;
+    scopes?: Scope[];
 };
 
 export type ScopeChangeResult = {
@@ -42,10 +46,30 @@ export type ScopeChangeResult = {
 
 type Props = {
     open: boolean;
+    direction: ScopeChangeDirection;
     rounds: ScopeChangeRound[];
     districtCount?: number;
     onClose?: () => void;
     onConfirm?: (result: ScopeChangeResult) => void;
+};
+
+const DIALOG_COPY = {
+    toRounds: {
+        title: MESSAGES.scope_per_round,
+        description: MESSAGES.scopeChangeDescription,
+        all: MESSAGES.scopeChangeCopyAllRounds,
+        selected: MESSAGES.scopeChangeCopySelectedRounds,
+        empty: MESSAGES.scopeChangeEmptyRounds,
+        helper: MESSAGES.scopeChangeUncheckedRoundsEmpty,
+    },
+    toCampaign: {
+        title: MESSAGES.scopeChangeToCampaignTitle,
+        description: MESSAGES.scopeChangeToCampaignDescription,
+        all: MESSAGES.scopeChangeMergeAllRounds,
+        selected: MESSAGES.scopeChangeMergeSelectedRounds,
+        empty: MESSAGES.scopeChangeEmptyCampaign,
+        helper: MESSAGES.scopeChangeUncheckedRoundsDropped,
+    },
 };
 
 const styles: SxStyles = {
@@ -108,12 +132,14 @@ const formatRoundDateRange = (
 
 export const ScopeChangeDialog: FunctionComponent<Props> = ({
     open,
+    direction,
     rounds,
     districtCount = 0,
     onClose = () => {},
     onConfirm = () => {},
 }) => {
     const { formatMessage } = useSafeIntl();
+    const copy = DIALOG_COPY[direction];
     const [mode, setMode] = useState<ScopeChangeMode>('allRounds');
     const [selectedRoundNumbers, setSelectedRoundNumbers] = useState<number[]>(
         [],
@@ -126,6 +152,28 @@ export const ScopeChangeDialog: FunctionComponent<Props> = ({
     const roundNumbers = useMemo(
         () => sortedRounds.map(round => round.number),
         [sortedRounds],
+    );
+    const allDistrictCount = useMemo(
+        () =>
+            direction === 'toCampaign'
+                ? countMergedDistricts(
+                      sortedRounds.map(round => round.scopes ?? []),
+                  )
+                : districtCount,
+        [direction, districtCount, sortedRounds],
+    );
+    const selectedDistrictCount = useMemo(
+        () =>
+            direction === 'toCampaign'
+                ? countMergedDistricts(
+                      sortedRounds
+                          .filter(round =>
+                              selectedRoundNumbers.includes(round.number),
+                          )
+                          .map(round => round.scopes ?? []),
+                  )
+                : districtCount,
+        [direction, districtCount, selectedRoundNumbers, sortedRounds],
     );
 
     useEffect(() => {
@@ -154,6 +202,31 @@ export const ScopeChangeDialog: FunctionComponent<Props> = ({
     }, [mode, onConfirm, roundNumbers, selectedRoundNumbers]);
 
     const toLabel = formatMessage(MESSAGES.dateRangeTo);
+    const dropsDistricts =
+        mode === 'empty' ||
+        (mode === 'selectedRounds' &&
+            selectedRoundNumbers.length < roundNumbers.length);
+
+    const getRoundLabel = (round: ScopeChangeRound): string => {
+        if (direction === 'toCampaign') {
+            return formatMessage(MESSAGES.scopeChangeRoundDistrictCount, {
+                number: `${round.number}`,
+                count: `${countDistricts(round.scopes)}`,
+            });
+        }
+        const dateRange = formatRoundDateRange(
+            round.started_at,
+            round.ended_at,
+            toLabel,
+        );
+        if (dateRange) {
+            return formatMessage(MESSAGES.scopeChangeRoundDateRange, {
+                number: `${round.number}`,
+                dateRange,
+            });
+        }
+        return `${formatMessage(MESSAGES.round)} ${round.number}`;
+    };
 
     return (
         <Dialog
@@ -163,11 +236,11 @@ export const ScopeChangeDialog: FunctionComponent<Props> = ({
             maxWidth="sm"
             data-test="scope-change-dialog"
         >
-            <DialogTitle>{formatMessage(MESSAGES.scope_per_round)}</DialogTitle>
+            <DialogTitle>{formatMessage(copy.title)}</DialogTitle>
             <DialogContent>
                 <Typography sx={styles.description}>
-                    {formatMessage(MESSAGES.scopeChangeDescription, {
-                        count: `${districtCount}`,
+                    {formatMessage(copy.description, {
+                        count: `${allDistrictCount}`,
                     })}
                 </Typography>
                 <RadioGroup
@@ -180,77 +253,57 @@ export const ScopeChangeDialog: FunctionComponent<Props> = ({
                     <FormControlLabel
                         value="allRounds"
                         control={<Radio color="primary" />}
-                        label={formatMessage(MESSAGES.scopeChangeCopyAllRounds)}
+                        label={formatMessage(copy.all, {
+                            count: `${allDistrictCount}`,
+                        })}
                         sx={styles.radioLabel}
                     />
                     <FormControlLabel
                         value="selectedRounds"
                         control={<Radio color="primary" />}
-                        label={formatMessage(
-                            MESSAGES.scopeChangeCopySelectedRounds,
-                        )}
+                        label={formatMessage(copy.selected, {
+                            count: `${selectedDistrictCount}`,
+                        })}
                         sx={styles.radioLabel}
                     />
                     {mode === 'selectedRounds' && (
                         <Box sx={styles.roundsBox}>
-                            {sortedRounds.map(round => {
-                                const dateRange = formatRoundDateRange(
-                                    round.started_at,
-                                    round.ended_at,
-                                    toLabel,
-                                );
-                                const label = dateRange
-                                    ? formatMessage(
-                                          MESSAGES.scopeChangeRoundDateRange,
-                                          {
-                                              number: `${round.number}`,
-                                              dateRange,
-                                          },
-                                      )
-                                    : `${formatMessage(MESSAGES.round)} ${
-                                          round.number
-                                      }`;
-                                return (
-                                    <FormControlLabel
-                                        key={round.number}
-                                        sx={styles.roundCheckbox}
-                                        control={
-                                            <Checkbox
-                                                size="small"
-                                                color="primary"
-                                                checked={selectedRoundNumbers.includes(
-                                                    round.number,
-                                                )}
-                                                onChange={() =>
-                                                    handleToggleRound(
-                                                        round.number,
-                                                    )
-                                                }
-                                            />
-                                        }
-                                        label={label}
-                                    />
-                                );
-                            })}
+                            {sortedRounds.map(round => (
+                                <FormControlLabel
+                                    key={round.number}
+                                    sx={styles.roundCheckbox}
+                                    control={
+                                        <Checkbox
+                                            size="small"
+                                            color="primary"
+                                            checked={selectedRoundNumbers.includes(
+                                                round.number,
+                                            )}
+                                            onChange={() =>
+                                                handleToggleRound(round.number)
+                                            }
+                                        />
+                                    }
+                                    label={getRoundLabel(round)}
+                                />
+                            ))}
                             <Typography
                                 variant="caption"
                                 color="text.secondary"
                                 sx={styles.roundsHelper}
                             >
-                                {formatMessage(
-                                    MESSAGES.scopeChangeUncheckedRoundsEmpty,
-                                )}
+                                {formatMessage(copy.helper)}
                             </Typography>
                         </Box>
                     )}
                     <FormControlLabel
                         value="empty"
                         control={<Radio color="primary" />}
-                        label={formatMessage(MESSAGES.scopeChangeEmptyRounds)}
+                        label={formatMessage(copy.empty)}
                         sx={styles.radioLabel}
                     />
                 </RadioGroup>
-                {mode === 'empty' && (
+                {dropsDistricts && (
                     <Alert
                         severity="error"
                         icon={<WarningAmberIcon />}

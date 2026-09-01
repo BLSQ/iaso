@@ -75,6 +75,36 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Round {number} — {dateRange}',
         id: 'iaso.polio.label.scopeChangeRoundDateRange',
     },
+    scopeChangeToCampaignTitle: {
+        defaultMessage: 'Use one scope for the whole campaign',
+        id: 'iaso.polio.label.scopeChangeToCampaignTitle',
+    },
+    scopeChangeToCampaignDescription: {
+        defaultMessage:
+            'Rounds hold separate scopes. Choose which one becomes the single campaign scope.',
+        id: 'iaso.polio.label.scopeChangeToCampaignDescription',
+    },
+    scopeChangeMergeAllRounds: {
+        defaultMessage:
+            'Merge every round scope into one, duplicates removed ({count} districts)',
+        id: 'iaso.polio.label.scopeChangeMergeAllRounds',
+    },
+    scopeChangeMergeSelectedRounds: {
+        defaultMessage: 'Merge selected rounds only ({count} districts)',
+        id: 'iaso.polio.label.scopeChangeMergeSelectedRounds',
+    },
+    scopeChangeEmptyCampaign: {
+        defaultMessage: 'Start from an empty campaign scope',
+        id: 'iaso.polio.label.scopeChangeEmptyCampaign',
+    },
+    scopeChangeUncheckedRoundsDropped: {
+        defaultMessage: 'Districts from unchecked rounds are dropped.',
+        id: 'iaso.polio.label.scopeChangeUncheckedRoundsDropped',
+    },
+    scopeChangeRoundDistrictCount: {
+        defaultMessage: 'Round {number} — {count} districts',
+        id: 'iaso.polio.label.scopeChangeRoundDistrictCount',
+    },
     preparedness_spreadsheet_url: {
         defaultMessage: 'Preparedness spreadsheet url',
         id: 'iaso.polio.label.preparednesSpreadsheetUrl',

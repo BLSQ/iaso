@@ -1,8 +1,8 @@
 import React, {
     FunctionComponent,
     useMemo,
+    useRef,
     useState,
-    useEffect,
     useCallback,
 } from 'react';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
@@ -23,8 +23,12 @@ import { useStyles } from '../../../styles/theme';
 import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
 import { useGetGeoJson } from './hooks/useGetGeoJson';
 import { useGetParentOrgUnit } from './hooks/useGetParentOrgUnit';
-import { ScopeChangeDialog } from './ScopeChangeDialog';
-import { ScopeChangeResult } from './ScopeChangeDialog';
+import { ScopeChangeDialog, ScopeChangeResult } from './ScopeChangeDialog';
+import {
+    applyScopeChange,
+    countDistricts,
+    countMergedDistricts,
+} from './scopeChangeUtils';
 import { ScopeField } from './ScopeField';
 import { FilteredDistricts, Round } from './Scopes/types';
 import { useFilteredDistricts } from './Scopes/utils';
@@ -32,8 +36,7 @@ import { useFilteredDistricts } from './Scopes/utils';
 export const scopeFormFields = ['separate_scopes_per_round', 'scopes'];
 
 export const ScopeForm: FunctionComponent = () => {
-    const { values, initialValues, setValues } =
-        useFormikContext<CampaignFormValues>();
+    const { values, setValues } = useFormikContext<CampaignFormValues>();
     const isPolio = useIsPolioCampaign(values);
     const { formatMessage } = useSafeIntl();
     const { separate_scopes_per_round: scopePerRound, rounds } = values;
@@ -44,60 +47,53 @@ export const ScopeForm: FunctionComponent = () => {
     const [debouncedSearch] = useDebounce(search, 500);
     const [displayScopeChangeDialog, setDisplayScopeChangeDialog] =
         useState(false);
-    const districtCount = useMemo(() => {
-        const orgUnitIds = new Set<number>();
-        values.scopes?.forEach(scope => {
-            scope.group?.org_units?.forEach(id => orgUnitIds.add(id));
-        });
-        return orgUnitIds.size;
-    }, [values.scopes]);
+    const ignoreNextToggle = useRef(false);
+    const campaignDistrictCount = useMemo(
+        () => countDistricts(values.scopes),
+        [values.scopes],
+    );
+    const roundDistrictCount = useMemo(
+        () =>
+            countMergedDistricts(
+                (rounds ?? []).map(round => round.scopes ?? []),
+            ),
+        [rounds],
+    );
 
     const handleCancelScopeChangeDialog = () => {
+        ignoreNextToggle.current = true;
         setDisplayScopeChangeDialog(false);
         setValues({
             ...values,
-            separate_scopes_per_round: initialValues.separate_scopes_per_round,
+            separate_scopes_per_round: !scopePerRound,
         });
     };
     const handleConfirmScopeChangeDialog = useCallback(
-        ({ mode, selectedRoundNumbers }: ScopeChangeResult) => {
-            const newValues: CampaignFormValues = values;
-            if (mode === 'allRounds') {
-                newValues.rounds = rounds.map(round => ({
-                    ...round,
-                    scopes: values.scopes,
-                }));
-            } else if (mode === 'selectedRounds') {
-                newValues.rounds = rounds.map(round => ({
-                    ...round,
-                    scopes: selectedRoundNumbers.includes(round.number)
-                        ? values.scopes
-                        : [],
-                }));
-            } else if (mode === 'empty') {
-                newValues.rounds = rounds.map(round => ({
-                    ...round,
-                    scopes: [],
-                }));
-            }
-            setValues(newValues);
+        ({ selectedRoundNumbers }: ScopeChangeResult) => {
+            setValues({
+                ...values,
+                ...applyScopeChange({
+                    toRounds: scopePerRound,
+                    rounds,
+                    campaignScopes: values.scopes ?? [],
+                    selectedRoundNumbers,
+                }),
+            });
             setDisplayScopeChangeDialog(false);
         },
-        [values, rounds, setValues],
+        [scopePerRound, values, rounds, setValues],
     );
-    useEffect(() => {
-        return () => {
-            if (
-                !initialValues.separate_scopes_per_round &&
-                !scopePerRound &&
-                !displayScopeChangeDialog &&
-                districtCount > 0
-            ) {
-                setDisplayScopeChangeDialog(true);
-            }
-        };
-        // Only change the dialog display when the scope per round changes
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+    useSkipEffectOnMount(() => {
+        if (ignoreNextToggle.current) {
+            ignoreNextToggle.current = false;
+            return;
+        }
+        const hasSourceDistricts = scopePerRound
+            ? campaignDistrictCount > 0
+            : roundDistrictCount > 0;
+        if (hasSourceDistricts) {
+            setDisplayScopeChangeDialog(true);
+        }
     }, [scopePerRound]);
     const [currentTab, setCurrentTab] = useState<string>(
         rounds?.[0] ? `${rounds[0].number}` : '1',
@@ -160,8 +156,9 @@ export const ScopeForm: FunctionComponent = () => {
         <>
             <ScopeChangeDialog
                 open={displayScopeChangeDialog}
+                direction={scopePerRound ? 'toRounds' : 'toCampaign'}
                 rounds={rounds ?? []}
-                districtCount={districtCount}
+                districtCount={campaignDistrictCount}
                 onClose={handleCancelScopeChangeDialog}
                 onConfirm={handleConfirmScopeChangeDialog}
             />

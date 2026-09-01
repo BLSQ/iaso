@@ -12,6 +12,7 @@ export type MenuItem = {
     url?: string;
     isActive?: (pathname: string) => boolean;
     dev?: boolean;
+    featureFlag?: string;
 };
 export type MenuItems = MenuItem[];
 

@@ -34,7 +34,7 @@ from iaso.utils.models.sized_file_field import SizedFileField
 from iaso.utils.models.upload_to import get_account_name_based_on_user
 
 from ..utils.dhis2 import generate_id_for_dhis_2
-from .common import ValidationWorkflowArtefact
+from .common import ValidationWorkflowArtefact, ValidationWorkflowArtefactQuerySet
 from .device import Device, DeviceOwnership
 from .forms import Form, FormVersion
 from .org_unit import OrgUnit, OrgUnitReferenceInstance
@@ -85,7 +85,7 @@ def resolve_status_form_ids(form_id=None, form_ids=None):
     return resolved or None
 
 
-class InstanceQuerySet(django_cte.CTEQuerySet):
+class InstanceQuerySet(django_cte.CTEQuerySet, ValidationWorkflowArtefactQuerySet):
     def with_lock_info(self, user):
         """
         Annotate the QuerySet with the lock info for the given user.

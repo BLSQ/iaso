@@ -9,13 +9,13 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- script: docker build -t coda2 --target prod -f $(Build.SourcesDirectory)/docker/bundle/Dockerfile .
+- script: docker build -t coda2 --target prod -f $(Build.SourcesDirectory)/docker/prod/Dockerfile .
   env:
     VERSION_NAME: test
   displayName: 'Build docker image'
   condition: eq(variables['Build.SourceBranch'], 'refs/heads/develop')
 
-- script: docker build -t coda2 --target prod -f $(Build.SourcesDirectory)/docker/bundle/Dockerfile .
+- script: docker build -t coda2 --target prod -f $(Build.SourcesDirectory)/docker/prod/Dockerfile .
   displayName: 'Build docker image'
   condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
 

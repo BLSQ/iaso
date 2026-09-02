@@ -2,7 +2,7 @@ import React, { FunctionComponent, useMemo, useCallback } from 'react';
 import { IconButton } from 'bluesquare-components';
 import { baseUrls } from '../../../constants/urls';
 import { isValidCoordinate } from '../../../utils/map/mapUtils';
-import { useSaveOrgUnit } from '../hooks';
+import { useSaveOrgUnit, SaveOrgUnitPayload } from '../hooks';
 import MESSAGES from '../messages';
 import { OrgUnit } from '../types/orgUnit';
 
@@ -18,11 +18,14 @@ export const ActionCell: FunctionComponent<Props> = ({ orgUnit }) => {
     );
 
     const handleRejectOrgUnit = useCallback(() => {
-        saveOu({
+        const payload: SaveOrgUnitPayload = {
             id: orgUnit.id,
             validation_status: 'REJECTED',
-            groups: orgUnit.groups.map(g => g.id),
-        });
+        };
+        if (orgUnit.groups) {
+            payload.groups = orgUnit.groups.map(g => g.id);
+        }
+        saveOu(payload);
     }, [saveOu, orgUnit.id, orgUnit.groups]);
 
     const cell = useMemo(() => {

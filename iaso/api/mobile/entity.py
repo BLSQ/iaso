@@ -144,7 +144,10 @@ class MobileEntitiesSetPagination(Paginator):
     max_page_size = 1000
 
     def get_iaso_page_number(self, request):
-        return int(request.query_params.get(self.page_query_param, 1))
+        try:
+            return int(request.query_params.get(self.page_query_param, 1))
+        except (TypeError, ValueError):
+            raise ParseError(f"Invalid {self.page_query_param}")
 
     def paginate_queryset(self, queryset, request, view=None):
         page_size = self.get_page_size(request)

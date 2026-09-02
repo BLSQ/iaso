@@ -42,6 +42,15 @@ class MobileEntityAPITestCase(EntityAPITestCase):
         # NotFound short-circuits before get_serializer_context's FormVersion query ever runs.
         self.assertEqual(len(ctx.captured_queries), 7)
 
+    def test_list_entities_non_integer_page_returns_400(self):
+        """MobileEntitiesSetPagination.get_iaso_page_number must reject a non-integer `page` the same
+        way DRF's default pagination does -- a clean 400, not an unhandled ValueError -> 500."""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id, "page": "abc"})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_list_entities_pagination_issues_a_single_entity_query_for_count_and_data(self):
         """Guards the count+data merge in MobileEntitiesSetPagination: a non-empty page must produce
         exactly one entity query -- `Window(Count("id"))` annotated onto the same LIMIT/OFFSET query --
@@ -157,6 +166,37 @@ class MobileEntityAPITestCase(EntityAPITestCase):
 
         # Verify no duplicate entity IDs
         self.assertEqual(len(entity_ids), len(set(entity_ids)), "Found duplicate entities in response")
+
+    def test_list_entities_no_duplicates_when_org_unit_in_multiple_groups(self):
+        """Unlike `/api/entities/`, the mobile endpoint has no `groups` query param -- `MobileEntityViewSet`
+        sets no `filterset_class`/`filterset_fields`, so DjangoFilterBackend silently ignores one if passed.
+        But an org unit belonging to several groups is a real `Group.org_units` m2m regardless of whether
+        anything filters on it, and `get_queryset` builds this response with a plain `select_related` (a
+        JOIN) rather than the `Exists(...)` pattern `EntityFilterSet.filter_groups` relies on -- so this
+        guards that group membership alone can't join-multiply the Entity row in a mobile sync response."""
+        group_1 = m.Group.objects.create(name="Group 1", source_version=self.sw_version)
+        group_2 = m.Group.objects.create(name="Group 2", source_version=self.sw_version)
+        group_1.org_units.add(self.ou_country)
+        group_2.org_units.add(self.ou_country)
+
+        instance = self.create_form_instance(
+            project=self.project, org_unit=self.ou_country, form=self.form_1, uuid=uuid.uuid4()
+        )
+        entity = m.Entity.objects.create(
+            name="entity_in_two_groups", entity_type=self.entity_type, attributes=instance, account=self.account
+        )
+        instance.entity = entity
+        instance.save()
+
+        self.yoda.iaso_profile.org_units.add(self.ou_country)
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id})
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        entity_ids = [e["id"] for e in response_json["results"]]
+        self.assertEqual(entity_ids, [str(entity.uuid)], f"expected a single entity, got {entity_ids}")
+        self.assertEqual(response_json["count"], 1)
 
     def test_list_entities_filter_by_limit_date_ignores_soft_deleted_instances(self):
         self.client.force_authenticate(self.yoda)

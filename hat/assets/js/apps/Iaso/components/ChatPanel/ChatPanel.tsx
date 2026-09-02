@@ -517,13 +517,15 @@ export const ChatPanel: FC<Props> = ({
                                 isLoading={isLoading}
                                 onSendMessage={onSendMessage}
                             />
-                            {onRevert && (
-                                <MessageRevertAction
-                                    message={msg}
-                                    isLoading={isLoading}
-                                    onRevert={onRevert}
-                                />
-                            )}
+                            {onRevert &&
+                                msg.role === 'assistant' &&
+                                msg.revertable && (
+                                    <MessageRevertAction
+                                        message={msg}
+                                        isLoading={isLoading}
+                                        onRevert={onRevert}
+                                    />
+                                )}
                         </Paper>
                     </Box>
                 ))}

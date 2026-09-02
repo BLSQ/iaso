@@ -378,6 +378,37 @@ describe('ChatPanel revert action', () => {
         expect(onRevert).not.toHaveBeenCalled();
     });
 
+    it('does not revert from an open confirmation once a request is in flight', async () => {
+        const onRevert = vi.fn();
+        const applied = { ...assistantMessage('applied'), revertable: true };
+        const { rerender } = renderWithThemeAndIntlProvider(
+            <ChatPanel
+                {...baseProps}
+                messages={[applied]}
+                onSendMessage={vi.fn()}
+                onRevert={onRevert}
+            />,
+        );
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Revert this change' }),
+        );
+        await screen.findByRole('button', { name: 'Revert' });
+
+        rerender(
+            <ChatPanel
+                {...baseProps}
+                isLoading
+                messages={[applied]}
+                onSendMessage={vi.fn()}
+                onRevert={onRevert}
+            />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Revert' }));
+
+        expect(onRevert).not.toHaveBeenCalled();
+    });
+
     it('shows a discreet Reverted note once the message is reverted', () => {
         renderWithThemeAndIntlProvider(
             <ChatPanel

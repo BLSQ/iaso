@@ -55,10 +55,14 @@ export const MessageRevertAction: FC<Props> = ({
 
     const openConfirm = useCallback(() => setConfirmOpen(true), []);
     const closeConfirm = useCallback(() => setConfirmOpen(false), []);
+    const noop = useCallback(() => null, []);
     const handleConfirm = useCallback(() => {
+        if (isLoading) {
+            return;
+        }
         setConfirmOpen(false);
         onRevert(message.id);
-    }, [onRevert, message.id]);
+    }, [isLoading, onRevert, message.id]);
 
     if (message.role !== 'assistant' || !message.revertable) {
         return null;
@@ -96,9 +100,10 @@ export const MessageRevertAction: FC<Props> = ({
             <ConfirmCancelModal
                 open={confirmOpen}
                 closeDialog={closeConfirm}
-                onClose={() => null}
+                onClose={noop}
                 onConfirm={handleConfirm}
                 onCancel={closeConfirm}
+                allowConfirm={!isLoading}
                 confirmMessage={MESSAGES.revertConfirmAccept}
                 cancelMessage={MESSAGES.revertConfirmCancel}
                 titleMessage={formatMessage(MESSAGES.revertConfirmTitle)}

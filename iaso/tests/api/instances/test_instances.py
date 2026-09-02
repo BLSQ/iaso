@@ -73,34 +73,40 @@ class InstancesAPITestCase(TaskAPITestCase):
             version=sw_version,
             validation_status="VALID",
             uuid=cls.jedi_council_corruscant_uuid,
+            code="coruscant_code",
         )
         cls.ou_top_1 = m.OrgUnit.objects.create(
             name="ou_top_1",
             source_ref="jedi_council_corruscant_ref",
             version=sw_version,
+            code="top1_code",
         )
         cls.ou_top_2 = m.OrgUnit.objects.create(
             name="ou_top_2",
             source_ref="jedi_council_corruscant_ref",
             parent=cls.ou_top_1,
             version=sw_version,
+            code="top2_code",
         )
         cls.ou_top_3 = m.OrgUnit.objects.create(
             name="ou_top_3",
             source_ref="jedi_council_corruscant_ref",
             parent=cls.ou_top_2,
             version=sw_version,
+            code="top3_code",
         )
         cls.jedi_council_endor = m.OrgUnit.objects.create(
             name="Endor Jedi Council",
             source_ref="jedi_council_endor_ref",
             version=sw_version,
+            code="endor_code",
         )
         cls.jedi_council_endor_region = m.OrgUnit.objects.create(
             name="Endor Region Jedi Council",
             parent=cls.jedi_council_endor,
             source_ref="jedi_council_endor_region_ref",
             version=sw_version,
+            code="endor_region_code",
         )
 
         cls.project = m.Project.objects.create(
@@ -1470,6 +1476,8 @@ class InstancesAPITestCase(TaskAPITestCase):
             "Coruscant Jedi Council,"
             f"{self.jedi_council_corruscant.id},"
             "jedi_council_corruscant_ref,"
+            "coruscant_code,"
+            "VALID,"
             ","
             ","
             ","
@@ -1531,6 +1539,8 @@ class InstancesAPITestCase(TaskAPITestCase):
             "Coruscant Jedi Council,"
             f"{self.jedi_council_corruscant.id},"
             "jedi_council_corruscant_ref,"
+            "coruscant_code,"
+            "VALID,"
             ","
             ","
             ","

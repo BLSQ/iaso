@@ -136,15 +136,20 @@ class MobileEntityTypesViewSet(ModelViewSet):
         # able to search without location restrictions.
         # The entities for the user's location should already be on the mobile
         # device.
+        skip_limit_date_filter = False
         if self.request.query_params.get("json_content"):
             queryset = filter_on_app_id(queryset, user, app_id)
         else:
-            queryset = filter_on_user_and_app_id(queryset, user, app_id)
+            # Merge the org-unit-scope and limit_date checks into a single correlated Exists(...)
+            # subquery -- see MobileEntityViewSet.get_queryset's comment.
+            limit_date = self.request.query_params.get("limit_date")
+            queryset = filter_on_user_and_app_id(queryset, user, app_id, limit_date=limit_date)
+            skip_limit_date_filter = True
 
         if queryset is not None:
             queryset = queryset.filter(entity_type__pk=type_pk)
 
-        queryset = filter_for_mobile_entity(queryset, self.request)
+        queryset = filter_for_mobile_entity(queryset, self.request, skip_limit_date_filter=skip_limit_date_filter)
 
         queryset = queryset.select_related("entity_type").prefetch_related(
             "instances__org_unit",

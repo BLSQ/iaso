@@ -451,6 +451,7 @@
     "iaso.instance.noGpsForSomeInstaces": "Algunas instancias no tienen ubicaciones. No se aplicará nada para esas unidades organizativas.",
     "iaso.instance.NoLocksHistory": "No hay historial",
     "iaso.instance.org_unit": "Unidad organizativa",
+    "iaso.instance.org_unit_status": "Estado de unidad organizativa",
     "iaso.instance.org_unit_type_name": "Tipo de unidad organizativa",
     "iaso.instance.patchInstanceError": "Ocurrió un error al guardar el envío",
     "iaso.instance.patchInstanceSuccesfull": "Envío guardado exitosamente",

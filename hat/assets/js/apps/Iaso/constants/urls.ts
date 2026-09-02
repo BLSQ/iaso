@@ -127,6 +127,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'projectIds',
             'isSearchActive',
             'referenceInstances',
+            'org_unit_status',
         ],
     },
     instanceDetail: {

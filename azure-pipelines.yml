@@ -52,8 +52,8 @@ steps:
 
 - script: |
     sudo apt-get update
-    sudo apt --fix-missing install gdal-bin
-  displayName: 'install gdal'
+    sudo apt --fix-missing install gdal-bin gettext
+  displayName: 'install gdal and gettext'
 
 - script: |
     python --version
@@ -76,10 +76,12 @@ steps:
 # The secret key is done with an export because Azure pipelines will
 # remove all env variables that start with SECRET_
 - script: |
+    set -euo pipefail
     export SECRET_KEY=${SECRETKEY}
     export DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
     export DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USERNAME}
     export DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL}
+    uv run python manage.py compile_translations
     uv run python manage.py migrate
     uv run python manage.py createcachetable
     uv run python manage.py createsuperuser --noinput

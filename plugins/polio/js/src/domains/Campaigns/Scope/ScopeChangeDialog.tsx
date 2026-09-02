@@ -21,15 +21,18 @@ import {
     Typography,
 } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import moment from 'moment';
 import { SxStyles } from 'Iaso/types/general';
-import { getLocaleDateFormat } from 'Iaso/utils/dates';
 
 import MESSAGES from '../../../constants/messages';
 import { Scope } from '../../../constants/types';
-import { countDistricts, countMergedDistricts } from './scopeChangeUtils';
+import { formatRoundDateRange } from '../../../utils/round';
+import {
+    countDistricts,
+    countMergedDistricts,
+    type ScopeChangeDirection,
+} from './scopeChangeUtils';
 
-export type ScopeChangeDirection = 'toRounds' | 'toCampaign';
+export type { ScopeChangeDirection };
 export type ScopeChangeMode = 'allRounds' | 'selectedRounds' | 'empty';
 
 export type ScopeChangeRound = {
@@ -102,32 +105,6 @@ const styles: SxStyles = {
     disclaimer: {
         mt: 2,
     },
-};
-
-const formatRoundDate = (
-    date: string | null | undefined,
-): string | undefined => {
-    if (!date) {
-        return undefined;
-    }
-    const parsed = moment(date);
-    if (!parsed.isValid()) {
-        return undefined;
-    }
-    return parsed.format(getLocaleDateFormat('L'));
-};
-
-const formatRoundDateRange = (
-    startedAt: string | null | undefined,
-    endedAt: string | null | undefined,
-    toLabel: string,
-): string | undefined => {
-    const start = formatRoundDate(startedAt);
-    const end = formatRoundDate(endedAt);
-    if (start && end) {
-        return `${start} ${toLabel} ${end}`;
-    }
-    return start || end;
 };
 
 export const ScopeChangeDialog: FunctionComponent<Props> = ({

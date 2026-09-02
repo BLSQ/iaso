@@ -73,7 +73,7 @@ export const ScopeForm: FunctionComponent = () => {
             setValues({
                 ...values,
                 ...applyScopeChange({
-                    toRounds: scopePerRound,
+                    direction: scopePerRound ? 'toRounds' : 'toCampaign',
                     rounds,
                     campaignScopes: values.scopes ?? [],
                     selectedRoundNumbers,

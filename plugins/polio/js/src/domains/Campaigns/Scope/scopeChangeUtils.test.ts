@@ -47,7 +47,7 @@ describe('scopeChangeUtils', () => {
     it('copies campaign scopes onto selected rounds only', () => {
         const campaignScopes = [scope('nOPV2', [1])];
         const result = applyScopeChange({
-            toRounds: true,
+            direction: 'toRounds',
             campaignScopes,
             selectedRoundNumbers: [2],
             rounds: [
@@ -63,7 +63,7 @@ describe('scopeChangeUtils', () => {
 
     it('merges selected round scopes into the campaign', () => {
         const result = applyScopeChange({
-            toRounds: false,
+            direction: 'toCampaign',
             campaignScopes: [],
             selectedRoundNumbers: [1, 2],
             rounds: [

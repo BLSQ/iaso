@@ -13,32 +13,28 @@ export const uniqueDistrictIds = (scopes: Scope[] = []): Set<number> => {
 export const countDistricts = (scopes: Scope[] = []): number =>
     uniqueDistrictIds(scopes).size;
 
-export const countMergedDistricts = (scopeLists: Scope[][]): number => {
-    const ids = new Set<number>();
-    scopeLists.forEach(scopes => {
-        uniqueDistrictIds(scopes).forEach(id => ids.add(id));
-    });
-    return ids.size;
-};
+export const countMergedDistricts = (scopeLists: Scope[][]): number =>
+    new Set(scopeLists.flatMap(scopes => [...uniqueDistrictIds(scopes)])).size;
 
 type RoundLike = { number: number; scopes?: Scope[] };
 
+export type ScopeChangeDirection = 'toRounds' | 'toCampaign';
+
 /** Union of district ids. If a district appears in several lists, the last vaccine wins. */
 export const mergeScopes = (scopeLists: Scope[][]): Scope[] => {
-    const districtToVaccine = new Map<number, Vaccine | undefined>();
-    scopeLists.forEach(scopes => {
-        (scopes ?? []).forEach(scope => {
-            scope.group?.org_units?.forEach(id => {
-                districtToVaccine.set(id, scope.vaccine);
-            });
-        });
-    });
+    const districtToVaccine = new Map<number, Vaccine | undefined>(
+        scopeLists.flatMap(scopes =>
+            (scopes ?? []).flatMap(scope =>
+                (scope.group?.org_units ?? []).map(
+                    (id): [number, Vaccine | undefined] => [id, scope.vaccine],
+                ),
+            ),
+        ),
+    );
     const byVaccine = new Map<string, number[]>();
     districtToVaccine.forEach((vaccine, id) => {
         const key = vaccine ?? '';
-        const orgUnits = byVaccine.get(key) ?? [];
-        orgUnits.push(id);
-        byVaccine.set(key, orgUnits);
+        byVaccine.set(key, [...(byVaccine.get(key) ?? []), id]);
     });
     return Array.from(byVaccine.entries()).map(([vaccine, org_units]) => ({
         vaccine: (vaccine || undefined) as Vaccine | undefined,
@@ -46,29 +42,33 @@ export const mergeScopes = (scopeLists: Scope[][]): Scope[] => {
     }));
 };
 
-export const applyScopeChange = <T extends RoundLike>({
-    toRounds,
+const copyCampaignScopesToSelectedRounds = <T extends RoundLike>({
     rounds,
     campaignScopes,
     selectedRoundNumbers,
 }: {
-    toRounds: boolean;
     rounds: T[];
     campaignScopes: Scope[];
     selectedRoundNumbers: number[];
 }): { rounds: T[]; scopes: Scope[] } => {
     const selected = new Set(selectedRoundNumbers);
-    if (toRounds) {
-        return {
-            scopes: campaignScopes,
-            rounds: rounds.map(round => ({
-                ...round,
-                scopes: selected.has(round.number)
-                    ? cloneDeep(campaignScopes)
-                    : [],
-            })),
-        };
-    }
+    return {
+        scopes: campaignScopes,
+        rounds: rounds.map(round => ({
+            ...round,
+            scopes: selected.has(round.number) ? cloneDeep(campaignScopes) : [],
+        })),
+    };
+};
+
+const mergeSelectedRoundScopesIntoCampaign = <T extends RoundLike>({
+    rounds,
+    selectedRoundNumbers,
+}: {
+    rounds: T[];
+    selectedRoundNumbers: number[];
+}): { rounds: T[]; scopes: Scope[] } => {
+    const selected = new Set(selectedRoundNumbers);
     return {
         rounds,
         scopes: mergeScopes(
@@ -79,3 +79,25 @@ export const applyScopeChange = <T extends RoundLike>({
         ),
     };
 };
+
+export const applyScopeChange = <T extends RoundLike>({
+    direction,
+    rounds,
+    campaignScopes,
+    selectedRoundNumbers,
+}: {
+    direction: ScopeChangeDirection;
+    rounds: T[];
+    campaignScopes: Scope[];
+    selectedRoundNumbers: number[];
+}): { rounds: T[]; scopes: Scope[] } =>
+    direction === 'toRounds'
+        ? copyCampaignScopesToSelectedRounds({
+              rounds,
+              campaignScopes,
+              selectedRoundNumbers,
+          })
+        : mergeSelectedRoundScopesIntoCampaign({
+              rounds,
+              selectedRoundNumbers,
+          });

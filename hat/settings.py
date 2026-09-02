@@ -139,6 +139,10 @@ USE_CELERY = env.bool("USE_CELERY", default=False)
 
 # It is possible to deactivate password login for the API, the website and the admin using this environment variable
 DISABLE_PASSWORD_LOGINS = env.bool("DISABLE_PASSWORD_LOGINS", default=False)
+# Token/login tests need /api/token/ registered. Dedicated tests still cover the
+# disabled path via override_settings + URL reload.
+if IN_TESTS:
+    DISABLE_PASSWORD_LOGINS = False
 
 # env variables allowing to configure the cache used by Iaso. By default, it's using a table in Postgres
 # to setup Redis, use django_redis.cache.RedisCache as CACHE_BACKEND and something like "redis://127.0.0.1:6379" as CACHE_LOCATION

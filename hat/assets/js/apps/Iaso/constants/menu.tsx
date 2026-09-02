@@ -560,6 +560,12 @@ export const useMenuItems = (): MenuItems => {
             menuItemsTemp.push(admin as MenuItem);
         }
         const authorizedItems = menuItemsTemp.filter(menuItem => {
+            if (
+                menuItem.featureFlag &&
+                !hasFeatureFlag(currentUser, menuItem.featureFlag)
+            ) {
+                return false;
+            }
             const permissionsList = listMenuPermission(menuItem);
             // If not permission set on the menuItem, we consider that everyone has access to it
             if (permissionsList.length === 0) {

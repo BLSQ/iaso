@@ -5,7 +5,7 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
-from iaso.models import Account, Form, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import Account, Form, Instance, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 from iaso.modules import MODULE_VALIDATION_WORKFLOW
@@ -247,7 +247,7 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(SwaggerTestCaseMixin, APITes
 
     def test_node_in_wrong_workflow(self):
         self.setup_approve()
-        nodes = self.instance.get_all_validation_nodes()
+        nodes = Instance.objects.filter(pk=self.instance.pk).with_all_validation_nodes().first().all_validation_nodes
         node = nodes[1]
         node.node = self.wrong_node
         node.save()

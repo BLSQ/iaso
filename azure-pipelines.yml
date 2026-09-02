@@ -137,7 +137,11 @@ steps:
   displayName: 'Clean up Docker system'
 
 - script: |
-    docker build -t dev-coda2 --target prod -f $(Build.SourcesDirectory)/docker/prod/Dockerfile .
+    docker build -t dev-coda2 --target prod \
+      --build-arg DEPLOYED_ON="$(date --rfc-3339=seconds)" \
+      --build-arg DEPLOYED_BY="$(Build.RequestedFor)" \
+      --build-arg IASO_VERSION="$(Build.SourceBranchName)-$(git rev-parse --short HEAD)" \
+      -f $(Build.SourcesDirectory)/docker/prod/Dockerfile .
   displayName: 'Build docker image'
 
 # Save the Docker image compressed to reduce disk usage

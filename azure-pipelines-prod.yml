@@ -134,7 +134,12 @@ steps:
     echo "Disk space after Docker cleanup:" && df -h
   displayName: 'Clean up Docker system'
 
-- script: docker build -t prod-coda2 --target prod -f $(Build.SourcesDirectory)/docker/prod/Dockerfile .
+- script: |
+    docker build -t prod-coda2 --target prod \
+      --build-arg DEPLOYED_ON="$(date --rfc-3339=seconds)" \
+      --build-arg DEPLOYED_BY="$(Build.RequestedFor)" \
+      --build-arg IASO_VERSION="$(Build.SourceBranchName)-$(git rev-parse --short HEAD)" \
+      -f $(Build.SourcesDirectory)/docker/prod/Dockerfile .
   displayName: 'Build docker image'
 
 # Save the Docker image compressed, in a dedicated folder for the artifact

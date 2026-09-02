@@ -51,6 +51,15 @@ class MobileEntityAPITestCase(EntityAPITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_list_entities_bad_limit_date_returns_400(self):
+        """An unparseable `limit_date` must raise a clean 400 (InvalidLimitDateError -> ParseError),
+        not an unhandled exception -- covers the merged filter_for_user/filter_for_mobile_entity path."""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id, "limit_date": "not-a-date"})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_list_entities_pagination_issues_a_single_entity_query_for_count_and_data(self):
         """Guards the count+data merge in MobileEntitiesSetPagination: a non-empty page must produce
         exactly one entity query -- `Window(Count("id"))` annotated onto the same LIMIT/OFFSET query --

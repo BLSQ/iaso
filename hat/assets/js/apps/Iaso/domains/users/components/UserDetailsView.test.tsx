@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { faker } from '@faker-js/faker';
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { textPlaceholder } from 'bluesquare-components';
 import Page404 from 'Iaso/components/errors/Page404';
 import { Project } from 'Iaso/domains/projects/types/project';
@@ -31,22 +31,18 @@ const { mockCurrentUser } = vi.hoisted(() => {
     return { mockCurrentUser: vi.fn() };
 });
 
-vi.mock('Iaso/utils/usersUtils', async () => {
-    const actual = await vi.importActual('Iaso/utils/usersUtils');
-    return {
-        ...actual,
-        useCurrentUser: mockCurrentUser,
-    };
-});
+vi.mock('Iaso/utils/usersUtils', () => ({
+    useCurrentUser: mockCurrentUser,
+}));
 
 // mocking hooks
 const { mockUseGetProfile } = vi.hoisted(() => {
     return { mockUseGetProfile: vi.fn() };
 });
 
-vi.mock('Iaso/domains/users/hooks/useGetProfiles', () => {
+vi.mock('Iaso/domains/users/hooks/useGetProfiles', async () => {
     return {
-        ...vi.importActual('Iaso/domains/users/hooks/useGetProfiles'),
+        ...(await vi.importActual('Iaso/domains/users/hooks/useGetProfiles')),
         useGetProfile: mockUseGetProfile,
     };
 });
@@ -521,7 +517,7 @@ describe('UsersDetailView unit tests', () => {
         expect(screen.queryByTestId('delete-dialog')).toBeNull();
     });
 
-    it('shows delete button for admin on other user', () => {
+    it('shows delete button for admin on other user', async () => {
         const randomUser = getRandomUser();
         mockUseGetProfile.mockReturnValue({
             data: randomUser,
@@ -536,7 +532,9 @@ describe('UsersDetailView unit tests', () => {
 
         renderWithTheme(<UserDetailsView userId={'2'} />);
 
-        expect(screen.getByTestId('delete-dialog')).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByTestId('delete-dialog')).toBeInTheDocument();
+        });
     });
 
     it('hides delete button for non admin on other user', () => {

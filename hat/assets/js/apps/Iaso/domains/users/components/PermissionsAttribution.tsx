@@ -6,18 +6,22 @@ import {
     Table,
     useSafeIntl,
 } from 'bluesquare-components';
+import { Permission } from 'Iaso/domains/userRoles/types/userRoles';
 import InputComponent from '../../../components/forms/InputComponent';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import * as Permissions from '../../../utils/permissions';
-import { useCurrentUser } from '../../../utils/usersUtils';
+import { CurrentUser, useCurrentUser } from '../../../utils/usersUtils';
 import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles';
 import { useUserPermissionColumns } from '../config';
 import { useGetUserPermissions } from '../hooks/useGetUserPermissions';
 import MESSAGES from '../messages';
 import { userHasPermission } from '../utils';
 
-const canAssignPermission = (user, permission): boolean => {
+const canAssignPermission = (
+    permission: Permission,
+    user?: CurrentUser,
+): boolean => {
     if (userHasPermission(Permissions.USERS_ADMIN, user)) {
         return true;
     }
@@ -112,11 +116,11 @@ const PermissionsAttribution: React.FunctionComponent<Props> = ({
 
     const allPermissions = useMemo(() => {
         const groups = data?.permissions ? Object.keys(data?.permissions) : [];
-        const permissions = {};
+        const permissions: Record<string, string[]> = {};
         groups.forEach(group => {
             permissions[group] =
-                data?.permissions[group]?.filter(permission =>
-                    canAssignPermission(loggedInUser, permission),
+                data?.permissions[group]?.filter((permission: Permission) =>
+                    canAssignPermission(permission, loggedInUser),
                 ) ?? [];
         });
         return permissions;

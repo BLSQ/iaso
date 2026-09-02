@@ -1,6 +1,7 @@
 import React, { FunctionComponent, SetStateAction } from 'react';
 import { Box, Button, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import InputComponent from '../../../../components/forms/InputComponent';
 import {
     ENTITY_DUPLICATES_SOFT_DELETE,
@@ -26,6 +27,7 @@ export const DuplicateDetailsTableButtons: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
+    const currentAccount = useCurrentAccount();
     return (
         <Grid container>
             <Grid item xs={4}>
@@ -46,7 +48,10 @@ export const DuplicateDetailsTableButtons: FunctionComponent<Props> = ({
                 Permission.ENTITIES_DUPLICATE_WRITE,
                 currentUser,
             ) &&
-                !hasFeatureFlag(currentUser, ENTITY_DUPLICATES_SOFT_DELETE) && (
+                !hasFeatureFlag(
+                    ENTITY_DUPLICATES_SOFT_DELETE,
+                    currentAccount,
+                ) && (
                     <Grid container item xs={8} justifyContent="flex-end">
                         <Box
                             py={2}

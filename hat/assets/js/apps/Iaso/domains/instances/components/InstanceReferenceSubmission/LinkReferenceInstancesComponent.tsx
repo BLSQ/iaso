@@ -15,9 +15,8 @@ import {
 } from 'bluesquare-components';
 import { baseUrls } from '../../../../constants/urls';
 import * as Permission from '../../../../utils/permissions';
-import { useCurrentUser } from '../../../../utils/usersUtils';
 import { Selection } from '../../../orgUnits/types/selection';
-import { userHasPermission } from '../../../users/utils';
+import { useCurrentUserHasPermission } from '../../../users/utils';
 import { useGetCheckBulkReferenceInstanceLink } from '../../hooks/useGetCheckBulkReferenceInstanceLink';
 import { useReferenceInstanceBulkLink } from '../../hooks/useReferenceInstanceBulkLink';
 import MESSAGES from '../../messages';
@@ -41,7 +40,6 @@ const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
     filters,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
 
     const redirectTo = useRedirectTo();
 
@@ -119,9 +117,8 @@ const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
         return '';
     }, [checkReferenceInstanceLink?.warning, isError]);
 
-    const hasTaskPermission = userHasPermission(
+    const hasTaskPermission = useCurrentUserHasPermission(
         Permission.DATA_TASKS,
-        currentUser,
     );
 
     return (

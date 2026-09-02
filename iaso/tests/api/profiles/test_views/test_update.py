@@ -5,7 +5,6 @@ from django.contrib.auth.models import Group, Permission
 from django.urls import reverse
 from rest_framework import status
 
-from iaso.api.profiles.constants import PK_ME
 from iaso.models import Profile, Project, TenantUser, UserRole
 from iaso.modules import MODULE_DEFAULT, MODULE_VALIDATION_WORKFLOW
 from iaso.permissions.core_permissions import (
@@ -140,7 +139,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
     def test_log_on_user_updates_own_profile(self):
         self.client.force_authenticate(self.jim)
         new_data = {"language": "fr"}
-        response = self.client.patch(reverse("profiles-detail", kwargs={"pk": PK_ME}), data=new_data, format="json")
+        response = self.client.patch(reverse("profiles-retrieve-current"), data=new_data, format="json")
         self.assertJSONResponse(response, status.HTTP_200_OK)
         # Log as super user to access the logs API
         self.client.force_authenticate(self.john)
@@ -825,7 +824,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             "last_name": "Doe",
             "email": "jom@example.org",
         }
-        response = self.client.patch(reverse("profiles-detail", kwargs={"pk": PK_ME}), data=new_data, format="json")
+        response = self.client.patch(reverse("profiles-retrieve-current"), data=new_data, format="json")
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.jom.refresh_from_db()
@@ -837,7 +836,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
         """A single PATCH writes both `User` fields (e.g. `first_name`) and `Profile` fields (e.g. `language`)."""
         self.client.force_authenticate(self.jom)
         new_data = {"first_name": "Jom", "language": "en"}
-        response = self.client.patch(reverse("profiles-detail", kwargs={"pk": PK_ME}), data=new_data, format="json")
+        response = self.client.patch(reverse("profiles-retrieve-current"), data=new_data, format="json")
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.jom.refresh_from_db()
@@ -848,7 +847,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
     def test_me_endpoint_rejects_invalid_email(self):
         self.client.force_authenticate(self.jom)
         response = self.client.patch(
-            reverse("profiles-detail", kwargs={"pk": PK_ME}),
+            reverse("profiles-retrieve-current"),
             data={"email": "not-an-email"},
             format="json",
         )
@@ -859,7 +858,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
         self.client.force_authenticate(self.jom)
         self.assertEqual(self.jom.user_permissions.count(), 0)
         response = self.client.patch(
-            reverse("profiles-detail", kwargs={"pk": PK_ME}),
+            reverse("profiles-retrieve-current"),
             data={
                 "first_name": "Jom",
                 "user_permissions": [CORE_USERS_ADMIN_PERMISSION.codename],

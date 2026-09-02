@@ -168,7 +168,6 @@ const TopBar: FunctionComponent<Props> = ({
                                 justifyContent="flex-end"
                             >
                                 <CurrentUserInfos
-                                    currentUser={currentUser}
                                     version={window.IASO_VERSION ?? ''}
                                 />
                             </Box>
@@ -177,8 +176,8 @@ const TopBar: FunctionComponent<Props> = ({
                                 <HomePageButton />
                             </Box>
 
-                            {currentUser.is_staff === true &&
-                                currentUser.is_superuser === true && (
+                            {currentUser.is_staff &&
+                                currentUser.is_superuser && (
                                     <Box
                                         display="flex"
                                         justifyContent="center"

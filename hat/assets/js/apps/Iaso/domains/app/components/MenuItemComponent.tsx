@@ -17,7 +17,8 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { Link } from 'react-router-dom';
-import { useCurrentUser } from '../../../utils/usersUtils';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { listMenuPermission, userHasOneOfPermissions } from '../../users/utils';
 
 const useStyles = makeStyles(theme => ({
@@ -50,6 +51,7 @@ const MenuItem: FunctionComponent<Props> = ({
     url = '',
 }) => {
     const classes: Record<string, string> = useStyles();
+    const currentAccount = useCurrentAccount();
     const currentUser = useCurrentUser();
     const urlLink = url;
     const { formatMessage } = useSafeIntl();
@@ -63,7 +65,7 @@ const MenuItem: FunctionComponent<Props> = ({
         : path === activePath;
     const fullPath = `${
         menuItem.extraPath
-            ? `${path}/accountId/${currentUser.account?.id}${menuItem.extraPath}`
+            ? `${path}/accountId/${currentAccount?.id}${menuItem.extraPath}`
             : path
     }`;
     const [open, setOpen] = React.useState(isMenuActive);

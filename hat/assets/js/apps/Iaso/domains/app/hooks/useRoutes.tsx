@@ -1,6 +1,7 @@
 import React, { ReactElement, useMemo } from 'react';
 import { Route, Routes } from 'react-router';
 
+import { useHasNoAccount } from 'Iaso/domains/accounts/hooks';
 import {
     routeConfigs as appRoutes,
     page404,
@@ -16,7 +17,7 @@ import {
 } from '../../../plugins/hooks/routes';
 import { useRedirections } from '../../../routing/hooks/useRedirections';
 import { RouteCustom } from '../../../routing/types';
-import { useCurrentUser, useHasNoAccount } from '../../../utils/usersUtils';
+import { useCurrentUser } from '../../../utils/usersUtils';
 import ProtectedRoute from '../../users/components/ProtectedRoute';
 
 type Result = {

@@ -1,9 +1,9 @@
+import { AccountRetrieveCurrent } from 'Iaso/api/accounts';
 import {
     hasFeatureFlag,
     EDIT_GEO_JSON_RIGHT,
     EDIT_CATCHMENT_RIGHT,
 } from '../../../../../utils/featureFlags';
-import { User } from '../../../../../utils/usersUtils';
 import { OrgUnit } from '../../../types/orgUnit';
 import EditableGroup from '../EditableGroup';
 import { buttonsInitialState } from './constants';
@@ -20,12 +20,14 @@ export const getAncestorWithGeojson = (orgUnit: OrgUnit): OrgUnit => {
     return ancestorWithGeoJson;
 };
 
-export const initialState = (currentUser: User): OrgUnitMapState => {
+export const initialState = (
+    account?: AccountRetrieveCurrent,
+): OrgUnitMapState => {
     return {
         locationGroup: new EditableGroup(),
         catchmentGroup: new EditableGroup(),
-        canEditLocation: hasFeatureFlag(currentUser, EDIT_GEO_JSON_RIGHT),
-        canEditCatchment: hasFeatureFlag(currentUser, EDIT_CATCHMENT_RIGHT),
+        canEditLocation: hasFeatureFlag(EDIT_GEO_JSON_RIGHT, account),
+        canEditCatchment: hasFeatureFlag(EDIT_CATCHMENT_RIGHT, account),
         currentOption: 'filters',
         formsSelected: [],
         orgUnitTypesSelected: [],

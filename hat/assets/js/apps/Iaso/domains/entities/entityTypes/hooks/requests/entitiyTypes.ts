@@ -1,5 +1,6 @@
 import { UseQueryResult, UseMutationResult } from 'react-query';
 import { useDeleteTableRow } from 'Iaso/components/tables/TableWithDeepLink';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import { baseUrls } from '../../../../../constants/urls';
 import {
     getRequest,
@@ -8,8 +9,6 @@ import {
     patchRequest,
 } from '../../../../../libs/Api';
 import { useSnackQuery, useSnackMutation } from '../../../../../libs/apiHooks';
-
-import { useCurrentUser } from '../../../../../utils/usersUtils';
 
 import MESSAGES from '../../messages';
 import { EntityType } from '../../types/entityType';
@@ -98,14 +97,14 @@ export const useGetType = (
 };
 
 export const useSave = (): UseMutationResult => {
-    const { account } = useCurrentUser();
+    const account = useCurrentAccount();
     return useSnackMutation({
         mutationFn: body => {
             return body.id
                 ? patchRequest(`/api/entitytypes/${body.id}/`, body)
                 : postRequest('/api/entitytypes/', {
                       ...body,
-                      account: account.id,
+                      account: account?.id,
                   });
         },
         invalidateQueryKey: ['entitytypes', 'entityTypesOptions'],

@@ -12,8 +12,13 @@ import {
     getAccountFeatureFlagsMock,
     getApiAccountFeatureFlagsDropdownListMockHandler,
 } from 'Iaso/api/accountFeatureFlags/endpoints/account-feature-flags/account-feature-flags.msw';
-import { getApiAccountsAiApiKeyRetrieveQueryKey } from 'Iaso/api/accounts';
 import {
+    getApiAccountsAiApiKeyRetrieveQueryKey,
+    getApiAccountsMeRetrieveQueryKey,
+} from 'Iaso/api/accounts';
+import {
+    getApiAccountsMeRetrieveMockHandler,
+    getApiAccountsMeRetrieveResponseMock,
     getApiAccountsRetrieveMockHandler,
     getApiAccountsRetrieveResponseMock,
     getApiAccountsUpdateMockHandler,
@@ -29,19 +34,6 @@ import {
 
 const mockUpdate = vi.fn();
 
-// mocking currentUser
-const { mockCurrentUser } = vi.hoisted(() => {
-    return { mockCurrentUser: vi.fn() };
-});
-
-vi.mock('Iaso/utils/usersUtils', async () => {
-    const actual = await vi.importActual('Iaso/utils/usersUtils');
-    return {
-        ...actual,
-        useCurrentUser: mockCurrentUser,
-    };
-});
-
 const server = setupServer(
     ...[getApiAccountsRetrieveMockHandler()],
     ...getAccountFeatureFlagsMock(),
@@ -52,6 +44,14 @@ const server = setupServer(
             mockUpdate(info.params.id, body);
             return;
         }),
+    ],
+    ...[
+        getApiAccountsMeRetrieveMockHandler(
+            getApiAccountsMeRetrieveResponseMock({
+                id: 1234,
+                modules: [],
+            }),
+        ),
     ],
 );
 
@@ -114,12 +114,12 @@ describe('Accounts edit tests', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         vi.unstubAllEnvs();
-        mockCurrentUser.mockReturnValue({
-            account: {
-                id: 1234,
-                modules: [],
-            },
-        });
+        // mockCurrentUser.mockReturnValue({
+        //     account: {
+        //         id: 1234,
+        //         modules: [],
+        //     },
+        // });
     });
 
     it('displays a 404 page if account is not found', async () => {
@@ -146,6 +146,7 @@ describe('Accounts edit tests', () => {
     });
     it('displays and submit initial data', async () => {
         const mockAccount = getApiAccountsRetrieveResponseMock({
+            id: 1234,
             feature_flags: [{ code: 'ALLOW_SHAPE_EDITION', name: 'FF1' }],
             modules: ['COMPLETENESS_PER_PERIOD', 'DEFAULT'],
             user_manual_path: 'USER MANUAL PATH',
@@ -250,6 +251,7 @@ describe('Accounts edit tests', () => {
         );
 
         const mockAccount = getApiAccountsRetrieveResponseMock({
+            id: 1234,
             feature_flags: [{ code: 'ALLOW_SHAPE_EDITION', name: 'FF1' }],
             modules: ['COMPLETENESS_PER_PERIOD', 'DEFAULT'],
             user_manual_path: 'USER MANUAL PATH',
@@ -340,6 +342,7 @@ describe('Accounts edit tests', () => {
     });
     it('redirects to detail page when submit is valid and refreshes the client query key', async () => {
         const mockAccount = getApiAccountsRetrieveResponseMock({
+            id: 1234,
             feature_flags: [],
             modules: [],
         });
@@ -375,7 +378,9 @@ describe('Accounts edit tests', () => {
             expect(mockRedirectTo).toHaveBeenCalledWith(
                 expect.stringContaining(baseUrls.accountsDetail),
             );
-            expect(invalidateSpy).toHaveBeenCalledWith('currentUser');
+            expect(invalidateSpy).toHaveBeenCalledWith({
+                queryKey: getApiAccountsMeRetrieveQueryKey(),
+            });
         });
     });
     it('redirects to detail page without submitting when cancel button is clicked', async () => {
@@ -401,6 +406,7 @@ describe('Accounts edit tests', () => {
     });
     it('disables submit while mutating', async () => {
         const mockAccount = getApiAccountsRetrieveResponseMock({
+            id: 1234,
             feature_flags: [],
             modules: [],
         });
@@ -447,6 +453,7 @@ describe('Accounts edit tests', () => {
     });
     it('refreshes the api key call if form_ai has been enabled', async () => {
         const mockAccount = getApiAccountsRetrieveResponseMock({
+            id: 1234,
             feature_flags: [],
             modules: [],
         });
@@ -489,7 +496,9 @@ describe('Accounts edit tests', () => {
             expect(mockRedirectTo).toHaveBeenCalledWith(
                 expect.stringContaining(baseUrls.accountsDetail),
             );
-            expect(invalidateSpy).toHaveBeenCalledWith('currentUser');
+            expect(invalidateSpy).toHaveBeenCalledWith({
+                queryKey: getApiAccountsMeRetrieveQueryKey(),
+            });
             expect(invalidateSpy).toHaveBeenCalledWith(
                 getApiAccountsAiApiKeyRetrieveQueryKey(1234),
             );

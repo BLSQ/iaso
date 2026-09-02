@@ -1,3 +1,6 @@
+import { AccountRetrieveCurrent } from 'Iaso/api/accounts';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
+
 export const EDIT_GEO_JSON_RIGHT = 'ALLOW_SHAPE_EDITION';
 export const EDIT_CATCHMENT_RIGHT = 'ALLOW_CATCHMENT_EDITION';
 export const HIDE_PERIOD_QUARTER_NAME = 'HIDE_PERIOD_QUARTER_NAME';
@@ -17,5 +20,15 @@ export const IMPACT = 'IMPACT';
  * @param {featureKey} featureKey
  * @return {Boolean}
  */
-export const hasFeatureFlag = (currentUser, featureKey) =>
-    Boolean(currentUser?.account?.feature_flags?.includes(featureKey));
+export const hasFeatureFlag = (
+    featureKey: string,
+    account?: AccountRetrieveCurrent,
+) =>
+    Boolean(
+        account?.feature_flags?.map(({ code }) => code)?.includes(featureKey),
+    );
+
+export const useCurrentUserHasFeatureFlag = (featureKey: string): boolean => {
+    const account = useCurrentAccount();
+    return hasFeatureFlag(featureKey, account);
+};

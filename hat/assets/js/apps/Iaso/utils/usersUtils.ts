@@ -1,5 +1,6 @@
 import { LangOptions, textPlaceholder } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
+import { useGetProfile } from 'Iaso/domains/users/hooks/useGetProfiles';
 import { OrgUnitStatus } from '../domains/orgUnits/types/orgUnit';
 import { Project } from '../domains/projects/types/project';
 import { userHasPermission } from '../domains/users/utils';
@@ -90,6 +91,26 @@ export type User = {
     color?: string;
 };
 
+export type CurrentUser = {
+    id: number;
+    first_name: string;
+    user_name: string;
+    last_name: string;
+    email: `${string}@${string}`;
+    permissions: Array<string>;
+    is_staff: boolean;
+    is_superuser: boolean;
+    language?: LangOptions;
+    organization: string;
+    user_id: number;
+    phone_number: string;
+    projects?: Project[];
+    org_units: {
+        name: string;
+        id: string;
+    }[];
+};
+
 export const getDisplayName = (
     user: Partial<User> | Partial<Profile> | undefined,
 ): string => {
@@ -108,32 +129,29 @@ export const getDisplayName = (
 
 export default getDisplayName;
 
-export const useCurrentUser = (): User => {
+export const useCurrentUser = (): CurrentUser | undefined => {
     const queryClient = useQueryClient();
-    const currentUser = queryClient.getQueryData<User>('currentUser');
-    return currentUser as User;
+    const currentUser = queryClient.getQueryData<CurrentUser>('currentUser');
+    return currentUser;
 };
 
 export const useIsLoggedIn = (): boolean => {
-    const currentUser: User = useCurrentUser();
-    return Boolean(currentUser);
-};
-
-export const useHasNoAccount = (): boolean => {
     const currentUser = useCurrentUser();
-    return Boolean(currentUser && !currentUser.account);
+    return Boolean(currentUser);
 };
 
 export const useCheckUserHasWriteTypePermission = (): ((
     orgUnitTypeId?: number,
 ) => boolean) => {
     const currentUser = useCurrentUser();
+    const { data: user } = useGetProfile(currentUser?.id);
+
     return (orgUnitTypeId?: number) => {
         if (!currentUser) return false;
 
         const editableTypeIds = [
-            ...(currentUser.editable_org_unit_type_ids ?? []),
-            ...(currentUser.user_roles_editable_org_unit_type_ids ?? []),
+            ...(user?.editable_org_unit_types?.map(({ id }) => id) ?? []),
+            ...(user?.user_roles_editable_org_unit_type_ids ?? []),
         ];
 
         return (

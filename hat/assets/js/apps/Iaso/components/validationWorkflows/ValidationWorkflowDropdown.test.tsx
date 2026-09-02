@@ -14,8 +14,8 @@ vi.mock('Iaso/utils/usersUtils', () => ({
     useCurrentUser: mockCurrentUser,
 }));
 
-const { mockUserHasPermission } = vi.hoisted(() => {
-    return { mockUserHasPermission: vi.fn() };
+const { mockUseCurrentUserHasPermission } = vi.hoisted(() => {
+    return { mockUseCurrentUserHasPermission: vi.fn() };
 });
 
 const { mockUseGetWorkflowOptions } = vi.hoisted(() => {
@@ -26,16 +26,16 @@ vi.mock('Iaso/api/validationWorkflows', () => ({
     useApiValidationWorkflowsDropdownList: mockUseGetWorkflowOptions,
 }));
 
-const { mockUserHasAccessToModule } = vi.hoisted(() => {
-    return { mockUserHasAccessToModule: vi.fn() };
+const { mockUseCurrentUserHasAccessToModule } = vi.hoisted(() => {
+    return { mockUseCurrentUserHasAccessToModule: vi.fn() };
 });
 
 vi.mock('Iaso/domains/users/utils', async () => {
     const actual = await vi.importActual('Iaso/domains/users/utils');
     return {
         ...actual,
-        userHasAccessToModule: mockUserHasAccessToModule,
-        userHasPermission: mockUserHasPermission,
+        useCurrentUserHasAccessToModule: mockUseCurrentUserHasAccessToModule,
+        useCurrentUserHasPermission: mockUseCurrentUserHasPermission,
     };
 });
 
@@ -51,8 +51,8 @@ describe('ValidationWorkflowDropdown', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mockCurrentUser.mockReturnValue({ id: 1 });
-        mockUserHasPermission.mockReturnValue(true);
-        mockUserHasAccessToModule.mockReturnValue(true);
+        mockUseCurrentUserHasPermission.mockReturnValue(true);
+        mockUseCurrentUserHasAccessToModule.mockReturnValue(true);
     });
 
     it('renders input normally when user has permission and module', () => {
@@ -81,7 +81,7 @@ describe('ValidationWorkflowDropdown', () => {
     });
 
     it('does not render input when user lacks permission', () => {
-        mockUserHasPermission.mockReturnValue(false);
+        mockUseCurrentUserHasPermission.mockReturnValue(false);
 
         mockUseGetWorkflowOptions.mockReturnValue({
             data: [],
@@ -95,7 +95,7 @@ describe('ValidationWorkflowDropdown', () => {
     });
 
     it('does not render input when when user lacks module', () => {
-        mockUserHasAccessToModule.mockReturnValue(false);
+        mockUseCurrentUserHasAccessToModule.mockReturnValue(false);
 
         mockUseGetWorkflowOptions.mockReturnValue({
             data: [],
@@ -156,7 +156,7 @@ describe('ValidationWorkflowDropdown', () => {
     });
 
     it('does not call the API when user has no permissions', () => {
-        mockUserHasPermission.mockReturnValue(false);
+        mockUseCurrentUserHasPermission.mockReturnValue(false);
 
         mockUseGetWorkflowOptions.mockReturnValue({});
 
@@ -172,7 +172,7 @@ describe('ValidationWorkflowDropdown', () => {
     });
 
     it('does not pass initialValue when user has no permissions', () => {
-        mockUserHasPermission.mockReturnValue(false);
+        mockUseCurrentUserHasPermission.mockReturnValue(false);
 
         mockUseGetWorkflowOptions.mockReturnValue({});
 
@@ -186,7 +186,7 @@ describe('ValidationWorkflowDropdown', () => {
     });
 
     it('does not call the API when user has no module', () => {
-        mockUserHasAccessToModule.mockReturnValue(false);
+        mockUseCurrentUserHasAccessToModule.mockReturnValue(false);
 
         mockUseGetWorkflowOptions.mockReturnValue({});
 
@@ -202,7 +202,7 @@ describe('ValidationWorkflowDropdown', () => {
     });
 
     it('does not pass initialValue when user has no module', () => {
-        mockUserHasAccessToModule.mockReturnValue(false);
+        mockUseCurrentUserHasAccessToModule.mockReturnValue(false);
 
         mockUseGetWorkflowOptions.mockReturnValue({});
 

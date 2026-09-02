@@ -8,8 +8,7 @@ import {
 
 import { baseUrls } from '../../../constants/urls';
 import * as Permission from '../../../utils/permissions';
-import { useCurrentUser } from '../../../utils/usersUtils';
-import { userHasOneOfPermissions } from '../../users/utils';
+import { useCurrentUserHasOneOfPermissions } from '../../users/utils';
 import { DescendantsCell } from '../components/DescendantsCell';
 import { ItselfCell } from '../components/ItselfCell';
 import MESSAGES from '../messages';
@@ -24,13 +23,11 @@ export const useCompletenessStatsColumns = (
     params: CompletenessRouterParams,
     completenessStats?: CompletenessApiResponse,
 ): Column[] => {
-    const currentUser = useCurrentUser();
-
     const getParentPageUrl = useGetParentPageUrl();
-    const hasSubmissionPermission = userHasOneOfPermissions(
-        [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
-        currentUser,
-    );
+    const hasSubmissionPermission = useCurrentUserHasOneOfPermissions([
+        Permission.SUBMISSIONS,
+        Permission.SUBMISSIONS_UPDATE,
+    ]);
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         let columns: Column[] = [

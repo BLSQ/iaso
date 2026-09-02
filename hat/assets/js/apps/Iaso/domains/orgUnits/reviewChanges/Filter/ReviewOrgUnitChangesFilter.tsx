@@ -18,10 +18,10 @@ import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { useCheckBoxFilter, useFilterState } from 'Iaso/hooks/useFilterState';
 import { DropdownOptions } from 'Iaso/types/utils';
-import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import DatesRange from '../../../../components/filters/DatesRange';
 import InputComponent from '../../../../components/forms/InputComponent';
 import * as Permission from '../../../../utils/permissions';
@@ -62,15 +62,15 @@ const styles = {
 export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     params,
 }) => {
-    const currentUser = useCurrentUser();
-    const { modules } = currentUser.account;
+    const currentAccount = useCurrentAccount();
+    const modules = currentAccount?.modules;
     const redirectToReplace = useRedirectToReplace();
 
     const defaultSourceVersion = useDefaultSourceVersion();
     const [selectedVersionId, setSelectedVersionId] = useState<string>(
         params.source_version_id
             ? params.source_version_id
-            : defaultSourceVersion?.version?.id.toString(),
+            : (defaultSourceVersion?.version?.id.toString() ?? ''),
     );
 
     const { filters, handleSearch, handleChange, filtersUpdated } =

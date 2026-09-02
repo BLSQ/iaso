@@ -2,6 +2,7 @@ import React from 'react';
 import { Alert } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import { InstanceValidation } from 'Iaso/domains/instances/components/ValidationWorkflow/InstanceValidation';
 import { useGetSubmissionValidationStatus } from 'Iaso/domains/instances/components/ValidationWorkflow/useGetSubmissionValidationStatus';
 import MESSAGES from 'Iaso/domains/instances/messages';
@@ -27,7 +28,8 @@ export const useValidationAvailability = ():
     | 'moduleDisabled'
     | 'missingPermissions' => {
     const currentUser = useCurrentUser();
-    if (!userHasAccessToModule(VALIDATION_WORKFLOW_MODULE, currentUser)) {
+    const account = useCurrentAccount();
+    if (!userHasAccessToModule(VALIDATION_WORKFLOW_MODULE, account)) {
         return 'moduleDisabled';
     }
     if (
@@ -35,7 +37,7 @@ export const useValidationAvailability = ():
             [VALIDATION_WORKFLOWS, SUBMISSIONS],
             currentUser,
         ) &&
-        !currentUser.is_superuser
+        !currentUser?.is_superuser
     ) {
         return 'missingPermissions';
     }

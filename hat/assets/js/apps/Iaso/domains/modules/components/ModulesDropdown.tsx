@@ -4,9 +4,8 @@ import {
     useApiModulesDropdownList,
 } from 'Iaso/api/modules';
 import InputComponent from 'Iaso/components/forms/InputComponent';
-import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
+import { useCurrentUserHasOneOfPermissions } from 'Iaso/domains/users/utils';
 import { ACCOUNT_MANAGEMENT, MODULES } from 'Iaso/utils/permissions';
-import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import MESSAGES from '../messages';
 export type ModulesDropdownProps = {
     params?: ApiModulesDropdownListParams;
@@ -22,11 +21,10 @@ export const ModulesDropdown = ({
     label,
     ...props
 }: ModulesDropdownProps) => {
-    const currentUser = useCurrentUser();
-    const hasPermissions = userHasOneOfPermissions(
-        [MODULES, ACCOUNT_MANAGEMENT],
-        currentUser,
-    );
+    const hasPermissions = useCurrentUserHasOneOfPermissions([
+        MODULES,
+        ACCOUNT_MANAGEMENT,
+    ]);
 
     const { data, isLoading } = useApiModulesDropdownList(params, {
         query: {

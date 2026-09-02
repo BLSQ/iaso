@@ -1,24 +1,37 @@
 import { QueryKey } from 'react-query';
+import { AccountRetrieveCurrent } from 'Iaso/api/accounts';
 import { RoutePath } from 'Iaso/constants/routes';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import { MenuItem } from 'Iaso/domains/app/types';
-import { User } from 'Iaso/utils/usersUtils';
+import { useCurrentUser, User } from 'Iaso/utils/usersUtils';
 
 /**
  * check if user has the permission
  *
- * @param {String, Array} permission
+ * @param {String} permission
  * @param {Object} user
  * @return {Boolean}
  */
-export const userHasPermission = (permission: string, user: User): boolean => {
+export const userHasPermission = (
+    permission: string,
+    user?: Pick<User, 'permissions' | 'is_superuser'>,
+): boolean => {
     if (!user) {
         return false;
     }
-    if (!user.permissions || !Array.isArray(user.permissions)) return false;
-    if (user.is_superuser || user.permissions.find(p => p === permission)) {
-        return true;
-    }
-    return false;
+
+    return Boolean(user.is_superuser || user.permissions?.includes(permission));
+};
+
+/**
+ * check if current logged-in user has the permission
+ *
+ * @param {String} permission
+ * @return {Boolean}
+ */
+export const useCurrentUserHasPermission = (permission: string): boolean => {
+    const currentUser = useCurrentUser();
+    return userHasPermission(permission, currentUser);
 };
 
 /**
@@ -30,20 +43,24 @@ export const userHasPermission = (permission: string, user: User): boolean => {
  */
 export const userHasOneOfPermissions = (
     permissions: string[] = [],
-    user: User,
+    user?: Parameters<typeof userHasPermission>[1],
 ): boolean => {
     if (!user) {
         return false;
     }
-    if (user.is_superuser) return true;
-    let isAuthorised = false;
-    permissions.forEach(p => {
-        if (!!p && userHasPermission(p, user)) {
-            isAuthorised = true;
-        }
-    });
-    return isAuthorised;
+
+    return Boolean(
+        user.is_superuser || permissions.some(p => userHasPermission(p, user)),
+    );
 };
+
+export const useCurrentUserHasOneOfPermissions = (
+    permissions: string[],
+): boolean => {
+    const user = useCurrentUser();
+    return userHasOneOfPermissions(permissions, user);
+};
+
 /**
  * Check if user has all the specified permissions.
  *
@@ -53,12 +70,20 @@ export const userHasOneOfPermissions = (
  */
 export const userHasAllPermissions = (
     permissions: string[],
-    user: User,
+    user?: Parameters<typeof userHasPermission>[1],
 ): boolean => {
-    if (!user || !Array.isArray(permissions) || permissions.length === 0) {
+    if (!user || !permissions.length) {
         return false;
     }
+
     return permissions.every(permission => userHasPermission(permission, user));
+};
+
+export const useCurrentUserHasAllPermissions = (
+    permissions: string[],
+): boolean => {
+    const user = useCurrentUser();
+    return userHasAllPermissions(permissions, user);
 };
 
 /**
@@ -132,15 +157,22 @@ export const getFirstAllowedUrl = (
  * @param {Object} user
  * @return {Boolean} - Returns true if user account has specified module, otherwise false.
  */
-export const userHasAccessToModule = (module: string, user: User): boolean => {
-    if (!user) {
+export const userHasAccessToModule = (
+    module: NonNullable<AccountRetrieveCurrent['modules']>[number],
+    account?: AccountRetrieveCurrent,
+): boolean => {
+    if (!account) {
         return false;
     }
-    if (user?.account?.modules.includes(module)) {
-        return true;
-    }
 
-    return false;
+    return !!account.modules?.includes(module);
+};
+
+export const useCurrentUserHasAccessToModule = (
+    module: Parameters<typeof userHasAccessToModule>[0],
+): boolean => {
+    const account = useCurrentAccount();
+    return userHasAccessToModule(module, account);
 };
 
 export const userHasRole = (user: User, userRoleId: number): boolean => {

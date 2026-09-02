@@ -36,6 +36,14 @@ vi.mock('Iaso/utils/usersUtils', () => ({
     useCurrentUser: mockCurrentUser,
 }));
 
+const { mockCurrentAccount } = vi.hoisted(() => {
+    return { mockCurrentAccount: vi.fn() };
+});
+
+vi.mock('Iaso/domains/accounts/hooks', () => ({
+    useCurrentAccount: mockCurrentAccount,
+}));
+
 describe('InstanceValidationWidgetPaper', () => {
     const baseProps = {
         currentInstanceId: 42,
@@ -57,10 +65,11 @@ describe('InstanceValidationWidgetPaper', () => {
     it('shows module disabled alert when module is missing', () => {
         mockCurrentUser.mockReturnValue({
             id: 1,
-            account: {
-                modules: [],
-            },
             is_superuser: true,
+        });
+
+        mockCurrentAccount.mockReturnValue({
+            modules: [],
         });
 
         renderWithThemeAndIntlProvider(
@@ -76,10 +85,11 @@ describe('InstanceValidationWidgetPaper', () => {
     it('shows missing permissions warning when user lacks permissions', () => {
         mockCurrentUser.mockReturnValue({
             id: 1,
-            account: {
-                modules: [VALIDATION_WORKFLOW_MODULE],
-            },
             is_superuser: false,
+        });
+
+        mockCurrentAccount.mockReturnValue({
+            modules: [VALIDATION_WORKFLOW_MODULE],
         });
 
         renderWithThemeAndIntlProvider(
@@ -100,10 +110,11 @@ describe('InstanceValidationWidgetPaper', () => {
     it('does not show missing permissions if user is superuser', () => {
         mockCurrentUser.mockReturnValue({
             id: 1,
-            account: {
-                modules: [VALIDATION_WORKFLOW_MODULE],
-            },
             is_superuser: true,
+        });
+
+        mockCurrentAccount.mockReturnValue({
+            modules: [VALIDATION_WORKFLOW_MODULE],
         });
 
         renderWithThemeAndIntlProvider(
@@ -128,10 +139,11 @@ describe('InstanceValidationWidgetPaper', () => {
         });
         mockCurrentUser.mockReturnValue({
             id: 1,
-            account: {
-                modules: [VALIDATION_WORKFLOW_MODULE],
-            },
             is_superuser: true,
+        });
+
+        mockCurrentAccount.mockReturnValue({
+            modules: [VALIDATION_WORKFLOW_MODULE],
         });
 
         renderWithThemeAndIntlProvider(
@@ -145,14 +157,15 @@ describe('InstanceValidationWidgetPaper', () => {
     it('renders InstanceValidation when everything is valid', () => {
         mockCurrentUser.mockReturnValue({
             id: 1,
-            account: {
-                modules: [VALIDATION_WORKFLOW_MODULE],
-            },
             permissions: [VALIDATION_WORKFLOWS, SUBMISSIONS],
         });
         (useGetSubmissionValidationStatus as any).mockReturnValue({
             data: { foo: 'bar' },
             isLoading: false,
+        });
+
+        mockCurrentAccount.mockReturnValue({
+            modules: [VALIDATION_WORKFLOW_MODULE],
         });
 
         renderWithThemeAndIntlProvider(

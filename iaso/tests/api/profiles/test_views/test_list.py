@@ -88,7 +88,7 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
         self.client.force_authenticate(self.jam)
         response = self.client.get(reverse("profiles-list"), {"managedUsersOnly": True, "fields": ":all"})
         response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertValidProfileListData(response_data, 2)
+        self.assertValidProfileListData(response_data, 3)
 
     def test_profile_list_managed_user_only_user_regular_user(self):
         """GET /profiles/ with auth (user without users admin/managed permissions)"""

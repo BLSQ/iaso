@@ -6,7 +6,6 @@ import { CurrentUserInfos } from '../../components/nav/CurrentUser';
 import { LogoutButton } from '../../components/nav/LogoutButton';
 import TopBar from '../../components/nav/TopBarComponent';
 import iasoBg from '../../images/iaso-bg.jpg';
-import { useCurrentUser } from '../../utils/usersUtils';
 import { LogoSvg } from '../app/components/LogoSvg';
 import { ThemeConfigContext } from '../app/contexts/ThemeConfigContext';
 import { useHomeButtons } from './hooks/useHomeButtons';
@@ -93,7 +92,6 @@ export const HomeOnline: FunctionComponent = () => {
     const classes = useStyles();
     const { LOGO_PATH, APP_TITLE } = useContext(ThemeConfigContext);
     const homeButtons = useHomeButtons();
-    const currentUser = useCurrentUser();
     return (
         <>
             <TopBar displayBackButton={false} />
@@ -109,7 +107,6 @@ export const HomeOnline: FunctionComponent = () => {
                             justifyContent="flex-end"
                         >
                             <CurrentUserInfos
-                                currentUser={currentUser}
                                 version={(window as any).IASO_VERSION}
                             />
                         </Box>

@@ -10,9 +10,10 @@ export const UserOrgUnitRestriction: React.FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const [isOpen, setIsOpen] = useState(true);
 
-    if (currentUser.org_units.length === 0) {
+    if (!currentUser || !currentUser?.org_units?.length) {
         return null;
     }
+
     return (
         <Snackbar open={isOpen}>
             <Alert onClose={() => setIsOpen(false)} severity="info">

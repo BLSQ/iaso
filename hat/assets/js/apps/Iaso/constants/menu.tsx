@@ -38,6 +38,8 @@ import StorageIcon from '@mui/icons-material/Storage';
 import SupervisorAccount from '@mui/icons-material/SupervisorAccount';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
+import { AccountRetrieveCurrent } from 'Iaso/api/accounts';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import { ThemeConfigContext } from 'Iaso/domains/app/contexts/ThemeConfigContext';
 import {
     MODULE_EMBEDDED_LINKS,
@@ -65,7 +67,7 @@ import {
     SHOW_DEV_FEATURES,
     SHOW_DHIS2_LINK,
 } from '../utils/featureFlags';
-import { useCurrentUser, User } from '../utils/usersUtils';
+import { CurrentUser, useCurrentUser } from '../utils/usersUtils';
 import MESSAGES from './messages';
 import * as paths from './routes';
 import {
@@ -79,7 +81,8 @@ import {
 const menuItems = (
     entityTypes: Array<DropdownOptions<number>>,
     formatMessage: IntlFormatMessage,
-    currentUser: User,
+    currentUser: CurrentUser,
+    currentAccount: AccountRetrieveCurrent,
     orgUnitExtraPath?: string,
 ): MenuItems => {
     const entitiesListEntry: MenuItem = {
@@ -88,7 +91,7 @@ const menuItems = (
         key: 'list',
         icon: props => <FormatListBulleted {...props} />,
     };
-    if (hasFeatureFlag(currentUser, SHOW_BENEFICIARY_TYPES_IN_LIST_MENU)) {
+    if (hasFeatureFlag(SHOW_BENEFICIARY_TYPES_IN_LIST_MENU, currentAccount)) {
         entitiesListEntry.subMenu = entityTypes.map(entityType => ({
             label: `${entityType.label}`,
             permissions: paths.entitiesPath.permissions,
@@ -101,11 +104,13 @@ const menuItems = (
                 `/isSearchActive/true`,
         }));
     }
-    const settingsSubMenu = [
+    const settingsSubMenu: MenuItems = [
         {
             label: formatMessage(MESSAGES.dataSources),
             key: 'sources',
-            icon: props => <DnsRoundedIcon {...props} />,
+            icon: (props: React.ComponentProps<typeof DnsRoundedIcon>) => (
+                <DnsRoundedIcon {...props} />
+            ),
             subMenu: [
                 {
                     label: formatMessage(MESSAGES.dataSourceList),
@@ -454,6 +459,7 @@ const filterDevFeatures = (items: MenuItems): MenuItems => {
 
 export const useMenuItems = (): MenuItems => {
     const currentUser = useCurrentUser();
+    const account = useCurrentAccount();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     const orgUnitExtraPath = useGetOrgunitsExtraPath();
@@ -461,17 +467,21 @@ export const useMenuItems = (): MenuItems => {
     const { plugins }: Plugins = useContext(PluginsContext);
     const { HIDE_BASIC_NAV_ITEMS } = useContext(ThemeConfigContext);
     const pluginsMenu = plugins.map(plugin => plugin.menu).flat();
-    const allBasicItems = useMemo(
-        () => [
-            ...menuItems(
-                entityTypes || [],
-                formatMessage,
-                currentUser,
-                orgUnitExtraPath,
-            ),
-        ],
-        [currentUser, orgUnitExtraPath, entityTypes, formatMessage],
-    );
+    const allBasicItems = useMemo(() => {
+        if (account && currentUser) {
+            return [
+                ...menuItems(
+                    entityTypes || [],
+                    formatMessage,
+                    currentUser,
+                    account,
+                    orgUnitExtraPath,
+                ),
+            ];
+        } else {
+            return [];
+        }
+    }, [currentUser, account, orgUnitExtraPath, entityTypes, formatMessage]);
     // Find admin entry
     const admin = allBasicItems.find(item => item.key === 'settings');
     const basicItems = useMemo(
@@ -483,7 +493,7 @@ export const useMenuItems = (): MenuItems => {
     );
 
     // Hide dhis2 mapping In the main menu, under Forms when dhis2 module is not activated
-    const hasDhis2Module = userHasAccessToModule('DHIS2_MAPPING', currentUser);
+    const hasDhis2Module = userHasAccessToModule('DHIS2_MAPPING', account);
     if (!hasDhis2Module && basicItems?.length > 0) {
         basicItems[0].subMenu = basicItems[0]?.subMenu?.filter(
             item => item.key !== 'mappings',
@@ -491,7 +501,7 @@ export const useMenuItems = (): MenuItems => {
     }
 
     // Hide Form AI in the main menu, under Forms when FORM_AI module is not activated
-    const hasFormAIModule = userHasAccessToModule('FORM_AI', currentUser);
+    const hasFormAIModule = userHasAccessToModule('FORM_AI', account);
     if (!hasFormAIModule && basicItems?.length > 0) {
         basicItems[0].subMenu = basicItems[0]?.subMenu?.filter(
             item => item.key !== 'ai',
@@ -500,7 +510,7 @@ export const useMenuItems = (): MenuItems => {
 
     // add feature flags
     if (
-        userHasAccessToModule(VALIDATION_WORKFLOW_MODULE, currentUser) &&
+        userHasAccessToModule(VALIDATION_WORKFLOW_MODULE, account) &&
         !basicItems.find(item => item.key === 'validation-workflows')
     ) {
         basicItems.push({
@@ -527,7 +537,7 @@ export const useMenuItems = (): MenuItems => {
     }
 
     if (
-        userHasAccessToModule(MODULE_EMBEDDED_LINKS, currentUser) &&
+        userHasAccessToModule(MODULE_EMBEDDED_LINKS, account) &&
         !basicItems.find(item => item.key === 'pages')
     ) {
         basicItems.push({
@@ -539,14 +549,14 @@ export const useMenuItems = (): MenuItems => {
     }
 
     if (
-        hasFeatureFlag(currentUser, SHOW_DHIS2_LINK) &&
-        currentUser?.account?.default_version?.data_source.url &&
+        hasFeatureFlag(SHOW_DHIS2_LINK, account) &&
+        account?.default_version?.data_source.url &&
         !basicItems.find(item => item.key === 'dhis2')
     ) {
         basicItems.push({
             label: formatMessage(MESSAGES.dhis2),
             key: 'dhis2',
-            url: currentUser.account.default_version.data_source.url,
+            url: account.default_version.data_source.url,
             icon: props => <DHIS2Svg {...props} />,
         });
     }
@@ -573,11 +583,11 @@ export const useMenuItems = (): MenuItems => {
             }
             return userHasOneOfPermissions(permissionsList, currentUser);
         });
-        if (hasFeatureFlag(currentUser, SHOW_DEV_FEATURES)) {
+        if (hasFeatureFlag(SHOW_DEV_FEATURES, account)) {
             return authorizedItems;
         }
         // Remove dev (incomplete) features
         return filterDevFeatures(authorizedItems);
-    }, [admin, basicItems, currentUser, pluginsMenu]);
+    }, [admin, basicItems, currentUser, account, pluginsMenu]);
     return items;
 };

@@ -5,7 +5,8 @@ import {
 } from '@mui/icons-material';
 import { Chip } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { useCurrentUser } from '../../utils/usersUtils';
+import { AccountRetrieveCurrent } from 'Iaso/api/accounts';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import { userHasAccessToModule } from '../users/utils';
 import MESSAGES from './messages';
 
@@ -16,30 +17,36 @@ import MESSAGES from './messages';
  * @return {Object}
  */
 
-export const getDefaultSourceVersion = user => {
-    const sourceVersion = {
+type SourceVersion = {
+    source?: NonNullable<
+        AccountRetrieveCurrent['default_version']
+    >['data_source'];
+    version?: AccountRetrieveCurrent['default_version'];
+};
+
+export const getDefaultSourceVersion = (
+    account?: AccountRetrieveCurrent,
+): SourceVersion => {
+    const sourceVersion: SourceVersion = {
         source: undefined,
         version: undefined,
     };
-    if (user && user.account) {
-        if (user.account.default_version) {
-            sourceVersion.version = user.account.default_version;
+    if (account) {
+        if (account.default_version) {
+            sourceVersion.version = account.default_version;
         }
-        if (
-            user.account.default_version &&
-            user.account.default_version.data_source
-        ) {
-            sourceVersion.source = user.account.default_version.data_source;
+        if (account.default_version && account.default_version.data_source) {
+            sourceVersion.source = account.default_version.data_source;
         }
     }
     return sourceVersion;
 };
 
 export const useDefaultSourceVersion = () => {
-    const user = useCurrentUser();
+    const account = useCurrentAccount();
     return useMemo(() => {
-        return getDefaultSourceVersion(user);
-    }, [user]);
+        return getDefaultSourceVersion(account);
+    }, [account]);
 };
 
 export const FIELDS_TO_EXPORT = {
@@ -224,7 +231,11 @@ export const getTablePages = (dataForTable, rowsPerPage) => {
         : 0;
 };
 
-export const getLabelsAndValues = (dataSource, formatMessage, user) => {
+export const getLabelsAndValues = (
+    dataSource,
+    formatMessage,
+    account?: AccountRetrieveCurrent,
+) => {
     const keys = [
         'name',
         'description',
@@ -266,7 +277,7 @@ export const getLabelsAndValues = (dataSource, formatMessage, user) => {
     };
 
     const fields = [];
-    const hasDhis2Module = userHasAccessToModule('DHIS2_MAPPING', user);
+    const hasDhis2Module = userHasAccessToModule('DHIS2_MAPPING', account);
     if (!hasDhis2Module) {
         delete dataSource?.url;
     }

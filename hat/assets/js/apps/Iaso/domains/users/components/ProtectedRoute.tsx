@@ -1,6 +1,7 @@
 import React, { useEffect, FunctionComponent, ReactNode } from 'react';
 import * as Sentry from '@sentry/browser';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import PageError from '../../../components/errors/PageError';
 import PageNoPerms from '../../../components/errors/PageNoPerms';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
@@ -27,17 +28,18 @@ const ProtectedRoute: FunctionComponent<Props> = ({
     const navigate = useNavigate();
     const location = useLocation();
     const currentUser = useCurrentUser();
+    const currentAccount = useCurrentAccount();
 
     // TODO test wrong account feature
     const isWrongAccount = Boolean(
-        params?.accountId && params?.accountId !== `${currentUser.account?.id}`,
+        params?.accountId && params?.accountId !== `${currentAccount?.id}`,
     );
 
     let isAuthorized =
         permissions.length > 0
             ? userHasOneOfPermissions(permissions, currentUser)
             : true;
-    if (featureFlag && !hasFeatureFlag(currentUser, featureFlag)) {
+    if (featureFlag && !hasFeatureFlag(featureFlag, currentAccount)) {
         isAuthorized = false;
     }
     // TODO merge both effects for simpler redirect
@@ -45,7 +47,7 @@ const ProtectedRoute: FunctionComponent<Props> = ({
         if (!isAuthorized && isRootUrl) {
             const newBaseUrl = getFirstAllowedUrl(
                 permissions,
-                currentUser.permissions ?? [],
+                currentUser?.permissions ?? [],
                 allRoutes,
             );
             if (newBaseUrl) {
@@ -63,32 +65,29 @@ const ProtectedRoute: FunctionComponent<Props> = ({
 
     useEffect(() => {
         // Checking with paramsString because params maybe empty if the config is not correct for useParamsObject
-        if (
-            !(paramsString ?? '').includes('accountId') &&
-            currentUser.account
-        ) {
-            navigate(`./accountId/${currentUser.account.id}/${paramsString}`, {
+        if (!(paramsString ?? '').includes('accountId') && currentAccount) {
+            navigate(`./accountId/${currentAccount.id}/${paramsString}`, {
                 replace: true,
                 state: location.state ? { ...location.state } : null,
             });
         }
-    }, [currentUser.account, baseUrl, navigate, paramsString, location.state]);
+    }, [currentAccount, baseUrl, navigate, paramsString, location.state]);
 
     useEffect(() => {
-        if (currentUser && Sentry?.setUser) {
+        if (currentUser && currentAccount && Sentry?.setUser) {
             Sentry.setUser({
                 id: currentUser.id,
                 username: currentUser.user_name,
                 email: currentUser.email,
-                account: currentUser.account?.name,
+                account: currentAccount.name,
             });
         }
-    }, [currentUser]);
+    }, [currentUser, currentAccount]);
     // this should kick in if the above effect didn't redirect the user to a better page
     const hasNoPermWarning =
         isRootUrl &&
-        (!currentUser.permissions ||
-            (currentUser.permissions.length === 0 && !isAuthorized));
+        (!currentUser?.permissions ||
+            (currentUser?.permissions.length === 0 && !isAuthorized));
     if (!currentUser) {
         return null;
     }

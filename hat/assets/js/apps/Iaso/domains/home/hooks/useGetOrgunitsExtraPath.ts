@@ -1,11 +1,11 @@
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import { getColor, useGetColors } from 'Iaso/hooks/useGetColors';
-import { useCurrentUser } from '../../../utils/usersUtils';
 import { getDefaultSourceVersion } from '../../dataSources/utils';
 import { locationLimitMax } from '../../orgUnits/constants/orgUnitConstants';
 
 export const useGetOrgunitsExtraPath = (): string => {
-    const currentUser = useCurrentUser();
-    const defaultSourceVersion = getDefaultSourceVersion(currentUser);
+    const currentAccount = useCurrentAccount();
+    const defaultSourceVersion = getDefaultSourceVersion(currentAccount);
     const { data: colors } = useGetColors(true);
     const defaultColor = getColor(0, colors).replace('#', '');
     let sourceOrVersionParam = '';

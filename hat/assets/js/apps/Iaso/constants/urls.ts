@@ -98,6 +98,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         params: [
             'accountId',
             'formIds',
+            'form_version_ids',
             ...paginationPathParams,
             'periodType',
             'dateFrom',

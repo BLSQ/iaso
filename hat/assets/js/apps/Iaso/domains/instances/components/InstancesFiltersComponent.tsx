@@ -1,6 +1,14 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import Search from '@mui/icons-material/Search';
-import { Box, Button, Grid, Typography } from '@mui/material';
+import {
+    Autocomplete,
+    Box,
+    Button,
+    Grid,
+    TextField,
+    Tooltip,
+    Typography,
+} from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     QueryBuilderInput,
@@ -14,6 +22,7 @@ import {
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
+import { useGetFormVersionsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormVersionsDropdownOptions';
 import { useGetOrgUnitValidationStatus } from 'Iaso/domains/orgUnits/hooks/utils/useGetOrgUnitValidationStatus';
 import { PlanningsDropdown } from 'Iaso/domains/plannings/components/PlanningsDropdown';
 import { getInstancesFilterValues, useFormState } from 'Iaso/hooks/form';
@@ -37,6 +46,7 @@ import { INSTANCE_STATUSES } from '../constants';
 
 import { useReferenceInstancesOptions } from '../hooks/useReferenceInstancesOptions';
 import MESSAGES from '../messages';
+import { getPrunedFormVersionIds } from '../utils/getPrunedFormVersionIds';
 import { parseJson } from '../utils/jsonLogicParse';
 
 import { ColumnSelect } from './ColumnSelect';
@@ -62,6 +72,7 @@ const filterDefault = params => ({
     ...params,
     mapResults: params.mapResults ? 3000 : params.mapResults,
     referenceInstances: params.referenceInstances ?? 'all',
+    form_version_ids: params.form_version_ids ?? null,
 });
 
 type Props = {
@@ -188,11 +199,53 @@ const InstancesFiltersComponent = ({
         setFormState,
     ]);
 
+    const selectedFormIds = useMemo(() => {
+        if (!formState.formIds.value) return [];
+        return formState.formIds.value
+            .split(',')
+            .map(id => parseInt(id, 10))
+            .filter(id => !isNaN(id));
+    }, [formState.formIds.value]);
+
+    const { data: allFormVersions = [], isFetching: fetchingFormVersions } =
+        useGetFormVersionsDropdownOptions();
+
+    const versionToFormMap = useMemo(() => {
+        const map = new Map<string, number>();
+        allFormVersions.forEach(v => {
+            map.set(v.value, v.formId);
+        });
+        return map;
+    }, [allFormVersions]);
+
+    const formVersionsOptions = useMemo(() => {
+        const selectedFormIdsSet = new Set(selectedFormIds);
+        return allFormVersions.filter(version =>
+            selectedFormIdsSet.has(version.formId),
+        );
+    }, [allFormVersions, selectedFormIds]);
+
+    const selectedVersions = useMemo(() => {
+        if (!formState.form_version_ids?.value) return [];
+        const idsSet = new Set(formState.form_version_ids.value.split(','));
+        return formVersionsOptions.filter(option => idsSet.has(option.value));
+    }, [formState.form_version_ids?.value, formVersionsOptions]);
+
     const handleFormChange = useCallback(
         (key: string, value: any) => {
             // checking only as value can be null or false
             if (key === 'formIds') {
                 setFormState('fieldsSearch', null);
+
+                // check if form versions need to be dropped if the form has been unselected
+                const currentVersionsStr = formState.form_version_ids?.value;
+                const prunedVersionIdsStr = getPrunedFormVersionIds(
+                    currentVersionsStr,
+                    value,
+                    versionToFormMap,
+                );
+                setFormState('form_version_ids', prunedVersionIdsStr);
+
                 setFormIds(value ? value.split(',') : undefined);
             }
             if (key) {
@@ -208,7 +261,13 @@ const InstancesFiltersComponent = ({
             }
             setIsInstancesFilterUpdated(true);
         },
-        [setFormState, setFormIds, setIsInstancesFilterUpdated],
+        [
+            setFormState,
+            setFormIds,
+            setIsInstancesFilterUpdated,
+            versionToFormMap,
+            formState.form_version_ids?.value,
+        ],
     );
 
     const startPeriodError = useMemo(() => {
@@ -514,44 +573,102 @@ const InstancesFiltersComponent = ({
                     </Box>
                 )}
                 {showAdvancedSettings && (
-                    <Grid container spacing={2}>
-                        <Grid item xs={12} md={6}>
-                            <Box data-test="modificationDate">
-                                <DatesRange
-                                    xs={12}
-                                    sm={12}
-                                    md={12}
-                                    lg={6}
-                                    keyDateFrom="modificationDateFrom"
-                                    keyDateTo="modificationDateTo"
-                                    onChangeDate={handleFormChange}
-                                    dateFrom={
-                                        formState.modificationDateFrom.value
+                    <>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} md={6}>
+                                <Box data-test="modificationDate">
+                                    <DatesRange
+                                        xs={12}
+                                        sm={12}
+                                        md={12}
+                                        lg={6}
+                                        keyDateFrom="modificationDateFrom"
+                                        keyDateTo="modificationDateTo"
+                                        onChangeDate={handleFormChange}
+                                        dateFrom={
+                                            formState.modificationDateFrom.value
+                                        }
+                                        dateTo={
+                                            formState.modificationDateTo.value
+                                        }
+                                        labelFrom={
+                                            MESSAGES.modificationDateFrom
+                                        }
+                                        labelTo={MESSAGES.modificationDateTo}
+                                    />
+                                </Box>
+                            </Grid>
+                            <Grid item xs={12} md={6}>
+                                <Box data-test="sentDate">
+                                    <DatesRange
+                                        xs={12}
+                                        sm={12}
+                                        md={12}
+                                        lg={6}
+                                        keyDateFrom="sentDateFrom"
+                                        keyDateTo="sentDateTo"
+                                        onChangeDate={handleFormChange}
+                                        dateFrom={formState.sentDateFrom.value}
+                                        dateTo={formState.sentDateTo.value}
+                                        labelFrom={MESSAGES.sentDateFrom}
+                                        labelTo={MESSAGES.sentDateTo}
+                                    />
+                                </Box>
+                            </Grid>
+                            <Grid item xs={12} md={6}>
+                                <Tooltip
+                                    title={
+                                        selectedFormIds.length === 0
+                                            ? formatMessage(
+                                                  MESSAGES.selectFormFirst,
+                                              )
+                                            : ''
                                     }
-                                    dateTo={formState.modificationDateTo.value}
-                                    labelFrom={MESSAGES.modificationDateFrom}
-                                    labelTo={MESSAGES.modificationDateTo}
-                                />
-                            </Box>
+                                    arrow
+                                >
+                                    <span>
+                                        <Autocomplete
+                                            multiple
+                                            disabled={
+                                                selectedFormIds.length === 0
+                                            }
+                                            options={formVersionsOptions}
+                                            value={selectedVersions}
+                                            groupBy={option => option.formName}
+                                            getOptionLabel={option =>
+                                                option.label
+                                            }
+                                            isOptionEqualToValue={(
+                                                option,
+                                                val,
+                                            ) => option.value === val.value}
+                                            loading={fetchingFormVersions}
+                                            onChange={(event, newValue) => {
+                                                handleFormChange(
+                                                    'form_version_ids',
+                                                    newValue &&
+                                                        newValue.length > 0
+                                                        ? newValue
+                                                              .map(v => v.value)
+                                                              .join(',')
+                                                        : null,
+                                                );
+                                            }}
+                                            renderInput={params => (
+                                                <TextField
+                                                    {...params}
+                                                    label={formatMessage(
+                                                        MESSAGES.formVersions,
+                                                    )}
+                                                    placeholder=""
+                                                />
+                                            )}
+                                        />
+                                    </span>
+                                </Tooltip>
+                            </Grid>
                         </Grid>
-                        <Grid item xs={12} md={6}>
-                            <Box data-test="sentDate">
-                                <DatesRange
-                                    xs={12}
-                                    sm={12}
-                                    md={12}
-                                    lg={6}
-                                    keyDateFrom="sentDateFrom"
-                                    keyDateTo="sentDateTo"
-                                    onChangeDate={handleFormChange}
-                                    dateFrom={formState.sentDateFrom.value}
-                                    dateTo={formState.sentDateTo.value}
-                                    labelFrom={MESSAGES.sentDateFrom}
-                                    labelTo={MESSAGES.sentDateTo}
-                                />
-                            </Box>
-                        </Grid>
-                        <Box ml={1}>
+                        <Box mt={2}>
                             <Typography
                                 data-test="advanced-settings"
                                 className={classes.advancedSettings}
@@ -561,7 +678,7 @@ const InstancesFiltersComponent = ({
                                 {formatMessage(MESSAGES.hideAdvancedSettings)}
                             </Typography>
                         </Box>
-                    </Grid>
+                    </>
                 )}
             </Box>
             <Grid container spacing={2}>

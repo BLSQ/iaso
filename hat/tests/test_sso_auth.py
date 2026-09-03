@@ -392,3 +392,18 @@ class SSOAuthTestCase(APITestCase):
         """
         response = self.client.get("/polio/login/callback/?error=server_error")
         self.assertEqual(response.status_code, 200)
+
+
+@override_settings(SSO_PROVIDERS={})
+class SocialAccountCancelledUrlTestCase(APITestCase):
+    def test_cancelled_url_registered_when_sso_providers_empty(self):
+        """WFP is configured via WFP_AUTH_CLIENT_ID, not SSO_PROVIDERS.
+
+        Cancelling a WFP login still goes through allauth's render_authentication_error(),
+        which reverses socialaccount_login_cancelled. That name must exist even when
+        SSO_PROVIDERS is empty (WFP-only deployments).
+        """
+        from hat.urls import get_sso_urlpatterns
+
+        names = [getattr(pattern, "name", None) for pattern in get_sso_urlpatterns()]
+        self.assertIn("socialaccount_login_cancelled", names)

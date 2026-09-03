@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime, timedelta
 
 from submissions import (
+    APP_VERSION,
     create_default_reference_submission,
     org_unit_gps_point,
     picture_by_org_unit_type_name,
@@ -94,7 +95,7 @@ def setup_instances(account_name, iaso_client):
                 }
             ]
             image = picture_by_org_unit_type_name(orgunit["org_unit_type_name"])
-            iaso_client.post(f"/api/instances/?app_id={account_name}", json=instance_body)
+            iaso_client.post(f"/api/instances/?app_id={account_name}&app_version={APP_VERSION}", json=instance_body)
 
             bool_choice = random.choice(["yes", "no"])
             current_datetime = datetime.now()

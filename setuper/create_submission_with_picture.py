@@ -5,6 +5,7 @@ from datetime import datetime
 
 from names_generator import generate_name
 from submissions import (
+    APP_VERSION,
     create_default_reference_submission,
     org_unit_gps_point,
     picture_by_org_unit_type_name,
@@ -86,7 +87,7 @@ def create_submission_with_picture(account_name, iaso_client):
                 "is_instance_of_reference_form": True,
             }
         ]
-        iaso_client.post(f"/api/instances/?app_id={account_name}", json=instance_body)
+        iaso_client.post(f"/api/instances/?app_id={account_name}&app_version={APP_VERSION}", json=instance_body)
         form_versions = iaso_client.get("/api/formversions/")["form_versions"]
         form_version = [form_version for form_version in form_versions if form_version["form_id"] == form_id]
         health_facility_electricity = random.choice(["yes", "no"])

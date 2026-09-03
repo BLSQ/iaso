@@ -35,6 +35,7 @@ def safe_api_import(key: str, fallback_status=200):
                 request_key: request.META.get(request_key) for request_key in REQUEST_HEADER_INFO_KEYS
             }
             api_import.json_body = request.data
+            api_import.save()
 
             # Run the view in a try/except
             try:
@@ -44,10 +45,8 @@ def safe_api_import(key: str, fallback_status=200):
                 logger.exception("Exception" + str(e))  # For logs
                 api_import.has_problem = True
                 api_import.exception = format_exc()
+                api_import.save()
                 response = Response({"res": "a problem happened, but your data was saved"}, status=fallback_status)
-
-            # Save the APIImport record
-            api_import.save()
 
             return response
 

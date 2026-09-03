@@ -523,6 +523,7 @@
     "iaso.instance.deleteTitle": "Êtes-vous certain de vouloir effacer cette soumission ?",
     "iaso.instance.details": "Voir les détails de la soumission",
     "iaso.instance.device": "IMEI appareil",
+    "iaso.instance.device_app_version": "Version app mobile",
     "iaso.instance.dialog.editGpsFromInstanceTitle": "Voulez-vous vraiment appliquer les coordonnées GPS de la soumission à l'unité organisation ?",
     "iaso.instance.dialog.linkOffOrgUnitToInstanceReferenceTitle": "Êtes-vous sûr de vouloir dissocier cette soumission de référence de l'orgUnit ?",
     "iaso.instance.dialog.linkOrgUnitToInstanceReferenceTitle": "Etes-vous certain de vouloir lier cette soumission à l'unité d'organisation comme référence ?",

@@ -5,6 +5,7 @@ from datetime import datetime
 
 from names_generator import generate_name
 from submissions import (
+    APP_VERSION,
     org_unit_gps_point,
     submission2xml,
     submission_org_unit_gps_point,
@@ -82,7 +83,7 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
             }
         ]
 
-        iaso_client.post(f"/api/instances/?app_id={account_name}", json=instance_body)
+        iaso_client.post(f"/api/instances/?app_id={account_name}&app_version={APP_VERSION}", json=instance_body)
         usable_vials_start_day = random.randint(10, 50)
         vials_used = random.randint(5, usable_vials_start_day)
         usable_vials_theoretical = usable_vials_start_day - vials_used

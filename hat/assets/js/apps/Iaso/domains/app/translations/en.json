@@ -522,6 +522,7 @@
     "iaso.instance.deleteTitle": "Are you sure you want to delete this submission?",
     "iaso.instance.details": "View submission details",
     "iaso.instance.device": "IMEI device",
+    "iaso.instance.device_app_version": "App Version",
     "iaso.instance.dialog.editGpsFromInstanceTitle": "Are you sure you want to push GPS from submission to the org unit. ?",
     "iaso.instance.dialog.linkOffOrgUnitToInstanceReferenceTitle": "Are you sure you want to unlink this reference submission from the orgUnit ?",
     "iaso.instance.dialog.linkOrgUnitToInstanceReferenceTitle": "Are you sure you want to link this submission to the orgUnit as a reference one ?",

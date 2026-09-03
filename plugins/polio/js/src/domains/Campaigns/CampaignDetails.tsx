@@ -63,6 +63,7 @@ export const CampaignDetails: FunctionComponent = () => {
         isFetching,
         saveDisabled,
         showObrInTitle,
+        isFormChanged,
     } = useCampaignFormState({
         campaignId,
     });
@@ -120,7 +121,7 @@ export const CampaignDetails: FunctionComponent = () => {
                         <Button
                             onClick={handleCancel}
                             color="primary"
-                            disabled={isSaving}
+                            disabled={isSaving || !isFormChanged}
                         >
                             {formatMessage(MESSAGES.cancel)}
                         </Button>

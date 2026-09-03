@@ -642,10 +642,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.orgUnitRejected',
         defaultMessage: 'Org Unit rejected successfully',
     },
-    goToCurrentTask: {
-        id: 'iaso.label.goToCurrentTask',
-        defaultMessage: 'Launch and show task',
-    },
     yes: {
         id: 'iaso.label.yes',
         defaultMessage: 'Yes',

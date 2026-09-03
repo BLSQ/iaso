@@ -68,16 +68,6 @@ const useStyles = makeStyles(theme => ({
         display: 'flex',
         alignItems: 'center',
     },
-    warningIcon: {
-        display: 'inline-block',
-        marginLeft: theme.spacing(1),
-        marginRight: theme.spacing(1),
-    },
-    warningMessage: {
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
 }));
 
 const stringOfIdsToArrayofIds = stringValue =>

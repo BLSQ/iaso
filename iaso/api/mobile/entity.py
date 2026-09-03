@@ -16,18 +16,40 @@ from iaso.models.entity import InvalidJsonContentError, InvalidLimitDateError, P
 from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION
 
 
-def filter_for_mobile_entity(queryset, request, skip_limit_date_filter=False):
+def filter_for_mobile_entity(queryset, user, request):
     if queryset is not None:
         try:
             queryset = queryset.filter_for_mobile_entity(
-                request.query_params.get("limit_date"),
-                request.query_params.get("json_content"),
-                skip_limit_date_filter=skip_limit_date_filter,
+                user,
+                limit_date=request.query_params.get("limit_date"),
+                json_content=request.query_params.get("json_content"),
             )
         except InvalidLimitDateError as e:
             raise ParseError(e.message)
         except InvalidJsonContentError as e:
             raise ParseError(e.message)
+        except UserNotAuthError as e:
+            raise AuthenticationFailed(e.message)
+
+    return queryset
+
+
+def filter_for_mobile_entity_non_geo_restricted_search(queryset, user, request):
+    # "Online search" (IA-3021): a user can find an entity that isn't scoped to their org units /
+    # synced to their device yet -- see EntityQuerySet.filter_for_mobile_entity_non_geo_restricted_search.
+    if queryset is not None:
+        try:
+            queryset = queryset.filter_for_mobile_entity_non_geo_restricted_search(
+                user,
+                limit_date=request.query_params.get("limit_date"),
+                json_content=request.query_params.get("json_content"),
+            )
+        except InvalidLimitDateError as e:
+            raise ParseError(e.message)
+        except InvalidJsonContentError as e:
+            raise ParseError(e.message)
+        except UserNotAuthError as e:
+            raise AuthenticationFailed(e.message)
 
     return queryset
 
@@ -41,15 +63,13 @@ def filter_on_app_id(queryset, user, app_id):
         raise AuthenticationFailed(e.message)
 
 
-def filter_on_user_and_app_id(queryset, user, app_id, limit_date=None):
+def filter_on_user_and_app_id(queryset, user, app_id):
     try:
-        return queryset.filter_for_user_and_app_id(user, app_id, limit_date=limit_date)
+        return queryset.filter_for_user_and_app_id(user, app_id)
     except ProjectNotFoundError as e:
         raise NotFound(e.message)
     except UserNotAuthError as e:
         raise AuthenticationFailed(e.message)
-    except InvalidLimitDateError as e:
-        raise ParseError(e.message)
 
 
 class LargeResultsSetPagination(PageNumberPagination):
@@ -252,14 +272,12 @@ class MobileEntityViewSet(ModelViewSet):
         entity_types = EntityType.objects.filter(reference_form__projects=project).only("id")
 
         queryset = Entity.objects.filter(entity_type__in=entity_types)
+        queryset = filter_on_app_id(queryset, user, app_id)
 
-        # Merge the org-unit-scope check (inside filter_on_user_and_app_id) and the limit_date check
-        # (inside filter_for_mobile_entity) into a single correlated Exists(...) subquery against
-        # iaso_instance, instead of two separate ones -- see filter_for_user's comment. skip_limit_date_filter
-        # tells filter_for_mobile_entity not to re-add limit_date as a second Exists(...).
-        limit_date = self.request.query_params.get("limit_date")
-        queryset = filter_on_user_and_app_id(queryset, user, app_id, limit_date=limit_date)
-        queryset = filter_for_mobile_entity(queryset, self.request, skip_limit_date_filter=True)
+        # filter_for_mobile_entity owns the org-unit scope and limit_date checks together, merged
+        # into a single correlated Exists(...) subquery against iaso_instance instead of two
+        # separate ones -- see its docstring/comment.
+        queryset = filter_for_mobile_entity(queryset, user, self.request)
 
         # select_related (a JOIN) is right here, not prefetch_related: `filter_for_mobile_entity` already
         # filters on `attributes__deleted`, which forces Postgres to join iaso_instance into this query

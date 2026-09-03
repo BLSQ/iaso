@@ -157,14 +157,64 @@ class EntityQuerySet(models.QuerySet):
         # whole table before it could probe entities against it -- the dominant cost of this query in prod.
         return self.filter(Exists(instances.filter(entity_id=OuterRef("pk"))))
 
-    def filter_for_mobile_entity(self, limit_date=None, json_content=None, skip_limit_date_filter=False):
+    def _org_units_qs_for_user(self, user):
+        """Org unit hierarchy the user's profile is restricted to, or None if unrestricted."""
+        profile = user.iaso_profile
+        if profile.org_units.exists():
+            return OrgUnit.objects.hierarchy(profile.org_units.all())
+        return None
+
+    def filter_for_mobile_entity(
+        self,
+        user: typing.Optional[typing.Union[User, AnonymousUser]],
+        limit_date: typing.Optional[str] = None,
+        json_content: typing.Optional[str] = None,
+    ):
+        """Entities queryset for the mobile app's normal sync: scoped to the user's account and
+        their profile's org units, merged with limit_date/json_content, with the
+        instances/attributes the mobile serializer needs prefetched."""
+        return self._filter_for_mobile_entity(user, limit_date, json_content, restrict_to_user_org_units=True)
+
+    def filter_for_mobile_entity_non_geo_restricted_search(
+        self,
+        user: typing.Optional[typing.Union[User, AnonymousUser]],
+        limit_date: typing.Optional[str] = None,
+        json_content: typing.Optional[str] = None,
+    ):
+        """Entities queryset for the mobile app's "online search" action (IA-3021): a user can find
+        an entity that isn't scoped to their org units / synced to their device yet. This mode does
+        not scope by account either (matching pre-existing behaviour of that action, which relies on
+        the caller's own app_id/project scoping instead -- that scoping does not itself guarantee the
+        account matches the requesting user's when the project has needs_authentication=False,
+        tracked separately, not addressed by this method)."""
+        return self._filter_for_mobile_entity(user, limit_date, json_content, restrict_to_user_org_units=False)
+
+    def _filter_for_mobile_entity(
+        self,
+        user: typing.Optional[typing.Union[User, AnonymousUser]],
+        limit_date: typing.Optional[str],
+        json_content: typing.Optional[str],
+        *,
+        restrict_to_user_org_units: bool,
+    ):
+        if not user or not user.is_authenticated:
+            raise UserNotAuthError("User not Authenticated")
+
         queryset = self
-        # skip_limit_date_filter=True means the caller already merged limit_date into filter_for_user's
-        # org-unit Exists(...) (see filter_for_user) -- applying it again here would re-add it as a
-        # *second*, separate correlated Exists(...) against iaso_instance, which is exactly the shape
-        # that pushes Postgres off the cheap per-entity plan (see filter_for_user's comment).
-        if limit_date and not skip_limit_date_filter:
-            queryset = queryset._filter_entities_with_instances(limit_date=limit_date)
+        org_units_qs = None
+        if restrict_to_user_org_units:
+            profile = user.iaso_profile
+            queryset = queryset.filter(account=profile.account)
+            org_units_qs = self._org_units_qs_for_user(user)
+
+        # Merge the org-unit scope and limit_date checks into a *single* correlated Exists(...)
+        # subquery against iaso_instance, rather than issuing one Exists(...) for each. Two stacked
+        # EXISTS(...) subqueries against the same table -- even though each is individually cheap --
+        # push Postgres off the cheap per-entity incremental-scan plan and into a full sequential
+        # scan + hash join of the whole account, regardless of org unit scope size: measured ~7M vs
+        # ~200 buffer blocks touched for the same real profile+query once merged into one.
+        if org_units_qs is not None or limit_date:
+            queryset = queryset._filter_entities_with_instances(org_units_qs=org_units_qs, limit_date=limit_date)
 
         if json_content:
             try:
@@ -188,9 +238,7 @@ class EntityQuerySet(models.QuerySet):
 
         return queryset
 
-    def filter_for_user(
-        self, user: typing.Optional[typing.Union[User, AnonymousUser]], limit_date: typing.Optional[str] = None
-    ):
+    def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]):
         if not user or not user.is_authenticated:
             raise UserNotAuthError("User not Authenticated")
 
@@ -198,19 +246,9 @@ class EntityQuerySet(models.QuerySet):
         queryset = self.filter(account=profile.account)
 
         # we give all entities having an instance linked to the one of the org units allowed for the current user
-        org_units_qs = None
-        if profile.org_units.exists():
-            org_units_qs = OrgUnit.objects.hierarchy(profile.org_units.all())
-
-        if org_units_qs is not None or limit_date:
-            # Merge the org-unit scope and limit_date checks into a *single* correlated Exists(...)
-            # subquery against iaso_instance, rather than issuing this one now and a separate one later
-            # for limit_date (see filter_for_mobile_entity's skip_limit_date_filter). Two stacked
-            # EXISTS(...) subqueries against the same table -- even though each is individually cheap --
-            # push Postgres off the cheap per-entity incremental-scan plan and into a full sequential
-            # scan + hash join of the whole account, regardless of org unit scope size: measured ~7M vs
-            # ~200 buffer blocks touched for the same real profile+query once merged into one.
-            queryset = queryset._filter_entities_with_instances(org_units_qs=org_units_qs, limit_date=limit_date)
+        org_units_qs = self._org_units_qs_for_user(user)
+        if org_units_qs is not None:
+            queryset = queryset._filter_entities_with_instances(org_units_qs=org_units_qs)
 
         return queryset
 
@@ -232,9 +270,8 @@ class EntityQuerySet(models.QuerySet):
         self,
         user: typing.Optional[typing.Union[User, AnonymousUser]],
         app_id: typing.Optional[str],
-        limit_date: typing.Optional[str] = None,
     ):
-        return self.filter_for_user(user, limit_date=limit_date).filter_for_app_id(user, app_id)
+        return self.filter_for_user(user).filter_for_app_id(user, app_id)
 
 
 class Entity(SoftDeletableModel):

@@ -3,6 +3,7 @@ import json
 import uuid
 
 from django.db import connection
+from django.db.models import Exists, OuterRef
 from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 from rest_framework import status
@@ -431,6 +432,71 @@ class MobileEntityAPITestCase(EntityAPITestCase):
 
         self.assertEqual(response_json["count"], 1)
         self.assertEqual(response_json["results"][0]["id"], str(entity_in_scope_recent.uuid))
+
+    def test_list_entities_drops_entity_when_scope_and_recency_are_on_different_instances(self):
+        """Pins down a semantic side-effect of merging the org-unit-scope and limit_date checks into
+        a *single* correlated Exists(...) (see EntityQuerySet._filter_entities_with_instances):
+        an entity now needs ONE instance that is *both* inside the user's org-unit scope AND
+        recently updated. Before that merge (pre-03a509698c), the two checks were independent
+        `.filter(Exists(...))` calls: an entity qualified if it had *any* instance in scope, and
+        *separately* *any* (possibly different) instance that was recent.
+
+        Unlike test_list_entities_combines_org_unit_scope_and_limit_date_correctly above (where each
+        entity has a single instance carrying both conditions at once), this entity has TWO
+        instances: one OLD instance inside scope, and one RECENT instance outside scope. Under the
+        pre-merge (independent Exists) semantics this entity would still sync; under the current
+        (merged) semantics it's silently dropped, which this test demonstrates side by side.
+
+        If this test starts failing, the merged-Exists tradeoff changed -- that's worth a deliberate
+        look, not a "just update the assertion" fix.
+        """
+        self.yoda.iaso_profile.org_units.add(self.ou_country)
+        ou_other = m.OrgUnit.objects.create(name="Other country", validation_status=m.OrgUnit.VALIDATION_VALID)
+
+        now = timezone.now()
+        limit_date_str = (now - datetime.timedelta(days=5)).strftime("%Y-%m-%d")
+        old_date = now - datetime.timedelta(days=10)
+        recent_date = now - datetime.timedelta(days=2)
+
+        instance_in_scope_old = self.create_form_instance(
+            form=self.form_1, org_unit=self.ou_country, project=self.project, uuid=uuid.uuid4()
+        )
+        instance_out_of_scope_recent = self.create_form_instance(
+            form=self.form_1, org_unit=ou_other, project=self.project, uuid=uuid.uuid4()
+        )
+
+        entity = m.Entity.objects.create(
+            name="split_entity", entity_type=self.entity_type, attributes=instance_in_scope_old, account=self.account
+        )
+        instance_in_scope_old.entity = entity
+        instance_in_scope_old.save()
+        instance_out_of_scope_recent.entity = entity
+        instance_out_of_scope_recent.save()
+
+        m.Instance.objects.filter(pk=instance_in_scope_old.pk).update(updated_at=old_date)
+        m.Instance.objects.filter(pk=instance_out_of_scope_recent.pk).update(updated_at=recent_date)
+
+        # What the pre-merge code effectively did: two independent Exists(), each satisfiable by a
+        # different instance -- this entity qualifies for both checks taken separately.
+        org_units_qs = m.OrgUnit.objects.hierarchy(self.yoda.iaso_profile.org_units.all())
+        pre_merge_semantics_qs = (
+            m.Entity.objects.filter(account=self.account)
+            .filter(Exists(m.Instance.non_deleted_objects.filter(org_unit__in=org_units_qs, entity_id=OuterRef("pk"))))
+            .filter(
+                Exists(m.Instance.non_deleted_objects.filter(updated_at__gte=limit_date_str, entity_id=OuterRef("pk")))
+            )
+        )
+        self.assertTrue(
+            pre_merge_semantics_qs.filter(pk=entity.pk).exists(),
+            "sanity check: with two independent Exists(...) this entity should still qualify",
+        )
+
+        # Current (merged Exists) behaviour on the live endpoint: the same entity is dropped.
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id, "limit_date": limit_date_str})
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        self.assertEqual(response_json["count"], 0)
 
     def test_list_entities_full_sync_without_limit_date_includes_stale_entities(self):
         """A full sync (limit_date omitted entirely, as the mobile app does on first install --

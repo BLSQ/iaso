@@ -9,7 +9,7 @@ import { IconButton, ConfirmCancelModal } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import { baseUrls } from '../../../constants/urls';
 import { isValidCoordinate } from '../../../utils/map/mapUtils';
-import { useSaveOrgUnit, SaveOrgUnitPayload } from '../hooks';
+import { useSaveOrgUnit } from '../hooks';
 import MESSAGES from '../messages';
 import { OrgUnit } from '../types/orgUnit';
 type Props = {
@@ -25,15 +25,11 @@ export const ActionCell: FunctionComponent<Props> = ({ orgUnit }) => {
     );
 
     const handleRejectOrgUnit = useCallback(() => {
-        const payload: SaveOrgUnitPayload = {
+        saveOu({
             id: orgUnit.id,
             validation_status: 'REJECTED',
-        };
-        if (orgUnit.groups) {
-            payload.groups = orgUnit.groups.map(g => g.id);
-        }
-        saveOu(payload);
-    }, [saveOu, orgUnit.id, orgUnit.groups]);
+        });
+    }, [saveOu, orgUnit.id]);
 
     const cell = useMemo(() => {
         return (

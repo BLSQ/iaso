@@ -17,7 +17,7 @@ import MESSAGES from './messages';
 import { useGetPublicVaccineStock } from './useGetPublicVaccineStock';
 
 const baseUrl = baseUrls.embeddedVaccineStock;
-const useXlsxUrl = allParams => {
+const useXlsxUrl = (allParams: Record<string, string>) => {
     const appId = useAppId();
     const xlsxApiUrl = '/api/polio/dashboards/public/vaccine_stock/export_xlsx';
     const defaults = {
@@ -27,7 +27,10 @@ const useXlsxUrl = allParams => {
     };
 
     const { tab: _tab, ...params } = allParams;
-    const safeParams = useUrlParams({ ...params, app_id: appId }, defaults);
+    const safeParams = useUrlParams(
+        { ...params, app_id: appId } as Parameters<typeof useUrlParams>[0],
+        defaults,
+    );
     const apiParams = useApiParams(safeParams);
     const queryString = new URLSearchParams(apiParams).toString();
     return `${xlsxApiUrl}/?${queryString}`;
@@ -151,12 +154,16 @@ export const PublicVaccineStock: FunctionComponent = () => {
                         tab={tab}
                         params={params}
                     />
-                    {!isLoading && Boolean(data.results) && (
+                    {!isLoading && data?.results && (
                         <VialsSummary
                             totalVials={data.results.total_vials}
                             totalDoses={data.results.total_doses}
-                            earmarkedVials={data.results.earmarked_vials}
-                            earmarkedDoses={data.results.earmarked_doses}
+                            earmarkedVials={
+                                data.results.earmarked_vials ?? undefined
+                            }
+                            earmarkedDoses={
+                                data.results.earmarked_doses ?? undefined
+                            }
                             tab={tab}
                         />
                     )}

@@ -2251,3 +2251,37 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
         item_50 = next((item for item in results if item["value"] == 50), None)
         self.assertIsNotNone(item_50)
         self.assertEqual(item_50["unusable_doses"], 0)  # No 50-dose vials in test data
+
+    def test_expanded_movements_use_source_record_id(self):
+        duplicate_incident = pm.IncidentReport.objects.create(
+            vaccine_stock=self.vaccine_stock,
+            stock_correction=pm.IncidentReport.StockCorrectionChoices.MISSING,
+            date_of_incident_report=self.now.date(),
+            incident_report_received_by_rrt=self.now.date(),
+            unusable_vials=0,
+            usable_vials=1,
+            doses_per_vial=20,
+        )
+        other_duplicate_incident = pm.IncidentReport.objects.create(
+            vaccine_stock=self.vaccine_stock,
+            stock_correction=pm.IncidentReport.StockCorrectionChoices.MISSING,
+            date_of_incident_report=self.now.date(),
+            incident_report_received_by_rrt=self.now.date(),
+            unusable_vials=0,
+            usable_vials=1,
+            doses_per_vial=20,
+        )
+
+        calculator = VaccineStockCalculator(self.vaccine_stock)
+        movements = calculator.get_list_of_usable_vials(expanded=True)
+        keys = [(movement["type"], movement["id"]) for movement in movements]
+
+        self.assertEqual(len(keys), len(set(keys)))
+        self.assertTrue(all(movement["vaccine_stock_id"] == self.vaccine_stock.id for movement in movements))
+
+        missing_ids = {
+            movement["id"]
+            for movement in movements
+            if movement["type"] == "incident_report" and movement["action"] == "missing"
+        }
+        self.assertEqual(missing_ids, {duplicate_incident.id, other_duplicate_incident.id})

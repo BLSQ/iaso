@@ -5,7 +5,7 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
-from iaso.models import Account, Form, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import Account, Form, Instance, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 from iaso.modules import MODULE_VALIDATION_WORKFLOW
@@ -49,6 +49,10 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(SwaggerTestCaseMixin, APITes
         )
         self.validation_workflow.form_set.add(self.form)
 
+        self.validation_workflow_2 = ValidationWorkflow.objects.create(
+            name="Validation workflow 2", account=self.account, description="Another Workflow"
+        )
+
         self.first_node = ValidationNodeTemplate.objects.create(name="First node", workflow=self.validation_workflow)
         self.first_node.roles_required.add(self.user_role)
 
@@ -60,6 +64,9 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(SwaggerTestCaseMixin, APITes
         )
         self.third_node.previous_node_templates.add(self.second_node)
         self.third_node.roles_required.add(self.user_role)
+
+        self.wrong_node = ValidationNodeTemplate.objects.create(name="Wrong node", workflow=self.validation_workflow_2)
+        self.wrong_node.roles_required.add(self.user_role)
 
         self.other_form = Form.objects.create(name="Form 2")
 
@@ -237,6 +244,75 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(SwaggerTestCaseMixin, APITes
                 self.assertEqual(third_item["type"], "TIMELINE")
                 self.assertEqual(third_item["order"], 1)
                 self.assertTrue(third_item["user_can_do_actions"])
+
+    def test_node_in_wrong_workflow(self):
+        self.setup_approve()
+        nodes = Instance.objects.filter(pk=self.instance.pk).with_all_validation_nodes().first().all_validation_nodes
+        node = nodes[1]
+        node.node = self.wrong_node
+        node.save()
+
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.get(reverse("validation_workflow_instances-detail", kwargs={"pk": self.instance.pk}))
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidResponse(res_data)
+
+        self.assertEqual(res_data["workflow"], self.validation_workflow.slug)
+        self.assertEqual(res_data["total_steps"], 3)
+        self.assertEqual(res_data["validation_status"], ValidationWorkflowArtefactStatus.APPROVED)
+
+        self.assertEqual(len(res_data["submissions"]), 1)
+
+        first_submission = res_data["submissions"][0]
+
+        self.assertEqual(first_submission["general_validation_status"], ValidationWorkflowArtefactStatus.APPROVED)
+        self.assertIsNone(first_submission["next_created_at"])
+        self.assertEqual(first_submission["created_by"], self.john_wick.username)
+
+        self.assertEqual(len(first_submission["timeline"]), 3)
+
+        timeline = first_submission["timeline"]
+
+        # checking order, should be from leaves to root (graph wise)
+        first_item = timeline[0]
+        self.assertIsNotNone(first_item["id"])
+        self.assertEqual(first_item["name"], "Wrong node")
+        self.assertEqual(first_item["node_template_slug"], "wrong-node")
+        self.assertEqual(first_item["comment"], "LGTM 1")
+        self.assertIsNotNone(first_item["updated_at"])
+        self.assertIsNotNone(first_item["created_at"])
+        self.assertEqual(first_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(first_item["updated_by"], self.john_wick.username)
+        self.assertEqual(first_item["type"], "TIMELINE")
+        self.assertEqual(first_item["order"], 0)
+        self.assertTrue(first_item["user_can_do_actions"])
+
+        second_item = timeline[1]
+        self.assertIsNotNone(second_item["id"])
+        self.assertEqual(second_item["name"], "Third node")
+        self.assertEqual(second_item["node_template_slug"], "third-node")
+        self.assertEqual(second_item["comment"], "LGTM 2")
+        self.assertIsNotNone(second_item["updated_at"])
+        self.assertIsNotNone(second_item["created_at"])
+        self.assertEqual(second_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(second_item["updated_by"], self.john_wick.username)
+        self.assertEqual(second_item["type"], "TIMELINE")
+        self.assertEqual(second_item["order"], 3)
+        self.assertTrue(second_item["user_can_do_actions"])
+
+        third_item = timeline[2]
+        self.assertIsNotNone(third_item["id"])
+        self.assertEqual(third_item["name"], "First node")
+        self.assertEqual(third_item["node_template_slug"], "first-node")
+        self.assertEqual(third_item["comment"], "LGTM 0")
+        self.assertIsNotNone(third_item["updated_at"])
+        self.assertIsNotNone(third_item["created_at"])
+        self.assertEqual(third_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(third_item["updated_by"], self.john_wick.username)
+        self.assertEqual(third_item["type"], "TIMELINE")
+        self.assertEqual(third_item["order"], 1)
+        self.assertTrue(third_item["user_can_do_actions"])
 
     def test_data_approved(self):
         self.setup_approve()

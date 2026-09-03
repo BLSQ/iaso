@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRedirectToReplace } from 'bluesquare-components';
-import { useFormik } from 'formik';
+import { FormikHelpers, useFormik } from 'formik';
 import { isEqual, merge } from 'lodash';
+import { cloneDeep } from 'lodash';
 import { useQueryClient } from 'react-query';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { UuidAsString } from 'Iaso/types/general';
@@ -101,7 +102,10 @@ export const useCampaignFormState = ({
     } = formik;
 
     const handleSubmit = useCallback(
-        (values, helpers) => {
+        (
+            values: CampaignFormValues,
+            helpers: FormikHelpers<CampaignFormValues>,
+        ) => {
             saveCampaign(convertEmptyStringToNull(values), {
                 onSuccess: (result: Campaign) => {
                     setIsUpdated(true);
@@ -133,13 +137,12 @@ export const useCampaignFormState = ({
     );
 
     const handleClose = useCallback(() => {
-        formik.setValues(baseValues);
-        setSelectedCampaignId(undefined);
+        formik.setValues(cloneDeep(formikInitialValues));
         if (isUpdated) {
             queryClient.invalidateQueries('campaigns');
             queryClient.invalidateQueries('subActivities');
         }
-    }, [isUpdated, formik, queryClient]);
+    }, [formik, formikInitialValues, isUpdated, queryClient]);
     const isFormChanged = !isEqual(values, formikInitialValues);
 
     const handleConfirm = useCallback(() => {

@@ -1190,6 +1190,8 @@
     "iaso.orgUnits.addSource": "Add source",
     "iaso.orgUnits.addToGroups": "Add to group(s)",
     "iaso.orgUnits.bulkChangeCount": "You are about to change {count} Org units",
+    "iaso.orgUnits.bulkChangeTaskHelp": "The modification runs in the background and can take a few minutes.",
+    "iaso.orgUnits.modifyAndFollow": "Modify and follow",
     "iaso.orgUnits.closingDate": "Closing date",
     "iaso.orgUnits.code": "Code",
     "iaso.orgUnits.confirmMultiChange": "Confirm bulk changes ?",

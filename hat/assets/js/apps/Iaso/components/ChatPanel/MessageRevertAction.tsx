@@ -1,13 +1,6 @@
 import React, { FC, useCallback, useState } from 'react';
 import UndoIcon from '@mui/icons-material/Undo';
-import {
-    Box,
-    IconButton,
-    SxProps,
-    Theme,
-    Tooltip,
-    Typography,
-} from '@mui/material';
+import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import { ConfirmCancelModal, useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import { ChatMessage } from './ChatPanel';
@@ -70,12 +63,9 @@ export const MessageRevertAction: FC<Props> = ({
 
     if (message.reverted) {
         return (
-            <Box sx={styles.root as SxProps<Theme>}>
-                <Typography
-                    variant="caption"
-                    sx={styles.revertedNote as SxProps<Theme>}
-                >
-                    <UndoIcon sx={styles.revertedIcon as SxProps<Theme>} />
+            <Box sx={styles.root}>
+                <Typography variant="caption" sx={styles.revertedNote}>
+                    <UndoIcon sx={styles.revertedIcon} />
                     {formatMessage(MESSAGES.reverted)}
                 </Typography>
             </Box>
@@ -83,7 +73,7 @@ export const MessageRevertAction: FC<Props> = ({
     }
 
     return (
-        <Box sx={styles.root as SxProps<Theme>}>
+        <Box sx={styles.root}>
             <Tooltip title={formatMessage(MESSAGES.revert)}>
                 <span>
                     <IconButton
@@ -91,7 +81,7 @@ export const MessageRevertAction: FC<Props> = ({
                         aria-label={formatMessage(MESSAGES.revert)}
                         disabled={isLoading}
                         onClick={openConfirm}
-                        sx={styles.button as SxProps<Theme>}
+                        sx={styles.button}
                     >
                         <UndoIcon fontSize="small" />
                     </IconButton>

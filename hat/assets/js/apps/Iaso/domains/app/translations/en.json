@@ -1231,6 +1231,7 @@
     "iaso.orgUnits.referenceForm": "Reference form",
     "iaso.orgUnits.referenceForms": "Reference forms",
     "iaso.orgUnits.rejectOrgUnit": "Reject Org Unit",
+    "iaso.orgUnits.rejectOrgUnitQuestion": "Are you sure you want to reject this org unit: {name}?",
     "iaso.orgUnits.removeAsDefaultImage": "Remove as default image",
     "iaso.orgUnits.removeFromGroups": "Remove from group(s)",
     "iaso.orgUnits.search": "Search org unit",

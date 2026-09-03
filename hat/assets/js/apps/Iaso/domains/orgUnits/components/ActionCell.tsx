@@ -1,16 +1,23 @@
-import React, { FunctionComponent, useMemo, useCallback } from 'react';
-import { IconButton } from 'bluesquare-components';
+import React, {
+    FunctionComponent,
+    useMemo,
+    useCallback,
+    useState,
+} from 'react';
+import { DialogContentText } from '@mui/material';
+import { IconButton, ConfirmCancelModal } from 'bluesquare-components';
+import { FormattedMessage } from 'react-intl';
 import { baseUrls } from '../../../constants/urls';
 import { isValidCoordinate } from '../../../utils/map/mapUtils';
 import { useSaveOrgUnit, SaveOrgUnitPayload } from '../hooks';
 import MESSAGES from '../messages';
 import { OrgUnit } from '../types/orgUnit';
-
 type Props = {
     orgUnit: OrgUnit;
 };
 
 export const ActionCell: FunctionComponent<Props> = ({ orgUnit }) => {
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const { mutateAsync: saveOu, isLoading: isSaving } = useSaveOrgUnit(
         undefined,
         ['orgunits'],
@@ -50,12 +57,37 @@ export const ActionCell: FunctionComponent<Props> = ({ orgUnit }) => {
                     icon="history"
                     tooltipMessage={MESSAGES.history}
                 />
-                <IconButton
-                    onClick={handleRejectOrgUnit}
-                    icon="delete"
-                    tooltipMessage={MESSAGES.rejectOrgUnit}
-                    disabled={isSaving}
-                />
+                {orgUnit.validation_status !== 'REJECTED' && (
+                    <>
+                        <IconButton
+                            onClick={() => setIsConfirmModalOpen(true)}
+                            icon="delete"
+                            tooltipMessage={MESSAGES.rejectOrgUnit}
+                            disabled={isSaving}
+                        />
+                        <ConfirmCancelModal
+                            open={isConfirmModalOpen}
+                            closeDialog={() => setIsConfirmModalOpen(false)}
+                            onClose={() => null}
+                            id={`reject-orgunit-${orgUnit.id}`}
+                            dataTestId={`reject-orgunit-modal-${orgUnit.id}`}
+                            titleMessage={MESSAGES.rejectOrgUnit}
+                            onConfirm={handleRejectOrgUnit}
+                            onCancel={() => setIsConfirmModalOpen(false)}
+                            confirmMessage={MESSAGES.yes}
+                            cancelMessage={MESSAGES.no}
+                        >
+                            <DialogContentText id="alert-dialog-description">
+                                <FormattedMessage
+                                    {...MESSAGES.rejectOrgUnitQuestion}
+                                    values={{
+                                        name: orgUnit.name,
+                                    }}
+                                />
+                            </DialogContentText>
+                        </ConfirmCancelModal>
+                    </>
+                )}
             </section>
         );
     }, [
@@ -63,7 +95,10 @@ export const ActionCell: FunctionComponent<Props> = ({ orgUnit }) => {
         orgUnit.has_geo_json,
         orgUnit.latitude,
         orgUnit.longitude,
+        orgUnit.name,
+        orgUnit.validation_status,
         handleRejectOrgUnit,
+        isConfirmModalOpen,
         isSaving,
     ]);
     return cell;

@@ -362,7 +362,9 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(response_json["count"], 2)
         org_units = response_json["orgunits"]
         self.assertEqual(org_units[0]["id"], self.jedi_council_corruscant.id)
+        self.assertEqual(org_units[0]["code"], self.jedi_council_corruscant.code)
         self.assertEqual(org_units[1]["id"], self.jedi_council_endor.id)
+        self.assertEqual(org_units[1]["code"], self.jedi_council_endor.code)
 
     def test_org_unit_search(self):
         """GET /orgunits/ with a search based on name"""

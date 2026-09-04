@@ -211,6 +211,7 @@ class OrgUnitSearchSerializer(DynamicFieldsModelSerializerBackwardCompatibleMixi
             "aliases",
             "parent_id",
             "validation_status",
+            "code",
             "parent_name",
             "source",
             "source_ref",

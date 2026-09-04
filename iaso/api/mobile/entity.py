@@ -274,9 +274,9 @@ class MobileEntityViewSet(ModelViewSet):
         queryset = Entity.objects.filter(entity_type__in=entity_types)
         queryset = filter_on_app_id(queryset, user, app_id)
 
-        # filter_for_mobile_entity owns the org-unit scope and limit_date checks together, merged
-        # into a single correlated Exists(...) subquery against iaso_instance instead of two
-        # separate ones -- see its docstring/comment.
+        # filter_for_mobile_entity owns the org-unit scope and limit_date checks together, each as
+        # its own independent Exists(...) subquery against iaso_instance -- see its docstring and
+        # EntityQuerySet._filter_entities_with_instances' for why they stay independent.
         queryset = filter_for_mobile_entity(queryset, user, self.request)
 
         # select_related (a JOIN) is right here, not prefetch_related: `filter_for_mobile_entity` already

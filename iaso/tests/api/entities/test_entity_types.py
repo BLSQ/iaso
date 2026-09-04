@@ -532,9 +532,8 @@ class EntityTypeAPITestCase(APITestCase):
     def test_get_entities_by_entity_type_combines_org_unit_scope_and_limit_date_correctly(self):
         """Both the org-unit restriction and limit_date must still apply correctly on the
         non-search branch of get_entities_by_types now that they're both delegated to a single
-        filter_for_mobile_entity(...) call, merged into one correlated Exists(...) instead of two --
-        mirrors MobileEntityAPITestCase's equivalent test for the /api/mobile/entities/ list
-        endpoint."""
+        filter_for_mobile_entity(...) call, applied as two independent Exists(...) checks -- mirrors
+        MobileEntityAPITestCase's equivalent test for the /api/mobile/entities/ list endpoint."""
         entity_type = EntityType.objects.create(
             name="scoped beneficiary", reference_form=self.form_1, account=self.star_wars
         )

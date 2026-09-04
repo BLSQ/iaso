@@ -3,7 +3,6 @@ import json
 import uuid
 
 from django.db import connection
-from django.db.models import Exists, OuterRef
 from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 from rest_framework import status
@@ -394,9 +393,9 @@ class MobileEntityAPITestCase(EntityAPITestCase):
 
     def test_list_entities_combines_org_unit_scope_and_limit_date_correctly(self):
         """Both the org-unit restriction (filter_for_user) and limit_date (filter_for_mobile_entity)
-        must still apply correctly now that they're merged into a single correlated Exists(...)
-        against iaso_instance instead of two separate ones, for entities that satisfy only one of the
-        two conditions, only the other, both, or neither."""
+        must apply correctly together, via their two independent Exists(...) checks against
+        iaso_instance (see EntityQuerySet._filter_entities_with_instances), for entities that
+        satisfy only one of the two conditions, only the other, both, or neither."""
         ou_other = m.OrgUnit.objects.create(name="Other country", validation_status=m.OrgUnit.VALIDATION_VALID)
         self.yoda.iaso_profile.org_units.add(self.ou_country)
 
@@ -433,22 +432,20 @@ class MobileEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(response_json["count"], 1)
         self.assertEqual(response_json["results"][0]["id"], str(entity_in_scope_recent.uuid))
 
-    def test_list_entities_drops_entity_when_scope_and_recency_are_on_different_instances(self):
-        """Pins down a semantic side-effect of merging the org-unit-scope and limit_date checks into
-        a *single* correlated Exists(...) (see EntityQuerySet._filter_entities_with_instances):
-        an entity now needs ONE instance that is *both* inside the user's org-unit scope AND
-        recently updated. Before that merge (pre-03a509698c), the two checks were independent
-        `.filter(Exists(...))` calls: an entity qualified if it had *any* instance in scope, and
-        *separately* *any* (possibly different) instance that was recent.
+    def test_list_entities_includes_entity_when_scope_and_recency_are_on_different_instances(self):
+        """Regression test for a real bug found while reviewing the merged-Exists optimization
+        (reproduced live against a prod data copy: entity 82070255-ee36-4d29-87ae-b7688f7e2d0f,
+        account 37, before this fix): folding the org-unit-scope and limit_date checks into a
+        single correlated Exists(...) requires ONE instance to satisfy both simultaneously, instead
+        of each condition being independently satisfiable by a *different* instance of the same
+        entity. EntityQuerySet._filter_entities_with_instances now applies them as two independent
+        Exists(...) checks specifically to keep this case correct.
 
         Unlike test_list_entities_combines_org_unit_scope_and_limit_date_correctly above (where each
         entity has a single instance carrying both conditions at once), this entity has TWO
-        instances: one OLD instance inside scope, and one RECENT instance outside scope. Under the
-        pre-merge (independent Exists) semantics this entity would still sync; under the current
-        (merged) semantics it's silently dropped, which this test demonstrates side by side.
-
-        If this test starts failing, the merged-Exists tradeoff changed -- that's worth a deliberate
-        look, not a "just update the assertion" fix.
+        instances: one OLD instance inside scope, and one RECENT instance outside scope. Neither
+        instance alone satisfies both conditions, but the entity should still sync: it does have
+        activity in scope, and it does have recent activity, just not on the same submission.
         """
         self.yoda.iaso_profile.org_units.add(self.ou_country)
         ou_other = m.OrgUnit.objects.create(name="Other country", validation_status=m.OrgUnit.VALIDATION_VALID)
@@ -476,33 +473,18 @@ class MobileEntityAPITestCase(EntityAPITestCase):
         m.Instance.objects.filter(pk=instance_in_scope_old.pk).update(updated_at=old_date)
         m.Instance.objects.filter(pk=instance_out_of_scope_recent.pk).update(updated_at=recent_date)
 
-        # What the pre-merge code effectively did: two independent Exists(), each satisfiable by a
-        # different instance -- this entity qualifies for both checks taken separately.
-        org_units_qs = m.OrgUnit.objects.hierarchy(self.yoda.iaso_profile.org_units.all())
-        pre_merge_semantics_qs = (
-            m.Entity.objects.filter(account=self.account)
-            .filter(Exists(m.Instance.non_deleted_objects.filter(org_unit__in=org_units_qs, entity_id=OuterRef("pk"))))
-            .filter(
-                Exists(m.Instance.non_deleted_objects.filter(updated_at__gte=limit_date_str, entity_id=OuterRef("pk")))
-            )
-        )
-        self.assertTrue(
-            pre_merge_semantics_qs.filter(pk=entity.pk).exists(),
-            "sanity check: with two independent Exists(...) this entity should still qualify",
-        )
-
-        # Current (merged Exists) behaviour on the live endpoint: the same entity is dropped.
         self.client.force_authenticate(self.yoda)
         response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id, "limit_date": limit_date_str})
         response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
 
-        self.assertEqual(response_json["count"], 0)
+        self.assertEqual(response_json["count"], 1)
+        self.assertEqual(response_json["results"][0]["id"], str(entity.uuid))
 
     def test_list_entities_full_sync_without_limit_date_includes_stale_entities(self):
         """A full sync (limit_date omitted entirely, as the mobile app does on first install --
         see FetchEntities.kt) must return entities regardless of activity date, including ones an
-        incremental sync (limit_date set) would exclude. Exercises filter_for_user's merged
-        Exists(...) with only the org-unit condition present (limit_date=None), distinct from
+        incremental sync (limit_date set) would exclude. Exercises the org-unit-scope Exists(...)
+        on its own (limit_date=None, so no recency Exists(...) is added at all), distinct from
         test_list_entities_combines_org_unit_scope_and_limit_date_correctly above, which only
         covers the case where both conditions are present together."""
         self.yoda.iaso_profile.org_units.add(self.ou_country)

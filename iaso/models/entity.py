@@ -140,28 +140,61 @@ class ProjectNotFoundError(ValidationError):
 
 class EntityQuerySet(models.QuerySet):
     def _filter_entities_with_instances(self, *, limit_date=None, org_units_qs=None):
-        instances = Instance.non_deleted_objects.all()
+        """AND-combine, as *independent* conditions, an org-unit-scope check and a limit_date check
+        against an entity's related instances: each condition gets its own correlated Exists(...),
+        so a *different* instance of the same entity can satisfy each one (e.g. an old in-scope
+        submission and a separate, more recent out-of-scope one both count -- the entity still
+        qualifies for both). Folding both conditions into one shared `instances` queryset before a
+        single Exists(...) would instead require a *single* instance to satisfy both simultaneously
+        -- a real semantic difference, not just a query-shape detail (see
+        test_list_entities_includes_entity_when_scope_and_recency_are_on_different_instances).
+
+        org_units_qs is materialized into a concrete id list before filtering: even once
+        _org_units_qs_for_user makes it cheap to *evaluate* on its own (see its docstring),
+        embedding it here as `org_unit__in=org_units_qs` still leaves Postgres re-running that
+        (constant, uncorrelated) subquery once per candidate instance row instead of hoisting it --
+        unlike the array-subquery shape _org_units_qs_for_user avoids, Postgres doesn't cache this
+        IN-subquery shape across rows either, so at real account scale (a full sync with no
+        limit_date, ~396K candidate entities) that adds up to ~1.8M repeated point lookups against
+        iaso_orgunit (measured ~97GB / 3.7s). A concrete id list sidesteps the question entirely --
+        Postgres just probes iaso_instance_org_unit_entity_idx directly.
+        """
+        queryset = self
 
         if org_units_qs is not None:
-            instances = instances.filter(org_unit__in=org_units_qs)
+            org_unit_ids = list(org_units_qs.values_list("id", flat=True))
+            queryset = queryset.filter(
+                Exists(Instance.non_deleted_objects.filter(org_unit_id__in=org_unit_ids, entity_id=OuterRef("pk")))
+            )
 
         if limit_date:
             try:
-                instances = instances.filter(updated_at__gte=limit_date)
+                queryset = queryset.filter(
+                    Exists(Instance.non_deleted_objects.filter(updated_at__gte=limit_date, entity_id=OuterRef("pk")))
+                )
             except ValidationError:
                 raise InvalidLimitDateError(f"Invalid limit date {limit_date}")
 
-        # Exists(...) with a correlated OuterRef lets Postgres push the entity_id correlation down
-        # (nested loop keyed on the entity's own instances) instead of the id__in=Subquery(...distinct())
-        # shape, which forced Postgres to materialize/sort/dedupe every matching instance row across the
-        # whole table before it could probe entities against it -- the dominant cost of this query in prod.
-        return self.filter(Exists(instances.filter(entity_id=OuterRef("pk"))))
+        return queryset
 
     def _org_units_qs_for_user(self, user):
-        """Org unit hierarchy the user's profile is restricted to, or None if unrestricted."""
+        """Org unit hierarchy the user's profile is restricted to, or None if unrestricted.
+
+        Passes a materialized `list(...)` of the profile's org units, not the QuerySet, to
+        OrgUnit.objects.hierarchy(...): given a QuerySet, hierarchy() builds
+        `path__descendants=ArraySubquery(...)`, i.e. a single `path <@ ARRAY(...)` check --
+        ltree's GiST index isn't used for the array form once it has more than one element, so
+        Postgres falls back to a full/parallel sequential scan of iaso_orgunit to enumerate
+        descendants (measured ~1.3s / ~7.1GB touched on real prod data for a 7-org-unit profile,
+        every 7-org-unit-array element scanned against the *whole* org unit table). Given a plain
+        list instead, hierarchy() OR-combines one `path <@ single_value` check per org unit, and
+        each of those individually *is* GiST-indexable (a BitmapOr of per-org-unit Bitmap Index
+        Scans) -- same real profile: ~1.3s -> ~1.3ms, regardless of how many org units are
+        directly assigned.
+        """
         profile = user.iaso_profile
         if profile.org_units.exists():
-            return OrgUnit.objects.hierarchy(profile.org_units.all())
+            return OrgUnit.objects.hierarchy(list(profile.org_units.all()))
         return None
 
     def filter_for_mobile_entity(
@@ -207,12 +240,10 @@ class EntityQuerySet(models.QuerySet):
             queryset = queryset.filter(account=profile.account)
             org_units_qs = self._org_units_qs_for_user(user)
 
-        # Merge the org-unit scope and limit_date checks into a *single* correlated Exists(...)
-        # subquery against iaso_instance, rather than issuing one Exists(...) for each. Two stacked
-        # EXISTS(...) subqueries against the same table -- even though each is individually cheap --
-        # push Postgres off the cheap per-entity incremental-scan plan and into a full sequential
-        # scan + hash join of the whole account, regardless of org unit scope size: measured ~7M vs
-        # ~200 buffer blocks touched for the same real profile+query once merged into one.
+        # See _filter_entities_with_instances' docstring: org-unit scope and limit_date are applied
+        # as two independent Exists(...) checks (a different instance can satisfy each), not merged
+        # into one -- that's what keeps this correct for an entity whose in-scope activity and its
+        # most recent activity happened on different instances.
         if org_units_qs is not None or limit_date:
             queryset = queryset._filter_entities_with_instances(org_units_qs=org_units_qs, limit_date=limit_date)
 

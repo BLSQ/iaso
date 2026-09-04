@@ -1,5 +1,8 @@
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory
+from django.urls import NoReverseMatch
 
 from iaso.auth.backends import MultiTenantAuthBackend
 from iaso.models import Account, TenantUser
@@ -58,3 +61,13 @@ class MultiTenantAuthBackendTestCase(TestCase):
 
         result = self.backend.authenticate(self.request, username="main_user", password="wrong_password")
         self.assertIsNone(result)
+
+    @patch("iaso.auth.backends.reverse", side_effect=NoReverseMatch("token_obtain_pair"))
+    def test_authenticate_when_token_url_is_not_registered(self, _mock_reverse):
+        """DISABLE_PASSWORD_LOGINS unregisters token_obtain_pair; authenticate must still succeed."""
+        user = self.create_user_with_profile(username="single_user", account=self.account1)
+        user.set_password("password")
+        user.save()
+
+        result = self.backend.authenticate(self.request, username="single_user", password="password")
+        self.assertEqual(result, user)

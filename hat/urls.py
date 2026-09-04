@@ -170,6 +170,9 @@ else:
         path("models/", ModelDataView.as_view(), name="models"),
     ]
 
+    if getattr(settings, "MCP_ENABLED", False):
+        urlpatterns += [path("", include("iaso.mcp.urls"))]
+
     for plugin_name in settings.PLUGINS:
         urls_module_name = "plugins." + plugin_name + ".urls"
         urls_module = importlib.util.find_spec(urls_module_name)  # checking if the urls module exists for this plugin

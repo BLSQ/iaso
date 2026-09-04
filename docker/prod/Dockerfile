@@ -25,6 +25,14 @@ COPY ../../tsconfig.json ../../babel-register.js ./
 # Build webpack assets
 RUN npm run webpack-prod
 
+# MCP catalog UI (Vite). Served from iaso/mcp/frontend/dist at /mcp/app/.
+COPY ../../iaso/mcp/frontend/package.json ../../iaso/mcp/frontend/package-lock.json ./iaso/mcp/frontend/
+WORKDIR /opt/app/iaso/mcp/frontend
+RUN npm ci
+COPY ../../iaso/mcp/frontend/ ./
+RUN npm run build
+WORKDIR /opt/app
+
 # ── Stage 2: Python dependency builder ────────────────────────────────────────
 # Full Bullseye image to compile C extensions
 # Only the resulting /.venv is carried forward.
@@ -94,6 +102,8 @@ COPY --from=npmbuilder --chown=appuser:appuser /opt/app/hat/assets /opt/app/hat/
 # Copy project code (all owned by appuser, no separate chown layer needed)
 COPY --chown=appuser:appuser ../../hat ./hat
 COPY --chown=appuser:appuser ../../iaso ./iaso
+# Overlay the built MCP UI (local dist/ is dockerignored)
+COPY --from=npmbuilder --chown=appuser:appuser /opt/app/iaso/mcp/frontend/dist /opt/app/iaso/mcp/frontend/dist
 COPY --chown=appuser:appuser ../../setuper ./setuper
 COPY --chown=appuser:appuser ../../beanstalk_worker ./beanstalk_worker
 COPY --chown=appuser:appuser ../../dynamic_fields ./dynamic_fields

@@ -16,6 +16,8 @@ service so `/mcp` is on with `docker compose up`. Production must set
 
 ## Run
 
+The production image (`docker/prod/Dockerfile`, used by GitHub deploy/build workflows) runs `npm ci && npm run build` in `iaso/mcp/frontend` and copies `dist/` into the image.
+
 `docker compose up` starts Django (`:8081`) and `mcp-ui` (`:5173`).
 
 - Catalog (browser): `http://127.0.0.1:8081/mcp/`

@@ -236,15 +236,13 @@ class MetricTypeAPITestCase(APITestCase):
         response = self.client.delete(f"{self.BASE_URL}{self.metric_type_1.id}/")
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
-    def test_delete_openhexa_metric_type_forbidden(self):
+    def test_delete_openhexa_metric_type(self):
+        """OpenHexa data layers can be removed like any other layer (re-importable afterwards)."""
         self.client.force_authenticate(self.user)
         response = self.client.delete(f"{self.BASE_URL}{self.metric_type_2.id}/")
-        data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
-        # Verify data contains error message
-        self.assertIn("Cannot delete OpenHexa metric types", data)
-        # Verify that the MetricType still exists
-        metric_type = MetricType.objects.get(id=self.metric_type_2.id)
-        self.assertIsNotNone(metric_type)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        with self.assertRaises(MetricType.DoesNotExist):
+            MetricType.objects.get(id=self.metric_type_2.id)
 
     def test_metric_type_grouped_per_category(self):
         self.client.force_authenticate(self.user)

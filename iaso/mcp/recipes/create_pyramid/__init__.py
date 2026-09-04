@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import logging
 import os
 import sys
@@ -442,11 +441,10 @@ def _write(
     dry_run: bool,
 ) -> Any:
     logger.debug(
-        "%s %s /api/%s %s",
+        "%s %s /api/%s",
         "[DRY-RUN]" if dry_run else "[WRITE]",
         method,
         path.lstrip("/"),
-        json.dumps(json_body, default=str),
     )
     if dry_run:
         return None

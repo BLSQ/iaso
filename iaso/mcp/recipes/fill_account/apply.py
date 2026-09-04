@@ -38,12 +38,10 @@ def _write(
     params: dict[str, Any] | None = None,
 ) -> Any:
     logger.debug(
-        "%s %s /api/%s %s %s",
+        "%s %s /api/%s",
         "[DRY-RUN]" if dry_run else "[WRITE]",
         method,
         path.lstrip("/"),
-        json.dumps(params, default=str) if params else "",
-        json.dumps(json_body, default=str),
     )
     if dry_run:
         return None

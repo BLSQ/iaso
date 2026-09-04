@@ -38,6 +38,19 @@ def _wants_html(request: HttpRequest) -> bool:
     return "text/html" in accept
 
 
+def _unauthorized(request: HttpRequest) -> JsonResponse:
+    response = JsonResponse(
+        {
+            "error": "unauthorized",
+            "error_description": "Bearer token required. Complete OAuth (Connect / /mcp auth).",
+        },
+        status=401,
+    )
+    response["WWW-Authenticate"] = _www_authenticate(request)
+    return response
+
+
+@require_GET
 def tools_json(request: HttpRequest) -> JsonResponse:
     return JsonResponse(tools_catalog())
 
@@ -62,20 +75,14 @@ def mcp_endpoint(request: HttpRequest) -> HttpResponse:
             return spa(request)
         return tools_json(request)
     if request.method == "DELETE":
+        if not _has_bearer(request) or not request.user.is_authenticated:
+            return _unauthorized(request)
         return HttpResponse(status=200)
     if request.method != "POST":
         return HttpResponse(status=405)
 
     if not _has_bearer(request) or not request.user.is_authenticated:
-        response = JsonResponse(
-            {
-                "error": "unauthorized",
-                "error_description": "Bearer token required. Complete OAuth (Connect / /mcp auth).",
-            },
-            status=401,
-        )
-        response["WWW-Authenticate"] = _www_authenticate(request)
-        return response
+        return _unauthorized(request)
 
     set_current_request(request)
     result = handle_jsonrpc(request.body, request.user)
@@ -84,15 +91,20 @@ def mcp_endpoint(request: HttpRequest) -> HttpResponse:
     return JsonResponse(result)
 
 
+@require_GET
 def spa(request: HttpRequest, rest: str = "") -> HttpResponse:
     index = _FRONTEND_DIST / "index.html"
     if index.is_file():
         return HttpResponse(index.read_text(encoding="utf-8"), content_type="text/html")
-    if settings.DEBUG:
+    if settings.DEBUG and not settings.IN_TESTS:
         return redirect("http://127.0.0.1:5173/mcp/app/")
-    return HttpResponse("MCP frontend not built. Run npm run build in iaso/mcp/frontend.", status=503)
+    return HttpResponse(
+        "MCP frontend not built. Run npm run build in iaso/mcp/frontend.",
+        content_type="text/html",
+    )
 
 
+@require_GET
 def frontend_asset(request: HttpRequest, path: str) -> FileResponse:
     root = (_FRONTEND_DIST / "assets").resolve()
     target = (root / path).resolve()
@@ -101,6 +113,7 @@ def frontend_asset(request: HttpRequest, path: str) -> FileResponse:
     return FileResponse(target.open("rb"))
 
 
+@require_GET
 def frontend_mark(request: HttpRequest) -> FileResponse:
     try:
         return FileResponse(staticfiles_storage.open("mcp/iaso-mark.png"), content_type="image/png")

@@ -15,7 +15,7 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 from oauth2_provider.models import Application
 from oauth2_provider.views import AuthorizationView
 
@@ -62,6 +62,7 @@ def _server_metadata(request: HttpRequest) -> dict:
     }
 
 
+@require_GET
 def protected_resource_metadata(request: HttpRequest) -> JsonResponse:
     base_url = get_base_url(request)
     return JsonResponse(
@@ -75,10 +76,12 @@ def protected_resource_metadata(request: HttpRequest) -> JsonResponse:
     )
 
 
+@require_GET
 def oauth_server_metadata(request: HttpRequest) -> JsonResponse:
     return JsonResponse(_server_metadata(request))
 
 
+@require_GET
 def openid_configuration(request: HttpRequest) -> JsonResponse:
     return JsonResponse(_server_metadata(request))
 

@@ -151,6 +151,9 @@ class McpEndpointAuthTest(TestCase):
         session_only = self.client.post("/mcp", data=body, content_type="application/json")
         self.assertEqual(session_only.status_code, 401)
 
+        deleted = self.client.delete("/mcp")
+        self.assertEqual(deleted.status_code, 401)
+
     def test_mcp_ping_with_bearer(self):
         body = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "ping"})
         response = self.client.post(
@@ -203,7 +206,7 @@ class McpEndpointAuthTest(TestCase):
 
     def test_get_mcp_html_for_browsers(self):
         response = self.client.get("/mcp", HTTP_ACCEPT="text/html,application/xhtml+xml")
-        self.assertIn(response.status_code, {200, 302, 503})
+        self.assertIn(response.status_code, {200, 302})
         if response.status_code == 302:
             self.assertIn("/mcp/app/", response["Location"])
         else:

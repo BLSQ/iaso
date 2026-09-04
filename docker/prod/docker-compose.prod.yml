@@ -82,6 +82,7 @@ services:
         - LOGIN_LOGO_PATH
         - LOGO_PATH
         - MAINTENANCE_MODE
+        - MCP_ENABLED
         - PLUGINS
         - PROD_IMAGE_CREATION
         - PROD_IMAGE_DIGEST

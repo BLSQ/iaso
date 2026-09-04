@@ -490,6 +490,40 @@ class WebEntityAPITestCase(EntityAPITestCase):
         ]
         self.assertEqual(row_to_test, expected_row)
 
+    def test_list_entities_filter_by_groups_no_duplicates_when_org_unit_in_multiple_groups(self):
+        """`groups` filters via `Group.org_units`, a genuine m2m: an org unit belonging to more than
+        one of the requested groups must not duplicate the Entity row in the response or the count
+        (guards the field_name=... -> Exists(...) rewrite in EntityFilterSet.filter_groups)."""
+        self.client.force_authenticate(self.yoda)
+
+        group_1 = m.Group.objects.create(name="Group 1", source_version=self.sw_version)
+        group_2 = m.Group.objects.create(name="Group 2", source_version=self.sw_version)
+        group_1.org_units.add(self.ou_country)
+        group_2.org_units.add(self.ou_country)
+
+        instance = self.create_form_instance(
+            project=self.project, org_unit=self.ou_country, form=self.form_1, uuid=uuid.uuid4()
+        )
+        entity = m.Entity.objects.create(
+            name="entity_in_two_groups",
+            entity_type=self.entity_type,
+            attributes=instance,
+            account=self.account,
+        )
+        instance.entity = entity
+        instance.save()
+
+        groups_param = f"{group_1.pk},{group_2.pk}"
+
+        response = self.client.get("/api/entities/", {"groups": groups_param})
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        entity_ids = [e["id"] for e in response_json["result"]]
+        self.assertEqual(entity_ids, [entity.id], f"expected a single entity, got {entity_ids}")
+
+        count_response = self.client.get("/api/entities/count/", {"groups": groups_param})
+        count_json = self.assertJSONResponse(count_response, status.HTTP_200_OK)
+        self.assertEqual(count_json["count"], 1)
+
     def test_list_entities_columns_with_blank_label_fields(self):
         """start/end/calculate often have blank labels; columns must still be returned."""
         self.client.force_authenticate(self.yoda)

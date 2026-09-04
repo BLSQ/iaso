@@ -1,8 +1,12 @@
+import math
+
+from django.db.models import Count, Window
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions, serializers
 from rest_framework.exceptions import AuthenticationFailed, NotFound, ParseError
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 
 from iaso.api.common import DeletionFilterBackend, HasPermission, ModelViewSet, Paginator, TimestampField
 from iaso.api.query_params import LIMIT, PAGE
@@ -12,16 +16,40 @@ from iaso.models.entity import InvalidJsonContentError, InvalidLimitDateError, P
 from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION
 
 
-def filter_for_mobile_entity(queryset, request):
+def filter_for_mobile_entity(queryset, user, request):
     if queryset is not None:
         try:
             queryset = queryset.filter_for_mobile_entity(
-                request.query_params.get("limit_date"), request.query_params.get("json_content")
+                user,
+                limit_date=request.query_params.get("limit_date"),
+                json_content=request.query_params.get("json_content"),
             )
         except InvalidLimitDateError as e:
             raise ParseError(e.message)
         except InvalidJsonContentError as e:
             raise ParseError(e.message)
+        except UserNotAuthError as e:
+            raise AuthenticationFailed(e.message)
+
+    return queryset
+
+
+def filter_for_mobile_entity_non_geo_restricted_search(queryset, user, request):
+    # "Online search" (IA-3021): a user can find an entity that isn't scoped to their org units /
+    # synced to their device yet -- see EntityQuerySet.filter_for_mobile_entity_non_geo_restricted_search.
+    if queryset is not None:
+        try:
+            queryset = queryset.filter_for_mobile_entity_non_geo_restricted_search(
+                user,
+                limit_date=request.query_params.get("limit_date"),
+                json_content=request.query_params.get("json_content"),
+            )
+        except InvalidLimitDateError as e:
+            raise ParseError(e.message)
+        except InvalidJsonContentError as e:
+            raise ParseError(e.message)
+        except UserNotAuthError as e:
+            raise AuthenticationFailed(e.message)
 
     return queryset
 
@@ -122,13 +150,76 @@ class MobileEntitySerializer(serializers.ModelSerializer):
 
 
 class MobileEntitiesSetPagination(Paginator):
+    """
+    DRF's default pagination issues two separate queries: one for `.count()`, one for the page
+    slice. Both re-run the same (expensive, for this endpoint) entity filtering. `Window` lets
+    Postgres compute the total count and the page in the same query execution, roughly halving
+    the DB cost -- measured ~2x fewer buffer blocks touched on both a narrow and a whole-country
+    org unit scope, same query plan either way.
+    """
+
     page_size_query_param = LIMIT
     page_query_param = PAGE
     page_size = 1000
     max_page_size = 1000
 
     def get_iaso_page_number(self, request):
-        return int(request.query_params.get(self.page_query_param, 1))
+        try:
+            return int(request.query_params.get(self.page_query_param, 1))
+        except (TypeError, ValueError):
+            raise ParseError(f"Invalid {self.page_query_param}")
+
+    def paginate_queryset(self, queryset, request, view=None):
+        page_size = self.get_page_size(request)
+        if not page_size:
+            return None
+
+        page_number = self.get_iaso_page_number(request)
+        if page_number < 1:
+            raise NotFound(self.invalid_page_message)
+
+        offset = (page_number - 1) * page_size
+        windowed_qs = queryset.annotate(_iaso_total_count=Window(expression=Count("id")))[offset : offset + page_size]
+        results = list(windowed_qs)
+
+        if results:
+            total_count = results[0]._iaso_total_count
+        elif page_number == 1:
+            # Page 1 came back empty -> the whole queryset matched nothing, no fallback query needed:
+            # if page 1 is empty, so is every other page.
+            total_count = 0
+        else:
+            # An empty page beyond page 1 is ambiguous on its own -- a genuinely empty queryset, or a
+            # page number past the end. The one case that still needs a real count() query, but it's
+            # the rare/cold path (a client paging past the last page), not the common one.
+            total_count = queryset.count()
+
+        num_pages = math.ceil(total_count / page_size) if total_count else 1
+        if page_number > num_pages:
+            raise NotFound(self.invalid_page_message)
+
+        self.count = total_count
+        self.num_pages = num_pages
+        self.current_page_number = page_number
+        self.current_page_size = page_size
+        self.next_exists = offset + page_size < total_count
+        self.previous_exists = page_number > 1
+        self.request = request
+
+        return results
+
+    def get_paginated_response(self, data):
+        return Response(
+            {
+                "count": self.count,
+                self.get_results_key(): data,
+                "has_next": self.next_exists,
+                "has_previous": self.previous_exists,
+                "page": self.current_page_number,
+                "pages": self.num_pages,
+                "limit": self.current_page_size,
+            }
+        )
 
 
 @extend_schema(tags=["Mobile", "Entities"])
@@ -181,13 +272,34 @@ class MobileEntityViewSet(ModelViewSet):
         entity_types = EntityType.objects.filter(reference_form__projects=project).only("id")
 
         queryset = Entity.objects.filter(entity_type__in=entity_types)
+        queryset = filter_on_app_id(queryset, user, app_id)
 
-        queryset = filter_on_user_and_app_id(queryset, user, app_id)
-        queryset = filter_for_mobile_entity(queryset, self.request)
+        # filter_for_mobile_entity owns the org-unit scope and limit_date checks together, each as
+        # its own independent Exists(...) subquery against iaso_instance -- see its docstring and
+        # EntityQuerySet._filter_entities_with_instances' for why they stay independent.
+        queryset = filter_for_mobile_entity(queryset, user, self.request)
 
-        queryset = queryset.select_related("entity_type", "attributes").prefetch_related("instances")
-
-        queryset = queryset.distinct("id")
+        # select_related (a JOIN) is right here, not prefetch_related: `filter_for_mobile_entity` already
+        # filters on `attributes__deleted`, which forces Postgres to join iaso_instance into this query
+        # regardless -- prefetch_related would keep that join *and* add a second round trip to re-fetch
+        # the same rows. What actually wastes work is pulling every iaso_instance column (json, location,
+        # file, ...) into that join when the serializer only ever reads `attributes.uuid` -- `.only()` keeps
+        # the single JOIN but drops the unused columns from the SELECT list.
+        queryset = (
+            queryset.select_related("entity_type", "attributes")
+            .only(
+                "id",
+                "uuid",
+                "created_at",
+                "updated_at",
+                "entity_type_id",
+                "attributes_id",
+                "entity_type__id",
+                "attributes__id",
+                "attributes__uuid",
+            )
+            .prefetch_related("instances")
+        )
 
         return queryset.order_by("id")
 

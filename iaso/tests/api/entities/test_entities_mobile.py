@@ -529,6 +529,45 @@ class MobileEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(response_json["count"], 1)
         self.assertEqual(response_json["results"][0]["id"], str(stale_entity.uuid))
 
+    def test_list_entities_prefetches_instances_in_a_deterministic_order(self):
+        """The `instances` array nested in each entity (MobileEntitySerializer.get_instances) is
+        populated from a single Prefetch("instances", ...) query in
+        EntityQuerySet._filter_for_mobile_entity, not lazily per-entity -- and `Instance` has no
+        `Meta.ordering`. Without an explicit ORDER BY on that Prefetch's queryset, Postgres is free to
+        return the same set of instances in a different row order on each execution: same records,
+        but a different `instances` order in the response body every sync (observed live: identical
+        requests a few seconds apart returning byte-different bodies with the same record count).
+
+        A handful of freshly-inserted rows in a test database can't be relied on to actually come back
+        scrambled without an ORDER BY (Postgres commonly happens to return them in insertion order),
+        so asserting on response order would be flaky in both directions. This instead asserts on the
+        generated SQL directly: the prefetch query for `instances` must include an explicit
+        `ORDER BY ... id`.
+        """
+        instance = self.create_form_instance(
+            project=self.project, org_unit=self.ou_country, form=self.form_1, uuid=uuid.uuid4()
+        )
+        entity = m.Entity.objects.create(
+            name="entity_with_instance", entity_type=self.entity_type, attributes=instance, account=self.account
+        )
+        instance.entity = entity
+        instance.save()
+
+        self.client.force_authenticate(self.yoda)
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id})
+
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response_json["count"], 1)
+
+        instance_prefetch_queries = [q["sql"] for q in ctx.captured_queries if 'FROM "iaso_instance"' in q["sql"]]
+        self.assertEqual(
+            len(instance_prefetch_queries),
+            1,
+            f"expected a single prefetch query for instances, got {instance_prefetch_queries}",
+        )
+        self.assertIn('ORDER BY "iaso_instance"."id"', instance_prefetch_queries[0])
+
     def test_list_entities_pagination_matches_count_and_pages(self):
         """The count+data-in-one-query paginator (Window(Count())) must report the same count/
         has_next/has_previous/pages a plain queryset would, across a full page, the true last

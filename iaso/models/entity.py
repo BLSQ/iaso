@@ -258,9 +258,12 @@ class EntityQuerySet(models.QuerySet):
 
         p = Prefetch(
             "instances",
-            queryset=Instance.objects.filter(
-                deleted=False, org_unit__validation_status=OrgUnit.VALIDATION_VALID
-            ).exclude(file=""),
+            # order_by("id"): Instance has no Meta.ordering, so without this Postgres is free to return
+            # these rows in a different order on each execution -- same instances, but a different order
+            # in the mobile serializer's `instances` array every sync (see MobileEntitySerializer.get_instances).
+            queryset=Instance.objects.filter(deleted=False, org_unit__validation_status=OrgUnit.VALIDATION_VALID)
+            .exclude(file="")
+            .order_by("id"),
         )
 
         queryset = queryset.filter(attributes_id__isnull=False, attributes__deleted=False)

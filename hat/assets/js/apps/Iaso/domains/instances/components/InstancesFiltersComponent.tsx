@@ -14,6 +14,7 @@ import {
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
+import { useGetOrgUnitValidationStatus } from 'Iaso/domains/orgUnits/hooks/utils/useGetOrgUnitValidationStatus';
 import { PlanningsDropdown } from 'Iaso/domains/plannings/components/PlanningsDropdown';
 import { getInstancesFilterValues, useFormState } from 'Iaso/hooks/form';
 import { LocationLimit } from 'Iaso/utils/map/LocationLimit';
@@ -137,6 +138,10 @@ const InstancesFiltersComponent = ({
         formState.formIds.value?.split(',').length === 1
             ? formState.formIds.value.split(',')[0]
             : undefined;
+    const {
+        data: validationStatusOptions,
+        isLoading: isLoadingValidationStatusOptions,
+    } = useGetOrgUnitValidationStatus();
 
     const { data: formDescriptor } = useGetFormDescriptor(formId);
     const fields = useGetQueryBuildersFields(formDescriptor, possibleFields);
@@ -412,6 +417,16 @@ const InstancesFiltersComponent = ({
                         options={orgUnitTypes || []}
                         label={MESSAGES.org_unit_type_id}
                         loading={isFetchingOuTypes}
+                    />
+                    <InputComponent
+                        keyValue="org_unit_status"
+                        clearable
+                        onChange={handleFormChange}
+                        value={formState.org_unit_status.value || null}
+                        type="select"
+                        loading={isLoadingValidationStatusOptions}
+                        options={validationStatusOptions}
+                        label={MESSAGES.org_unit_status}
                     />
                     <Box mt={2}>
                         <UserAsyncSelect

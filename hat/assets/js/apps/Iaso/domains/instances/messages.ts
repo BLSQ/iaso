@@ -998,6 +998,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Not a reference',
         id: 'iaso.instance.notReferenceSubmission',
     },
+    org_unit_status: {
+        id: 'iaso.instance.org_unit_status',
+        defaultMessage: 'Org Unit Status',
+    },
 });
 
 export default MESSAGES;

@@ -591,6 +591,7 @@
     "iaso.instance.notReferenceSubmission": "Not a reference",
     "iaso.instance.oneColumn": "One column",
     "iaso.instance.org_unit": "Org unit",
+    "iaso.instance.org_unit_status": "Org unit status",
     "iaso.instance.org_unit_type_name": "Org unit type",
     "iaso.instance.patchInstanceError": "An error occurred while saving submission",
     "iaso.instance.patchInstanceSuccesfull": "Submission saved successfully",

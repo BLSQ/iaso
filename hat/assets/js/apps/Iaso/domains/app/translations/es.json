@@ -1009,6 +1009,8 @@
     "iaso.orgUnits.project": "Proyecto",
     "iaso.orgUnits.referenceForm": "Formulario de referencia",
     "iaso.orgUnits.referenceForms": "Formularios de referencia",
+    "iaso.orgUnits.rejectOrgUnit": "Rechazar unidad organizativa",
+    "iaso.orgUnits.rejectOrgUnitQuestion": "¿Está seguro de que desea rechazar esta unidad organizativa: {name}?",
     "iaso.orgUnits.removeAsDefaultImage": "Quitar como imagen predeterminada",
     "iaso.orgUnits.removeFromGroups": "Quitar de grupo(s)",
     "iaso.orgUnits.search": "Buscar unidad organizativa",

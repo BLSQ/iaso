@@ -1233,6 +1233,7 @@
     "iaso.orgUnits.referenceForm": "Formulaire de référence",
     "iaso.orgUnits.referenceForms": "Formulaires de référence",
     "iaso.orgUnits.rejectOrgUnit": "Rejeter l'unité d'organisation",
+    "iaso.orgUnits.rejectOrgUnitQuestion": "Êtes-vous sûr de vouloir rejeter cette unité d'organisation : {name} ?",
     "iaso.orgUnits.removeAsDefaultImage": "Retirer l'image par défaut",
     "iaso.orgUnits.removeFromGroups": "Retirer du(des) groupe(s)",
     "iaso.orgUnits.search": "Rechercher une unité d'org.",

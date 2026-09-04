@@ -28,6 +28,7 @@ export const DEFAULT_ORG_UNIT_COLUMNS = [
     'org_unit_type_name',
     'source',
     'validation_status',
+    'code',
     'created_at',
     'updated_at',
     'actions',

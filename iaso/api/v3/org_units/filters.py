@@ -29,6 +29,10 @@ class OrgUnitFilterSetV3(BaseV3FilterSet):
 
     extra_allowed_params = EXTRA_ALLOWED_PARAMS
 
+    # -- id --
+    id = django_filters.NumberFilter(field_name="id", lookup_expr="exact")
+    id__in = django_filters.BaseInFilter(field_name="id", lookup_expr="in")
+
     # -- text --
     name = django_filters.CharFilter(field_name="name", lookup_expr="exact")
     # case-insensitive only, not accent-insensitive for now: that needs the `unaccent` postgres extension,

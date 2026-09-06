@@ -177,6 +177,15 @@ class OrgUnitV3APITestCase(APITestCase):
 
     # -- FilterSet fields --
 
+    def test_filter_id_exact(self):
+        response = self.client.get(BASE_URL, {"id": self.region.id})
+        self.assertEqual([r["id"] for r in response.json()["results"]], [self.region.id])
+
+    def test_filter_id_in_loads_several_org_units_by_id(self):
+        response = self.client.get(BASE_URL, {"id__in": f"{self.region.id},{self.district.id}"})
+        ids = {r["id"] for r in response.json()["results"]}
+        self.assertEqual(ids, {self.region.id, self.district.id})
+
     def test_filter_name_exact(self):
         response = self.client.get(BASE_URL, {"name": "Theed"})
         self.assertEqual([r["id"] for r in response.json()["results"]], [self.region.id])

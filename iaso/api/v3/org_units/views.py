@@ -72,6 +72,12 @@ PARQUET_EXTRA_FIELDS = [
 ]
 
 V3_ORG_UNIT_PARAMETERS = [
+    OpenApiParameter(name="id", type=OpenApiTypes.INT, description="Exact id match"),
+    OpenApiParameter(
+        name="id__in",
+        type=OpenApiTypes.STR,
+        description="Comma-separated list of ids - load several org units by id in one request.",
+    ),
     OpenApiParameter(name="name", type=OpenApiTypes.STR, description="Exact name match"),
     OpenApiParameter(
         name="name__icontains", type=OpenApiTypes.STR, description="Case-insensitive substring match on name"

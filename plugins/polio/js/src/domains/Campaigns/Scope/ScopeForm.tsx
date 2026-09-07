@@ -150,7 +150,7 @@ export const ScopeForm: FunctionComponent = () => {
 
     useSkipEffectOnMount(() => {
         setPage(0);
-    }, [filteredDistricts]);
+    }, [debouncedSearch, searchScope]);
 
     return (
         <>

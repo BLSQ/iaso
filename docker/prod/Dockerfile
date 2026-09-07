@@ -1,5 +1,5 @@
 # ── Stage 1: JS / webpack build ───────────────────────────────────────────────
-FROM node:22.18.0-bullseye-slim AS npmbuilder
+FROM node:22.18.0-bookworm-slim AS npmbuilder
 
 # Set environment variables
 ENV PROJECT_ROOT=/opt
@@ -26,9 +26,9 @@ COPY ../../tsconfig.json ../../babel-register.js ./
 RUN npm run webpack-prod
 
 # ── Stage 2: Python dependency builder ────────────────────────────────────────
-# Full Bullseye image to compile C extensions
+# Full Bookworm image to compile C extensions
 # Only the resulting /.venv is carried forward.
-FROM python:3.9-bullseye AS pybuilder
+FROM python:3.9-bookworm AS pybuilder
 
 # Set working directory
 WORKDIR /opt/app
@@ -58,7 +58,7 @@ RUN find ./.venv -type d -name "__pycache__" -exec rm -rf {} + && \
 
 # ── Stage 3: Production image ─────────────────────────────────────────────────
 # Slim image with runtime-only libraries.
-FROM python:3.9-slim-bullseye AS prod
+FROM python:3.9-slim-bookworm AS prod
 
 ARG DEPLOYED_ON=unknown
 ARG DEPLOYED_BY=unknown
@@ -72,14 +72,14 @@ RUN groupadd --gid 1001 appuser && \
     useradd --uid 1001 --gid appuser --shell /bin/bash --create-home appuser
 
 # Runtime-only dependencies:
-#  - libgdal28: GDAL shared library (runtime, no headers)
+#  - libgdal32: GDAL shared library on Bookworm (runtime, no headers)
 #  - libpq5: PostgreSQL client library (for psycopg2)
 #  - postgresql-client: psql CLI (used in wait_for_dbs.sh)
 #  - gettext-base: envsubst (used for config templating)
 #  - gettext: compilemessages needs msgfmt at build, but also useful at runtime
 #  - libmagic1: used by python-magic
 RUN apt-get update && apt-get install --yes --no-install-recommends \
-    libgdal28 \
+    libgdal32 \
     libpq5 \
     postgresql-client \
     gettext \

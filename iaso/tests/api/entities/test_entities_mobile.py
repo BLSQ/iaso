@@ -89,6 +89,19 @@ class MobileEntityAPITestCase(EntityAPITestCase):
             f"expected a single count+data entity query, got {len(entity_queries)}: {entity_queries}",
         )
         self.assertIn("OVER (", entity_queries[0])
+
+        # No query should touch "iaso_form": get_form_version_id and get_possible_form_versions_dict
+        # both read the FK column (obj.form_id / version.form_id) instead of the related Form object,
+        # so the `instances__form` prefetch that used to pull it in was removed as dead weight. If this
+        # ever comes back, either a Form-object access crept back in, or the prefetch was re-added
+        # needlessly -- in both cases that's the regression this assertion exists to catch.
+        form_queries = [q["sql"] for q in ctx.captured_queries if 'FROM "iaso_form"' in q["sql"]]
+        self.assertEqual(form_queries, [])
+
+        # The remaining 8 queries, in order: 2 permission checks (user + group permissions), 2 Project
+        # lookups (filter_on_app_id, then filter_for_mobile_entity), 1 org-unit-restriction EXISTS check,
+        # 1 merged entity count+data query (asserted above), 1 instances prefetch, and 1 FormVersion
+        # lookup for get_serializer_context's possible_form_versions dict.
         self.assertEqual(len(ctx.captured_queries), 8)
 
     def test_list_entities_with_filtered_out_entities_with_soft_deleted_instances(self):

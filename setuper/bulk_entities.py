@@ -42,7 +42,7 @@ from uuid import uuid4
 import requests
 
 from iaso_api_client import IasoClient
-from submissions import instance_by_LLIN_campaign_form, org_unit_gps_point, submission2xml
+from submissions import APP_VERSION, instance_by_LLIN_campaign_form, org_unit_gps_point, submission2xml
 
 
 BULK_UPLOAD_TASK_NAME = "process_mobile_bulk_upload"
@@ -169,7 +169,9 @@ def build_batch_zip(
 def upload_batch_zip(iaso_client, account_name, zip_buffer, batch_index):
     url = iaso_client.server_url.rstrip("/") + "/api/mobile/bulkupload/"
     files = {"zip_file": (f"bulk_entities_{batch_index}.zip", zip_buffer, "application/zip")}
-    response = requests.post(url, params={"app_id": account_name}, headers=iaso_client.headers, files=files)
+    response = requests.post(
+        url, params={"app_id": account_name, "app_version": APP_VERSION}, headers=iaso_client.headers, files=files
+    )
     if response.status_code != 204:
         raise Exception(f"Bulk upload of batch {batch_index} failed: {response.status_code} {response.text}")
 

@@ -1,9 +1,22 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
-from django.urls import reverse
+from django.urls import NoReverseMatch, reverse
 
 
 UserModel = get_user_model()
+
+
+def _is_token_obtain_request(request) -> bool:
+    """True when this authenticate() call is for JWT token issuance.
+
+    `token_obtain_pair` is not registered when DISABLE_PASSWORD_LOGINS is on.
+    """
+    if not request or not hasattr(request, "path"):
+        return False
+    try:
+        return request.path == reverse("token_obtain_pair")
+    except NoReverseMatch:
+        return False
 
 
 class MultiTenantAuthBackend(ModelBackend):
@@ -16,7 +29,7 @@ class MultiTenantAuthBackend(ModelBackend):
 
         if user:
             # Skip tenant switching for token generation requests.
-            if request and hasattr(request, "path") and request.path == reverse("token_obtain_pair"):
+            if _is_token_obtain_request(request):
                 return user
 
             # When users switch accounts, `login()` is called and automatically updates `last_login`.

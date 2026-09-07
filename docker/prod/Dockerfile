@@ -60,6 +60,13 @@ RUN find ./.venv -type d -name "__pycache__" -exec rm -rf {} + && \
 # Slim image with runtime-only libraries.
 FROM python:3.9-slim-bullseye AS prod
 
+ARG DEPLOYED_ON=unknown
+ARG DEPLOYED_BY=unknown
+ARG IASO_VERSION=
+ENV DEPLOYED_ON=$DEPLOYED_ON \
+    DEPLOYED_BY=$DEPLOYED_BY \
+    IASO_VERSION=$IASO_VERSION
+
 # Create non-root user early so COPY --chown can use it (avoids chown layer duplication)
 RUN groupadd --gid 1001 appuser && \
     useradd --uid 1001 --gid appuser --shell /bin/bash --create-home appuser

@@ -26,6 +26,70 @@ class MobileEntityAPITestCase(EntityAPITestCase):
         # queryset (e.g. via `if queryset:`), which would add an extra query.
         self.assertEqual(len(ctx.captured_queries), 7)
 
+    def test_list_entities_page_two_of_empty_result_returns_404(self):
+        """MobileEntitiesSetPagination.paginate_queryset special-cases an empty page 1 (total_count=0,
+        no fallback count() query needed). Page >1 of a genuinely empty result is the one case that
+        still falls back to a real count() query, to tell it apart from a page number past the end of
+        a *non-empty* result -- both must still 404, matching DRF's default pagination behaviour."""
+        self.client.force_authenticate(self.yoda)
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id, "page": 2})
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        # Same total as the page-1 empty case: one more query than that (the fallback count() to tell
+        # "genuinely empty" apart from "page number past the end"), but one fewer because raising
+        # NotFound short-circuits before get_serializer_context's FormVersion query ever runs.
+        self.assertEqual(len(ctx.captured_queries), 7)
+
+    def test_list_entities_non_integer_page_returns_400(self):
+        """MobileEntitiesSetPagination.get_iaso_page_number must reject a non-integer `page` the same
+        way DRF's default pagination does -- a clean 400, not an unhandled ValueError -> 500."""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id, "page": "abc"})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_list_entities_bad_limit_date_returns_400(self):
+        """An unparseable `limit_date` must raise a clean 400 (InvalidLimitDateError -> ParseError),
+        not an unhandled exception -- covers the merged filter_for_user/filter_for_mobile_entity path."""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id, "limit_date": "not-a-date"})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_list_entities_pagination_issues_a_single_entity_query_for_count_and_data(self):
+        """Guards the count+data merge in MobileEntitiesSetPagination: a non-empty page must produce
+        exactly one entity query -- `Window(Count("id"))` annotated onto the same LIMIT/OFFSET query --
+        not the two separate queries (a `.count()`, then a data slice) DRF's default paginator would
+        issue for the same request."""
+        for i in range(3):
+            instance = self.create_form_instance(
+                project=self.project, org_unit=self.ou_country, form=self.form_1, uuid=uuid.uuid4()
+            )
+            entity = m.Entity.objects.create(
+                name=f"entity_{i}", entity_type=self.entity_type, attributes=instance, account=self.account
+            )
+            instance.entity = entity
+            instance.save()
+
+        self.client.force_authenticate(self.yoda)
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id})
+
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response_json["count"], 3)
+
+        entity_queries = [q["sql"] for q in ctx.captured_queries if 'FROM "iaso_entity"' in q["sql"]]
+        self.assertEqual(
+            len(entity_queries),
+            1,
+            f"expected a single count+data entity query, got {len(entity_queries)}: {entity_queries}",
+        )
+        self.assertIn("OVER (", entity_queries[0])
+
     def test_list_entities_with_filtered_out_entities_with_soft_deleted_instances(self):
         uuid_valid_instance = uuid.uuid4()
         valid_instance = self.create_form_instance(
@@ -111,6 +175,37 @@ class MobileEntityAPITestCase(EntityAPITestCase):
 
         # Verify no duplicate entity IDs
         self.assertEqual(len(entity_ids), len(set(entity_ids)), "Found duplicate entities in response")
+
+    def test_list_entities_no_duplicates_when_org_unit_in_multiple_groups(self):
+        """Unlike `/api/entities/`, the mobile endpoint has no `groups` query param -- `MobileEntityViewSet`
+        sets no `filterset_class`/`filterset_fields`, so DjangoFilterBackend silently ignores one if passed.
+        But an org unit belonging to several groups is a real `Group.org_units` m2m regardless of whether
+        anything filters on it, and `get_queryset` builds this response with a plain `select_related` (a
+        JOIN) rather than the `Exists(...)` pattern `EntityFilterSet.filter_groups` relies on -- so this
+        guards that group membership alone can't join-multiply the Entity row in a mobile sync response."""
+        group_1 = m.Group.objects.create(name="Group 1", source_version=self.sw_version)
+        group_2 = m.Group.objects.create(name="Group 2", source_version=self.sw_version)
+        group_1.org_units.add(self.ou_country)
+        group_2.org_units.add(self.ou_country)
+
+        instance = self.create_form_instance(
+            project=self.project, org_unit=self.ou_country, form=self.form_1, uuid=uuid.uuid4()
+        )
+        entity = m.Entity.objects.create(
+            name="entity_in_two_groups", entity_type=self.entity_type, attributes=instance, account=self.account
+        )
+        instance.entity = entity
+        instance.save()
+
+        self.yoda.iaso_profile.org_units.add(self.ou_country)
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id})
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        entity_ids = [e["id"] for e in response_json["results"]]
+        self.assertEqual(entity_ids, [str(entity.uuid)], f"expected a single entity, got {entity_ids}")
+        self.assertEqual(response_json["count"], 1)
 
     def test_list_entities_filter_by_limit_date_ignores_soft_deleted_instances(self):
         self.client.force_authenticate(self.yoda)
@@ -265,3 +360,247 @@ class MobileEntityAPITestCase(EntityAPITestCase):
         response = self.client.get(url, {"app_id": self.project.app_id, "json_content": json_content_filter_1})
         response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response_json["count"], 0)
+
+    def test_list_entities_no_duplicates_when_reference_form_shared_across_projects(self):
+        """A reference form linked to several projects must not duplicate entities in the response
+        (guards the join -> `entity_type__in=EntityType.objects.filter(...)` subquery rewrite in
+        filter_for_app_id: a JOIN through the projects m2m could in principle multiply rows if a form
+        matched more than once, an IN-subquery can't, no matter how many projects share the form)."""
+        other_project = m.Project.objects.create(name="Other project", app_id="other_project", account=self.account)
+        self.form_1.projects.add(other_project)
+
+        instance = self.create_form_instance(
+            project=self.project,
+            org_unit=self.ou_country,
+            form=self.form_1,
+            uuid=uuid.uuid4(),
+        )
+        entity = m.Entity.objects.create(
+            name="shared_form_entity",
+            entity_type=self.entity_type,
+            attributes=instance,
+            account=self.account,
+        )
+        instance.entity = entity
+        instance.save()
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id})
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        self.assertEqual(response_json["count"], 1)
+        self.assertEqual(response_json["results"][0]["id"], str(entity.uuid))
+
+    def test_list_entities_combines_org_unit_scope_and_limit_date_correctly(self):
+        """Both the org-unit restriction (filter_for_user) and limit_date (filter_for_mobile_entity)
+        must apply correctly together, via their two independent Exists(...) checks against
+        iaso_instance (see EntityQuerySet._filter_entities_with_instances), for entities that
+        satisfy only one of the two conditions, only the other, both, or neither."""
+        ou_other = m.OrgUnit.objects.create(name="Other country", validation_status=m.OrgUnit.VALIDATION_VALID)
+        self.yoda.iaso_profile.org_units.add(self.ou_country)
+
+        now = timezone.now()
+        limit_date_str = (now - datetime.timedelta(days=5)).strftime("%Y-%m-%d")
+        recent_date = now - datetime.timedelta(days=2)
+        old_date = now - datetime.timedelta(days=10)
+
+        def make_entity(name, org_unit, updated_at):
+            instance = self.create_form_instance(
+                project=self.project, org_unit=org_unit, form=self.form_1, uuid=uuid.uuid4()
+            )
+            entity = m.Entity.objects.create(
+                name=name, entity_type=self.entity_type, attributes=instance, account=self.account
+            )
+            instance.entity = entity
+            instance.save()
+            m.Instance.objects.filter(pk=instance.pk).update(updated_at=updated_at)
+            return entity
+
+        # In scope (ou_country) and recent -> should be the only one returned.
+        entity_in_scope_recent = make_entity("in_scope_recent", self.ou_country, recent_date)
+        # In scope but stale -> excluded by limit_date.
+        make_entity("in_scope_old", self.ou_country, old_date)
+        # Recent but outside the user's org unit scope -> excluded by org unit restriction.
+        make_entity("out_of_scope_recent", ou_other, recent_date)
+        # Neither in scope nor recent -> excluded by both.
+        make_entity("out_of_scope_old", ou_other, old_date)
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id, "limit_date": limit_date_str})
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        self.assertEqual(response_json["count"], 1)
+        self.assertEqual(response_json["results"][0]["id"], str(entity_in_scope_recent.uuid))
+
+    def test_list_entities_includes_entity_when_scope_and_recency_are_on_different_instances(self):
+        """Regression test for a real bug found while reviewing the merged-Exists optimization
+        (reproduced live against a prod data copy: entity 82070255-ee36-4d29-87ae-b7688f7e2d0f,
+        account 37, before this fix): folding the org-unit-scope and limit_date checks into a
+        single correlated Exists(...) requires ONE instance to satisfy both simultaneously, instead
+        of each condition being independently satisfiable by a *different* instance of the same
+        entity. EntityQuerySet._filter_entities_with_instances now applies them as two independent
+        Exists(...) checks specifically to keep this case correct.
+
+        Unlike test_list_entities_combines_org_unit_scope_and_limit_date_correctly above (where each
+        entity has a single instance carrying both conditions at once), this entity has TWO
+        instances: one OLD instance inside scope, and one RECENT instance outside scope. Neither
+        instance alone satisfies both conditions, but the entity should still sync: it does have
+        activity in scope, and it does have recent activity, just not on the same submission.
+        """
+        self.yoda.iaso_profile.org_units.add(self.ou_country)
+        ou_other = m.OrgUnit.objects.create(name="Other country", validation_status=m.OrgUnit.VALIDATION_VALID)
+
+        now = timezone.now()
+        limit_date_str = (now - datetime.timedelta(days=5)).strftime("%Y-%m-%d")
+        old_date = now - datetime.timedelta(days=10)
+        recent_date = now - datetime.timedelta(days=2)
+
+        instance_in_scope_old = self.create_form_instance(
+            form=self.form_1, org_unit=self.ou_country, project=self.project, uuid=uuid.uuid4()
+        )
+        instance_out_of_scope_recent = self.create_form_instance(
+            form=self.form_1, org_unit=ou_other, project=self.project, uuid=uuid.uuid4()
+        )
+
+        entity = m.Entity.objects.create(
+            name="split_entity", entity_type=self.entity_type, attributes=instance_in_scope_old, account=self.account
+        )
+        instance_in_scope_old.entity = entity
+        instance_in_scope_old.save()
+        instance_out_of_scope_recent.entity = entity
+        instance_out_of_scope_recent.save()
+
+        m.Instance.objects.filter(pk=instance_in_scope_old.pk).update(updated_at=old_date)
+        m.Instance.objects.filter(pk=instance_out_of_scope_recent.pk).update(updated_at=recent_date)
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id, "limit_date": limit_date_str})
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        self.assertEqual(response_json["count"], 1)
+        self.assertEqual(response_json["results"][0]["id"], str(entity.uuid))
+
+    def test_list_entities_full_sync_without_limit_date_includes_stale_entities(self):
+        """A full sync (limit_date omitted entirely, as the mobile app does on first install --
+        see FetchEntities.kt) must return entities regardless of activity date, including ones an
+        incremental sync (limit_date set) would exclude. Exercises the org-unit-scope Exists(...)
+        on its own (limit_date=None, so no recency Exists(...) is added at all), distinct from
+        test_list_entities_combines_org_unit_scope_and_limit_date_correctly above, which only
+        covers the case where both conditions are present together."""
+        self.yoda.iaso_profile.org_units.add(self.ou_country)
+
+        now = timezone.now()
+        old_date = now - datetime.timedelta(days=10)
+        excluding_limit_date_str = (now - datetime.timedelta(days=5)).strftime("%Y-%m-%d")
+        including_limit_date_str = (now - datetime.timedelta(days=15)).strftime("%Y-%m-%d")
+
+        instance = self.create_form_instance(
+            project=self.project, org_unit=self.ou_country, form=self.form_1, uuid=uuid.uuid4()
+        )
+        stale_entity = m.Entity.objects.create(
+            name="stale", entity_type=self.entity_type, attributes=instance, account=self.account
+        )
+        instance.entity = stale_entity
+        instance.save()
+        m.Instance.objects.filter(pk=instance.pk).update(updated_at=old_date)
+
+        self.client.force_authenticate(self.yoda)
+
+        # Full sync: no limit_date param at all -> the stale entity is still returned.
+        response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id})
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response_json["count"], 1)
+        self.assertEqual(response_json["results"][0]["id"], str(stale_entity.uuid))
+
+        # Same entity, incremental sync with a cutoff *after* its update: excluded.
+        response = self.client.get(
+            self.BASE_URL, {"app_id": self.project.app_id, "limit_date": excluding_limit_date_str}
+        )
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response_json["count"], 0)
+
+        # Same entity, incremental sync with a cutoff *before* its update: still included. Without
+        # this, the previous assertion alone couldn't tell "correctly filters by date" apart from
+        # "always excludes everything once limit_date is present at all".
+        response = self.client.get(
+            self.BASE_URL, {"app_id": self.project.app_id, "limit_date": including_limit_date_str}
+        )
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response_json["count"], 1)
+        self.assertEqual(response_json["results"][0]["id"], str(stale_entity.uuid))
+
+    def test_list_entities_prefetches_instances_in_a_deterministic_order(self):
+        """The `instances` array nested in each entity (MobileEntitySerializer.get_instances) is
+        populated from a single Prefetch("instances", ...) query in
+        EntityQuerySet._filter_for_mobile_entity, not lazily per-entity -- and `Instance` has no
+        `Meta.ordering`. Without an explicit ORDER BY on that Prefetch's queryset, Postgres is free to
+        return the same set of instances in a different row order on each execution: same records,
+        but a different `instances` order in the response body every sync (observed live: identical
+        requests a few seconds apart returning byte-different bodies with the same record count).
+
+        A handful of freshly-inserted rows in a test database can't be relied on to actually come back
+        scrambled without an ORDER BY (Postgres commonly happens to return them in insertion order),
+        so asserting on response order would be flaky in both directions. This instead asserts on the
+        generated SQL directly: the prefetch query for `instances` must include an explicit
+        `ORDER BY ... id`.
+        """
+        instance = self.create_form_instance(
+            project=self.project, org_unit=self.ou_country, form=self.form_1, uuid=uuid.uuid4()
+        )
+        entity = m.Entity.objects.create(
+            name="entity_with_instance", entity_type=self.entity_type, attributes=instance, account=self.account
+        )
+        instance.entity = entity
+        instance.save()
+
+        self.client.force_authenticate(self.yoda)
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id})
+
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response_json["count"], 1)
+
+        instance_prefetch_queries = [q["sql"] for q in ctx.captured_queries if 'FROM "iaso_instance"' in q["sql"]]
+        self.assertEqual(
+            len(instance_prefetch_queries),
+            1,
+            f"expected a single prefetch query for instances, got {instance_prefetch_queries}",
+        )
+        self.assertIn('ORDER BY "iaso_instance"."id"', instance_prefetch_queries[0])
+
+    def test_list_entities_pagination_matches_count_and_pages(self):
+        """The count+data-in-one-query paginator (Window(Count())) must report the same count/
+        has_next/has_previous/pages a plain queryset would, across a full page, the true last
+        *partial* page, and one page past the end (404, matching DRF's default pagination)."""
+        self.client.force_authenticate(self.yoda)
+
+        entities = []
+        for i in range(5):
+            instance = self.create_form_instance(
+                project=self.project, org_unit=self.ou_country, form=self.form_1, uuid=uuid.uuid4()
+            )
+            entity = m.Entity.objects.create(
+                name=f"entity_{i}", entity_type=self.entity_type, attributes=instance, account=self.account
+            )
+            instance.entity = entity
+            instance.save()
+            entities.append(entity)
+
+        response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id, "limit": 3, "page": 1})
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response_json["count"], 5)
+        self.assertEqual(response_json["pages"], 2)
+        self.assertEqual(len(response_json["results"]), 3)
+        self.assertTrue(response_json["has_next"])
+        self.assertFalse(response_json["has_previous"])
+
+        response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id, "limit": 3, "page": 2})
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response_json["count"], 5)
+        self.assertEqual(response_json["pages"], 2)
+        self.assertEqual(len(response_json["results"]), 2)
+        self.assertFalse(response_json["has_next"])
+        self.assertTrue(response_json["has_previous"])
+
+        response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id, "limit": 3, "page": 3})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

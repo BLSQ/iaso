@@ -2,7 +2,12 @@ from django.db.models import Q
 from django_filters import rest_framework as django_filters
 
 from iaso.api.v3.common.filterset import CORE_EXTRA_ALLOWED_PARAMS, BaseV3FilterSet
-from iaso.api.v3.common.spatial_filters import BboxFilter, OutsideOrgUnitFilter, WithinOrgUnitFilter
+from iaso.api.v3.common.spatial_filters import (
+    BboxFilter,
+    OutsideBboxFilter,
+    OutsideOrgUnitFilter,
+    WithinOrgUnitFilter,
+)
 from iaso.models import OrgUnit, OrgUnitType
 
 
@@ -24,7 +29,7 @@ class OrgUnitFilterSetV3(BaseV3FilterSet):
     See the field x lookup table in the plan / PR description for the rationale of what is (and isn't)
     exposed here - in short: exact/`__in`/`__startswith` on indexed-but-not-trigram text fields (no
     `__icontains`), `__icontains` on genuinely free-text fields, one level of relation nesting, and a core
-    subset of spatial operators (`__bbox`, `__within_org_unit`, `__outside_org_unit`).
+    subset of spatial operators (`__bbox`, `__outside_bbox`, `__within_org_unit`, `__outside_org_unit`).
     """
 
     extra_allowed_params = EXTRA_ALLOWED_PARAMS
@@ -105,6 +110,9 @@ class OrgUnitFilterSetV3(BaseV3FilterSet):
     geom__bbox = BboxFilter(geometry_field="geom")
     simplified_geom__bbox = BboxFilter(geometry_field="simplified_geom")
     location__bbox = BboxFilter(geometry_field="location")
+    geom__outside_bbox = OutsideBboxFilter(geometry_field="geom")
+    simplified_geom__outside_bbox = OutsideBboxFilter(geometry_field="simplified_geom")
+    location__outside_bbox = OutsideBboxFilter(geometry_field="location")
     geom__within_org_unit = WithinOrgUnitFilter(geometry_field="geom", org_unit_model=OrgUnit)
     location__within_org_unit = WithinOrgUnitFilter(geometry_field="location", org_unit_model=OrgUnit)
     geom__outside_org_unit = OutsideOrgUnitFilter(geometry_field="geom", org_unit_model=OrgUnit)

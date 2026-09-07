@@ -197,6 +197,29 @@ V3_ORG_UNIT_PARAMETERS = [
         description="`minx,miny,maxx,maxy` - org units whose `location` point falls in this bounding box",
     ),
     OpenApiParameter(
+        name="geom__outside_bbox",
+        type=OpenApiTypes.STR,
+        description=(
+            "`minx,miny,maxx,maxy` - org units that HAVE a `geom` but it does NOT intersect this bounding "
+            'box (org units with no `geom` are excluded, not treated as "outside")'
+        ),
+    ),
+    OpenApiParameter(
+        name="simplified_geom__outside_bbox",
+        type=OpenApiTypes.STR,
+        description="Same as `geom__outside_bbox` but against `simplified_geom` (faster, lower precision)",
+    ),
+    OpenApiParameter(
+        name="location__outside_bbox",
+        type=OpenApiTypes.STR,
+        description=(
+            "`minx,miny,maxx,maxy` - org units that HAVE a `location` but it falls OUTSIDE this bounding "
+            "box - a cheap approximate counterpart to `location__outside_org_unit` that doesn't require "
+            "the reference shape to already be in the DB, just a known real-world bbox (e.g. a country's). "
+            "Combine with `ancestor_id` to scope to one org unit's descendants specifically."
+        ),
+    ),
+    OpenApiParameter(
         name="geom__within_org_unit",
         type=OpenApiTypes.INT,
         description="Org units whose `geom` is contained within the referenced org unit's geometry",

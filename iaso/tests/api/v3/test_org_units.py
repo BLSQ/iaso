@@ -279,6 +279,54 @@ class OrgUnitV3APITestCase(APITestCase):
         response = self.client.get(BASE_URL, {"geom__bbox": "not-a-bbox"})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_filter_location_outside_bbox(self):
+        misplaced = m.OrgUnit.objects.create(
+            org_unit_type=self.region_type,
+            version=self.sw_version_1,
+            parent=self.region,
+            name="Misplaced Facility",
+            location=Point(x=50, y=50, z=0),  # well outside the 0..10 box
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+        response = self.client.get(BASE_URL, {"location__outside_bbox": "0,0,10,10"})
+        self.assertEqual([r["id"] for r in response.json()["results"]], [misplaced.id])
+        # `region`'s location IS inside the box -> not "outside"; `district` has no location at all
+        # -> excluded rather than counted as "outside".
+
+    def test_filter_geom_outside_bbox_no_match(self):
+        # the country's `geom` (0..10 box) intersects itself
+        response = self.client.get(BASE_URL, {"geom__outside_bbox": "-1,-1,11,11"})
+        self.assertNotIn(self.country.id, [r["id"] for r in response.json()["results"]])
+
+    def test_filter_invalid_outside_bbox(self):
+        response = self.client.get(BASE_URL, {"location__outside_bbox": "not-a-bbox"})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_find_descendants_with_location_outside_a_bbox(self):
+        # same data-quality query as `test_find_descendants_with_location_outside_their_own_ancestors_shape`,
+        # but against a known real-world bbox instead of a reference org unit's own geometry - useful when
+        # the reference org unit has no `geom`/`simplified_geom` in the DB yet.
+        misplaced = m.OrgUnit.objects.create(
+            org_unit_type=self.district_type,
+            version=self.sw_version_1,
+            parent=self.district,
+            name="CAVALLY child with a misplaced point",
+            location=Point(x=50, y=50, z=0),
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+        response = self.client.get(
+            BASE_URL,
+            {
+                "ancestor_id": self.country.id,
+                "location__outside_bbox": "0,0,10,10",
+                "fields": "id,name,latitude,longitude,ancestors(id,name)",
+            },
+        )
+        results = response.json()["results"]
+        self.assertEqual([r["id"] for r in results], [misplaced.id])
+        self.assertEqual(results[0]["latitude"], 50.0)
+        self.assertEqual([a["name"] for a in results[0]["ancestors"]], ["Naboo", "Theed", "Theed District"])
+
     def test_filter_within_org_unit(self):
         response = self.client.get(BASE_URL, {"location__within_org_unit": self.country.id})
         self.assertEqual([r["id"] for r in response.json()["results"]], [self.region.id])

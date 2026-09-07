@@ -1,8 +1,8 @@
 """Spatial filters shared by v3 endpoints.
 
-Core subset only (per product decision): bounding-box intersection (`__bbox`) and containment inside/
-outside another org unit's geometry (`__within_org_unit`/`__outside_org_unit`). Point-in-arbitrary-polygon
-(`__contains`) and radius search (`__near`) are still deferred to a follow-up.
+Core subset only (per product decision): bounding-box intersection/exclusion (`__bbox`/`__outside_bbox`)
+and containment inside/outside another org unit's geometry (`__within_org_unit`/`__outside_org_unit`).
+Point-in-arbitrary-polygon (`__contains`) and radius search (`__near`) are still deferred to a follow-up.
 """
 
 import django_filters
@@ -50,18 +50,39 @@ def resolve_reference_geometry(org_unit_model, org_unit_id: str, operator_name: 
     return geometry
 
 
-class BboxFilter(django_filters.CharFilter):
-    """`<field>__bbox=minx,miny,maxx,maxy` -> keep rows whose geometry intersects the bounding box."""
+class _BboxFilterBase(django_filters.CharFilter):
+    """Shared base for `bbox`/`outside_bbox`: both parse the same `minx,miny,maxx,maxy` box, they just
+    apply it as a `filter()` (intersects) vs. an `exclude()` (does not intersect)."""
 
     def __init__(self, *args, geometry_field: str, **kwargs):
         super().__init__(*args, **kwargs)
         self.geometry_field = geometry_field
+
+
+class BboxFilter(_BboxFilterBase):
+    """`<field>__bbox=minx,miny,maxx,maxy` -> keep rows whose geometry intersects the bounding box."""
 
     def filter(self, qs, value):
         if value in (None, ""):
             return qs
         polygon = parse_bbox(value)
         return qs.filter(**{f"{self.geometry_field}__intersects": polygon})
+
+
+class OutsideBboxFilter(_BboxFilterBase):
+    """`<field>__outside_bbox=minx,miny,maxx,maxy` -> keep rows that HAVE a `geometry_field` value but it
+    does NOT intersect the bounding box (e.g. points recorded outside a country's box - a cheap
+    approximate counterpart to `__outside_org_unit` that doesn't require the reference org unit to carry
+    its own geometry, just a known real-world bbox). Rows where `geometry_field` is null are excluded
+    rather than treated as "outside": there's nothing to compare."""
+
+    def filter(self, qs, value):
+        if value in (None, ""):
+            return qs
+        polygon = parse_bbox(value)
+        return qs.filter(**{f"{self.geometry_field}__isnull": False}).exclude(
+            **{f"{self.geometry_field}__intersects": polygon}
+        )
 
 
 class _OrgUnitContainmentFilter(django_filters.CharFilter):

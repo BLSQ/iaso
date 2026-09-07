@@ -9,8 +9,8 @@ from iaso.api.mobile.entity import (
     LargeResultsSetPagination,
     MobileEntitySerializer,
     filter_for_mobile_entity,
+    filter_for_mobile_entity_non_geo_restricted_search,
     filter_on_app_id,
-    filter_on_user_and_app_id,
 )
 from iaso.models import Entity, EntityType, FormVersion, Project
 
@@ -131,20 +131,18 @@ class MobileEntityTypesViewSet(ModelViewSet):
         if not type_pk:
             raise ParseError("type_pk is required")
 
-        queryset = Entity.objects
-        # If there's an "Online search" from the mobile app, we want to be
-        # able to search without location restrictions.
-        # The entities for the user's location should already be on the mobile
-        # device.
-        if self.request.query_params.get("json_content"):
-            queryset = filter_on_app_id(queryset, user, app_id)
-        else:
-            queryset = filter_on_user_and_app_id(queryset, user, app_id)
+        queryset = filter_on_app_id(Entity.objects, user, app_id)
 
         if queryset is not None:
             queryset = queryset.filter(entity_type__pk=type_pk)
 
-        queryset = filter_for_mobile_entity(queryset, self.request)
+        # If there's an "Online search" from the mobile app (json_content set), we want to be able
+        # to search without location restrictions -- the entities for the user's org units should
+        # already be on the mobile device (IA-3021).
+        if self.request.query_params.get("json_content"):
+            queryset = filter_for_mobile_entity_non_geo_restricted_search(queryset, user, self.request)
+        else:
+            queryset = filter_for_mobile_entity(queryset, user, self.request)
 
         queryset = queryset.select_related("entity_type").prefetch_related(
             "instances__org_unit",

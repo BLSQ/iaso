@@ -2,6 +2,8 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 
+declare const process: { env: Record<string, string | undefined> };
+
 const django = process.env.IASO_PROXY || "http://127.0.0.1:8081";
 
 export default defineConfig({

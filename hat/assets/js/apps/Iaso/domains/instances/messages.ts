@@ -118,6 +118,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.device',
         defaultMessage: 'IMEI device',
     },
+    device_app_version: {
+        id: 'iaso.instance.device_app_version',
+        defaultMessage: 'Device App Version',
+    },
     coordinate: {
         id: 'iaso.instance.coordinate',
         defaultMessage: 'Coordinates',

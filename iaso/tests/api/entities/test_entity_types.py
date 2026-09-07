@@ -1,3 +1,4 @@
+import datetime
 import json
 import uuid
 
@@ -6,6 +7,7 @@ from unittest import mock
 from django.core.files import File
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
+from django.utils import timezone
 from rest_framework import status
 
 from iaso import models as m
@@ -526,6 +528,51 @@ class EntityTypeAPITestCase(APITestCase):
 
         self.assertEqual(response_entity_instance[0]["id"], instance.uuid)
         self.assertEqual(response_entity_instance[0]["json"], instance.json)
+
+    def test_get_entities_by_entity_type_combines_org_unit_scope_and_limit_date_correctly(self):
+        """Both the org-unit restriction and limit_date must still apply correctly on the
+        non-search branch of get_entities_by_types now that they're both delegated to a single
+        filter_for_mobile_entity(...) call, applied as two independent Exists(...) checks -- mirrors
+        MobileEntityAPITestCase's equivalent test for the /api/mobile/entities/ list endpoint."""
+        entity_type = EntityType.objects.create(
+            name="scoped beneficiary", reference_form=self.form_1, account=self.star_wars
+        )
+        ou_other = m.OrgUnit.objects.create(name="Other council", validation_status=m.OrgUnit.VALIDATION_VALID)
+        self.chewie.iaso_profile.org_units.add(self.jedi_council_corruscant)
+
+        now = timezone.now()
+        limit_date_str = (now - datetime.timedelta(days=5)).strftime("%Y-%m-%d")
+        recent_date = now - datetime.timedelta(days=2)
+        old_date = now - datetime.timedelta(days=10)
+
+        def make_entity(name, org_unit, updated_at):
+            instance = self.create_form_instance(form=self.form_1, org_unit=org_unit, project=self.project)
+            entity = Entity.objects.create(
+                name=name, entity_type=entity_type, attributes=instance, account=self.star_wars
+            )
+            instance.entity = entity
+            instance.save()
+            Instance.objects.filter(pk=instance.pk).update(updated_at=updated_at)
+            return entity
+
+        # In scope (jedi_council_corruscant) and recent -> should be the only one returned.
+        entity_in_scope_recent = make_entity("in_scope_recent", self.jedi_council_corruscant, recent_date)
+        # In scope but stale -> excluded by limit_date.
+        make_entity("in_scope_old", self.jedi_council_corruscant, old_date)
+        # Recent but outside the user's org unit scope -> excluded by org unit restriction.
+        make_entity("out_of_scope_recent", ou_other, recent_date)
+        # Neither in scope nor recent -> excluded by both.
+        make_entity("out_of_scope_old", ou_other, old_date)
+
+        self.client.force_authenticate(self.chewie)
+        response = self.client.get(
+            f"/api/mobile/entitytypes/{entity_type.pk}/entities/",
+            {"app_id": self.project.app_id, "limit_date": limit_date_str},
+        )
+        response_json = response.json()
+
+        self.assertEqual(response_json["count"], 1)
+        self.assertEqual(response_json["results"][0]["id"], str(entity_in_scope_recent.uuid))
 
     def test_get_entities_by_entity_type_empty_list_deleted_instances(self):
         entity_type = EntityType.objects.create(

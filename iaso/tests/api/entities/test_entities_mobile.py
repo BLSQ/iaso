@@ -89,6 +89,7 @@ class MobileEntityAPITestCase(EntityAPITestCase):
             f"expected a single count+data entity query, got {len(entity_queries)}: {entity_queries}",
         )
         self.assertIn("OVER (", entity_queries[0])
+        self.assertEqual(len(ctx.captured_queries), 8)
 
     def test_list_entities_with_filtered_out_entities_with_soft_deleted_instances(self):
         uuid_valid_instance = uuid.uuid4()

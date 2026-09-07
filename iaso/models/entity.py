@@ -268,7 +268,7 @@ class EntityQuerySet(models.QuerySet):
 
         queryset = queryset.filter(attributes_id__isnull=False, attributes__deleted=False)
 
-        queryset = queryset.prefetch_related(p).prefetch_related("instances__form")
+        queryset = queryset.prefetch_related(p)
 
         return queryset
 

@@ -109,7 +109,8 @@ class PostgresTaskService(_TaskServiceBase):
 
         if connection.in_atomic_block:
             while connection.run_on_commit:
-                sids, func = connection.run_on_commit.pop(0)
+                item = connection.run_on_commit.pop(0)
+                func = item[1]
                 func()
         count = 0
         task = self.get_queryset().filter(status=QUEUED).first()

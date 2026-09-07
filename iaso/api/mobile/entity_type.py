@@ -144,12 +144,7 @@ class MobileEntityTypesViewSet(ModelViewSet):
         else:
             queryset = filter_for_mobile_entity(queryset, user, self.request)
 
-        queryset = queryset.select_related("entity_type").prefetch_related(
-            "instances__org_unit",
-            "attributes__org_unit",
-            "instances__form__form_versions",
-            "attributes__form__form_versions",
-        )
+        queryset = queryset.select_related("entity_type", "attributes")
 
         page = self.paginate_queryset(queryset)
         serializer = MobileEntitySerializer(

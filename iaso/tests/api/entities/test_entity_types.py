@@ -565,14 +565,36 @@ class EntityTypeAPITestCase(APITestCase):
         make_entity("out_of_scope_old", ou_other, old_date)
 
         self.client.force_authenticate(self.chewie)
-        response = self.client.get(
-            f"/api/mobile/entitytypes/{entity_type.pk}/entities/",
-            {"app_id": self.project.app_id, "limit_date": limit_date_str},
-        )
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get(
+                f"/api/mobile/entitytypes/{entity_type.pk}/entities/",
+                {"app_id": self.project.app_id, "limit_date": limit_date_str},
+            )
         response_json = response.json()
 
         self.assertEqual(response_json["count"], 1)
         self.assertEqual(response_json["results"][0]["id"], str(entity_in_scope_recent.uuid))
+
+        # No query should touch "iaso_form": get_form_version_id and get_possible_form_versions_dict
+        # both read the FK column (obj.form_id / version.form_id) instead of the related Form object,
+        # so `instances__form__form_versions` / `attributes__form__form_versions` in get_entities_by_types's
+        # prefetch are dead weight -- mirrors MobileEntityAPITestCase's equivalent assertion for
+        # /api/mobile/entities/. If this ever comes back, either a Form-object access crept back in, or
+        # the prefetch was re-added needlessly -- in both cases that's the regression this catches.
+        form_queries = [q["sql"] for q in ctx.captured_queries if 'FROM "iaso_form"' in q["sql"]]
+        self.assertEqual(form_queries, [])
+
+        # The remaining 8 queries: 1 Project lookup (filter_on_app_id), 3 org-unit-scope queries
+        # (restriction EXISTS check, profile org units, descendants path), 2 merged entity count+data
+        # queries -- select_related("attributes") folds the entity's attribute instance into these two
+        # via JOIN instead of a separate prefetch round trip -- 1 instances prefetch, and 1 FormVersion
+        # lookup for get_serializer_context's possible_form_versions dict. No dedicated org_unit prefetch
+        # query either: MobileEntityAttributesSerializer.org_unit_id reads the FK column directly, so
+        # `instances__org_unit` / `attributes__org_unit` were dead weight, same as the form ones above --
+        # if select_related("attributes") ever gets dropped without a replacement, entity.attributes
+        # falls back to one query per entity (a real N+1, not just a harmless extra prefetch), which this
+        # exact-count assertion also catches (4 entities created above -> +4 queries).
+        self.assertEqual(len(ctx.captured_queries), 8)
 
     def test_get_entities_by_entity_type_empty_list_deleted_instances(self):
         entity_type = EntityType.objects.create(

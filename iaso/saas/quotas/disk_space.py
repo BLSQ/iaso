@@ -1,3 +1,5 @@
+from django.db.models import Sum
+
 from hat.api_import.models import APIImport
 from iaso.models import (
     BulkCreateUserFile,
@@ -6,7 +8,6 @@ from iaso.models import (
     ImportGPKG,
     Instance,
     InstanceFile,
-    Profile,
     ReportVersion,
 )
 from plugins.saas.models.account_usage import PeriodTypeChoices, UsageTypeChoices
@@ -19,53 +20,61 @@ class DiskSpaceAccountUsage:
     @staticmethod
     def calculate_instances_size(account) -> int:
         """Calculate the instances size for an account"""
-        instances = Instance.objects.filter(project__account=account)
-        return DiskSpaceAccountUsage.sum_size(map(lambda x: x.file, instances))
+        return Instance.objects.filter(project__account=account).aggregate(total=Sum("file_size"))["total"] or 0
 
     @staticmethod
     def calculate_instances_files_size(account) -> int:
         """Calculate the instances files size for an account"""
-        instance_files = InstanceFile.objects.filter(instance__project__account=account)
-        return DiskSpaceAccountUsage.sum_size(map(lambda x: x.file, instance_files))
+        return (
+            InstanceFile.objects.filter(instance__project__account=account).aggregate(total=Sum("file_size"))["total"]
+            or 0
+        )
 
     @staticmethod
     def calculate_form_versions_files_size(account) -> int:
         """Calculate the form versions files size for an account"""
-        form_files = FormVersion.objects.filter(form__projects__account=account)
-        return sum(
-            map(lambda x: x.file.size.real if x.file else 0 + x.xls_file.size.real if x.xls_file else 0, form_files)
+        result = FormVersion.objects.filter(form__projects__account=account).aggregate(
+            total_file=Sum("file_size"),
+            total_xls=Sum("xls_file_size"),
         )
+        return (result["total_file"] or 0) + (result["total_xls"] or 0)
 
     @staticmethod
     def calculate_form_attachments_files_size(account) -> int:
         """Calculate the form attachments files size for an account"""
-        form_files = FormAttachment.objects.filter(form__projects__account=account)
-        return DiskSpaceAccountUsage.sum_size(map(lambda x: x.file, form_files))
+        return (
+            FormAttachment.objects.filter(form__projects__account=account).aggregate(total=Sum("file_size"))["total"]
+            or 0
+        )
 
     @staticmethod
     def calculate_reports_size(account) -> int:
         """Calculate the reports size for an account"""
-        reports = ReportVersion.objects.filter(report__project__account=account)
-        return DiskSpaceAccountUsage.sum_size(map(lambda x: x.file, reports))
+        return (
+            ReportVersion.objects.filter(report__project__account=account).aggregate(total=Sum("file_size"))["total"]
+            or 0
+        )
 
     @staticmethod
     def calculate_bulk_create_user_csv_file_size(account) -> int:
         """Calculate the BulkCreateUserCsvFile size for an account"""
-        files = BulkCreateUserFile.objects.filter(account=account)
-        return DiskSpaceAccountUsage.sum_size(map(lambda x: x.file, files))
+        return BulkCreateUserFile.objects.filter(account=account).aggregate(total=Sum("file_size"))["total"] or 0
 
     @staticmethod
     def calculate_import_gpkg_file_size(account) -> int:
         """Calculate the ImportGPKG size for an account"""
-        imports = ImportGPKG.objects.filter(data_source__projects__account=account)
-        return DiskSpaceAccountUsage.sum_size(map(lambda x: x.file, imports))
+        return (
+            ImportGPKG.objects.filter(data_source__projects__account=account).aggregate(total=Sum("file_size"))["total"]
+            or 0
+        )
 
     @staticmethod
     def calculate_api_import_file_size(account) -> int:
         """Calculate the ImportGPKG size for an account"""
-        # Unfortunately, the user is nullable and the information about which project this was used for is lost
-        imports = APIImport.objects.filter(user__in=map(lambda p: p.user, Profile.objects.filter(account=account)))
-        return DiskSpaceAccountUsage.sum_size(map(lambda x: x.file, imports))
+        return (
+            APIImport.objects.filter(user__iaso_profile__account=account).aggregate(total=Sum("file_size"))["total"]
+            or 0
+        )
 
     @staticmethod
     def sum_size(files) -> int:

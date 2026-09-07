@@ -24,7 +24,7 @@ class MobileEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(response_json["count"], 0)
         # `filter_for_mobile_entity` must not force early evaluation of an empty
         # queryset (e.g. via `if queryset:`), which would add an extra query.
-        self.assertEqual(len(ctx.captured_queries), 7)
+        self.assertEqual(len(ctx.captured_queries), 6)
 
     def test_list_entities_page_two_of_empty_result_returns_404(self):
         """MobileEntitiesSetPagination.paginate_queryset special-cases an empty page 1 (total_count=0,
@@ -40,7 +40,7 @@ class MobileEntityAPITestCase(EntityAPITestCase):
         # Same total as the page-1 empty case: one more query than that (the fallback count() to tell
         # "genuinely empty" apart from "page number past the end"), but one fewer because raising
         # NotFound short-circuits before get_serializer_context's FormVersion query ever runs.
-        self.assertEqual(len(ctx.captured_queries), 7)
+        self.assertEqual(len(ctx.captured_queries), 6)
 
     def test_list_entities_non_integer_page_returns_400(self):
         """MobileEntitiesSetPagination.get_iaso_page_number must reject a non-integer `page` the same
@@ -98,11 +98,14 @@ class MobileEntityAPITestCase(EntityAPITestCase):
         form_queries = [q["sql"] for q in ctx.captured_queries if 'FROM "iaso_form"' in q["sql"]]
         self.assertEqual(form_queries, [])
 
-        # The remaining 8 queries, in order: 2 permission checks (user + group permissions), 2 Project
-        # lookups (filter_on_app_id, then filter_for_mobile_entity), 1 org-unit-restriction EXISTS check,
-        # 1 merged entity count+data query (asserted above), 1 instances prefetch, and 1 FormVersion
-        # lookup for get_serializer_context's possible_form_versions dict.
-        self.assertEqual(len(ctx.captured_queries), 8)
+        # The remaining 7 queries, in order: 2 permission checks (user + group permissions), 1 Project
+        # lookup (filter_on_app_id -- get_queryset used to also resolve the project itself just to
+        # recompute the same entity_type filter filter_on_app_id already applies; that redundant lookup
+        # and its duplicate `entity_type_id IN (...)` clause are gone, see get_queryset's docstring),
+        # 1 org-unit-restriction EXISTS check, 1 merged entity count+data query (asserted above), 1
+        # instances prefetch, and 1 FormVersion lookup for get_serializer_context's possible_form_versions
+        # dict.
+        self.assertEqual(len(ctx.captured_queries), 7)
 
     def test_list_entities_with_filtered_out_entities_with_soft_deleted_instances(self):
         uuid_valid_instance = uuid.uuid4()

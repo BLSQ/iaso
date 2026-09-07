@@ -103,7 +103,7 @@ class MobileEntityAttributesSerializer(serializers.ModelSerializer):
         if obj.json is None:
             return None
         possible_form_versions = self.context.get("possible_form_versions")
-        key = "%s|%s" % (obj.json.get("_version"), str(obj.form.id))
+        key = "%s|%s" % (obj.json.get("_version"), str(obj.form_id))
         return possible_form_versions.get(key)
 
 

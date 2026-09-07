@@ -659,21 +659,38 @@ PIVOT_QUERY = """
 """
 
 OU_COUNT_QUERY = """
-    SELECT "iaso_orgunit"."path",
-        "iaso_form"."id" AS "form_id",
+    SELECT "form_target_orgunit"."path",
+        "form_target_orgunit"."form_id",
         COUNT("iaso_instance"."id") FILTER (
             WHERE ("iaso_instance"."file" IS NOT NULL AND NOT "iaso_instance"."file" = '')
             AND NOT ("iaso_instance"."deleted")
         ) AS "instances_count"
-    FROM "filtered_forms" AS "iaso_form"
-    JOIN "iaso_form_org_unit_types"
-    ON "iaso_form"."id" = "iaso_form_org_unit_types"."form_id"
-    LEFT OUTER JOIN "filtered_orgunit" AS "iaso_orgunit"
-    ON ("iaso_orgunit"."org_unit_type_id" = "iaso_form_org_unit_types"."orgunittype_id")
+    FROM (
+        -- An org unit is a target for a form either because its org unit type is one of the
+        -- form's org unit types, or because it belongs to one of the form's org unit groups.
+        -- The UNION (rather than UNION ALL) de-duplicates org units matched by both.
+        SELECT "iaso_orgunit"."id" AS "orgunit_id", "iaso_orgunit"."path", "iaso_form"."id" AS "form_id"
+        FROM "filtered_forms" AS "iaso_form"
+        JOIN "iaso_form_org_unit_types"
+        ON "iaso_form"."id" = "iaso_form_org_unit_types"."form_id"
+        JOIN "filtered_orgunit" AS "iaso_orgunit"
+        ON ("iaso_orgunit"."org_unit_type_id" = "iaso_form_org_unit_types"."orgunittype_id")
+
+        UNION
+
+        SELECT "iaso_orgunit"."id" AS "orgunit_id", "iaso_orgunit"."path", "iaso_form"."id" AS "form_id"
+        FROM "filtered_forms" AS "iaso_form"
+        JOIN "iaso_form_org_unit_groups"
+        ON "iaso_form"."id" = "iaso_form_org_unit_groups"."form_id"
+        JOIN "iaso_group_org_units"
+        ON "iaso_group_org_units"."group_id" = "iaso_form_org_unit_groups"."group_id"
+        JOIN "filtered_orgunit" AS "iaso_orgunit"
+        ON ("iaso_orgunit"."id" = "iaso_group_org_units"."orgunit_id")
+    ) AS "form_target_orgunit"
     LEFT OUTER JOIN "filtered_instance" AS "iaso_instance"
-    ON ("iaso_orgunit"."id" = "iaso_instance"."org_unit_id"
-    AND "iaso_form"."id" = "iaso_instance"."form_id")
-    GROUP BY "iaso_orgunit"."path", "iaso_form"."id"
+    ON ("form_target_orgunit"."orgunit_id" = "iaso_instance"."org_unit_id"
+    AND "form_target_orgunit"."form_id" = "iaso_instance"."form_id")
+    GROUP BY "form_target_orgunit"."path", "form_target_orgunit"."form_id"
     """
 
 COUNT_PER_ROOT_QUERY = """

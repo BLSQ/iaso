@@ -11,7 +11,7 @@ from typing import Any
 from django.contrib.auth.models import Permission, User
 from rest_framework import status
 
-from iaso.models import Account, Form, Instance, OrgUnit, OrgUnitType
+from iaso.models import Account, Form, Group, Instance, OrgUnit, OrgUnitType
 from iaso.models.base import Profile
 from iaso.models.team import Team
 from iaso.test import APITestCase
@@ -980,3 +980,184 @@ class CompletenessStatsAPITestCase(APITestCase):
                 # because form_hs_4 has itself_target=1 but itself_has_instances=0
                 form_hs_4_direct_idx = header.index(f"{self.form_hs_4.name} - Direct")
                 self.assertEqual(row[form_hs_4_direct_idx], "false")
+
+    def test_form_scoped_by_org_unit_group(self):
+        """IA-5400: a form configured via org_unit_groups (instead of/in addition to org_unit_types)
+        should still get proper (non-zero) completeness stats for the org units in that group."""
+        self.client.force_authenticate(self.user)
+
+        # form_hs_5 is scoped *only* via an org unit group, it has no org_unit_types at all.
+        form_hs_5 = Form.objects.create(name="Hydroponics study 5")
+        self.project_1.forms.add(form_hs_5)
+
+        # Only AS A.B.B (pk=10) is put in the group, not its siblings AS A.B.A (pk=6) or AS A.B.C (pk=11).
+        group = Group.objects.create(name="Group of interest", source_version_id=self.as_abb_ou.version_id)
+        group.org_units.add(self.as_abb_ou)
+        form_hs_5.org_unit_groups.add(group)
+
+        self.create_form_instance(form=form_hs_5, org_unit=self.as_abb_ou, project=None)
+
+        response = self.client.get(
+            "/api/v2/completeness_stats/",
+            {
+                "parent_org_unit_id": self.as_abb_ou.parent.id,  # District A.B
+                "form_id": form_hs_5.id,
+                "limit": 10,
+                "org_unit_validation_status": "VALID,NEW",
+            },
+        )
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
+        results_by_ou_id = {r["org_unit"]["id"]: r for r in j["results"]}
+
+        # The org unit that is a member of the group is correctly detected as a target with a submission.
+        as_abb_b_stats = results_by_ou_id[self.as_abb_ou.id]["form_stats"][_slug(form_hs_5)]
+        self.assertEqual(as_abb_b_stats["itself_target"], 1)
+        self.assertEqual(as_abb_b_stats["itself_has_instances"], 1)
+        self.assertEqual(as_abb_b_stats["itself_instances_count"], 1)
+
+        # Its siblings, which are NOT in the group, are correctly excluded (not spuriously targeted).
+        as_aba_stats = results_by_ou_id[6]["form_stats"][_slug(form_hs_5)]  # AS A.B.A
+        self.assertEqual(as_aba_stats["itself_target"], 0)
+        self.assertEqual(as_aba_stats["itself_has_instances"], 0)
+
+        # The root (District A.B) correctly reports the group-scoped descendant as covered.
+        root_stats = results_by_ou_id[self.as_abb_ou.parent.id]["form_stats"][_slug(form_hs_5)]
+        self.assertEqual(root_stats["descendants"], 1)
+        self.assertEqual(root_stats["descendants_ok"], 1)
+        self.assertEqual(root_stats["percent"], 100)
+        self.assertEqual(root_stats["total_instances"], 1)
+
+    def test_form_scoped_by_both_org_unit_type_and_group_no_double_count(self):
+        """IA-5400: when an org unit qualifies both via org_unit_types AND org_unit_groups on the
+        same form, it must be counted only once (not doubled)."""
+        self.client.force_authenticate(self.user)
+
+        # AS A.B.A (pk=6), AS A.B.B (pk=10) and AS A.B.C (pk=11) are all "Aire de Santé", siblings under
+        # District A.B. form_hs_6 targets them all via type, AND also explicitly targets AS A.B.B via a group.
+        form_hs_6 = Form.objects.create(name="Hydroponics study 6")
+        self.project_1.forms.add(form_hs_6)
+        form_hs_6.org_unit_types.add(self.org_unit_type_aire_sante)
+
+        group = Group.objects.create(name="Overlapping group", source_version_id=self.as_abb_ou.version_id)
+        group.org_units.add(self.as_abb_ou)  # AS A.B.B: matches both type and group
+        form_hs_6.org_unit_groups.add(group)
+
+        self.create_form_instance(form=form_hs_6, org_unit=self.as_abb_ou, project=None)
+
+        response = self.client.get(
+            "/api/v2/completeness_stats/",
+            {
+                "parent_org_unit_id": self.as_abb_ou.parent.id,  # District A.B
+                "form_id": form_hs_6.id,
+                "limit": 10,
+                "org_unit_validation_status": "VALID,NEW",
+            },
+        )
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
+        results_by_ou_id = {r["org_unit"]["id"]: r for r in j["results"]}
+
+        # AS A.B.B qualifies via both type and group, but must be counted as a single target with a
+        # single submission, not doubled.
+        as_abb_b_stats = results_by_ou_id[self.as_abb_ou.id]["form_stats"][_slug(form_hs_6)]
+        self.assertEqual(as_abb_b_stats["itself_target"], 1)
+        self.assertEqual(as_abb_b_stats["itself_has_instances"], 1)
+        self.assertEqual(as_abb_b_stats["itself_instances_count"], 1)
+
+        # Its siblings still qualify via type alone (the group didn't narrow anything).
+        as_aba_stats = results_by_ou_id[6]["form_stats"][_slug(form_hs_6)]  # AS A.B.A
+        self.assertEqual(as_aba_stats["itself_target"], 1)
+        self.assertEqual(as_aba_stats["itself_has_instances"], 0)
+
+        # The root sees all 3 "Aire de Santé" as targets, only 1 filled, and the total instance count
+        # is not doubled by the overlapping group membership.
+        root_stats = results_by_ou_id[self.as_abb_ou.parent.id]["form_stats"][_slug(form_hs_6)]
+        self.assertEqual(root_stats["descendants"], 3)
+        self.assertEqual(root_stats["descendants_ok"], 1)
+        self.assertAlmostEqualRecursive(root_stats["percent"], 100 / 3)
+        self.assertEqual(root_stats["total_instances"], 1)
+
+    def test_form_scoped_by_multiple_org_unit_groups(self):
+        """IA-5400: when a form has multiple org_unit_groups, an org unit in ANY of them is a target (OR)."""
+        self.client.force_authenticate(self.user)
+
+        form_hs_7 = Form.objects.create(name="Hydroponics study 7")
+        self.project_1.forms.add(form_hs_7)
+
+        as_aba_ou = OrgUnit.objects.get(pk=6)  # AS A.B.A
+        as_abc_ou = OrgUnit.objects.get(pk=11)  # AS A.B.C (new)
+
+        group_a = Group.objects.create(name="Group A", source_version_id=self.as_abb_ou.version_id)
+        group_a.org_units.add(as_aba_ou)
+        group_b = Group.objects.create(name="Group B", source_version_id=self.as_abb_ou.version_id)
+        group_b.org_units.add(as_abc_ou)
+        form_hs_7.org_unit_groups.add(group_a, group_b)
+
+        self.create_form_instance(form=form_hs_7, org_unit=as_aba_ou, project=None)
+        self.create_form_instance(form=form_hs_7, org_unit=as_abc_ou, project=None)
+
+        response = self.client.get(
+            "/api/v2/completeness_stats/",
+            {
+                "parent_org_unit_id": self.as_abb_ou.parent.id,  # District A.B
+                "form_id": form_hs_7.id,
+                "limit": 10,
+                "org_unit_validation_status": "VALID,NEW",
+            },
+        )
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
+        results_by_ou_id = {r["org_unit"]["id"]: r for r in j["results"]}
+
+        # Members of either group are targets with their submission.
+        for ou_id in (as_aba_ou.id, as_abc_ou.id):
+            stats = results_by_ou_id[ou_id]["form_stats"][_slug(form_hs_7)]
+            self.assertEqual(stats["itself_target"], 1)
+            self.assertEqual(stats["itself_has_instances"], 1)
+
+        # AS A.B.B, member of neither group, is correctly not a target.
+        as_abb_b_stats = results_by_ou_id[self.as_abb_ou.id]["form_stats"][_slug(form_hs_7)]
+        self.assertEqual(as_abb_b_stats["itself_target"], 0)
+
+        root_stats = results_by_ou_id[self.as_abb_ou.parent.id]["form_stats"][_slug(form_hs_7)]
+        self.assertEqual(root_stats["descendants"], 2)
+        self.assertEqual(root_stats["descendants_ok"], 2)
+        self.assertEqual(root_stats["percent"], 100)
+        self.assertEqual(root_stats["total_instances"], 2)
+
+    def test_form_scoped_by_org_unit_group_rejected_ou_not_counted(self):
+        """IA-5400: an org unit that belongs to the form's group but has a non-valid status is still
+        excluded, same as for org_unit_types. See also test_rejected_ous_not_counted."""
+        self.client.force_authenticate(self.user)
+
+        form_hs_8 = Form.objects.create(name="Hydroponics study 8")
+        self.project_1.forms.add(form_hs_8)
+
+        group = Group.objects.create(name="Group of interest", source_version_id=self.as_abb_ou.version_id)
+        group.org_units.add(self.as_abb_ou)
+        form_hs_8.org_unit_groups.add(group)
+
+        self.create_form_instance(form=form_hs_8, org_unit=self.as_abb_ou, project=None)
+
+        self.as_abb_ou.validation_status = OrgUnit.VALIDATION_REJECTED
+        self.as_abb_ou.save()
+
+        response = self.client.get(
+            "/api/v2/completeness_stats/",
+            {
+                "parent_org_unit_id": self.as_abb_ou.parent.id,
+                "form_id": form_hs_8.id,
+                "limit": 10,
+                "org_unit_validation_status": "VALID,NEW",
+            },
+        )
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        # The rejected org unit itself is dropped from the results entirely...
+        result_ou_ids = {r["org_unit"]["id"] for r in j["results"]}
+        self.assertNotIn(self.as_abb_ou.id, result_ou_ids)
+
+        # ...and the root no longer counts it as a target/descendant.
+        results_by_ou_id = {r["org_unit"]["id"]: r for r in j["results"]}
+        root_stats = results_by_ou_id[self.as_abb_ou.parent.id]["form_stats"][_slug(form_hs_8)]
+        self.assertEqual(root_stats["descendants"], 0)
+        self.assertEqual(root_stats["descendants_ok"], 0)
+        self.assertEqual(root_stats["total_instances"], 0)

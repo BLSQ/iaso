@@ -16,7 +16,7 @@ def destroy_account_feature_flag(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0397_bulkcreateuserfile_file_size_and_more"),
+        ("iaso", "0398_instance_api_import_instance_app_version"),
     ]
 
     operations = [

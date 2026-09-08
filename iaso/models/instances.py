@@ -784,6 +784,12 @@ class Instance(ValidationWorkflowArtefact):
         return {key: value for key, value in result.items() if key in wanted}
 
     def as_dict_with_descriptor(self, fields: typing.Optional[typing.Iterable[str]] = None):
+        """Same as `as_dict()`, plus a `form_descriptor` key (the form version's descriptor).
+
+        :param fields: see `as_dict()`. Additionally, when given and it doesn't contain
+            "form_descriptor", the (potentially expensive) `get_form_version()` lookup is skipped
+            entirely rather than just filtered out afterwards.
+        """
         wanted = None if fields is None else set(fields)
         dict = self.as_dict(fields=fields)
         if wanted is None or "form_descriptor" in wanted:

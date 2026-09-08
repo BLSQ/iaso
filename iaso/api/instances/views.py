@@ -17,7 +17,8 @@ from django.db.models import Case, Count, Exists, F, OuterRef, Prefetch, Q, Quer
 from django.db.models.functions import Cast, Concat, JSONObject, Replace
 from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.utils.timezone import now
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -89,6 +90,9 @@ class InstancesViewSet(viewsets.ViewSet):
 
     GET /api/instances/
         Optional query referenceInstances=all|reference|not_reference (default: no filter) matches is_reference_instance.
+        Optional query fields=<comma-separated keys> (default: all fields) restricts the JSON search response
+        (not the csv/xlsx/parquet exports) to the requested keys, and skips the queries/computation needed
+        for any field that isn't requested (see `Instance.as_dict`).
     GET /api/instances/<id>
     DELETE /api/instances/<id>
     POST /api/instances/
@@ -410,6 +414,33 @@ class InstancesViewSet(viewsets.ViewSet):
         response["Content-Disposition"] = "attachment; filename=%s" % filename
         return response
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="fields",
+                location=OpenApiParameter.QUERY,
+                description=(
+                    "A comma-separated list of field names (as returned by `Instance.as_dict()`, e.g. "
+                    "`id,org_unit,file_content`). When given, only these keys are included in the response, "
+                    "and the fields that aren't requested are neither queried for (e.g. `org_unit`, "
+                    "`project`) nor computed (e.g. `file_content`, which parses the submission's XML). Only "
+                    "applies to the JSON search responses (paginated or not); the csv/xlsx/parquet export "
+                    "branches always return every column regardless of this param. Defaults to returning "
+                    "every field, same as before this param existed."
+                ),
+                type=OpenApiTypes.STR,
+            ),
+            OpenApiParameter(
+                name="with_descriptor",
+                location=OpenApiParameter.QUERY,
+                description=(
+                    "'true' to also include the form's `form_descriptor` in each instance (also subject to "
+                    "`fields`, i.e. omitted if `fields` is given and doesn't list `form_descriptor`)."
+                ),
+                type=OpenApiTypes.BOOL,
+            ),
+        ]
+    )
     def list(self, request):
         """List instances: this endpoint is used for both searches and file exports"""
 

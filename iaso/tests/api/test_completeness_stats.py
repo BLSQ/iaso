@@ -981,6 +981,26 @@ class CompletenessStatsAPITestCase(APITestCase):
                 form_hs_4_direct_idx = header.index(f"{self.form_hs_4.name} - Direct")
                 self.assertEqual(row[form_hs_4_direct_idx], "false")
 
+    def _create_group_with_org_units(self, name, org_units):
+        """Shared setup for the IA-5400 org-unit-group tests below."""
+        group = Group.objects.create(name=name, source_version_id=self.as_abb_ou.version_id)
+        group.org_units.add(*org_units)
+        return group
+
+    def _get_completeness_stats_results_by_ou_id(self, parent_org_unit_id, form_id):
+        """Shared query/response-shaping for the IA-5400 org-unit-group tests below."""
+        response = self.client.get(
+            "/api/v2/completeness_stats/",
+            {
+                "parent_org_unit_id": parent_org_unit_id,
+                "form_id": form_id,
+                "limit": 10,
+                "org_unit_validation_status": "VALID,NEW",
+            },
+        )
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
+        return {r["org_unit"]["id"]: r for r in j["results"]}
+
     def test_form_scoped_by_org_unit_group(self):
         """IA-5400: a form configured via org_unit_groups (instead of/in addition to org_unit_types)
         should still get proper (non-zero) completeness stats for the org units in that group."""
@@ -991,23 +1011,15 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.project_1.forms.add(form_hs_5)
 
         # Only AS A.B.B (pk=10) is put in the group, not its siblings AS A.B.A (pk=6) or AS A.B.C (pk=11).
-        group = Group.objects.create(name="Group of interest", source_version_id=self.as_abb_ou.version_id)
-        group.org_units.add(self.as_abb_ou)
+        group = self._create_group_with_org_units("Group of interest", [self.as_abb_ou])
         form_hs_5.org_unit_groups.add(group)
 
         self.create_form_instance(form=form_hs_5, org_unit=self.as_abb_ou, project=None)
 
-        response = self.client.get(
-            "/api/v2/completeness_stats/",
-            {
-                "parent_org_unit_id": self.as_abb_ou.parent.id,  # District A.B
-                "form_id": form_hs_5.id,
-                "limit": 10,
-                "org_unit_validation_status": "VALID,NEW",
-            },
+        results_by_ou_id = self._get_completeness_stats_results_by_ou_id(
+            parent_org_unit_id=self.as_abb_ou.parent.id,  # District A.B
+            form_id=form_hs_5.id,
         )
-        j = self.assertJSONResponse(response, status.HTTP_200_OK)
-        results_by_ou_id = {r["org_unit"]["id"]: r for r in j["results"]}
 
         # The org unit that is a member of the group is correctly detected as a target with a submission.
         as_abb_b_stats = results_by_ou_id[self.as_abb_ou.id]["form_stats"][_slug(form_hs_5)]
@@ -1038,23 +1050,16 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.project_1.forms.add(form_hs_6)
         form_hs_6.org_unit_types.add(self.org_unit_type_aire_sante)
 
-        group = Group.objects.create(name="Overlapping group", source_version_id=self.as_abb_ou.version_id)
-        group.org_units.add(self.as_abb_ou)  # AS A.B.B: matches both type and group
+        # AS A.B.B: matches both type and group
+        group = self._create_group_with_org_units("Overlapping group", [self.as_abb_ou])
         form_hs_6.org_unit_groups.add(group)
 
         self.create_form_instance(form=form_hs_6, org_unit=self.as_abb_ou, project=None)
 
-        response = self.client.get(
-            "/api/v2/completeness_stats/",
-            {
-                "parent_org_unit_id": self.as_abb_ou.parent.id,  # District A.B
-                "form_id": form_hs_6.id,
-                "limit": 10,
-                "org_unit_validation_status": "VALID,NEW",
-            },
+        results_by_ou_id = self._get_completeness_stats_results_by_ou_id(
+            parent_org_unit_id=self.as_abb_ou.parent.id,  # District A.B
+            form_id=form_hs_6.id,
         )
-        j = self.assertJSONResponse(response, status.HTTP_200_OK)
-        results_by_ou_id = {r["org_unit"]["id"]: r for r in j["results"]}
 
         # AS A.B.B qualifies via both type and group, but must be counted as a single target with a
         # single submission, not doubled.
@@ -1086,26 +1091,17 @@ class CompletenessStatsAPITestCase(APITestCase):
         as_aba_ou = OrgUnit.objects.get(pk=6)  # AS A.B.A
         as_abc_ou = OrgUnit.objects.get(pk=11)  # AS A.B.C (new)
 
-        group_a = Group.objects.create(name="Group A", source_version_id=self.as_abb_ou.version_id)
-        group_a.org_units.add(as_aba_ou)
-        group_b = Group.objects.create(name="Group B", source_version_id=self.as_abb_ou.version_id)
-        group_b.org_units.add(as_abc_ou)
+        group_a = self._create_group_with_org_units("Group A", [as_aba_ou])
+        group_b = self._create_group_with_org_units("Group B", [as_abc_ou])
         form_hs_7.org_unit_groups.add(group_a, group_b)
 
         self.create_form_instance(form=form_hs_7, org_unit=as_aba_ou, project=None)
         self.create_form_instance(form=form_hs_7, org_unit=as_abc_ou, project=None)
 
-        response = self.client.get(
-            "/api/v2/completeness_stats/",
-            {
-                "parent_org_unit_id": self.as_abb_ou.parent.id,  # District A.B
-                "form_id": form_hs_7.id,
-                "limit": 10,
-                "org_unit_validation_status": "VALID,NEW",
-            },
+        results_by_ou_id = self._get_completeness_stats_results_by_ou_id(
+            parent_org_unit_id=self.as_abb_ou.parent.id,  # District A.B
+            form_id=form_hs_7.id,
         )
-        j = self.assertJSONResponse(response, status.HTTP_200_OK)
-        results_by_ou_id = {r["org_unit"]["id"]: r for r in j["results"]}
 
         # Members of either group are targets with their submission.
         for ou_id in (as_aba_ou.id, as_abc_ou.id):
@@ -1131,8 +1127,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         form_hs_8 = Form.objects.create(name="Hydroponics study 8")
         self.project_1.forms.add(form_hs_8)
 
-        group = Group.objects.create(name="Group of interest", source_version_id=self.as_abb_ou.version_id)
-        group.org_units.add(self.as_abb_ou)
+        group = self._create_group_with_org_units("Group of interest", [self.as_abb_ou])
         form_hs_8.org_unit_groups.add(group)
 
         self.create_form_instance(form=form_hs_8, org_unit=self.as_abb_ou, project=None)
@@ -1140,23 +1135,15 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.as_abb_ou.validation_status = OrgUnit.VALIDATION_REJECTED
         self.as_abb_ou.save()
 
-        response = self.client.get(
-            "/api/v2/completeness_stats/",
-            {
-                "parent_org_unit_id": self.as_abb_ou.parent.id,
-                "form_id": form_hs_8.id,
-                "limit": 10,
-                "org_unit_validation_status": "VALID,NEW",
-            },
+        results_by_ou_id = self._get_completeness_stats_results_by_ou_id(
+            parent_org_unit_id=self.as_abb_ou.parent.id,
+            form_id=form_hs_8.id,
         )
-        j = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         # The rejected org unit itself is dropped from the results entirely...
-        result_ou_ids = {r["org_unit"]["id"] for r in j["results"]}
-        self.assertNotIn(self.as_abb_ou.id, result_ou_ids)
+        self.assertNotIn(self.as_abb_ou.id, results_by_ou_id)
 
         # ...and the root no longer counts it as a target/descendant.
-        results_by_ou_id = {r["org_unit"]["id"]: r for r in j["results"]}
         root_stats = results_by_ou_id[self.as_abb_ou.parent.id]["form_stats"][_slug(form_hs_8)]
         self.assertEqual(root_stats["descendants"], 0)
         self.assertEqual(root_stats["descendants_ok"], 0)

@@ -121,7 +121,7 @@ def get_annotated_queryset(
     # Same underlying queryset as `filter_ou_cte`, given its own cte name so the org-unit-group
     # branch of OU_COUNT_QUERY doesn't share a reference with the org-unit-type branch -- see the
     # comment there for why that matters for the query plan.
-    filter_ou_groups_cte = With(orgunit_qs.only("id", "org_unit_type_id", "path"), name="filtered_orgunit_groups")
+    filter_ou_groups_cte = With(orgunit_qs.only("id", "path"), name="filtered_orgunit_groups")
 
     pivot_cte = raw_cte_sql(
         sql=PIVOT_QUERY,

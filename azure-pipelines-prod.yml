@@ -55,8 +55,8 @@ steps:
   displayName: 'apt update'
 
 - script: |
-    sudo apt install gdal-bin
-  displayName: 'install gdal'
+    sudo apt install gdal-bin gettext
+  displayName: 'install gdal and gettext'
 
 - script: |
     python --version
@@ -78,10 +78,12 @@ steps:
 # The secret key is done with an export because Azure pipelines will
 # remove all env variables that start with SECRET_
 - script: |
+    set -euo pipefail
     export SECRET_KEY=${SECRETKEY}
     export DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
     export DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USERNAME}
     export DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL}
+    uv run python manage.py compile_translations
     uv run python manage.py migrate
     uv run python manage.py createcachetable
     uv run python manage.py createsuperuser --noinput
@@ -132,7 +134,12 @@ steps:
     echo "Disk space after Docker cleanup:" && df -h
   displayName: 'Clean up Docker system'
 
-- script: docker build -t prod-coda2 --target prod -f $(Build.SourcesDirectory)/docker/prod/Dockerfile .
+- script: |
+    docker build -t prod-coda2 --target prod \
+      --build-arg DEPLOYED_ON="$(date --rfc-3339=seconds)" \
+      --build-arg DEPLOYED_BY="$(Build.RequestedFor)" \
+      --build-arg IASO_VERSION="$(Build.SourceBranchName)-$(git rev-parse --short HEAD)" \
+      -f $(Build.SourcesDirectory)/docker/prod/Dockerfile .
   displayName: 'Build docker image'
 
 # Save the Docker image compressed, in a dedicated folder for the artifact

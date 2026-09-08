@@ -426,7 +426,7 @@ class GPKGImport(TestCase):
                 # Ensure the DataSource is created with the project
                 source = DataSource.objects.create(name=f"test_column_validation_{i}")
                 source.projects.add(self.project)
-                with self.assertRaisesMessage(ValueError, f"Missing required column: {column}"):
+                with self.assertRaisesMessage(ValueError, f"Column '{column}' is required but missing from GPKG"):
                     import_gpkg_file(
                         f"./iaso/tests/fixtures/gpkg/missing_column_{column}.gpkg",
                         source_name=f"test_column_validation_{i}",

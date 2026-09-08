@@ -22,7 +22,7 @@ class EntityFilterSet(FilterSet):
     created_by_team_id = CharFilter(field_name="attributes__created_by__teams__id")
 
     entity_type_ids = CharInFilter(field_name="entity_type_id", lookup_expr="in")
-    groups = CharInFilter(field_name="attributes__org_unit__groups", lookup_expr="in")
+    groups = CharInFilter(method="filter_groups")
 
     show_deleted = BooleanFilter(field_name="deleted_at", lookup_expr="isnull", exclude=True)
     orgUnitId = CharFilter(method="filter_org_unit")
@@ -32,6 +32,16 @@ class EntityFilterSet(FilterSet):
     class Meta:
         model = Entity
         fields = []
+
+    def filter_groups(self, queryset, name, value):
+        # `attributes__org_unit__groups__in=value` (a direct field_name+lookup_expr filter, as this
+        # used to be) joins through Group.org_units, a genuine m2m: an org unit routinely belongs to
+        # several groups, so filtering by 2+ group ids that a single org unit belongs to would join
+        # once per matching membership and duplicate the Entity row. Exists(...) checks membership
+        # without joining, so it can't duplicate -- same pattern as EntityDateFilterBackend below.
+        return queryset.filter(
+            Exists(Instance.objects.filter(pk=OuterRef("attributes_id"), org_unit__groups__in=value))
+        )
 
     def filter_org_unit(self, queryset, name, value):
         try:

@@ -34,7 +34,7 @@ from iaso.utils.models.sized_file_field import SizedFileField
 from iaso.utils.models.upload_to import get_account_name_based_on_user
 
 from ..utils.dhis2 import generate_id_for_dhis_2
-from .common import ValidationWorkflowArtefact
+from .common import ValidationWorkflowArtefact, ValidationWorkflowArtefactQuerySet
 from .device import Device, DeviceOwnership
 from .forms import Form, FormVersion
 from .org_unit import OrgUnit, OrgUnitReferenceInstance
@@ -85,7 +85,7 @@ def resolve_status_form_ids(form_id=None, form_ids=None):
     return resolved or None
 
 
-class InstanceQuerySet(django_cte.CTEQuerySet):
+class InstanceQuerySet(django_cte.CTEQuerySet, ValidationWorkflowArtefactQuerySet):
     def with_lock_info(self, user):
         """
         Annotate the QuerySet with the lock info for the given user.
@@ -522,6 +522,10 @@ class Instance(ValidationWorkflowArtefact):
     form_version = models.ForeignKey(
         "FormVersion", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="form_version"
     )
+    api_import = models.ForeignKey(
+        "api_import.APIImport", null=True, blank=True, on_delete=models.SET_NULL, related_name="instances"
+    )
+    app_version = models.CharField(max_length=25, blank=True, null=True)
 
     last_export_success_at = models.DateTimeField(null=True, blank=True)
 
@@ -776,6 +780,7 @@ class Instance(ValidationWorkflowArtefact):
             "modification": True,
             "id": self.id,
             "device_id": self.device.imei if self.device else None,
+            "device_app_version": self.app_version,
             "file_name": self.file_name,
             "file_url": self.file.url if self.file else None,
             "form_id": self.form_id,

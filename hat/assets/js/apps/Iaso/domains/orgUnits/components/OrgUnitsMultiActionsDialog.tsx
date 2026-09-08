@@ -3,6 +3,7 @@ import React, { FunctionComponent, useMemo, useState } from 'react';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ReportIcon from '@mui/icons-material/Report';
 import {
+    Alert,
     Box,
     Button,
     Dialog,
@@ -17,13 +18,16 @@ import { makeStyles } from '@mui/styles';
 import {
     commonStyles,
     formatThousand,
+    useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
 // @ts-ignore
 import { UseMutateAsyncFunction } from 'react-query';
-import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
+import { baseUrls } from '../../../constants/urls';
+import * as Permission from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';
+import { userHasPermission } from '../../users/utils';
 
 import { useGetGroupDropdown } from '../hooks/requests/useGetGroups';
 import { useGetOrgUnitValidationStatus } from '../hooks/utils/useGetOrgUnitValidationStatus';
@@ -64,15 +68,6 @@ const useStyles = makeStyles(theme => ({
         display: 'flex',
         alignItems: 'center',
     },
-    warningIcon: {
-        display: 'inline-block',
-        marginLeft: theme.spacing(1),
-        marginRight: theme.spacing(1),
-    },
-    warningMessage: {
-        display: 'flex',
-        justifyContent: 'center',
-    },
 }));
 
 const stringOfIdsToArrayofIds = stringValue =>
@@ -90,6 +85,7 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const theme = useTheme();
+    const redirectTo = useRedirectTo();
     const { data: orgUnitTypes } = useGetOrgUnitTypesDropdownOptions({
         onlyWriteAccess: true,
     });
@@ -105,8 +101,13 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
     const [validationStatus, setValidationStatus] = useState<
         string | undefined
     >(undefined);
+    const [openConfirmDialog, setOpenConfirmDialog] = useState<boolean>(false);
 
     const currentUser = useCurrentUser();
+    const hasTaskPermission = userHasPermission(
+        Permission.DATA_TASKS,
+        currentUser,
+    );
     const searches = useMemo(
         () => decodeSearch(decodeURI(params.searches)),
         [params.searches],
@@ -173,9 +174,10 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
         setEditValidation(false);
         setUpdateGPS(false);
         setValidationStatus(undefined);
+        setOpenConfirmDialog(false);
         closeDialog();
     };
-    const saveAndReset = () => {
+    const saveAndReset = (redirect = false) => {
         const data: SaveData = {};
         if (editGroups) {
             if (groupsAdded.length > 0) {
@@ -209,7 +211,14 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
             ...data,
             saveGPS: updateGPS,
             saveOtherField: editValidation || editOrgUnitType || editGroups,
-        }).then(() => closeAndReset());
+        }).then(() => {
+            closeAndReset();
+            if (redirect) {
+                redirectTo(baseUrls.tasks, {
+                    order: '-created_at',
+                });
+            }
+        });
     };
     return (
         <Dialog
@@ -363,41 +372,73 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
                     {formatMessage(MESSAGES.cancel)}
                 </Button>
 
-                <ConfirmDialog
-                    withDivider
-                    btnMessage={formatMessage(MESSAGES.validate)}
-                    question={
-                        <Box className={classes.warningTitle}>
-                            <ReportIcon
-                                className={classes.warningIcon}
-                                color="error"
-                                fontSize="large"
-                            />
-                            {formatMessage(MESSAGES.confirmMultiChange)}
-                            <ReportIcon
-                                className={classes.warningIcon}
-                                color="error"
-                                fontSize="large"
-                            />
-                        </Box>
-                    }
-                    message={
-                        <Typography
-                            variant="body2"
-                            color="error"
-                            component="span"
-                            className={classes.warningMessage}
-                        >
-                            {formatMessage(MESSAGES.bulkChangeCount, {
-                                count: `${formatThousand(selectCount)}`,
-                            })}
-                        </Typography>
-                    }
-                    confirm={() => saveAndReset()}
-                    btnDisabled={isSaveDisabled()}
-                    btnVariant="text"
-                />
+                <Button
+                    onClick={() => setOpenConfirmDialog(true)}
+                    disabled={isSaveDisabled()}
+                    color="primary"
+                >
+                    {formatMessage(MESSAGES.validate)}
+                </Button>
             </DialogActions>
+            <Dialog
+                open={openConfirmDialog}
+                onClose={(event, reason) => {
+                    if (reason === 'backdropClick') {
+                        setOpenConfirmDialog(false);
+                    }
+                }}
+            >
+                <DialogTitle>
+                    <Box className={classes.warningTitle}>
+                        {formatMessage(MESSAGES.confirmMultiChange)}
+                    </Box>
+                </DialogTitle>
+                <DialogContent>
+                    <Box display="flex" flexDirection="column" gap={2} pt={1}>
+                        <Alert
+                            severity="error"
+                            icon={<ReportIcon />}
+                            sx={{
+                                alignItems: 'center',
+                            }}
+                        >
+                            <Typography variant="body2" fontWeight="bold">
+                                {formatMessage(MESSAGES.bulkChangeCount, {
+                                    count: `${formatThousand(selectCount)}`,
+                                })}
+                            </Typography>
+                        </Alert>
+                        <Typography variant="body2" color="text.secondary">
+                            {formatMessage(MESSAGES.bulkChangeTaskHelp)}
+                        </Typography>
+                    </Box>
+                </DialogContent>
+                <DialogActions className={classes.action}>
+                    <Button
+                        onClick={() => setOpenConfirmDialog(false)}
+                        color="primary"
+                    >
+                        {formatMessage(MESSAGES.no)}
+                    </Button>
+                    <Button
+                        onClick={() => saveAndReset()}
+                        color="primary"
+                        autoFocus={!hasTaskPermission}
+                    >
+                        {formatMessage(MESSAGES.yes)}
+                    </Button>
+                    {hasTaskPermission && (
+                        <Button
+                            onClick={() => saveAndReset(true)}
+                            color="primary"
+                            variant="contained"
+                            autoFocus
+                        >
+                            {formatMessage(MESSAGES.modifyAndFollow)}
+                        </Button>
+                    )}
+                </DialogActions>
+            </Dialog>
         </Dialog>
     );
 };

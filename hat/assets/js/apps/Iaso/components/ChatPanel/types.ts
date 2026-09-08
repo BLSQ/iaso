@@ -17,6 +17,10 @@ export type ChatMessage = {
     id: string;
     quickReplies?: ChatQuickReplyQuestion[];
     attachments?: ChatMessageAttachment[];
+    // This assistant turn applied a change that can be undone.
+    revertable?: boolean;
+    // The change has been undone, or a later revert made this one's snapshot stale.
+    reverted?: boolean;
 };
 
 export type QuickReplyAnswer = {

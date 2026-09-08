@@ -30,7 +30,7 @@ class NestedHistorySerializer(ModelSerializer):
 class MobileValidationWorkflowListSerializer(ModelSerializer):
     instance_id = serializers.CharField(read_only=True, source="uuid")
     created_at = TimestampField(read_only=True)
-    history = NestedHistorySerializer(read_only=True, source="get_all_validation_nodes", many=True)
+    history = NestedHistorySerializer(read_only=True, source="all_validation_nodes", many=True)
     validation_status = serializers.CharField(read_only=True, source="general_validation_status")
     rejection_comment = serializers.SerializerMethodField(read_only=True)
     updated_at = serializers.SerializerMethodField(label="Timestamp of the last update (history)", read_only=True)

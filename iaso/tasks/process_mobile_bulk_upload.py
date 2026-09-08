@@ -81,7 +81,7 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                 if INSTANCES_JSON in zip_ref.namelist():
                     log_progress(the_task, 20, "Processing forms and files")
                     instances_data = read_json_file_from_zip(zip_ref, INSTANCES_JSON)
-                    import_instances(instances_data, user, project.app_id)
+                    import_instances(instances_data, user, project.app_id, api_import=api_import)
                     new_instance_files = []
                     dirs = get_directory_handlers(zip_ref)
 

@@ -33,7 +33,7 @@ from .api.check_version import CheckVersionViewSet
 from .api.colors import colors_list
 from .api.comment import CommentViewSet
 from .api.completeness import CompletenessViewSet
-from .api.completeness_stats import CompletenessStatsV2ViewSet
+from .api.completeness_stats.views import CompletenessStatsV2ViewSet
 from .api.data_source_versions_synchronization.views import DataSourceVersionsSynchronizationViewSet
 from .api.data_sources import DataSourceViewSet
 from .api.deduplication.entity_duplicate import EntityDuplicateViewSet  # type: ignore

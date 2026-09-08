@@ -268,6 +268,8 @@ class InstancesViewSet(viewsets.ViewSet):
             {"title": "Org unit", "width": 20},
             {"title": "Org unit id", "width": 20},
             {"title": "Référence externe", "width": 20},
+            {"title": "OU Code", "width": 20},
+            {"title": "OU Status", "width": 20},
             {"title": "parent1", "width": 20},
             {"title": "parent2", "width": 20},
             {"title": "parent3", "width": 20},
@@ -334,6 +336,8 @@ class InstancesViewSet(viewsets.ViewSet):
                 instance.org_unit.name,
                 instance.org_unit.id,
                 instance.org_unit.source_ref,
+                instance.org_unit.code,
+                instance.org_unit.validation_status,
             ]
 
             parent = org_unit.parent

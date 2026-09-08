@@ -718,14 +718,29 @@ class Instance(ValidationWorkflowArtefact):
         except NothingToExportError:
             print("Export failed for instance", self)
 
-    def as_dict(self):
-        file_content = self.get_and_save_json_of_xml()
+    def as_dict(self, fields: typing.Optional[typing.Iterable[str]] = None):
+        """
+        :param fields: if given, restrict the returned dict to these keys, and skip computing
+            the (potentially expensive, e.g. S3 fetch + XML parse for `file_content`, or extra
+            queries for `org_unit`) values of any key that isn't requested. `fields=None` (the
+            default) preserves the historical behavior of returning every key.
+        """
+        wanted = None if fields is None else set(fields)
+
+        def want(key: str) -> bool:
+            return wanted is None or key in wanted
+
+        file_content = self.get_and_save_json_of_xml() if want("file_content") else None
         last_modified_by = None
 
         if self.last_modified_by is not None:
             last_modified_by = self.last_modified_by.username
 
-        return {
+        # Only touch self.project (a non-select_related FK, so accessing it triggers a query
+        # per instance) when at least one of the fields it feeds is actually requested.
+        project = self.project if want("project_name") or want("project_color") or want("project_id") else None
+
+        result = {
             "uuid": self.uuid,
             "export_id": self.export_id,
             "file_name": self.file_name,
@@ -738,14 +753,18 @@ class Instance(ValidationWorkflowArtefact):
             "updated_at": self.updated_at.timestamp(),
             "source_created_at": self.source_created_at.timestamp() if self.source_created_at else None,
             "source_updated_at": self.source_updated_at.timestamp() if self.source_updated_at else None,
-            "org_unit": self.org_unit.as_dict() if self.org_unit else None,
+            # `want("org_unit")` must be checked before touching `self.org_unit` at all: with the
+            # org_unit relation not select_related (skipped when "org_unit" isn't requested),
+            # merely evaluating `self.org_unit` triggers a query per instance, regardless of
+            # whether its value ends up used.
+            "org_unit": self.org_unit.as_dict() if want("org_unit") and self.org_unit else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "period": self.period,
-            "project_name": self.project.name if self.project else None,
-            "project_color": self.project.color if self.project else None,
-            "project_id": self.project.id if self.project else None,
+            "project_name": project.name if project else None,
+            "project_color": project.color if project else None,
+            "project_id": project.id if project else None,
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
             "created_by": (
@@ -760,10 +779,16 @@ class Instance(ValidationWorkflowArtefact):
             "last_modified_by": last_modified_by,
         }
 
-    def as_dict_with_descriptor(self):
-        dict = self.as_dict()
-        form_version = self.get_form_version()
-        dict["form_descriptor"] = form_version.get_or_save_form_descriptor() if form_version is not None else None
+        if wanted is None:
+            return result
+        return {key: value for key, value in result.items() if key in wanted}
+
+    def as_dict_with_descriptor(self, fields: typing.Optional[typing.Iterable[str]] = None):
+        wanted = None if fields is None else set(fields)
+        dict = self.as_dict(fields=fields)
+        if wanted is None or "form_descriptor" in wanted:
+            form_version = self.get_form_version()
+            dict["form_descriptor"] = form_version.get_or_save_form_descriptor() if form_version is not None else None
         return dict
 
     def as_full_model(self, with_entity=False):

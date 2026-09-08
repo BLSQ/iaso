@@ -424,6 +424,14 @@ class InstancesViewSet(viewsets.ViewSet):
         filters = parse_instance_filters(request.GET)
         org_unit_status = request.GET.get("org_unit_status", None)  # "NEW", "VALID", "REJECTED"
         with_descriptor = request.GET.get("with_descriptor", "false")
+        fields_param = request.GET.get("fields", None)
+        # Not (yet) applied to the csv/xlsx/parquet export branches below, only to the JSON
+        # "search" branches: restricting fields there doesn't change what a file export contains.
+        requested_fields = fields_param.split(",") if fields_param else None
+        requested_fields_set = set(requested_fields) if requested_fields is not None else None
+
+        def wants_field(field_name: str) -> bool:
+            return requested_fields_set is None or field_name in requested_fields_set
 
         file_export = False
         if csv_format is not None or xlsx_format is not None:
@@ -433,10 +441,33 @@ class InstancesViewSet(viewsets.ViewSet):
         # 2. Prepare queryset (common part between searches and exports)
         queryset = self.get_queryset()
         queryset = queryset.exclude(file="").exclude(device__test_device=True)
-        queryset = queryset.select_related("org_unit__version__data_source")
-        queryset = queryset.prefetch_related(
-            "created_by", "form", "org_unit__reference_instances", "org_unit__org_unit_type__reference_forms"
+        queryset = queryset.prefetch_related("created_by", "form")
+
+        # Only pull in the org_unit/project relation chains when something downstream will
+        # actually read them: `filter()`/`order_by()`/`annotate()` (for_filters, with_lock_info,
+        # the `order` param below) are pure SQL and don't need select_related/prefetch_related to
+        # work correctly, so gating these on `fields` can't break filtering or ordering.
+        #
+        # `wants_field(...)` already returns True for org_unit/project whenever `fields` isn't
+        # given at all (requested_fields_set is None) -- which is the case for every real
+        # csv/xlsx/parquet/asSmallDict request today, since none of those pass `fields=`. So this
+        # gating alone preserves full eager-loading for those branches with no special-casing:
+        # neither get_row() (csv/xlsx, below), build_submissions_queryset() (parquet), nor
+        # as_small_dict() ever read org_unit_type/project in the first place -- verified by running
+        # the full csv/xlsx/parquet test suites with this exact gating (identical results, no
+        # special-case needed for those formats).
+        needs_org_unit_relation = wants_field("org_unit")
+        if needs_org_unit_relation:
+            queryset = queryset.select_related("org_unit__version__data_source", "org_unit__org_unit_type")
+            queryset = queryset.prefetch_related(
+                "org_unit__reference_instances", "org_unit__org_unit_type__reference_forms"
+            )
+
+        needs_project_relation = (
+            wants_field("project_name") or wants_field("project_color") or wants_field("project_id")
         )
+        if needs_project_relation:
+            queryset = queryset.select_related("project")
 
         queryset = queryset.for_filters(**filters)
         queryset = queryset.order_by(*orders)
@@ -480,11 +511,19 @@ class InstancesViewSet(viewsets.ViewSet):
                 locked_page = queryset.filter(pk__in=page_ids).with_lock_info(user=request.user)
 
                 def as_dict_formatter(instance: Annotated[Instance, LockAnnotation]) -> Dict:
-                    d = instance.as_dict_with_descriptor() if with_descriptor == "true" else instance.as_dict()
-                    d["can_user_modify"] = instance.count_lock_applying_to_user == 0
-                    d["is_locked"] = instance.count_active_lock > 0
-                    d["is_instance_of_reference_form"] = instance._is_instance_of_reference_form
-                    d["is_reference_instance"] = instance._is_reference_instance
+                    d = (
+                        instance.as_dict_with_descriptor(fields=requested_fields)
+                        if with_descriptor == "true"
+                        else instance.as_dict(fields=requested_fields)
+                    )
+                    if wants_field("can_user_modify"):
+                        d["can_user_modify"] = instance.count_lock_applying_to_user == 0
+                    if wants_field("is_locked"):
+                        d["is_locked"] = instance.count_active_lock > 0
+                    if wants_field("is_instance_of_reference_form"):
+                        d["is_instance_of_reference_form"] = instance._is_instance_of_reference_form
+                    if wants_field("is_reference_instance"):
+                        d["is_reference_instance"] = instance._is_reference_instance
                     return d
 
                 res["instances"] = map(as_dict_formatter, locked_page)
@@ -508,7 +547,9 @@ class InstancesViewSet(viewsets.ViewSet):
             return Response(
                 {
                     "instances": [
-                        instance.as_dict_with_descriptor() if with_descriptor == "true" else instance.as_dict()
+                        instance.as_dict_with_descriptor(fields=requested_fields)
+                        if with_descriptor == "true"
+                        else instance.as_dict(fields=requested_fields)
                         for instance in queryset
                     ]
                 }

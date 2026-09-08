@@ -522,6 +522,10 @@ class Instance(ValidationWorkflowArtefact):
     form_version = models.ForeignKey(
         "FormVersion", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="form_version"
     )
+    api_import = models.ForeignKey(
+        "api_import.APIImport", null=True, blank=True, on_delete=models.SET_NULL, related_name="instances"
+    )
+    app_version = models.CharField(max_length=25, blank=True, null=True)
 
     last_export_success_at = models.DateTimeField(null=True, blank=True)
 
@@ -776,6 +780,7 @@ class Instance(ValidationWorkflowArtefact):
             "modification": True,
             "id": self.id,
             "device_id": self.device.imei if self.device else None,
+            "device_app_version": self.app_version,
             "file_name": self.file_name,
             "file_url": self.file.url if self.file else None,
             "form_id": self.form_id,

@@ -5,6 +5,7 @@ source /var/app/venv/*/bin/activate
 DEBUG=true DEBUG_SQL=true python3 /var/app/current/manage.py shell
 """
 
+import hashlib
 import json
 import time
 import traceback
@@ -142,16 +143,36 @@ def save_streaming_content_to_file(response, output_dir):
     fullpath_name = output_dir + "/" + filename
     print(f"saving response in {fullpath_name}")
     size_bytes = 0
+    hasher = hashlib.sha1()
     with open(fullpath_name, "wb") as f:
         for chunk in response.streaming_content:
             if isinstance(chunk, str):
                 chunk = chunk.encode()
             f.write(chunk)
+            hasher.update(chunk)
             size_bytes += len(chunk)
     if fullpath_name.endswith(".parquet"):
         print("to visualize the content :")
         print(f"    duckdb -c 'select * from \"{fullpath_name}\"'")
-    return f"binary in {filename}", size_bytes / 1024 / 1024
+    return f"binary in {filename}", size_bytes / 1024 / 1024, hasher.hexdigest()
+
+
+def guess_record_count(body, content_type):
+    """Best-effort guess of the number of records in a JSON response: look for
+    a top-level array, either the payload itself or any key holding a list."""
+    if not content_type or "json" not in content_type:
+        return None
+    try:
+        parsed = json.loads(body)
+    except (ValueError, TypeError):
+        return None
+
+    if isinstance(parsed, list):
+        return {"<top-level array>": len(parsed)}
+    if isinstance(parsed, dict):
+        array_counts = {key: len(value) for key, value in parsed.items() if isinstance(value, list)}
+        return array_counts or None
+    return None
 
 
 def consume_response(response, output_dir):
@@ -160,7 +181,7 @@ def consume_response(response, output_dir):
     size_mb = -1
     # ensure we use the response or stream all the response to get the correct sql, duration and content
     if isinstance(response, FileResponse):
-        body, _ = save_streaming_content_to_file(response, output_dir)
+        body, _, signature = save_streaming_content_to_file(response, output_dir)
         size_mb = float(response.get("Content-Length")) / 1024 / 1024
     elif isinstance(response, StreamingHttpResponse):
         if is_textual:
@@ -168,18 +189,20 @@ def consume_response(response, output_dir):
                 chunk.decode() if isinstance(chunk, bytes) else str(chunk) for chunk in response.streaming_content
             )
             size_mb = len(body) / 1024 / 1024
+            signature = hashlib.sha1(body.encode()).hexdigest()
         else:
             # e.g. xlsx exports: binary content, can't be decoded/joined as text.
-            body, size_mb = save_streaming_content_to_file(response, output_dir)
+            body, size_mb, signature = save_streaming_content_to_file(response, output_dir)
 
     else:
         size_mb = len(response.content) / 1024 / 1024
+        signature = hashlib.sha1(response.content).hexdigest()
         if is_textual:
             body = response.content.decode()
         else:
             body = "binary content"
 
-    return [size_mb, body, is_textual]
+    return [size_mb, body, is_textual, signature]
 
 
 """
@@ -287,7 +310,7 @@ class Command(BaseCommand):
 
         self.log(response)
 
-        size_mb, body, is_textual = consume_response(response, output_dir)
+        size_mb, body, is_textual, signature = consume_response(response, output_dir)
 
         duration = time.perf_counter() - start
 
@@ -302,5 +325,10 @@ class Command(BaseCommand):
                 self.log("Body:\n", body)
 
         self.log(f"Response size: ({size_mb:.2f} MB)")
+        self.log(f"Response SHA1: {signature}")
+
+        record_counts = guess_record_count(body, response.get("Content-Type", "")) if is_textual else None
+        if record_counts:
+            self.log(f"Guessed record count(s) (array(s) found in JSON body): {record_counts}")
 
         self.log(f"Total request time: {duration:.3f}s with {len(executed_queries)} queries")

@@ -1499,34 +1499,48 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertEqual(response["Content-Type"], CONTENT_TYPE_XLSX)
 
     def test_xlsx_export_is_constant_queries(self):
-        """GET /instances/?xlsx=true must evaluate in the same number of queries
-        regardless of how many instances are exported (no per-instance N+1).
+        """GET /instances/?xlsx=true must evaluate in a number of queries that only depends on
+        the number of `queryset_iterator` pages involved, not on the number of exported instances
+        within a page (no per-instance N+1).
 
-        `json` is set explicitly (non-empty) on the created instances: a real ingested
-        instance always has it populated already (process_instance_file/enketo submission
-        compute it synchronously at upload time, and it's essentially always non-empty --
-        _version/meta/instanceID are always present -- see get_and_save_json_of_xml()).
-        Leaving `json` at its default `{}` here would instead exercise that (falsy-`{}`)
-        lazy-recompute-and-save path on every row, which is real but not what a normal
-        export hits in production -- and would make this test measure that instead of
-        the org_unit/parent-chain/entity N+1 it's meant to guard.
+        `json` is set explicitly (non-empty) on all instances involved (including
+        setUpTestData's instance_1..instance_4, which are also form_1 and so also included in
+        the export below): a real ingested instance always has it populated already
+        (process_instance_file/enketo submission compute it synchronously at upload time, and
+        it's essentially always non-empty -- _version/meta/instanceID are always present -- see
+        get_and_save_json_of_xml()). Leaving `json` at its default `{}` would instead exercise
+        that (falsy-`{}`) lazy-recompute-and-save path on every row on every request (`file` is a
+        bare mock with no real XML content, so it never resolves to a truthy json, however often
+        it's computed) -- real, but not what a normal export hits in production, and it would
+        make this test measure that per-request recompute/resave instead of the per-page
+        prefetch_related cost it's meant to guard.
 
-        The two sizes (5 and 150) are chosen to straddle `queryset_iterator`'s page size
-        (`hat/common/utils.py`, chunk_size=100, called from `list_file_export` via
-        `generate_xlsx(..., queryset_iterator(queryset, 100), ...)`): when the export's
-        queryset has prefetch_related lookups (org_unit/org_unit__parent/.../entity/
-        form_version__form, all set up in list_file_export), queryset_iterator evaluates it
-        page by page via `Paginator`, and each page re-runs the *entire* prefetch_related set
-        from scratch -- so those ~8 prefetch queries repeat once per page (~ceil(N/100) times)
-        instead of once for the whole export. Staying under 100 rows (as an earlier version of
-        this test did) hides that entirely, since it's all a single page."""
+        `queryset_iterator` (`hat/common/utils.py`, chunk_size=100, called from `list_file_export`
+        via `generate_xlsx(..., queryset_iterator(queryset, 100), ...)`) evaluates its queryset
+        page by page via `Paginator` whenever it carries any prefetch_related lookups (org_unit/
+        org_unit__parent/.../entity/form_version__form, all set up in list_file_export, plus a
+        couple more from list()) -- and each page re-runs those prefetch_related lookups again,
+        restricted to that page. That's a real, constant cost *per page* (`ceil(N / 100)` pages
+        for N exported rows), not a per-instance N+1: it doesn't grow with how many rows are in
+        a given page, only with how many pages there are. So the invariant to check for isn't
+        "same query count at any N" (false in general, once N crosses a page boundary) -- it's
+        "the same, constant marginal cost per extra page, and zero marginal cost per extra row
+        within a page". 5, 150 and 250 instances (plus the 4 preexisting fixtures, always
+        included by the form_id filter, for 9/154/254 total rows) land on 1/2/3 pages -- enough
+        points to tell "constant cost per extra page" apart from "cost grows with row count" or
+        "cost compounds across pages"."""
         self.client.force_authenticate(self.yoda)
 
         org_unit = self.jedi_council_corruscant
 
+        for i, fixture_instance in enumerate((self.instance_1, self.instance_2, self.instance_3, self.instance_4)):
+            fixture_instance.json = {"_version": "1", "meta/instanceID": f"uuid:fixture-instance-{i}"}
+            fixture_instance.save()
+
         # Warm up permission caches attached to `self.yoda`/the request user first: those are
-        # memoized after the first request and would otherwise make the two measurements below
-        # differ for reasons unrelated to row count (see the same fix in test_instances_parquet.py).
+        # memoized after the first request and would otherwise make the measurements below
+        # differ for reasons unrelated to row/page count (see the same fix in
+        # test_instances_parquet.py).
         self.client.get(f"/api/instances/?form_ids={self.form_1.pk}&xlsx=true")
 
         def num_queries_for(n_instances):
@@ -1548,15 +1562,17 @@ class InstancesAPITestCase(TaskAPITestCase):
                 instance.delete()
             return len(ctx.captured_queries)
 
-        queries_for_5 = num_queries_for(5)
-        queries_for_150 = num_queries_for(150)
+        queries_for_1_page = num_queries_for(5)  # 5 + 4 fixtures = 9 rows -> 1 page
+        queries_for_2_pages = num_queries_for(150)  # 150 + 4 = 154 rows -> 2 pages
+        queries_for_3_pages = num_queries_for(250)  # 250 + 4 = 254 rows -> 3 pages
 
         self.assertEqual(
-            queries_for_5,
-            queries_for_150,
-            "Query count must not grow with the number of exported instances -- if it does, "
-            "something in list_file_export()/get_row() is issuing a per-instance (or per-page) "
-            "query.",
+            queries_for_2_pages - queries_for_1_page,
+            queries_for_3_pages - queries_for_2_pages,
+            "Each additional queryset_iterator page must cost the same, constant number of extra "
+            "queries -- if the cost per page keeps growing (rather than staying flat), or if query "
+            "count grows within a single page (i.e. with row count rather than page count), "
+            "something in list_file_export()/get_row() is issuing a genuine per-instance query.",
         )
 
     def test_can_retrieve_submissions_list_in_csv_format_without_source_fields(self):
@@ -3669,6 +3685,195 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertEqual(len(data["instances"]), 4)
         for item in data["instances"]:
             self.assertEqual(set(item.keys()), requested_fields)
+
+    def test_instances_list_fields_filter_order_combinations(self):
+        """A representative sweep of fields=/filter/order combinations on GET /api/instances/,
+        to catch a bad interaction between the fields=-based select_related/prefetch_related
+        gating (see wants_field() in list()) and a specific filter or order= value -- the rest
+        of this file's fields= coverage only ever exercises one filter/order at a time. Covers
+        (each combined with a fields= and an order=): orgUnitId, project_ids, showDeleted,
+        form_ids, period_ids, with_descriptor=true, no fields= at all, the three search= forms
+        (ids:/refs:/plain text), status=DUPLICATED, userIds, referenceInstances, and the three
+        date-range filter pairs (dateFrom/To, modificationDateFrom/To, sentDateFrom/To).
+
+        One shared setup (reusing setUpTestData's fixtures, no new instances created), then a
+        loop over parametrized cases via subTest(), keeps this fast despite the added coverage
+        (~0.4s/case: no per-case fixture creation, just one request each)."""
+        self.client.force_authenticate(self.yoda)
+        self.yoda.iaso_profile.projects.add(self.project, self.project_2)
+
+        # The exact key set as_dict() returns when `fields` isn't passed at all (see
+        # Instance.as_dict()) -- used below to sanity-check the "no fields=" case still returns
+        # everything, even when combined with an order= on a relation sub-field.
+        full_as_dict_keys = {
+            "uuid",
+            "export_id",
+            "file_name",
+            "file_content",
+            "file_url",
+            "id",
+            "form_id",
+            "form_name",
+            "created_at",
+            "updated_at",
+            "source_created_at",
+            "source_updated_at",
+            "org_unit",
+            "latitude",
+            "longitude",
+            "altitude",
+            "period",
+            "project_name",
+            "project_color",
+            "project_id",
+            "status",
+            "correlation_id",
+            "created_by",
+            "last_modified_by",
+        }
+
+        cases = [
+            {
+                "description": "order by an org_unit sub-field while fields= excludes org_unit",
+                "params": {
+                    "order": "org_unit__name",
+                    "fields": "id,form_id",
+                    "orgUnitId": str(self.jedi_council_corruscant.id),
+                },
+                "expected_fields": {"id", "form_id"},
+            },
+            {
+                "description": "order by -id, fields= includes project sub-fields, filtered by project_ids",
+                "params": {"order": "-id", "fields": "id,project_name,project_id", "project_ids": str(self.project.id)},
+                "expected_fields": {"id", "project_name", "project_id"},
+            },
+            {
+                "description": "showDeleted with a minimal fields= set",
+                "params": {"order": "id", "fields": "id", "showDeleted": "true"},
+                "expected_fields": {"id"},
+            },
+            {
+                "description": "multiple form_ids, ordered by period, fields= subset",
+                "params": {"order": "period", "fields": "id,period", "form_ids": f"{self.form_1.id},{self.form_2.id}"},
+                "expected_fields": {"id", "period"},
+            },
+            {
+                "description": "period_ids filter, fields= includes both relations",
+                "params": {
+                    "order": "updated_at",
+                    "fields": "id,org_unit,project_name",
+                    "period_ids": "202001,202002,202003",
+                },
+                "expected_fields": {"id", "org_unit", "project_name"},
+            },
+            {
+                "description": "with_descriptor=true combined with fields=",
+                "params": {
+                    "order": "id",
+                    "with_descriptor": "true",
+                    "fields": "id,form_descriptor",
+                    "form_id": str(self.form_1.id),
+                },
+                "expected_fields": {"id", "form_descriptor"},
+            },
+            {
+                "description": "no fields= at all (full payload), ordered by an org_unit sub-field",
+                "params": {"order": "org_unit__name", "form_id": str(self.form_1.id)},
+                "expected_fields": full_as_dict_keys,
+            },
+            {
+                "description": "search=ids: filter, fields= subset",
+                "params": {
+                    "order": "id",
+                    "fields": "id",
+                    "search": f"ids:{self.instance_1.id},{self.instance_4.id}",
+                },
+                "expected_fields": {"id"},
+            },
+            {
+                "description": "search=refs: filter (org_unit__source_ref), fields= includes org_unit",
+                "params": {
+                    "order": "id",
+                    "fields": "id,org_unit",
+                    "search": f"refs:{self.jedi_council_corruscant.source_ref}",
+                },
+                "expected_fields": {"id", "org_unit"},
+            },
+            {
+                "description": "plain text search (org_unit__name icontains), minimal fields=",
+                "params": {"order": "id", "fields": "id", "search": "Coruscant"},
+                "expected_fields": {"id"},
+            },
+            {
+                "description": "status=DUPLICATED filter (form_1 is single_per_period), fields= includes status",
+                "params": {
+                    "order": "id",
+                    "fields": "id,status",
+                    "status": "DUPLICATED",
+                    "form_id": str(self.form_1.id),
+                },
+                "expected_fields": {"id", "status"},
+            },
+            {
+                "description": "userIds filter, fields= includes created_by",
+                "params": {
+                    "order": "id",
+                    "fields": "id,created_by",
+                    "userIds": str(self.yoda.id),
+                    "form_id": str(self.form_1.id),
+                },
+                "expected_fields": {"id", "created_by"},
+            },
+            {
+                "description": "referenceInstances=not_reference filter, minimal fields=",
+                "params": {
+                    "order": "id",
+                    "fields": "id",
+                    "referenceInstances": "not_reference",
+                    "form_id": str(self.form_1.id),
+                },
+                "expected_fields": {"id"},
+            },
+            {
+                "description": "wide-open dateFrom/dateTo (created_from/to, Coalesce annotation path)",
+                "params": {
+                    "order": "created_at",
+                    "fields": "id,created_at",
+                    "dateFrom": "2000-01-01",
+                    "dateTo": "2030-01-01",
+                },
+                "expected_fields": {"id", "created_at"},
+            },
+            {
+                "description": "wide-open modificationDateFrom/To, ordered by -updated_at",
+                "params": {
+                    "order": "-updated_at",
+                    "fields": "id,updated_at",
+                    "modificationDateFrom": "2000-01-01",
+                    "modificationDateTo": "2030-01-01",
+                },
+                "expected_fields": {"id", "updated_at"},
+            },
+            {
+                "description": "wide-open sentDateFrom/To, fields= includes org_unit and project",
+                "params": {
+                    "order": "id",
+                    "fields": "id,org_unit,project_name",
+                    "sentDateFrom": "2000-01-01",
+                    "sentDateTo": "2030-01-01",
+                },
+                "expected_fields": {"id", "org_unit", "project_name"},
+            },
+        ]
+
+        for case in cases:
+            with self.subTest(case["description"]):
+                response = self.client.get("/api/instances/", case["params"])
+                self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
+                instances = response.json()["instances"]
+                self.assertTrue(instances, "expected at least one matching instance for this case")
+                for item in instances:
+                    self.assertEqual(set(item.keys()), case["expected_fields"])
 
     def assertInstanceListContainsStrictly(self, api_response, expected_instances):
         try:

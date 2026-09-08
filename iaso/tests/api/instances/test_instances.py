@@ -3589,6 +3589,87 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertIn("org_unit", j["instances"][0])
         self.assertIn("project_name", j["instances"][0])
 
+    def test_instances_list_with_as_small_dict_true_returns_small_dict_shape(self):
+        """GET /api/instances/?asSmallDict=true returns Instance.as_small_dict()'s shape: a bare
+        list (not the {"instances": [...]} envelope used by every other branch), restricted to
+        instances that have a location or an attached file. This is an older payload shape,
+        predating `fields=`, and wasn't covered by any test before this PR's `fields=` work
+        touched the same view -- it must keep working unchanged since it doesn't pass `fields=`."""
+        self.client.force_authenticate(self.yoda)
+        self.yoda.iaso_profile.projects.add(self.project)
+
+        instance = self.create_form_instance(
+            form=self.form_1,
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            created_by=self.yoda,
+            location=Point(1.0, 2.0, 3.0),
+        )
+
+        response = self.client.get(f"/api/instances/?form_id={self.form_1.pk}&asSmallDict=true")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIsInstance(data, list)
+
+        items_for_instance = [item for item in data if item["id"] == instance.id]
+        self.assertEqual(len(items_for_instance), 1)
+        item = items_for_instance[0]
+
+        self.assertEqual(
+            set(item.keys()),
+            {
+                "id",
+                "file_url",
+                "created_at",
+                "updated_at",
+                "period",
+                "latitude",
+                "longitude",
+                "altitude",
+                "accuracy",
+                "files",
+                "status",
+                "correlation_id",
+            },
+        )
+        self.assertEqual(item["latitude"], 2.0)
+        self.assertEqual(item["longitude"], 1.0)
+
+    def test_instances_list_with_descriptor_true_includes_form_descriptor(self):
+        """GET /api/instances/?with_descriptor=true adds `form_descriptor` on top of the full
+        as_dict() payload. Exercised here without `fields=`, since that's the pre-existing shape
+        the `fields=` param must not have broken (the combination of the two is a separate,
+        newer test below)."""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(f"/api/instances/?form_id={self.form_1.pk}&with_descriptor=true")
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        self.assertValidInstanceListData(j, 4)
+        for item in j["instances"]:
+            self.assertIn("form_descriptor", item)
+            # Still the full as_dict() payload underneath, since fields= wasn't passed.
+            self.assertIn("org_unit", item)
+            self.assertIn("file_content", item)
+
+    def test_instances_list_with_descriptor_true_and_fields_param_restricts_payload(self):
+        """New interaction introduced alongside `fields=`: combined with `with_descriptor=true`,
+        it restricts as_dict_with_descriptor()'s payload the same way it restricts as_dict()'s,
+        and `form_descriptor` itself is only computed/returned when explicitly requested."""
+        self.client.force_authenticate(self.yoda)
+
+        requested_fields = {"id", "form_descriptor"}
+        response = self.client.get(
+            f"/api/instances/?form_id={self.form_1.pk}&with_descriptor=true&fields={','.join(requested_fields)}"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(len(data["instances"]), 4)
+        for item in data["instances"]:
+            self.assertEqual(set(item.keys()), requested_fields)
+
     def assertInstanceListContainsStrictly(self, api_response, expected_instances):
         try:
             self.assertEqual(api_response.status_code, status.HTTP_200_OK)

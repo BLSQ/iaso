@@ -3690,11 +3690,20 @@ class InstancesAPITestCase(TaskAPITestCase):
         """A representative sweep of fields=/filter/order combinations on GET /api/instances/,
         to catch a bad interaction between the fields=-based select_related/prefetch_related
         gating (see wants_field() in list()) and a specific filter or order= value -- the rest
-        of this file's fields= coverage only ever exercises one filter/order at a time. Covers
-        (each combined with a fields= and an order=): orgUnitId, project_ids, showDeleted,
-        form_ids, period_ids, with_descriptor=true, no fields= at all, the three search= forms
-        (ids:/refs:/plain text), status=DUPLICATED, userIds, referenceInstances, and the three
-        date-range filter pairs (dateFrom/To, modificationDateFrom/To, sentDateFrom/To).
+        of this file's fields= coverage only ever exercises one filter/order at a time.
+
+        Most cases deliberately filter and/or order by a field that `fields=` then excludes from
+        the response (e.g. filtered+ordered by org_unit, but fields= doesn't request "org_unit"):
+        `for_filters()`/`order_by()` are pure SQL and must keep working correctly even though the
+        gating in list() means the corresponding select_related/prefetch_related isn't applied --
+        this is the case that would break if a filter/order silently started depending on that
+        eager loading instead of joining for itself. Covers (each combined with a fields= that
+        excludes whatever the filter/order references, unless noted): orgUnitId, project_ids,
+        both org_unit+project together, showDeleted, form_ids (+ordered by period), period_ids
+        (here fields= *does* include org_unit/project, to also check the inclusion side),
+        with_descriptor=true (+fields=id,form_descriptor, the field it adds), no fields= at all,
+        the three search= forms (ids:/refs:/plain text), status=DUPLICATED, userIds, and the
+        three date-range filter pairs (dateFrom/To, modificationDateFrom/To, sentDateFrom/To).
 
         One shared setup (reusing setUpTestData's fixtures, no new instances created), then a
         loop over parametrized cases via subTest(), keeps this fast despite the added coverage
@@ -3743,9 +3752,19 @@ class InstancesAPITestCase(TaskAPITestCase):
                 "expected_fields": {"id", "form_id"},
             },
             {
-                "description": "order by -id, fields= includes project sub-fields, filtered by project_ids",
-                "params": {"order": "-id", "fields": "id,project_name,project_id", "project_ids": str(self.project.id)},
-                "expected_fields": {"id", "project_name", "project_id"},
+                "description": "filtered by project_ids, ordered by -id, while fields= excludes every project sub-field",
+                "params": {"order": "-id", "fields": "id", "project_ids": str(self.project.id)},
+                "expected_fields": {"id"},
+            },
+            {
+                "description": "filtered and ordered by both org_unit and project, while fields= excludes both",
+                "params": {
+                    "order": "org_unit__name",
+                    "fields": "id",
+                    "orgUnitId": str(self.jedi_council_corruscant.id),
+                    "project_ids": str(self.project.id),
+                },
+                "expected_fields": {"id"},
             },
             {
                 "description": "showDeleted with a minimal fields= set",
@@ -3753,9 +3772,9 @@ class InstancesAPITestCase(TaskAPITestCase):
                 "expected_fields": {"id"},
             },
             {
-                "description": "multiple form_ids, ordered by period, fields= subset",
-                "params": {"order": "period", "fields": "id,period", "form_ids": f"{self.form_1.id},{self.form_2.id}"},
-                "expected_fields": {"id", "period"},
+                "description": "filtered by form_ids and ordered by period, while fields= excludes form_id/form_name/period",
+                "params": {"order": "period", "fields": "id", "form_ids": f"{self.form_1.id},{self.form_2.id}"},
+                "expected_fields": {"id"},
             },
             {
                 "description": "period_ids filter, fields= includes both relations",
@@ -3791,13 +3810,13 @@ class InstancesAPITestCase(TaskAPITestCase):
                 "expected_fields": {"id"},
             },
             {
-                "description": "search=refs: filter (org_unit__source_ref), fields= includes org_unit",
+                "description": "search=refs: filter (org_unit__source_ref), while fields= excludes org_unit",
                 "params": {
                     "order": "id",
-                    "fields": "id,org_unit",
+                    "fields": "id",
                     "search": f"refs:{self.jedi_council_corruscant.source_ref}",
                 },
-                "expected_fields": {"id", "org_unit"},
+                "expected_fields": {"id"},
             },
             {
                 "description": "plain text search (org_unit__name icontains), minimal fields=",
@@ -3805,24 +3824,24 @@ class InstancesAPITestCase(TaskAPITestCase):
                 "expected_fields": {"id"},
             },
             {
-                "description": "status=DUPLICATED filter (form_1 is single_per_period), fields= includes status",
+                "description": "status=DUPLICATED filter (form_1 is single_per_period), while fields= excludes status",
                 "params": {
                     "order": "id",
-                    "fields": "id,status",
+                    "fields": "id",
                     "status": "DUPLICATED",
                     "form_id": str(self.form_1.id),
                 },
-                "expected_fields": {"id", "status"},
+                "expected_fields": {"id"},
             },
             {
-                "description": "userIds filter, fields= includes created_by",
+                "description": "userIds filter, while fields= excludes created_by",
                 "params": {
                     "order": "id",
-                    "fields": "id,created_by",
+                    "fields": "id",
                     "userIds": str(self.yoda.id),
                     "form_id": str(self.form_1.id),
                 },
-                "expected_fields": {"id", "created_by"},
+                "expected_fields": {"id"},
             },
             {
                 "description": "referenceInstances=not_reference filter, minimal fields=",
@@ -3835,24 +3854,24 @@ class InstancesAPITestCase(TaskAPITestCase):
                 "expected_fields": {"id"},
             },
             {
-                "description": "wide-open dateFrom/dateTo (created_from/to, Coalesce annotation path)",
+                "description": "wide-open dateFrom/dateTo (created_from/to, Coalesce annotation path), fields= excludes created_at",
                 "params": {
                     "order": "created_at",
-                    "fields": "id,created_at",
+                    "fields": "id",
                     "dateFrom": "2000-01-01",
                     "dateTo": "2030-01-01",
                 },
-                "expected_fields": {"id", "created_at"},
+                "expected_fields": {"id"},
             },
             {
-                "description": "wide-open modificationDateFrom/To, ordered by -updated_at",
+                "description": "wide-open modificationDateFrom/To, ordered by -updated_at, fields= excludes updated_at",
                 "params": {
                     "order": "-updated_at",
-                    "fields": "id,updated_at",
+                    "fields": "id",
                     "modificationDateFrom": "2000-01-01",
                     "modificationDateTo": "2030-01-01",
                 },
-                "expected_fields": {"id", "updated_at"},
+                "expected_fields": {"id"},
             },
             {
                 "description": "wide-open sentDateFrom/To, fields= includes org_unit and project",

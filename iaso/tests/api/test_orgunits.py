@@ -975,6 +975,48 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertIsNotNone(response.json()["catchment"])
         self.assertEqual(response.json()["catchment"]["features"][0]["id"], org_unit.id)
 
+    def test_org_unit_retrieve_reference_instances_shape(self):
+        """`fields=reference_instances` should return each reference instance's full shape, i.e. the
+        submission's answers (`file_content`) and its form's question definitions (`form_descriptor`,
+        resolved from the submission's `_version`) -- not just presence/count."""
+        self.client.force_authenticate(self.yoda)
+        org_unit = self.jedi_council_corruscant
+
+        version_id = "2022090601"
+        # Reused below for both setting up the FormVersion/Instance and asserting the response, so
+        # the test can't pass by accident with an assertion that has quietly drifted from the input.
+        form_descriptor = {"name": "data", "type": "survey", "children": [{"name": "age", "type": "integer"}]}
+        file_content = {"_version": version_id, "age": 42}
+
+        form_version = m.FormVersion.objects.create(
+            form=self.reference_form,
+            version_id=version_id,
+            form_descriptor=form_descriptor,
+        )
+        instance = self.create_form_instance(
+            form=self.reference_form,
+            period="202003",
+            org_unit=org_unit,
+            project=self.project,
+            json=file_content,
+        )
+        m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, instance=instance, form=self.reference_form)
+
+        with self.assertNumQueries(28):
+            response = self.client.get(f"/api/orgunits/{org_unit.id}/?fields=reference_instances")
+
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(set(data.keys()), {"reference_instances"})
+        self.assertEqual(len(data["reference_instances"]), 1)
+
+        [reference_instance] = data["reference_instances"]
+        self.assertEqual(reference_instance["id"], instance.id)
+        self.assertEqual(reference_instance["form_id"], self.reference_form.id)
+        self.assertEqual(reference_instance["form_version_id"], form_version.id)
+        self.assertEqual(reference_instance["file_content"], file_content)
+        self.assertEqual(reference_instance["form_descriptor"], form_descriptor)
+
     def test_org_unit_performance_optimization_no_instance_count(self):
         """Test if instances_count is NOT queried when not in 'fields'"""
         self.client.force_authenticate(self.yoda)

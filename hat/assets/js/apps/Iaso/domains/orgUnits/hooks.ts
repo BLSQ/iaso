@@ -20,6 +20,46 @@ import { PaginatedDataSources } from './types/dataSources';
 import { OrgUnit } from './types/orgUnit';
 import { PaginatedOrgUnitTypes } from './types/orgunitTypes';
 
+// Every key OrgUnitViewSet.retrieve() returns by default, EXCEPT `instances_count` and
+// `catchment` (both expensive to compute -- see the comment on the `fields=` fetch below). Keep in
+// sync with `OrgUnit.as_dict_with_parents()` (iaso/models/org_unit.py) and the extra keys
+// `retrieve()` itself adds (iaso/api/org_units.py).
+const ORG_UNIT_DETAIL_FIELDS = [
+    'id',
+    'name',
+    'short_name',
+    'code',
+    'sub_source',
+    'sub_source_id',
+    'source_ref',
+    'source_url',
+    'parent_id',
+    'validation_status',
+    'parent_name',
+    'parent',
+    'org_unit_type_id',
+    'created_at',
+    'updated_at',
+    'aliases',
+    'latitude',
+    'longitude',
+    'altitude',
+    'has_geo_json',
+    'creator',
+    'opening_date',
+    'closed_date',
+    'default_image_id',
+    'groups',
+    'org_unit_type_name',
+    'org_unit_type',
+    'source',
+    'source_id',
+    'version',
+    'version_id',
+    'geo_json',
+    'reference_instances',
+].join(',');
+
 type UseOrgUnitDetailDataReturn = {
     groups: GroupDropdownOption[];
     orgUnitTypes: OrgUnitTypeDropdownOption[];
@@ -42,10 +82,22 @@ export const useOrgUnitDetailData = (
     tab: string,
 ): UseOrgUnitDetailDataReturn => {
     const { data: colors } = useGetColors(true);
+    // `/api/orgunits/{id}/?fields=` both narrows the response to exactly these keys AND skips
+    // computing whichever of `instances_count`/`catchment` isn't listed (both expensive: the
+    // former walks the whole descendant subtree, the latter serializes a geometry). Every other
+    // key here is cheap and mirrors what OrgUnitViewSet.retrieve() returns by default (see
+    // `OrgUnit.as_dict_with_parents()` + the extra keys `retrieve()` itself adds), minus
+    // `instances_count` and `catchment` -- neither is read from this query's result anywhere on the
+    // org unit detail page: map marker popups fetch their own org unit data independently (see
+    // OrgUnitPopupComponent / useGetOrgUnitDetail), which still requests the full default response.
+    // If the backend response shape changes, this list needs updating to match.
     const { data: originalOrgUnit, isFetching: isFetchingDetail } =
         useSnackQuery(
             ['currentOrgUnit', orgUnitId],
-            () => getRequest(`/api/orgunits/${orgUnitId}/`),
+            () =>
+                getRequest(
+                    `/api/orgunits/${orgUnitId}/?fields=${ORG_UNIT_DETAIL_FIELDS}`,
+                ),
             MESSAGES.fetchOrgUnitError,
             {
                 enabled: !isNewOrgunit,

@@ -1006,8 +1006,14 @@ class OrgUnitViewSet(viewsets.ViewSet):
             self.get_queryset().select_related(*related_args).prefetch_related(*prefetch_args),
             pk=pk,
         )
-        # Count instances for the Org unit and its descendants.
-        org_unit.instances_count = org_unit.descendants().aggregate(Count("instance"))["instance__count"]
+        # Count instances for the Org unit and its descendants. For a high-level org unit (e.g. a
+        # country) this walks essentially the whole account's org unit tree and can take seconds, so
+        # mirror the `fields=` opt-in already used by list(): only compute it when explicitly asked
+        # for. `fields` absent keeps the historical (expensive) default, for callers that don't send
+        # it (e.g. the mobile app).
+        requested_fields = request.query_params.get("fields")
+        if is_field_referenced("instances_count", requested_fields, []):
+            org_unit.instances_count = org_unit.descendants().aggregate(Count("instance"))["instance__count"]
 
         self.check_object_permissions(request, org_unit)
 
@@ -1046,10 +1052,25 @@ class OrgUnitViewSet(viewsets.ViewSet):
             elif org_unit.simplified_geom:
                 res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
 
-            if org_unit.catchment:
+            # Catchment geometry serialization can be expensive (large polygon) and, like
+            # instances_count above, isn't always needed by the caller -- skip it unless asked for.
+            if org_unit.catchment and is_field_referenced("catchment", requested_fields, []):
                 res["catchment"] = geojson_queryset(geo_queryset, geometry_field="catchment")
 
         res["reference_instances"] = org_unit.get_reference_instances_details_for_api()
+
+        # `fields=` also trims the response to just the requested top-level keys (in addition to
+        # skipping the `instances_count`/`catchment` computations above when they're not among
+        # them). This is a response-shaping step only: every value above is still computed/fetched
+        # unconditionally (prefetch_related/select_related, ancestors, geo_json, reference_instances)
+        # regardless of `fields` -- only the two known-expensive computations are actually skipped,
+        # and only the returned dict is narrowed here. `:all` (same sentinel as elsewhere, e.g.
+        # /api/group_sets/) opts back into the full response.
+        if requested_fields:
+            wanted_fields = set(requested_fields.split(","))
+            if ":all" not in wanted_fields:
+                res = {key: value for key, value in res.items() if key in wanted_fields}
+
         return Response(res)
 
 

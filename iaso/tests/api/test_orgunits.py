@@ -961,6 +961,20 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(set(response.json().keys()), {"id", "name", "catchment"})
         self.assertIsNotNone(response.json()["catchment"])
 
+    def test_org_unit_retrieve_requested_catchment_empty_geometry(self):
+        """A non-null but empty MultiPolygon `catchment` (falsy in Python, since MultiPolygon is a
+        GeometryCollection and defines __len__) must still be serialized when explicitly requested
+        via 'fields' -- it shouldn't be treated the same as no catchment at all."""
+        self.client.force_authenticate(self.yoda)
+        org_unit = self.jedi_council_endor  # catchment is `MULTIPOLYGON EMPTY`, not null
+
+        response = self.client.get(f"/api/orgunits/{org_unit.id}/?fields=id,name,catchment")
+
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(set(response.json().keys()), {"id", "name", "catchment"})
+        self.assertIsNotNone(response.json()["catchment"])
+        self.assertEqual(response.json()["catchment"]["features"][0]["id"], org_unit.id)
+
     def test_org_unit_performance_optimization_no_instance_count(self):
         """Test if instances_count is NOT queried when not in 'fields'"""
         self.client.force_authenticate(self.yoda)

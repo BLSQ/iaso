@@ -1038,7 +1038,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
         res["geo_json"] = None
         res["catchment"] = None
 
-        if org_unit.geom or org_unit.simplified_geom or org_unit.catchment:
+        # `or org_unit.catchment is not None` (rather than plain truthiness): `MultiPolygonField`
+        # values are `GeometryCollection`s, which define `__len__`, so a non-null but empty
+        # MultiPolygon is falsy -- using truthiness here would skip this whole block (and so skip
+        # serializing that empty catchment below) even when it's the only populated geometry field.
+        if org_unit.geom or org_unit.simplified_geom or org_unit.catchment is not None:
             can_edit_shape = False
             if request.user.is_authenticated:
                 can_edit_shape = request.user.iaso_profile.account.feature_flags.filter(
@@ -1054,7 +1058,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
             # Catchment geometry serialization can be expensive (large polygon) and, like
             # instances_count above, isn't always needed by the caller -- skip it unless asked for.
-            if org_unit.catchment and is_field_referenced("catchment", requested_fields, []):
+            # `is not None` (not truthiness): an empty MultiPolygon is falsy but still a real,
+            # explicitly-requestable value -- see the comment above on the outer `if`.
+            if is_field_referenced("catchment", requested_fields, []) and org_unit.catchment is not None:
                 res["catchment"] = geojson_queryset(geo_queryset, geometry_field="catchment")
 
         res["reference_instances"] = org_unit.get_reference_instances_details_for_api()

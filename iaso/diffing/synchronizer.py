@@ -70,12 +70,9 @@ class DataSourceVersionsSynchronizer:
         if self.task:
             self.task.report_progress_and_stop_if_killed(progress_message=message)
 
-    def _report_error(self, message: str, extra: dict) -> None:
+    def _report_warning(self, message: str, extra: dict) -> None:
         self._report_progress(message)
-        logger.error(
-            message,
-            extra,
-        )
+        logger.warning(message, extra=extra)
 
     def synchronize(self) -> None:
         self._report_progress("Preparing groups matching…")
@@ -148,7 +145,7 @@ class DataSourceVersionsSynchronizer:
         )
         for group in existing_groups:
             if not group.source_ref:
-                self._report_error(
+                self._report_warning(
                     message=f"Ignoring Group ID #{group.pk} because it has no `source_ref` attribute.",
                     extra={"group": group, "data_source_sync": self.data_source_sync},
                 )
@@ -184,7 +181,7 @@ class DataSourceVersionsSynchronizer:
                 org_unit = next(org_unit for org_unit in org_units if org_unit.id == org_unit_id)
 
                 if not org_unit.source_ref:
-                    self._report_error(
+                    self._report_warning(
                         message=f"Ignoring OrgUnit ID #{org_unit.pk} because it has no `source_ref` attribute.",
                         extra={"org_unit": org_unit, "data_source_sync": self.data_source_sync},
                     )
@@ -299,7 +296,7 @@ class DataSourceVersionsSynchronizer:
         ]
 
         if not requested_fields:
-            self._report_error(
+            self._report_warning(
                 message=f"Ignoring OrgUnit ID #{diff['orgunit_ref']['id']} because `requested_fields` is empty.",
                 extra={"diff": diff, "data_source_sync": self.data_source_sync},
             )
@@ -332,7 +329,7 @@ class DataSourceVersionsSynchronizer:
                     if matching_iaso_id:
                         new_group["iaso_id"] = matching_iaso_id
                     else:
-                        self._report_error(
+                        self._report_warning(
                             message=f"Unable to find a corresponding `Group` with `source_ref={source_ref}` in the pyramid to update.",
                             extra={"new_group": new_group, "data_source_sync": self.data_source_sync},
                         )

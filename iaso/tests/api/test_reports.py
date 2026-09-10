@@ -134,9 +134,29 @@ class ReportsAPITestCase(APITestCase):
         report_names = [report["name"] for report in response.json()]
         self.assertEqual(report_names, ["TEST_REPORT_A"])
 
-    def test_get_reports_mobile_requires_app_id(self):
+    def test_get_reports_mobile_without_app_id_falls_back_to_account(self):
+        # Backward compatibility: a caller that doesn't pass `app_id` keeps the previous
+        # behaviour (every report on the account), instead of being rejected.
         self.client.force_authenticate(self.kefla)
+
+        file = File(open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_valid.csv", "rb"))
+
+        sayanj_version = ReportVersion.objects.create(
+            file=file,
+            name="TEST_REPORT_VERSION_A",
+            status="published",
+        )
+        Report.objects.create(name="TEST_REPORT_A", published_version=sayanj_version, project=self.sayanj)
+
+        freeza_version = ReportVersion.objects.create(
+            file=file,
+            name="TEST_REPORT_VERSION_B",
+            status="published",
+        )
+        Report.objects.create(name="TEST_REPORT_B", published_version=freeza_version, project=self.freeza_project)
 
         response = self.client.get("/api/mobile/reports/")
 
-        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        report_names = {report["name"] for report in response.json()}
+        self.assertEqual(report_names, {"TEST_REPORT_A", "TEST_REPORT_B"})

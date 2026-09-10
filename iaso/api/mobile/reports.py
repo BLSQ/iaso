@@ -39,10 +39,13 @@ class MobileReportsViewSet(ModelViewSet):
         return MobileReportSerializer
 
     def get_queryset(self):
-        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
-        project = Project.objects.get_for_user_and_app_id(self.request.user, app_id)
+        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=False)
+        if app_id:
+            project = Project.objects.get_for_user_and_app_id(self.request.user, app_id)
+            queryset = Report.objects.filter(project=project)
+        else:
+            queryset = Report.objects.filter(project__account=self.request.user.iaso_profile.account)
         search = self.request.query_params.get("search", None)
-        queryset = Report.objects.filter(project=project)
         if search:
             queryset = queryset.filter(name__icontains=search)
         return queryset

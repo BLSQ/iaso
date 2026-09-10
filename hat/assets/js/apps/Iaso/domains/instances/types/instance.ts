@@ -42,6 +42,7 @@ export type Instance = {
     uuid: string;
     id: number;
     device_id: string;
+    device_app_version?: string;
     file_name: string;
     file_url: string;
     form_id: number;

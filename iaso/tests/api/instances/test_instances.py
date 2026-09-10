@@ -11,6 +11,7 @@ import pytz
 
 from django.contrib.gis.geos import Point
 from django.core.files import File
+from django.core.files.base import ContentFile
 from django.utils import timezone
 from django.utils.timezone import now
 from rest_framework import status
@@ -73,34 +74,40 @@ class InstancesAPITestCase(TaskAPITestCase):
             version=sw_version,
             validation_status="VALID",
             uuid=cls.jedi_council_corruscant_uuid,
+            code="coruscant_code",
         )
         cls.ou_top_1 = m.OrgUnit.objects.create(
             name="ou_top_1",
             source_ref="jedi_council_corruscant_ref",
             version=sw_version,
+            code="top1_code",
         )
         cls.ou_top_2 = m.OrgUnit.objects.create(
             name="ou_top_2",
             source_ref="jedi_council_corruscant_ref",
             parent=cls.ou_top_1,
             version=sw_version,
+            code="top2_code",
         )
         cls.ou_top_3 = m.OrgUnit.objects.create(
             name="ou_top_3",
             source_ref="jedi_council_corruscant_ref",
             parent=cls.ou_top_2,
             version=sw_version,
+            code="top3_code",
         )
         cls.jedi_council_endor = m.OrgUnit.objects.create(
             name="Endor Jedi Council",
             source_ref="jedi_council_endor_ref",
             version=sw_version,
+            code="endor_code",
         )
         cls.jedi_council_endor_region = m.OrgUnit.objects.create(
             name="Endor Region Jedi Council",
             parent=cls.jedi_council_endor,
             source_ref="jedi_council_endor_region_ref",
             version=sw_version,
+            code="endor_region_code",
         )
 
         cls.project = m.Project.objects.create(
@@ -1470,6 +1477,8 @@ class InstancesAPITestCase(TaskAPITestCase):
             "Coruscant Jedi Council,"
             f"{self.jedi_council_corruscant.id},"
             "jedi_council_corruscant_ref,"
+            "coruscant_code,"
+            "VALID,"
             ","
             ","
             ","
@@ -1531,6 +1540,8 @@ class InstancesAPITestCase(TaskAPITestCase):
             "Coruscant Jedi Council,"
             f"{self.jedi_council_corruscant.id},"
             "jedi_council_corruscant_ref,"
+            "coruscant_code,"
+            "VALID,"
             ","
             ","
             ","
@@ -2351,6 +2362,46 @@ class InstancesAPITestCase(TaskAPITestCase):
         )
 
         self.assertInstanceListContainsStrictly(response_with_coma, [instance_2, instance_3])
+
+    def test_instances_api_import_app_version(self):
+        self.client.force_authenticate(self.yoda)
+        instance_uuid = str(uuid4())
+        body = [
+            {
+                "id": instance_uuid,
+                "latitude": 50.2,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153704,
+                "orgUnitId": self.jedi_council_corruscant.id,
+                "formId": self.form_1.id,
+                "longitude": 4.4,
+                "accuracy": 10,
+                "altitude": 100,
+                "file": "/storage/emulated/0/odk/instances/RDC Collecte Data DPS_2_2019-08-08_11-54-46/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "name": "1",
+            }
+        ]
+
+        response = self.client.post(
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics&app_version=1.4.2", data=body, format="json"
+        )
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        instance = m.Instance.objects.get(uuid=instance_uuid)
+
+        instance.file = ContentFile(b"<root></root>", name="test.xml")
+        instance.save()
+        self.assertIsNotNone(instance.api_import)
+        self.assertEqual(instance.api_import.app_version, "1.4.2")
+        self.assertEqual(instance.app_version, "1.4.2")
+
+        # Retrieve instance details and check that device_app_version is returned
+        response_details = self.client.get(
+            f"/api/instances/{instance.id}/",
+            headers={"Content-Type": "application/json"},
+        )
+        response_json = self.assertJSONResponse(response_details, status.HTTP_200_OK)
+        self.assertEqual(response_json.get("device_app_version"), "1.4.2")
 
     def test_instances_bad_sent_date_from(self):
         self.client.force_authenticate(self.yoda)

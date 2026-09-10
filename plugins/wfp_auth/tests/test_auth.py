@@ -4,6 +4,7 @@ import jwt
 
 from allauth.socialaccount.models import SocialAccount
 from django.conf import settings
+from django.urls import reverse
 
 from iaso import models as m
 from iaso.test import APITestCase
@@ -179,3 +180,17 @@ class WFPAuthTestCase(APITestCase):
         payload = jwt.decode(access_token, settings.SECRET_KEY, algorithms=["HS256"])
         token_user_id = payload["user_id"]
         self.assertEqual(token_user_id, tenant_user.id)  # It should be the tenant user.
+
+    def test_web_callback_cancelled_login_does_not_crash(self):
+        """Cancelling WFP login must redirect, not 500, even when SSO_PROVIDERS is empty.
+
+        WFP is not in SSO_PROVIDERS; allauth still reverses socialaccount_login_cancelled.
+        """
+        response = self.client.get("/wfp_auth/wfp/login/callback/?error=access_denied")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("socialaccount_login_cancelled"))
+
+    def test_web_callback_error_page_renders_without_crashing(self):
+        """A generic WFP SSO error on the web callback must render a page, not 500."""
+        response = self.client.get("/wfp_auth/wfp/login/callback/?error=server_error")
+        self.assertEqual(response.status_code, 200)

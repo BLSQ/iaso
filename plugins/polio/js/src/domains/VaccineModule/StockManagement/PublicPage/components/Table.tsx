@@ -17,12 +17,23 @@ import {
 } from 'bluesquare-components';
 import { baseUrls } from '../../../../../constants/urls';
 import MESSAGES from '../messages';
+import { Entry, PublicVaccineStockResponse } from '../types';
 
 type Props = {
-    data: any;
+    data?: PublicVaccineStockResponse;
     isLoading: boolean;
     tab: 'usable' | 'unusable';
-    params: any;
+    params: Record<string, string>;
+};
+
+const formatEntryMessage = (
+    formatMessage: ReturnType<typeof useSafeIntl>['formatMessage'],
+    key: string,
+): string => {
+    if (key in MESSAGES) {
+        return formatMessage(MESSAGES[key as keyof typeof MESSAGES]);
+    }
+    return key;
 };
 
 export const Table: FunctionComponent<Props> = ({
@@ -36,20 +47,20 @@ export const Table: FunctionComponent<Props> = ({
     const redirectTo = useRedirectTo();
     const { order } = params;
     const handleChangePage = useCallback(
-        (_event, newPage) => {
+        (_event: unknown, newPage: number) => {
             redirectTo(baseUrls.embeddedVaccineStock, {
                 ...params,
-                page: newPage + 1,
+                page: `${newPage + 1}`,
             });
         },
         [params, redirectTo],
     );
     const handleChangeRowsPerPage = useCallback(
-        event => {
+        (event: React.ChangeEvent<HTMLInputElement>) => {
             redirectTo(baseUrls.embeddedVaccineStock, {
                 ...params,
-                page: 1,
-                pageSize: parseInt(event.target.value, 10),
+                page: '1',
+                pageSize: `${parseInt(event.target.value, 10)}`,
             });
         },
         [params, redirectTo],
@@ -252,9 +263,11 @@ export const Table: FunctionComponent<Props> = ({
                         </TableHead>
                         <TableBody>
                             {data?.results &&
-                                data.results.movements.map(entry => {
+                                data.results.movements.map((entry: Entry) => {
                                     return (
-                                        <TableRow key={entry.id}>
+                                        <TableRow
+                                            key={`${entry.type}-${entry.id}`}
+                                        >
                                             <TableCell sx={{ height: '60px' }}>
                                                 {entry.country_name}
                                             </TableCell>
@@ -266,14 +279,16 @@ export const Table: FunctionComponent<Props> = ({
                                             </TableCell>
                                             <TableCell>{tabText}</TableCell>
                                             <TableCell sx={{ height: '60px' }}>
-                                                {formatMessage(
-                                                    MESSAGES[entry.type],
-                                                ) ?? entry.type}
+                                                {formatEntryMessage(
+                                                    formatMessage,
+                                                    entry.type,
+                                                )}
                                             </TableCell>
                                             <TableCell sx={{ height: '60px' }}>
-                                                {formatMessage(
-                                                    MESSAGES[entry.action],
-                                                ) ?? entry.action}
+                                                {formatEntryMessage(
+                                                    formatMessage,
+                                                    entry.action,
+                                                )}
                                             </TableCell>
                                             <TableCell sx={{ height: '60px' }}>
                                                 {entry.vials_in}

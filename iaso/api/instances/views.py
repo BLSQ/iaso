@@ -268,6 +268,8 @@ class InstancesViewSet(viewsets.ViewSet):
             {"title": "Org unit", "width": 20},
             {"title": "Org unit id", "width": 20},
             {"title": "Référence externe", "width": 20},
+            {"title": "OU Code", "width": 20},
+            {"title": "OU Status", "width": 20},
             {"title": "parent1", "width": 20},
             {"title": "parent2", "width": 20},
             {"title": "parent3", "width": 20},
@@ -334,6 +336,8 @@ class InstancesViewSet(viewsets.ViewSet):
                 instance.org_unit.name,
                 instance.org_unit.id,
                 instance.org_unit.source_ref,
+                instance.org_unit.code,
+                instance.org_unit.validation_status,
             ]
 
             parent = org_unit.parent
@@ -620,8 +624,8 @@ class InstancesViewSet(viewsets.ViewSet):
         lock.save()
 
     @safe_api_import("instance")
-    def create(self, _, request):
-        import_data(request.data, request.user, request.query_params.get("app_id"))
+    def create(self, api_import, request):
+        import_data(request.data, request.user, request.query_params.get("app_id"), api_import=api_import)
 
         return Response({"res": "ok"})
 
@@ -980,7 +984,7 @@ def find_entity(account: Account, entity_uuid: str, entity_type_id: Optional[int
     return sorted(existing_entities, key=_entity_correctness_score, reverse=True)[0]
 
 
-def import_data(instances, user, app_id):
+def import_data(instances, user, app_id, api_import):
     """
     This function creates empty instances (without files) and should be called first when uploading new instances.
     Sometimes, due to some network issues, this function might not properly be called and the instances are created by
@@ -1011,6 +1015,8 @@ def import_data(instances, user, app_id):
 
         instance.uuid = uuid
         instance.project = project
+        instance.api_import = api_import
+        instance.app_version = api_import.app_version
         instance.name = instance_data.get("name", None)
         instance.period = instance_data.get("period", None)
         accuracy_raw = instance_data.get("accuracy", None)

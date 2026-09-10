@@ -1,13 +1,11 @@
 from django.apps import AppConfig
 
-from iaso.plugins import is_saas_plugin_active
-
 
 class IasoConfig(AppConfig):
     name = "iaso"
 
     def ready(self):
         from .auth import signals  # noqa: F401
+        from .stack_dump import register_stack_dump_signal
 
-        if is_saas_plugin_active():
-            import iaso.saas  # noqa: F401
+        register_stack_dump_signal()

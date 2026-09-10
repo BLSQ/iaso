@@ -118,6 +118,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.device',
         defaultMessage: 'IMEI device',
     },
+    device_app_version: {
+        id: 'iaso.instance.device_app_version',
+        defaultMessage: 'Device App Version',
+    },
     coordinate: {
         id: 'iaso.instance.coordinate',
         defaultMessage: 'Coordinates',
@@ -997,6 +1001,10 @@ const MESSAGES = defineMessages({
     notReferenceSubmission: {
         defaultMessage: 'Not a reference',
         id: 'iaso.instance.notReferenceSubmission',
+    },
+    org_unit_status: {
+        id: 'iaso.instance.org_unit_status',
+        defaultMessage: 'Org Unit Status',
     },
 });
 

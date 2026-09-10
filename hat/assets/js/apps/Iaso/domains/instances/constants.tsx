@@ -221,6 +221,17 @@ export const INSTANCE_METAS_FIELDS = [
         type: 'location',
     },
     {
+        key: 'org_unit_status',
+        Cell: settings => {
+            const data = settings.row.original;
+            return data.org_unit.validation_status;
+        },
+        sortable: false,
+        active: false,
+        type: 'info',
+        tableOrder: 7,
+    },
+    {
         key: 'period',
         render: value => <PrettyPeriod value={value} />,
         tableOrder: 8,

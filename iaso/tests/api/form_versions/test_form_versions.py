@@ -493,6 +493,35 @@ class FormsVersionAPITestCase(APITestCase):
         response = self.client.get("/api/formversions/", {APP_ID: self.project.app_id})
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
+    def test_formversions_list_with_app_id_filters_out_version_of_derived_forms(self):
+        """GET /formversions/ with auth for project which requires it: 200"""
+
+        form_derived = m.Form.objects.create(
+            name="Derived",
+            form_id="sample2",
+            period_type="MONTH",
+            single_per_period=False,
+            derived=True,
+        )
+        self.project.forms.add(form_derived)
+        self.project.save()
+        form_derived.org_unit_types.set([self.sith_council])
+        form_derived_file_mock = mock.MagicMock(spec=File)
+        form_derived_file_mock.name = "test.xml"
+        with open("iaso/tests/fixtures/odk_form_valid_no_settings.xlsx", "rb") as xls_file:
+            form_derived.form_versions.create(
+                file=form_derived_file_mock, xls_file=UploadedFile(xls_file), version_id="2020022401"
+            )
+
+        self.client.force_authenticate(user=self.yoda)
+        response = self.client.get("/api/formversions/", {APP_ID: self.project.app_id})
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        response_data = response.json()
+        self.assertEqual(len(response_data["form_versions"]), 1)
+        # form_1 is not returned because it doesn't have a version
+        # form_derived is not returned because it is derived
+        self.assertEqual(response_data["form_versions"][0]["form_id"], self.form_2.pk)
+
     def assertValidFormVersionData(
         self, form_version_data: typing.Mapping, *, check_annotated_fields: bool = True
     ):  # TODO: check for other fields

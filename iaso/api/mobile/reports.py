@@ -3,7 +3,8 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions, serializers
 
 from iaso.api.common import ModelViewSet, TimestampField
-from iaso.models import Report
+from iaso.api.serializers import AppIdSerializer
+from iaso.models import Project, Report
 
 
 class MobileReportSerializer(serializers.ModelSerializer):
@@ -38,8 +39,10 @@ class MobileReportsViewSet(ModelViewSet):
         return MobileReportSerializer
 
     def get_queryset(self):
+        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
+        project = Project.objects.get_for_user_and_app_id(self.request.user, app_id)
         search = self.request.query_params.get("search", None)
-        queryset = Report.objects.filter(project__account=self.request.user.iaso_profile.account)
+        queryset = Report.objects.filter(project=project)
         if search:
             queryset = queryset.filter(name__icontains=search)
         return queryset

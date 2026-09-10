@@ -1011,7 +1011,13 @@ def import_data(instances, user, app_id, api_import):
         # it is possible (although it won't happen often) that the instance has already been created by the
         # POST /sync/form_upload/ endpoint.
         file_name = ntpath.basename(instance_data.get("file", None))
-        instance, _ = Instance.objects.get_or_create(file_name=file_name)
+        instance, _ = Instance.objects.get_or_create(
+            file_name=file_name,
+            defaults={
+                "project": project,
+                "uuid": uuid,
+            },
+        )
 
         instance.uuid = uuid
         instance.project = project

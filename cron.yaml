@@ -12,6 +12,3 @@ cron:
     - name: 'setuper_sandbox'
       url: '/tasks/launch_task/iaso.tasks.setuper_sandbox.setuper_sandbox/cron_task_sandbox_user/'
       schedule: '0 4 * * *'
-    - name: 'sync disk space usage by account'
-      url: '/tasks/launch_task/iaso.tasks.sync_disk_space_usage.sync_disk_space_usage/cron_task_sync_disk_space_usage/'
-      schedule: '0 0 * * 0'

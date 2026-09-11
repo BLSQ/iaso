@@ -294,27 +294,33 @@ def etl_bangladesh(all_data=None):
     entity_type_U5_code = "bangladesh_under5"
     etl_u5 = ETL(entity_type_U5_code)
     child_account = etl_u5.get_account()
-    updated_U5_beneficiaries = etl_u5.get_updated_entity_ids(last_success_task_date)
-    Beneficiary.objects.filter(account=child_account, entity_id__in=updated_U5_beneficiaries).delete()
-    BD_Under5().run(updated_U5_beneficiaries, entity_type_U5_code, task_name)
+    if not child_account:
+        logger.warning(f"Skipping Children under 5 ETL: no EntityType found for code '{entity_type_U5_code}'")
+    else:
+        updated_U5_beneficiaries = etl_u5.get_updated_entity_ids(last_success_task_date)
+        Beneficiary.objects.filter(account=child_account, entity_id__in=updated_U5_beneficiaries).delete()
+        BD_Under5().run(updated_U5_beneficiaries, entity_type_U5_code, task_name)
 
-    logger.info(
-        f"----------------------------- Aggregating Children under 5 journey for {child_account} per org unit, admission and period(month and year) -----------------------------"
-    )
-    org_units = etl_u5.get_org_unit_and_period_with_updated_data(last_success_task_date)
-    Aggregator.reset_monthly_statistics(child_account, "U5", org_units)
-    Aggregator.aggregate_monthly_data_by_org_unit(child_account, org_units, "U5")
+        logger.info(
+            f"----------------------------- Aggregating Children under 5 journey for {child_account} per org unit, admission and period(month and year) -----------------------------"
+        )
+        org_units = etl_u5.get_org_unit_and_period_with_updated_data(last_success_task_date)
+        Aggregator.reset_monthly_statistics(child_account, "U5", org_units)
+        Aggregator.aggregate_monthly_data_by_org_unit(child_account, org_units, "U5")
 
     entity_type_pbwg_code = "bangladesh_pbwg"
     etl_pbwg = ETL(entity_type_pbwg_code)
     pbwg_account = etl_pbwg.get_account()
-    updated_pbwg_beneficiaries = etl_pbwg.get_updated_entity_ids(last_success_task_date)
-    Beneficiary.objects.filter(account=pbwg_account, entity_id__in=updated_pbwg_beneficiaries).delete()
-    BD_PBWG().run(updated_pbwg_beneficiaries, entity_type_pbwg_code, task_name)
+    if not pbwg_account:
+        logger.warning(f"Skipping PBWG ETL: no EntityType found for code '{entity_type_pbwg_code}'")
+    else:
+        updated_pbwg_beneficiaries = etl_pbwg.get_updated_entity_ids(last_success_task_date)
+        Beneficiary.objects.filter(account=pbwg_account, entity_id__in=updated_pbwg_beneficiaries).delete()
+        BD_PBWG().run(updated_pbwg_beneficiaries, entity_type_pbwg_code, task_name)
 
-    logger.info(
-        f"----------------------------- Aggregating PBWG journey for {pbwg_account} per org unit, admission and period(month and year) -----------------------------"
-    )
-    pbwg_org_units = etl_pbwg.get_org_unit_and_period_with_updated_data(last_success_task_date)
-    Aggregator.reset_monthly_statistics(pbwg_account, "PLW", pbwg_org_units)
-    Aggregator.aggregate_monthly_data_by_org_unit(pbwg_account, pbwg_org_units, "PLW")
+        logger.info(
+            f"----------------------------- Aggregating PBWG journey for {pbwg_account} per org unit, admission and period(month and year) -----------------------------"
+        )
+        pbwg_org_units = etl_pbwg.get_org_unit_and_period_with_updated_data(last_success_task_date)
+        Aggregator.reset_monthly_statistics(pbwg_account, "PLW", pbwg_org_units)
+        Aggregator.aggregate_monthly_data_by_org_unit(pbwg_account, pbwg_org_units, "PLW")

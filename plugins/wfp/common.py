@@ -251,8 +251,13 @@ def extract_exit_type(data):
     """
     exit_type = None
 
+    discharge_program = data.get("discharge_program") or ""
+    if any(programme in discharge_program for programme in ("TSFP", "OTP", "BSFP")):
+        new_programme = data.get("new_programme")
+        exit_type = new_programme if new_programme not in (None, "") else "cured"
+
     # new_programme set to NONE -> reason for not continuing
-    if data.get("new_programme") == "NONE":
+    elif data.get("new_programme") == "NONE":
         exit_type = data.get("reason_for_not_continuing")
 
     # Transfer to TSFP
@@ -710,7 +715,7 @@ class ETL:
 
     def get_account(self):
         entity_type = EntityType.objects.select_related("account").filter(code=self.entity_type).first()
-        return entity_type.account
+        return entity_type.account if entity_type else None
 
     def get_updated_data(self, updated_at=None):
         entities = Instance.objects.filter(entity__entity_type__code=self.entity_type)

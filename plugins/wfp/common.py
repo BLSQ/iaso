@@ -58,7 +58,9 @@ JOURNEY_STARTING_FORMS = frozenset(
 )
 
 # All admission anthropometric forms (including ones also used as followup).
-ADMISSION_FORMS = frozenset(JOURNEY_STARTING_FORMS | {"Anthropometric_BSFP_child_2", "PBWG_BSFP"})
+ADMISSION_FORMS = frozenset(
+    JOURNEY_STARTING_FORMS | {"Anthropometric_BSFP_child_2", "PBWG_BSFP", "bsfp_child_visit", "bsfp_pbwg_visit"}
+)
 
 # Anthropometric followup forms.
 FOLLOWUP_FORMS = frozenset(
@@ -70,6 +72,8 @@ FOLLOWUP_FORMS = frozenset(
         "antropometric_followUp_otp_u6",
         "Anthropometric_BSFP_child_2",
         "PBWG_BSFP",
+        "bsfp_child_visit",
+        "bsfp_pbwg_visit",
         "wfp_coda_pbwg_luctating_followup_anthro",
         "wfp_coda_pbwg_followup_anthro",
         "anthropometric_second_visit_otp",
@@ -96,11 +100,19 @@ ASSISTANCE_FORMS = frozenset(
         "assistance_u6",
         "Anthropometric_BSFP_child_2",
         "PBWG_BSFP",
+        "bsfp_child_visit",
+        "bsfp_pbwg_visit",
         "wfp_coda_pbwg_assistance",
         "wfp_coda_pbwg_assistance_followup",
         "ng_pbwg_assistanceassistance_admission_otp",
         "ng_pbwg_assistance",
         "ethiopia_child_assistance_follow_up",
+        # Bangladesh "medical" forms only carry medicine/vaccine items (see extract_assistance),
+        # so they're classified as assistance forms rather than a separate category.
+        "Child Medical Admission_2_u6",
+        "medical_follow_up_u6",
+        "wfp_coda_medical_visit_PBWG",
+        "wfp_coda_medical_follow_up_visit_PBWG",
     ]
 )
 # Program to exclude in the data to push to dhis2

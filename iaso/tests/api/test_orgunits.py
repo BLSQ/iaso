@@ -22,6 +22,10 @@ from iaso.utils.gis import simplify_geom
 
 
 COUNT_INSTANCES = 'COUNT(DISTINCT "iaso_instance"."id")'.lower()
+# retrieve()'s `instances_count` (org_unit.descendants().aggregate(Count("instance"))) uses a plain,
+# non-distinct COUNT and an ltree descendants filter, so it needs its own marker (COUNT_INSTANCES
+# above matches list()'s annotation, which is a different query).
+DESCENDANTS_COUNT_QUERY_MARKER = '"iaso_orgunit"."path" <@'.lower()
 
 
 class OrgUnitAPIUtilsTestCase(SimpleTestCase):
@@ -866,6 +870,152 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertJSONResponse(response_parent, status.HTTP_200_OK)
         parent_instances_count = response_parent.json()["instances_count"]
         self.assertEqual(parent_instances_count, 2)
+
+    def test_org_unit_retrieve_performance_optimization_no_instance_count(self):
+        """Test that instances_count is NOT computed on retrieve() when 'fields' doesn't ask for it"""
+        self.client.force_authenticate(self.yoda)
+
+        org_unit = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_council,
+            version=self.sw_version_1,
+            name="Coruscant Jedi Temple",
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+        self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=org_unit,
+            project=self.project,
+            json={"name": "a", "age": 18, "gender": "M"},
+        )
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get(f"/api/orgunits/{org_unit.id}/?fields=id,name")
+
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response.json(), {"id": org_unit.id, "name": org_unit.name})
+        self.assertNotIn("instances_count", response.json())
+
+        for q in ctx.captured_queries:
+            self.assertNotIn(DESCENDANTS_COUNT_QUERY_MARKER, q["sql"].lower(), f"Found unexpected query: {q['sql']}")
+
+    def test_org_unit_retrieve_requested_instances_count_success(self):
+        """Verify instances_count IS computed and returned on retrieve() when explicitly requested via 'fields'"""
+        self.client.force_authenticate(self.yoda)
+
+        org_unit = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_council,
+            version=self.sw_version_1,
+            name="Coruscant Jedi Temple",
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+        self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=org_unit,
+            project=self.project,
+            json={"name": "a", "age": 18, "gender": "M"},
+        )
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get(f"/api/orgunits/{org_unit.id}/?fields=id,name,instances_count")
+
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response.json(), {"id": org_unit.id, "name": org_unit.name, "instances_count": 1})
+
+        self.assertTrue(
+            any(DESCENDANTS_COUNT_QUERY_MARKER in q["sql"].lower() for q in ctx.captured_queries),
+            "Expected a query computing instances_count",
+        )
+
+    def test_org_unit_retrieve_catchment_default(self):
+        """Default behavior (no 'fields') is unchanged: catchment is still serialized"""
+        self.client.force_authenticate(self.yoda)
+        org_unit = self.jedi_council_corruscant  # has a non-empty `catchment` geometry
+
+        response = self.client.get(f"/api/orgunits/{org_unit.id}/")
+
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertIsNotNone(response.json()["catchment"])
+
+    def test_org_unit_retrieve_performance_optimization_no_catchment(self):
+        """Test that catchment geometry is NOT serialized (nor even present) on retrieve() when
+        'fields' doesn't ask for it -- `fields=` also trims the response to just the requested keys."""
+        self.client.force_authenticate(self.yoda)
+        org_unit = self.jedi_council_corruscant  # has a non-empty `catchment` geometry
+
+        response = self.client.get(f"/api/orgunits/{org_unit.id}/?fields=id,name")
+
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response.json(), {"id": org_unit.id, "name": org_unit.name})
+        self.assertNotIn("catchment", response.json())
+
+    def test_org_unit_retrieve_requested_catchment_success(self):
+        """Verify catchment geometry IS returned on retrieve() when explicitly requested via 'fields'"""
+        self.client.force_authenticate(self.yoda)
+        org_unit = self.jedi_council_corruscant  # has a non-empty `catchment` geometry
+
+        response = self.client.get(f"/api/orgunits/{org_unit.id}/?fields=id,name,catchment")
+
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(set(response.json().keys()), {"id", "name", "catchment"})
+        self.assertIsNotNone(response.json()["catchment"])
+
+    def test_org_unit_retrieve_requested_catchment_empty_geometry(self):
+        """A non-null but empty MultiPolygon `catchment` (falsy in Python, since MultiPolygon is a
+        GeometryCollection and defines __len__) must still be serialized when explicitly requested
+        via 'fields' -- it shouldn't be treated the same as no catchment at all."""
+        self.client.force_authenticate(self.yoda)
+        org_unit = self.jedi_council_endor  # catchment is `MULTIPOLYGON EMPTY`, not null
+
+        response = self.client.get(f"/api/orgunits/{org_unit.id}/?fields=id,name,catchment")
+
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(set(response.json().keys()), {"id", "name", "catchment"})
+        self.assertIsNotNone(response.json()["catchment"])
+        self.assertEqual(response.json()["catchment"]["features"][0]["id"], org_unit.id)
+
+    def test_org_unit_retrieve_reference_instances_shape(self):
+        """`fields=reference_instances` should return each reference instance's full shape, i.e. the
+        submission's answers (`file_content`) and its form's question definitions (`form_descriptor`,
+        resolved from the submission's `_version`) -- not just presence/count."""
+        self.client.force_authenticate(self.yoda)
+        org_unit = self.jedi_council_corruscant
+
+        version_id = "2022090601"
+        # Reused below for both setting up the FormVersion/Instance and asserting the response, so
+        # the test can't pass by accident with an assertion that has quietly drifted from the input.
+        form_descriptor = {"name": "data", "type": "survey", "children": [{"name": "age", "type": "integer"}]}
+        file_content = {"_version": version_id, "age": 42}
+
+        form_version = m.FormVersion.objects.create(
+            form=self.reference_form,
+            version_id=version_id,
+            form_descriptor=form_descriptor,
+        )
+        instance = self.create_form_instance(
+            form=self.reference_form,
+            period="202003",
+            org_unit=org_unit,
+            project=self.project,
+            json=file_content,
+        )
+        m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, instance=instance, form=self.reference_form)
+
+        with self.assertNumQueries(28):
+            response = self.client.get(f"/api/orgunits/{org_unit.id}/?fields=reference_instances")
+
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(set(data.keys()), {"reference_instances"})
+        self.assertEqual(len(data["reference_instances"]), 1)
+
+        [reference_instance] = data["reference_instances"]
+        self.assertEqual(reference_instance["id"], instance.id)
+        self.assertEqual(reference_instance["form_id"], self.reference_form.id)
+        self.assertEqual(reference_instance["form_version_id"], form_version.id)
+        self.assertEqual(reference_instance["file_content"], file_content)
+        self.assertEqual(reference_instance["form_descriptor"], form_descriptor)
 
     def test_org_unit_performance_optimization_no_instance_count(self):
         """Test if instances_count is NOT queried when not in 'fields'"""

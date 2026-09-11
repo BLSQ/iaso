@@ -21,6 +21,22 @@ Once the script has run, you can log in to your server using the account name as
 
 ## How To Use
 
+### Quick start (local)
+
+If you're running the stack locally via `docker compose` and just want a fresh
+account without going through the manual `createsuperuser` step below, use the
+`--local` flag. It creates a Django admin directly in the `iaso` container
+(via `docker compose exec ... manage.py createsuperuser --noinput`) and uses
+those credentials right away to set up the account:
+
+    cd setuper
+    python3 setuper.py --local
+
+This can be combined with the other flags (`-n`, `-a`, `--create_main_org_unit`, `--create_demo_form`, ...).
+The steps below and `credentials.py` are not needed in this mode.
+
+### Manual setup
+
 1. Backup your DB
 
         docker compose exec db pg_dump -U postgres iaso  -Fc > ~/Desktop/iaso.dump

@@ -108,7 +108,7 @@ ASSISTANCE_FORMS = frozenset(
     ]
 )
 
-# Bangladesh-only has its own BSFP visit forms.
+# Bangladesh has its own BSFP visit forms.
 BANGLADESH_BSFP_FORMS = frozenset({"bsfp_child_visit", "bsfp_pbwg_visit"})
 BANGLADESH_ENTITY_TYPE_PREFIX = "bangladesh"
 # Program to exclude in the data to push to dhis2

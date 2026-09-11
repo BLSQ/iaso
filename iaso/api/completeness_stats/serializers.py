@@ -72,8 +72,10 @@ class ParamSerializer(serializers.Serializer):
         super().__init__(*args, **kwargs)
 
         request = self.context.get("request")
-        # filter on what the user has access to
-        if request:
+        # filter on what the user has access to. Guard against an unauthenticated (e.g.
+        # AnonymousUser, as used by schema generation) user: filter_for_user() et al. below
+        # assume a real iaso_profile.
+        if request and request.user.is_authenticated:
             user = request.user
             # we could filter but since it's an additional it probably just a waste
             self.fields["org_unit_type_ids"].child_relation.queryset = OrgUnitType.objects.filter_for_user_and_app_id(

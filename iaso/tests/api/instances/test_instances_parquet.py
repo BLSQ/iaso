@@ -9,6 +9,8 @@ import pytz
 
 from django.contrib.gis.geos import Point
 from django.core.files import File
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from rest_framework import status
 
 from iaso import models as m
@@ -291,6 +293,49 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
                         "org_unit_id": self.instance_1.org_unit_id,
                     },
                 )
+
+    def test_parquet_export_django_side_queries_are_constant(self):
+        """The parquet export builds one big query (`build_submissions_queryset` uses
+        `.values()`/`.annotate()`, never instantiating Instance objects) that DuckDB scans
+        via its own direct Postgres connection -- so Django's query log only ever sees the
+        small, fixed setup queries (permission checks, Form lookup, `SELECT 1`), regardless
+        of how many instances actually match. This is what keeps parquet export immune to
+        the get_and_save_json_of_xml()-per-row write issue that xlsx/csv are exposed to
+        (see test_xlsx_export_is_constant_queries in test_instances.py)."""
+        self.yoda.iaso_profile.projects.add(self.instance_1.project)
+        self.client.force_authenticate(self.yoda)
+
+        # Warm up the permission caches (auth_permission, project-permission queries) attached
+        # to `self.yoda`/the request user first: those are memoized after the first request and
+        # would otherwise make the two measurements below differ for reasons unrelated to row count.
+        self.client.get(f"/api/instances/?form_ids={self.instance_1.form.id}&parquet=true&order=id")
+
+        def num_django_queries_for(n_extra_instances):
+            created = [
+                self.create_form_instance(
+                    form=self.form_1,
+                    period="202001",
+                    org_unit=self.jedi_council_corruscant,
+                    project=self.instance_1.project,
+                    created_by=self.yoda,
+                )
+                for _ in range(n_extra_instances)
+            ]
+            with CaptureQueriesContext(connection) as ctx:
+                response = self.client.get(
+                    f"/api/instances/?form_ids={self.instance_1.form.id}&parquet=true&order=id",
+                    headers={"Content-Type": "text/csv"},
+                )
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assert_parquet_content_type(response)
+            for instance in created:
+                instance.delete()
+            return len(ctx.captured_queries)
+
+        queries_for_0_extra = num_django_queries_for(0)
+        queries_for_6_extra = num_django_queries_for(6)
+
+        self.assertEqual(queries_for_0_extra, queries_for_6_extra)
 
     def test_bad_request_parquet_validates_unknown_query_param(self):
         self.client.force_authenticate(self.yoda)

@@ -40,12 +40,14 @@ const getSubOrgunits = (
 ) => {
     if (orgUnit?.sub_unit_types.length > 0) {
         let newOrgUnitTypesList = [...orgUnitTypesList];
-        orgUnit.sub_unit_types.forEach(subOrgUnit => {
+        // `sub_unit_types` is a flat array of org unit type ids (from the `/dropdown/`
+        // endpoint), not nested objects -- look up the full entry by id.
+        orgUnit.sub_unit_types.forEach(subOrgUnitId => {
             const fullSubOrgUnit = orgUnitTypes.find(
-                o => o.id === subOrgUnit.id,
+                o => o.id === subOrgUnitId,
             );
             if (fullSubOrgUnit) {
-                if (!newOrgUnitTypesList.find(o => o.id === subOrgUnit.id)) {
+                if (!newOrgUnitTypesList.find(o => o.id === subOrgUnitId)) {
                     newOrgUnitTypesList.push(fullSubOrgUnit);
                 }
                 if (

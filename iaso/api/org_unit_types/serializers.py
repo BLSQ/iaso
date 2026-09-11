@@ -291,5 +291,5 @@ class OrgUnitTypeHierarchySerializer(serializers.ModelSerializer):
 class OrgUnitTypesDropdownSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrgUnitType
-        fields = ["id", "name", "depth", "sub_unit_types"]
-        read_only_fields = ["id", "name", "depth", "sub_unit_types"]
+        fields = ["id", "name", "short_name", "depth", "sub_unit_types"]
+        read_only_fields = ["id", "name", "short_name", "depth", "sub_unit_types"]

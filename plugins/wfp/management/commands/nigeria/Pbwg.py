@@ -7,7 +7,7 @@ from django.core.paginator import Paginator
 
 from iaso.models import Task
 from plugins.wfp.common import ETL
-from plugins.wfp.models import *
+from plugins.wfp.models import Beneficiary
 
 
 logger = logging.getLogger(__name__)

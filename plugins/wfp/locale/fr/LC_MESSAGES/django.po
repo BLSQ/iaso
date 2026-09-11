@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-09 21:04+0000\n"
+"POT-Creation-Date: 2026-09-11 15:14+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -119,6 +119,10 @@ msgid "WHZ"
 msgstr "PTZ"
 
 #: plugins/wfp/models.py
+msgid "Both MUAC & WHZ"
+msgstr "A la fois MUAC & WHZ"
+
+#: plugins/wfp/models.py
 msgid "OEDEMA"
 msgstr "ŒDÈME"
 
@@ -129,6 +133,22 @@ msgstr "Par enfant émacié"
 #: plugins/wfp/models.py
 msgid "New case"
 msgstr "Nouveau cas"
+
+#: plugins/wfp/models.py
+msgid "New admission (MUAC <11.5 cm)"
+msgstr "Nouvelle admission (MUAC <11.5 cm)"
+
+#: plugins/wfp/models.py
+msgid "New admission (WHZ scores <-3SD)"
+msgstr "Nouvelle admission (WHZ scores <-3SD)"
+
+#: plugins/wfp/models.py
+msgid "New admission (Both WHZ and MUAC)"
+msgstr "Nouvelle admission (MUBoth WHZ and MUAC)"
+
+#: plugins/wfp/models.py
+msgid "New admission (Oedema + or ++)"
+msgstr "Nouvelle admission (Oedema + or ++)"
 
 #: plugins/wfp/models.py
 msgid "Readmission as non-respondent"

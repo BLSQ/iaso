@@ -265,3 +265,56 @@ def etl_ethiopia(all_data=None):
     pbwg_org_units = etl_pbwg.get_org_unit_and_period_with_updated_data(last_success_task_date)
     Aggregator.reset_monthly_statistics(pbwg_account, "PLW", pbwg_org_units)
     Aggregator.aggregate_monthly_data_by_org_unit(pbwg_account, pbwg_org_units, "PLW")
+
+
+@shared_task()
+def etl_bangladesh(all_data=None):
+    """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
+    from django_celery_results.models import TaskResult
+
+    from .management.commands.bangladesh.Pbwg import BD_PBWG
+    from .management.commands.bangladesh.Under5 import BD_Under5
+
+    task_name = "plugins.wfp.tasks.etl_bangladesh"
+    last_success_task = TaskResult.objects.filter(task_name=task_name, status="SUCCESS").order_by("-id").first()
+
+    if last_success_task:
+        # A task was found, use its creation date
+        last_success_task_date = last_success_task.date_created.strftime("%Y-%m-%d")
+    else:
+        # No successful task was found (first run case)
+        # Define a safe default date
+        last_success_task_date = None  # Example default: Unix Epoch start date
+
+    # Allow to re-run on the whole data
+    if all_data is not None:
+        last_success_task_date = None
+
+    logger.info("Starting ETL for Bangladesh")
+    entity_type_U5_code = "bangladesh_under5"
+    etl_u5 = ETL(entity_type_U5_code)
+    child_account = etl_u5.get_account()
+    updated_U5_beneficiaries = etl_u5.get_updated_entity_ids(last_success_task_date)
+    Beneficiary.objects.filter(account=child_account, entity_id__in=updated_U5_beneficiaries).delete()
+    BD_Under5().run(updated_U5_beneficiaries, entity_type_U5_code, task_name)
+
+    logger.info(
+        f"----------------------------- Aggregating Children under 5 journey for {child_account} per org unit, admission and period(month and year) -----------------------------"
+    )
+    org_units = etl_u5.get_org_unit_and_period_with_updated_data(last_success_task_date)
+    Aggregator.reset_monthly_statistics(child_account, "U5", org_units)
+    Aggregator.aggregate_monthly_data_by_org_unit(child_account, org_units, "U5")
+
+    entity_type_pbwg_code = "bangladesh_pbwg"
+    etl_pbwg = ETL(entity_type_pbwg_code)
+    pbwg_account = etl_pbwg.get_account()
+    updated_pbwg_beneficiaries = etl_pbwg.get_updated_entity_ids(last_success_task_date)
+    Beneficiary.objects.filter(account=pbwg_account, entity_id__in=updated_pbwg_beneficiaries).delete()
+    BD_PBWG().run(updated_pbwg_beneficiaries, entity_type_pbwg_code, task_name)
+
+    logger.info(
+        f"----------------------------- Aggregating PBWG journey for {pbwg_account} per org unit, admission and period(month and year) -----------------------------"
+    )
+    pbwg_org_units = etl_pbwg.get_org_unit_and_period_with_updated_data(last_success_task_date)
+    Aggregator.reset_monthly_statistics(pbwg_account, "PLW", pbwg_org_units)
+    Aggregator.aggregate_monthly_data_by_org_unit(pbwg_account, pbwg_org_units, "PLW")

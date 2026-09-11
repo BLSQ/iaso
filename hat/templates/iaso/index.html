@@ -20,7 +20,8 @@
         const THEME = {{ theme| safe }};
         const DEFAULT_APP_ID = "{{DEFAULT_APP_ID}}";
         const DNS_DOMAIN = "{{DNS_DOMAIN}}";
-        window.iasoApp(document.getElementById("app"), PLUGINS_ENABLED, THEME, USER_HOME_PAGE, DEFAULT_APP_ID, DNS_DOMAIN );
+        const SITE_ANNOUNCEMENT_MESSAGE = "{{SITE_ANNOUNCEMENT_MESSAGE|escapejs}}";
+        window.iasoApp(document.getElementById("app"), PLUGINS_ENABLED, THEME, USER_HOME_PAGE, DEFAULT_APP_ID, DNS_DOMAIN, SITE_ANNOUNCEMENT_MESSAGE );
     </script>
     {% endblock %}
 </section>

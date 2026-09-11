@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { useSnackBars } from '../../components/snackBars/useSnackBars';
 import ProductFruitsComponent from './components/ProductFruits';
+import SiteAnnouncementBanner from './components/SiteAnnouncementBanner';
 import { InputContextProvider } from './contexts/InputContext';
 import { SentryProvider } from './contexts/SentryProvider';
 import { useRoutes } from './hooks/useRoutes';
@@ -26,6 +27,7 @@ const App: FunctionComponent<Props> = ({ userHomePage }) => {
                 basename={isDashboardPath ? dashboardBasename : undefined}
             >
                 <InputContextProvider>
+                    <SiteAnnouncementBanner />
                     {isDashboardPath && <ProductFruitsComponent />}
                     {isDashboardPath ? routes : nonDashboardRoutes}
                 </InputContextProvider>

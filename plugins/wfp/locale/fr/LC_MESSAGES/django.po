@@ -144,7 +144,7 @@ msgstr "Nouvelle admission (WHZ scores <-3SD)"
 
 #: plugins/wfp/models.py
 msgid "New admission (Both WHZ and MUAC)"
-msgstr "Nouvelle admission (MUBoth WHZ and MUAC)"
+msgstr "Nouvelle admission (A la fois WHZ et MUAC)"
 
 #: plugins/wfp/models.py
 msgid "New admission (Oedema + or ++)"

@@ -101,10 +101,6 @@ ASSISTANCE_FORMS = frozenset(
         "ng_pbwg_assistanceassistance_admission_otp",
         "ng_pbwg_assistance",
         "ethiopia_child_assistance_follow_up",
-        "Child Medical Admission_2_u6",
-        "medical_follow_up_u6",
-        "wfp_coda_medical_visit_PBWG",
-        "wfp_coda_medical_follow_up_visit_PBWG",
     ]
 )
 

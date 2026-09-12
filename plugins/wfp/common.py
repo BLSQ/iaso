@@ -252,10 +252,11 @@ def extract_exit_type(data):
     exit_type = None
 
     discharge_program = data.get("discharge_program") or ""
-    if any(programme in discharge_program for programme in ("TSFP", "OTP", "BSFP")):
-        new_programme = data.get("new_programme")
-        exit_type = new_programme if new_programme not in (None, "") else "cured"
-
+    if any(programme in discharge_program for programme in ("TSFP", "OTP")):
+        if data.get("referred_to_BSFP") == "1":
+            exit_type = "transfer_to_bsfp"
+        elif data.get("new_programme") in (None, ""):
+            exit_type = ""
     # new_programme set to NONE -> reason for not continuing
     elif data.get("new_programme") == "NONE":
         exit_type = data.get("reason_for_not_continuing")
@@ -844,7 +845,7 @@ class ETL:
 
             # If this journey ended with a transfer, prepare info for the
             # next journey group.
-            if journey.exit_type in ("transfer_to_tsfp", "transfer_to_otp"):
+            if journey.exit_type in ("transfer_to_tsfp", "transfer_to_otp", "transfer_to_bsfp"):
                 transfer_info = self._build_transfer_info(journey)
 
         if not all_journeys:

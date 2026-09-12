@@ -108,8 +108,16 @@ ASSISTANCE_FORMS = frozenset(
     ]
 )
 
-# Bangladesh has its own BSFP visit forms.
+# Bangladesh has its own BSFP visit and medical forms.
 BANGLADESH_BSFP_FORMS = frozenset({"bsfp_child_visit", "bsfp_pbwg_visit"})
+BANGLADESH_MEDICAL_FORMS = frozenset(
+    {
+        "Child Medical Admission_2_u6",
+        "medical_follow_up_u6",
+        "wfp_coda_medical_visit_PBWG",
+        "wfp_coda_medical_follow_up_visit_PBWG",
+    }
+)
 BANGLADESH_ENTITY_TYPE_PREFIX = "bangladesh"
 # Program to exclude in the data to push to dhis2
 EXCLUDED_PROGRAMMES = [None, "", "Not Eligible", "OTP - Under 6"]
@@ -701,7 +709,11 @@ class ETL:
 
     @property
     def assistance_forms(self):
-        return ASSISTANCE_FORMS | BANGLADESH_BSFP_FORMS if self._is_bangladesh() else ASSISTANCE_FORMS
+        return (
+            ASSISTANCE_FORMS | BANGLADESH_BSFP_FORMS | BANGLADESH_MEDICAL_FORMS
+            if self._is_bangladesh()
+            else ASSISTANCE_FORMS
+        )
 
     @property
     def all_anthropometric_forms(self):

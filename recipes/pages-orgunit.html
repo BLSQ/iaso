@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<!--
+  OpenStreetMap's tile servers enforce a usage policy that expects requests to carry a real Referer
+  identifying the calling site (see https://operations.osmfoundation.org/policies/tiles/). Don't set
+  content="no-referrer" or content="same-origin" here - either would strip the referrer on the
+  cross-origin tile requests Leaflet makes to tile.openstreetmap.org and can get tiles blocked/degraded.
+  "strict-origin-when-cross-origin" (the modern browser default anyway) sends at least the origin, which
+  satisfies that policy while still not leaking the full page path.
+-->
+<meta name="referrer" content="strict-origin-when-cross-origin" />
+<title>Org unit shape QA</title>
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
+  integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw=="
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+/>
+<style>
+  :root {
+    --border: #d8dee8;
+    --text: #1c2430;
+    --muted: #6b7686;
+    --accent: #2563eb;
+    --danger: #b91c1c;
+    --bg: #f7f8fa;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --border: #333c4a;
+      --text: #e8ebf0;
+      --muted: #9aa5b4;
+      --accent: #6ea8fe;
+      --danger: #f87171;
+      --bg: #14181f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --border: #333c4a;
+    --text: #e8ebf0;
+    --muted: #9aa5b4;
+    --accent: #6ea8fe;
+    --danger: #f87171;
+    --bg: #14181f;
+  }
+
+  html, body {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  #controls label {
+    color: var(--muted);
+  }
+  #controls input {
+    width: 260px;
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+  }
+
+  .autocomplete {
+    position: relative;
+  }
+  .suggestions {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 4px;
+    list-style: none;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    max-height: 280px;
+    overflow-y: auto;
+    z-index: 1000;
+  }
+  .suggestions li {
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .suggestions li.active,
+  .suggestions li:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+  .suggestions li.active small,
+  .suggestions li:hover small {
+    color: inherit;
+    opacity: 0.85;
+  }
+  .suggestions li small {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .suggestions li.empty {
+    cursor: default;
+    color: var(--muted);
+  }
+  .suggestions li.empty:hover {
+    background: none;
+    color: var(--muted);
+  }
+
+  #controls button {
+    padding: 6px 14px;
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    background: var(--accent);
+    color: #fff;
+    font: inherit;
+    cursor: pointer;
+  }
+  #controls button:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+  #status {
+    color: var(--muted);
+    margin-left: auto;
+  }
+  #status.error {
+    color: var(--danger);
+  }
+
+  #stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    padding: 6px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 12px;
+  }
+  #stats strong {
+    color: var(--text);
+  }
+  #stats .warn strong {
+    color: var(--danger);
+  }
+
+  #content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+  }
+  #map {
+    flex: 1;
+    min-height: 0;
+  }
+  #outside-list {
+    display: none;
+    width: 260px;
+    flex-shrink: 0;
+    border-left: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 10px;
+  }
+  #outside-list.visible {
+    display: block;
+  }
+  #outside-list h3 {
+    margin: 0 0 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  #outside-list ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  #outside-list li {
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  #outside-list li:hover {
+    background: var(--danger);
+    color: #fff;
+  }
+  #outside-list li small {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+  }
+  #outside-list li:hover small {
+    color: inherit;
+    opacity: 0.85;
+  }
+
+  .leaflet-popup-content b {
+    display: block;
+    margin-bottom: 2px;
+  }
+  .popup-ancestors {
+    color: var(--muted);
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+
+<div id="controls">
+  <label for="org-unit-search">Org unit</label>
+  <div class="autocomplete">
+    <input
+      id="org-unit-search"
+      type="text"
+      autocomplete="off"
+      placeholder="Search by name, or paste an id..."
+    />
+    <ul id="suggestions" class="suggestions" hidden></ul>
+  </div>
+  <button id="load-btn" type="button">Load</button>
+  <span id="status"></span>
+</div>
+<div id="stats" hidden></div>
+<div id="content">
+  <div id="map"></div>
+  <aside id="outside-list">
+    <h3>Outside the shape</h3>
+    <ul id="outside-list-items"></ul>
+  </aside>
+</div>
+
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"
+  integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g=="
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+></script>
+<script>
+  // Fetches are relative ('/api/v3/...'), so this page must be served from the same origin as Iaso
+  // (e.g. hosted as an Iaso Page) to reuse the logged-in session cookie automatically. If you open this
+  // file directly (file://) instead, point this at the full server URL - but expect the browser to
+  // refuse to send session cookies cross-origin, so you'd be fetching as an anonymous user.
+  const API_BASE = "";
+  const DEFAULT_ORG_UNIT_ID = "2062840";
+
+  const searchInput = document.getElementById("org-unit-search");
+  const suggestionsList = document.getElementById("suggestions");
+  const loadButton = document.getElementById("load-btn");
+  const statusEl = document.getElementById("status");
+  const outsideListEl = document.getElementById("outside-list");
+  const outsideListItemsEl = document.getElementById("outside-list-items");
+  const statsEl = document.getElementById("stats");
+
+  const map = L.map("map").setView([0, 0], 2);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright" referrerpolicy="strict-origin-when-cross-origin">OpenStreetMap</a> contributors',
+  }).addTo(map);
+
+  let shapeLayer = null;
+  const markersLayer = L.layerGroup().addTo(map);
+
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    })[c]);
+  }
+
+  function setStatus(text, isError) {
+    statusEl.textContent = text;
+    statusEl.classList.toggle("error", Boolean(isError));
+  }
+
+  async function fetchJson(path) {
+    const response = await fetch(API_BASE + path, { credentials: "same-origin" });
+    if (!response.ok) {
+      let detail = "";
+      try {
+        detail = JSON.stringify(await response.json());
+      } catch (e) {
+        detail = await response.text();
+      }
+      throw new Error(`${response.status} ${response.statusText} - ${detail}`);
+    }
+    return response.json();
+  }
+
+  // -- autocomplete (searches org units by name, via the same v3 API) --------------------------------
+
+  let selectedId = DEFAULT_ORG_UNIT_ID;
+  let searchDebounceTimer = null;
+  let searchRequestToken = 0;
+  let activeSuggestionIndex = -1;
+
+  function hideSuggestions() {
+    suggestionsList.hidden = true;
+    suggestionsList.innerHTML = "";
+    activeSuggestionIndex = -1;
+  }
+
+  function renderSuggestions(orgUnits) {
+    suggestionsList.innerHTML = "";
+    if (orgUnits.length === 0) {
+      const li = document.createElement("li");
+      li.className = "empty";
+      li.textContent = "No matching org unit";
+      suggestionsList.appendChild(li);
+    } else {
+      for (const orgUnit of orgUnits) {
+        const ancestorNames = (orgUnit.ancestors || []).map((a) => a.name).join(" › ");
+        const li = document.createElement("li");
+        li.dataset.id = orgUnit.id;
+        li.dataset.name = orgUnit.name;
+        li.innerHTML =
+          `${escapeHtml(orgUnit.name)}` +
+          `<small>#${orgUnit.id}${ancestorNames ? " · " + escapeHtml(ancestorNames) : ""}</small>`;
+        li.addEventListener("mousedown", (event) => {
+          // mousedown (not click): fires before the input's blur, so it isn't lost to hideSuggestions().
+          event.preventDefault();
+          pickOrgUnit(orgUnit.id, orgUnit.name);
+        });
+        suggestionsList.appendChild(li);
+      }
+    }
+    activeSuggestionIndex = -1;
+    suggestionsList.hidden = false;
+  }
+
+  function highlightSuggestion(index) {
+    const items = [...suggestionsList.querySelectorAll("li:not(.empty)")];
+    items.forEach((item, i) => item.classList.toggle("active", i === index));
+    if (items[index]) items[index].scrollIntoView({ block: "nearest" });
+    activeSuggestionIndex = index;
+  }
+
+  function pickOrgUnit(id, name) {
+    selectedId = String(id);
+    searchInput.value = `${name} (#${id})`;
+    hideSuggestions();
+    loadOrgUnit(selectedId);
+  }
+
+  async function searchOrgUnits(query) {
+    const token = ++searchRequestToken;
+    const params = new URLSearchParams({
+      format: "json",
+      // `search` matches name OR aliases (same criteria as the legacy /api/orgunits/ endpoint's search
+      // shortcut) - `name__icontains` alone would miss aliases.
+      search: query,
+      order: "name",
+      page_size: "8",
+      fields: "id,name,ancestors(name)",
+    });
+    let data;
+    try {
+      data = await fetchJson(`/api/v3/orgunits/?${params}`);
+    } catch (error) {
+      return; // a stale/broken search shouldn't disrupt typing
+    }
+    if (token !== searchRequestToken) return; // a newer keystroke already started a fresher search
+    renderSuggestions(data.results);
+  }
+
+  searchInput.addEventListener("input", () => {
+    selectedId = null; // typing invalidates whatever was picked/pasted before
+    const query = searchInput.value.trim();
+    clearTimeout(searchDebounceTimer);
+    if (/^\d+$/.test(query)) {
+      // pasted a bare id - usable directly, no need to search by name
+      selectedId = query;
+      hideSuggestions();
+      return;
+    }
+    if (query.length < 3) {
+      // `name` has no database index, so `search`/`name__icontains` is a full table scan under the
+      // hood - a slightly longer minimum + debounce cuts down how often that runs while typing. The
+      // real fix is a trigram index on `name`; ask about adding one before doing it.
+      hideSuggestions();
+      return;
+    }
+    searchDebounceTimer = setTimeout(() => searchOrgUnits(query), 350);
+  });
+
+  searchInput.addEventListener("keydown", (event) => {
+    const items = suggestionsList.querySelectorAll("li:not(.empty)");
+    if (event.key === "ArrowDown" && items.length) {
+      event.preventDefault();
+      highlightSuggestion((activeSuggestionIndex + 1) % items.length);
+    } else if (event.key === "ArrowUp" && items.length) {
+      event.preventDefault();
+      highlightSuggestion((activeSuggestionIndex - 1 + items.length) % items.length);
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      if (activeSuggestionIndex >= 0 && items[activeSuggestionIndex]) {
+        const item = items[activeSuggestionIndex];
+        pickOrgUnit(item.dataset.id, item.dataset.name);
+      } else {
+        loadButton.click();
+      }
+    } else if (event.key === "Escape") {
+      hideSuggestions();
+    }
+  });
+
+  searchInput.addEventListener("blur", () => {
+    // deferred: lets a suggestion's mousedown handler run first (see the comment in renderSuggestions).
+    setTimeout(hideSuggestions, 100);
+  });
+
+  // -- map ------------------------------------------------------------------------------------------
+
+  async function loadOrgUnit(orgUnitId) {
+    loadButton.disabled = true;
+    setStatus(`Loading org unit ${orgUnitId}...`);
+
+    if (shapeLayer) {
+      map.removeLayer(shapeLayer);
+      shapeLayer = null;
+    }
+    markersLayer.clearLayers();
+    outsideListItemsEl.innerHTML = "";
+    outsideListEl.classList.remove("visible");
+    statsEl.hidden = true;
+
+    try {
+      // 1. the shape of the org unit itself
+      const orgUnit = await fetchJson(
+        `/api/v3/orgunits/${encodeURIComponent(orgUnitId)}/?fields=id,name,simplified_geom,org_unit_type`
+      );
+
+      if (orgUnit.simplified_geom) {
+        shapeLayer = L.geoJSON(orgUnit.simplified_geom, {
+          style: { color: "#2563eb", weight: 2, fillOpacity: 0.08 },
+        }).addTo(map);
+      }
+      if (!selectedId) selectedId = orgUnitId;
+      if (!searchInput.matches(":focus")) searchInput.value = `${orgUnit.name} (#${orgUnit.id})`;
+
+      // 2. every descendant with a location, and separately which of those fall outside the shape -
+      // two calls to the same endpoint (one plain, one with `location__outside_org_unit`) instead of
+      // computing point-in-polygon ourselves client-side.
+      const commonParams = {
+        format: "json",
+        ancestor_id: orgUnitId,
+        has_location: "true",
+        fields: "id,name,latitude,longitude,ancestors(id,name)",
+        page_size: "10000",
+      };
+      // `page_size=1&with_count=true` for the two "missing data" counts below - we only need the total,
+      // not the rows (the v3 API skips COUNT(*) unless asked, so this is an explicit opt-in per call).
+      const countOnlyParams = { format: "json", ancestor_id: orgUnitId, page_size: "1", with_count: "true" };
+      const [allDescendants, outsideDescendants, withoutLocation, withoutShape] = await Promise.all([
+        fetchJson(`/api/v3/orgunits/?${new URLSearchParams(commonParams)}`),
+        fetchJson(
+          `/api/v3/orgunits/?${new URLSearchParams({ ...commonParams, location__outside_org_unit: orgUnitId })}`
+        ),
+        fetchJson(`/api/v3/orgunits/?${new URLSearchParams({ ...countOnlyParams, has_location: "false" })}`),
+        fetchJson(`/api/v3/orgunits/?${new URLSearchParams({ ...countOnlyParams, has_shape: "false" })}`),
+      ]);
+      const outsideIds = new Set(outsideDescendants.results.map((row) => row.id));
+
+      statsEl.hidden = false;
+      statsEl.innerHTML = [
+        `<span${withoutLocation.count ? ' class="warn"' : ""}>Descendants without location: <strong>${withoutLocation.count}</strong></span>`,
+        `<span${withoutShape.count ? ' class="warn"' : ""}>Descendants without shape: <strong>${withoutShape.count}</strong></span>`,
+      ].join("");
+
+      // Several org units can share the exact same (mis)recorded coordinate - e.g. all defaulted to the
+      // same fallback point - which would otherwise stack invisibly under a single circle, making it look
+      // like there's only one point when the count says otherwise. Group by coordinate and size the
+      // marker by how many org units are actually there; all of a group's members necessarily share the
+      // same inside/outside status, since that's a function of the point + the one reference shape.
+      const groupsByCoordinate = new Map();
+      for (const row of allDescendants.results) {
+        const key = `${row.latitude.toFixed(6)},${row.longitude.toFixed(6)}`;
+        if (!groupsByCoordinate.has(key)) {
+          groupsByCoordinate.set(key, {
+            latitude: row.latitude,
+            longitude: row.longitude,
+            isOutside: outsideIds.has(row.id),
+            rows: [],
+          });
+        }
+        groupsByCoordinate.get(key).rows.push(row);
+      }
+
+      for (const group of groupsByCoordinate.values()) {
+        const count = group.rows.length;
+        const rowsHtml = group.rows
+          .map((row) => {
+            const ancestorNames = (row.ancestors || []).map((a) => a.name).join(" → ");
+            return (
+              `<div><b>${escapeHtml(row.name)}</b> (#${row.id})` +
+              (ancestorNames ? ` <span class="popup-ancestors">${escapeHtml(ancestorNames)}</span>` : "") +
+              `</div>`
+            );
+          })
+          .join("");
+        const header =
+          count > 1
+            ? `<b>${count} org units</b> share this exact point - ${group.isOutside ? "outside" : "inside"} the shape`
+            : `${group.isOutside ? "outside" : "inside"} the shape`;
+
+        group.marker = L.circleMarker([group.latitude, group.longitude], {
+          radius: count > 1 ? 6 + Math.min(count - 1, 6) * 2 : 6,
+          color: group.isOutside ? "#b91c1c" : "#15803d",
+          fillColor: group.isOutside ? "#ef4444" : "#22c55e",
+          fillOpacity: count > 1 ? 0.7 : 0.9,
+          weight: count > 1 ? 2 : 1,
+        })
+          .bindPopup(`<div>${header}</div>${rowsHtml}`)
+          .addTo(markersLayer);
+      }
+
+      // zoom to the shape itself when there is one - that's the boundary being checked against, and
+      // outlier points can be arbitrarily far away; fall back to the points if the org unit has no shape.
+      const bounds = (shapeLayer || markersLayer).getBounds();
+      if (bounds.isValid()) {
+        map.fitBounds(bounds.pad(0.2));
+      }
+
+      // A misplaced point can be anywhere on the globe, so it may well sit outside whatever view was
+      // just fitted to the shape - list every "outside" group explicitly, each clickable, instead of
+      // relying on it being visible (or even on-screen at all) in the current viewport.
+      const outsideGroups = [...groupsByCoordinate.values()].filter((group) => group.isOutside);
+      outsideListEl.classList.toggle("visible", outsideGroups.length > 0);
+      for (const group of outsideGroups) {
+        const li = document.createElement("li");
+        const label = group.rows.length > 1 ? `${group.rows.length} org units` : group.rows[0].name;
+        const ids = group.rows.map((row) => row.id).join(", ");
+        li.innerHTML = `${escapeHtml(label)}<small>#${ids}</small>`;
+        li.addEventListener("click", () => {
+          map.flyTo([group.latitude, group.longitude], Math.max(map.getZoom(), 14));
+          group.marker.openPopup();
+        });
+        outsideListItemsEl.appendChild(li);
+      }
+
+      const total = allDescendants.results.length;
+      const outsideCount = outsideIds.size;
+      setStatus(
+        `${orgUnit.name} (#${orgUnit.id}) — ${total} descendant${total === 1 ? "" : "s"} with a location ` +
+          `(${outsideCount} outside its shape, ${total - outsideCount} inside)` +
+          (orgUnit.simplified_geom ? "" : " - org unit has no shape to draw")
+      );
+    } catch (error) {
+      setStatus(String(error.message || error), true);
+    } finally {
+      loadButton.disabled = false;
+    }
+  }
+
+  loadButton.addEventListener("click", () => {
+    const id = selectedId || (/^\d+$/.test(searchInput.value.trim()) ? searchInput.value.trim() : null);
+    if (id) {
+      loadOrgUnit(id);
+    } else {
+      setStatus("Pick an org unit from the search results, or paste a numeric id.", true);
+    }
+  });
+
+  searchInput.value = DEFAULT_ORG_UNIT_ID;
+  loadOrgUnit(DEFAULT_ORG_UNIT_ID);
+</script>
+</body>
+</html>

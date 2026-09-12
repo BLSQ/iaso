@@ -13,12 +13,12 @@ from plugins.wfp.models import Beneficiary
 logger = logging.getLogger(__name__)
 
 
-class ET_Under5:
+class BD_Under5:
     PROGRAMME_TYPE = "U5"
-    ENTITY_TYPE_CODE = "ethiopia_under5"
+    ENTITY_TYPE_CODE = "bangladesh_under5"
     PAGE_SIZE = 5000
 
-    def run(self, updated_entity_ids, entity_type_code=None, task_name="etl_eth"):
+    def run(self, updated_entity_ids, entity_type_code=None, task_name="etl_bangladesh"):
         code = entity_type_code or self.ENTITY_TYPE_CODE
         elt = ETL(code)
         account = elt.get_account()

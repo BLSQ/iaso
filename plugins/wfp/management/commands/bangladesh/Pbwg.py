@@ -13,12 +13,12 @@ from plugins.wfp.models import Beneficiary
 logger = logging.getLogger(__name__)
 
 
-class ET_Under5:
-    PROGRAMME_TYPE = "U5"
-    ENTITY_TYPE_CODE = "ethiopia_under5"
+class BD_PBWG:
+    ENTITY_TYPE_CODE = "bangladesh_pbwg"
+    PROGRAMME_TYPE = "PLW"
     PAGE_SIZE = 5000
 
-    def run(self, updated_entity_ids, entity_type_code=None, task_name="etl_eth"):
+    def run(self, updated_entity_ids, entity_type_code=None, task_name="etl_bangladesh"):
         code = entity_type_code or self.ENTITY_TYPE_CODE
         elt = ETL(code)
         account = elt.get_account()
@@ -28,8 +28,9 @@ class ET_Under5:
         pages = paginator.page_range
 
         logger.info(
-            f"Processing {len(updated_entity_ids)} entities Child Under 5 across {paginator.num_pages} pages for {account}"
+            f"Processing {len(updated_entity_ids)} entities PBWG across {paginator.num_pages} pages for {account}"
         )
+
         for page in pages:
             submissions, page_info = ETL._retrieve_submissions(
                 code, updated_entity_ids, page_size=page_size, page_number=page
@@ -53,7 +54,13 @@ class ET_Under5:
                 entity_count += 1
 
                 entity_subs = list(entity_submissions)
-                result = elt._process_entity(self.PROGRAMME_TYPE, entity_id, entity_subs, account, existing_entity_ids)
+                result = elt._process_entity(
+                    self.PROGRAMME_TYPE,
+                    entity_id,
+                    entity_subs,
+                    account,
+                    existing_entity_ids,
+                )
                 if result is None:
                     skipped_count += 1
                     continue

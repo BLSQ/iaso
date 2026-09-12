@@ -16,6 +16,7 @@ EXIT_TYPES = [
     ("transfer_from_other_otp", _("Transfer in from other OTP")),
     ("transfer_to_tsfp", _("Transfer To TSFP")),
     ("transfer_from_other_tsfp", _("Transfer in from other TSFP")),
+    ("transfer_to_bsfp", _("Transfer To BSFP")),
     ("non_respondent", _("Non respondent")),
     ("transferred_out", _("Transferred out")),
     ("defaulter", _("Defaulter")),

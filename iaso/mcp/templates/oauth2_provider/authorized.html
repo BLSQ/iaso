@@ -1,0 +1,63 @@
+{% extends "oauth2_provider/base.html" %}
+
+{% block title %}Authorized{% endblock %}
+
+{% block extra_css %}
+  .scopes li { opacity: 0.4; color: #94a3b8; transition: opacity 0.4s ease, color 0.4s ease; }
+  .scopes li.enabled { opacity: 1; color: #475569; }
+  .scopes li.enabled .tool-name { color: #0f172a; }
+  .nav-links { display: flex; justify-content: center; gap: 1.25rem; margin-top: 0.85rem; }
+  .nav-links a { font-size: 0.875rem; font-weight: 600; color: #b45309; text-decoration: none; }
+  .nav-links a:visited { color: #b45309; }
+  .nav-links a:hover { text-decoration: underline; }
+  .nav-links a:focus:not(:focus-visible) { outline: none; }
+  .nav-links a:focus-visible { outline: 2px solid #c49200; outline-offset: 2px; }
+{% endblock %}
+
+{% block body %}
+  <div>
+    <h2>Authorization successful</h2>
+    <p class="subtitle">{% if tools %}Enabling tools for your session…{% else %}You can close this tab.{% endif %}</p>
+    <p class="nav-links">
+      <a href="/mcp/">MCP tools</a>
+      <a href="/">Back to IASO</a>
+    </p>
+  </div>
+  {% if tools %}
+    <div class="scopes">
+      <h3>Tools enabled:</h3>
+      <ul>
+        {% for tool in tools %}
+          <li>
+            <div>
+              <span class="tool-name">{{ tool.name }}</span>
+              {% if tool.description %}
+                <span class="tool-desc"> — {{ tool.description|truncatechars:140 }}</span>
+              {% endif %}
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  var redirectUri = "{{ redirect_uri|escapejs }}";
+  fetch(redirectUri, { mode: "no-cors" }).then(function () {
+    var items = document.querySelectorAll(".scopes li");
+    items.forEach(function (item, i) {
+      setTimeout(function () { item.classList.add("enabled"); }, (i + 1) * 150);
+    });
+    if (items.length) {
+      setTimeout(function () {
+        var subtitle = document.querySelector(".subtitle");
+        if (subtitle) subtitle.textContent = "All tools enabled. You can close this tab, or continue below.";
+      }, (items.length + 1) * 150);
+    }
+  }).catch(function () {
+    window.location.href = redirectUri;
+  });
+</script>
+{% endblock %}

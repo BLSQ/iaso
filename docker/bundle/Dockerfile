@@ -41,6 +41,14 @@ COPY babel-register.js /opt/app/babel-register.js
 RUN npm run webpack-prod
 RUN ls ./hat/assets
 
+# MCP catalog UI (Vite)
+COPY iaso/mcp/frontend/package.json iaso/mcp/frontend/package-lock.json /opt/app/iaso/mcp/frontend/
+WORKDIR /opt/app/iaso/mcp/frontend
+RUN npm ci
+COPY iaso/mcp/frontend/ ./
+RUN npm run build
+WORKDIR /opt/app
+
 
 ########### Django Builder ########################################################################
 FROM python:3.9 AS base
@@ -63,6 +71,7 @@ RUN uv sync --python "$(which python3)" --group prod
 
 COPY --from=npmbuilder /opt/app/hat/assets /opt/app/hat/assets
 COPY . /opt/app
+COPY --from=npmbuilder /opt/app/iaso/mcp/frontend/dist /opt/app/iaso/mcp/frontend/dist
 RUN SECRET_KEY=NOT_SO_SECRET uv run python manage.py collectstatic
 RUN SECRET_KEY=NOT_SO_SECRET uv run python manage.py compilemessages
 

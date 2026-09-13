@@ -1,4 +1,7 @@
 import datetime
+import json
+
+from unittest.mock import patch
 
 import time_machine
 
@@ -6,6 +9,9 @@ from django.test import TestCase
 
 from iaso import models as m
 from iaso.diffing import DataSourceVersionsSynchronizer, Differ, diffs_to_json
+from iaso.diffing.synchronizer import OrgUnitMatching
+from iaso.tasks.data_source_versions_synchronization import synchronize_source_versions_async
+from iaso.test import TestCase as IasoTestCase
 from iaso.tests.diffing.utils import PyramidBaseTest
 
 
@@ -619,3 +625,262 @@ class PrepareModifiedChangeRequestsTestCase(PyramidBaseTest):
 
         self.assertIn("new_code", change_request.requested_fields)
         self.assertEqual(change_request.new_code, "")
+
+
+class ReportWarningSkipPathsTestCase(PyramidBaseTest):
+    """Skip paths must warn and continue; they must not fail the synchronization."""
+
+    def _make_synchronizer(self, json_diff="[]"):
+        account = m.Account.objects.create(name="Account")
+        data_source_sync = m.DataSourceVersionsSynchronization.objects.create(
+            name="sync",
+            source_version_to_update=self.source_version_to_update,
+            source_version_to_compare_with=self.source_version_to_compare_with,
+            json_diff=json_diff,
+            account=account,
+        )
+        return DataSourceVersionsSynchronizer(data_source_sync=data_source_sync)
+
+    def _warning_messages(self, mock_warning):
+        return [call.args[0] for call in mock_warning.call_args_list]
+
+    def test_prepare_groups_matching_ignores_groups_without_source_ref(self):
+        group_empty_ref = m.Group.objects.create(
+            name="Group without source_ref",
+            source_ref="",
+            source_version=self.source_version_to_update,
+        )
+        group_none_ref = m.Group.objects.create(
+            name="Group with null source_ref",
+            source_ref=None,
+            source_version=self.source_version_to_update,
+        )
+        synchronizer = self._make_synchronizer()
+
+        with patch("iaso.diffing.synchronizer.logger.warning") as mock_warning:
+            synchronizer._prepare_groups_matching()
+
+        self.assertEqual(synchronizer.groups_matching["group-a"], self.group_a1.pk)
+        self.assertEqual(synchronizer.groups_matching["group-b"], self.group_b.pk)
+        self.assertNotIn("", synchronizer.groups_matching)
+        self.assertNotIn(None, synchronizer.groups_matching)
+        self.assertNotIn(group_empty_ref.pk, synchronizer.groups_matching.values())
+        self.assertNotIn(group_none_ref.pk, synchronizer.groups_matching.values())
+        messages = self._warning_messages(mock_warning)
+        self.assertTrue(any(f"Ignoring Group ID #{group_empty_ref.pk}" in msg for msg in messages))
+        self.assertTrue(any(f"Ignoring Group ID #{group_none_ref.pk}" in msg for msg in messages))
+        self.assertTrue(all("extra" in call.kwargs for call in mock_warning.call_args_list))
+
+    def test_create_missing_org_units_ignores_org_units_without_source_ref(self):
+        org_unit = m.OrgUnit.objects.create(
+            parent=None,
+            version=self.source_version_to_compare_with,
+            source_ref="",
+            name="Facility without source ref",
+            org_unit_type=self.org_unit_type_district,
+        )
+        json_diff = json.dumps(
+            [
+                {
+                    "status": Differ.STATUS_NEW,
+                    "org_unit": {"id": org_unit.pk, "path": "no-source-ref"},
+                    "orgunit_ref": {"id": org_unit.pk},
+                }
+            ]
+        )
+        synchronizer = self._make_synchronizer(json_diff=json_diff)
+
+        with patch("iaso.diffing.synchronizer.logger.warning") as mock_warning:
+            synchronizer._create_missing_org_units_and_prepare_missing_groups()
+
+        self.assertEqual(synchronizer.org_units_created_count, 0)
+        self.assertEqual(synchronizer.org_units_matching, {})
+        messages = self._warning_messages(mock_warning)
+        self.assertTrue(any(f"Ignoring OrgUnit ID #{org_unit.pk}" in msg for msg in messages))
+
+    def test_prepare_new_change_requests_ignores_empty_requested_fields(self):
+        synchronizer = self._make_synchronizer()
+        diff = {
+            "orgunit_ref": {
+                "id": 123,
+                "source_ref": "id-missing-fields",
+                "name": "",
+                "parent": None,
+                "opening_date": None,
+                "closed_date": None,
+            },
+            "comparisons": [],
+        }
+
+        with patch("iaso.diffing.synchronizer.logger.warning") as mock_warning:
+            change_request, group_changes = synchronizer._prepare_new_change_requests(diff)
+
+        self.assertIsNone(change_request)
+        self.assertIsNone(group_changes)
+        self.assertTrue(
+            any(
+                "Ignoring OrgUnit ID #123 because `requested_fields` is empty." in msg
+                for msg in self._warning_messages(mock_warning)
+            )
+        )
+
+    def test_prepare_new_change_requests_warns_on_unmatched_group(self):
+        synchronizer = self._make_synchronizer()
+        synchronizer.org_units_matching["id-1"] = OrgUnitMatching(
+            corresponding_id=self.angola_country_to_update.pk,
+            corresponding_parent_id=None,
+        )
+        unmatched_group = {"id": "missing-group", "name": "Unknown group"}
+        diff = {
+            "orgunit_ref": {
+                "id": self.angola_country_to_compare_with.pk,
+                "source_ref": "id-1",
+                "name": "Angola",
+                "parent": None,
+                "opening_date": "2022-11-28",
+                "closed_date": None,
+            },
+            "comparisons": [
+                {
+                    "field": "group:missing-group:Unknown group",
+                    "before": [],
+                    "after": [unmatched_group],
+                    "status": Differ.STATUS_NEW,
+                    "distance": None,
+                }
+            ],
+        }
+
+        with patch("iaso.diffing.synchronizer.logger.warning") as mock_warning:
+            change_request, group_changes = synchronizer._prepare_new_change_requests(diff)
+
+        self.assertIsNotNone(change_request)
+        self.assertEqual(group_changes[0]["after"][0], unmatched_group)
+        self.assertNotIn("iaso_id", unmatched_group)
+        self.assertTrue(
+            any(
+                "Unable to find a corresponding `Group` with `source_ref=missing-group`" in msg
+                for msg in self._warning_messages(mock_warning)
+            )
+        )
+
+    def test_synchronize_continues_when_group_has_no_source_ref(self):
+        m.Group.objects.create(
+            name="Group without source_ref",
+            source_ref="",
+            source_version=self.source_version_to_update,
+        )
+        self.angola_country_to_compare_with.name = "Angola new"
+        self.angola_country_to_compare_with.save()
+        data_source_sync = m.DataSourceVersionsSynchronization.objects.create(
+            name="sync",
+            source_version_to_update=self.source_version_to_update,
+            source_version_to_compare_with=self.source_version_to_compare_with,
+            json_diff=None,
+            account=m.Account.objects.create(name="Account"),
+        )
+        data_source_sync.create_json_diff(
+            source_version_to_update_org_unit_types=[self.org_unit_type_country],
+            source_version_to_compare_with_org_unit_types=[self.org_unit_type_country],
+            ignore_groups=True,
+            field_names=["name"],
+        )
+
+        with patch("iaso.diffing.synchronizer.logger.warning") as mock_warning:
+            data_source_sync.synchronize_source_versions()
+
+        self.assertTrue(any("Ignoring Group ID #" in msg for msg in self._warning_messages(mock_warning)))
+        self.assertEqual(
+            m.OrgUnitChangeRequest.objects.filter(data_source_synchronization=data_source_sync).count(),
+            1,
+        )
+
+
+class SynchronizeSourceVersionsAsyncTaskTestCase(IasoTestCase, PyramidBaseTest):
+    def setUp(self):
+        self.account = m.Account.objects.create(name="Account")
+        self.user = self.create_user_with_profile(username="sync-user", account=self.account)
+        self.task = m.Task.objects.create(
+            name="synchronize_source_versions_task",
+            launcher=self.user,
+            account=self.account,
+        )
+
+    def _run_async(self, data_source_sync):
+        return synchronize_source_versions_async(
+            data_source_versions_synchronization_id=data_source_sync.id,
+            task=self.task,
+            _immediate=True,  # type: ignore[call-arg]
+        )
+
+    def test_async_task_succeeds_when_group_has_no_source_ref(self):
+        m.Group.objects.create(
+            name="Group without source_ref",
+            source_ref="",
+            source_version=self.source_version_to_update,
+        )
+        data_source_sync = m.DataSourceVersionsSynchronization.objects.create(
+            name="sync",
+            source_version_to_update=self.source_version_to_update,
+            source_version_to_compare_with=self.source_version_to_compare_with,
+            json_diff="[]",
+            account=self.account,
+            created_by=self.user,
+        )
+
+        with patch("iaso.diffing.synchronizer.logger.warning") as mock_warning:
+            self._run_async(data_source_sync)
+
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+        self.assertTrue(any("Ignoring Group ID #" in call.args[0] for call in mock_warning.call_args_list))
+
+    def test_async_task_reports_failure_on_invalid_date(self):
+        json_diff = json.dumps(
+            [
+                {
+                    "status": Differ.STATUS_MODIFIED,
+                    "org_unit": {
+                        "id": self.angola_country_to_update.pk,
+                        "path": str(self.angola_country_to_update.path),
+                    },
+                    "orgunit_dhis2": {
+                        "id": self.angola_country_to_update.pk,
+                        "name": "Angola",
+                        "parent": None,
+                        "opening_date": "2022-11-28",
+                        "closed_date": "2025-11-28",
+                        "org_unit_type": self.org_unit_type_country.pk,
+                        "location": None,
+                    },
+                    "comparisons": [
+                        {
+                            "field": "opening_date",
+                            "before": "2022-11-28",
+                            "after": "not-a-date",
+                            "status": Differ.STATUS_MODIFIED,
+                            "distance": None,
+                        }
+                    ],
+                }
+            ]
+        )
+        data_source_sync = m.DataSourceVersionsSynchronization.objects.create(
+            name="sync",
+            source_version_to_update=self.source_version_to_update,
+            source_version_to_compare_with=self.source_version_to_compare_with,
+            json_diff=json_diff,
+            account=self.account,
+            created_by=self.user,
+        )
+
+        self._run_async(data_source_sync)
+
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.ERRORED)
+        self.assertIn("not-a-date", self.task.result["message"])
+        self.assertIn("stack_trace", self.task.result)
+        self.assertEqual(
+            m.OrgUnitChangeRequest.objects.filter(data_source_synchronization=data_source_sync).count(),
+            0,
+        )

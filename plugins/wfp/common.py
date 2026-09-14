@@ -1107,6 +1107,14 @@ class ETL:
         elif journey.exit_type == "transfer_to_otp":
             programme = "OTP"
             admission_type = "referred_from_tsfp_mam"
+        elif journey.exit_type == "transfer_to_bsfp":
+            programme = "BSFP"
+            if journey.nutrition_programme == "OTP":
+                admission_type = "referred_from_otp_sam"
+            elif journey.nutrition_programme == "TSFP":
+                admission_type = "referred_from_tsfp_mam"
+            else:
+                admission_type = "referred_from_otp_sam"
         else:
             return None
 

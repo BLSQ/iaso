@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from django.test import TestCase
 
 from iaso import models as m
-from plugins.wfp.common import ETL
+from plugins.wfp.common import ETL, extract_exit_type
 from plugins.wfp.models import *
 
 
@@ -514,3 +514,87 @@ class ETLTestCase(TestCase):
         self.assertEqual(len(created_PBWG_monthlyStatistics), 2)
         self.assertEqual(created_PBWG_monthlyStatistics[1].physiology_status, "Breastfeeding")
         self.assertEqual(created_PBWG_monthlyStatistics[1].period, "202508")
+
+
+class BangladeshExitTypeTestCase(TestCase):
+    """discharge_program (Bangladesh anthropometric form) exit detection."""
+
+    def test_discharge_program_referred_to_bsfp_takes_priority(self):
+        # referred_to_BSFP wins even when new_programme also has a value.
+        data = {"discharge_program": "TSFP", "referred_to_BSFP": "1", "new_programme": "BSFP"}
+        self.assertEqual(extract_exit_type(data), "transfer_to_bsfp")
+
+    def test_discharge_program_without_new_programme_or_referral_is_empty(self):
+        # Discharged from TSFP/OTP, not referred to BSFP, and no new
+        # programme recorded yet -> explicit "no exit reason known" ("").
+        data = {"discharge_program": "OTP", "new_programme": ""}
+        self.assertEqual(extract_exit_type(data), "")
+
+    def test_discharge_program_with_new_programme_and_no_referral_is_not_an_exit(self):
+        # Discharged from TSFP/OTP with a new_programme already assigned
+        # (a same-programme continuation/transfer handled elsewhere) and no
+        # BSFP referral -> not treated as an exit event.
+        data = {"discharge_program": "TSFP", "new_programme": "OTP"}
+        self.assertIsNone(extract_exit_type(data))
+
+    def test_discharge_program_short_circuits_other_exit_signals(self):
+        # Once discharge_program matches TSFP/OTP, later exit signals
+        # (e.g. reason_for_not_continuing) are not consulted.
+        data = {"discharge_program": "TSFP", "new_programme": "OTP", "reason_for_not_continuing": "death"}
+        self.assertIsNone(extract_exit_type(data))
+
+    def test_discharge_program_matches_as_substring(self):
+        data = {"discharge_program": "Transferred to TSFP"}
+        self.assertEqual(extract_exit_type(data), "")
+
+    def test_discharge_program_bsfp_alone_is_not_a_tsfp_otp_discharge(self):
+        # BSFP is a target of a referral, not a discharge_program value that
+        # triggers the TSFP/OTP branch on its own.
+        data = {"discharge_program": "BSFP"}
+        self.assertIsNone(extract_exit_type(data))
+
+    def test_discharge_program_without_known_programme_is_ignored(self):
+        data = {"discharge_program": "NONE"}
+        self.assertIsNone(extract_exit_type(data))
+
+    def test_missing_discharge_program_is_ignored(self):
+        self.assertIsNone(extract_exit_type({}))
+
+
+class ETLFormScopingTestCase(TestCase):
+    """bsfp_child_visit / bsfp_pbwg_visit must only be recognized for Bangladesh."""
+
+    def test_bangladesh_under5_includes_bsfp_visit_forms(self):
+        etl = ETL("bangladesh_under5")
+        self.assertIn("bsfp_child_visit", etl.admission_forms)
+        self.assertIn("bsfp_pbwg_visit", etl.admission_forms)
+        self.assertIn("bsfp_child_visit", etl.assistance_forms)
+        self.assertIn("bsfp_pbwg_visit", etl.assistance_forms)
+        self.assertIn("bsfp_child_visit", etl.all_anthropometric_forms)
+        self.assertIn("bsfp_pbwg_visit", etl.all_anthropometric_forms)
+
+    def test_bangladesh_pbwg_includes_bsfp_visit_forms(self):
+        etl = ETL("bangladesh_pbwg")
+        self.assertIn("bsfp_child_visit", etl.admission_forms)
+        self.assertIn("bsfp_pbwg_visit", etl.assistance_forms)
+
+    def test_other_countries_do_not_include_bsfp_visit_forms(self):
+        for entity_type in ("south_sudan_under5", "nigeria_under5", "ethiopia_under5", "south_sudan_pbwg"):
+            etl = ETL(entity_type)
+            self.assertNotIn("bsfp_child_visit", etl.admission_forms)
+            self.assertNotIn("bsfp_pbwg_visit", etl.admission_forms)
+            self.assertNotIn("bsfp_child_visit", etl.assistance_forms)
+            self.assertNotIn("bsfp_pbwg_visit", etl.assistance_forms)
+            self.assertNotIn("bsfp_child_visit", etl.all_anthropometric_forms)
+            self.assertNotIn("bsfp_pbwg_visit", etl.all_anthropometric_forms)
+
+    def test_no_entity_type_does_not_include_bsfp_visit_forms(self):
+        etl = ETL()
+        self.assertNotIn("bsfp_child_visit", etl.all_anthropometric_forms)
+
+
+class ETLGetAccountTestCase(TestCase):
+    """get_account() must degrade gracefully when the EntityType doesn't exist."""
+
+    def test_returns_none_for_unknown_entity_type_code(self):
+        self.assertIsNone(ETL("bangladesh_under5").get_account())

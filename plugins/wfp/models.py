@@ -16,6 +16,7 @@ EXIT_TYPES = [
     ("transfer_from_other_otp", _("Transfer in from other OTP")),
     ("transfer_to_tsfp", _("Transfer To TSFP")),
     ("transfer_from_other_tsfp", _("Transfer in from other TSFP")),
+    ("transfer_to_bsfp", _("Transfer To BSFP")),
     ("non_respondent", _("Non respondent")),
     ("transferred_out", _("Transferred out")),
     ("defaulter", _("Defaulter")),
@@ -39,12 +40,17 @@ PROGRAMME_TYPE = [("PLW", _("PLW")), ("U5", _("U5"))]
 ADMISSION_CRITERIAS = [
     ("muac", _("MUAC")),
     ("whz", _("WHZ")),
+    ("muac_whz", _("Both MUAC & WHZ")),
     ("oedema", _("OEDEMA")),
     ("child_wasted", _("By wasted child")),
 ]
 
 ADMISSION_TYPES = [
     ("new_case", _("New case")),
+    ("new_case_MUAC", _("New admission (MUAC <11.5 cm)")),
+    ("new_case_WHZ", _("New admission (WHZ scores <-3SD)")),
+    ("new_case_MUAC_WHZ", _("New admission (Both WHZ and MUAC)")),
+    ("new_case_OEDEMA", _("New admission (Oedema + or ++)")),
     ("readmission_as_non_respondent", _("Readmission as non-respondent")),
     ("referred_from_otp_sam", _("Referred from OTP (SAM)")),
     ("referred_from_sc", _("Referred from SC")),

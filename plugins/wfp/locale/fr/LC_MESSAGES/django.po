@@ -75,6 +75,10 @@ msgid "Defaulter"
 msgstr "Défaillant"
 
 #: plugins/wfp/models.py
+msgid "Age limit reached"
+msgstr "Limite d'âge atteinte"
+
+#: plugins/wfp/models.py
 msgid "Other"
 msgstr "Autre"
 
@@ -93,6 +97,10 @@ msgstr "OTP - Under 6"
 #: plugins/wfp/models.py
 msgid "BSFP"
 msgstr "BSFP"
+
+#: plugins/wfp/models.py
+msgid "NSEP"
+msgstr "NSEP"
 
 #: plugins/wfp/models.py
 msgid "Not Eligible"

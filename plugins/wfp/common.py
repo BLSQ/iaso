@@ -18,7 +18,7 @@ Usage:
 import logging
 import traceback
 
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta, timezone
 from functools import reduce
 from operator import or_
 
@@ -106,6 +106,9 @@ ASSISTANCE_FORMS = frozenset(
 
 # Bangladesh has its own BSFP visit and medical forms.
 BANGLADESH_BSFP_FORMS = frozenset({"bsfp_child_visit", "bsfp_pbwg_visit"})
+BANGLADESH_BSFP_FOLLOWUP_FORMS = frozenset({"bsfp_child_followup_visit", "bsfp_pbwg_followup_visit"})
+# In these forms `is_child_alive` is about the beneficiary; in the PBWG forms it is about her infant.
+BANGLADESH_U5_BSFP_FORMS = frozenset({"bsfp_child_visit", "bsfp_child_followup_visit"})
 BANGLADESH_MEDICAL_FORMS = frozenset(
     {
         "Child Medical Admission_2_u6",
@@ -251,14 +254,8 @@ def extract_exit_type(data):
     """
     exit_type = None
 
-    discharge_program = data.get("discharge_program") or ""
-    if any(programme in discharge_program for programme in ("TSFP", "OTP")):
-        if data.get("referred_to_BSFP") == "1":
-            exit_type = "transfer_to_bsfp"
-        elif data.get("new_programme") in (None, ""):
-            exit_type = ""
     # new_programme set to NONE -> reason for not continuing
-    elif data.get("new_programme") == "NONE":
+    if data.get("new_programme") == "NONE":
         exit_type = data.get("reason_for_not_continuing")
 
     # Transfer to TSFP
@@ -312,11 +309,51 @@ def extract_exit_type(data):
     return _convert_exit_type(exit_type)
 
 
+def extract_bangladesh_exit_type(form_id, data):
+    """Extract exit type from a Bangladesh anthropometric form.
+
+    Bangladesh forms store the programme the beneficiary stays in (``_programme`` or ``programme``):
+    ``NONE`` means the beneficiary leaves the programme. TSFP follow-up forms also set
+    ``discharge_program`` to ``TSFP`` whenever the beneficiary leaves TSFP, including towards BSFP.
+    Other exit signals are only read on those visits, so a calculated flag (green visits, non respondent)
+    does not end a journey the health worker kept open. The answer to "not continuing" is always read:
+    the BSFP child follow-up keeps its programme when the child does not continue.
+    """
+    programme = _first_of(data, "_programme", "programme")
+    reason = _convert_exit_type(
+        _first_of(data, "reason_not_continue", "reasons_not_continuing", "reason_for_not_continuing")
+    )
+
+    if programme != "NONE" and data.get("discharge_program") != "TSFP":
+        return reason
+
+    if programme == "BSFP":
+        return "transfer_to_bsfp"
+    if form_id in BANGLADESH_U5_BSFP_FORMS and data.get("is_child_alive") == "0":
+        return "death"
+    if data.get("confirm_discharge_tsfp__int__") == "1" or data.get("confirm_otp_referral") == "1":
+        return "transfer_to_otp"
+    if data.get("confirm_tsfp_referral") == "1":
+        return "transfer_to_tsfp"
+    if reason:
+        return reason
+    if data.get("_age_band") == "exit" or data.get("_infant_exit") == "1":
+        return "age_limit"
+    if data.get("discharge_note__int__") == "1" or data.get("_cured") == "1":
+        return "cured"
+    if data.get("non_respondent__int__") == "1" or data.get("non_respondent") == "1":
+        return "non_respondent"
+    if data.get("_defaulter") == "1":
+        return "defaulter"
+    return "other"
+
+
 _EXIT_TYPE_MAP = {
     "dismissedduetocheating": "dismissed_due_to_cheating",
     "dismissal": "dismissed_due_to_cheating",
     "transferredout": "transferred_out",
     "voluntarywithdrawal": "voluntary_withdrawal",
+    "voluntary": "voluntary_withdrawal",
 }
 
 
@@ -343,6 +380,20 @@ def extract_weight(data):
 def extract_visit_date(submission):
     """Extract the best available date from a submission dict."""
     return submission.get("source_created_at") or submission.get("created_at")
+
+
+def extract_form_visit_date(submission):
+    """Extract the actual visit date entered in the form (``visit_date``).
+
+    The day is stored at noon UTC so that it stays the same day in the local time zone.
+    Falls back to ``extract_visit_date`` when the form has no valid visit date.
+    """
+    raw = (submission.get("json") or {}).get("visit_date")
+    try:
+        visit_day = datetime.strptime(str(raw)[:10], "%Y-%m-%d").date()
+    except (ValueError, TypeError):
+        return extract_visit_date(submission)
+    return datetime.combine(visit_day, time(12, 0), tzinfo=timezone.utc)
 
 
 def extract_muac(data):
@@ -714,7 +765,22 @@ class ETL:
 
     @property
     def all_anthropometric_forms(self):
-        return ALL_ANTHROPOMETRIC_FORMS | BANGLADESH_BSFP_FORMS if self._is_bangladesh() else ALL_ANTHROPOMETRIC_FORMS
+        return (
+            ALL_ANTHROPOMETRIC_FORMS | BANGLADESH_BSFP_FORMS | BANGLADESH_BSFP_FOLLOWUP_FORMS
+            if self._is_bangladesh()
+            else ALL_ANTHROPOMETRIC_FORMS
+        )
+
+    def _extract_exit_type(self, submission):
+        data = submission.get("json", {})
+        if self._is_bangladesh():
+            return extract_bangladesh_exit_type(submission.get("form__form_id"), data)
+        return extract_exit_type(data)
+
+    def _extract_visit_date(self, submission):
+        if self._is_bangladesh():
+            return extract_form_visit_date(submission)
+        return extract_visit_date(submission)
 
     def delete_beneficiaries(self, account_id):
         deleted_count, deleted = Beneficiary.objects.filter(account=account_id).delete()
@@ -941,8 +1007,7 @@ class ETL:
             # Detect exit events so we know to split on the next
             # anthropometric form.
             if form_id in self.all_anthropometric_forms:
-                data = sub.get("json", {})
-                et = extract_exit_type(data)
+                et = self._extract_exit_type(sub)
                 if et is not None and et != "":
                     current_has_exit = True
 
@@ -992,7 +1057,7 @@ class ETL:
             physiology_status = extract_pbwg_physiology(admission_data)
             admission_type = extract_admission_type(admission_data)
             admission_criteria = extract_admission_criteria(admission_data)
-            start_date = extract_visit_date(admission_sub)
+            start_date = self._extract_visit_date(admission_sub)
             initial_weight = extract_weight(admission_data)
             instance_id = admission_sub["id"]
         else:
@@ -1019,12 +1084,12 @@ class ETL:
             if w is not None:
                 discharge_weight = w
 
-            vd = extract_visit_date(sub)
+            vd = self._extract_visit_date(sub)
             if vd is not None:
                 last_visit_date = vd
 
             if form_id in self.all_anthropometric_forms:
-                et = extract_exit_type(data)
+                et = self._extract_exit_type(sub)
                 if et is not None and et != "":
                     exit_type = et
                     end_date = vd
@@ -1237,7 +1302,7 @@ class ETL:
 
         visit = Visit(
             journey=journey,
-            date=extract_visit_date(anthro_sub),
+            date=self._extract_visit_date(anthro_sub),
             number=visit_number,
             muac_size=extract_muac(anthro_data),
             whz_color=extract_whz_color(anthro_data),

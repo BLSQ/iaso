@@ -20,6 +20,7 @@ EXIT_TYPES = [
     ("non_respondent", _("Non respondent")),
     ("transferred_out", _("Transferred out")),
     ("defaulter", _("Defaulter")),
+    ("age_limit", _("Age limit reached")),
     ("other", _("Other")),
 ]
 
@@ -28,6 +29,7 @@ NUTRITION_PROGRAMMES = [
     ("OTP", _("OTP")),
     ("OTP - Under 6", _("OTP - Under 6")),
     ("BSFP", _("BSFP")),
+    ("NSEP", _("NSEP")),
     ("Not Eligible", _("Not Eligible")),
 ]
 PHYSIOLOGY_STATUS = [

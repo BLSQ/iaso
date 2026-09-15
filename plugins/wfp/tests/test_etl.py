@@ -1,12 +1,12 @@
 import json
 import random
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from django.test import TestCase
 
 from iaso import models as m
-from plugins.wfp.common import ETL, extract_exit_type
+from plugins.wfp.common import ETL, extract_bangladesh_exit_type, extract_exit_type, extract_form_visit_date
 from plugins.wfp.models import *
 
 
@@ -516,53 +516,284 @@ class ETLTestCase(TestCase):
         self.assertEqual(created_PBWG_monthlyStatistics[1].period, "202508")
 
 
-class BangladeshExitTypeTestCase(TestCase):
-    """discharge_program (Bangladesh anthropometric form) exit detection."""
+class ExitTypeDischargeProgramTestCase(TestCase):
+    """discharge_program is only read by the Bangladesh exit extraction."""
 
-    def test_discharge_program_referred_to_bsfp_takes_priority(self):
-        # referred_to_BSFP wins even when new_programme also has a value.
-        data = {"discharge_program": "TSFP", "referred_to_BSFP": "1", "new_programme": "BSFP"}
-        self.assertEqual(extract_exit_type(data), "transfer_to_bsfp")
-
-    def test_discharge_program_without_new_programme_or_referral_is_empty(self):
-        # Discharged from TSFP/OTP, not referred to BSFP, and no new
-        # programme recorded yet -> explicit "no exit reason known" ("").
-        data = {"discharge_program": "OTP", "new_programme": ""}
-        self.assertEqual(extract_exit_type(data), "")
-
-    def test_discharge_program_with_new_programme_and_no_referral_is_not_an_exit(self):
-        # Discharged from TSFP/OTP with a new_programme already assigned
-        # (a same-programme continuation/transfer handled elsewhere) and no
-        # BSFP referral -> not treated as an exit event.
-        data = {"discharge_program": "TSFP", "new_programme": "OTP"}
-        self.assertIsNone(extract_exit_type(data))
-
-    def test_discharge_program_short_circuits_other_exit_signals(self):
-        # Once discharge_program matches TSFP/OTP, later exit signals
-        # (e.g. reason_for_not_continuing) are not consulted.
-        data = {"discharge_program": "TSFP", "new_programme": "OTP", "reason_for_not_continuing": "death"}
-        self.assertIsNone(extract_exit_type(data))
-
-    def test_discharge_program_matches_as_substring(self):
-        data = {"discharge_program": "Transferred to TSFP"}
-        self.assertEqual(extract_exit_type(data), "")
-
-    def test_discharge_program_bsfp_alone_is_not_a_tsfp_otp_discharge(self):
-        # BSFP is a target of a referral, not a discharge_program value that
-        # triggers the TSFP/OTP branch on its own.
-        data = {"discharge_program": "BSFP"}
-        self.assertIsNone(extract_exit_type(data))
-
-    def test_discharge_program_without_known_programme_is_ignored(self):
-        data = {"discharge_program": "NONE"}
-        self.assertIsNone(extract_exit_type(data))
+    def test_other_countries_keep_their_exit_signals(self):
+        data = {"discharge_program": "TSFP", "reason_for_not_continuing": "death"}
+        self.assertEqual(extract_exit_type(data), "death")
 
     def test_missing_discharge_program_is_ignored(self):
         self.assertIsNone(extract_exit_type({}))
 
 
+class BangladeshExitTypeTestCase(TestCase):
+    """Exit detection on the Bangladesh anthropometric forms, with the field values the forms save."""
+
+    def test_tsfp_follow_up_still_in_programme_is_not_an_exit(self):
+        # Form 82, second green visit, discharge answered No: the calculated flags must not end the journey.
+        data = {
+            "_programme": "TSFP",
+            "discharge_program": "",
+            "_number_of_green_visits": "2",
+            "non_respondent__int__": "0",
+        }
+        self.assertIsNone(extract_bangladesh_exit_type("child_antropometric_followUp_tsfp_2", data))
+
+    def test_tsfp_follow_up_cured(self):
+        data = {
+            "_programme": "NONE",
+            "discharge_program": "TSFP",
+            "discharge_note__int__": "1",
+            "referred_to_BSFP": "0",
+        }
+        self.assertEqual(extract_bangladesh_exit_type("child_antropometric_followUp_tsfp_2", data), "cured")
+
+    def test_tsfp_follow_up_cured_and_referred_to_bsfp(self):
+        data = {
+            "_programme": "BSFP",
+            "discharge_program": "TSFP",
+            "discharge_note__int__": "1",
+            "referred_to_BSFP": "1",
+        }
+        self.assertEqual(extract_bangladesh_exit_type("child_antropometric_followUp_tsfp_2", data), "transfer_to_bsfp")
+
+    def test_tsfp_follow_up_referred_to_otp(self):
+        data = {"_programme": "NONE", "discharge_program": "TSFP", "confirm_discharge_tsfp__int__": "1"}
+        self.assertEqual(extract_bangladesh_exit_type("child_antropometric_followUp_tsfp_2", data), "transfer_to_otp")
+
+    def test_tsfp_follow_up_not_continuing(self):
+        data = {"_programme": "NONE", "discharge_program": "TSFP", "reasons_not_continuing": "dismissedduetocheating"}
+        self.assertEqual(
+            extract_bangladesh_exit_type("child_antropometric_followUp_tsfp_2", data), "dismissed_due_to_cheating"
+        )
+
+    def test_transferred_out_keeps_the_programme(self):
+        data = {"_programme": "TSFP", "discharge_program": "", "reasons_not_continuing": "transferredout"}
+        self.assertEqual(extract_bangladesh_exit_type("child_antropometric_followUp_tsfp_2", data), "transferred_out")
+
+    def test_pbwg_tsfp_follow_up_referred_to_bsfp(self):
+        data = {"programme": "BSFP", "discharge_program": "TSFP", "confirm_BFP_referral": "yes"}
+        self.assertEqual(extract_bangladesh_exit_type("wfp_coda_pbwg_followup_anthro", data), "transfer_to_bsfp")
+
+    def test_pbwg_tsfp_follow_up_cured(self):
+        data = {"programme": "NONE", "discharge_program": "TSFP", "_cured": "1"}
+        self.assertEqual(extract_bangladesh_exit_type("wfp_coda_pbwg_followup_anthro", data), "cured")
+
+    def test_bsfp_child_still_in_programme_is_not_an_exit(self):
+        data = {"_programme": "NSEP", "is_child_alive": "1", "beneficiary_continuing_facility": "1"}
+        self.assertIsNone(extract_bangladesh_exit_type("bsfp_child_followup_visit", data))
+
+    def test_bsfp_child_not_continuing_keeps_its_programme_in_the_form(self):
+        data = {
+            "_programme": "NSEP",
+            "is_child_alive": "1",
+            "beneficiary_continuing_facility": "0",
+            "reason_not_continue": "dismissed_due_to_cheating",
+        }
+        self.assertEqual(extract_bangladesh_exit_type("bsfp_child_followup_visit", data), "dismissed_due_to_cheating")
+
+    def test_bsfp_pbwg_voluntary_withdrawal(self):
+        data = {"_programme": "NONE", "beneficiary_continuing_facility": "0", "reason_not_continue": "voluntary"}
+        self.assertEqual(extract_bangladesh_exit_type("bsfp_pbwg_followup_visit", data), "voluntary_withdrawal")
+
+    def test_bsfp_child_death(self):
+        data = {"_programme": "NONE", "is_child_alive": "0"}
+        self.assertEqual(extract_bangladesh_exit_type("bsfp_child_followup_visit", data), "death")
+
+    def test_bsfp_child_referred_to_otp_or_tsfp(self):
+        otp = {"_programme": "NONE", "is_child_alive": "1", "confirm_otp_referral": "1"}
+        tsfp = {"_programme": "NONE", "is_child_alive": "1", "confirm_tsfp_referral": "1"}
+        self.assertEqual(extract_bangladesh_exit_type("bsfp_child_followup_visit", otp), "transfer_to_otp")
+        self.assertEqual(extract_bangladesh_exit_type("bsfp_child_visit", tsfp), "transfer_to_tsfp")
+
+    def test_bsfp_child_not_continuing(self):
+        data = {
+            "_programme": "NONE",
+            "is_child_alive": "1",
+            "beneficiary_continuing_facility": "0",
+            "reason_not_continue": "other",
+        }
+        self.assertEqual(extract_bangladesh_exit_type("bsfp_child_followup_visit", data), "other")
+
+    def test_bsfp_child_reaching_36_months(self):
+        data = {"_programme": "NONE", "is_child_alive": "1", "_age_band": "exit"}
+        self.assertEqual(extract_bangladesh_exit_type("bsfp_child_followup_visit", data), "age_limit")
+
+    def test_bsfp_pbwg_infant_older_than_6_months(self):
+        # In the PBWG forms is_child_alive is about the infant, never a death of the beneficiary.
+        data = {"_programme": "NONE", "status_of_woman": "breastfeeding", "is_child_alive": "1", "_infant_exit": "1"}
+        self.assertEqual(extract_bangladesh_exit_type("bsfp_pbwg_followup_visit", data), "age_limit")
+
+    def test_bsfp_pbwg_infant_death_is_not_a_death_of_the_woman(self):
+        data = {"_programme": "NONE", "status_of_woman": "breastfeeding", "is_child_alive": "0"}
+        self.assertEqual(extract_bangladesh_exit_type("bsfp_pbwg_followup_visit", data), "other")
+
+
+class BangladeshVisitDateTestCase(TestCase):
+    def test_form_visit_date_is_used(self):
+        submission = {
+            "json": {"visit_date": "2026-08-20"},
+            "source_created_at": datetime(2026, 8, 25, 21, 30, tzinfo=timezone.utc),
+        }
+        self.assertEqual(extract_form_visit_date(submission), datetime(2026, 8, 20, 12, 0, tzinfo=timezone.utc))
+
+    def test_falls_back_to_the_submission_date(self):
+        created = datetime(2026, 8, 25, 21, 30, tzinfo=timezone.utc)
+        self.assertEqual(extract_form_visit_date({"json": {}, "source_created_at": created}), created)
+        self.assertEqual(
+            extract_form_visit_date({"json": {"visit_date": "not a date"}, "source_created_at": created}), created
+        )
+
+    def test_other_countries_keep_the_submission_date(self):
+        created = datetime(2026, 8, 25, 21, 30, tzinfo=timezone.utc)
+        submission = {"json": {"visit_date": "2026-08-20"}, "source_created_at": created}
+        self.assertEqual(ETL("south_sudan_under5")._extract_visit_date(submission), created)
+
+
+class BangladeshJourneysTestCase(TestCase):
+    """Journeys and visits built from a sequence of Bangladesh submissions."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.account = Account.objects.create(name="WFP Bangladesh")
+
+    @staticmethod
+    def _submissions(*forms):
+        created = datetime(2026, 6, 1, 8, 0, tzinfo=timezone.utc)
+        submissions = []
+        for index, (form_id, data) in enumerate(forms):
+            submissions.append(
+                {
+                    "id": 1000 + index,
+                    "entity_id": 1,
+                    "json": data,
+                    "form__form_id": form_id,
+                    "org_unit_id": None,
+                    "source_created_at": created + timedelta(days=14 * index),
+                    "created_at": created + timedelta(days=14 * index, hours=2),
+                }
+            )
+        return submissions
+
+    def _process(self, entity_type, program_type, submissions):
+        result = ETL(entity_type)._process_entity(program_type, 1, submissions, self.account, set())
+        self.assertIsNotNone(result)
+        _beneficiary, journeys, visits, _steps = result
+        return journeys, visits
+
+    def test_nsep_child_follow_ups_and_exit(self):
+        registration = {"gender": "M", "actual_birthday__date__": "2024-03-15T00:00:00.000+06:00"}
+        enrollment = {"_programme": "NSEP", "muac": "13.5", "admission_type": "new_admission", "is_child_alive": "1"}
+        follow_up = {
+            "_programme": "NSEP",
+            "muac": "13.2",
+            "is_child_alive": "1",
+            "beneficiary_continuing_facility": "1",
+        }
+        submissions = self._submissions(
+            ("wfp_coda_child_registration", registration),
+            ("bsfp_child_visit", enrollment),
+            ("bsfp_child_followup_visit", {**follow_up, "visit_date": "2026-06-27"}),
+            ("bsfp_child_followup_visit", {**follow_up, "visit_date": "2026-07-13"}),
+            (
+                "bsfp_child_followup_visit",
+                # The form keeps _programme = NSEP when the child does not continue.
+                {
+                    **follow_up,
+                    "visit_date": "2026-07-26",
+                    "beneficiary_continuing_facility": "0",
+                    "reason_not_continue": "other",
+                },
+            ),
+        )
+
+        journeys, visits = self._process("bangladesh_under5", "U5", submissions)
+
+        self.assertEqual(len(journeys), 1)
+        self.assertEqual(journeys[0].nutrition_programme, "NSEP")
+        self.assertEqual(journeys[0].exit_type, "other")
+        self.assertEqual(journeys[0].end_date, "2026-07-26")
+        self.assertEqual(len(visits), 4)
+        self.assertEqual(
+            [visit.date.date().isoformat() for visit in visits],
+            ["2026-06-15", "2026-06-27", "2026-07-13", "2026-07-26"],
+        )
+
+    def test_tsfp_child_cured_then_referred_to_bsfp(self):
+        registration = {"gender": "F", "actual_birthday__date__": "2025-10-15T00:00:00.000+06:00"}
+        green_visit = {"_programme": "TSFP", "discharge_program": "", "muac": "13.5", "_number_of_green_visits": "1"}
+        submissions = self._submissions(
+            ("wfp_coda_child_registration", registration),
+            (
+                "Anthropometric visit child_U6",
+                {"_programme": "TSFP", "muac": "12.0", "admission_type": "new_case_muac"},
+            ),
+            ("child_antropometric_followUp_tsfp_2", {**green_visit, "visit_date": "2026-06-29"}),
+            (
+                "child_antropometric_followUp_tsfp_2",
+                {
+                    **green_visit,
+                    "_programme": "BSFP",
+                    "discharge_program": "TSFP",
+                    "visit_date": "2026-07-13",
+                    "_number_of_green_visits": "2",
+                    "discharge_note__int__": "1",
+                    "referred_to_BSFP": "1",
+                },
+            ),
+            (
+                "bsfp_child_visit",
+                {"_programme": "BSFP", "muac": "13.5", "is_child_alive": "1", "visit_date": "2026-07-27"},
+            ),
+        )
+
+        journeys, visits = self._process("bangladesh_under5", "U5", submissions)
+
+        self.assertEqual([journey.nutrition_programme for journey in journeys], ["TSFP", "BSFP"])
+        self.assertEqual(journeys[0].exit_type, "transfer_to_bsfp")
+        self.assertEqual(journeys[0].end_date, "2026-07-13")
+        self.assertIsNone(journeys[1].exit_type)
+
+    def test_tsfp_child_cured_without_referral(self):
+        registration = {"gender": "M", "actual_birthday__date__": "2025-10-15T00:00:00.000+06:00"}
+        submissions = self._submissions(
+            ("wfp_coda_child_registration", registration),
+            ("Anthropometric visit child_U6", {"_programme": "TSFP", "muac": "12.0"}),
+            (
+                "child_antropometric_followUp_tsfp_2",
+                {"_programme": "NONE", "discharge_program": "TSFP", "muac": "13.5", "discharge_note__int__": "1"},
+            ),
+        )
+
+        journeys, _visits = self._process("bangladesh_under5", "U5", submissions)
+
+        self.assertEqual(len(journeys), 1)
+        self.assertEqual(journeys[0].exit_type, "cured")
+
+    def test_bsfp_woman_follow_ups_until_infant_is_6_months(self):
+        registration = {"actual_birthday__date__": "2001-09-14T00:00:00.000+06:00"}
+        follow_up = {"_programme": "BSFP", "status_of_woman": "breastfeeding", "muac": "23.0", "_infant_exit": "0"}
+        submissions = self._submissions(
+            ("wfp_coda_pbwg_registration", registration),
+            ("bsfp_pbwg_visit", {**follow_up, "admission_type": "new_case"}),
+            ("bsfp_pbwg_followup_visit", {**follow_up, "visit_date": "2026-06-29"}),
+            (
+                "bsfp_pbwg_followup_visit",
+                {**follow_up, "_programme": "NONE", "_infant_exit": "1", "visit_date": "2026-07-13"},
+            ),
+        )
+
+        journeys, visits = self._process("bangladesh_pbwg", "PLW", submissions)
+
+        self.assertEqual(len(journeys), 1)
+        self.assertEqual(journeys[0].nutrition_programme, "BSFP")
+        self.assertEqual(journeys[0].exit_type, "age_limit")
+        self.assertEqual(len(visits), 3)
+
+
 class ETLFormScopingTestCase(TestCase):
-    """bsfp_child_visit / bsfp_pbwg_visit must only be recognized for Bangladesh."""
+    """Bangladesh BSFP forms must only be recognized for Bangladesh."""
 
     def test_bangladesh_under5_includes_bsfp_visit_forms(self):
         etl = ETL("bangladesh_under5")
@@ -572,6 +803,9 @@ class ETLFormScopingTestCase(TestCase):
         self.assertIn("bsfp_pbwg_visit", etl.assistance_forms)
         self.assertIn("bsfp_child_visit", etl.all_anthropometric_forms)
         self.assertIn("bsfp_pbwg_visit", etl.all_anthropometric_forms)
+        self.assertIn("bsfp_child_followup_visit", etl.all_anthropometric_forms)
+        self.assertIn("bsfp_pbwg_followup_visit", etl.all_anthropometric_forms)
+        self.assertNotIn("bsfp_child_followup_visit", etl.admission_forms)
 
     def test_bangladesh_pbwg_includes_bsfp_visit_forms(self):
         etl = ETL("bangladesh_pbwg")
@@ -587,6 +821,8 @@ class ETLFormScopingTestCase(TestCase):
             self.assertNotIn("bsfp_pbwg_visit", etl.assistance_forms)
             self.assertNotIn("bsfp_child_visit", etl.all_anthropometric_forms)
             self.assertNotIn("bsfp_pbwg_visit", etl.all_anthropometric_forms)
+            self.assertNotIn("bsfp_child_followup_visit", etl.all_anthropometric_forms)
+            self.assertNotIn("bsfp_pbwg_followup_visit", etl.all_anthropometric_forms)
 
     def test_no_entity_type_does_not_include_bsfp_visit_forms(self):
         etl = ETL()

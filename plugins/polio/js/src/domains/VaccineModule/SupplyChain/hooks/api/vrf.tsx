@@ -162,9 +162,10 @@ export const useCampaignDropDowns = ({
         CAMPAIGNS_ENDPOINT,
     );
     return useMemo(() => {
-        const list = ((data as Campaign[]) ?? []).concat(
-            (fIPVData as Campaign[]) ?? [],
-        );
+        const list = [
+            ...((data as Campaign[]) ?? []),
+            ...((fIPVData as Campaign[]) ?? []),
+        ];
 
         const selectedCampaign = list.find(c => c.obr_name === campaign);
         const campaigns = list
@@ -212,7 +213,7 @@ export const useCampaignDropDowns = ({
             isFetching,
             rndsParams,
         };
-    }, [data, vaccine, isFetching, campaign, rndsParams]);
+    }, [data, fIPVData, vaccine, isFetching, rndsParams, campaign]);
 };
 
 const getVrfDetails = (id?: string) => {

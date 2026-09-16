@@ -157,9 +157,15 @@ export const useCampaignDropDowns = ({
     };
 
     const { data, isFetching } = useGetCampaigns(options, CAMPAIGNS_ENDPOINT);
-
+    const { data: fIPVData } = useGetCampaigns(
+        { ...options, campaignType: 'fIPV' },
+        CAMPAIGNS_ENDPOINT,
+    );
     return useMemo(() => {
-        const list = (data as Campaign[]) ?? [];
+        const list = ((data as Campaign[]) ?? []).concat(
+            (fIPVData as Campaign[]) ?? [],
+        );
+
         const selectedCampaign = list.find(c => c.obr_name === campaign);
         const campaigns = list
             .filter(
@@ -179,8 +185,12 @@ export const useCampaignDropDowns = ({
 
         const rounds = vaccine
             ? (selectedCampaign?.rounds ?? [])
-                  .filter(round =>
-                      round.vaccine_names_extended.includes(vaccine),
+                  .filter(
+                      round =>
+                          round.vaccine_names_extended.includes(vaccine) ||
+                          (fIPVData as Campaign[])?.some(
+                              c => c.obr_name === selectedCampaign?.obr_name,
+                          ),
                   )
                   .filter(
                       round =>

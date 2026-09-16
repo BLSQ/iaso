@@ -1251,6 +1251,18 @@
 </ul>
 <p>Once the script has run, you can log in to your server using the account name as login and password. </p>
 <h2 id="how-to-use">How To Use<a class="headerlink" href="#how-to-use" title="Permanent link">#</a></h2>
+<h3 id="quick-start-local">Quick start (local)<a class="headerlink" href="#quick-start-local" title="Permanent link">#</a></h3>
+<p>If you're running the stack locally via <code>docker compose</code> and just want a fresh
+account without going through the manual <code>createsuperuser</code> step below, use the
+<code>--local</code> flag. It creates a Django admin directly in the <code>iaso</code> container
+(via <code>docker compose exec ... manage.py createsuperuser --noinput</code>) and uses
+those credentials right away to set up the account:</p>
+<pre><code>cd setuper
+python3 setuper.py --local
+</code></pre>
+<p>This can be combined with the other flags (<code>-n</code>, <code>-a</code>, <code>--create_main_org_unit</code>, <code>--create_demo_form</code>, ...).
+The steps below and <code>credentials.py</code> are not needed in this mode.</p>
+<h3 id="manual-setup">Manual setup<a class="headerlink" href="#manual-setup" title="Permanent link">#</a></h3>
 <ol>
 <li>
 <p>Backup your DB</p>

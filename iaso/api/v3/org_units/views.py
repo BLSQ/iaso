@@ -4,6 +4,7 @@ import tempfile
 from time import gmtime, strftime
 
 from django.conf import settings
+from django.db import connection
 from django.db.models import BooleanField, ExpressionWrapper, Q
 from django.http import HttpResponse, StreamingHttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -14,6 +15,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_csv.renderers import CSVRenderer
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
@@ -661,3 +663,134 @@ class OrgUnitViewSetV3(ReadOnlyModelViewSet):
         parquet.export_django_query_to_parquet_via_duckdb(export_queryset, tmp.name)
         filename = self._export_filename("parquet")
         return CleaningFileResponse(tmp.name, as_attachment=True, filename=filename)
+
+
+class OrgUnitMVTTilesView(APIView):
+    """
+    Dynamic Vector Tiles POC Endpoint.
+    Returns binary Mapbox Vector Tiles (MVT) directly from PostGIS.
+    Supports:
+    - z/x/y path parameters
+    - Query parameters: validation_status, version_id, parent_id
+    - Dynamic Level of Detail (LoD) based on Zoom level z.
+    - Tenant access control restrictions from the user's Profile.
+    """
+
+    permission_classes = [AuthenticationEnforcedPermission, permissions.IsAuthenticated]
+
+    def get(self, request, z, x, y):
+        # 1. Enforce profile restrictions
+        profile = getattr(request.user, "iaso_profile", None)
+        if not profile:
+            return HttpResponse(b"", status=403, content_type="application/vnd.mapbox-vector-tile")
+
+        # 2. Extract and sanitize parameters
+        try:
+            z, x, y = int(z), int(x), int(y)
+        except ValueError:
+            raise ValidationError("z, x, and y must be integers.")
+
+        version_id = request.query_params.get("version_id")
+        if not version_id:
+            # Fallback to the default version of the user's account
+            version_id = profile.account.default_version_id
+
+        validation_status = request.query_params.get("validation_status")
+        parent_id = request.query_params.get("parent_id")
+        org_unit_type_id = request.query_params.get("org_unit_type_id")
+        org_unit_type_id_in = request.query_params.get("org_unit_type_id__in")
+
+        # 3. Build query filters and parameters
+        params = [z, x, y, z, x, y]
+        where_clauses = []
+
+        if version_id:
+            where_clauses.append("u.version_id = %s")
+            params.append(version_id)
+
+        if validation_status:
+            where_clauses.append("u.validation_status = %s")
+            params.append(validation_status)
+
+        if parent_id:
+            where_clauses.append("u.parent_id = %s")
+            params.append(parent_id)
+
+        if org_unit_type_id:
+            where_clauses.append("u.org_unit_type_id = %s")
+            params.append(org_unit_type_id)
+
+        if org_unit_type_id_in:
+            type_ids = [int(i.strip()) for i in org_unit_type_id_in.split(",") if i.strip()]
+            if type_ids:
+                where_clauses.append(f"u.org_unit_type_id IN ({', '.join(['%s' for _ in type_ids])})")
+                params.extend(type_ids)
+
+        # 4. Hierarchical user access (Multi-tenancy / Account scoping)
+        if not request.user.is_superuser:
+            user_org_units = list(profile.org_units.all())
+            if user_org_units:
+                ltree_clauses = []
+                for ou in user_org_units:
+                    ltree_clauses.append("u.path <@ %s")
+                    params.append(ou.path)
+                where_clauses.append(f"({' OR '.join(ltree_clauses)})")
+            elif profile.org_units.exists():
+                return HttpResponse(b"", content_type="application/vnd.mapbox-vector-tile")
+
+        # 5. Zoom-Level Level of Detail (LoD) filtering:
+        # - Low zooms (0-5): show high-level areas (provinces, districts), hide villages
+        # - Mid zooms (6-9): show down to sub-districts/health areas
+        # - High zooms (10+): show all org units, including villages/points
+        # Bypass LoD level checks if the user is filtering by a specific Org Unit Type
+        if not org_unit_type_id and not org_unit_type_id_in:
+            if z < 6:
+                where_clauses.append("nlevel(u.path) <= 3")
+            elif z < 10:
+                where_clauses.append("nlevel(u.path) <= 4")
+
+        where_str = ""
+        if where_clauses:
+            where_str = "AND " + " AND ".join(where_clauses)
+
+        # 6. Execute PostGIS query
+        query = f"""
+            WITH tile_bounds AS (
+                SELECT ST_TileEnvelope(%s, %s, %s) AS geom_3857,
+                       ST_Transform(ST_TileEnvelope(%s, %s, %s), 4326) AS geom_4326
+            ),
+            mvt_features AS (
+                SELECT
+                    ST_AsMVTGeom(
+                        ST_Transform(COALESCE(u.location::geometry, u.simplified_geom::geometry, u.geom::geometry), 3857),
+                        tb.geom_3857,
+                        4096,
+                        64,
+                        true
+                    ) AS geom,
+                    u.id,
+                    u.name,
+                    u.validation_status,
+                    u.org_unit_type_id,
+                    u.parent_id
+                FROM iaso_orgunit u, tile_bounds tb
+                WHERE
+                    (u.location IS NOT NULL OR u.simplified_geom IS NOT NULL OR u.geom IS NOT NULL)
+                    AND (
+                        (u.location::geometry && tb.geom_4326) OR
+                        (u.simplified_geom::geometry && tb.geom_4326) OR
+                        (u.geom::geometry && tb.geom_4326)
+                    )
+                    {where_str}
+            )
+            SELECT ST_AsMVT(mvt_features.*, 'org_units') FROM mvt_features;
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+            row = cursor.fetchone()
+            mvt_data = row[0] if row else b""
+
+        response = HttpResponse(mvt_data, content_type="application/vnd.mapbox-vector-tile")
+        response["Cache-Control"] = "public, max-age=3600"
+        return response

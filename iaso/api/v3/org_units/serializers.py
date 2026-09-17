@@ -668,3 +668,18 @@ def required_row_columns(scalar_fields: List[str], include_ancestors: bool) -> L
     if include_ancestors:
         columns.add("path")
     return sorted(columns)
+
+
+def only_columns_for_field_tree(field_tree: Optional[Dict[str, dict]]) -> List[str]:
+    """Columns for `.only(...)` on the paginated JSON path (see `views.py`) - derives `required_row_columns()`'s
+    `scalar_fields`/`include_ancestors` arguments straight from a parsed `fields=` tree (or the default field
+    set when `None`), the same way `_export()` already does for CSV/XLSX. Rows stay real `OrgUnit` instances
+    (relations are still batch-loaded separately by `serialize_org_units()`, never read as an attribute off
+    the row) - `.only()` just defers every column `fields=` didn't ask for instead of fetching all of them."""
+    all_fields = list(field_tree.keys()) if field_tree else list(DEFAULT_FIELDS)
+    scalar_fields = [f for f in all_fields if f not in ("ancestors", "org_unit_type", "parent", "creator", "version")]
+    scalar_fields += [f for f in ("org_unit_type", "parent", "creator", "version") if f in all_fields]
+    columns = required_row_columns(scalar_fields, include_ancestors="ancestors" in all_fields)
+    # `has_geo_json` is a queryset `.annotate(...)` (see `get_queryset()`), not a real model column - always
+    # computed regardless of `.only()`, and `.only()` would raise `FieldDoesNotExist` if it were passed one.
+    return [column for column in columns if column != "has_geo_json"]

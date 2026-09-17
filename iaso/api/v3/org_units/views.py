@@ -42,6 +42,7 @@ from .serializers import (
     build_export_row_getter,
     build_fields_schema,
     collect_distinct_groups_for_queryset,
+    only_columns_for_field_tree,
     required_row_columns,
     serialize_org_units,
     validate_field_tree,
@@ -446,6 +447,14 @@ class OrgUnitViewSetV3(ReadOnlyModelViewSet):
             return self._export(queryset, field_tree, file_format="xlsx")
         if export_format == "parquet":
             return self._export_parquet(request, queryset)
+
+        # Real `OrgUnit` instances, but `.only(...)` the columns `fields=` actually needs: every relation
+        # (`groups`/`ancestors`/`org_unit_type`/`parent`/`creator`/`version`) is batch-loaded separately by
+        # `serialize_org_units()` from id-keyed maps, never read as an attribute off the row itself, so the
+        # row only needs to carry whatever `only_columns_for_field_tree()` computes. Same idea `_export()`
+        # already uses (via `.values()`) for CSV/XLSX, applied here through `.only()` instead so rows stay
+        # model instances.
+        queryset = queryset.only(*only_columns_for_field_tree(field_tree))
 
         page = self.paginate_queryset(queryset)
         if page is not None:

@@ -562,10 +562,19 @@ class OrgUnitV3APITestCase(APITestCase):
         self.assertEqual(data["count"], 5)
         self.assertEqual(data["pages"], 3)
 
-    def test_pagination_page_size_is_clamped_to_max(self):
+    def test_pagination_page_size_over_max_is_bad_request(self):
         response = self.client.get(BASE_URL, {"page_size": 999999})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        data = response.json()
+        # same `{error, detail}` shape as the other 400s in this API (e.g. `fields=` errors), not DRF's
+        # default bare `{"detail": ...}`.
+        self.assertIn("error", data)
+        self.assertIn("detail", data)
+
+    def test_pagination_page_size_at_max_is_allowed(self):
+        response = self.client.get(BASE_URL, {"page_size": 200_000})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json()["page_size"], 10_000)
+        self.assertEqual(response.json()["page_size"], 200_000)
 
     def test_pagination_out_of_range_page_is_404(self):
         response = self.client.get(BASE_URL, {"page_size": 2, "page": 999})

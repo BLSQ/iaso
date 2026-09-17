@@ -1,4 +1,4 @@
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.response import Response
 
 from iaso.api.common.pagination import Paginator
@@ -18,7 +18,7 @@ class V3PagePagination(Paginator):
     """
 
     page_size = 100
-    max_page_size = 10_000
+    max_page_size = 200_000
     page_size_query_param = "page_size"
     results_key = "results"
 
@@ -28,6 +28,28 @@ class V3PagePagination(Paginator):
 
     def with_count(self, request):
         return str(request.query_params.get("with_count", "")).lower() in TRUE_VALUES
+
+    def get_page_size(self, request):
+        """Unlike DRF's own `PageNumberPagination.get_page_size()`, a `page_size=` over `max_page_size`
+        is a 400, not a silent clamp - a caller asking for 5,000,000 rows should find out immediately,
+        not get a quietly truncated page they might not notice."""
+        raw_page_size = request.query_params.get(self.page_size_query_param)
+        if raw_page_size is None:
+            return self.page_size
+        try:
+            page_size = int(raw_page_size)
+        except (TypeError, ValueError):
+            return self.page_size
+        if page_size <= 0:
+            return self.page_size
+        if page_size > self.max_page_size:
+            raise ValidationError(
+                {
+                    "error": f"Invalid page_size: {page_size}",
+                    "detail": f"page_size must be <= {self.max_page_size}.",
+                }
+            )
+        return page_size
 
     def paginate_queryset(self, queryset, request, view=None):
         self.request = request

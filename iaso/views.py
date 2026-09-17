@@ -256,3 +256,79 @@ class ModelDataView(View):
         if isinstance(field, GenericForeignKey):
             return "GenericForeignKey"
         return field.__class__.__name__
+
+
+class MvtTestPageView(View):
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return HttpResponseForbidden("authentication required")
+
+        profile = getattr(request.user, "iaso_profile", None)
+        default_version_id = None
+        if profile and profile.account:
+            default_version_id = profile.account.default_version_id
+
+        # Import models inside the get method to avoid circular imports
+        from django.db import connection
+
+        from iaso.models import OrgUnitType, SourceVersion
+
+        versions = SourceVersion.objects.filter_for_user(request.user).select_related("data_source")
+
+        # Calculate bounding boxes/extents for these versions to enable automatic centering
+        version_ids = [v.id for v in versions]
+        extents = {}
+        if version_ids:
+            try:
+                with connection.cursor() as cursor:
+                    format_strings = ", ".join(["%s"] * len(version_ids))
+                    cursor.execute(
+                        f"""
+                            SELECT version_id, ST_XMin(ext), ST_YMin(ext), ST_XMax(ext), ST_YMax(ext)
+                            FROM (
+                                SELECT version_id, ST_Extent(COALESCE(location::geometry, simplified_geom::geometry, geom::geometry)) as ext
+                                FROM iaso_orgunit
+                                WHERE version_id IN ({format_strings})
+                                GROUP BY version_id
+                            ) sub
+                        """,
+                        version_ids,
+                    )
+                    for row in cursor.fetchall():
+                        if row[1] is not None:
+                            extents[row[0]] = [row[1], row[2], row[3], row[4]]
+            except Exception as e:
+                # Fallback on failure
+                print(f"Error querying version extents: {e}")
+
+        version_list = []
+        for v in versions:
+            version_list.append(
+                {
+                    "id": v.id,
+                    "number": v.number,
+                    "data_source_name": v.data_source.name,
+                    "description": v.description or "",
+                    "extent": extents.get(v.id, None),
+                }
+            )
+
+        # Fetch org unit types
+        types = OrgUnitType.objects.filter_for_user_and_app_id(request.user).distinct()
+        type_list = []
+        for t in types:
+            type_list.append(
+                {
+                    "id": t.id,
+                    "name": t.name,
+                    "short_name": t.short_name or "",
+                }
+            )
+
+        context = {
+            "versions": version_list,
+            "default_version_id": default_version_id,
+            "org_unit_types": type_list,
+            "extents_json": json.dumps(extents),
+        }
+        return render(request, "iaso/mvt_test.html", context)

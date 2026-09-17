@@ -15,7 +15,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 
 from hat.sso_views import SSOCallbackView, SSOLoginView, get_adapter_class, make_token_view
 from iaso.auth.views import IasoLogoutView, IasoPasswordResetView
-from iaso.views import ModelDataView, health, health_clamav, page, robots_txt
+from iaso.views import ModelDataView, MvtTestPageView, health, health_clamav, page, robots_txt
 
 
 def _sso_providers():
@@ -182,6 +182,7 @@ else:
         ),
         path("sync/", include("hat.sync.urls")),
         path("models/", ModelDataView.as_view(), name="models"),
+        path("mvt-test/", MvtTestPageView.as_view(), name="mvt_test"),
     ]
 
     for plugin_name in settings.PLUGINS:

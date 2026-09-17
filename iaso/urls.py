@@ -136,7 +136,7 @@ from .api.tasks.create.org_unit_bulk_location_set import OrgUnitsBulkLocationSet
 from .api.tasks.views import TaskSourceViewSet
 from .api.teams.views import TeamViewSet
 from .api.user_roles import UserRolesViewSet
-from .api.v3.org_units.views import OrgUnitViewSetV3
+from .api.v3.org_units.views import OrgUnitMVTTilesView, OrgUnitViewSetV3
 from .api.validation_workflow_instances.views import ValidationWorkflowInstanceViewSet
 from .api.validation_workflows.views import ValidationWorkflowViewSet
 from .api.validation_workflows_node_templates.views import ValidationNodeTemplatesView
@@ -358,6 +358,7 @@ urlpatterns = urlpatterns + [
     path("form_ai/load/<int:form_id>/", form_ai_load_form, name="form_ai_load_form"),
     path("form_ai/download/<str:form_uuid>/", form_ai_download, name="form_ai_download"),
     path("form_ai/save/", form_ai_save, name="form_ai_save"),
+    path("v3/orgunits/tiles/<int:z>/<int:x>/<int:y>/", OrgUnitMVTTilesView.as_view(), name="orgunits_mvt_tiles"),
     path("", include(router.urls)),
 ]
 # External Auth

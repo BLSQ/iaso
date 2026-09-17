@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IASO - Maplibre Vector Tiles (MVT) POC</title>
+    <!-- Maplibre GL JS and CSS -->
+    <script src="https://unpkg.com/maplibre-gl@^4.0.0/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@^4.0.0/dist/maplibre-gl.css" rel="stylesheet" />
+    <style>
+        /* Modern UI Reset & Fonts */
+        :root {
+            --bg-color: #1a1e24;
+            --sidebar-bg: #222831;
+            --text-color: #eeeeee;
+            --accent-color: #00adb5;
+            --accent-hover: #00fff5;
+            --border-color: #393e46;
+            --item-hover: #2e3440;
+
+            --status-valid: #4CAF50;
+            --status-new: #FF9800;
+            --status-rejected: #F44336;
+            --status-unknown: #2196F3;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 340px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(0,0,0,0.15);
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.25rem;
+            margin: 0 0 5px 0;
+            color: var(--text-color);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-header h1 span {
+            font-size: 0.75rem;
+            background: var(--accent-color);
+            color: #000;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .sidebar-header p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .sidebar-content {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #ccc;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .select-input, .text-input {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 0.9rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .select-input:focus, .text-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(0, 173, 181, 0.2);
+        }
+
+        /* Custom Checkboxes / Layers toggles */
+        .layer-toggle-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: rgba(0,0,0,0.1);
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .layer-toggle-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .layer-toggle-item input[type="checkbox"] {
+            accent-color: var(--accent-color);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        /* Legend component */
+        .legend-card {
+            margin-top: 20px;
+            background: rgba(0,0,0,0.1);
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .legend-title {
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* Buttons */
+        .btn {
+            background-color: var(--accent-color);
+            color: #1a1e24;
+            border: none;
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s, transform 0.1s;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--border-color);
+        }
+
+        /* Map & Inspector Containers */
+        .map-container-wrapper {
+            flex: 1;
+            position: relative;
+            height: 100%;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Right Inspector Panel */
+        .inspector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 320px;
+            max-height: calc(100% - 100px);
+            background-color: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            z-index: 10;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .inspector.hidden {
+            transform: translateX(360px);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .inspector-header {
+            padding: 15px;
+            background: rgba(0,0,0,0.15);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .inspector-header h2 {
+            font-size: 1rem;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            color: var(--text-color);
+        }
+
+        .inspector-content {
+            padding: 15px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .inspector-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .inspector-table th {
+            text-align: left;
+            padding: 6px 0;
+            color: #888;
+            font-weight: 500;
+            width: 40%;
+        }
+
+        .inspector-table td {
+            padding: 6px 0;
+            color: #fff;
+            word-break: break-all;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(0,0,0,0.05);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-weight: 500;
+            color: #888;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab.active {
+            color: var(--accent-color);
+            border-bottom-color: var(--accent-color);
+            background: rgba(0,0,0,0.1);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 15px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* JSON View styling */
+        pre {
+            margin: 0;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 0.8rem;
+            background: #111;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            color: #a9ffaf;
+        }
+
+        /* Hover Popup styling */
+        .maplibregl-popup-content {
+            background-color: var(--sidebar-bg) !important;
+            color: var(--text-color) !important;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 6px !important;
+            padding: 10px !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+            font-size: 0.85rem !important;
+        }
+
+        .maplibregl-popup-anchor-top .maplibregl-popup-tip {
+            border-bottom-color: var(--sidebar-bg) !important;
+        }
+        .maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
+            border-top-color: var(--sidebar-bg) !important;
+        }
+        .maplibregl-popup-anchor-left .maplibregl-popup-tip {
+            border-right-color: var(--sidebar-bg) !important;
+        }
+        .maplibregl-popup-anchor-right .maplibregl-popup-tip {
+            border-left-color: var(--sidebar-bg) !important;
+        }
+
+        /* Performance panel / Log panel */
+        .perf-panel {
+            margin-top: 20px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+        }
+
+        .perf-log-list {
+            margin-top: 8px;
+            max-height: 100px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: #88c0d0;
+            padding-left: 0;
+            list-style: none;
+        }
+
+        .perf-log-item {
+            margin-bottom: 4px;
+            border-bottom: 1px dashed rgba(255,255,255,0.05);
+            padding-bottom: 2px;
+        }
+
+        /* Map Type Switcher overlay */
+        .map-style-control {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 6px;
+            z-index: 10;
+            display: flex;
+            gap: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .style-btn {
+            background: var(--bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .style-btn.active {
+            background: var(--accent-color);
+            color: #000;
+            font-weight: bold;
+            border-color: var(--accent-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- LEFT SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>IASO Map MVT <span>V3</span></h1>
+                <p>Vector Tile Performance Playground</p>
+            </div>
+
+            <div class="sidebar-content">
+                <!-- Data Source Version Select -->
+                <div class="control-group">
+                    <label for="versionSelect">Data Source Version</label>
+                    <select id="versionSelect" class="select-input">
+                        {% for v in versions %}
+                            <option value="{{ v.id }}" {% if v.id == default_version_id %}selected{% endif %}>
+                                {{ v.data_source_name }} (v{{ v.number }})
+                            </option>
+                        {% empty %}
+                            <option value="">No versions available</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Validation Status Filter -->
+                <div class="control-group">
+                    <label for="statusSelect">Validation Status</label>
+                    <select id="statusSelect" class="select-input">
+                        <option value="">All Statuses</option>
+                        <option value="VALID">Valid Only</option>
+                        <option value="NEW">New Only</option>
+                        <option value="REJECTED">Rejected Only</option>
+                    </select>
+                </div>
+
+                <!-- Org Unit Type Filter -->
+                <div class="control-group">
+                    <label for="typeSelect">Org Unit Type</label>
+                    <select id="typeSelect" class="select-input">
+                        <option value="">All Types</option>
+                        {% for t in org_unit_types %}
+                            <option value="{{ t.id }}">{{ t.name }} ({{ t.short_name }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Actions -->
+                <div class="control-group" style="display: flex; gap: 10px; margin-bottom: 25px;">
+                    <button id="btnCenter" class="btn" style="flex: 1; margin-bottom: 0;">Center on Data</button>
+                    <button id="btnReset" class="btn btn-secondary" style="flex: 1; margin-bottom: 0;">Reset View</button>
+                </div>
+
+                <!-- Layer Visibility Toggles -->
+                <div class="control-group">
+                    <label>Map Layers</label>
+                    <div class="layer-toggle-list">
+                        <label class="layer-toggle-item">
+                            <input type="checkbox" id="toggleCircles" checked>
+                            <span>Org Unit Points (Circles)</span>
+                        </label>
+                        <label class="layer-toggle-item">
+                            <input type="checkbox" id="toggleFills" checked>
+                            <span>Org Unit Polygons (Fills)</span>
+                        </label>
+                        <label class="layer-toggle-item">
+                            <input type="checkbox" id="toggleLines" checked>
+                            <span>Org Unit Boundaries (Lines)</span>
+                        </label>
+                        <label class="layer-toggle-item">
+                            <input type="checkbox" id="toggleLabels" checked>
+                            <span>Labels</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Validation Status Colors (Legend) -->
+                <div class="legend-card">
+                    <div class="legend-title">Legend</div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: var(--status-valid)"></div>
+                        <span>Valid (Active)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: var(--status-new)"></div>
+                        <span>New (Pending)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: var(--status-rejected)"></div>
+                        <span>Rejected</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: var(--status-unknown)"></div>
+                        <span>Other / Default</span>
+                    </div>
+                </div>
+
+                <!-- Tile Performance Monitor -->
+                <div class="perf-panel">
+                    <div class="legend-title" style="display: flex; justify-content: space-between;">
+                        <span>Tile Network Speed</span>
+                        <span id="loadTimeAvg" style="color: #00adb5; font-weight: bold;">-- ms</span>
+                    </div>
+                    <ul id="perfLog" class="perf-log-list">
+                        <li class="perf-log-item" style="color: #888;">No tiles loaded yet...</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- CENTER MAP AREA -->
+        <div class="map-container-wrapper">
+            <div id="map"></div>
+
+            <!-- Map Style (Basemap) Selector overlay -->
+            <div class="map-style-control">
+                <button class="style-btn active" data-style="voyager">Voyager</button>
+                <button class="style-btn" data-style="positron">Light</button>
+                <button class="style-btn" data-style="dark">Dark</button>
+            </div>
+
+            <!-- RIGHT DETAILS INSPECTOR PANEL -->
+            <div id="inspector" class="inspector hidden">
+                <div class="inspector-header">
+                    <h2 id="inspectorTitle">Org Unit Details</h2>
+                    <button id="inspectorClose" class="close-btn">&times;</button>
+                </div>
+
+                <div class="tabs">
+                    <div id="tabTableBtn" class="tab active" onclick="switchTab('table')">Attributes</div>
+                    <div id="tabJsonBtn" class="tab" onclick="switchTab('json')">JSON</div>
+                </div>
+
+                <div id="tabTableContent" class="tab-content active">
+                    <table class="inspector-table">
+                        <tbody>
+                            <tr><th>ID</th><td id="propId">--</td></tr>
+                            <tr><th>Name</th><td id="propName">--</td></tr>
+                            <tr><th>Validation</th><td id="propValidation">--</td></tr>
+                            <tr><th>Type ID</th><td id="propType">--</td></tr>
+                            <tr><th>Parent ID</th><td id="propParent">--</td></tr>
+                            <tr><th>Geometry</th><td id="propGeom">--</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="tabJsonContent" class="tab-content">
+                    <pre id="propRawJson">{}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inject Extents JSON cleanly from Python -->
+    <script id="extents-data" type="application/json">
+        {{ extents_json|safe }}
+    </script>
+
+    <script>
+        // Load extents & map configs
+        const extents = JSON.parse(document.getElementById('extents-data').textContent);
+
+        const mapStyles = {
+            voyager: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+            positron: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+            dark: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
+        };
+
+        let currentStyleKey = 'voyager';
+        const loadTimes = [];
+
+        // Setup Hover, Tooltip and Clicking mechanisms
+        let hoveredFeature = null;
+        let selectedFeatureId = null;
+
+        const popup = new maplibregl.Popup({
+            closeButton: false,
+            closeOnClick: false
+        });
+
+        // Initialize Maplibre
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: mapStyles[currentStyleKey],
+            center: [0, 20],
+            zoom: 2,
+            hash: true
+        });
+
+        // Add standard navigation controls
+        map.addControl(new maplibregl.NavigationControl(), 'top-left');
+
+        // Helper to get active query parameters
+        function getMvtQueryParams() {
+            const versionId = document.getElementById('versionSelect').value;
+            const status = document.getElementById('statusSelect').value;
+            const typeId = document.getElementById('typeSelect').value;
+
+            const params = [];
+            if (versionId) params.push(`version_id=${versionId}`);
+            if (status) params.push(`validation_status=${status}`);
+            if (typeId) params.push(`org_unit_type_id=${typeId}`);
+
+            return params.length > 0 ? '?' + params.join('&') : '';
+        }
+
+        // Generate absolute URL for tiles source
+        function buildTileUrl() {
+            const queryParams = getMvtQueryParams();
+            return window.location.origin + `/api/v3/orgunits/tiles/{z}/{x}/{y}/` + queryParams;
+        }
+
+        // Add MVT source and layers to the map
+        function initMvtLayers() {
+            const tileUrl = buildTileUrl();
+
+            // 1. Add Source
+            map.addSource('org_units_source', {
+                type: 'vector',
+                tiles: [tileUrl],
+                minzoom: 0,
+                maxzoom: 14 // PostGIS tile generation optimizes up to zoom level 14-18
+            });
+
+            // 2. Add Polygon Fill Layer
+            map.addLayer({
+                id: 'org-units-fill',
+                type: 'fill',
+                source: 'org_units_source',
+                'source-layer': 'org_units',
+                filter: ['==', '$type', 'Polygon'],
+                paint: {
+                    'fill-color': [
+                        'match',
+                        ['get', 'validation_status'],
+                        'VALID', '#4CAF50',
+                        'REJECTED', '#F44336',
+                        'NEW', '#FF9800',
+                        '#2196F3'
+                    ],
+                    'fill-opacity': 0.25
+                }
+            });
+
+            // 3. Add Line Boundary Layer
+            map.addLayer({
+                id: 'org-units-line',
+                type: 'line',
+                source: 'org_units_source',
+                'source-layer': 'org_units',
+                filter: ['in', '$type', 'LineString', 'Polygon'],
+                paint: {
+                    'line-color': [
+                        'match',
+                        ['get', 'validation_status'],
+                        'VALID', '#2E7D32',
+                        'REJECTED', '#C62828',
+                        'NEW', '#EF6C00',
+                        '#1565C0'
+                    ],
+                    'line-width': [
+                        'case',
+                        ['boolean', ['feature-state', 'hover'], false],
+                        3,
+                        1.2
+                    ],
+                    'line-opacity': 0.8
+                }
+            });
+
+            // 4. Add Circle Layer
+            map.addLayer({
+                id: 'org-units-circle',
+                type: 'circle',
+                source: 'org_units_source',
+                'source-layer': 'org_units',
+                filter: ['==', '$type', 'Point'],
+                paint: {
+                    'circle-radius': [
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        0, 2,
+                        4, 3.5,
+                        8, 5,
+                        12, 7,
+                        16, 12
+                    ],
+                    'circle-color': [
+                        'match',
+                        ['get', 'validation_status'],
+                        'VALID', '#4CAF50',
+                        'REJECTED', '#F44336',
+                        'NEW', '#FF9800',
+                        '#2196F3'
+                    ],
+                    'circle-stroke-color': [
+                        'case',
+                        ['boolean', ['feature-state', 'hover'], false],
+                        '#ffffff',
+                        'rgba(255, 255, 255, 0.4)'
+                    ],
+                    'circle-stroke-width': [
+                        'case',
+                        ['boolean', ['feature-state', 'hover'], false],
+                        2,
+                        0.8
+                    ],
+                    'circle-opacity': 0.95
+                }
+            });
+
+            // 5. Add Text Label Layer
+            map.addLayer({
+                id: 'org-units-label',
+                type: 'symbol',
+                source: 'org_units_source',
+                'source-layer': 'org_units',
+                minzoom: 7,
+                layout: {
+                    'text-field': ['get', 'name'],
+                    'text-size': 11,
+                    'text-offset': [0, 1.2],
+                    'text-anchor': 'top',
+                    'visibility': 'visible'
+                },
+                paint: {
+                    'text-color': currentStyleKey === 'dark' ? '#eeeeee' : '#333333',
+                    'text-halo-color': currentStyleKey === 'dark' ? '#111111' : '#ffffff',
+                    'text-halo-width': 1.5
+                }
+            });
+
+            // Register interactivity events
+            setupInteractivity();
+        }
+
+        function setupInteractivity() {
+            const targetLayers = ['org-units-circle', 'org-units-fill'];
+
+            targetLayers.forEach(layerId => {
+                // Change cursor on hover
+                map.on('mouseenter', layerId, (e) => {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+
+                map.on('mousemove', layerId, (e) => {
+                    if (e.features.length > 0) {
+                        const feat = e.features[0];
+
+                        // Handle Hover state styling
+                        if (hoveredFeature) {
+                            map.setFeatureState(
+                                { source: 'org_units_source', sourceLayer: 'org_units', id: hoveredFeature.id },
+                                { hover: false }
+                            );
+                        }
+                        hoveredFeature = feat;
+                        map.setFeatureState(
+                            { source: 'org_units_source', sourceLayer: 'org_units', id: hoveredFeature.id },
+                            { hover: true }
+                        );
+
+                        // Show Tooltip Popup
+                        const name = feat.properties.name || 'Unnamed Org Unit';
+                        const status = feat.properties.validation_status || 'UNKNOWN';
+                        const popupContent = `<strong>${name}</strong><br/><span style="font-size: 0.8rem; opacity: 0.8;">Status: ${status}</span>`;
+
+                        popup.setLngLat(e.lngLat)
+                            .setHTML(popupContent)
+                            .addTo(map);
+                    }
+                });
+
+                map.on('mouseleave', layerId, () => {
+                    map.getCanvas().style.cursor = '';
+                    popup.remove();
+
+                    if (hoveredFeature) {
+                        map.setFeatureState(
+                            { source: 'org_units_source', sourceLayer: 'org_units', id: hoveredFeature.id },
+                            { hover: false }
+                        );
+                        hoveredFeature = null;
+                    }
+                });
+
+                // Click to inspect feature properties
+                map.on('click', layerId, (e) => {
+                    if (e.features.length > 0) {
+                        const feat = e.features[0];
+                        inspectFeature(feat, e.lngLat);
+                    }
+                });
+            });
+        }
+
+        // Render selected properties into the right inspector
+        function inspectFeature(feature, clickLngLat) {
+            selectedFeatureId = feature.id || feature.properties.id;
+
+            document.getElementById('inspector').classList.remove('hidden');
+
+            document.getElementById('propId').textContent = selectedFeatureId || 'N/A';
+            document.getElementById('propName').textContent = feature.properties.name || 'N/A';
+            document.getElementById('propValidation').textContent = feature.properties.validation_status || 'N/A';
+            document.getElementById('propType').textContent = feature.properties.org_unit_type_id || 'N/A';
+            document.getElementById('propParent').textContent = feature.properties.parent_id || 'N/A';
+
+            // Format geometry summary
+            const geomType = feature.geometry ? feature.geometry.type : 'N/A';
+            let geomCoords = '--';
+            if (feature.geometry && feature.geometry.type === 'Point') {
+                geomCoords = feature.geometry.coordinates.map(c => c.toFixed(5)).join(', ');
+            } else if (clickLngLat) {
+                geomCoords = `${clickLngLat.lng.toFixed(5)}, ${clickLngLat.lat.toFixed(5)} (click)`;
+            }
+            document.getElementById('propGeom').textContent = `${geomType} [${geomCoords}]`;
+
+            // Full GeoJSON output tab
+            document.getElementById('propRawJson').textContent = JSON.stringify(feature, null, 2);
+        }
+
+        // Tab Switching for inspector
+        window.switchTab = function(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            if (tabName === 'table') {
+                document.getElementById('tabTableBtn').classList.add('active');
+                document.getElementById('tabTableContent').classList.add('active');
+            } else {
+                document.getElementById('tabJsonBtn').classList.add('active');
+                document.getElementById('tabJsonContent').classList.add('active');
+            }
+        };
+
+        // Close Inspector
+        document.getElementById('inspectorClose').addEventListener('click', () => {
+            document.getElementById('inspector').classList.add('hidden');
+        });
+
+        // Trigger interactive updates on form change
+        function refreshTileSource() {
+            const source = map.getSource('org_units_source');
+            if (source) {
+                const newTilesUrl = buildTileUrl();
+                source.setTiles([newTilesUrl]);
+
+                // Clear inspector & popups when dataset changes
+                document.getElementById('inspector').classList.add('hidden');
+                popup.remove();
+
+                logPerfEvent('Config updated: Requesting new tiles...');
+            }
+        }
+
+        // Attach event listeners for inputs
+        document.getElementById('versionSelect').addEventListener('change', () => {
+            refreshTileSource();
+            zoomToSelectedVersionExtent();
+        });
+        document.getElementById('statusSelect').addEventListener('change', refreshTileSource);
+        document.getElementById('typeSelect').addEventListener('change', refreshTileSource);
+
+        // Center Map on Selected Version's bounding box
+        function zoomToSelectedVersionExtent() {
+            const versionId = parseInt(document.getElementById('versionSelect').value);
+            if (versionId && extents[versionId]) {
+                const bbox = extents[versionId];
+                // bbox is [xmin, ymin, xmax, ymax] -> Maplibre expects [[xmin, ymin], [xmax, ymax]]
+                map.fitBounds([
+                    [bbox[0], bbox[1]],
+                    [bbox[2], bbox[3]]
+                ], {
+                    padding: 50,
+                    maxZoom: 13,
+                    duration: 1200
+                });
+                logPerfEvent(`Map centered to bounds of Version ID: ${versionId}`);
+            } else {
+                logPerfEvent(`No precalculated bounds found for Version ID: ${versionId}`);
+            }
+        }
+
+        document.getElementById('btnCenter').addEventListener('click', zoomToSelectedVersionExtent);
+        document.getElementById('btnReset').addEventListener('click', () => {
+            map.flyTo({ center: [0, 20], zoom: 2, duration: 1000 });
+        });
+
+        // Layer Toggles
+        document.getElementById('toggleCircles').addEventListener('change', (e) => {
+            const val = e.target.checked ? 'visible' : 'none';
+            if (map.getLayer('org-units-circle')) map.setLayoutProperty('org-units-circle', 'visibility', val);
+        });
+
+        document.getElementById('toggleFills').addEventListener('change', (e) => {
+            const val = e.target.checked ? 'visible' : 'none';
+            if (map.getLayer('org-units-fill')) map.setLayoutProperty('org-units-fill', 'visibility', val);
+        });
+
+        document.getElementById('toggleLines').addEventListener('change', (e) => {
+            const val = e.target.checked ? 'visible' : 'none';
+            if (map.getLayer('org-units-line')) map.setLayoutProperty('org-units-line', 'visibility', val);
+        });
+
+        document.getElementById('toggleLabels').addEventListener('change', (e) => {
+            const val = e.target.checked ? 'visible' : 'none';
+            if (map.getLayer('org-units-label')) map.setLayoutProperty('org-units-label', 'visibility', val);
+        });
+
+        // Basemap switcher
+        document.querySelectorAll('.style-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+
+                const styleKey = e.target.dataset.style;
+                currentStyleKey = styleKey;
+
+                map.setStyle(mapStyles[styleKey]);
+            });
+        });
+
+        // Style load handler to re-inject source & layers
+        map.on('style.load', () => {
+            if (!map.getSource('org_units_source')) {
+                initMvtLayers();
+            }
+        });
+
+        // Initial Map Setup once loaded
+        map.on('load', () => {
+            initMvtLayers();
+            zoomToSelectedVersionExtent();
+            logPerfEvent('Map initialized and ready.');
+        });
+
+        // Performance Log utilities
+        function logPerfEvent(message) {
+            const logEl = document.getElementById('perfLog');
+            const items = logEl.querySelectorAll('li');
+            if (items.length > 0 && items[0].style.color === 'rgb(136, 136, 136)' || items[0].textContent.includes('No tiles loaded yet...')) {
+                logEl.innerHTML = ''; // Clear placeholder
+            }
+
+            const timestamp = new Date().toTimeString().split(' ')[0];
+            const li = document.createElement('li');
+            li.className = 'perf-log-item';
+            li.textContent = `[${timestamp}] ${message}`;
+            logEl.insertBefore(li, logEl.firstChild);
+
+            // Limit to 20 items to keep display lean
+            while (logEl.children.length > 20) {
+                logEl.removeChild(logEl.lastChild);
+            }
+        }
+
+        // Hook into browser window.fetch to time performance
+        const originalFetch = window.fetch;
+        window.fetch = async function(...args) {
+            const fetchUrl = args[0];
+            const isMvtTile = typeof fetchUrl === 'string' && fetchUrl.includes('/api/v3/orgunits/tiles/');
+            let startTime;
+            if (isMvtTile) {
+                startTime = performance.now();
+            }
+            try {
+                const res = await originalFetch(...args);
+                if (isMvtTile) {
+                    const duration = performance.now() - startTime;
+                    // Extract coordinates from url
+                    const match = fetchUrl.match(/\/tiles\/(\d+)\/(\d+)\/(\d+)\//);
+                    const coords = match ? `${match[1]}/${match[2]}/${match[3]}` : 'Tile';
+
+                    loadTimes.push(duration);
+                    if (loadTimes.length > 30) loadTimes.shift(); // rolling average
+
+                    const avg = Math.round(loadTimes.reduce((a, b) => a + b, 0) / loadTimes.length);
+                    document.getElementById('loadTimeAvg').textContent = `${avg} ms`;
+
+                    logPerfEvent(`Tile ${coords} loaded in ${Math.round(duration)}ms`);
+                }
+                return res;
+            } catch (err) {
+                if (isMvtTile) {
+                    logPerfEvent(`Tile fetch failed: ${err.message}`);
+                }
+                throw err;
+            }
+        };
+    </script>
+</body>
+</html>

@@ -11,7 +11,6 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import filters, permissions
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from rest_framework.response import Response
 from rest_framework_csv.renderers import CSVRenderer
@@ -20,6 +19,7 @@ from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX
 from iaso.api.common.views import ReadOnlyModelViewSet
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
+from iaso.api.v3.common.errors import bad_request
 from iaso.api.v3.common.fields_parser import FieldsParseError, parse_fields
 from iaso.api.v3.common.pagination import V3PagePagination
 from iaso.api.v3.common.param_validator import suggest_close_matches
@@ -381,14 +381,10 @@ class OrgUnitViewSetV3(ReadOnlyModelViewSet):
         valid_formats = {renderer.format for renderer in self.renderer_classes}
         if requested_format and requested_format not in valid_formats:
             suggestions = suggest_close_matches(requested_format, self.DOCUMENTED_FORMATS)
-            raise ValidationError(
-                {
-                    "error": f"Unsupported format: {requested_format!r}",
-                    "detail": (
-                        f"Allowed values: {', '.join(sorted(self.DOCUMENTED_FORMATS))}."
-                        + (f" Did you mean {suggestions[0]!r}?" if suggestions else "")
-                    ),
-                }
+            raise bad_request(
+                f"Unsupported format: {requested_format!r}",
+                f"Allowed values: {', '.join(sorted(self.DOCUMENTED_FORMATS))}."
+                + (f" Did you mean {suggestions[0]!r}?" if suggestions else ""),
             )
         super().initial(request, *args, **kwargs)
 
@@ -431,7 +427,7 @@ class OrgUnitViewSetV3(ReadOnlyModelViewSet):
         try:
             field_tree = parse_fields(fields_param) if fields_param else None
         except FieldsParseError as e:
-            raise ValidationError({"error": "Invalid fields= parameter", "detail": str(e)})
+            raise bad_request("Invalid fields= parameter", str(e))
         validate_field_tree(field_tree)
         return field_tree
 
@@ -654,17 +650,15 @@ class OrgUnitViewSetV3(ReadOnlyModelViewSet):
         extra_fields = [f for f in extra_fields_raw.split(",") if f]
         unknown_extra_fields = set(extra_fields) - set(PARQUET_EXTRA_FIELDS)
         if unknown_extra_fields:
-            raise ValidationError(
-                {
-                    "error": f"Unknown extra_fields for parquet exports: {', '.join(sorted(unknown_extra_fields))}",
-                    "detail": f"Allowed extra_fields: {', '.join(PARQUET_EXTRA_FIELDS)}",
-                }
+            raise bad_request(
+                f"Unknown extra_fields for parquet exports: {', '.join(sorted(unknown_extra_fields))}",
+                f"Allowed extra_fields: {', '.join(PARQUET_EXTRA_FIELDS)}",
             )
 
         try:
             export_queryset = parquet.build_pyramid_queryset(queryset, extra_fields)
         except ValueError as e:
-            raise ValidationError(str(e))
+            raise bad_request(str(e))
 
         tmp = tempfile.NamedTemporaryFile(suffix=".parquet", delete=False)
         parquet.export_django_query_to_parquet_via_duckdb(export_queryset, tmp.name)

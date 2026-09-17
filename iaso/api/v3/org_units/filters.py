@@ -1,6 +1,9 @@
+from datetime import timedelta
+
 from django.db.models import Q
 from django_filters import rest_framework as django_filters
 
+from iaso.api.v3.common.errors import bad_request
 from iaso.api.v3.common.filterset import CORE_EXTRA_ALLOWED_PARAMS, BaseV3FilterSet
 from iaso.api.v3.common.spatial_filters import (
     BboxFilter,
@@ -23,6 +26,33 @@ EXTRA_ALLOWED_PARAMS = CORE_EXTRA_ALLOWED_PARAMS | frozenset(
 )
 
 
+class NumberInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):
+    """`django_filters.BaseInFilter` alone doesn't validate its comma-separated values as numbers (its
+    default `field_class` is a plain `forms.Field`) - a non-numeric token (`id__in=abc`) reaches the ORM
+    unvalidated and blows up with an uncaught `ValueError` (`Field 'id' expected a number but got 'abc'`)
+    instead of a 400. Mixing in `NumberFilter` gives the per-token form field a `DecimalField`, so each
+    value is validated before it ever reaches the queryset."""
+
+
+#: Postgres' `timestamptz` rejects a UTC offset displacement of 16 hours or more ("time zone displacement
+#: out of range") - a raw, uncaught `django.db.utils.DataError` if an otherwise-valid-looking ISO 8601
+#: datetime carries one (e.g. `created_at__gte=1715-10-23T22:51:28-16:01`). `IsoDateTimeFilter` happily
+#: parses it (Python's `datetime` has no such limit), so the check has to happen here, before the value
+#: reaches the database.
+POSTGRES_MAX_TZ_OFFSET = timedelta(hours=16)
+
+
+class SafeIsoDateTimeFilter(django_filters.IsoDateTimeFilter):
+    def filter(self, qs, value):
+        if value not in (None, "") and value.utcoffset() is not None:
+            if abs(value.utcoffset()) >= POSTGRES_MAX_TZ_OFFSET:
+                raise bad_request(
+                    f"Invalid value for {self.field_name!r}",
+                    f"Time zone offset in {value.isoformat()!r} must be within 16 hours of UTC.",
+                )
+        return super().filter(qs, value)
+
+
 class OrgUnitFilterSetV3(BaseV3FilterSet):
     """FilterSet backing `/api/v3/orgunits/`.
 
@@ -36,7 +66,7 @@ class OrgUnitFilterSetV3(BaseV3FilterSet):
 
     # -- id --
     id = django_filters.NumberFilter(field_name="id", lookup_expr="exact")
-    id__in = django_filters.BaseInFilter(field_name="id", lookup_expr="in")
+    id__in = NumberInFilter(field_name="id", lookup_expr="in")
 
     # -- text --
     name = django_filters.CharFilter(field_name="name", lookup_expr="exact")
@@ -77,10 +107,10 @@ class OrgUnitFilterSetV3(BaseV3FilterSet):
     parent__source_ref = django_filters.CharFilter(field_name="parent__source_ref", lookup_expr="exact")
 
     # -- dates --
-    created_at__gte = django_filters.IsoDateTimeFilter(field_name="created_at", lookup_expr="gte")
-    created_at__lte = django_filters.IsoDateTimeFilter(field_name="created_at", lookup_expr="lte")
-    updated_at__gte = django_filters.IsoDateTimeFilter(field_name="updated_at", lookup_expr="gte")
-    updated_at__lte = django_filters.IsoDateTimeFilter(field_name="updated_at", lookup_expr="lte")
+    created_at__gte = SafeIsoDateTimeFilter(field_name="created_at", lookup_expr="gte")
+    created_at__lte = SafeIsoDateTimeFilter(field_name="created_at", lookup_expr="lte")
+    updated_at__gte = SafeIsoDateTimeFilter(field_name="updated_at", lookup_expr="gte")
+    updated_at__lte = SafeIsoDateTimeFilter(field_name="updated_at", lookup_expr="lte")
     opening_date__gte = django_filters.DateFilter(field_name="opening_date", lookup_expr="gte")
     opening_date__lte = django_filters.DateFilter(field_name="opening_date", lookup_expr="lte")
     closed_date__gte = django_filters.DateFilter(field_name="closed_date", lookup_expr="gte")
@@ -130,11 +160,15 @@ class OrgUnitFilterSetV3(BaseV3FilterSet):
         return queryset.filter(location__isnull=not value)
 
     def filter_ancestor_id(self, queryset, name, value):
-        """Keep only the descendants of the given org unit (excluding itself)."""
+        """Keep only the descendants of the given org unit (excluding itself).
+
+        Scoped to the requesting user (`filter_for_user`), same as `within_org_unit`/`outside_org_unit`:
+        a nonexistent id and one belonging to another account both get the same "does not exist" 400,
+        instead of one silently returning an empty result set and the other raising."""
         try:
-            ancestor = OrgUnit.objects.only("id", "path").get(pk=value)
+            ancestor = OrgUnit.objects.filter_for_user(self.request.user).only("id", "path").get(pk=value)
         except OrgUnit.DoesNotExist:
-            return queryset.none()
+            raise bad_request(f"Org unit {value!r} does not exist")
         if ancestor.path is None:
             return queryset.none()
         return queryset.filter(path__descendants=str(ancestor.path), path__depth__gt=len(ancestor.path))

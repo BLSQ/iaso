@@ -101,6 +101,27 @@ class OrgUnitV3APITestCase(APITestCase):
         region.creator = cls.user
         region.save()
 
+        # a marvel-account org unit, invisible to `padme` (star wars) - used to check that
+        # `within_org_unit`/`outside_org_unit`/`ancestor_id` don't leak its existence or geometry across
+        # the account boundary (see spatial_filters.py `resolve_reference_geometry`).
+        marvel_project = m.Project.objects.create(name="Wakanda outreach", app_id="marvel.app", account=marvel)
+        marvel_source = m.DataSource.objects.create(name="Wakandan registry")
+        marvel_source.projects.add(marvel_project)
+        cls.marvel_version = marvel_version = m.SourceVersion.objects.create(data_source=marvel_source, number=1)
+        cls.marvel_org_unit = m.OrgUnit.objects.create(
+            org_unit_type=country_type,
+            version=marvel_version,
+            name="Wakanda",
+            geom=MultiPolygon(Polygon(((20, 20), (20, 30), (30, 30), (30, 20), (20, 20)))),
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+        cls.marvel_org_unit_without_geom = m.OrgUnit.objects.create(
+            org_unit_type=country_type,
+            version=marvel_version,
+            name="Sokovia",
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+
     def setUp(self):
         self.client.force_authenticate(self.user)
 
@@ -111,11 +132,40 @@ class OrgUnitV3APITestCase(APITestCase):
         response = self.client.get(BASE_URL)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_user_from_another_account_sees_nothing(self):
+    def test_user_from_another_account_sees_only_their_own_account(self):
         self.client.force_authenticate(self.other_account_user)
         response = self.client.get(BASE_URL)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json()["results"], [])
+        ids = {r["id"] for r in response.json()["results"]}
+        self.assertEqual(ids, {self.marvel_org_unit.id, self.marvel_org_unit_without_geom.id})
+
+    def test_within_org_unit_rejects_org_unit_outside_user_scope(self):
+        # `self.marvel_org_unit` belongs to a different account and DOES have a geom - without the scoped
+        # lookup in `resolve_reference_geometry`, this would succeed (200) using a foreign account's
+        # geometry as the reference shape, leaking that it exists and has a geometry.
+        response = self.client.get(BASE_URL, {"location__within_org_unit": self.marvel_org_unit.id})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("does not exist", response.json()["error"])
+
+    def test_outside_org_unit_rejects_org_unit_outside_user_scope(self):
+        # same check, but against a foreign org unit with NO geometry - without the fix this returned 400
+        # too, but with a different message ("has no geometry"), which itself leaked that the id exists.
+        # Scoped, it's now indistinguishable from a nonexistent id: both say "does not exist".
+        response = self.client.get(BASE_URL, {"location__outside_org_unit": self.marvel_org_unit_without_geom.id})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("does not exist", response.json()["error"])
+
+    def test_ancestor_id_rejects_org_unit_outside_user_scope(self):
+        # same "does not exist" treatment as `within_org_unit`/`outside_org_unit`, not a silent empty
+        # result set - see `filter_ancestor_id` in filters.py.
+        response = self.client.get(BASE_URL, {"ancestor_id": self.marvel_org_unit.id})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("does not exist", response.json()["error"])
+
+    def test_ancestor_id_rejects_nonexistent_org_unit(self):
+        response = self.client.get(BASE_URL, {"ancestor_id": 999999999})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("does not exist", response.json()["error"])
 
     # -- default shape / retrieve --
 
@@ -185,6 +235,13 @@ class OrgUnitV3APITestCase(APITestCase):
         response = self.client.get(BASE_URL, {"id__in": f"{self.region.id},{self.district.id}"})
         ids = {r["id"] for r in response.json()["results"]}
         self.assertEqual(ids, {self.region.id, self.district.id})
+
+    def test_filter_id_in_rejects_non_numeric_token_instead_of_500(self):
+        # `BaseInFilter` alone doesn't validate each comma-separated value as a number - a non-numeric
+        # token used to reach the ORM unvalidated and raise an uncaught `ValueError` (500) instead of a
+        # clean 400 - see `NumberInFilter` in filters.py.
+        response = self.client.get(BASE_URL, {"id__in": f"{self.region.id},not-a-number"})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_filter_name_exact(self):
         response = self.client.get(BASE_URL, {"name": "Theed"})
@@ -260,6 +317,23 @@ class OrgUnitV3APITestCase(APITestCase):
         response = self.client.get(BASE_URL, {"depth": 1})
         ids = {r["id"] for r in response.json()["results"]}
         self.assertEqual(ids, {self.country.id, self.country_without_geom.id, self.cote.id})
+
+    # -- dates --
+
+    def test_filter_created_at_gte_rejects_out_of_range_timezone_offset(self):
+        # postgres' `timestamptz` rejects a UTC offset displacement of 16 hours or more - an otherwise
+        # well-formed ISO 8601 datetime with one used to reach the database unvalidated and raise an
+        # uncaught `DataError` (500) instead of a clean 400 - see `SafeIsoDateTimeFilter` in filters.py.
+        response = self.client.get(BASE_URL, {"created_at__gte": "2020-01-01T00:00:00-16:01"})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_filter_updated_at_lte_rejects_out_of_range_timezone_offset(self):
+        response = self.client.get(BASE_URL, {"updated_at__lte": "2020-01-01T00:00:00-18:39"})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_filter_created_at_gte_accepts_normal_timezone_offset(self):
+        response = self.client.get(BASE_URL, {"created_at__gte": "2020-01-01T00:00:00+02:00"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     # -- spatial (core subset) --
 

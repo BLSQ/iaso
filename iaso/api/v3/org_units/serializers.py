@@ -11,8 +11,8 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 
+from iaso.api.v3.common.errors import bad_request
 from iaso.models import DataSource, Group, OrgUnit, OrgUnitType, SourceVersion
 from iaso.utils import geojson_queryset
 
@@ -215,14 +215,10 @@ def _reject_fixed_shape_sub_selector(field_tree: Dict[str, dict], field: str, su
     asked for."""
     requested_subfields = field_tree.get(field)
     if requested_subfields:
-        raise ValidationError(
-            {
-                "error": f"{field} doesn't support a sub-selector",
-                "detail": (
-                    f"{field} always returns {{id, {', '.join(subfields)}}} - request `{field}` (no "
-                    f"parentheses), not `{field}({','.join(requested_subfields)})`."
-                ),
-            }
+        raise bad_request(
+            f"{field} doesn't support a sub-selector",
+            f"{field} always returns {{id, {', '.join(subfields)}}} - request `{field}` (no parentheses), "
+            f"not `{field}({','.join(requested_subfields)})`.",
         )
 
 
@@ -234,11 +230,9 @@ def _reject_unknown_subfields(field_tree: Dict[str, dict], field: str, allowed_s
     if requested:
         unknown = sorted(set(requested) - allowed_subfields)
         if unknown:
-            raise ValidationError(
-                {
-                    "error": f"Unknown {field}(...) sub-field(s): {', '.join(unknown)}",
-                    "detail": f"Allowed {field}(...) sub-fields: {', '.join(sorted(allowed_subfields))}",
-                }
+            raise bad_request(
+                f"Unknown {field}(...) sub-field(s): {', '.join(unknown)}",
+                f"Allowed {field}(...) sub-fields: {', '.join(sorted(allowed_subfields))}",
             )
     return requested
 
@@ -250,11 +244,9 @@ def validate_field_tree(field_tree: Optional[Dict[str, dict]]) -> None:
         return
     unknown_top = sorted(set(field_tree) - ALLOWED_TOP_LEVEL_FIELDS)
     if unknown_top:
-        raise ValidationError(
-            {
-                "error": f"Unknown field(s) in fields=: {', '.join(unknown_top)}",
-                "detail": f"Allowed fields: {', '.join(sorted(ALLOWED_TOP_LEVEL_FIELDS))}",
-            }
+        raise bad_request(
+            f"Unknown field(s) in fields=: {', '.join(unknown_top)}",
+            f"Allowed fields: {', '.join(sorted(ALLOWED_TOP_LEVEL_FIELDS))}",
         )
     _reject_unknown_subfields(field_tree, "ancestors", ANCESTOR_ALLOWED_SUBFIELDS)
     _reject_unknown_subfields(field_tree, "parent", PARENT_ALLOWED_SUBFIELDS)
@@ -263,15 +255,11 @@ def validate_field_tree(field_tree: Optional[Dict[str, dict]]) -> None:
 
     version_subfields = _reject_unknown_subfields(field_tree, "version", VERSION_ALLOWED_SUBFIELDS)
     if version_subfields and version_subfields.get("data_source"):
-        raise ValidationError(
-            {
-                "error": "version(data_source) doesn't support a further sub-selector",
-                "detail": (
-                    f"data_source always returns {{id, {', '.join(DATA_SOURCE_SUBFIELDS)}}} - request "
-                    "version(data_source), not "
-                    f"version(data_source({','.join(version_subfields['data_source'])}))."
-                ),
-            }
+        raise bad_request(
+            "version(data_source) doesn't support a further sub-selector",
+            f"data_source always returns {{id, {', '.join(DATA_SOURCE_SUBFIELDS)}}} - request "
+            "version(data_source), not "
+            f"version(data_source({','.join(version_subfields['data_source'])})).",
         )
 
 

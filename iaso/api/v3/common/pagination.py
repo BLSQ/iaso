@@ -1,7 +1,8 @@
-from rest_framework.exceptions import NotFound, ValidationError
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
 from iaso.api.common.pagination import Paginator
+from iaso.api.v3.common.errors import bad_request
 
 
 TRUE_VALUES = ("true", "1", "yes")
@@ -43,12 +44,7 @@ class V3PagePagination(Paginator):
         if page_size <= 0:
             return self.page_size
         if page_size > self.max_page_size:
-            raise ValidationError(
-                {
-                    "error": f"Invalid page_size: {page_size}",
-                    "detail": f"page_size must be <= {self.max_page_size}.",
-                }
-            )
+            raise bad_request(f"Invalid page_size: {page_size}", f"page_size must be <= {self.max_page_size}.")
         return page_size
 
     def paginate_queryset(self, queryset, request, view=None):

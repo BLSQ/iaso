@@ -118,6 +118,19 @@ class MobileFormsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 2)
 
+    def test_forms_list_ok_with_org_unit_groups_field(self):
+        """
+        Older mobile app versions request `org_unit_groups` in the `fields` param even though forms
+        don't carry org unit groups. It should be accepted and return an empty list, not a 400.
+        """
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/mobile/forms/?fields=id,org_unit_groups", headers={"Content-Type": "application/json"}
+        )
+        self.assertJSONResponse(response, 200)
+        for form in response.json()["forms"]:
+            self.assertEqual(form["org_unit_groups"], [])
+
     def test_forms_list_ok_hide_derived_forms(self):
         """GET /mobile/forms/ web app happy path: we expect 1 results if one of the form is marked as derived"""
 

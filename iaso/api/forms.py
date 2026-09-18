@@ -132,6 +132,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
             "change_request_mode",
             "has_mappings",
             "possible_fields_with_latest_version",
+            "org_unit_groups",
         ]
         read_only_fields = [
             "id",
@@ -147,6 +148,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
             "has_attachments",
             "reference_form_of_org_unit_types",
             "has_mappings",
+            "org_unit_groups",
         ]
 
     org_unit_types = serializers.SerializerMethodField()
@@ -168,6 +170,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
     reference_form_of_org_unit_types = serializers.SerializerMethodField()
     has_mappings = serializers.BooleanField(read_only=True)
     possible_fields_with_latest_version = serializers.SerializerMethodField()
+    org_unit_groups = serializers.SerializerMethodField()
 
     @staticmethod
     def get_org_unit_types(obj: Form):
@@ -182,6 +185,12 @@ class FormSerializer(DynamicFieldsModelSerializer):
         if hasattr(obj, "has_attachments"):
             return obj.has_attachments
         return obj.attachments.exists()
+
+    @staticmethod
+    def get_org_unit_groups(obj: Form):
+        # Forms don't carry org unit groups. Field kept as an accepted no-op so mobile
+        # clients requesting it via ?fields= don't get a "field unknown" 400.
+        return []
 
     @staticmethod
     def get_possible_fields_with_latest_version(obj: Form):

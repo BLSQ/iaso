@@ -850,7 +850,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
     Available filters:
     - campaign__obr_name : Use campaign obr_name
     - campaign__country : Use country id
-    - vaccine_type : Use on of the VACCINES : mOPV2, nOPV2, bOPV
+    - vaccine_type : Use one of the INDIVIDUAL_VACCINES : mOPV2, nOPV2, bOPV, IPV
     - rounds__started_at : Use a date in the format YYYY-MM-DD
     - rounds__ended_at : Use a date in the format YYYY-MM-DD
     - round_id : Filter by a specific round ID

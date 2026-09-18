@@ -20,7 +20,7 @@ import { ModalButton } from './ModalButton';
 
 const DISPLAYED_STORAGE_ID_RE = /\(([^)]+)\)$/;
 
-export const getRawStorageId = (storageId: string): string => {
+const getRawStorageId = (storageId: string): string => {
     const match = storageId.match(DISPLAYED_STORAGE_ID_RE);
     return match ? match[1] : storageId;
 };
@@ -54,7 +54,7 @@ const StatusModal: FunctionComponent<Props> = ({
     };
 
     const handleChange = useCallback(
-        (key, value) => {
+        (key: string, value: string) => {
             const newStatus = {
                 ...status,
                 [key]: value,

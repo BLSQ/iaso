@@ -880,6 +880,23 @@ class StorageAPITestCase(APITestCase):
         self.assertEqual(latest_log_entry_for_storage.status_comment, "not usable anymore")
         # TODO: also check the value of performed_at (use mock object?)
 
+    def test_post_blacklisted_storage_ok_with_hex_display_id(self):
+        """The web UI posts the HEX display storage_id returned by GET /api/storages/."""
+        self.client.force_authenticate(self.yoda)
+
+        post_body = {
+            "storage_id": "04 56 7A CA 16 18 90 (BFZ6yhYYkA==)",
+            "storage_type": "NFC",
+            "storage_status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": "taken"},
+        }
+        response = self.client.post("/api/storages/blacklisted/", post_body, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        updated_storage = StorageDevice.objects.get(pk=self.existing_storage_device_4.pk)
+        self.assertEqual(updated_storage.status, "BLACKLISTED")
+        self.assertEqual(updated_storage.status_reason, "STOLEN")
+        self.assertEqual(updated_storage.status_comment, "taken")
+
     def test_post_blacklisted_storage_non_existing(self):
         """An error 400 is returned if we try to blacklist a non-existing device"""
         self.client.force_authenticate(self.yoda)

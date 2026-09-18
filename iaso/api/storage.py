@@ -3,7 +3,7 @@ import base64
 import binascii
 import datetime
 
-from typing import Any, List, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 from django.core.paginator import Paginator
 from django.db.models import Case, Q, QuerySet, When
@@ -143,6 +143,23 @@ class StorageSerializer(serializers.ModelSerializer):
             return f"{base64.b64decode(base64_id).hex(' ').upper()} ({base64_id})"
         except (TypeError, binascii.Error):
             return base64_id
+
+
+def parse_customer_chosen_id(storage_id: Optional[str]) -> Optional[str]:
+    """Extract the stored customer_chosen_id from a display-formatted storage_id.
+
+    GET /api/storages/ returns base64 NFC/USB ids as
+    ``"04 2D DF E2 10 10 90 (S0J+4hAQkA==)"``. The web UI round-trips that
+    value when changing status, so POST /api/storages/blacklisted/ must
+    accept both the display form and the raw customer_chosen_id.
+    """
+    if not storage_id:
+        return storage_id
+    if storage_id.endswith(")") and "(" in storage_id:
+        inner = storage_id[storage_id.rfind("(") + 1 : -1].strip()
+        if inner:
+            return inner
+    return storage_id
 
 
 class StorageSerializerWithLogs(StorageSerializer):
@@ -342,7 +359,9 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
 
         # 2. Preprocess submitted data
         try:
-            device = StorageDevice.objects.get(customer_chosen_id=storage_id, type=storage_type, account=account)
+            device = StorageDevice.objects.get(
+                customer_chosen_id=parse_customer_chosen_id(storage_id), type=storage_type, account=account
+            )
         except StorageDevice.DoesNotExist:
             device = None
 
@@ -360,8 +379,9 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
             )
             return Response({}, status=200)
 
-        # Some parameters were invalid
-        return Response({}, status=400)
+        if device is None:
+            return Response({"storage_id": ["Device not found"]}, status=400)
+        return Response(status_serializer.errors, status=400)
 
 
 # This could be rewritten in more idiomatic DRF (serializers, ...). On the other hand, I quite like the explicitness

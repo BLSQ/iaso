@@ -18,6 +18,13 @@ import MESSAGES from '../messages';
 import { Storage, StorageStatus } from '../types/storages';
 import { ModalButton } from './ModalButton';
 
+const DISPLAYED_STORAGE_ID_RE = /\(([^)]+)\)$/;
+
+export const getRawStorageId = (storageId: string): string => {
+    const match = storageId.match(DISPLAYED_STORAGE_ID_RE);
+    return match ? match[1] : storageId;
+};
+
 type Props = {
     isOpen: boolean;
     id?: string;
@@ -40,7 +47,7 @@ const StatusModal: FunctionComponent<Props> = ({
     const { mutate: saveStatus } = useSaveStatus(closeDialog);
     const handleConfirm = () => {
         saveStatus({
-            storage_id: storage.storage_id,
+            storage_id: getRawStorageId(storage.storage_id),
             storage_type: storage.storage_type,
             storage_status: status,
         });

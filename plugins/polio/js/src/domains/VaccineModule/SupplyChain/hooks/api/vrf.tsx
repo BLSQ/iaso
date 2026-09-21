@@ -186,21 +186,22 @@ export const useCampaignDropDowns = ({
             selectedCampaign &&
             fipvCampaigns.some(c => c.obr_name === selectedCampaign.obr_name),
         );
-        const vaccinesFromScopes = selectedCampaign?.single_vaccines
-            ? selectedCampaign.single_vaccines
-                  .split(',')
-                  .map(vaccineName => vaccineName.trim())
-                  .filter(Boolean)
-                  .map(vaccineName => ({
-                      label: vaccineName,
-                      value: vaccineName,
-                  }))
-            : [];
-        let vaccines = vaccinesFromScopes;
+        let vaccines;
         if (isFipvCampaign) {
             vaccines = fipvVaccineOptions;
-        } else if (vaccinesFromScopes.length === 0) {
-            vaccines = singleVaccinesList;
+        } else {
+            vaccines =
+                selectedCampaign?.single_vaccines
+                    ?.split(',')
+                    .map(vaccineName => vaccineName.trim())
+                    .filter(Boolean)
+                    .map(vaccineName => ({
+                        label: vaccineName,
+                        value: vaccineName,
+                    })) ?? [];
+            if (vaccines.length === 0) {
+                vaccines = singleVaccinesList;
+            }
         }
 
         const rounds = vaccine

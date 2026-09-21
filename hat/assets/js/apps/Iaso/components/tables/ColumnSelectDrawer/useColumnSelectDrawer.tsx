@@ -35,8 +35,12 @@ export const useColumnSelectDrawer = ({
 
     const getCleanKeys = useCallback(
         (fields?: string): string[] => {
-            const keys = fields ? fields.split(',') : defaultColumnsKey.split(',');
-            return keys.filter(key => !hiddenColumnsKey.split(',').includes(key));
+            const keys = fields
+                ? fields.split(',')
+                : defaultColumnsKey.split(',');
+            return keys.filter(
+                key => !hiddenColumnsKey.split(',').includes(key),
+            );
         },
         [defaultColumnsKey, hiddenColumnsKey],
     );

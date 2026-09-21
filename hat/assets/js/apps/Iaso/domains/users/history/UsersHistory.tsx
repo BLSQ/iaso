@@ -10,8 +10,8 @@ import { useGetUsersHistory } from '../hooks/useGetUsersHistory';
 import MESSAGES from '../messages';
 import { UserHistoryLogDetails } from './UserHistoryLogDetails';
 import { UsersHistoryFilters } from './UsersHistoryFilters';
-import { useUsersHistoryColumnSelectDrawer } from './useUsersHistoryColumnSelectDrawer';
 import { useUsersHistoryColumns } from './useUsersHistoryColumns';
+import { useUsersHistoryColumnSelectDrawer } from './useUsersHistoryColumnSelectDrawer';
 
 const tableDefaults = {
     page: 1,

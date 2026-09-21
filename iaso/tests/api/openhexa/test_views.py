@@ -6,11 +6,12 @@ from django.utils import timezone
 from rest_framework import status
 
 from iaso import models as m
-from iaso.models.base import QUEUED, RUNNING, SUCCESS
+from iaso.models.base import ERRORED, QUEUED, RUNNING, SUCCESS
 from iaso.models.openhexa import OpenHEXAInstance, OpenHEXAWorkspace
 from iaso.permissions.core_permissions import CORE_PIPELINE_MANAGEMENT_PERMISSION
 from iaso.tasks.launch_openhexa_pipeline import launch_openhexa_pipeline
 from iaso.test import APITestCase
+from iaso.utils.openhexa import sanitize_openhexa_pipeline_config
 
 
 class OpenHexaAPITestCase(APITestCase):
@@ -617,6 +618,81 @@ class BackgroundTaskTestCase(OpenHexaAPITestCase):
 
         # Verify ExternalTaskModelViewSet.launch_task was called
         mock_launch.assert_called_once()
+
+    @patch("iaso.tasks.launch_openhexa_pipeline.Client")
+    @patch("iaso.tasks.launch_openhexa_pipeline.ExternalTaskModelViewSet.launch_task")
+    def test_does_not_poll_when_openhexa_rejects_launch(self, mock_launch, mock_client_class):
+        """A failed OpenHEXA launch must not be marked SUCCESS from a previous run."""
+        pipeline_id = "test-pipeline-id"
+        openhexa_url = "https://test.openhexa.org/graphql/"
+        openhexa_token = "test-token"
+        version = str(uuid.uuid4())
+        config = {"test_param": "test_value"}
+
+        task = m.Task.objects.create(
+            created_by=self.user,
+            launcher=self.user,
+            account=self.account,
+            name="launch_openhexa_pipeline",
+            status=QUEUED,
+            external=True,
+            started_at=timezone.now(),
+        )
+
+        mock_client = Mock()
+        mock_client_class.return_value = mock_client
+        mock_client.execute.return_value = {
+            "pipeline": {
+                "runs": {
+                    "items": [
+                        {
+                            "run_id": "old-successful-run",
+                            "status": "success",
+                            "config": config,
+                            "logs": "Previous run",
+                        }
+                    ]
+                }
+            }
+        }
+        mock_launch.return_value = ERRORED
+
+        launch_openhexa_pipeline(
+            pipeline_id=pipeline_id,
+            openhexa_url=openhexa_url,
+            openhexa_token=openhexa_token,
+            version=version,
+            config=config,
+            delay=0,
+            _immediate=True,
+            task=task,
+        )
+
+        task.refresh_from_db()
+        self.assertEqual(task.status, ERRORED)
+        mock_client.execute.assert_not_called()
+
+    def test_sanitize_openhexa_pipeline_config_replaces_all_null_lists(self):
+        cleaned = sanitize_openhexa_pipeline_config(
+            {
+                "planning_id": 261,
+                "org_unit_type_exceptions": [None, None, None],
+                "connection_token": "token",
+                "unused": None,
+            }
+        )
+        self.assertEqual(
+            cleaned,
+            {
+                "planning_id": 261,
+                "org_unit_type_exceptions": ["", "", ""],
+                "connection_token": "token",
+            },
+        )
+
+    def test_sanitize_openhexa_pipeline_config_replaces_mixed_nulls(self):
+        cleaned = sanitize_openhexa_pipeline_config({"org_unit_type_exceptions": ["123", None, "456"]})
+        self.assertEqual(cleaned, {"org_unit_type_exceptions": ["123", "", "456"]})
 
     def test_launch_openhexa_pipeline_with_beanstalk_worker(self):
         """Test that the function works with beanstalk_worker decorator."""

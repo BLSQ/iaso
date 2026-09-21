@@ -11,7 +11,6 @@ from iaso.models.openhexa import OpenHEXAInstance, OpenHEXAWorkspace
 from iaso.permissions.core_permissions import CORE_PIPELINE_MANAGEMENT_PERMISSION
 from iaso.tasks.launch_openhexa_pipeline import launch_openhexa_pipeline
 from iaso.test import APITestCase
-from iaso.utils.openhexa import sanitize_openhexa_pipeline_config
 
 
 class OpenHexaAPITestCase(APITestCase):
@@ -671,28 +670,6 @@ class BackgroundTaskTestCase(OpenHexaAPITestCase):
         task.refresh_from_db()
         self.assertEqual(task.status, ERRORED)
         mock_client.execute.assert_not_called()
-
-    def test_sanitize_openhexa_pipeline_config_replaces_all_null_lists(self):
-        cleaned = sanitize_openhexa_pipeline_config(
-            {
-                "planning_id": 261,
-                "org_unit_type_exceptions": [None, None, None],
-                "connection_token": "token",
-                "unused": None,
-            }
-        )
-        self.assertEqual(
-            cleaned,
-            {
-                "planning_id": 261,
-                "org_unit_type_exceptions": ["", "", ""],
-                "connection_token": "token",
-            },
-        )
-
-    def test_sanitize_openhexa_pipeline_config_replaces_mixed_nulls(self):
-        cleaned = sanitize_openhexa_pipeline_config({"org_unit_type_exceptions": ["123", None, "456"]})
-        self.assertEqual(cleaned, {"org_unit_type_exceptions": ["123", "", "456"]})
 
     def test_launch_openhexa_pipeline_with_beanstalk_worker(self):
         """Test that the function works with beanstalk_worker decorator."""

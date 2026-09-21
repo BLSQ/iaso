@@ -1011,7 +1011,7 @@ class ProcessMobileBulkUploadTest(TestCase):
                 zipf.writestr("11111111-2222-3333-4444-555555555555/same_name.xml", xml_content)
                 zipf.writestr("77777777-8888-9999-aaaa-bbbbbbbbbbbb/same_name.xml", xml_content)
 
-        self.save_file_to_api_import(self.api_import, zip_path)
+        save_file_to_api_import(self.api_import, zip_path)
 
         process_mobile_bulk_upload(
             api_import_id=self.api_import.id,

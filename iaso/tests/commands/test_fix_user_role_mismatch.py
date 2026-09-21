@@ -37,7 +37,7 @@ class FixUserRoleMismatchTestCase(APITestCase):
         self.assertEqual(self.user1.groups.count(), 0)
         self.assertEqual(self.user2.groups.count(), 0)
 
-        management.call_command("fix_user_role_mismatch")
+        management.call_command("fix_user_role_mismatch", verbosity=0)
 
         self.user1.refresh_from_db()
         self.user2.refresh_from_db()
@@ -51,7 +51,7 @@ class FixUserRoleMismatchTestCase(APITestCase):
     def test_dry_run(self):
         self.assertEqual(self.user1.groups.count(), 0)
 
-        management.call_command("fix_user_role_mismatch", "--dry-run")
+        management.call_command("fix_user_role_mismatch", "--dry-run", verbosity=0)
 
         self.user1.refresh_from_db()
         self.assertEqual(self.user1.groups.count(), 0)
@@ -60,7 +60,7 @@ class FixUserRoleMismatchTestCase(APITestCase):
         self.assertEqual(self.user1.groups.count(), 0)
         self.assertEqual(self.user2.groups.count(), 0)
 
-        management.call_command("fix_user_role_mismatch", f"--account-id={self.account1.id}")
+        management.call_command("fix_user_role_mismatch", f"--account-id={self.account1.id}", verbosity=0)
 
         self.user1.refresh_from_db()
         self.user2.refresh_from_db()
@@ -78,7 +78,7 @@ class FixUserRoleMismatchTestCase(APITestCase):
 
         self.assertEqual(self.user1.groups.count(), 2)
 
-        management.call_command("fix_user_role_mismatch", "--clean-up-groups")
+        management.call_command("fix_user_role_mismatch", "--clean-up-groups", verbosity=0)
 
         self.user1.refresh_from_db()
 

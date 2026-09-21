@@ -35,7 +35,12 @@ class Command(BaseCommand):
             help="Also remove Django groups that are linked to a UserRole the user does not have.",
         )
 
+    def _log(self, message):
+        if self.verbosity > 0:
+            self.stdout.write(message)
+
     def handle(self, *args, **options):
+        self.verbosity = options.get("verbosity", 1)
         account_id = options.get("account_id")
         dry_run = options.get("dry_run")
         clean_up_groups = options.get("clean_up_groups")
@@ -66,7 +71,7 @@ class Command(BaseCommand):
         total_groups_added = 0
         total_groups_removed = 0
 
-        self.stdout.write(f"Analyzing users{' for account ' + str(account_id) if account_id else ''}...")
+        self._log(f"Analyzing users{' for account ' + str(account_id) if account_id else ''}...")
 
         role_groups = set(Group.objects.filter(iaso_user_role__isnull=False))
 
@@ -81,32 +86,32 @@ class Command(BaseCommand):
 
             if missing_groups or (extra_groups and clean_up_groups):
                 affected_count += 1
-                self.stdout.write(f"{user.username} (id: {user.id}, account_id: {profile.account.id})")
+                self._log(f"{user.username} (id: {user.id}, account_id: {profile.account.id})")
 
                 if missing_groups:
                     group_names = ", ".join(g.name for g in missing_groups)
-                    self.stdout.write(f" - Missing groups: [{group_names}]")
+                    self._log(f" - Missing groups: [{group_names}]")
                     total_groups_added += len(missing_groups)
 
                 if extra_groups and clean_up_groups:
                     group_names = ", ".join(g.name for g in extra_groups)
-                    self.stdout.write(f" - Extra groups (to be removed): [{group_names}]")
+                    self._log(f" - Extra groups (to be removed): [{group_names}]")
                     total_groups_removed += len(extra_groups)
 
                 if not dry_run:
                     with transaction.atomic():
                         if missing_groups:
                             user.groups.add(*missing_groups)
-                            self.stdout.write(self.style.SUCCESS(f" - Added missing groups for {user.username}"))
+                            self._log(self.style.SUCCESS(f" - Added missing groups for {user.username}"))
                         if extra_groups and clean_up_groups:
                             user.groups.remove(*extra_groups)
-                            self.stdout.write(self.style.SUCCESS(f" - Removed extra groups for {user.username}"))
+                            self._log(self.style.SUCCESS(f" - Removed extra groups for {user.username}"))
 
-        self.stdout.write("\nSummary:")
-        self.stdout.write(f" - Affected users: {affected_count}")
-        self.stdout.write(f" - Groups added: {total_groups_added}")
+        self._log("\nSummary:")
+        self._log(f" - Affected users: {affected_count}")
+        self._log(f" - Groups added: {total_groups_added}")
         if clean_up_groups:
-            self.stdout.write(f" - Groups removed: {total_groups_removed}")
+            self._log(f" - Groups removed: {total_groups_removed}")
 
         if dry_run:
-            self.stdout.write(self.style.WARNING("Dry run enabled. No changes were actually saved."))
+            self._log(self.style.WARNING("Dry run enabled. No changes were actually saved."))

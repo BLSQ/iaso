@@ -8,7 +8,7 @@ import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/
 import { apiDateFormat } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
 import { baseUrls } from '../../../../constants/urls';
 import { useCampaignCategoryOptions } from '../../../Campaigns/hooks/useCampaignCategoryOptions';
-import { singleVaccinesList } from '../constants';
+import { vrfVaccineFilterOptions } from '../constants';
 import { useGetCountriesOptions } from '../hooks/api/vrf';
 import MESSAGES from '../messages';
 
@@ -85,7 +85,7 @@ export const VaccineSupplyChainFilters: FunctionComponent<Props> = ({
                     keyValue="vaccine_type"
                     value={filters.vaccine_type}
                     onChange={handleChange}
-                    options={singleVaccinesList}
+                    options={vrfVaccineFilterOptions}
                     labelString={formatMessage(MESSAGES.vaccine)}
                 />
                 <InputComponent

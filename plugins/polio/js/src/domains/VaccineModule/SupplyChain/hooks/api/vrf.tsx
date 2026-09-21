@@ -40,7 +40,11 @@ import {
     Options,
     useGetCampaigns,
 } from '../../../../Campaigns/hooks/api/useGetCampaigns';
-import { apiUrl, singleVaccinesList } from '../../constants';
+import {
+    apiUrl,
+    fipvVaccineOptions,
+    singleVaccinesList,
+} from '../../constants';
 import MESSAGES from '../../messages';
 import {
     CampaignDropdowns,
@@ -177,19 +181,35 @@ export const useCampaignDropDowns = ({
                 label: c.obr_name,
                 value: c.obr_name,
             }));
-        const vaccines = selectedCampaign?.single_vaccines
-            ? selectedCampaign.single_vaccines.split(',').map(vaccineName => ({
-                  label: vaccineName.trim(),
-                  value: vaccineName.trim(),
-              }))
-            : singleVaccinesList;
+        const fipvCampaigns = (fIPVData as Campaign[]) ?? [];
+        const isFipvCampaign = Boolean(
+            selectedCampaign &&
+            fipvCampaigns.some(c => c.obr_name === selectedCampaign.obr_name),
+        );
+        let vaccines;
+        if (isFipvCampaign) {
+            vaccines = fipvVaccineOptions;
+        } else {
+            vaccines =
+                selectedCampaign?.single_vaccines
+                    ?.split(',')
+                    .map(vaccineName => vaccineName.trim())
+                    .filter(Boolean)
+                    .map(vaccineName => ({
+                        label: vaccineName,
+                        value: vaccineName,
+                    })) ?? [];
+            if (vaccines.length === 0) {
+                vaccines = singleVaccinesList;
+            }
+        }
 
         const rounds = vaccine
             ? (selectedCampaign?.rounds ?? [])
                   .filter(
                       round =>
                           round.vaccine_names_extended.includes(vaccine) ||
-                          (fIPVData as Campaign[])?.some(
+                          fipvCampaigns.some(
                               c => c.obr_name === selectedCampaign?.obr_name,
                           ),
                   )
@@ -212,6 +232,7 @@ export const useCampaignDropDowns = ({
             rounds,
             isFetching,
             rndsParams,
+            isFipvCampaign,
         };
     }, [data, fIPVData, vaccine, isFetching, rndsParams, campaign]);
 };

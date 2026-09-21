@@ -1,5 +1,3 @@
-from io import StringIO
-
 from django.contrib import auth
 from django.core import management
 
@@ -39,8 +37,7 @@ class FixUserRoleMismatchTestCase(APITestCase):
         self.assertEqual(self.user1.groups.count(), 0)
         self.assertEqual(self.user2.groups.count(), 0)
 
-        out = StringIO()
-        management.call_command("fix_user_role_mismatch", stdout=out)
+        management.call_command("fix_user_role_mismatch")
 
         self.user1.refresh_from_db()
         self.user2.refresh_from_db()
@@ -54,8 +51,7 @@ class FixUserRoleMismatchTestCase(APITestCase):
     def test_dry_run(self):
         self.assertEqual(self.user1.groups.count(), 0)
 
-        out = StringIO()
-        management.call_command("fix_user_role_mismatch", "--dry-run", stdout=out)
+        management.call_command("fix_user_role_mismatch", "--dry-run")
 
         self.user1.refresh_from_db()
         self.assertEqual(self.user1.groups.count(), 0)
@@ -64,8 +60,7 @@ class FixUserRoleMismatchTestCase(APITestCase):
         self.assertEqual(self.user1.groups.count(), 0)
         self.assertEqual(self.user2.groups.count(), 0)
 
-        out = StringIO()
-        management.call_command("fix_user_role_mismatch", f"--account-id={self.account1.id}", stdout=out)
+        management.call_command("fix_user_role_mismatch", f"--account-id={self.account1.id}")
 
         self.user1.refresh_from_db()
         self.user2.refresh_from_db()
@@ -83,8 +78,7 @@ class FixUserRoleMismatchTestCase(APITestCase):
 
         self.assertEqual(self.user1.groups.count(), 2)
 
-        out = StringIO()
-        management.call_command("fix_user_role_mismatch", "--clean-up-groups", stdout=out)
+        management.call_command("fix_user_role_mismatch", "--clean-up-groups")
 
         self.user1.refresh_from_db()
 

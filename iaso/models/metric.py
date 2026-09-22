@@ -57,6 +57,9 @@ class MetricType(models.Model):
     legend_config = models.JSONField(blank=True, default=dict)
     # This is meant to flag metric types that are used for system purposes (like population)
     is_utility = models.BooleanField(default=False)
+    # False while the data-layer wizard is still creating/running it (shell created, no usable
+    # values/legend yet); such rows are shown with a warning in data-layer lists until it flips True.
+    is_complete = models.BooleanField(default=True)
     metric_kind = models.CharField(
         max_length=50,
         choices=MetricKind.choices,

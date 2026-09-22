@@ -21,6 +21,7 @@ from iaso.utils.org_units import get_valid_org_units_with_geography
 from .permissions import MetricsPermissions
 from .serializers import (
     ExportMetricValuesSerializer,
+    ImportMetricValuesJsonSerializer,
     ImportMetricValuesSerializer,
     MetricTypeCreateSerializer,
     MetricTypeSerializer,
@@ -165,6 +166,17 @@ class MetricValueViewSet(viewsets.ModelViewSet):
             },
             status=status.HTTP_201_CREATED,
         )
+
+    @action(detail=False, methods=["post"], serializer_class=ImportMetricValuesJsonSerializer)
+    def import_values(self, request):
+        """Replaces one MetricType's values for a set of years from a JSON body
+        (the data-layer wizard's table), instead of a CSV file upload."""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        metric_values = serializer.save()
+
+        return Response({"total_imported": len(metric_values)}, status=status.HTTP_201_CREATED)
 
 
 @extend_schema(tags=["Metrics", "Org units"])

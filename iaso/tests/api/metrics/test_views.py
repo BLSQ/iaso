@@ -79,9 +79,12 @@ class MetricTypeAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
         response = self.client.post(self.BASE_URL, payload)
-        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         created_mt = MetricType.objects.get(code="MT003")
+        # The frontend wizard needs this id right away to import values and finalise
+        # the layer's legend against the same record instead of creating another one.
+        self.assertEqual(data["id"], created_mt.id)
         self.assertEqual(created_mt.account, self.account)
         self.assertEqual(created_mt.legend_type, MetricType.LegendType.THRESHOLD.value)
         self.assertEqual(created_mt.metric_kind, "population")
@@ -98,6 +101,33 @@ class MetricTypeAPITestCase(APITestCase):
                 ],
             },
         )
+
+    def test_metric_type_post_creates_an_incomplete_shell(self):
+        """A fresh POST is the wizard creating its shell before the user has finished the
+        form, so it starts out `is_complete=False`, but still appears in the grouped list
+        (flagged, so it's not silently lost) until the wizard finishes it."""
+        payload = {
+            "code": "MT003",
+            "name": "Metric Type 3",
+            "description": "Description for Metric Type 3",
+            "category": "Category C",
+            "origin": MetricType.MetricTypeOrigin.CUSTOM.value,
+            "legend_config": {"domain": [1.0, 2.0, 3.0], "range": ["#A2CAEA", "#ACDF9B", "#F2B16E", "#A93A42"]},
+            "legend_type": MetricType.LegendType.THRESHOLD.value,
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(self.BASE_URL, payload)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+
+        created_mt = MetricType.objects.get(code="MT003")
+        self.assertFalse(created_mt.is_complete)
+
+        grouped_response = self.client.get(f"{self.BASE_URL}grouped_per_category/")
+        grouped_data = self.assertJSONResponse(grouped_response, status.HTTP_200_OK)
+        category_c = next((group for group in grouped_data if group["name"] == "Category C"), None)
+        self.assertIsNotNone(category_c)
+        self.assertFalse(category_c["items"][0]["is_complete"])
 
     def test_metric_type_post_unauthenticated(self):
         payload = {
@@ -144,13 +174,41 @@ class MetricTypeAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(f"{self.BASE_URL}{self.metric_type_1.id}/", payload)
-        self.assertJSONResponse(response, status.HTTP_200_OK)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(data["id"], self.metric_type_1.id)
 
         # Verify the update
         self.metric_type_1.refresh_from_db()
         self.assertEqual(self.metric_type_1.name, "Updated Metric Type 1")
         self.assertEqual(self.metric_type_1.description, "Updated description for Metric Type 1")
         self.assertEqual(self.metric_type_1.metric_kind, "population")
+
+    def test_metric_type_update_marks_an_incomplete_shell_complete(self):
+        """The wizard's final PATCH (finalising the legend) is what makes a shell created by
+        a prior POST visible in the grouped list."""
+        shell = MetricType.objects.create(
+            account=self.account,
+            code="MT_SHELL",
+            name="Shell",
+            category="Category A",
+            origin=MetricType.MetricTypeOrigin.CUSTOM.value,
+            is_complete=False,
+        )
+        payload = {
+            "name": "Shell",
+            "description": "",
+            "category": "Category A",
+            "origin": MetricType.MetricTypeOrigin.CUSTOM.value,
+            "legend_config": {"domain": [1.0, 2.0], "range": ["#A2CAEA", "#A93A42"]},
+            "legend_type": MetricType.LegendType.LINEAR.value,
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(f"{self.BASE_URL}{shell.id}/", payload)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        shell.refresh_from_db()
+        self.assertTrue(shell.is_complete)
 
     def test_metric_type_list_include_utility_query_param(self):
         MetricType.objects.create(
@@ -262,6 +320,30 @@ class MetricTypeAPITestCase(APITestCase):
 
         self.assertEqual(len(category_b_items), 1)
         self.assertEqual(category_b_items[0]["code"], "MT002")
+
+    def test_metric_type_grouped_per_category_flags_incomplete_layers(self):
+        """A layer still being created/processed by the wizard is still shown in the browsing
+        list, but flagged with `is_complete=False` so the UI can warn about it."""
+        MetricType.objects.create(
+            account=self.account,
+            code="MT_INCOMPLETE",
+            name="Still processing",
+            category="Category A",
+            origin=MetricType.MetricTypeOrigin.CUSTOM.value,
+            is_complete=False,
+        )
+
+        self.client.force_authenticate(self.user)
+
+        grouped_response = self.client.get(f"{self.BASE_URL}grouped_per_category/")
+        grouped_data = self.assertJSONResponse(grouped_response, status.HTTP_200_OK)
+        items_by_code = {mt["code"]: mt for group in grouped_data for mt in group["items"]}
+        self.assertIn("MT_INCOMPLETE", items_by_code)
+        self.assertFalse(items_by_code["MT_INCOMPLETE"]["is_complete"])
+
+        list_response = self.client.get(self.BASE_URL)
+        list_data = self.assertJSONResponse(list_response, status.HTTP_200_OK)
+        self.assertIn("MT_INCOMPLETE", {mt["code"] for mt in list_data})
 
     def test_metric_type_groupes_per_category_unauthenticated(self):
         response = self.client.get(f"{self.BASE_URL}grouped_per_category/")
@@ -822,4 +904,107 @@ class MetricValueAPITestCase(APITestCase):
     def test_metric_value_import_from_csv_no_perm(self):
         self.client.force_authenticate(self.user_no_perms)
         response = self.client.post(f"{self.BASE_URL}import_from_csv/", data={})
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
+
+    def test_metric_value_import_values_replaces_years_in_scope(self):
+        """Submitting values for 2020 and 2021 replaces both years' rows, even the
+        one no value was resubmitted for (it gets cleared, not left untouched)."""
+        payload = {
+            "metric_type_id": self.metric_type.id,
+            "years": [2020, 2021],
+            "values": [
+                {"org_unit_id": self.org_unit.id, "year": 2020, "value": "42"},
+            ],
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(f"{self.BASE_URL}import_values/", payload)
+        data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        self.assertEqual(data["total_imported"], 1)
+
+        values = MetricValue.objects.filter(metric_type=self.metric_type, org_unit=self.org_unit)
+        self.assertEqual(values.count(), 1)
+        self.assertEqual(values.get().year, 2020)
+        self.assertEqual(values.get().value, 42.0)
+
+    def test_metric_value_import_values_leaves_years_out_of_scope_untouched(self):
+        """A year not listed in 'years' keeps its existing value, even though this
+        metric type has other years being replaced."""
+        payload = {
+            "metric_type_id": self.metric_type.id,
+            "years": [2020],
+            "values": [],
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(f"{self.BASE_URL}import_values/", payload)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+
+        self.assertFalse(
+            MetricValue.objects.filter(metric_type=self.metric_type, org_unit=self.org_unit, year=2020).exists()
+        )
+        # 2021 wasn't in `years`, so metric_value_2 survives.
+        self.assertTrue(MetricValue.objects.filter(id=self.metric_value_2.id).exists())
+
+    def test_metric_value_import_values_string_value_fallback(self):
+        payload = {
+            "metric_type_id": self.metric_type.id,
+            "years": [2022],
+            "values": [
+                {"org_unit_id": self.org_unit.id, "year": 2022, "value": "n/a"},
+            ],
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(f"{self.BASE_URL}import_values/", payload)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+
+        created = MetricValue.objects.get(metric_type=self.metric_type, org_unit=self.org_unit, year=2022)
+        self.assertIsNone(created.value)
+        self.assertEqual(created.string_value, "n/a")
+
+    def test_metric_value_import_values_rejects_year_not_in_years(self):
+        payload = {
+            "metric_type_id": self.metric_type.id,
+            "years": [2020],
+            "values": [
+                {"org_unit_id": self.org_unit.id, "year": 2021, "value": "1"},
+            ],
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(f"{self.BASE_URL}import_values/", payload)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+
+    def test_metric_value_import_values_rejects_metric_type_from_other_account(self):
+        payload = {
+            "metric_type_id": self.metric_type_wrong_account.id,
+            "years": [2020],
+            "values": [],
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(f"{self.BASE_URL}import_values/", payload)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+
+    def test_metric_value_import_values_rejects_invalid_org_unit(self):
+        payload = {
+            "metric_type_id": self.metric_type.id,
+            "years": [2020],
+            "values": [
+                {"org_unit_id": self.org_unit_rejected.id, "year": 2020, "value": "1"},
+            ],
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(f"{self.BASE_URL}import_values/", payload)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+
+    def test_metric_value_import_values_unauthenticated(self):
+        response = self.client.post(f"{self.BASE_URL}import_values/", data={})
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
+
+    def test_metric_value_import_values_no_perm(self):
+        self.client.force_authenticate(self.user_no_perms)
+        response = self.client.post(f"{self.BASE_URL}import_values/", data={})
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)

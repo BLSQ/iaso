@@ -37,12 +37,14 @@ class MetricTypeSerializerTestCase(TestCase):
             "legend_type",
             "metric_kind",
             "origin",
+            "is_complete",
             "created_at",
             "updated_at",
         }
         readonly_fields = {
             "id",
             "account",
+            "is_complete",
             "created_at",
             "updated_at",
         }
@@ -93,6 +95,7 @@ class MetricTypeWriteSerializerTestCase(TestCase):
     def test_fields(self):
         serializer = MetricTypeWriteSerializer()
         expected_fields = {
+            "id",
             "name",
             "category",
             "description",
@@ -254,6 +257,7 @@ class MetricTypeCreateSerializerTestCase(TestCase):
     def test_fields(self):
         serializer = MetricTypeCreateSerializer()
         expected_fields = {
+            "id",
             "code",
             "name",
             "category",

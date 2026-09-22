@@ -32,12 +32,14 @@ class MetricTypeSerializer(serializers.ModelSerializer):
             "legend_type",
             "metric_kind",
             "origin",
+            "is_complete",
             "created_at",
             "updated_at",
         ]
         read_only_fields = [
             "id",
             "account",
+            "is_complete",
             "created_at",
             "updated_at",
         ]
@@ -57,6 +59,7 @@ class MetricTypeWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = MetricType
         fields = [
+            "id",
             "name",
             "category",
             "description",
@@ -89,6 +92,13 @@ class MetricTypeWriteSerializer(serializers.ModelSerializer):
 
         return data
 
+    def update(self, instance, validated_data):
+        # A PATCH through this serializer always comes from the data-layer wizard finishing a
+        # step (finalising a new layer, or editing an existing one) - either way the layer is
+        # done being set up, so this is where a wizard-created shell stops being flagged as
+        # incomplete.
+        return super().update(instance, {**validated_data, "is_complete": True})
+
 
 class MetricTypeCreateSerializer(MetricTypeWriteSerializer):
     code = serializers.CharField(required=True, allow_blank=False)
@@ -97,8 +107,11 @@ class MetricTypeCreateSerializer(MetricTypeWriteSerializer):
         fields = MetricTypeWriteSerializer.Meta.fields + ["code"]
 
     def create(self, validated_data):
+        # The wizard creates this shell before the user has finished setting up the layer
+        # (legend not chosen yet); it stays flagged as incomplete in data-layer lists until
+        # the following PATCH (see `update` above) marks it complete.
         account = self.context["request"].user.iaso_profile.account
-        return super().create({**validated_data, "account": account})
+        return super().create({**validated_data, "account": account, "is_complete": False})
 
     def validate_code(self, value):
         if any(char.isspace() for char in value):
@@ -231,6 +244,73 @@ class ImportMetricValuesSerializer(serializers.Serializer):
                 Q(metric_type_id__in=metric_type_ids, org_unit_id__in=org_unit_ids), Q(year=year) | Q(year__isnull=True)
             ).delete()
 
+            return MetricValue.objects.bulk_create(metric_values)
+
+
+class MetricValueEntrySerializer(serializers.Serializer):
+    org_unit_id = serializers.IntegerField()
+    year = serializers.IntegerField()
+    value = serializers.CharField(allow_blank=False)
+
+
+class ImportMetricValuesJsonSerializer(serializers.Serializer):
+    """Replaces one MetricType's values for a set of years with exactly what's
+    submitted, instead of upserting like `ImportMetricValuesSerializer` does — the
+    wizard's table is always the complete desired state for those years, and a cell
+    the user cleared should disappear rather than linger from an earlier submit."""
+
+    metric_type_id = serializers.IntegerField()
+    years = serializers.ListField(child=serializers.IntegerField(), allow_empty=False)
+    values = MetricValueEntrySerializer(many=True, required=False, default=list)
+
+    def validate_metric_type_id(self, value):
+        account = self.context["request"].user.iaso_profile.account
+        if not MetricType.objects.filter(id=value, account=account).exists():
+            raise serializers.ValidationError(_("Metric type does not exist."))
+        return value
+
+    def validate(self, data):
+        years = set(data["years"])
+        stray_years = {entry["year"] for entry in data["values"]} - years
+        if stray_years:
+            raise serializers.ValidationError(
+                {"values": _("Every value's year must be one of the submitted 'years'.")}
+            )
+
+        account = self.context["request"].user.iaso_profile.account
+        org_unit_ids = {entry["org_unit_id"] for entry in data["values"]}
+        if org_unit_ids:
+            valid_org_unit_ids = set(
+                get_valid_org_units_with_geography(account).filter(id__in=org_unit_ids).values_list("id", flat=True)
+            )
+            missing_org_unit_ids = org_unit_ids - valid_org_unit_ids
+            if missing_org_unit_ids:
+                raise serializers.ValidationError(
+                    {
+                        "values": _("The following org unit IDs do not exist: ")
+                        + ", ".join(str(ou_id) for ou_id in missing_org_unit_ids)
+                    }
+                )
+        return data
+
+    def save(self, **kwargs):
+        metric_type_id = self.validated_data["metric_type_id"]
+        years = self.validated_data["years"]
+
+        metric_values = []
+        for entry in self.validated_data["values"]:
+            mv = MetricValue(metric_type_id=metric_type_id, org_unit_id=entry["org_unit_id"], year=entry["year"])
+            try:
+                mv.value = float(entry["value"])
+            except ValueError:
+                mv.value = None
+                mv.string_value = entry["value"]
+            metric_values.append(mv)
+
+        with transaction.atomic():
+            # Every year in scope is fully replaced, not just the ones a row was
+            # submitted for — that's how a cleared cell gets deleted server-side.
+            MetricValue.objects.filter(metric_type_id=metric_type_id, year__in=years).delete()
             return MetricValue.objects.bulk_create(metric_values)
 
 

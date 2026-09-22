@@ -161,7 +161,7 @@ def update_single_profile_from_bulk(
 
     if roles_id_added:
         for role_id in roles_id_added:
-            role = get_object_or_404(UserRole, id=role_id, account_id=account_id)
+            role = get_object_or_404(UserRole.objects.select_related("group"), id=role_id, account_id=account_id)
             if role.account.id == account_id:
                 role_permission_names = role.group.permissions.values_list("codename", flat=True)
                 raise_error_if_user_lacks_admin_permission(user, role_permission_names)
@@ -242,8 +242,12 @@ def update_single_profile_from_bulk(
 
     if len(roles_to_be_added) > 0:
         profile.user_roles.add(*roles_to_be_added)
+        groups_to_be_added = [role.group for role in roles_to_be_added]
+        profile.user.groups.add(*groups_to_be_added)
     if len(roles_to_be_removed) > 0:
         profile.user_roles.remove(*roles_to_be_removed)
+        groups_to_be_removed = [role.group for role in roles_to_be_removed]
+        profile.user.groups.remove(*groups_to_be_removed)
     if len(projects_to_be_added) > 0:
         profile.projects.add(*projects_to_be_added)
     if len(projects_to_be_removed) > 0:

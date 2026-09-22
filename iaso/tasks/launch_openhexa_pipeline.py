@@ -11,6 +11,7 @@ from beanstalk_worker import task_decorator
 from iaso.api.tasks.views import ExternalTaskModelViewSet
 from iaso.models import Task
 from iaso.models.base import ERRORED, QUEUED, RUNNING, SUCCESS
+from iaso.utils.openhexa import sanitize_openhexa_pipeline_config
 
 
 logger = logging.getLogger(__name__)
@@ -63,8 +64,8 @@ def _create_pipeline_config(pipeline_id: str, version: str, openhexa_url: str, o
     )
 
 
-def _launch_pipeline(task: Task, pipeline_id: str, version: str, config: dict, pipeline_config: MockConfig) -> None:
-    """Launch the OpenHEXA pipeline and update task status."""
+def _launch_pipeline(task: Task, pipeline_id: str, version: str, config: dict, pipeline_config: MockConfig) -> bool:
+    """Launch the OpenHEXA pipeline and update task status. Returns False if launch failed."""
     task.status = QUEUED
     task.external = True
     task.params = {
@@ -74,12 +75,17 @@ def _launch_pipeline(task: Task, pipeline_id: str, version: str, config: dict, p
     # Use update_fields to ensure external flag is not overwritten
     task.save(update_fields=["status", "external", "params"])
 
-    ExternalTaskModelViewSet.launch_task(
+    launch_status = ExternalTaskModelViewSet.launch_task(
         slug=None,
-        config=config,
+        config=sanitize_openhexa_pipeline_config(config),
         task_id=task.pk,
         pipeline_config=pipeline_config,
     )
+
+    if launch_status == ERRORED:
+        logger.error(f"OpenHEXA rejected launch of pipeline {pipeline_id} for task {task.pk}")
+        task.report_failure(Exception(f"OpenHEXA rejected launch of pipeline {pipeline_id}"))
+        return False
 
     logger.info(f"Successfully launched pipeline {pipeline_id} v{version} as task {task.pk}")
     # Preserve external flag during progress updates
@@ -87,6 +93,7 @@ def _launch_pipeline(task: Task, pipeline_id: str, version: str, config: dict, p
     task.report_progress_and_stop_if_killed(
         progress_message=f"Successfully launched pipeline {pipeline_id} v{version} as task {task.pk}"
     )
+    return True
 
 
 def _check_timeout(
@@ -236,7 +243,8 @@ def launch_openhexa_pipeline(
 
     # Launch pipeline
     pipeline_config = _create_pipeline_config(pipeline_id, version, openhexa_url, openhexa_token)
-    _launch_pipeline(task, pipeline_id, version, config, pipeline_config)
+    if not _launch_pipeline(task, pipeline_id, version, config, pipeline_config):
+        return
 
     # Set up polling
     logger.info(f"Started OpenHexa polling task for task {task.pk}")

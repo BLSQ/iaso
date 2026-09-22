@@ -458,40 +458,46 @@ const OrgUnitDetail: FunctionComponent = () => {
                                 }
                             >
                                 <Box className={classes.containerFullHeight}>
-                                    {!isFetchingDetail && (
-                                        <OrgUnitMap
-                                            loadingSelectedSources={
-                                                loadingSelectedSources
-                                            }
-                                            currentOrgUnit={currentOrgUnit}
-                                            sources={sources}
-                                            orgUnitTypes={orgUnitTypes}
-                                            sourcesSelected={sourcesSelected}
-                                            setSourcesSelected={
-                                                setSourcesSelected
-                                            }
-                                            setOrgUnitLocationModified={isModified =>
-                                                setOrgUnitLocationModified(
-                                                    isModified,
-                                                )
-                                            }
-                                            orgUnitLocationModified={
-                                                orgUnitLocationModified
-                                            }
-                                            resetOrgUnit={() =>
-                                                handleResetOrgUnit()
-                                            }
-                                            saveOrgUnit={() =>
-                                                handleSaveOrgUnit()
-                                            }
-                                            onChangeLocation={
-                                                handleChangeLocation
-                                            }
-                                            onChangeShape={(key, geoJson) =>
-                                                handleChangeShape(geoJson, key)
-                                            }
-                                        />
-                                    )}
+                                    {!isFetchingDetail &&
+                                        params.tab === 'map' && (
+                                            <OrgUnitMap
+                                                loadingSelectedSources={
+                                                    loadingSelectedSources
+                                                }
+                                                currentOrgUnit={currentOrgUnit}
+                                                sources={sources}
+                                                orgUnitTypes={orgUnitTypes}
+                                                sourcesSelected={
+                                                    sourcesSelected
+                                                }
+                                                setSourcesSelected={
+                                                    setSourcesSelected
+                                                }
+                                                setOrgUnitLocationModified={isModified =>
+                                                    setOrgUnitLocationModified(
+                                                        isModified,
+                                                    )
+                                                }
+                                                orgUnitLocationModified={
+                                                    orgUnitLocationModified
+                                                }
+                                                resetOrgUnit={() =>
+                                                    handleResetOrgUnit()
+                                                }
+                                                saveOrgUnit={() =>
+                                                    handleSaveOrgUnit()
+                                                }
+                                                onChangeLocation={
+                                                    handleChangeLocation
+                                                }
+                                                onChangeShape={(key, geoJson) =>
+                                                    handleChangeShape(
+                                                        geoJson,
+                                                        key,
+                                                    )
+                                                }
+                                            />
+                                        )}
                                 </Box>
                             </div>
 

@@ -6,7 +6,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
-from rest_framework import serializers, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
@@ -56,11 +56,6 @@ class MetricTypeViewSet(viewsets.ModelViewSet):
             if self.action in ["update", "partial_update"]
             else MetricTypeSerializer
         )
-
-    def perform_destroy(self, instance):
-        if instance.origin == MetricType.MetricTypeOrigin.OPENHEXA.value:
-            raise serializers.ValidationError("Cannot delete OpenHexa metric types")
-        return super().perform_destroy(instance)
 
     @action(detail=False, methods=["get"])
     def grouped_per_category(self, request):

@@ -273,9 +273,7 @@ class ImportMetricValuesJsonSerializer(serializers.Serializer):
         years = set(data["years"])
         stray_years = {entry["year"] for entry in data["values"]} - years
         if stray_years:
-            raise serializers.ValidationError(
-                {"values": _("Every value's year must be one of the submitted 'years'.")}
-            )
+            raise serializers.ValidationError({"values": _("Every value's year must be one of the submitted 'years'.")})
 
         account = self.context["request"].user.iaso_profile.account
         org_unit_ids = {entry["org_unit_id"] for entry in data["values"]}

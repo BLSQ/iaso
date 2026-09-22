@@ -542,6 +542,7 @@
     "iaso.instance.dialog.lockSuccess": "Verrou placé sur la soumission",
     "iaso.instance.dialog.unlockedWarning": "Êtes-vous sûr de vouloir déverrouiller la soumission ?",
     "iaso.instance.disableColumnSelectionMessage": "Lancer la recherche pour pouvoir sélectionner les colonnes visibles",
+    "iaso.instance.downloadAll": "Tout télécharger",
     "iaso.instance.duplicate": "Comparer les soumissions",
     "iaso.instance.editGpsFromInstanceWarning": "Cette opération peut toujours être annulée.",
     "iaso.instance.end": "End period",

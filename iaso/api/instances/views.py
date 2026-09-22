@@ -48,6 +48,7 @@ from iaso.api.instances.serializers import (
     InstanceSerializer,
     UnlockSerializer,
 )
+from iaso.api.instances.zip import generate_zip
 from iaso.api.org_units import HasCreateOrgUnitPermission
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
@@ -1018,6 +1019,20 @@ class InstancesViewSet(viewsets.ViewSet):
         log_dict["possible_fields"] = possible_fields
         log_dict["form_descriptor"] = instance.form_version.form_descriptor if instance.form_version else None
         return Response(log_dict)
+
+    @action(["GET"], detail=True)
+    def download_attachments(self, request, pk=None) -> StreamingHttpResponse:
+        instance = get_object_or_404(
+            Instance.objects.filter_for_user(request.user).prefetch_related("instancefile_set").filter(pk=pk)
+        )
+        return StreamingHttpResponse(
+            streaming_content=generate_zip(instance),
+            headers={
+                "Content-Type": "application/zip",
+                "Content-Disposition": f'attachment; filename="{instance.name}-{instance.id}.zip"',
+                "Access-Control-Expose-Headers": "Content-Disposition",
+            },
+        )
 
 
 def find_entity(account: Account, entity_uuid: str, entity_type_id: Optional[int] = None) -> Entity:

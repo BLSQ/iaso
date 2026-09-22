@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
 
-import { Box, Tab, Tabs } from '@mui/material';
+import { Box, Button, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import { useSafeIntl } from 'bluesquare-components';
@@ -238,6 +238,12 @@ const InstancesFilesList: FunctionComponent<Props> = ({
                     }
                 />
             )}
+
+            <Button
+                href={`/api/instances/${currentInstance?.id}/download_attachments/`}
+            >
+                {formatMessage(MESSAGES.downloadAll)}
+            </Button>
         </section>
     );
 };

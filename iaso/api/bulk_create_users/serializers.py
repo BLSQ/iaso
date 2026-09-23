@@ -17,6 +17,7 @@ from rest_framework.validators import UniqueValidator
 
 from iaso.api.bulk_create_users.mixin import BulkCreateUserSerializerFileMixin
 from iaso.api.bulk_create_users.permissions import has_only_user_managed_permission
+from iaso.api.bulk_create_users.signals import ProfileBulkCreatedMessage, bulk_profiles_created
 from iaso.api.common import ModelSerializer
 from iaso.api.common.serializer_fields import (
     AccountPrefixedSlugRelatedField,
@@ -516,6 +517,10 @@ class BulkCreateUserSerializer(BulkCreateUserSerializerFileMixin, ModelSerialize
                 validated_data["file"] = self._filter_out_sensitive_data(validated_data["file"])
 
             instance = super().create(validated_data)
+            bulk_profiles_created.send(
+                sender=self.__class__,
+                message=ProfileBulkCreatedMessage(account=account, profiles=profiles),
+            )
 
         if email_invitations:
             self._send_bulk_email_invitations(email_invitations)

@@ -5,12 +5,14 @@ from urllib.parse import parse_qs
 
 import responses
 
+from django.contrib.auth.models import User
 from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile, UploadedFile
 from django.test import override_settings
 from django.utils import timezone
+from rest_framework import status
 
-from hat.audit.models import Modification
+from hat.audit.models import INSTANCE_API, Modification
 from iaso import models as m
 from iaso.enketo.enketo_xml import build_substitutions
 from iaso.models import Instance, InstanceFile
@@ -110,7 +112,7 @@ class EnketoAPITestCase(APITestCase):
         """GET /api/enketo/edit/{uuid}/"""
         instance = self.form_1.instances.first()
         response = self.client.get(f"/api/enketo/edit/{instance.uuid}/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     @override_settings(ENKETO=enketo_test_settings)
     @responses.activate
@@ -325,7 +327,46 @@ class EnketoAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/enketo/edit/{instance.uuid}/")
 
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    @override_settings(ENKETO=enketo_test_settings)
+    @responses.activate
+    def test_enketo_create_url_creates_instance_with_expected_fields(self):
+        """POST /api/enketo/create/ (dashboard-initiated instance creation)"""
+        self.client.force_authenticate(self.yoda)
+
+        def request_callback(request):
+            return (200, {}, json.dumps({"edit_url": "https://enketo_url.host.test/something"}))
+
+        responses.add_callback(
+            responses.POST,
+            "https://enketo_url.host.test/api_v2/instance",
+            callback=request_callback,
+            content_type="application/json",
+        )
+
+        old_count = Instance.objects.count()
+        response = self.client.post(
+            "/api/enketo/create/",
+            data={
+                "form_id": self.form_1.id,
+                "period": "202005",
+                "org_unit_id": self.jedi_council_corruscant.id,
+            },
+            format="json",
+        )
+        r = self.assertJSONResponse(response, 201)
+        self.assertEqual(r, {"edit_url": "https://enketo_url.host.test/something"})
+        self.assertEqual(Instance.objects.count(), old_count + 1)
+
+        instance = Instance.objects.latest("id")
+        self.assertEqual(instance.form_id, self.form_1.id)
+        self.assertEqual(instance.org_unit_id, self.jedi_council_corruscant.id)
+        self.assertEqual(instance.period, "202005")
+        self.assertEqual(instance.project_id, self.project.id)
+        self.assertEqual(instance.created_by, self.yoda)
+        self.assertEqual(instance.last_modified_by, self.yoda)
+        self.assertEqual(instance.name, self.form_1.name)
 
     def test_when_anonymous_head_submission_should_work(self):
         response = self.client.head("/api/enketo/submission")
@@ -338,7 +379,7 @@ class EnketoAPITestCase(APITestCase):
         response = self.client.get("/api/enketo/formList")
 
         self.assertEqual(response.content.decode(), "formID is required")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_when_anonymous_get_formList_should_work_1(self):
         instance = self.form_1.instances.first()
@@ -386,6 +427,7 @@ class EnketoAPITestCase(APITestCase):
             self.assertEqual("1", modification.new_value[0]["fields"]["json"]["Ident_type_serv_medical"])
 
             self.assertEqual(instance, modification.content_object)
+            self.assertEqual(modification.source, INSTANCE_API)
 
     def assertXmlResponse(self, response, expected_status_code):
         self.assertEqual(expected_status_code, response.status_code, response)
@@ -408,8 +450,136 @@ class EnketoAPITestCase(APITestCase):
 
             instance = self.form_1.instances.first()
 
-            self.assertEqual(response.status_code, 201)
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
             self.assertEqual(self.yoda, instance.last_modified_by)
+
+    def test_submission_sets_instance_fields(self):
+        """`EnketoSubmissionAPIView.post()` should set file/name/source_updated_at on the submitted instance."""
+        with open("iaso/tests/fixtures/hydroponics_test_upload_modified.xml") as modified_xml:
+            instance = self.form_1.instances.first()
+            source_updated_at_before = instance.source_updated_at
+            f = SimpleUploadedFile(
+                "file.txt",
+                modified_xml.read()
+                .replace("replaceInstanceId", str(instance.id))
+                .replace("REPLACEuserID", str(self.yoda.id))
+                .encode(),
+            )
+            response = self.client.post(
+                "/api/enketo/submission", {"name": "xml_submission_file", "xml_submission_file": f}, format="multipart"
+            )
+
+            self.assertEqual(response.status_code, 201)
+            instance.refresh_from_db()
+            self.assertTrue(instance.file)
+            self.assertEqual(instance.name, self.form_1.name)
+            self.assertNotEqual(instance.source_updated_at, source_updated_at_before)
+            self.assertEqual(instance.json.get("Ident_nom_responsable"), "Chggh")
+
+    def test_submission_derives_form_version(self):
+        """`Instance.save()` should auto-derive form_version from json['_version'] on submission."""
+        form_version = m.FormVersion.objects.create(
+            form=self.form_1,
+            version_id="201911280919",
+            file=UploadedFile(open("iaso/tests/fixtures/form_rapide_1666691000_with_injectables.xml")),
+        )
+        with open("iaso/tests/fixtures/hydroponics_test_upload_modified.xml") as modified_xml:
+            instance = self.form_1.instances.first()
+            f = SimpleUploadedFile(
+                "file.txt",
+                modified_xml.read()
+                .replace("replaceInstanceId", str(instance.id))
+                .replace("REPLACEuserID", str(self.yoda.id))
+                .encode(),
+            )
+            response = self.client.post(
+                "/api/enketo/submission", {"name": "xml_submission_file", "xml_submission_file": f}, format="multipart"
+            )
+
+            self.assertEqual(response.status_code, 201)
+            instance.refresh_from_db()
+            self.assertEqual(instance.form_version, form_version)
+
+    def test_submission_converts_location_and_device(self):
+        """`convert_location_from_field()`/`convert_device()` should run as part of the submission callback."""
+        self.form_1.location_field = "gps"
+        self.form_1.save()
+        with open("iaso/tests/fixtures/hydroponics_test_upload_modified.xml") as modified_xml:
+            instance = self.form_1.instances.first()
+            f = SimpleUploadedFile(
+                "file.txt",
+                modified_xml.read()
+                .replace("replaceInstanceId", str(instance.id))
+                .replace("REPLACEuserID", str(self.yoda.id))
+                .encode(),
+            )
+            response = self.client.post(
+                "/api/enketo/submission", {"name": "xml_submission_file", "xml_submission_file": f}, format="multipart"
+            )
+
+            self.assertEqual(response.status_code, 201)
+            instance.refresh_from_db()
+            self.assertAlmostEqual(instance.location.y, 50.8367386)  # latitude
+            self.assertAlmostEqual(instance.location.x, 4.40093901)  # longitude
+            self.assertAlmostEqual(instance.location.z, 123.56201171875)  # altitude
+            self.assertAlmostEqual(float(instance.accuracy), 49.312, places=2)
+            self.assertIsNotNone(instance.device)
+            self.assertEqual(instance.device.imei, "358544083104930")
+
+    def test_submission_creates_attachment_instance_files(self):
+        """Extra files posted alongside the xml_submission_file should become InstanceFile rows.
+
+        Characterizes a real quirk: `deprecated_files` is computed as a lazy queryset excluding
+        names referenced inside the XML body, but it's only evaluated (and saved with
+        `deleted=True`) *after* this request's own new InstanceFile rows are already created.
+        So an attachment whose name isn't referenced inside the submitted XML content -- like a
+        plain multipart field name that doesn't match any media reference in the form -- gets
+        marked `deleted=True` immediately, in the same request that created it.
+        """
+        with (
+            open("iaso/tests/fixtures/hydroponics_test_upload_modified.xml") as modified_xml,
+            open("iaso/tests/fixtures/clamav/safe.jpg", "rb") as photo,
+        ):
+            instance = self.form_1.instances.first()
+            f = SimpleUploadedFile(
+                "file.txt",
+                modified_xml.read()
+                .replace("replaceInstanceId", str(instance.id))
+                .replace("REPLACEuserID", str(self.yoda.id))
+                .encode(),
+            )
+            response = self.client.post(
+                "/api/enketo/submission",
+                {"name": "xml_submission_file", "xml_submission_file": f, "photo1.jpg": photo},
+                format="multipart",
+            )
+
+            self.assertEqual(response.status_code, 201)
+            instance.refresh_from_db()
+            attachment = instance.instancefile_set.get(name="photo1.jpg")
+            self.assertEqual(attachment.instance_id, instance.id)
+            self.assertTrue(attachment.deleted)
+
+    @responses.activate
+    def test_submission_export_not_triggered_when_to_export_false(self):
+        """Without to_export set, submitting should not call out to DHIS2 at all."""
+        with open("iaso/tests/fixtures/hydroponics_test_upload_modified.xml") as modified_xml:
+            instance = self.form_1.instances.first()
+            instance.to_export = False
+            instance.save()
+            f = SimpleUploadedFile(
+                "file.txt",
+                modified_xml.read()
+                .replace("replaceInstanceId", str(instance.id))
+                .replace("REPLACEuserID", str(self.yoda.id))
+                .encode(),
+            )
+            response = self.client.post(
+                "/api/enketo/submission", {"name": "xml_submission_file", "xml_submission_file": f}, format="multipart"
+            )
+
+            self.assertEqual(response.status_code, 201)
+            self.assertEqual(len(responses.calls), 0)
 
     @responses.activate
     def test_save_last_user_modified_submission_auto_export(self):
@@ -486,7 +656,7 @@ class EnketoAPITestCase(APITestCase):
 
             instance.refresh_from_db()
 
-            self.assertEqual(response.status_code, 201)
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
             self.assertEqual(self.yoda, instance.last_modified_by)
 
     @responses.activate
@@ -542,7 +712,7 @@ class EnketoAPITestCase(APITestCase):
                 format="multipart",
             )
 
-            self.assertEqual(response.status_code, 409)
+            self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
 
     @override_settings(ENKETO=enketo_test_settings)
     @responses.activate
@@ -561,7 +731,7 @@ class EnketoAPITestCase(APITestCase):
         }
 
         response = self.client.get("/api/enketo/public_create_url/", data=data)
-        r = self.assertJSONResponse(response, 201)
+        r = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertEqual(r, {"url": "https://enketo_url.host.test/something"})
         self.assertTrue(responses.assert_call_count("https://enketo_url.host.test/api_v2/instance", 1))
 
@@ -604,7 +774,7 @@ class EnketoAPITestCase(APITestCase):
 
         response = self.client.get("/api/enketo/public_create_url/", data=data)
 
-        r = self.assertJSONResponse(response, 201)
+        r = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertEqual(r, {"url": "https://enketo_url.host.test/something"})
         self.assertTrue(responses.assert_call_count("https://enketo_url.host.test/api_v2/instance", 1))
         self.assertEqual(len(responses.calls), 1)
@@ -666,7 +836,7 @@ class EnketoAPITestCase(APITestCase):
         # test setup
 
         response = self.client.get("/api/enketo/public_create_url/", data=data)
-        r = self.assertJSONResponse(response, 400)
+        r = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             r,
             {
@@ -698,14 +868,18 @@ class EnketoAPITestCase(APITestCase):
             "form_id": form_id,
             "external_org_unit_id": self.jedi_council_corruscant.source_ref,
             "token": token,
+            "to_export": "true",
         }
 
         response = self.client.get("/api/enketo/public_create_url/", data=data)
-        r = self.assertJSONResponse(response, 201)
+        r = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertEqual(r, {"url": "https://enketo_url.host.test/something"})
         self.assertEqual(len(responses.calls), 1)
         self.assertTrue(responses.assert_call_count("https://enketo_url.host.test/api_v2/instance", 1), responses.calls)
         self.assertEqual(old_count, Instance.objects.count())
+
+        instance.refresh_from_db()
+        self.assertTrue(instance.to_export)
 
     @override_settings(ENKETO=enketo_test_settings)
     @responses.activate
@@ -732,7 +906,7 @@ class EnketoAPITestCase(APITestCase):
         }
 
         response = self.client.get("/api/enketo/public_create_url/", data=data)
-        r = self.assertJSONResponse(response, 201)
+        r = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertEqual(r, {"url": "https://enketo_url.host.test/something"})
         self.assertEqual(len(responses.calls), 1)
         # self.assertEqual(responses.calls[0].request.url, 1)
@@ -770,7 +944,7 @@ class EnketoAPITestCase(APITestCase):
         }
 
         response = self.client.get("/api/enketo/public_create_url/", data=data)
-        r = self.assertJSONResponse(response, 201)
+        r = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertEqual(r, {"url": "https://enketo_url.host.test/something"})
         self.assertEqual(len(responses.calls), 1)
         # self.assertEqual(responses.calls[0].request.url, 1)
@@ -1000,8 +1174,39 @@ class EnketoAPITestCase(APITestCase):
         )
 
         response = self.client.get(f"/api/fill/{form_with_injectables.uuid}/{self.jedi_council_corruscant.id}/202301")
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, status.HTTP_302_FOUND)
         self.assertEqual(response.url, "https://enketo_url.host.test/something")
+
+        instance = Instance.objects.filter(form=form_with_injectables).latest("id")
+        self.assertEqual(instance.org_unit_id, self.jedi_council_corruscant.id)
+        self.assertEqual(instance.period, "202301")
+        self.assertIsNone(instance.project)
+
+    @override_settings(ENKETO=enketo_test_settings)
+    @responses.activate
+    def test_public_create_url_creates_user_and_profile_for_external_user_id(self):
+        """`enketo_public_create_url` should auto-create a User+Profile for a never-seen external_user_id."""
+        self.setUpMockEnketo()
+        token = self.project.external_token
+        form_id = self.form_1.form_id
+        external_user_id = "ext-user-42"
+
+        self.assertFalse(User.objects.filter(username=f"external-{external_user_id}").exists())
+
+        data = {
+            "period": "202301",
+            "form_id": form_id,
+            "external_org_unit_id": self.jedi_council_corruscant.source_ref,
+            "token": token,
+            "external_user_id": external_user_id,
+        }
+        response = self.client.get("/api/enketo/public_create_url/", data=data)
+        self.assertJSONResponse(response, 201)
+
+        user = User.objects.get(username=f"external-{external_user_id}")
+        profile = m.Profile.objects.get(external_user_id=external_user_id)
+        self.assertEqual(profile.user, user)
+        self.assertEqual(profile.account, self.project.account)
 
     def test_enketo_instance_files(self):
         """GET /api/enketo/instance_files/<instance_file_id>/<file_name>"""
@@ -1020,14 +1225,14 @@ class EnketoAPITestCase(APITestCase):
 
         # Test correct file download
         response = self.client.get(f"/api/enketo/instance_files/{instance_file.id}/test.txt")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(b"".join(response.streaming_content), file_content)
         self.assertEqual(response["Content-Disposition"], 'attachment; filename="test.txt"')
 
         # Test wrong file name
         response = self.client.get(f"/api/enketo/instance_files/{instance_file.id}/wrong_name.txt")
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
         # Test non-existent instance file
         response = self.client.get("/api/enketo/instance_files/9999/test.txt")
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

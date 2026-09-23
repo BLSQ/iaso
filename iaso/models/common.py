@@ -1,6 +1,8 @@
 from autoslug import AutoSlugField
 from autoslug.utils import crop_slug, get_prepopulated_value
 from django.db import models
+from django.db.models import Prefetch
+from django.db.models.expressions import Case, OuterRef, Subquery, When
 from django.utils.translation import gettext_lazy as _
 
 
@@ -16,6 +18,48 @@ class ValidationWorkflowArtefactStatus(models.TextChoices):
     APPROVED = "APPROVED", _("Approved")
     REJECTED = "REJECTED", _("Rejected")
     PENDING = "PENDING", _("Pending")
+
+
+class ValidationWorkflowArtefactQuerySet(models.QuerySet):
+    def with_rejection_comment(self):
+        from iaso.models import ValidationNode
+        from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
+
+        return self.annotate(
+            rejection_comment=Case(
+                When(
+                    general_validation_status=ValidationWorkflowArtefactStatus.REJECTED,
+                    then=Subquery(
+                        ValidationNode.objects.filter(instance=OuterRef("pk"), status=ValidationNodeStatus.REJECTED)
+                        .order_by("-updated_at")
+                        .values("comment")[:1]
+                    ),
+                ),
+                default=None,
+            ),
+        )
+
+    def with_last_updated_at(self):
+        from iaso.models import ValidationNode
+
+        return self.annotate(
+            last_updated_at=Subquery(
+                ValidationNode.objects.filter(instance=OuterRef("pk")).order_by("-updated_at").values("updated_at")[:1]
+            )
+        )
+
+    def with_all_validation_nodes(self, workflow=None):
+        from iaso.models import ValidationNode
+
+        return self.prefetch_related(
+            Prefetch(
+                "validationnode_set",
+                queryset=ValidationNode.objects.filter(**{"node__workflow": workflow} if workflow else {})
+                .order_by("-created_at")
+                .select_related("created_by", "updated_by", "node"),
+                to_attr="all_validation_nodes",
+            )
+        )
 
 
 class ValidationWorkflowArtefact(models.Model):
@@ -35,16 +79,6 @@ class ValidationWorkflowArtefact(models.Model):
         return self.validationnode_set.filter(
             status=ValidationNodeStatus.UNKNOWN, **{"node__workflow": workflow} if workflow else {}
         )
-
-    def get_all_validation_nodes(self, workflow=None):
-        """
-        Function to recursively get all validation nodes and order them
-        """
-        from iaso.models import ValidationNode
-
-        return ValidationNode.objects.filter(
-            instance_id=self.pk, **{"node__workflow": workflow} if workflow else {}
-        ).order_by("-created_at")
 
 
 class BulkAutoSlugField(AutoSlugField):

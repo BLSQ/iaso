@@ -134,7 +134,7 @@ def get_vaccine_country(vaccine_stock):
     return {"country": country, "vaccine": vaccine}
 
 
-def download_xlsx_stock_variants(request, filename, results, lambda_methods, vaccince_stock, tab):
+def download_xlsx_stock_variants(request, results, lambda_methods, vaccince_stock, tab):
     workbook = Workbook()
     sheet_configs = get_sheet_configs()
 
@@ -169,7 +169,6 @@ def download_xlsx_stock_variants(request, filename, results, lambda_methods, vac
         write_vials_doses_stock_balance(sheet, config, sums, sum_columns_indices)
 
     workbook._sheets = [sheets[name] for name in sheets_order]
-    workbook.save(filename)
     return workbook
 
 
@@ -252,7 +251,6 @@ def write_vials_doses_total(
 
 
 def download_xlsx_public_stock_variants(
-    filename,
     usable_results,
     unusable_results,
     usable_totals,
@@ -304,5 +302,4 @@ def download_xlsx_public_stock_variants(
             doses_out=doses_out,
         )
 
-    workbook.save(filename)
     return workbook

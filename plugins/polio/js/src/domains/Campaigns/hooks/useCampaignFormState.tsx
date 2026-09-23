@@ -1,8 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useFormik } from 'formik';
+import { useRedirectToReplace } from 'bluesquare-components';
+import { FormikHelpers, useFormik } from 'formik';
 import { isEqual, merge } from 'lodash';
+import { cloneDeep } from 'lodash';
 import { useQueryClient } from 'react-query';
-import { CampaignFormValues } from '../../../constants/types';
+import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
+import { UuidAsString } from 'Iaso/types/general';
+import { Campaign, CampaignFormValues } from '../../../constants/types';
+import { baseUrls } from '../../../constants/urls';
 import { convertEmptyStringToNull } from '../../../utils/convertEmptyStringToNull';
 import { useWarningModal } from '../MainDialog/WarningModal/useWarningModal';
 import { useCampaignAPI } from './useCampaignAPI';
@@ -34,7 +39,14 @@ const baseValues: CampaignFormValues = {
     non_field_errors: undefined, // TODO find out whether we still use this formik state value or not
 };
 
-export const useCampaignFormState = ({ campaignId, enableAPI = true }) => {
+type CampaignFormStateArgs = { campaignId?: UuidAsString; enableAPI?: boolean };
+
+export const useCampaignFormState = ({
+    campaignId,
+    enableAPI = true,
+}: CampaignFormStateArgs) => {
+    const params = useParamsObject(baseUrls.campaignDetails);
+    const redirectToReplace = useRedirectToReplace();
     const [selectedCampaignId, setSelectedCampaignId] = useState<
         string | undefined
     >(campaignId);
@@ -90,16 +102,22 @@ export const useCampaignFormState = ({ campaignId, enableAPI = true }) => {
     } = formik;
 
     const handleSubmit = useCallback(
-        (values, helpers) => {
+        (
+            values: CampaignFormValues,
+            helpers: FormikHelpers<CampaignFormValues>,
+        ) => {
             saveCampaign(convertEmptyStringToNull(values), {
-                onSuccess: result => {
+                onSuccess: (result: Campaign) => {
                     setIsUpdated(true);
                     queryClient.setQueryData(
                         ['campaign', selectedCampaignId],
                         values,
                     );
                     if (!selectedCampaignId) {
-                        setSelectedCampaignId(result.id);
+                        redirectToReplace(baseUrls.campaignDetails, {
+                            ...params,
+                            campaignId: result.id,
+                        });
                     }
                 },
                 onError: error => {
@@ -109,17 +127,22 @@ export const useCampaignFormState = ({ campaignId, enableAPI = true }) => {
                 },
             });
         },
-        [saveCampaign, queryClient, selectedCampaignId],
+        [
+            saveCampaign,
+            queryClient,
+            selectedCampaignId,
+            redirectToReplace,
+            params,
+        ],
     );
 
     const handleClose = useCallback(() => {
-        formik.setValues(baseValues);
-        setSelectedCampaignId(undefined);
+        formik.setValues(cloneDeep(formikInitialValues));
         if (isUpdated) {
             queryClient.invalidateQueries('campaigns');
             queryClient.invalidateQueries('subActivities');
         }
-    }, [isUpdated, formik, queryClient]);
+    }, [formik, formikInitialValues, isUpdated, queryClient]);
     const isFormChanged = !isEqual(values, formikInitialValues);
 
     const handleConfirm = useCallback(() => {

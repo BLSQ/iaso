@@ -1,4 +1,5 @@
 import json
+import logging
 
 from typing import List
 
@@ -11,6 +12,9 @@ from iaso.diffing import Differ
 from iaso.utils.dhis2 import generate_id_for_dhis_2
 
 from .comparisons import Comparison, Diff, as_field_types
+
+
+logger = logging.getLogger(__name__)
 
 
 def all_slices(iterables, size: int):
@@ -68,30 +72,27 @@ def format_error(action, exc, errors):
 
 
 class Exporter:
-    def __init__(self, logger):
-        self.iaso_logger = logger
-
     def export_to_dhis2(self, api: Api, diffs: List[Diff], fields, task=None):
         if task:
             task.report_progress_and_stop_if_killed(
                 progress_message="Creating new Org Units", progress_value=0, end_value=3
             )
-        self.iaso_logger.ok("   ------ New org units----")
+        logger.info("   ------ New org units----")
         self.create_missings(api, diffs)
         if task:
             task.report_progress_and_stop_if_killed(
                 progress_message="Modifying existing Org Units", progress_value=1, end_value=3
             )
-        self.iaso_logger.ok("   ------ Modified org units----")
+        logger.info("   ------ Modified org units----")
         self.update_orgunits(api, diffs)
         if task:
             task.report_progress_and_stop_if_killed(progress_message="Updating groups", progress_value=3, end_value=3)
-        self.iaso_logger.ok("   ------ Modified groups----")
+        logger.info("   ------ Modified groups----")
         self.update_groups_without_groupsets(api, diffs, fields)
 
     def create_missings(self, api, diffs: List[Diff], task=None):
         to_create_diffs = list(filter(lambda x: x.status == "new", diffs))
-        self.iaso_logger.info("orgunits to create : ", len(to_create_diffs))
+        logger.info(f"orgunits to create : {len(to_create_diffs)}")
 
         assign_dhis2_ids(to_create_diffs)
         to_create_diffs = sort_by_path(to_create_diffs)
@@ -107,7 +108,7 @@ class Exporter:
             if name_comparison is None:
                 raise Exception("can't create missing orgunit " + to_create.org_unit.path)
 
-            self.iaso_logger.info("----", name_comparison.after, to_create.org_unit.path)
+            logger.info(f"---- {name_comparison.after} {to_create.org_unit.path}")
 
             payload = {
                 "id": to_create.org_unit.source_ref,
@@ -124,7 +125,7 @@ class Exporter:
 
             self.fill_geometry_or_coordinates(to_create.comparison("geometry"), payload)
 
-            self.iaso_logger.info("will post ", payload)
+            logger.info(f"will post {payload}")
 
             try:
                 resp = api.post("organisationUnits", payload)
@@ -141,7 +142,7 @@ class Exporter:
                 exc.extra = {"payload": json.dumps(payload, indent=4), "response": exc.description}
                 raise exc
 
-            self.iaso_logger.info("received ", resp.json())
+            logger.info(f"received {resp.json()}")
             index = index + 1
             if task and index % 10 == 0:
                 task.report_progress_and_stop_if_killed(progress_message="Creating Orgunits", progress_value=index)
@@ -165,7 +166,7 @@ class Exporter:
         to_update_diffs = list(
             filter(lambda x: x.status == "modified" and x.are_fields_modified(support_by_update_fields), diffs)
         )
-        self.iaso_logger.info("orgunits to update : ", len(to_update_diffs))
+        logger.info(f"orgunits to update : {len(to_update_diffs)}")
         to_update_diffs = sort_by_path(to_update_diffs)
 
         slices = all_slices(to_update_diffs, 4)
@@ -195,7 +196,7 @@ class Exporter:
                         ("group:", "groupset:")
                     ):
                         self.apply_comparison(dhis2_payload, comparison)
-            self.iaso_logger.info(f"will post slice for {', '.join(ids)}")
+            logger.info(f"will post slice for {', '.join(ids)}")
             # pprint([{k: (v if k != "geometry" else "...") for k, v in payload.items()} for payload in dhis2_payloads])
             payload = {"organisationUnits": dhis2_payloads}
             try:
@@ -213,7 +214,7 @@ class Exporter:
                 exc.extra = {"payload": json.dumps(payload, indent=4), "response": resp.text}
                 raise exc
 
-            self.iaso_logger.info(resp)
+            logger.info(resp)
             report = resp.json()
 
             if resp.status_code == 200 and report["status"] == "ERROR":
@@ -286,15 +287,15 @@ class Exporter:
             )
         )
 
-        self.iaso_logger.info("orgunits with groups to change ", len(to_update_diffs))
+        logger.info(f"orgunits with groups to change {len(to_update_diffs)}")
         if len(to_update_diffs) == 0:
-            self.iaso_logger.ok("nothing to update in the groups")
+            logger.info("nothing to update in the groups")
             return
 
         groupset_field_types = as_field_types(support_by_update_fields)
 
         for groupset_field_type in groupset_field_types:
-            self.iaso_logger.info("---", groupset_field_type.groupset_ref, groupset_field_type.groupset_name)
+            logger.info(f"--- {groupset_field_type.groupset_ref} {groupset_field_type.groupset_name}")
             dhis2_groups = api.get(
                 "organisationUnitGroups",
                 params={
@@ -304,7 +305,7 @@ class Exporter:
                 },
             ).json()["organisationUnitGroups"]
             for dhis2_group in dhis2_groups:
-                self.iaso_logger.info("group ", dhis2_group["id"], dhis2_group["name"])
+                logger.info(f"group {dhis2_group['id']} {dhis2_group['name']}")
                 modified = False
                 for diff in to_update_diffs:
                     comparison = diff.comparison(groupset_field_type.field_name)
@@ -314,7 +315,7 @@ class Exporter:
                             if not dhis2_group_contains(dhis2_group, diff.org_unit):
                                 dhis2_group["organisationUnits"].append({"id": diff.org_unit.source_ref})
                                 modified = True
-                                self.iaso_logger.info("\t added : ", diff.org_unit.name, diff.org_unit.source_ref)
+                                logger.info(f"\t added : {diff.org_unit.name} {diff.org_unit.source_ref}")
                         else:
                             if dhis2_group_contains(dhis2_group, diff.org_unit):
                                 dhis2_group["organisationUnits"] = list(
@@ -324,7 +325,7 @@ class Exporter:
                                     )
                                 )
                                 modified = True
-                                self.iaso_logger.info("\t removed : ", diff.org_unit.name, diff.org_unit.id)
+                                logger.info(f"\t removed : {diff.org_unit.name} {diff.org_unit.id}")
                     if comparison.status == Differ.STATUS_NOT_IN_ORIGIN:
                         if dhis2_group_contains(dhis2_group, diff.org_unit):
                             dhis2_group["organisationUnits"] = list(
@@ -334,12 +335,12 @@ class Exporter:
                                 )
                             )
                             modified = True
-                            self.iaso_logger.info("\t removed : ", diff.org_unit.name, diff.org_unit.id)
+                            logger.info(f"\t removed : {diff.org_unit.name} {diff.org_unit.id}")
 
                 if modified:
-                    self.iaso_logger.info("updating ", dhis2_group["id"], dhis2_group["name"])
+                    logger.info(f"updating {dhis2_group['id']} {dhis2_group['name']}")
                     resp = api.put("organisationUnitGroups/" + dhis2_group["id"], dhis2_group)
-                    self.iaso_logger.info("updated  ", dhis2_group["id"], dhis2_group["name"], resp, resp.json())
+                    logger.info(f"updated  {dhis2_group['id']} {dhis2_group['name']} {resp} {resp.json()}")
         return
 
     def update_groups_without_groupsets(self, api, diffs: List[Diff], fields):
@@ -352,15 +353,15 @@ class Exporter:
             )
         )
 
-        self.iaso_logger.info("orgunits with groups to change ", len(to_update_diffs))
+        logger.info(f"orgunits with groups to change {len(to_update_diffs)}")
         if len(to_update_diffs) == 0:
-            self.iaso_logger.ok("nothing to update in the groups")
+            logger.info("nothing to update in the groups")
             return
 
         group_field_types = as_field_types(support_by_update_fields)
 
         for group_field_type in group_field_types:
-            self.iaso_logger.info("---", group_field_type.group_ref, group_field_type.group_name)
+            logger.info(f"--- {group_field_type.group_ref} {group_field_type.group_name}")
             dhis2_groups = api.get(
                 "organisationUnitGroups",
                 params={
@@ -400,6 +401,6 @@ class Exporter:
                             modified = True
 
                 if modified:
-                    self.iaso_logger.info("updating ", dhis2_group["id"], dhis2_group["name"])
+                    logger.info(f"updating {dhis2_group['id']} {dhis2_group['name']}")
                     resp = api.put("organisationUnitGroups/" + dhis2_group["id"], dhis2_group)
-                    self.iaso_logger.info("updated  ", dhis2_group["id"], dhis2_group["name"], resp, resp.json())
+                    logger.info(f"updated  {dhis2_group['id']} {dhis2_group['name']} {resp} {resp.json()}")

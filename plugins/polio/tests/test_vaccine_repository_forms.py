@@ -427,3 +427,17 @@ class VaccineRepositoryFormsAPITestCase(APITestCase, PolioTestCaseMixin):
         self.assertEqual(
             len(data), 2
         )  # Only 1 round of self.campaign is cvovered by the vrf, the others should be filtered out
+
+        # Test filtering by campaign category
+        campaign2.is_preventive = True
+        campaign2.save()
+
+        response = self.client.get(f"{BASE_URL}?campaign_category=is_preventive")
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(data["results"]), 1)
+        self.assertEqual(data["results"][0]["campaign_obr_name"], "Another Campaign")
+
+        response = self.client.get(f"{BASE_URL}?campaign_category=regular")
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(data["results"]), 2)
+        self.assertTrue(all(result["campaign_obr_name"] != "Another Campaign" for result in data["results"]))

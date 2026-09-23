@@ -276,6 +276,14 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
             const id: number = newDataSourceVersionsSynchronization?.value;
             // Set the value of `data_source_synchronization_id` URL param.
             handleChange(keyValue, id);
+            // Automatically align source_version_id with the sync's version to update.
+            const versionId: number | undefined =
+                newDataSourceVersionsSynchronization?.sourceVersionToUpdateId;
+            if (versionId) {
+                const versionIdStr = versionId.toString();
+                setSelectedVersionId(versionIdStr);
+                handleChange('source_version_id', versionIdStr);
+            }
         },
         [handleChange],
     );
@@ -291,7 +299,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                 )[0];
 
                 selectedVersion =
-                    selectedSource?.original?.default_version.id.toString();
+                    selectedSource?.original?.default_version?.id?.toString();
             } else {
                 selectedVersion = newValue.toString();
             }

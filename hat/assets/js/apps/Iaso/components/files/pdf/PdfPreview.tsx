@@ -233,8 +233,8 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
                                 </IconButton>
                                 <Box>
                                     {formatMessage(MESSAGES.pageInfo, {
-                                        current: pageNumber,
-                                        total: numPages || 0,
+                                        current: `${pageNumber}`,
+                                        total: `${numPages || 0}`,
                                     })}
                                 </Box>
                                 <IconButton

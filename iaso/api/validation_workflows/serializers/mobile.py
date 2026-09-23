@@ -7,8 +7,6 @@ from iaso.api.common import ModelSerializer, TimestampField
 from iaso.api.validation_workflows.constants import DEFAULT_COLOR, MOBILE_STATUS_TO_COLOR
 from iaso.api.validation_workflows.serializers.common import UserDisplayNameField
 from iaso.models import Instance, ValidationNode
-from iaso.models.common import ValidationWorkflowArtefactStatus
-from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 
 
 class NestedHistorySerializer(ModelSerializer):
@@ -40,9 +38,9 @@ class NestedHistorySerializer(ModelSerializer):
 class MobileValidationWorkflowListSerializer(ModelSerializer):
     instance_id = serializers.CharField(read_only=True, source="uuid")
     created_at = TimestampField(read_only=True)
-    history = serializers.SerializerMethodField(read_only=True)
+    history = NestedHistorySerializer(source="all_validation_nodes", many=True)
     validation_status = serializers.CharField(read_only=True, source="general_validation_status")
-    rejection_comment = serializers.SerializerMethodField(read_only=True)
+    rejection_comment = serializers.CharField(read_only=True)
     updated_at = serializers.SerializerMethodField(label="Timestamp of the last update (history)", read_only=True)
     name = serializers.CharField(read_only=True, source="form.name")
     display_name = serializers.SerializerMethodField(read_only=True)
@@ -60,26 +58,9 @@ class MobileValidationWorkflowListSerializer(ModelSerializer):
             "history",
         ]
 
-    @extend_schema_field({"type": "string", "nullable": True})
-    def get_rejection_comment(self, obj):
-        if obj.general_validation_status == ValidationWorkflowArtefactStatus.REJECTED:
-            return (
-                obj.validationnode_set.filter(status=ValidationNodeStatus.REJECTED)
-                .only("status", "comment")
-                .first()
-                .comment
-            )
-        return None
-
-    @extend_schema_field(NestedHistorySerializer(many=True))
-    def get_history(self, obj):
-        return NestedHistorySerializer(
-            obj.get_all_validation_nodes().select_related("created_by", "updated_by", "node"), many=True
-        ).data
-
     @extend_schema_field({"type": "integer", "format": "int64", "nullable": True})
     def get_updated_at(self, obj):
-        updated_at = getattr(obj.validationnode_set.all().order_by("-updated_at").first(), "updated_at", None)
+        updated_at = obj.last_updated_at
         return updated_at.timestamp() if updated_at else None
 
     @extend_schema_field({"type": "string", "nullable": True})

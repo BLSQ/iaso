@@ -65,14 +65,14 @@ class APIImportViewSetTest(SwaggerTestCaseMixin, APITestCase):
         url = "/api/api_import/"
         self.client.force_authenticate(self.user_with_permission)
         res = self.client.get(url)
-        res_json = self.assertJSONResponse(res, 200)
+        res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertResponseCompliantToSwagger(res_json, "PaginatedAPIImportList")
 
     def test_assertValidFiltersSchema(self):
         url = "/api/api_import/filters/"
         self.client.force_authenticate(self.user_with_permission)
         res = self.client.get(url)
-        res_json = self.assertJSONResponse(res, 200)
+        res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertResponseCompliantToSwagger(res_json, "APIImportFilter")
 
     def test_export_csv(self):
@@ -80,7 +80,7 @@ class APIImportViewSetTest(SwaggerTestCaseMixin, APITestCase):
         self.client.force_authenticate(self.user_with_permission)
         res = self.client.get(url)
         self.assertIsInstance(res, HttpResponse)
-        self.assertEqual(200, res.status_code)
+        self.assertEqual(status.HTTP_200_OK, res.status_code)
         self.assertEqual("text/csv", res["Content-Type"])
 
     def test_retrieve_anonymous(self):

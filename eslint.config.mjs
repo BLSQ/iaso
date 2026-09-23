@@ -107,7 +107,6 @@ export default defineConfig([
                 mount: 'readonly',
                 render: 'readonly',
                 shallow: 'readonly',
-                sinon: 'readonly',
                 URLSearchParams: 'readonly',
             },
 

@@ -656,6 +656,7 @@ export const getFilters = (
             params.referenceInstances && params.referenceInstances !== 'all'
                 ? params.referenceInstances
                 : undefined,
+        org_unit_status: params.org_unit_status,
     };
     const filters = {};
     Object.keys(allFilters).forEach(k => {

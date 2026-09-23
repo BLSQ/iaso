@@ -1,4 +1,5 @@
 from django.contrib.auth.models import Permission
+from rest_framework import status
 
 from iaso import models as m
 from iaso.permissions.core_permissions import (
@@ -42,14 +43,14 @@ class DataSourcesAPITestCase(APITestCase):
         """GET /datasources/ without auth should result in a 401"""
 
         response = self.client.get("/api/datasources/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_datasource_list_with_auth_no_permissions(self):
         """GET /projects/ with auth should result in a 403 as no permission"""
         self.client.force_authenticate(self.jim)
 
         response = self.client.get("/api/datasources/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_datasource_list_with_auth_ok(self):
         """GET /datasource/ with auth should result in a 200"""
@@ -58,7 +59,7 @@ class DataSourcesAPITestCase(APITestCase):
 
         with self.assertNumQueries(7):
             response = self.client.get("/api/datasources/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_datasource_list_no_duplicates_when_multiple_projects(self):
         """A DataSource linked to multiple projects in the same account must not produce inflated org unit counts."""
@@ -77,7 +78,7 @@ class DataSourcesAPITestCase(APITestCase):
         with self.assertNumQueries(6):
             response = self.client.get("/api/datasources/")
 
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         source_ids = [s["id"] for s in data["sources"]]
         self.assertEqual(len(source_ids), len(set(source_ids)), "Duplicate DataSource entries found in response")
 
@@ -109,7 +110,7 @@ class DataSourcesAPITestCase(APITestCase):
             },
         )
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
     def test_datasource_post_without_credentials(self):
         """POST /datasource/ without credentials should NOT fail"""
@@ -125,7 +126,7 @@ class DataSourcesAPITestCase(APITestCase):
                 "project_ids": [self.project.pk],
             },
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
     def test_datasource_post_without_project_ids(self):
         """POST /datasource/ without project_ids should NOT fail"""
@@ -146,7 +147,7 @@ class DataSourcesAPITestCase(APITestCase):
                 },
             },
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
     def test_datasource_post_with_read_but_no_write_perms(self):
         """Can not create the data source with no write permission"""
@@ -168,7 +169,7 @@ class DataSourcesAPITestCase(APITestCase):
                 },
             },
         )
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_datasource_create_delete_fail_ok(self):
         """Create, read, delete fail, delete ok"""
@@ -190,28 +191,28 @@ class DataSourcesAPITestCase(APITestCase):
                 },
             },
         )
-        j = self.assertJSONResponse(response, 201)
+        j = self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         source_id = j["id"]
         response = self.client.get(f"/api/datasources/{source_id}/")
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(j["name"], "test_name")
 
         # read but not write
         self.client.force_authenticate(self.jane)
         response = self.client.get(f"/api/datasources/{source_id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         response = self.client.delete(f"/api/datasources/{source_id}/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
         # user with write
         self.client.force_authenticate(self.joe)
         response = self.client.delete(f"/api/datasources/{source_id}/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         self.assertEqual(m.DataSource.objects.filter(id=source_id).count(), 1)
 
         response = self.client.get(f"/api/datasources/{source_id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_datasource_update(self):
         self.client.force_authenticate(self.joe)
@@ -231,7 +232,7 @@ class DataSourcesAPITestCase(APITestCase):
         }
 
         response = self.client.put(f"/api/datasources/{self.data_source.id}/", format="json", data=data)
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.data_source.refresh_from_db()
         self.assertEqual(self.data_source.name, data["name"])
@@ -263,7 +264,7 @@ class DataSourcesAPITestCase(APITestCase):
         }
 
         response = self.client.put(f"/api/datasources/{self.data_source.id}/", format="json", data=data)
-        json_response = self.assertJSONResponse(response, 400)
+        json_response = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             ["User doesn't have the permission to change the default version of a data source."], json_response
         )
@@ -275,7 +276,7 @@ class DataSourcesAPITestCase(APITestCase):
         self.assertTrue(self.joe.has_perm(CORE_SOURCE_CAN_CHANGE_DEFAULT_VERSION_PERMISSION.full_name()))
 
         response = self.client.put(f"/api/datasources/{self.data_source.id}/", format="json", data=data)
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.data_source.refresh_from_db()
         self.assertEqual(self.data_source.default_version_id, new_default_version_id)
@@ -284,22 +285,22 @@ class DataSourcesAPITestCase(APITestCase):
         self.client.force_authenticate(self.joe)
 
         response = self.client.get("/api/datasources/?name=Data")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(data["sources"]), 1)
         self.assertEqual(data["sources"][0]["id"], self.data_source.pk)
         response = self.client.get("/api/datasources/?name=Pyra")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(data["sources"]), 1)
         self.assertEqual(data["sources"][0]["id"], self.data_source2.pk)
         response = self.client.get(f"/api/datasources/?project_ids={self.project.pk}")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(data["sources"]), 1)
         self.assertEqual(data["sources"][0]["id"], self.data_source.pk)
 
     def test_dropdown_datasource(self):
         self.client.force_authenticate(self.joe)
         response = self.client.get("/api/datasources/dropdown/?order=name")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(data), 2)
         self.assertEqual(data[0]["id"], self.data_source.pk)
         self.assertEqual(data[0]["name"], self.data_source.name)
@@ -307,12 +308,12 @@ class DataSourcesAPITestCase(APITestCase):
 
     def test_dropdown_datasource_without_user_authentication(self):
         response = self.client.get("/api/datasources/dropdown/?order=name")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_dropdown_datasource_with_user_without_permission(self):
         self.client.force_authenticate(self.jim)
         response = self.client.get("/api/datasources/dropdown/?order=name")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_datasource_update_can_unset_read_only(self):
         self.client.force_authenticate(self.joe)
@@ -334,14 +335,14 @@ class DataSourcesAPITestCase(APITestCase):
         }
 
         response = self.client.put(f"/api/datasources/{self.data_source.id}/", format="json", data=data)
-        json_response = self.assertJSONResponse(response, 200)
+        json_response = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertFalse(json_response["read_only"])
         self.data_source.refresh_from_db()
         self.assertFalse(self.data_source.read_only)
 
         response = self.client.get(f"/api/datasources/{self.data_source.id}/")
-        json_response = self.assertJSONResponse(response, 200)
+        json_response = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertFalse(json_response["read_only"])
 
     def test_datasource_update_without_read_only_does_not_alter_it(self):
@@ -364,7 +365,7 @@ class DataSourcesAPITestCase(APITestCase):
         }
 
         response = self.client.put(f"/api/datasources/{self.data_source.id}/", format="json", data=data)
-        json_response = self.assertJSONResponse(response, 200)
+        json_response = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertTrue(json_response["read_only"])
         self.data_source.refresh_from_db()

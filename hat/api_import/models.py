@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import CASCADE
 
+from iaso.utils.models.sized_file_field import SizedFileField
 from iaso.utils.models.upload_to import get_account_name_based_on_user
 
 
@@ -49,7 +50,7 @@ class APIImport(models.Model):
     headers = models.JSONField(null=True, blank=True)
     has_problem = models.BooleanField(default=False)
     exception = models.TextField(blank=True, default="")
-    file = models.FileField(upload_to=api_import_upload_to, null=True, blank=True)
+    file = SizedFileField(upload_to=api_import_upload_to, null=True, blank=True)
     app_id = models.TextField(blank=True, null=False)
     app_version = models.CharField(max_length=25, blank=True, null=False)
 

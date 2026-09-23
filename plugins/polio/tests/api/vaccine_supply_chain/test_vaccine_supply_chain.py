@@ -49,6 +49,23 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
         self.assertEqual(len(res), 2)
         self.assertEqual(res[0]["obr_name"], self.vaccine_request_form_rdc_1.campaign.obr_name)
 
+    def test_filter_by_campaign_category(self):
+        self.client.force_authenticate(user=self.user_rw_perm)
+        self.campaign_chad_1.is_preventive = True
+        self.campaign_chad_1.save()
+
+        response = self.client.get(f"{self.BASE_URL}?campaign_category=is_preventive")
+        self.assertEqual(response.status_code, 200)
+        res = response.data["results"]
+        self.assertEqual(len(res), 1)
+        self.assertEqual(res[0]["obr_name"], self.campaign_chad_1.obr_name)
+
+        response = self.client.get(f"{self.BASE_URL}?campaign_category=regular")
+        self.assertEqual(response.status_code, 200)
+        res = response.data["results"]
+        self.assertEqual(len(res), 2)
+        self.assertTrue(all(item["obr_name"] != self.campaign_chad_1.obr_name for item in res))
+
     def test_user_without_read_rights_cannot_see_detail(self):
         self.client.force_authenticate(user=self.user_no_perms)
         response = self.client.get(self.BASE_URL + str(self.vaccine_request_form_rdc_1.id) + "/")
@@ -126,6 +143,37 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
         res = response.data
         self.assertEqual(res["campaign"], str(campaign_test.id))
         self.assertEqual(res["vaccine_type"], pm.VACCINES[0][0])
+
+    def test_user_can_post_request_form_with_ipv_vaccine_type(self):
+        self.client.force_authenticate(user=self.user_ro_perm)
+
+        campaign_test = pm.Campaign.objects.create(
+            obr_name="TEST_IPV_CAMPAIGN",
+            country=self.org_unit_DRC,
+            account=self.account,
+        )
+        campaign_test_round_1 = pm.Round.objects.create(
+            campaign=campaign_test,
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
+            number=1,
+        )
+
+        response = self.client.post(
+            self.BASE_URL,
+            data={
+                "campaign": campaign_test.obr_name,
+                "vaccine_type": "IPV",
+                "date_vrf_reception": "2021-01-01",
+                "date_vrf_signature": "2021-01-02",
+                "date_dg_approval": "2021-01-03",
+                "quantities_ordered_in_doses": 1000000,
+                "rounds": [{"number": campaign_test_round_1.number}],
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data["vaccine_type"], "IPV")
 
     def test_vaccine_request_form_permissions(self):
         # Create a non-admin user with basic permissions

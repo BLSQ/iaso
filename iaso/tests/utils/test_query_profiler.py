@@ -56,6 +56,54 @@ class QueryProfilerTest(TestCase):
         # 1 INSERT INTO "iaso_account" + 1 UPDATE "iaso_account" - the regex matches both keywords.
         self.assertEqual(profiler.table_counts()["iaso_account"], 2)
 
+    def test_assert_less_equal_query_count_passes_within_bounds(self):
+        with QueryProfiler() as profiler:
+            m.Account.objects.filter(pk=MISSING_PK).exists()
+            m.Account.objects.filter(pk=MISSING_PK - 1).exists()
+            m.Project.objects.filter(pk=MISSING_PK).exists()
+
+        profiler.assertLessEqualQueryCount({"iaso_account": 2, "iaso_project": 1})
+
+    def test_assert_less_equal_query_count_fails_on_unaccounted_table(self):
+        with QueryProfiler() as profiler:
+            m.Account.objects.filter(pk=MISSING_PK).exists()
+            m.Project.objects.filter(pk=MISSING_PK).exists()
+
+        # iaso_project was queried but isn't in `expected` or `exclude` - a bare allow-list check
+        # would silently miss this; catching it is the whole point of the accounting requirement.
+        with self.assertRaises(AssertionError) as cm:
+            profiler.assertLessEqualQueryCount({"iaso_account": 1})
+        self.assertIn("iaso_project: not in `expected` or `exclude`, got 1", str(cm.exception))
+
+    def test_assert_less_equal_query_count_exclude_skips_accounting(self):
+        with QueryProfiler() as profiler:
+            m.Account.objects.filter(pk=MISSING_PK).exists()
+            m.Project.objects.filter(pk=MISSING_PK).exists()
+
+        profiler.assertLessEqualQueryCount({"iaso_account": 1}, exclude=["iaso_project"])
+
+    def test_assert_less_equal_query_count_fails_when_bound_exceeded(self):
+        with QueryProfiler() as profiler:
+            m.Account.objects.filter(pk=MISSING_PK).exists()
+            m.Account.objects.filter(pk=MISSING_PK - 1).exists()
+
+        with self.assertRaises(AssertionError) as cm:
+            profiler.assertLessEqualQueryCount({"iaso_account": 1})
+        self.assertIn("iaso_account: expected <= 1, got 2", str(cm.exception))
+
+    def test_assert_less_equal_query_count_reports_every_violation_at_once(self):
+        with QueryProfiler() as profiler:
+            m.Account.objects.filter(pk=MISSING_PK).exists()
+            m.Account.objects.filter(pk=MISSING_PK - 1).exists()
+            m.Project.objects.filter(pk=MISSING_PK).exists()
+            m.Project.objects.filter(pk=MISSING_PK - 1).exists()
+
+        with self.assertRaises(AssertionError) as cm:
+            profiler.assertLessEqualQueryCount({"iaso_account": 1, "iaso_project": 1})
+        message = str(cm.exception)
+        self.assertIn("iaso_account: expected <= 1, got 2", message)
+        self.assertIn("iaso_project: expected <= 1, got 2", message)
+
     def test_queries_for_table_returns_only_matching_queries(self):
         with QueryProfiler() as profiler:
             m.Account.objects.filter(pk=MISSING_PK).exists()

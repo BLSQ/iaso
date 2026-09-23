@@ -3,6 +3,7 @@ import datetime
 import time_machine
 
 from django.utils import timezone
+from rest_framework import status
 
 from iaso import models as m
 from iaso.api.tasks.serializers import TaskSerializer
@@ -162,7 +163,7 @@ class IasoTasksTestCase(APITestCase):
     def test_tasks_user_without_permissions_access(self):
         self.client.force_authenticate(self.miguel)
         response = self.client.get("/api/tasks/")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_tasks_user_can_access(self):
         """
@@ -180,7 +181,7 @@ class IasoTasksTestCase(APITestCase):
         )
 
         response = self.client.get("/api/tasks/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()["tasks"][0]["name"], "The best task")
         self.assertEqual(response.json()["tasks"][0]["status"], SUCCESS)
         self.assertEqual(response.json()["tasks"][0]["id"], task.id)
@@ -198,7 +199,7 @@ class IasoTasksTestCase(APITestCase):
             created_by=self.miguel,
         )
         response = self.client.get(f"/api/tasks/{task_by_miguel.id}/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()["id"], task_by_miguel.id)
 
         """
@@ -209,7 +210,7 @@ class IasoTasksTestCase(APITestCase):
             created_by=self.johnny,
         )
         response = self.client.get(f"/api/tasks/{task_by_johnny.id}/")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_relaunch_task(self):
         """
@@ -234,7 +235,7 @@ class IasoTasksTestCase(APITestCase):
         )
 
         response = self.client.patch(f"/api/tasks/{task_by_miguel.id}/relaunch/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()["id"], task_by_miguel.id)
 
         """
@@ -245,7 +246,7 @@ class IasoTasksTestCase(APITestCase):
             created_by=self.johnny,
         )
         response = self.client.get(f"/api/tasks/{task_by_johnny.id}/")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_relaunch_task_status_fail(self):
         """
@@ -260,7 +261,7 @@ class IasoTasksTestCase(APITestCase):
         )
 
         response = self.client.patch(f"/api/tasks/{task_by_miguel.id}/relaunch/")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json()["status"], "You cannot relaunch a task with status QUEUED.")
 
     def test_tasks_filtering(self):
@@ -316,7 +317,7 @@ class IasoTasksTestCase(APITestCase):
 
         # No filter: all tasks are returned
         response = self.client.get("/api/tasks/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["tasks"]), 5)
 
         # Filter on user id
@@ -369,7 +370,7 @@ class IasoTasksTestCase(APITestCase):
 
         response = self.client.get("/api/tasks/deployment-status/")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             response.json(),
             {
@@ -414,7 +415,7 @@ class IasoTasksTestCase(APITestCase):
 
         response = self.client.get("/api/tasks/deployment-status/")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
         self.assertEqual(data["can_deploy"], False)
         self.assertEqual(data["blocking_tasks_count"], 2)
@@ -476,7 +477,7 @@ class IasoTasksTestCase(APITestCase):
             "&start_date=19-01-2024&end_date=21-01-2024"
         )
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
         self.assertEqual(data["can_deploy"], False)
         self.assertEqual(data["blocking_tasks_count"], 1)
@@ -504,11 +505,11 @@ class IasoTasksTestCase(APITestCase):
 
     def test_deployment_status_requires_superuser(self):
         response = self.client.get("/api/tasks/deployment-status/")
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         self.client.force_authenticate(self.johnny)
         response = self.client.get("/api/tasks/deployment-status/")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
         staff_user = self.create_user_with_profile(
             username="staff",
@@ -518,7 +519,7 @@ class IasoTasksTestCase(APITestCase):
         )
         self.client.force_authenticate(staff_user)
         response = self.client.get("/api/tasks/deployment-status/")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
         superuser_without_staff = self.create_user_with_profile(
             username="superuser_without_staff",
@@ -528,16 +529,16 @@ class IasoTasksTestCase(APITestCase):
         )
         self.client.force_authenticate(superuser_without_staff)
         response = self.client.get("/api/tasks/deployment-status/")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.superuser)
         response = self.client.get("/api/tasks/deployment-status/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_logs_not_found(self):
         self.client.force_authenticate(self.johnny)
         response = self.client.get("/api/tasks/100000/logs/")
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_logs_not_authenticated(self):
         task = m.Task.objects.create(
@@ -549,7 +550,7 @@ class IasoTasksTestCase(APITestCase):
             name="The best task",
         )
         response = self.client.get(f"/api/tasks/{task.id}/logs/")
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_logs_authenticated(self):
         task = m.Task.objects.create(
@@ -577,7 +578,7 @@ class IasoTasksTestCase(APITestCase):
         m.TaskLog.objects.create(task=task2, message="Simply the worst task.")
         self.client.force_authenticate(self.johnny)
         response = self.client.get(f"/api/tasks/{task.id}/logs/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()["status"], SUCCESS)
         self.assertEqual(response.json()["end_value"], 1)
         self.assertEqual(response.json()["progress_value"], 1)

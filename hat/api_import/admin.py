@@ -6,7 +6,8 @@ from .models import APIImport
 @admin.register(APIImport)
 class APIImportAdmin(admin.GeoModelAdmin):
     date_hierarchy = "created_at"
-    search_fields = ("json_body", "headers", "exception")
+    search_fields = ("app_id", "json_body", "headers", "exception")
+    autocomplete_fields = ("user",)
     list_display = (
         "id",
         "created_at",
@@ -18,7 +19,6 @@ class APIImportAdmin(admin.GeoModelAdmin):
     list_filter = (
         "has_problem",
         "import_type",
-        "app_id",
     )
 
     def get_queryset(self, request):

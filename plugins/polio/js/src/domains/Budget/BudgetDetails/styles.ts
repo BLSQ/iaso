@@ -35,7 +35,6 @@ export const useStyles = makeStyles(theme => ({
         color: theme.palette.success.main,
     },
     taskPending: {
-        // @ts-ignore
         color: theme.palette.mediumGray.main,
     },
     itemLabel: {
@@ -43,7 +42,6 @@ export const useStyles = makeStyles(theme => ({
     },
     divider: {
         height: '30px',
-        // @ts-ignore
         backgroundColor: theme.palette.gray.main,
     },
     stepCompleted: {
@@ -53,13 +51,11 @@ export const useStyles = makeStyles(theme => ({
     },
     stepActive: {
         '& + div .MuiStepConnector-lineHorizontal': {
-            // @ts-ignore
             borderColor: theme.palette.yellow.main,
         },
     },
     stepInactive: {
         '& + div .MuiStepConnector-lineHorizontal': {
-            // @ts-ignore
             borderColor: theme.palette.gray.main,
         },
     },
@@ -67,7 +63,6 @@ export const useStyles = makeStyles(theme => ({
         textDecoration: 'line-through',
     },
     overrideIcon: {
-        // @ts-ignore
         color: theme.palette.gray.main,
     },
     latestItem: { fontWeight: 'bold' },

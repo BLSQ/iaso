@@ -20,7 +20,6 @@ type FormFormProps = {
 const useStyles = makeStyles(theme => ({
     fakeField: {
         padding: theme.spacing(2),
-        // @ts-ignore
         border: `1px solid ${theme.palette.border.main}`,
         borderRadius: 4,
     },

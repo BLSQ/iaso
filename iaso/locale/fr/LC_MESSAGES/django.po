@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-23 07:27+0000\n"
+"POT-Creation-Date: 2026-07-30 08:47+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -164,6 +164,10 @@ msgid "The file must be a CSV."
 msgstr "Le fichier doit être un CSV"
 
 #: iaso/api/metrics/serializers.py
+msgid "Unable to determine the CSV delimiter."
+msgstr "Impossible de déterminer le délimiteur du CSV"
+
+#: iaso/api/metrics/serializers.py
 #, python-brace-format
 msgid "The CSV must contain '{missing_headers}' columns."
 msgstr "Le CSV doit contenir les en-têtes '{missing_headers}'"
@@ -187,6 +191,10 @@ msgstr "Ces IDs d'org unit n'existent pas:"
 #: iaso/api/metrics/serializers.py
 msgid "Year must be between 1900 and 2100."
 msgstr "L'année doit être entre 1900 et 2100,"
+
+#: iaso/api/metrics/serializers.py
+msgid "metric_type_ids must be a comma-separated list of integers."
+msgstr "metric_type_ids doit être une liste d'integer séparé par une virgule"
 
 #: iaso/api/microplanning/filters.py
 msgid "Planning is missing sampling group or target org unit scope"
@@ -387,12 +395,10 @@ msgid "Group must be in the same source version"
 msgstr "Le groupe doit être dans la même version source"
 
 #: iaso/api/org_units.py
-#, python-brace-format
 msgid "InstanceFile with id {} does not exist"
 msgstr "Le fichier d'instance avec l'id {} n'existe pas"
 
 #: iaso/api/org_units.py
-#, python-brace-format
 msgid "Another valid OrgUnit already exists with the code '{}' in this version"
 msgstr ""
 "Une autre unité d'organisation valide existe déjà avec le code '{}' dans "
@@ -1025,8 +1031,8 @@ msgid "Trypelim project"
 msgstr "Projet Trypelim"
 
 #: iaso/modules.py
-msgid "Data validation"
-msgstr "Validation des données"
+msgid "Change requests"
+msgstr "Demandes de changement"
 
 #: iaso/modules.py
 msgid "SaaS"
@@ -1372,8 +1378,66 @@ msgstr "Virus détecté"
 msgid "Error"
 msgstr "Erreur lors de l'analyse"
 
+#, python-brace-format
+#~ msgid "Dynamic fields cannot contain both {all_fields} and {default_fields}"
+#~ msgstr ""
+#~ "Les champs dynamiques ne peuvent pas contenir à la fois {all_fields} et "
+#~ "{default_fields}"
+
+#, python-brace-format
+#~ msgid "Invalid dynamic fields: {fields}"
+#~ msgstr "Champs dynamiques invalides : {fields}"
+
+#~ msgid "Data validation"
+#~ msgstr "Validation des données"
+
 #~ msgid "Account id is required."
 #~ msgstr "L'identifiant du compte est requis."
+
+#, fuzzy
+#~| msgid "Exported"
+#~ msgid "Aborted!"
+#~ msgstr "Exporté"
+
+#, fuzzy, python-brace-format
+#~| msgid "Invalid value."
+#~ msgid "Invalid value: {message}"
+#~ msgstr "Valeur invalide"
+
+#, fuzzy
+#~| msgid "Fixing parents"
+#~ msgid "Missing argument"
+#~ msgstr "Correction des parents"
+
+#, fuzzy
+#~| msgid "Specific options"
+#~ msgid "Missing option"
+#~ msgstr "Options spécifiques"
+
+#, fuzzy
+#~| msgid "Fixing parents"
+#~ msgid "Missing parameter"
+#~ msgstr "Correction des parents"
+
+#, fuzzy
+#~| msgid "Unknown"
+#~ msgid "unknown error"
+#~ msgstr "Inconnu"
+
+#, fuzzy
+#~| msgid "Data source synchronization"
+#~ msgid "Repeat for confirmation"
+#~ msgstr "Synchronisation de source de données"
+
+#, fuzzy, python-brace-format
+#~| msgid "Parent is not in the same version"
+#~ msgid "{value} is not in the range {range}."
+#~ msgstr "Le parent n'est pas dans la même version"
+
+#, fuzzy
+#~| msgid "Model {value} does not exist."
+#~ msgid "{name} {filename!r} does not exist."
+#~ msgstr "Le modèle {value} n'existe pas."
 
 #~ msgid "Planning id is required in the URL path."
 #~ msgstr "L'ID du planning est requis dans le chemin de l'URL."

@@ -7,5 +7,5 @@ export const changeRequestModeOptions = [
     CR_MODE_IF_REFERENCE_FORM,
 ].map(changeRequestMode => ({
     value: changeRequestMode,
-    label: MESSAGES[changeRequestMode.toLowerCase()],
+    label: MESSAGES[changeRequestMode.toLowerCase() as keyof typeof MESSAGES],
 }));

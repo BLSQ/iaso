@@ -26,7 +26,7 @@ def generate_xlsx_campaigns_calendar(filename: str, datas: Any) -> Workbook:
                 datas (list[dict]): a list of data dictionaries
 
         returns:
-                file (openpyxl.workbook): Saved file openpyxl.workbook object
+                file (openpyxl.workbook): openpyxl.workbook object
     """
     file = Workbook()
     sheet = file.active
@@ -82,8 +82,6 @@ def generate_xlsx_campaigns_calendar(filename: str, datas: Any) -> Workbook:
                 cell_border(cell_format, False, True)
             else:
                 cell_border(cell_format, False, False)
-
-    file.save(filename)
 
     return file
 

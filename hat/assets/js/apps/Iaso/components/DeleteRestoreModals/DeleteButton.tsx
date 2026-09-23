@@ -34,7 +34,7 @@ export const DeleteButton: FunctionComponent<Props> = ({
             size={size}
             sx={sx}
         >
-            {message ?? formatMessage(messages.delete)}
+            {message ? formatMessage(message) : formatMessage(messages.delete)}
         </Button>
     );
 };

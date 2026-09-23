@@ -200,7 +200,7 @@ export const useFormsTableColumns = ({
                 id: 'org_unit_types',
                 Cell: settings =>
                     settings.row.original.org_unit_types
-                        ?.map(o => o.short_name)
+                        ?.map((o: { short_name: string }) => o.short_name)
                         ?.join(', '),
             },
             {
@@ -210,7 +210,7 @@ export const useFormsTableColumns = ({
                 id: 'org_unit_groups',
                 Cell: settings =>
                     settings.row.original.org_unit_groups
-                        ?.map(g => g.name)
+                        ?.map((g: { name: string }) => g.name)
                         ?.join(', '),
             },
             {

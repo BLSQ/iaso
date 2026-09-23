@@ -71,7 +71,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     formAI: {
         url: 'forms/ai',
-        params: ['accountId'],
+        params: ['accountId', 'formId'],
     },
     pipelineList: {
         url: 'settings/pipelines/',
@@ -127,6 +127,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'projectIds',
             'isSearchActive',
             'referenceInstances',
+            'org_unit_status',
         ],
     },
     instanceDetail: {
@@ -351,6 +352,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'user_ids',
             'created_at_before',
             'created_at_after',
+            'fields',
             ...paginationPathParams,
         ],
     },

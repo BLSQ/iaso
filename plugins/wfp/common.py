@@ -18,7 +18,7 @@ Usage:
 import logging
 import traceback
 
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta, timezone
 from functools import reduce
 from operator import or_
 
@@ -103,6 +103,21 @@ ASSISTANCE_FORMS = frozenset(
         "ethiopia_child_assistance_follow_up",
     ]
 )
+
+# Bangladesh has its own BSFP visit and medical forms.
+BANGLADESH_BSFP_FORMS = frozenset({"bsfp_child_visit", "bsfp_pbwg_visit"})
+BANGLADESH_BSFP_FOLLOWUP_FORMS = frozenset({"bsfp_child_followup_visit", "bsfp_pbwg_followup_visit"})
+# In these forms `is_child_alive` is about the beneficiary; in the PBWG forms it is about her infant.
+BANGLADESH_U5_BSFP_FORMS = frozenset({"bsfp_child_visit", "bsfp_child_followup_visit"})
+BANGLADESH_MEDICAL_FORMS = frozenset(
+    {
+        "Child Medical Admission_2_u6",
+        "medical_follow_up_u6",
+        "wfp_coda_medical_visit_PBWG",
+        "wfp_coda_medical_follow_up_visit_PBWG",
+    }
+)
+BANGLADESH_ENTITY_TYPE_PREFIX = "bangladesh"
 # Program to exclude in the data to push to dhis2
 EXCLUDED_PROGRAMMES = [None, "", "Not Eligible", "OTP - Under 6"]
 
@@ -294,11 +309,51 @@ def extract_exit_type(data):
     return _convert_exit_type(exit_type)
 
 
+def extract_bangladesh_exit_type(form_id, data):
+    """Extract exit type from a Bangladesh anthropometric form.
+
+    Bangladesh forms store the programme the beneficiary stays in (``_programme`` or ``programme``):
+    ``NONE`` means the beneficiary leaves the programme. TSFP follow-up forms also set
+    ``discharge_program`` to ``TSFP`` whenever the beneficiary leaves TSFP, including towards BSFP.
+    Other exit signals are only read on those visits, so a calculated flag (green visits, non respondent)
+    does not end a journey the health worker kept open. The answer to "not continuing" is always read:
+    the BSFP child follow-up keeps its programme when the child does not continue.
+    """
+    programme = _first_of(data, "_programme", "programme")
+    reason = _convert_exit_type(
+        _first_of(data, "reason_not_continue", "reasons_not_continuing", "reason_for_not_continuing")
+    )
+
+    if programme != "NONE" and data.get("discharge_program") != "TSFP":
+        return reason
+
+    if programme == "BSFP":
+        return "transfer_to_bsfp"
+    if form_id in BANGLADESH_U5_BSFP_FORMS and data.get("is_child_alive") == "0":
+        return "death"
+    if data.get("confirm_discharge_tsfp__int__") == "1" or data.get("confirm_otp_referral") == "1":
+        return "transfer_to_otp"
+    if data.get("confirm_tsfp_referral") == "1":
+        return "transfer_to_tsfp"
+    if reason:
+        return reason
+    if data.get("_age_band") == "exit" or data.get("_infant_exit") == "1":
+        return "age_limit"
+    if data.get("discharge_note__int__") == "1" or data.get("_cured") == "1":
+        return "cured"
+    if data.get("non_respondent__int__") == "1" or data.get("non_respondent") == "1":
+        return "non_respondent"
+    if data.get("_defaulter") == "1":
+        return "defaulter"
+    return "other"
+
+
 _EXIT_TYPE_MAP = {
     "dismissedduetocheating": "dismissed_due_to_cheating",
     "dismissal": "dismissed_due_to_cheating",
     "transferredout": "transferred_out",
     "voluntarywithdrawal": "voluntary_withdrawal",
+    "voluntary": "voluntary_withdrawal",
 }
 
 
@@ -325,6 +380,20 @@ def extract_weight(data):
 def extract_visit_date(submission):
     """Extract the best available date from a submission dict."""
     return submission.get("source_created_at") or submission.get("created_at")
+
+
+def extract_form_visit_date(submission):
+    """Extract the actual visit date entered in the form (``visit_date``).
+
+    The day is stored at noon UTC so that it stays the same day in the local time zone.
+    Falls back to ``extract_visit_date`` when the form has no valid visit date.
+    """
+    raw = (submission.get("json") or {}).get("visit_date")
+    try:
+        visit_day = datetime.strptime(str(raw)[:10], "%Y-%m-%d").date()
+    except (ValueError, TypeError):
+        return extract_visit_date(submission)
+    return datetime.combine(visit_day, time(12, 0), tzinfo=timezone.utc)
 
 
 def extract_muac(data):
@@ -679,6 +748,40 @@ class ETL:
     def __init__(self, entity_type=None):
         self.entity_type = entity_type
 
+    def _is_bangladesh(self):
+        return bool(self.entity_type) and self.entity_type.startswith(BANGLADESH_ENTITY_TYPE_PREFIX)
+
+    @property
+    def admission_forms(self):
+        return ADMISSION_FORMS | BANGLADESH_BSFP_FORMS if self._is_bangladesh() else ADMISSION_FORMS
+
+    @property
+    def assistance_forms(self):
+        return (
+            ASSISTANCE_FORMS | BANGLADESH_BSFP_FORMS | BANGLADESH_MEDICAL_FORMS
+            if self._is_bangladesh()
+            else ASSISTANCE_FORMS
+        )
+
+    @property
+    def all_anthropometric_forms(self):
+        return (
+            ALL_ANTHROPOMETRIC_FORMS | BANGLADESH_BSFP_FORMS | BANGLADESH_BSFP_FOLLOWUP_FORMS
+            if self._is_bangladesh()
+            else ALL_ANTHROPOMETRIC_FORMS
+        )
+
+    def _extract_exit_type(self, submission):
+        data = submission.get("json", {})
+        if self._is_bangladesh():
+            return extract_bangladesh_exit_type(submission.get("form__form_id"), data)
+        return extract_exit_type(data)
+
+    def _extract_visit_date(self, submission):
+        if self._is_bangladesh():
+            return extract_form_visit_date(submission)
+        return extract_visit_date(submission)
+
     def delete_beneficiaries(self, account_id):
         deleted_count, deleted = Beneficiary.objects.filter(account=account_id).delete()
         MonthlyStatistics.objects.filter(account=account_id).delete()
@@ -698,7 +801,7 @@ class ETL:
 
     def get_account(self):
         entity_type = EntityType.objects.select_related("account").filter(code=self.entity_type).first()
-        return entity_type.account
+        return entity_type.account if entity_type else None
 
     def get_updated_data(self, updated_at=None):
         entities = Instance.objects.filter(entity__entity_type__code=self.entity_type)
@@ -808,7 +911,7 @@ class ETL:
 
             # If this journey ended with a transfer, prepare info for the
             # next journey group.
-            if journey.exit_type in ("transfer_to_tsfp", "transfer_to_otp"):
+            if journey.exit_type in ("transfer_to_tsfp", "transfer_to_otp", "transfer_to_bsfp"):
                 transfer_info = self._build_transfer_info(journey)
 
         if not all_journeys:
@@ -890,7 +993,7 @@ class ETL:
             if (
                 form_id in JOURNEY_STARTING_FORMS
                 and current
-                or (form_id in ALL_ANTHROPOMETRIC_FORMS and current_has_exit and current)
+                or (form_id in self.all_anthropometric_forms and current_has_exit and current)
             ):
                 should_split = True
 
@@ -903,9 +1006,8 @@ class ETL:
 
             # Detect exit events so we know to split on the next
             # anthropometric form.
-            if form_id in ALL_ANTHROPOMETRIC_FORMS:
-                data = sub.get("json", {})
-                et = extract_exit_type(data)
+            if form_id in self.all_anthropometric_forms:
+                et = self._extract_exit_type(sub)
                 if et is not None and et != "":
                     current_has_exit = True
 
@@ -915,7 +1017,7 @@ class ETL:
         # Keep groups that have at least one anthropometric form (they
         # will have either an explicit admission or will be handled via
         # transfer_info).
-        return [j for j in journeys if any(s.get("form__form_id") in ALL_ANTHROPOMETRIC_FORMS for s in j)]
+        return [j for j in journeys if any(s.get("form__form_id") in self.all_anthropometric_forms for s in j)]
 
     # ------------------------------------------------------------------
     # Journey processing
@@ -941,7 +1043,7 @@ class ETL:
         admission_sub = None
         admission_data = None
         for sub in submissions:
-            if sub.get("form__form_id") in ADMISSION_FORMS:
+            if sub.get("form__form_id") in self.admission_forms:
                 admission_sub = sub
                 admission_data = sub.get("json", {})
                 break
@@ -955,7 +1057,7 @@ class ETL:
             physiology_status = extract_pbwg_physiology(admission_data)
             admission_type = extract_admission_type(admission_data)
             admission_criteria = extract_admission_criteria(admission_data)
-            start_date = extract_visit_date(admission_sub)
+            start_date = self._extract_visit_date(admission_sub)
             initial_weight = extract_weight(admission_data)
             instance_id = admission_sub["id"]
         else:
@@ -982,12 +1084,12 @@ class ETL:
             if w is not None:
                 discharge_weight = w
 
-            vd = extract_visit_date(sub)
+            vd = self._extract_visit_date(sub)
             if vd is not None:
                 last_visit_date = vd
 
-            if form_id in ALL_ANTHROPOMETRIC_FORMS:
-                et = extract_exit_type(data)
+            if form_id in self.all_anthropometric_forms:
+                et = self._extract_exit_type(sub)
                 if et is not None and et != "":
                     exit_type = et
                     end_date = vd
@@ -1070,6 +1172,14 @@ class ETL:
         elif journey.exit_type == "transfer_to_otp":
             programme = "OTP"
             admission_type = "referred_from_tsfp_mam"
+        elif journey.exit_type == "transfer_to_bsfp":
+            programme = "BSFP"
+            if journey.nutrition_programme == "OTP":
+                admission_type = "referred_from_otp_sam"
+            elif journey.nutrition_programme == "TSFP":
+                admission_type = "referred_from_tsfp_mam"
+            else:
+                admission_type = "referred_from_otp_sam"
         else:
             return None
 
@@ -1089,8 +1199,7 @@ class ETL:
     # Defaulter detection
     # ------------------------------------------------------------------
 
-    @staticmethod
-    def _check_defaulter(submissions):
+    def _check_defaulter(self, submissions):
         """Check whether the entity defaulted during this journey.
 
         Looks at the **last** assistance form.  If its scheduled next
@@ -1106,7 +1215,7 @@ class ETL:
         for idx in range(len(submissions) - 1, -1, -1):
             sub = submissions[idx]
             form_id = sub.get("form__form_id")
-            if form_id in ASSISTANCE_FORMS:
+            if form_id in self.assistance_forms:
                 data = sub.get("json", {})
                 nv_date, _ = _extract_next_visit_info(data)
                 if nv_date:
@@ -1135,7 +1244,7 @@ class ETL:
 
         # Check if there is any anthropometric form AFTER this assistance form.
         has_later_anthro = any(
-            submissions[i].get("form__form_id") in ALL_ANTHROPOMETRIC_FORMS
+            submissions[i].get("form__form_id") in self.all_anthropometric_forms
             for i in range(last_assistance_idx + 1, len(submissions))
         )
 
@@ -1148,8 +1257,7 @@ class ETL:
     # Visit grouping
     # ------------------------------------------------------------------
 
-    @staticmethod
-    def _group_into_visits(submissions):
+    def _group_into_visits(self, submissions):
         """Group a journey's submissions into visit groups.
 
         Each anthropometric form anchors a new visit.  Non-anthropometric
@@ -1161,7 +1269,7 @@ class ETL:
 
         for sub in submissions:
             form_id = sub.get("form__form_id")
-            if form_id in ALL_ANTHROPOMETRIC_FORMS and current:
+            if form_id in self.all_anthropometric_forms and current:
                 visits.append(current)
                 current = []
             current.append(sub)
@@ -1170,14 +1278,13 @@ class ETL:
             visits.append(current)
 
         # Only keep groups that actually contain an anthropometric form.
-        return [v for v in visits if any(s.get("form__form_id") in ALL_ANTHROPOMETRIC_FORMS for s in v)]
+        return [v for v in visits if any(s.get("form__form_id") in self.all_anthropometric_forms for s in v)]
 
     # ------------------------------------------------------------------
     # Visit processing
     # ------------------------------------------------------------------
 
-    @staticmethod
-    def _process_visit(submissions, journey, visit_number):
+    def _process_visit(self, submissions, journey, visit_number):
         """Create a Visit and its Steps from a visit group.
 
         Returns ``(Visit, [Step])`` or ``None``.
@@ -1185,7 +1292,7 @@ class ETL:
         anthro_sub = None
         anthro_data = None
         for sub in submissions:
-            if sub.get("form__form_id") in ALL_ANTHROPOMETRIC_FORMS:
+            if sub.get("form__form_id") in self.all_anthropometric_forms:
                 anthro_sub = sub
                 anthro_data = sub.get("json", {})
                 break
@@ -1195,7 +1302,7 @@ class ETL:
 
         visit = Visit(
             journey=journey,
-            date=extract_visit_date(anthro_sub),
+            date=self._extract_visit_date(anthro_sub),
             number=visit_number,
             muac_size=extract_muac(anthro_data),
             whz_color=extract_whz_color(anthro_data),

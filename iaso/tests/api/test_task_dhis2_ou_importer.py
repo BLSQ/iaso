@@ -1,3 +1,5 @@
+from rest_framework import status
+
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_SOURCE_PERMISSION
 from iaso.test import APITestCase
@@ -23,7 +25,7 @@ class ApiDhis2ouimporterTestCase(APITestCase):
                 "source_version_number": 1,
             },
         )
-        jr = self.assertJSONResponse(response, 403)
+        jr = self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         self.assertEqual({"detail": "You do not have permission to perform this action."}, jr)
 
     def test_no_perm_source(self):
@@ -37,7 +39,7 @@ class ApiDhis2ouimporterTestCase(APITestCase):
                 "source_version_number": 1,
             },
         )
-        jr = self.assertJSONResponse(response, 400)
+        jr = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertEqual({"non_field_errors": ["Unauthorized source_id"]}, jr)
 
     def test_ok(self):
@@ -57,7 +59,7 @@ class ApiDhis2ouimporterTestCase(APITestCase):
                 "source_version_number": 1,
             },
         )
-        jr = self.assertJSONResponse(response, 200)
+        jr = self.assertJSONResponse(response, status.HTTP_200_OK)
         task = self.assertValidTaskAndInDB(jr)
         self.assertEqual(task.launcher, self.user)
         self.assertEqual(task.params["kwargs"]["source_id"], source.id)
@@ -81,7 +83,7 @@ class ApiDhis2ouimporterTestCase(APITestCase):
                 "source_version_number": 1,
             },
         )
-        jr = self.assertJSONResponse(response, 400)
+        jr = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertEqual({"non_field_errors": ["No valid credentials exist for this source, please provide them"]}, jr)
 
     def test_pass_credentials(self):
@@ -102,7 +104,7 @@ class ApiDhis2ouimporterTestCase(APITestCase):
                 "dhis2_password": "overid pwd",
             },
         )
-        jr = self.assertJSONResponse(response, 200)
+        jr = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidTaskAndInDB(jr)
 
     def test_override_credentials(self):
@@ -125,7 +127,7 @@ class ApiDhis2ouimporterTestCase(APITestCase):
                 "dhis2_password": "override pwd",
             },
         )
-        jr = self.assertJSONResponse(response, 200)
+        jr = self.assertJSONResponse(response, status.HTTP_200_OK)
         task = self.assertValidTaskAndInDB(jr)
         self.assertEqual(task.launcher, self.user)
         self.assertEqual(task.params["kwargs"]["source_id"], source.id)
@@ -153,7 +155,7 @@ class ApiDhis2ouimporterTestCase(APITestCase):
                 "dhis2_password": "override pwd",
             },
         )
-        jr = self.assertJSONResponse(response, 200)
+        jr = self.assertJSONResponse(response, status.HTTP_200_OK)
         task = self.assertValidTaskAndInDB(jr)
         self.assertEqual(task.launcher, self.user)
         self.assertEqual(task.params["kwargs"]["source_id"], source.id)

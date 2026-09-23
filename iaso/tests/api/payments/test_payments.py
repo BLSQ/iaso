@@ -1,3 +1,5 @@
+from rest_framework import status
+
 from hat.audit import models as am
 from iaso import models as m
 from iaso.models.payments import PaymentStatuses
@@ -48,7 +50,7 @@ class PaymentViewSetAPITestCase(APITestCase):
     def test_list(self):
         self.client.force_authenticate(user=self.user)
         response = self.client.get("/api/payments/")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertIn("count", r)
         results = r["results"]
         result = results[0]
@@ -65,7 +67,7 @@ class PaymentViewSetAPITestCase(APITestCase):
     def test_retrieve(self):
         self.client.force_authenticate(user=self.user)
         response = self.client.get(f"/api/payments/{self.payment.id}/")
-        result = self.assertJSONResponse(response, 200)
+        result = self.assertJSONResponse(response, status.HTTP_200_OK)
         change_requests = result["change_requests"]
         change_request = result["change_requests"][0]
         self.assertEqual(len(change_requests), 1)
@@ -78,7 +80,7 @@ class PaymentViewSetAPITestCase(APITestCase):
     def test_update_status(self):
         self.client.force_authenticate(user=self.user)
         response = self.client.patch(f"/api/payments/{self.payment.id}/", format="json", data={"status": "sent"})
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(r["status"], PaymentStatuses.SENT)
         self.assertEqual(r["updated_by"], self.user.id)
         self.payment_lot.refresh_from_db()
@@ -88,7 +90,7 @@ class PaymentViewSetAPITestCase(APITestCase):
     def test_dropdown_options(self):
         self.client.force_authenticate(user=self.user)
         response = self.client.get("/api/payments/options/")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         for item in r:
             if item["value"] == PaymentStatuses.PENDING:
                 self.assertEqual(item["label"], "Pending")

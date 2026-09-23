@@ -4,9 +4,9 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from iaso.modules import (
+    MODULE_CHANGE_REQUESTS,
     MODULE_COMPLETENESS_PER_PERIOD,
     MODULE_DATA_COLLECTION,
-    MODULE_DATA_VALIDATION,
     MODULE_DEFAULT,
     MODULE_DHIS2_MAPPING,
     MODULE_EMBEDDED_LINKS,
@@ -196,13 +196,13 @@ CORE_ORG_UNIT_GROUPS_PERMISSION = CorePermission(
 CORE_ORG_UNITS_CHANGE_REQUEST_REVIEW_PERMISSION = CorePermission(
     codename="iaso_org_unit_change_request_review",
     label=_("Org unit change request review"),
-    module=MODULE_DATA_VALIDATION,
+    module=MODULE_CHANGE_REQUESTS,
     ui_group=PERMISSION_GROUP_DATA_VALIDATION,
 )
 CORE_ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS_PERMISSION = CorePermission(
     codename="iaso_org_unit_change_request_configurations",
     label=_("Org unit change request configurations"),
-    module=MODULE_DATA_VALIDATION,
+    module=MODULE_CHANGE_REQUESTS,
     ui_group=PERMISSION_GROUP_DATA_VALIDATION,
 )
 CORE_PAGES_PERMISSION = CorePermission(

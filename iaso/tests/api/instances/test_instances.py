@@ -1,6 +1,9 @@
+import asyncio
 import datetime
+import io
 import json
 import typing
+import zipfile
 
 from decimal import Decimal
 from unittest import mock
@@ -11,14 +14,20 @@ import pytz
 
 from django.contrib.gis.geos import Point
 from django.core.files import File
+from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import UploadedFile
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 from django.utils.timezone import now
+from prompt_toolkit.eventloop import async_generator
 from rest_framework import status
 
 from hat.api.export_utils import timestamp_to_utc_datetime
 from hat.audit.models import INSTANCE_API, Modification
 from iaso import models as m
 from iaso.api import query_params as query
+from iaso.api.common import CONTENT_TYPE_XLSX
 from iaso.models import FormVersion, Instance, InstanceLock, OrgUnitReferenceInstance
 from iaso.models.microplanning import Planning
 from iaso.models.team import Team
@@ -73,34 +82,40 @@ class InstancesAPITestCase(TaskAPITestCase):
             version=sw_version,
             validation_status="VALID",
             uuid=cls.jedi_council_corruscant_uuid,
+            code="coruscant_code",
         )
         cls.ou_top_1 = m.OrgUnit.objects.create(
             name="ou_top_1",
             source_ref="jedi_council_corruscant_ref",
             version=sw_version,
+            code="top1_code",
         )
         cls.ou_top_2 = m.OrgUnit.objects.create(
             name="ou_top_2",
             source_ref="jedi_council_corruscant_ref",
             parent=cls.ou_top_1,
             version=sw_version,
+            code="top2_code",
         )
         cls.ou_top_3 = m.OrgUnit.objects.create(
             name="ou_top_3",
             source_ref="jedi_council_corruscant_ref",
             parent=cls.ou_top_2,
             version=sw_version,
+            code="top3_code",
         )
         cls.jedi_council_endor = m.OrgUnit.objects.create(
             name="Endor Jedi Council",
             source_ref="jedi_council_endor_ref",
             version=sw_version,
+            code="endor_code",
         )
         cls.jedi_council_endor_region = m.OrgUnit.objects.create(
             name="Endor Region Jedi Council",
             parent=cls.jedi_council_endor,
             source_ref="jedi_council_endor_region_ref",
             version=sw_version,
+            code="endor_region_code",
         )
 
         cls.project = m.Project.objects.create(
@@ -242,12 +257,12 @@ class InstancesAPITestCase(TaskAPITestCase):
         """GET /instances/?form_id=form_id"""
         instance = self.form_1.instances.first()
         response = self.client.get(f"/api/instances/{instance.pk}/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_instance_details_permission_denied_when_anonymous(self):
         """GET /instances/?form_id=form_id"""
         response = self.client.get(f"/api/instances/?form_id={self.form_1.pk}")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_instance_create_planning(self):
         """POST /api/instances/ happy path (anonymous)"""
@@ -273,7 +288,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.post(
             "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertAPIImport("instance", request_body=body, has_problems=False)
 
@@ -319,7 +334,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.post(
             "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertAPIImport("instance", request_body=body, has_problems=False)
 
@@ -369,7 +384,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.post(
             "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertAPIImport("instance", request_body=body, has_problems=False)
 
@@ -391,8 +406,6 @@ class InstancesAPITestCase(TaskAPITestCase):
 
     def test_instance_create_with_valid_accuracy(self):
         """POST /api/instances/ with a valid accuracy value"""
-        from decimal import Decimal
-
         instance_uuid = str(uuid4())
         body = [
             {
@@ -413,14 +426,13 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.post(
             "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         last_instance = m.Instance.objects.get(uuid=instance_uuid)
         self.assertEqual(Decimal("15.50"), last_instance.accuracy)
 
     def test_instance_create_with_accuracy_rounded(self):
         """POST /api/instances/ with accuracy having more than 2 decimal places should be rounded"""
-
         instance_uuid = str(uuid4())
         body = [
             {
@@ -441,7 +453,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.post(
             "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         last_instance = m.Instance.objects.get(uuid=instance_uuid)
         self.assertEqual(Decimal("12.35"), last_instance.accuracy)
@@ -469,7 +481,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.post(
             "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         last_instance = m.Instance.objects.get(uuid=instance_uuid)
         self.assertEqual(Decimal("99999.00"), last_instance.accuracy)
@@ -497,7 +509,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.post(
             "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         last_instance = m.Instance.objects.get(uuid=instance_uuid)
         self.assertEqual(Decimal("99999.00"), last_instance.accuracy)
@@ -525,7 +537,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.post(
             "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         last_instance = m.Instance.objects.get(uuid=instance_uuid)
         self.assertEqual(Decimal("48.62"), last_instance.accuracy)
@@ -552,7 +564,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.post(
             "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("problem happened", response.json()["res"])
 
         # Instance should not be created when accuracy validation fails
@@ -591,7 +603,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.post(
             "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertAPIImport("instance", request_body=body, has_problems=False)
 
@@ -644,7 +656,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.post(
             "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertAPIImport("instance", request_body=body, has_problems=False)
 
@@ -676,7 +688,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.post(
             "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         j = response.json()
         self.assertFalse("problem" in j["res"], j)
 
@@ -735,7 +747,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.post(
             "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertAPIImport("instance", request_body=body, has_problems=False)
 
@@ -749,7 +761,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.yoda)
 
         response = self.client.get(f"/api/instances/?form_id={self.form_1.pk}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertValidInstanceListData(response.json(), 4)
 
@@ -763,23 +775,23 @@ class InstancesAPITestCase(TaskAPITestCase):
 
         base = f"/api/instances/?form_id={self.form_1.pk}&limit=100"
         response = self.client.get(f"{base}&{query.REFERENCE_INSTANCES}=reference")
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual({i["id"] for i in j["instances"]}, {self.instance_1.id})
         self.assertTrue(j["instances"][0]["is_reference_instance"])
 
         response = self.client.get(f"{base}&{query.REFERENCE_INSTANCES}=not_reference")
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(
             {i["id"] for i in j["instances"]},
             {self.instance_2.id, self.instance_3.id, self.instance_4.id},
         )
 
         response = self.client.get(base)
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(j["instances"]), 4)
 
         response = self.client.get(f"{base}&{query.REFERENCE_INSTANCES}=all")
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(j["instances"]), 4)
 
     def test_instance_filter_by_org_unit_status(self):
@@ -788,12 +800,12 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.yoda)
 
         response = self.client.get("/api/instances/?org_unit_status=VALID")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertValidInstanceListData(response.json(), 7)
 
         response = self.client.get("/api/instances/?org_unit_status=REJECTED")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertValidInstanceListData(response.json(), 0)
 
@@ -802,10 +814,10 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/instances/?csv=true&form_ids=99999")
 
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
         response = self.client.get("/api/instances/?csv=true&form_id=99999")
 
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_instance_list_by_form_id_ok_soft_deleted(self):
         """GET /instances/?form_id=form_id"""
@@ -813,7 +825,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.yoda)
 
         response = self.client.get(f"/api/instances/?form_id={self.form_1.pk}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidInstanceListData(response.json(), 4)
 
         soft_deleted_instance = self.form_1.instances.first()
@@ -821,7 +833,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         soft_deleted_instance.save()
 
         response = self.client.get(f"/api/instances/?form_id={self.form_1.pk}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidInstanceListData(response.json(), 3)
 
     def test_instance_list_excludes_instances_of_soft_deleted_forms(self):
@@ -829,19 +841,19 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.yoda)
 
         response = self.client.get(f"/api/instances/?form_id={self.form_1.pk}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidInstanceListData(response.json(), 4)
 
         self.form_1.delete()
 
         response = self.client.get(f"/api/instances/?form_id={self.form_1.pk}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidInstanceListData(response.json(), 0)
 
         self.form_1.restore()
 
         response = self.client.get(f"/api/instances/?form_id={self.form_1.pk}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidInstanceListData(response.json(), 4)
 
     def test_instance_details_retrieve(self):
@@ -864,7 +876,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         # the (expensive on large datasets) duplicates computation otherwise.
         with self.assertNumQueries(19):
             response = self.client.get(f"/api/instances/{instance.id}/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_instance_details_by_id_ok_soft_deleted(self):
         """GET /instances/{instanceid}/"""
@@ -876,7 +888,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.yoda)
 
         response = self.client.get(f"/api/instances/{soft_deleted_instance.id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_soft_delete_an_instance(self):
         """DELETE /instances/{instanceid}/"""
@@ -922,7 +934,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.yoda)
 
         response = self.client.get(f"/api/instances/{soft_deleted_instance.id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertFalse(response.json()["deleted"])
 
         # lets bulk delete
@@ -934,10 +946,10 @@ class InstancesAPITestCase(TaskAPITestCase):
             {"selected_ids": [str(soft_deleted_instance.id)], "is_deletion": True, "showDeleted": False},
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         response = self.client.get(f"/api/instances/{soft_deleted_instance.id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertTrue(response.json()["deleted"])
 
         audit_after_count = Modification.objects.all().count()
@@ -955,10 +967,10 @@ class InstancesAPITestCase(TaskAPITestCase):
             {"selected_ids": [str(soft_deleted_instance.id)], "is_deletion": False, "showDeleted": "true"},
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         response = self.client.get(f"/api/instances/{soft_deleted_instance.id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertFalse(response.json()["deleted"])
 
         last_modif = Modification.objects.all().order_by("created_at").last()
@@ -1001,9 +1013,11 @@ class InstancesAPITestCase(TaskAPITestCase):
                 ]
             }
         )
+        # 6, not 7: org_unit__org_unit_type is now select_related, saving the per-instance
+        # lazy-load query for org_unit_type.
         with self.assertNumQueries(6):
             response = self.client.get("/api/instances/", {"jsonContent": json_filters})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         response_json = response.json()
         self.assertValidInstanceListData(response_json, expected_length=1)
         self.assertEqual(response_json["instances"][0]["id"], b.id)
@@ -1119,11 +1133,112 @@ class InstancesAPITestCase(TaskAPITestCase):
         }
 
         response = self.client.get("/api/instances/", {"jsonContent": json.dumps(filters)})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         response_json = response.json()
         self.assertValidInstanceListData(response_json, expected_length=2)
         for instance in response_json["instances"]:
             self.assertIn(instance["id"], [a.id, b.id])
+
+    def test_instance_list_by_json_content_like_operator(self):
+        """Query-builder `like` emits needle-first JsonLogic `in`."""
+        matching = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"responsable_fosa": "Jean Beau"},
+        )
+        other = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"responsable_fosa": "Alice"},
+        )
+
+        self.client.force_authenticate(self.yoda)
+        json_filters = json.dumps({"and": [{"in": ["Beau", {"var": "responsable_fosa"}]}]})
+        response = self.client.get("/api/instances/", {"jsonContent": json_filters})
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        received_ids = [instance["id"] for instance in response.json()["instances"]]
+        self.assertIn(matching.id, received_ids)
+        self.assertNotIn(other.id, received_ids)
+
+    def test_instance_list_by_json_content_not_like_operator(self):
+        matching = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"responsable_fosa": "Alice"},
+        )
+        excluded = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"responsable_fosa": "Jean Beau"},
+        )
+
+        self.client.force_authenticate(self.yoda)
+        json_filters = json.dumps({"!": {"in": ["Beau", {"var": "responsable_fosa"}]}})
+        response = self.client.get("/api/instances/", {"jsonContent": json_filters})
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        received_ids = [instance["id"] for instance in response.json()["instances"]]
+        self.assertIn(matching.id, received_ids)
+        self.assertNotIn(excluded.id, received_ids)
+
+    def test_instance_list_by_json_content_is_empty(self):
+        empty = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"responsable_fosa": ""},
+        )
+        filled = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"responsable_fosa": "Beau"},
+        )
+
+        self.client.force_authenticate(self.yoda)
+        json_filters = json.dumps({"!": {"var": "responsable_fosa"}})
+        response = self.client.get("/api/instances/", {"jsonContent": json_filters})
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        received_ids = [instance["id"] for instance in response.json()["instances"]]
+        self.assertIn(empty.id, received_ids)
+        self.assertNotIn(filled.id, received_ids)
+
+    def test_instance_list_by_json_content_is_not_empty(self):
+        empty = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"responsable_fosa": ""},
+        )
+        filled = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"responsable_fosa": "Beau"},
+        )
+
+        self.client.force_authenticate(self.yoda)
+        json_filters = json.dumps({"!!": {"var": "responsable_fosa"}})
+        response = self.client.get("/api/instances/", {"jsonContent": json_filters})
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        received_ids = [instance["id"] for instance in response.json()["instances"]]
+        self.assertIn(filled.id, received_ids)
+        self.assertNotIn(empty.id, received_ids)
 
     def test_instance_list_by_form_id_and_status_ok(self):
         """GET /instances/?form_id=form_id&status="""
@@ -1132,7 +1247,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.get(
             "/api/instances/", {"form_id": self.form_1.id, "status": m.Instance.STATUS_DUPLICATED}
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertValidInstanceListData(response.json(), 2)
 
@@ -1141,7 +1256,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.yoda)
 
         response = self.client.get("/api/instances/", {"search": "refs:" + self.jedi_council_corruscant.source_ref})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertValidInstanceListData(response.json(), 7)
 
@@ -1150,7 +1265,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.yoda)
 
         response = self.client.get("/api/instances/", {"search": "refs:source_ref_not_in"})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertValidInstanceListData(response.json(), 0)
 
@@ -1168,7 +1283,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         )
 
         response = self.client.get("/api/instances/", {"form_id": form.id})
-        res = self.assertJSONResponse(response, 200)
+        res = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidInstanceListData(res, 1)
         self.assertEqual(res["instances"][0]["status"], "READY")
         # Create second submission, check status is duplicate
@@ -1176,13 +1291,13 @@ class InstancesAPITestCase(TaskAPITestCase):
             form=form, period="202001", org_unit=self.jedi_council_corruscant, project=self.project
         )
         response = self.client.get("/api/instances/", {"form_id": form.id})
-        res = self.assertJSONResponse(response, 200)
+        res = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidInstanceListData(res, 2)
         self.assertEqual(res["instances"][0]["status"], "DUPLICATED")
         self.assertEqual(res["instances"][1]["status"], "DUPLICATED")
         # soft delete instance
         response = self.client.delete(f"/api/instances/{dup.id}/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         dup.refresh_from_db()
         self.assertEqual(True, dup.deleted)
         self.assertEqual(1, Modification.objects.count())
@@ -1190,7 +1305,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.client.get("/api/instances/", {"form_id": form.id})
 
         response = self.client.get("/api/instances/", {"form_id": form.id})
-        res = self.assertJSONResponse(response, 200)
+        res = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidInstanceListData(res, 1)
         self.assertEqual(res["instances"][0]["status"], "READY")
 
@@ -1224,7 +1339,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             headers={"accept": "application/json"},
         )
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         instance_to_patch.refresh_from_db()
         self.assertEqual(instance_to_patch.org_unit, new_org_unit)
@@ -1256,7 +1371,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             format="json",
             headers={"accept": "application/json"},
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         instance_to_patch.refresh_from_db()
         self.assertEqual(instance_to_patch.org_unit, new_org_unit)
@@ -1295,7 +1410,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             headers={"accept": "application/json"},
         )
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         previous_org_unit.refresh_from_db()
         instance.refresh_from_db()
         self.assertEqual(instance.org_unit, new_org_unit)
@@ -1316,7 +1431,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             headers={"accept": "application/json"},
         )
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(1, Modification.objects.count())
         instance_to_patch.refresh_from_db()
@@ -1343,11 +1458,13 @@ class InstancesAPITestCase(TaskAPITestCase):
 
         # 11, not 10: with_status() now spends one extra query checking whether the filtered-in form(s) are
         # single_per_period, to be able to skip the (expensive on large datasets) duplicates computation otherwise.
+        # (was 12 before org_unit__org_unit_type was added to select_related: that saved the one per-instance
+        # lazy-load query for org_unit_type that CSV export was still paying for.)
         with self.assertNumQueries(11):
             response = self.client.get(
                 f"/api/instances/?form_ids={self.instance_1.form.id}&csv=true", headers={"Content-Type": "text/csv"}
             )
-            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assertEqual(response["Content-Type"], "text/csv")
 
         response_csv = response.getvalue().decode("utf-8")
@@ -1372,11 +1489,96 @@ class InstancesAPITestCase(TaskAPITestCase):
             "Coruscant Jedi Council,"
             f"{self.jedi_council_corruscant.id},"
             "jedi_council_corruscant_ref,"
+            "coruscant_code,"
+            "VALID,"
             ","
             ","
             ","
         )
         self.assertIn(expected_csv_row, response_csv)
+
+    def test_can_retrieve_submissions_list_in_xlsx_format(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/instances/?form_ids={self.form_1.pk}&xlsx=true")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response["Content-Type"], CONTENT_TYPE_XLSX)
+
+    def test_xlsx_export_is_constant_queries(self):
+        """GET /instances/?xlsx=true must evaluate in a number of queries that only depends on
+        the number of `queryset_iterator` pages involved, not on the number of exported instances
+        within a page (no per-instance N+1).
+
+        `json` is set explicitly (non-empty) on all instances involved (including
+        setUpTestData's instance_1..instance_4, which are also form_1 and so also included in
+        the export below): a real ingested instance always has it populated already
+        (process_instance_file/enketo submission compute it synchronously at upload time, and
+        it's essentially always non-empty -- _version/meta/instanceID are always present -- see
+        get_and_save_json_of_xml()). Leaving `json` at its default `{}` would instead exercise
+        that (falsy-`{}`) lazy-recompute-and-save path on every row on every request (`file` is a
+        bare mock with no real XML content, so it never resolves to a truthy json, however often
+        it's computed) -- real, but not what a normal export hits in production, and it would
+        make this test measure that per-request recompute/resave instead of the per-page
+        prefetch_related cost it's meant to guard.
+
+        `queryset_iterator` (`hat/common/utils.py`, chunk_size=100, called from `list_file_export`
+        via `generate_xlsx(..., queryset_iterator(queryset, 100), ...)`) evaluates its queryset
+        page by page via `Paginator` whenever it carries any prefetch_related lookups (org_unit/
+        org_unit__parent/.../entity/form_version__form, all set up in list_file_export, plus a
+        couple more from list()) -- and each page re-runs those prefetch_related lookups again,
+        restricted to that page. That's a real, constant cost *per page* (`ceil(N / 100)` pages
+        for N exported rows), not a per-instance N+1: it doesn't grow with how many rows are in
+        a given page, only with how many pages there are. So the invariant to check for isn't
+        "same query count at any N" (false in general, once N crosses a page boundary) -- it's
+        "the same, constant marginal cost per extra page, and zero marginal cost per extra row
+        within a page". 5, 150 and 250 instances (plus the 4 preexisting fixtures, always
+        included by the form_id filter, for 9/154/254 total rows) land on 1/2/3 pages -- enough
+        points to tell "constant cost per extra page" apart from "cost grows with row count" or
+        "cost compounds across pages"."""
+        self.client.force_authenticate(self.yoda)
+
+        org_unit = self.jedi_council_corruscant
+
+        for i, fixture_instance in enumerate((self.instance_1, self.instance_2, self.instance_3, self.instance_4)):
+            fixture_instance.json = {"_version": "1", "meta/instanceID": f"uuid:fixture-instance-{i}"}
+            fixture_instance.save()
+
+        # Warm up permission caches attached to `self.yoda`/the request user first: those are
+        # memoized after the first request and would otherwise make the measurements below
+        # differ for reasons unrelated to row/page count (see the same fix in
+        # test_instances_parquet.py).
+        self.client.get(f"/api/instances/?form_ids={self.form_1.pk}&xlsx=true")
+
+        def num_queries_for(n_instances):
+            created = [
+                self.create_form_instance(
+                    form=self.form_1,
+                    period="202001",
+                    org_unit=org_unit,
+                    project=self.project,
+                    created_by=self.yoda,
+                    json={"_version": "1", "meta/instanceID": f"uuid:instance-{i}"},
+                )
+                for i in range(n_instances)
+            ]
+            with CaptureQueriesContext(connection) as ctx:
+                response = self.client.get(f"/api/instances/?form_ids={self.form_1.pk}&xlsx=true")
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            for instance in created:
+                instance.delete()
+            return len(ctx.captured_queries)
+
+        queries_for_1_page = num_queries_for(5)  # 5 + 4 fixtures = 9 rows -> 1 page
+        queries_for_2_pages = num_queries_for(150)  # 150 + 4 = 154 rows -> 2 pages
+        queries_for_3_pages = num_queries_for(250)  # 250 + 4 = 254 rows -> 3 pages
+
+        self.assertEqual(
+            queries_for_2_pages - queries_for_1_page,
+            queries_for_3_pages - queries_for_2_pages,
+            "Each additional queryset_iterator page must cost the same, constant number of extra "
+            "queries -- if the cost per page keeps growing (rather than staying flat), or if query "
+            "count grows within a single page (i.e. with row count rather than page count), "
+            "something in list_file_export()/get_row() is issuing a genuine per-instance query.",
+        )
 
     def test_can_retrieve_submissions_list_in_csv_format_without_source_fields(self):
         # Set up a new instance without source fields
@@ -1408,7 +1610,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             f"/api/instances/?form_ids={sourceless_instance.form.id}&order=id&csv=true",
             headers={"Content-Type": "text/csv"},
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response["Content-Type"], "text/csv")
 
         response_csv = response.getvalue().decode("utf-8")
@@ -1433,6 +1635,8 @@ class InstancesAPITestCase(TaskAPITestCase):
             "Coruscant Jedi Council,"
             f"{self.jedi_council_corruscant.id},"
             "jedi_council_corruscant_ref,"
+            "coruscant_code,"
+            "VALID,"
             ","
             ","
             ","
@@ -1466,7 +1670,7 @@ class InstancesAPITestCase(TaskAPITestCase):
 
         # not restricted yet, can list all instances
         response = self.client.get("/api/instances/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidInstanceListData(response.json(), 10)
         # restrict user to endor region, can only see one instance. Not instance without org unit
         restricted = self.create_user_with_profile(
@@ -1477,7 +1681,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(restricted)
 
         response = self.client.get("/api/instances/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidInstanceListData(response.json(), 1)
 
         # restrict to parent region, should give one instance for parent and one for child
@@ -1485,7 +1689,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         restricted.iaso_profile.save()
 
         response = self.client.get("/api/instances/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidInstanceListData(response.json(), 2)
 
         # check with multiple orgunits. Return all submissions, except the empty one on the one on endor, and the one without orgunit
@@ -1495,21 +1699,21 @@ class InstancesAPITestCase(TaskAPITestCase):
         restricted.iaso_profile.save()
 
         response = self.client.get("/api/instances/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidInstanceListData(response.json(), 8)
 
         # Check org unit without submissions return empty
         restricted.iaso_profile.org_units.set([org_unit_without_submissions])
 
         response = self.client.get("/api/instances/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidInstanceListData(response.json(), 0)
 
     @mock.patch("django.utils.timezone.now", lambda: MOCK_DATE)
     def test_stats(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/instances/stats/")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(
             r["data"],
@@ -1541,7 +1745,7 @@ class InstancesAPITestCase(TaskAPITestCase):
     def test_stats_project_filter(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/instances/stats/?project_ids={self.project_2.id}")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(
             r["data"],
@@ -1561,7 +1765,7 @@ class InstancesAPITestCase(TaskAPITestCase):
     def test_stats_sum(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/instances/stats_sum/")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(
             r["data"],
@@ -1588,7 +1792,7 @@ class InstancesAPITestCase(TaskAPITestCase):
     def test_stats_sum_project_filter(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/instances/stats_sum/?project_ids={self.project_2.id}")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(
             r["data"],
             [{"index": 0, "period": "2020-02-05T00:00:00.000Z", "value": 1, "total": 1, "name": "2020-02-05"}],
@@ -1636,7 +1840,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         )
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/instances/stats/")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(
             r["data"],
@@ -1653,7 +1857,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             ],
         )
         response = self.client.get("/api/instances/stats_sum/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     @mock.patch("django.utils.timezone.now", lambda: MOCK_DATE)
     def test_stats_dup_deleted(self):
@@ -1688,7 +1892,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         )
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/instances/stats/")
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(
             r["data"],
             [
@@ -1705,7 +1909,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         )
 
         response = self.client.get("/api/instances/stats_sum/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_lock_instance_anonymous_not_allowed(self):
         instance = self.create_form_instance(
@@ -1736,15 +1940,15 @@ class InstancesAPITestCase(TaskAPITestCase):
 
         lock = instance.instancelock_set.last()
 
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
         lock_id = j["lock_id"]
         self.assertEqual(lock.instance, instance)
         self.assertEqual(lock.id, lock_id)
         response = self.client.get(f"/api/instances/{instance.pk}/")
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(j["is_locked"], True)
         response = self.client.get("/api/instances/?limit=100")
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         json_instance = list(filter(lambda x: x["id"] == instance.id, j["instances"]))[0]
         self.assertEqual(json_instance["is_locked"], True)
@@ -1783,7 +1987,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         # Bob add a lock
         self.client.force_authenticate(bob)
         response = self.client.post(f"/api/instances/{instance.pk}/add_lock/")
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
         # Lock should be on ou_top_2
         lock = InstanceLock.objects.get(pk=j["lock_id"])
         self.assertEqual(lock.instance, instance)
@@ -1795,7 +1999,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         # Alice add lock
         self.client.force_authenticate(alice)
         response = self.client.post(f"/api/instances/{instance.pk}/add_lock/")
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
         # Lock should be on ou_top_1
         lock = InstanceLock.objects.get(pk=j["lock_id"])
         self.assertEqual(lock.instance, instance)
@@ -1808,13 +2012,13 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.post(
             "/api/instances/unlock_lock/", {"lock": instance.instancelock_set.get(locked_by=alice).id}, json=True
         )
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         # Alice remove her lock
         self.client.force_authenticate(alice)
         response = self.client.post(
             "/api/instances/unlock_lock/", {"lock": instance.instancelock_set.get(locked_by=alice).id}, json=True
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self._check_via_api(instance, alice, can_user_modify=True, is_locked=True)
         self._check_via_api(instance, bob, can_user_modify=True, is_locked=True)
         self._check_via_api(instance, chris, can_user_modify=False, is_locked=True)
@@ -1824,7 +2028,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.post(
             "/api/instances/unlock_lock/", {"lock": instance.instancelock_set.get(locked_by=bob).id}, json=True
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self._check_via_api(instance, alice, can_user_modify=True, is_locked=False)
         self._check_via_api(instance, bob, can_user_modify=True, is_locked=False)
         self._check_via_api(instance, chris, can_user_modify=True, is_locked=False)
@@ -1834,11 +2038,11 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.post(
             "/api/instances/unlock_lock/", {"lock": instance.instancelock_set.get(locked_by=bob).id}, json=True
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         # Chris add lock. Anyone can modify
         self.client.force_authenticate(chris)
         response = self.client.post(f"/api/instances/{instance.pk}/add_lock/")
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
         # Lock should be on ou_top_3
         lock = InstanceLock.objects.get(pk=j["lock_id"])
         self.assertEqual(lock.instance, instance)
@@ -1850,7 +2054,7 @@ class InstancesAPITestCase(TaskAPITestCase):
     def _check_via_api(self, instance, user, can_user_modify, is_locked):
         self.client.force_authenticate(user)
         response = self.client.get(f"/api/instances/{instance.pk}/")
-        json = self.assertJSONResponse(response, 200)
+        json = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(json["can_user_modify"], can_user_modify)
         self.assertEqual(json["is_locked"], is_locked)
         self.assertFalse(json["is_instance_of_reference_form"])
@@ -1858,10 +2062,12 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertGreaterEqual(len(json["instance_locks"]), 1 if is_locked else 0, json["instance_locks"])
         # check from list view
         response = self.client.get("/api/instances/?limit=100")
-        j = self.assertJSONResponse(response, 200)
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
         json_instance = list(filter(lambda x: x["id"] == instance.id, j["instances"]))[0]
         self.assertEqual(json_instance["is_locked"], is_locked)
         self.assertEqual(json_instance["can_user_modify"], can_user_modify)
+        self.assertEqual(json_instance["project_id"], self.project.id)
+        self.assertEqual(json_instance["project_name"], self.project.name)
         # Try to modify the instance
         response = self.client.patch(
             f"/api/instances/{instance.pk}/",
@@ -1871,9 +2077,9 @@ class InstancesAPITestCase(TaskAPITestCase):
             format="json",
         )
         if can_user_modify:
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
         else:
-            self.assertJSONResponse(response, 403)
+            self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_instance_create_entity(self):
         """POST /api/instances/ with an entity that don't exist in db, it creates it"""
@@ -1900,7 +2106,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.post(
             "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertAPIImport("instance", request_body=body, has_problems=False)
 
@@ -1945,7 +2151,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.post(
             "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertAPIImport("instance", request_body=body, has_problems=False)
 
@@ -1984,7 +2190,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.post(
             "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertAPIImport("instance", request_body=body, has_problems=False)
 
@@ -2017,7 +2223,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(user_no_perm)
 
         response = self.client.get(f"/api/instances/{self.instance_1.pk}/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_data = response.json()
         self.assertIn("entity", response_data)
         self.assertNotIn("nfc_cards", response_data["entity"])
@@ -2041,7 +2247,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(user_no_module)
 
         response = self.client.get(f"/api/instances/{self.instance_1.pk}/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_data = response.json()
         self.assertIn("entity", response_data)
         self.assertNotIn("nfc_cards", response_data["entity"])
@@ -2065,7 +2271,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(user_with_both)
 
         response = self.client.get(f"/api/instances/{self.instance_1.pk}/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_data = response.json()
         self.assertIn("entity", response_data)
         self.assertIn("nfc_cards", response_data["entity"])
@@ -2092,7 +2298,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # Check if the instance created without FormVersion has form_version = None
 
@@ -2101,7 +2307,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         instance = Instance.objects.get(uuid=instance_uuid)
 
         response = self.client.get(f"/api/instances/{instance.pk}/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()["form_version_id"], None)
 
         # Check that once the FormVersion is created and instance.json updated with a "_version" instance.form_version_id is properly updated
@@ -2125,7 +2331,7 @@ class InstancesAPITestCase(TaskAPITestCase):
     def test_instances_list_planning(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/instances/", headers={"Content-Type": "application/json"})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertValidInstanceListData(response.json(), 7)
 
         team = Team.objects.create(project=self.project, manager=self.yoda)
@@ -2175,7 +2381,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.get(
             "/api/instances/", {"planningIds": planning_2.id}, headers={"Content-Type": "application/json"}
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidInstanceListData(response.json(), 0)
 
     def test_instances_list_user(self):
@@ -2252,6 +2458,46 @@ class InstancesAPITestCase(TaskAPITestCase):
 
         self.assertInstanceListContainsStrictly(response_with_coma, [instance_2, instance_3])
 
+    def test_instances_api_import_app_version(self):
+        self.client.force_authenticate(self.yoda)
+        instance_uuid = str(uuid4())
+        body = [
+            {
+                "id": instance_uuid,
+                "latitude": 50.2,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153704,
+                "orgUnitId": self.jedi_council_corruscant.id,
+                "formId": self.form_1.id,
+                "longitude": 4.4,
+                "accuracy": 10,
+                "altitude": 100,
+                "file": "/storage/emulated/0/odk/instances/RDC Collecte Data DPS_2_2019-08-08_11-54-46/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "name": "1",
+            }
+        ]
+
+        response = self.client.post(
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics&app_version=1.4.2", data=body, format="json"
+        )
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        instance = m.Instance.objects.get(uuid=instance_uuid)
+
+        instance.file = ContentFile(b"<root></root>", name="test.xml")
+        instance.save()
+        self.assertIsNotNone(instance.api_import)
+        self.assertEqual(instance.api_import.app_version, "1.4.2")
+        self.assertEqual(instance.app_version, "1.4.2")
+
+        # Retrieve instance details and check that device_app_version is returned
+        response_details = self.client.get(
+            f"/api/instances/{instance.id}/",
+            headers={"Content-Type": "application/json"},
+        )
+        response_json = self.assertJSONResponse(response_details, status.HTTP_200_OK)
+        self.assertEqual(response_json.get("device_app_version"), "1.4.2")
+
     def test_instances_bad_sent_date_from(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get(
@@ -2259,7 +2505,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             {query.SENT_DATE_FROM: "2020-0201"},
             headers={"Content-Type": "application/json"},
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_instances_bad_sent_date_to(self):
         self.client.force_authenticate(self.yoda)
@@ -2268,7 +2514,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             {query.SENT_DATE_TO: "2020-0201"},
             headers={"Content-Type": "application/json"},
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_instances_sent_date(self):
         self.client.force_authenticate(self.yoda)
@@ -2311,7 +2557,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             {query.MODIFICATION_DATE_FROM: "2020-0201"},
             headers={"Content-Type": "application/json"},
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_instances_bad_modification_date_to(self):
         self.client.force_authenticate(self.yoda)
@@ -2320,7 +2566,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             {query.MODIFICATION_DATE_TO: "2020-0201"},
             headers={"Content-Type": "application/json"},
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_instances_modification_date(self):
         self.client.force_authenticate(self.yoda)
@@ -2459,7 +2705,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         attachment4 = m.InstanceFile.objects.create(instance=instance, file="test4.pdf", name="test4.pdf")
 
         response = self.client.get("/api/instances/attachments/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.json()
         self.assertEqual(len(data), 4)
@@ -2483,7 +2729,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         attachment2 = m.InstanceFile.objects.create(instance=instance, file="test2.pdf")
 
         response = self.client.get("/api/instances/attachments/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.json()
         self.assertEqual(len(data), 2)
@@ -2497,7 +2743,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         m.InstanceFile.objects.create(instance=instance, file="test2.pdf")
 
         response = self.client.get("/api/instances/attachments/?image_only=true")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.json()
         self.assertEqual(len(data), 1)
@@ -2511,7 +2757,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         m.InstanceFile.objects.create(instance=instance, file="test3.jpg")
 
         response = self.client.get("/api/instances/attachments/?video_only=true")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.json()
         self.assertEqual(len(data), 2)
@@ -2526,7 +2772,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         m.InstanceFile.objects.create(instance=instance, file="test4.jpg")
 
         response = self.client.get("/api/instances/attachments/?document_only=true")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.json()
         self.assertEqual(len(data), 3)
@@ -2541,7 +2787,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         m.InstanceFile.objects.create(instance=instance, file="test4.pdf")
 
         response = self.client.get("/api/instances/attachments/?other_only=true")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.json()
         self.assertEqual(len(data), 2)
@@ -2558,7 +2804,7 @@ class InstancesAPITestCase(TaskAPITestCase):
 
         # Test image and video filters together
         response = self.client.get("/api/instances/attachments/?image_only=true&video_only=true")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.json()
         self.assertEqual(len(data), 2)
@@ -2566,7 +2812,7 @@ class InstancesAPITestCase(TaskAPITestCase):
 
         # Test document and other filters together
         response = self.client.get("/api/instances/attachments/?document_only=true&other_only=true")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.json()
         self.assertEqual(len(data), 2)
@@ -2579,7 +2825,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             m.InstanceFile.objects.create(instance=instance, file=f"test{i}.jpg")
 
         response = self.client.get("/api/instances/attachments/?limit=30")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.json()
         self.assertEqual(len(data["results"]), 30)
@@ -2601,7 +2847,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         m.InstanceFile.objects.create(instance=instance, file="test7.unknown")
 
         response = self.client.get("/api/instances/attachments_count/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.json()
         self.assertEqual(data["images"], 2)  # jpg, png
@@ -2623,7 +2869,7 @@ class InstancesAPITestCase(TaskAPITestCase):
 
         # Test with image_only filter
         response = self.client.get("/api/instances/attachments_count/?image_only=true")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.json()
         self.assertEqual(data["images"], 2)  # jpg, png
@@ -2634,7 +2880,7 @@ class InstancesAPITestCase(TaskAPITestCase):
 
         # Test with video_only filter
         response = self.client.get("/api/instances/attachments_count/?video_only=true")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = response.json()
         self.assertEqual(data["images"], 0)
@@ -2657,7 +2903,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         )
         # Test instance with no change request
         response = self.client.get(f"/api/instances/{instance_reference.id}/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_json = response.json()
         self.assertListEqual(response_json["change_requests"], [])
 
@@ -3202,7 +3448,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         with self.assertNumQueries(5):
             response = self.client.get("/api/instances/map/")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
         self.assertIsInstance(data, list)
 
@@ -3226,16 +3472,21 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.yoda)
         self.yoda.iaso_profile.projects.add(self.project)
 
-        # 15, not 14: with_lock_info() is now applied only to the page's ids (fetched via a separate,
-        # cheap id-only query) instead of to the whole queryset before pagination, to avoid forcing
-        # PostgreSQL to evaluate (join, group, sort) the entire matching instance set before truncating
-        # it to a page, which is extremely expensive on large accounts.
+        # 15, not 21: org_unit__org_unit_type and project are now select_related (previously
+        # only org_unit__version__data_source was), which folds what used to be one extra
+        # per-instance lazy-load query each into the single main query.
+        #
+        # (Was 21, not 14, before that: with_lock_info() is now applied only to the page's ids
+        # (fetched via a separate, cheap id-only query) instead of to the whole queryset before
+        # pagination, to avoid forcing PostgreSQL to evaluate (join, group, sort) the entire
+        # matching instance set before truncating it to a page, which is extremely expensive on
+        # large accounts.)
         expected_queries = 15
 
         with self.assertNumQueries(expected_queries):
             response = self.client.get("/api/instances/?limit=3000")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         data = response.json()
         self.assertIn("instances", data)
@@ -3249,9 +3500,440 @@ class InstancesAPITestCase(TaskAPITestCase):
             self.assertFalse(item["is_instance_of_reference_form"])
             self.assertFalse(item["is_reference_instance"])
 
+    def test_instances_list_with_fields_param_restricts_payload_and_query_count(self):
+        """GET /instances/?fields=... only returns the requested keys, and skips the
+        per-instance `project`/`org_unit` lookups (the N+1 the OrgUnit map screen hits)
+        when they aren't requested."""
+        self.client.force_authenticate(self.yoda)
+        self.yoda.iaso_profile.projects.add(self.project)
+
+        requested_fields = {"id", "form_id", "form_name", "latitude", "longitude"}
+
+        # Same 6 instances as test_instances_list_is_constant_queries, but requesting only
+        # the fields the OrgUnit map screen actually uses (see useGetInstances.js): this
+        # must be cheaper than the 15 queries of the unrestricted request, since it skips
+        # both the org_unit (org_unit_type) select_related/prefetch_related and the project
+        # select_related entirely (not just their values in the response).
+        expected_queries = 8
+
+        with self.assertNumQueries(expected_queries):
+            response = self.client.get(f"/api/instances/?limit=3000&fields={','.join(requested_fields)}")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(len(data["instances"]), 6)
+
+        for item in data["instances"]:
+            # can_user_modify/is_locked/is_instance_of_reference_form/is_reference_instance are
+            # only added when requested, same as every other field.
+            self.assertEqual(set(item.keys()), requested_fields)
+
+    def test_instances_list_with_fields_param_can_request_lock_fields(self):
+        """The paginated-branch-only keys (can_user_modify, is_locked,
+        is_instance_of_reference_form, is_reference_instance) are still available, but
+        only appear when explicitly requested via `fields=`."""
+        self.client.force_authenticate(self.yoda)
+        self.yoda.iaso_profile.projects.add(self.project)
+
+        requested_fields = {"id", "is_locked", "can_user_modify"}
+
+        response = self.client.get(f"/api/instances/?limit=3000&fields={','.join(requested_fields)}")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(len(data["instances"]), 6)
+        for item in data["instances"]:
+            self.assertEqual(set(item.keys()), requested_fields)
+
+    def test_instances_list_with_fields_excluding_relations_avoids_org_unit_and_project_n_plus_1(self):
+        """Regression test for the exact scenario reported in production:
+        GET /api/instances/?order=id&limit=...&fields=id,form_id,form_name,latitude,longitude&orgUnitId=...
+        must not issue a standalone per-instance query for org_unit or project. A mere
+        `self.org_unit`/`self.project` attribute access -- even if the value ends up unused --
+        triggers a query per row when the relation isn't select_related (see the
+        `want(...) and self.org_unit` evaluation-order fix in Instance.as_dict()), so this
+        inspects the captured SQL directly instead of asserting a brittle magic total count."""
+        self.client.force_authenticate(self.yoda)
+        self.yoda.iaso_profile.projects.add(self.project)
+
+        instances = [
+            self.create_form_instance(
+                form=self.form_1,
+                org_unit=self.jedi_council_corruscant,
+                project=self.project,
+                created_by=self.yoda,
+                location=Point(1.0 + i * 0.01, 7.0 + i * 0.01, 10),
+            )
+            for i in range(5)
+        ]
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get(
+                "/api/instances/?order=id&limit=20000&fields=id,form_id,form_name,latitude,longitude"
+                f"&orgUnitId={self.jedi_council_corruscant.id}"
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        # >=, not ==: this org_unit may already have other instances from setUpTestData's fixtures.
+        self.assertGreaterEqual(len(data["instances"]), len(instances))
+
+        # Django's lazy single-object FK fetch (`self.org_unit`/`self.project` on an instance
+        # whose relation isn't select_related) always generates `WHERE "<table>"."id" = <value>`
+        # -- unlike the main query's JOIN condition, which has the target table's "id" on the
+        # right-hand side of the `=` (e.g. `"iaso_instance"."org_unit_id" = "iaso_orgunit"."id")`),
+        # and unlike the permission-check subqueries, which reference aliases (V0, U0, ...) rather
+        # than the literal table name in their WHERE clause.
+        standalone_org_unit_queries = [
+            q["sql"]
+            for q in ctx.captured_queries
+            if '"iaso_orgunit"."id" = ' in q["sql"] and "iaso_profile_org_units" not in q["sql"]
+        ]
+        standalone_project_queries = [
+            q["sql"]
+            for q in ctx.captured_queries
+            if '"iaso_project"."id" = ' in q["sql"] and "iaso_profile_projects" not in q["sql"]
+        ]
+
+        self.assertEqual(standalone_org_unit_queries, [])
+        self.assertEqual(standalone_project_queries, [])
+
+    def test_instances_list_without_fields_param_returns_full_payload(self):
+        """Without `fields=`, the full instance dict is still returned (backward compatible)."""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(f"/api/instances/?form_id={self.form_1.pk}")
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        self.assertValidInstanceListData(j, 4)
+        self.assertIn("file_content", j["instances"][0])
+        self.assertIn("org_unit", j["instances"][0])
+        self.assertIn("project_name", j["instances"][0])
+
+    def test_instances_list_with_as_small_dict_true_returns_small_dict_shape(self):
+        """GET /api/instances/?asSmallDict=true returns Instance.as_small_dict()'s shape: a bare
+        list (not the {"instances": [...]} envelope used by every other branch), restricted to
+        instances that have a location or an attached file. This is an older payload shape,
+        predating `fields=`, and wasn't covered by any test before this PR's `fields=` work
+        touched the same view -- it must keep working unchanged since it doesn't pass `fields=`."""
+        self.client.force_authenticate(self.yoda)
+        self.yoda.iaso_profile.projects.add(self.project)
+
+        instance = self.create_form_instance(
+            form=self.form_1,
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            created_by=self.yoda,
+            location=Point(1.0, 2.0, 3.0),
+        )
+
+        response = self.client.get(f"/api/instances/?form_id={self.form_1.pk}&asSmallDict=true")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIsInstance(data, list)
+
+        items_for_instance = [item for item in data if item["id"] == instance.id]
+        self.assertEqual(len(items_for_instance), 1)
+        item = items_for_instance[0]
+
+        self.assertEqual(
+            set(item.keys()),
+            {
+                "id",
+                "file_url",
+                "created_at",
+                "updated_at",
+                "period",
+                "latitude",
+                "longitude",
+                "altitude",
+                "accuracy",
+                "files",
+                "status",
+                "correlation_id",
+            },
+        )
+        self.assertEqual(item["latitude"], 2.0)
+        self.assertEqual(item["longitude"], 1.0)
+
+    def test_instances_list_with_descriptor_true_includes_form_descriptor(self):
+        """GET /api/instances/?with_descriptor=true adds `form_descriptor` on top of the full
+        as_dict() payload. Exercised here without `fields=`, since that's the pre-existing shape
+        the `fields=` param must not have broken (the combination of the two is a separate,
+        newer test below)."""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(f"/api/instances/?form_id={self.form_1.pk}&with_descriptor=true")
+        j = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        self.assertValidInstanceListData(j, 4)
+        for item in j["instances"]:
+            self.assertIn("form_descriptor", item)
+            # Still the full as_dict() payload underneath, since fields= wasn't passed.
+            self.assertIn("org_unit", item)
+            self.assertIn("file_content", item)
+
+    def test_instances_list_with_descriptor_true_and_fields_param_restricts_payload(self):
+        """New interaction introduced alongside `fields=`: combined with `with_descriptor=true`,
+        it restricts as_dict_with_descriptor()'s payload the same way it restricts as_dict()'s,
+        and `form_descriptor` itself is only computed/returned when explicitly requested."""
+        self.client.force_authenticate(self.yoda)
+
+        requested_fields = {"id", "form_descriptor"}
+        response = self.client.get(
+            f"/api/instances/?form_id={self.form_1.pk}&with_descriptor=true&fields={','.join(requested_fields)}"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(len(data["instances"]), 4)
+        for item in data["instances"]:
+            self.assertEqual(set(item.keys()), requested_fields)
+
+    def test_instances_list_fields_filter_order_combinations(self):
+        """A representative sweep of fields=/filter/order combinations on GET /api/instances/,
+        to catch a bad interaction between the fields=-based select_related/prefetch_related
+        gating (see wants_field() in list()) and a specific filter or order= value -- the rest
+        of this file's fields= coverage only ever exercises one filter/order at a time.
+
+        Most cases deliberately filter and/or order by a field that `fields=` then excludes from
+        the response (e.g. filtered+ordered by org_unit, but fields= doesn't request "org_unit"):
+        `for_filters()`/`order_by()` are pure SQL and must keep working correctly even though the
+        gating in list() means the corresponding select_related/prefetch_related isn't applied --
+        this is the case that would break if a filter/order silently started depending on that
+        eager loading instead of joining for itself. Covers (each combined with a fields= that
+        excludes whatever the filter/order references, unless noted): orgUnitId, project_ids,
+        both org_unit+project together, showDeleted, form_ids (+ordered by period), period_ids
+        (here fields= *does* include org_unit/project, to also check the inclusion side),
+        with_descriptor=true (+fields=id,form_descriptor, the field it adds), no fields= at all,
+        the three search= forms (ids:/refs:/plain text), status=DUPLICATED, userIds, and the
+        three date-range filter pairs (dateFrom/To, modificationDateFrom/To, sentDateFrom/To).
+
+        One shared setup (reusing setUpTestData's fixtures, no new instances created), then a
+        loop over parametrized cases via subTest(), keeps this fast despite the added coverage
+        (~0.4s/case: no per-case fixture creation, just one request each)."""
+        self.client.force_authenticate(self.yoda)
+        self.yoda.iaso_profile.projects.add(self.project, self.project_2)
+
+        # The exact key set as_dict() returns when `fields` isn't passed at all (see
+        # Instance.as_dict()) -- used below to sanity-check the "no fields=" case still returns
+        # everything, even when combined with an order= on a relation sub-field.
+        full_as_dict_keys = {
+            "uuid",
+            "export_id",
+            "file_name",
+            "file_content",
+            "file_url",
+            "id",
+            "form_id",
+            "form_name",
+            "created_at",
+            "updated_at",
+            "source_created_at",
+            "source_updated_at",
+            "org_unit",
+            "latitude",
+            "longitude",
+            "altitude",
+            "period",
+            "project_name",
+            "project_color",
+            "project_id",
+            "status",
+            "correlation_id",
+            "created_by",
+            "last_modified_by",
+        }
+
+        cases = [
+            {
+                "description": "order by an org_unit sub-field while fields= excludes org_unit",
+                "params": {
+                    "order": "org_unit__name",
+                    "fields": "id,form_id",
+                    "orgUnitId": str(self.jedi_council_corruscant.id),
+                },
+                "expected_fields": {"id", "form_id"},
+            },
+            {
+                "description": "filtered by project_ids, ordered by -id, while fields= excludes every project sub-field",
+                "params": {"order": "-id", "fields": "id", "project_ids": str(self.project.id)},
+                "expected_fields": {"id"},
+            },
+            {
+                "description": "filtered and ordered by both org_unit and project, while fields= excludes both",
+                "params": {
+                    "order": "org_unit__name",
+                    "fields": "id",
+                    "orgUnitId": str(self.jedi_council_corruscant.id),
+                    "project_ids": str(self.project.id),
+                },
+                "expected_fields": {"id"},
+            },
+            {
+                "description": "showDeleted with a minimal fields= set",
+                "params": {"order": "id", "fields": "id", "showDeleted": "true"},
+                "expected_fields": {"id"},
+            },
+            {
+                "description": "filtered by form_ids and ordered by period, while fields= excludes form_id/form_name/period",
+                "params": {"order": "period", "fields": "id", "form_ids": f"{self.form_1.id},{self.form_2.id}"},
+                "expected_fields": {"id"},
+            },
+            {
+                "description": "period_ids filter, fields= includes both relations",
+                "params": {
+                    "order": "updated_at",
+                    "fields": "id,org_unit,project_name",
+                    "period_ids": "202001,202002,202003",
+                },
+                "expected_fields": {"id", "org_unit", "project_name"},
+            },
+            {
+                "description": "with_descriptor=true combined with fields=",
+                "params": {
+                    "order": "id",
+                    "with_descriptor": "true",
+                    "fields": "id,form_descriptor",
+                    "form_id": str(self.form_1.id),
+                },
+                "expected_fields": {"id", "form_descriptor"},
+            },
+            {
+                "description": "no fields= at all (full payload), ordered by an org_unit sub-field",
+                "params": {"order": "org_unit__name", "form_id": str(self.form_1.id)},
+                "expected_fields": full_as_dict_keys,
+            },
+            {
+                "description": "search=ids: filter, fields= subset",
+                "params": {
+                    "order": "id",
+                    "fields": "id",
+                    "search": f"ids:{self.instance_1.id},{self.instance_4.id}",
+                },
+                "expected_fields": {"id"},
+            },
+            {
+                "description": "search=refs: filter (org_unit__source_ref), while fields= excludes org_unit",
+                "params": {
+                    "order": "id",
+                    "fields": "id",
+                    "search": f"refs:{self.jedi_council_corruscant.source_ref}",
+                },
+                "expected_fields": {"id"},
+            },
+            {
+                "description": "plain text search (org_unit__name icontains), minimal fields=",
+                "params": {"order": "id", "fields": "id", "search": "Coruscant"},
+                "expected_fields": {"id"},
+            },
+            {
+                "description": "status=DUPLICATED filter (form_1 is single_per_period), while fields= excludes status",
+                "params": {
+                    "order": "id",
+                    "fields": "id",
+                    "status": "DUPLICATED",
+                    "form_id": str(self.form_1.id),
+                },
+                "expected_fields": {"id"},
+            },
+            {
+                "description": "userIds filter, while fields= excludes created_by",
+                "params": {
+                    "order": "id",
+                    "fields": "id",
+                    "userIds": str(self.yoda.id),
+                    "form_id": str(self.form_1.id),
+                },
+                "expected_fields": {"id"},
+            },
+            {
+                "description": "referenceInstances=not_reference filter, minimal fields=",
+                "params": {
+                    "order": "id",
+                    "fields": "id",
+                    "referenceInstances": "not_reference",
+                    "form_id": str(self.form_1.id),
+                },
+                "expected_fields": {"id"},
+            },
+            {
+                "description": "wide-open dateFrom/dateTo (created_from/to, Coalesce annotation path), fields= excludes created_at",
+                "params": {
+                    "order": "created_at",
+                    "fields": "id",
+                    "dateFrom": "2000-01-01",
+                    "dateTo": "2030-01-01",
+                },
+                "expected_fields": {"id"},
+            },
+            {
+                "description": "wide-open modificationDateFrom/To, ordered by -updated_at, fields= excludes updated_at",
+                "params": {
+                    "order": "-updated_at",
+                    "fields": "id",
+                    "modificationDateFrom": "2000-01-01",
+                    "modificationDateTo": "2030-01-01",
+                },
+                "expected_fields": {"id"},
+            },
+            {
+                "description": "wide-open sentDateFrom/To, fields= includes org_unit and project",
+                "params": {
+                    "order": "id",
+                    "fields": "id,org_unit,project_name",
+                    "sentDateFrom": "2000-01-01",
+                    "sentDateTo": "2030-01-01",
+                },
+                "expected_fields": {"id", "org_unit", "project_name"},
+            },
+        ]
+
+        for case in cases:
+            with self.subTest(case["description"]):
+                response = self.client.get("/api/instances/", case["params"])
+                self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
+                instances = response.json()["instances"]
+                self.assertTrue(instances, "expected at least one matching instance for this case")
+                for item in instances:
+                    self.assertEqual(set(item.keys()), case["expected_fields"])
+
+    def test_download_attachments_not_authenticated(self):
+        instance = self.create_form_instance(form=self.form_1, project=self.project, org_unit=self.ou_top_1)
+
+        response = self.client.get(f"/api/instances/{instance.pk}/download_attachments/")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_download_attachments(self):
+        self.client.force_authenticate(self.yoda)
+        instance = self.create_form_instance(form=self.form_1, project=self.project, org_unit=self.ou_top_1)
+        with open("iaso/tests/fixtures/odk_form_valid_no_settings.xlsx", "rb") as xls_file:
+            m.InstanceFile.objects.create(instance=instance, file=UploadedFile(xls_file), name="test1.jpg")
+            m.InstanceFile.objects.create(instance=instance, file=UploadedFile(xls_file), name="test2.webp")
+            m.InstanceFile.objects.create(instance=instance, file=UploadedFile(xls_file), name="test3.webp")
+            m.InstanceFile.objects.create(instance=instance, file=UploadedFile(xls_file), name="test4.pdf")
+
+        response = self.client.get(f"/api/instances/{instance.pk}/download_attachments/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        async def streaming_content_to_bytes(content: async_generator) -> io.BytesIO:
+            bytes = io.BytesIO()
+            async for x in content:
+                bytes.write(x)
+            return bytes
+
+        content = asyncio.run(streaming_content_to_bytes(response.streaming_content))
+        with zipfile.ZipFile(content, "a", zipfile.ZIP_DEFLATED, False) as zf:
+            self.assertEqual(4, len(zf.namelist()))
+            self.assertEqual("test1.jpg", zf.namelist()[0])
+            self.assertEqual("test2.webp", zf.namelist()[1])
+            self.assertEqual("test3.webp", zf.namelist()[2])
+            self.assertEqual("test4.pdf", zf.namelist()[3])
+
     def assertInstanceListContainsStrictly(self, api_response, expected_instances):
         try:
-            self.assertEqual(api_response.status_code, 200)
+            self.assertEqual(api_response.status_code, status.HTTP_200_OK)
             self.assertValidInstanceListData(api_response.json(), len(expected_instances))
             actual_instances_ids = [x.get("id") for x in api_response.json()["instances"]]
 

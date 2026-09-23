@@ -9,6 +9,10 @@ from fake import fake_person
 from names_generator import generate_name
 
 
+# App version reported on instances the setuper creates, so device_app_version gets filled.
+APP_VERSION = "1.0.0"
+
+
 def submission2xml(submission_dict, form_id, form_version_id, gen_uuid=False):
     root = "data"
     if gen_uuid:

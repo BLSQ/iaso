@@ -717,7 +717,7 @@ class BulkCreateAPITestCase(BulkCreateBaseAPITestCaseMixin):
 
         response = self.client.post(f"{BASE_URL}", {"file": file}, format="multipart")
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         usernames = ["broly", "ferdinand", "rsfg"]
 
         self.assertEqual(get_user_model().objects.filter(username__in=usernames).count(), 3)
@@ -999,7 +999,7 @@ class BulkCreateAPITestCase(BulkCreateBaseAPITestCaseMixin):
 
         login_response = self.client.post("/api/token/", data=login_data, format="json")
 
-        self.assertEqual(login_response.status_code, 200)
+        self.assertEqual(login_response.status_code, status.HTTP_200_OK)
 
     def test_cant_create_user_not_org_unit_in_the_pyramid_with_managed_geo_limit_permission(self):
         self.client.force_authenticate(self.user_managed_geo_limit)

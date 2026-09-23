@@ -2,9 +2,9 @@ import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../libs/utils';
-import { ApiFormStatsParams } from '../types/formStats';
+import { ApiFormStatsParams, FormStatsParams } from '../types/formStats';
 
-const getFormStats = url => {
+const getFormStats = (url: string) => {
     return getRequest(url);
 };
 
@@ -26,7 +26,7 @@ const useGetFormStats = ({
     });
 };
 
-export const useGetPerFormStats = params => {
+export const useGetPerFormStats = (params: FormStatsParams) => {
     return useGetFormStats({
         params,
         url: '/api/instances/stats/',
@@ -34,7 +34,7 @@ export const useGetPerFormStats = params => {
     });
 };
 
-export const useGetFormStatsSum = params => {
+export const useGetFormStatsSum = (params: FormStatsParams) => {
     return useGetFormStats({
         params,
         url: '/api/instances/stats_sum/',

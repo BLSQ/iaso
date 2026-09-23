@@ -5,8 +5,7 @@ import { SxStyles } from 'Iaso/types/general';
 
 const styles: SxStyles = {
     badge: {
-        // @ts-ignore
-        border: theme => `3px solid ${theme.palette.ligthGray.border}`,
+        border: theme => `3px solid ${theme.palette.lightGray.border}`,
         borderRadius: theme => theme.spacing(3),
         width: theme => theme.spacing(3),
         height: theme => theme.spacing(3),

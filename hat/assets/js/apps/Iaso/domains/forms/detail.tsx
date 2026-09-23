@@ -8,7 +8,6 @@ import React, {
 import { Box, Button, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    CommonStyles,
     LoadingSpinner,
     commonStyles,
     useGoBack,
@@ -17,9 +16,9 @@ import {
 } from 'bluesquare-components';
 import isEqual from 'lodash/isEqual';
 import mapValues from 'lodash/mapValues';
-import omit from 'lodash/omit';
 import { useQueryClient } from 'react-query';
 import { FormPredefinedFilters } from 'Iaso/domains/forms/components/FormPredefinedFilters';
+import { isApiError400 } from 'Iaso/libs/Api';
 import TopBar from '../../components/nav/TopBarComponent';
 import { openSnackBar } from '../../components/snackBars/EventDispatcher';
 import { succesfullSnackBar } from '../../constants/snackBars';
@@ -35,12 +34,12 @@ import { requiredFields } from './config/index';
 import { CR_MODE_NONE } from './constants';
 import MESSAGES from './messages';
 import { createForm, updateForm, useGetForm } from './requests';
-import { FormParams } from './types/forms';
+import { FormDataType, FormParams, FormWritePayload } from './types/forms';
 
 const useStyles = makeStyles(theme => ({
-    ...(commonStyles(theme) as unknown as CommonStyles),
+    ...(commonStyles(theme) as unknown as Record<string, any>),
     tabs: {
-        ...commonStyles(theme).tabs,
+        ...(commonStyles(theme).tabs as unknown as Record<string, any>),
         padding: 0,
     },
 }));
@@ -67,7 +66,8 @@ const defaultForm = {
     validation_workflow: null,
 };
 
-const formatFormData = value => {
+// Detail API payload is wider than `Form` (short_name, nested relations, etc.).
+const formatFormData = (value?: Record<string, any> | null) => {
     let form = value;
     if (!form) form = defaultForm;
     return {
@@ -99,6 +99,27 @@ const formatFormData = value => {
         validation_workflow: form.validation_workflow,
     };
 };
+
+const getFormWritePayload = (formState: FormDataType): FormWritePayload => ({
+    id: formState.id.value,
+    name: formState.name.value,
+    short_name: formState.short_name.value,
+    depth: formState.depth.value,
+    org_unit_type_ids: formState.org_unit_type_ids.value,
+    org_unit_group_ids: formState.org_unit_group_ids.value,
+    project_ids: formState.project_ids.value,
+    period_type: formState.period_type.value,
+    derived: formState.derived.value,
+    single_per_period: formState.single_per_period.value,
+    periods_before_allowed: formState.periods_before_allowed.value,
+    periods_after_allowed: formState.periods_after_allowed.value,
+    device_field: formState.device_field.value,
+    location_field: formState.location_field.value,
+    label_keys: formState.label_keys.value,
+    legend_threshold: formState.legend_threshold?.value,
+    change_request_mode: formState.change_request_mode.value,
+    validation_workflow: formState.validation_workflow?.value,
+});
 
 const FormDetail: FunctionComponent = () => {
     const params = useParamsObject(
@@ -159,24 +180,19 @@ const FormDetail: FunctionComponent = () => {
     }, [currentForm.period_type.value]);
     const isNew = params.formId === '0';
     const onConfirm = async () => {
-        let isUpdate;
+        const formData = getFormWritePayload(currentForm);
+        let isUpdate = false;
         let saveForm;
-        let formData;
 
         if (isNew) {
-            isUpdate = false;
-            formData = mapValues(
-                omit(currentForm, ['form_id', 'possible_fields']),
-                v => v.value,
-            );
             saveForm = createForm(formData);
         } else {
+            const formId: number | null = currentForm.id.value;
+            if (formId === null) {
+                return;
+            }
             isUpdate = true;
-            formData = mapValues(
-                omit(currentForm, ['possible_fields']),
-                v => v.value,
-            );
-            saveForm = updateForm(currentForm.id.value, formData);
+            saveForm = updateForm(formId, formData);
         }
         setIsLoading(true);
         let savedFormData;
@@ -187,20 +203,22 @@ const FormDetail: FunctionComponent = () => {
 
             if (!isUpdate) {
                 redirectToReplace(baseUrls.formDetail, {
-                    formId: savedFormData.id,
+                    formId: String(savedFormData.id),
                 });
             }
-        } catch (error) {
-            if (error.status === 400) {
-                Object.entries(error.details).forEach(
-                    ([errorKey, errorMessages]) => {
-                        setFieldErrors(errorKey, errorMessages);
-                    },
-                );
+        } catch (error: unknown) {
+            if (!isApiError400(error)) {
+                return;
             }
+            Object.entries(error.details).forEach(
+                ([errorKey, errorMessages]) => {
+                    setFieldErrors(errorKey, errorMessages);
+                },
+            );
+        } finally {
+            setIsLoading(false);
+            setIsSaved(true);
         }
-        setIsLoading(false);
-        setIsSaved(true);
     };
 
     const handleReset = useCallback(() => {
@@ -208,7 +226,7 @@ const FormDetail: FunctionComponent = () => {
     }, [form, setFormState]);
 
     const onChange = useCallback(
-        (keyValue: string, value) => {
+        (keyValue: string, value: any) => {
             if (isSaved) setIsSaved(false);
             setFieldValue(keyValue, value);
             if (!isFieldValid(keyValue, value, detailRequiredFields)) {
@@ -250,7 +268,7 @@ const FormDetail: FunctionComponent = () => {
         if (form) {
             singlePerPeriodValue = form.period_type
                 ? form.single_per_period
-                : null;
+                : false;
         }
         return singlePerPeriodValue;
     }, [form]);

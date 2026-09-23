@@ -23,17 +23,14 @@ export const useStyles = makeStyles(theme => {
         tableRow: {
             height: cellHeight,
             '& th:last-child, & td:last-child': {
-                // @ts-ignore
-                borderRight: `1px solid ${theme.palette.ligthGray.border}`,
+                borderRight: `1px solid ${theme.palette.lightGray.border}`,
             },
         },
         tableRowSmall: {
             height: smallCellHeight,
             '& th:last-child, & td:last-child': {
-                // @ts-ignore
-                borderRight: `1px solid ${theme.palette.ligthGray.border}`,
-                // @ts-ignore
-                borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
+                borderRight: `1px solid ${theme.palette.lightGray.border}`,
+                borderLeft: `1px solid ${theme.palette.lightGray.border}`,
             },
         },
         plannedCampaign: {
@@ -43,34 +40,29 @@ export const useStyles = makeStyles(theme => {
             padding: '0 !important',
             margin: '0 !important',
             position: 'relative',
-            // @ts-ignore
-            borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
+            borderLeft: `1px solid ${theme.palette.lightGray.border}`,
         },
         tableCellHead: {
             height: cellHeight,
             padding: '0 !important',
             margin: '0 !important',
             position: 'sticky',
-            // @ts-ignore
-            borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
+            borderLeft: `1px solid ${theme.palette.lightGray.border}`,
         },
         tableCellTopBordered: {
             height: cellHeight,
             padding: '0 !important',
             margin: '0 !important',
             position: 'sticky',
-            // @ts-ignore
-            borderTop: `1px solid ${theme.palette.ligthGray.border}`,
+            borderTop: `1px solid ${theme.palette.lightGray.border}`,
         },
         tableCellTitle: {
             padding: '0 !important',
             margin: '0 !important',
             position: 'sticky',
             height: cellHeight,
-            // @ts-ignore
-            borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
-            // @ts-ignore
-            borderTop: `1px solid ${theme.palette.ligthGray.border}`,
+            borderLeft: `1px solid ${theme.palette.lightGray.border}`,
+            borderTop: `1px solid ${theme.palette.lightGray.border}`,
         },
         tableCellTitleSmall: {
             width: '30px',
@@ -80,8 +72,7 @@ export const useStyles = makeStyles(theme => {
             backgroundColor: theme.palette.common.white,
         },
         tableCellBordered: {
-            // @ts-ignore
-            borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
+            borderLeft: `1px solid ${theme.palette.lightGray.border}`,
         },
         tableCellDashed: {
             border: `1px dashed ${theme.palette.secondary.main} !important`,
@@ -96,8 +87,7 @@ export const useStyles = makeStyles(theme => {
         tableCellHidden: {
             height: 0,
             border: `1px solid #fafafa`,
-            // @ts-ignore
-            borderBottom: `1px solid ${theme.palette.ligthGray.border}`,
+            borderBottom: `1px solid ${theme.palette.lightGray.border}`,
         },
         round: {
             fontSize: 12,
@@ -195,8 +185,7 @@ export const useStyles = makeStyles(theme => {
             height: theme.spacing(3),
             width: theme.spacing(3),
             opacity: vaccineOpacity,
-            // @ts-ignore
-            border: `2px solid ${theme.palette.ligthGray.border}`,
+            border: `2px solid ${theme.palette.lightGray.border}`,
         },
         mapLegendLabel: {
             textAlign: 'right',

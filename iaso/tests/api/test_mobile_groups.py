@@ -1,4 +1,5 @@
 from django.utils.timezone import now
+from rest_framework import status
 
 from iaso import models as m
 from iaso.api.query_params import APP_ID, SHOW_DELETED
@@ -47,19 +48,19 @@ class MobileGroupsAPITestCase(APITestCase):
     def test_api_mobile_groups_list_without_app_id(self):
         """GET /api/mobile/groups/ without app_id"""
         response = self.client.get("/api/mobile/groups/")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_api_mobile_groups_list_with_unknown_app_id(self):
         """GET /api/mobile/groups/ with unknown app_id"""
         response = self.client.get("/api/mobile/groups/", {APP_ID: "foo"})
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_api_mobile_groups_list_with_app_id(self):
         """GET /api/mobile/groups/ with app_id"""
 
         # Groups with `source_version_1`.
         response = self.client.get("/api/mobile/groups/", {APP_ID: self.project_cameroon.app_id})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
         expected_data = [
             {"id": self.group_nigeria_1.pk, "name": "Hospitals", "erased": False},
@@ -70,7 +71,7 @@ class MobileGroupsAPITestCase(APITestCase):
         # Groups with `source_version_2`.
         ## Without all versions
         response = self.client.get("/api/mobile/groups/", {APP_ID: self.project_nigeria.app_id})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         expected_data = [{"id": self.group_nigeria_2.pk, "name": "Villages", "erased": False}]
         self.assertCountEqual(response.data, expected_data)
@@ -80,7 +81,7 @@ class MobileGroupsAPITestCase(APITestCase):
             "/api/mobile/groups/",
             {APP_ID: self.project_nigeria.app_id, SHOW_DELETED: "true"},
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 3)
         expected_data = [
             {"id": self.group_nigeria_1.pk, "name": "Hospitals", "erased": True},

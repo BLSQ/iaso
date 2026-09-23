@@ -123,6 +123,7 @@ class ProcessMobileBulkUploadTest(TestCase):
             user=self.user,
             import_type="bulk",
             json_body={},
+            app_version="1.2.3",
         )
         self.account = m.Account.objects.first()
         self.task = m.Task.objects.create(
@@ -292,6 +293,8 @@ class ProcessMobileBulkUploadTest(TestCase):
         # The registration form is the entity type's reference form, so the entity's
         # `attributes` should point back to this instance.
         self.assertEqual(ent_disasi.attributes, reg_instance)
+        self.assertEqual(reg_instance.api_import, self.api_import)
+        self.assertEqual(reg_instance.app_version, "1.2.3")
         self.assertEqual(reg_instance.instancefile_set.count(), 0)
         # `location`/`accuracy` here come from the direct payload assignment in `import_data()`
         # (latitude/longitude/altitude/accuracy in instances.json) -- form_registration has no
@@ -309,6 +312,8 @@ class ProcessMobileBulkUploadTest(TestCase):
         catt_instance = m.Instance.objects.get(uuid=DISASI_MAKULO_CATT)
         self.assertEqual(catt_instance.json.get("result"), "positive")
         self.assertEqual(catt_instance.entity, ent_disasi)
+        self.assertEqual(catt_instance.api_import, self.api_import)
+        self.assertEqual(catt_instance.app_version, "1.2.3")
         self.assertEqual(catt_instance.instancefile_set.count(), 1)
         image = catt_instance.instancefile_set.first()
         self.assertEqual(image.name, "1712326156339.webp")

@@ -1,6 +1,7 @@
 import typing
 
 from django.utils.timezone import now
+from rest_framework import status
 
 from iaso import models as m
 from iaso.models import Form
@@ -84,7 +85,7 @@ class MobileFormsAPITestCase(APITestCase):
         """GET /mobile/forms/ without auth: 0 result"""
 
         response = self.client.get("/api/mobile/forms/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertValidFormListData(response.json(), 0)
 
@@ -93,7 +94,7 @@ class MobileFormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.raccoon)
         response = self.client.get("/api/mobile/forms/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertValidFormListData(response.json(), 0)
 
@@ -102,7 +103,7 @@ class MobileFormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/mobile/forms/", headers={"Content-Type": "application/json"})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(response.json(), 1)
 
     def test_forms_list_ok_with_custom_fields(self):
@@ -130,7 +131,7 @@ class MobileFormsAPITestCase(APITestCase):
             response = self.client.get(
                 "/api/mobile/forms/", data={"fields": custom_fields}, headers={"Content-Type": "application/json"}
             )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(response.json(), 2)
 
     def test_forms_list_exposes_org_unit_groups(self):
@@ -138,7 +139,7 @@ class MobileFormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.form_manager)
         response = self.client.get("/api/mobile/forms/", headers={"Content-Type": "application/json"})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         form_data = response.json()["forms"][0]
         self.assertHasField(form_data, "org_unit_groups", list)
@@ -154,28 +155,28 @@ class MobileFormsAPITestCase(APITestCase):
             f"/api/mobile/forms/?orgUnitGroupIds={self.health_facilities_group.pk}",
             headers={"Content-Type": "application/json"},
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(response.json(), 1)
 
         response = self.client.get(
             f"/api/mobile/forms/?orgUnitGroupIds={self.empty_group.pk}",
             headers={"Content-Type": "application/json"},
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(response.json(), 0)
 
     def test_forms_list_ok_hide_derived_forms(self):
         """GET /mobile/forms/ web app happy path: we expect 1 results if one of the form is marked as derived"""
 
         response = self.client.get(f"/api/mobile/forms/?app_id={self.project_1.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(response.json(), 1)
 
         self.form_2.derived = True
         self.form_2.save()
 
         response = self.client.get(f"/api/mobile/forms/?app_id={self.project_1.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(response.json(), 0)
 
     def test_forms_list_date_to_inclusive(self):
@@ -186,7 +187,7 @@ class MobileFormsAPITestCase(APITestCase):
         response = self.client.get(
             f"/api/mobile/forms/?date_to={date_to}", headers={"Content-Type": "application/json"}
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(response.json(), 1)
 
     def test_forms_list_paginated(self):
@@ -194,7 +195,7 @@ class MobileFormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/mobile/forms/?limit=1&page=1", headers={"Content-Type": "application/json"})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertValidFormListData(response_data, 1, True)
@@ -233,28 +234,28 @@ class MobileFormsAPITestCase(APITestCase):
         """GET /mobile/forms/<form_id> without auth should result in a 404"""
 
         response = self.client.get(f"/api/mobile/forms/{self.form_1.id}/")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_forms_retrieve_wrong_auth(self):
         """GET /mobile/forms/<form_id> with auth of unrelated user should result in a 404"""
 
         self.client.force_authenticate(self.raccoon)
         response = self.client.get(f"/api/mobile/forms/{self.form_1.id}/")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_forms_retrieve_not_found(self):
         """GET /mobile/forms/<form_id>: id does not exist"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/mobile/forms/292003030/")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_forms_retrieve_ok_1(self):
         """GET /mobile/forms/<form_id> happy path (simple form)"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/mobile/forms/{self.form_2.id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormData(response.json())
 
     def test_forms_retrieve_ok_2(self):
@@ -262,7 +263,7 @@ class MobileFormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/mobile/forms/{self.form_2.id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         form_data = response.json()
         self.assertValidFullFormData(form_data)
@@ -283,7 +284,7 @@ class MobileFormsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         response_data = response.json()
         self.assertValidFormData(response_data)
@@ -310,7 +311,7 @@ class MobileFormsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         response_data = response.json()
         self.assertValidFormData(response_data)
@@ -323,14 +324,14 @@ class MobileFormsAPITestCase(APITestCase):
         """POST /mobile/forms/ without auth: 401"""
 
         response = self.client.post("/api/mobile/forms/", data={"name": "test form"}, format="json")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_forms_create_wrong_permission(self):
         """POST /mobile/forms/ with auth but not the proper permission: 403"""
 
         self.client.force_authenticate(self.iron_man)
         response = self.client.post("/api/mobile/forms/", data={"name": "test form"}, format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_forms_create_invalid_1(self):
         """POST /mobile/forms/ with a lot of missing/invalid data"""
@@ -339,7 +340,7 @@ class MobileFormsAPITestCase(APITestCase):
         response = self.client.post(
             "/api/mobile/forms/", data={"period_type": "LOL", "single_per_period": "Oui"}, format="json"
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
         response_data = response.json()
         self.assertHasError(response.json(), "name")
@@ -353,7 +354,7 @@ class MobileFormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post("/api/mobile/forms/", data={"project_ids": []}, format="json")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
         response_data = response.json()
         self.assertHasError(response_data, "project_ids")
@@ -375,7 +376,7 @@ class MobileFormsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
         response_data = response.json()
         self.assertHasError(response_data, "periods_before_allowed")
@@ -397,7 +398,7 @@ class MobileFormsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(response.json(), "project_ids", "Invalid project ids")
 
     def test_forms_create_wrong_org_unit_types(self):
@@ -416,7 +417,7 @@ class MobileFormsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(response.json(), "org_unit_type_ids", "Invalid org unit type ids")
 
     def test_forms_update_ok(self):
@@ -440,7 +441,7 @@ class MobileFormsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertValidFormData(response_data)
@@ -459,7 +460,7 @@ class MobileFormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.delete(f"/api/mobile/forms/{self.form_2.id}/", format="json")
-        self.assertJSONResponse(response, 204)
+        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
 
         self.assertIsNotNone(Form.objects_only_deleted.get(pk=self.form_2.id))
         self.assertFalse(Form.objects.filter(pk=self.form_2.id).exists())
@@ -469,7 +470,7 @@ class MobileFormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.delete(f"/api/mobile/forms/{self.form_2.id}/", format="json")
-        self.assertJSONResponse(response, 204)
+        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
 
     def test_forms_can_restore_deleted_form(self):
         """PATCH /mobile/forms/<form_id>/?only_deleted=1"""
@@ -488,7 +489,7 @@ class MobileFormsAPITestCase(APITestCase):
             },
         )
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertIsNotNone(Form.objects.get(pk=self.form_2.id))
         self.assertFalse(Form.objects_only_deleted.filter(pk=self.form_2.id).exists())
@@ -498,13 +499,13 @@ class MobileFormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.raccoon)
         response = self.client.delete(f"/api/mobile/forms/{self.form_1.id}/", format="json")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_forms_destroy_no_auth(self):
         """DELETE /mobile/forms/<form_id> without auth -> 401"""
 
         response = self.client.delete(f"/api/mobile/forms/{self.form_1.id}/", format="json")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     # noinspection DuplicatedCode
     def assertValidFormListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):

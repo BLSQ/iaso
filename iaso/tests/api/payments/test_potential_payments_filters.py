@@ -1,6 +1,7 @@
 import datetime
 
 from django.contrib.auth.models import Group
+from rest_framework import status
 
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_ORG_UNITS_CHANGE_REQUEST_REVIEW_PERMISSION, CORE_PAYMENTS_PERMISSION
@@ -83,16 +84,16 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
         response = self.client.get(
             "/api/potential_payments/?change_requests__created_at_after=2023-10-17&change_requests__created_at_before=2023-10-17"
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(1, len(response.data["results"][0]["change_requests"]))
 
         response = self.client.get("/api/potential_payments/?change_requests__created_at_after=17-10-2022")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(1, len(response.data["results"]))
         self.assertEqual(2, len(response.data["results"][0]["change_requests"]))
 
         response = self.client.get("/api/potential_payments/?change_requests__created_at_before=17-10-2022")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(1, len(response.data["results"]))
         self.assertEqual(2, len(response.data["results"][0]["change_requests"]))
 
@@ -112,7 +113,7 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user_with_review_perm)
         response = self.client.get(f"/api/potential_payments/?users={self.user.id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(1, len(response.data["results"]))
         self.assertEqual(1, len(response.data["results"][0]["change_requests"]))
         self.assertEqual(response.data["results"][0]["change_requests"][0]["id"], change_request1.id)
@@ -133,7 +134,7 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user_with_review_perm)
         response = self.client.get(f"/api/potential_payments/?user_roles={self.user_role.id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(1, len(response.data["results"]))
         self.assertEqual(1, len(response.data["results"][0]["change_requests"]))
         self.assertEqual(response.data["results"][0]["change_requests"][0]["id"], change_request1.id)
@@ -163,13 +164,13 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user_with_review_perm)
 
         response = self.client.get(f"/api/potential_payments/?parent_id={self.parent_org_unit.id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 1)
         self.assertEqual(response.data["results"][0]["change_requests"][0]["id"], change_request1.id)
 
         # Test filtering by old parent
         response = self.client.get(f"/api/potential_payments/?parent_id={another_parent_org_unit.id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 1)
         self.assertEqual(response.data["results"][0]["change_requests"][0]["id"], change_request2.id)
 
@@ -202,7 +203,7 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user_with_review_perm)
         response = self.client.get(f"/api/potential_payments/?forms={self.form.id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 1)
         self.assertEqual(len(response.data["results"][0]["change_requests"]), 1)
         self.assertIn(change_request1.id, [change["id"] for change in response.data["results"][0]["change_requests"]])
@@ -225,7 +226,7 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
         )
         self.client.force_authenticate(self.user_with_review_perm)
         response = self.client.get("/api/potential_payments/?select_all=true")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertTrue(
             len(response.data["results"][0]["change_requests"]) == 2, "select_all filter did not return all results"
         )
@@ -271,7 +272,7 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
         selected_ids = f"{potential_payment1.id},{potential_payment2.id}"
         self.client.force_authenticate(self.user_with_review_perm)
         response = self.client.get(f"/api/potential_payments/?selected_ids={selected_ids}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(
             len(response.data["results"]),
@@ -336,7 +337,7 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
         unselected_ids = f"{potential_payment1.id}"
         self.client.force_authenticate(self.user_with_review_perm)
         response = self.client.get(f"/api/potential_payments/?unselected_ids={unselected_ids}&select_all=true")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(
             len(response.data["results"]),
             2,

@@ -86,11 +86,16 @@ export const Entities: FunctionComponent = () => {
     }, [data]);
 
     const hasCursor = !!(next || previous);
+
+    const requiresCount = !isFetching && hasCursor;
+
     const { data: countData, isFetching: isFetchingCount } =
-        useGetEntitiesCount(params, hasCursor);
+        useGetEntitiesCount(params, requiresCount);
 
     const lengthResults = data?.result?.length ?? 0;
-    const totalCount = countData?.count ?? lengthResults;
+    const totalCount = hasCursor
+        ? (countData?.count ?? lengthResults)
+        : lengthResults;
 
     const handleNextPage = () => {
         if (next) {
@@ -113,7 +118,10 @@ export const Entities: FunctionComponent = () => {
 
     const { cursor: _cursor, ...tableParams } = params;
 
-    const columns = useColumns(entityTypeIds, extraColumns || []);
+    const { columns, formDescriptorsReady } = useColumns(
+        entityTypeIds,
+        extraColumns || [],
+    );
 
     const { data: types } = useGetEntityTypesDropdown();
 
@@ -190,7 +198,12 @@ export const Entities: FunctionComponent = () => {
                                 baseUrl={baseUrl}
                                 params={tableParams}
                                 showPagination={false}
-                                extraProps={{ loading: isFetching }}
+                                extraProps={{
+                                    loading: isFetching,
+                                    // Bust Table React.memo when select labels
+                                    // become available (Cell fn changes are ignored).
+                                    formDescriptorsReady,
+                                }}
                                 noDataMessage={
                                     !isSearchActive
                                         ? MESSAGES.searchToSeeEntities

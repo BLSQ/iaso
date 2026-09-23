@@ -10,6 +10,7 @@ from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile, UploadedFile
 from django.test import override_settings
 from django.utils import timezone
+from rest_framework import status
 
 from hat.audit.models import INSTANCE_API, Modification
 from iaso import models as m
@@ -111,7 +112,7 @@ class EnketoAPITestCase(APITestCase):
         """GET /api/enketo/edit/{uuid}/"""
         instance = self.form_1.instances.first()
         response = self.client.get(f"/api/enketo/edit/{instance.uuid}/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     @override_settings(ENKETO=enketo_test_settings)
     @responses.activate
@@ -326,7 +327,7 @@ class EnketoAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/enketo/edit/{instance.uuid}/")
 
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     @override_settings(ENKETO=enketo_test_settings)
     @responses.activate
@@ -378,7 +379,7 @@ class EnketoAPITestCase(APITestCase):
         response = self.client.get("/api/enketo/formList")
 
         self.assertEqual(response.content.decode(), "formID is required")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_when_anonymous_get_formList_should_work_1(self):
         instance = self.form_1.instances.first()
@@ -449,7 +450,7 @@ class EnketoAPITestCase(APITestCase):
 
             instance = self.form_1.instances.first()
 
-            self.assertEqual(response.status_code, 201)
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
             self.assertEqual(self.yoda, instance.last_modified_by)
 
     def test_submission_sets_instance_fields(self):
@@ -655,7 +656,7 @@ class EnketoAPITestCase(APITestCase):
 
             instance.refresh_from_db()
 
-            self.assertEqual(response.status_code, 201)
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
             self.assertEqual(self.yoda, instance.last_modified_by)
 
     @responses.activate
@@ -711,7 +712,7 @@ class EnketoAPITestCase(APITestCase):
                 format="multipart",
             )
 
-            self.assertEqual(response.status_code, 409)
+            self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
 
     @override_settings(ENKETO=enketo_test_settings)
     @responses.activate
@@ -730,7 +731,7 @@ class EnketoAPITestCase(APITestCase):
         }
 
         response = self.client.get("/api/enketo/public_create_url/", data=data)
-        r = self.assertJSONResponse(response, 201)
+        r = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertEqual(r, {"url": "https://enketo_url.host.test/something"})
         self.assertTrue(responses.assert_call_count("https://enketo_url.host.test/api_v2/instance", 1))
 
@@ -773,7 +774,7 @@ class EnketoAPITestCase(APITestCase):
 
         response = self.client.get("/api/enketo/public_create_url/", data=data)
 
-        r = self.assertJSONResponse(response, 201)
+        r = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertEqual(r, {"url": "https://enketo_url.host.test/something"})
         self.assertTrue(responses.assert_call_count("https://enketo_url.host.test/api_v2/instance", 1))
         self.assertEqual(len(responses.calls), 1)
@@ -835,7 +836,7 @@ class EnketoAPITestCase(APITestCase):
         # test setup
 
         response = self.client.get("/api/enketo/public_create_url/", data=data)
-        r = self.assertJSONResponse(response, 400)
+        r = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             r,
             {
@@ -871,7 +872,7 @@ class EnketoAPITestCase(APITestCase):
         }
 
         response = self.client.get("/api/enketo/public_create_url/", data=data)
-        r = self.assertJSONResponse(response, 201)
+        r = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertEqual(r, {"url": "https://enketo_url.host.test/something"})
         self.assertEqual(len(responses.calls), 1)
         self.assertTrue(responses.assert_call_count("https://enketo_url.host.test/api_v2/instance", 1), responses.calls)
@@ -905,7 +906,7 @@ class EnketoAPITestCase(APITestCase):
         }
 
         response = self.client.get("/api/enketo/public_create_url/", data=data)
-        r = self.assertJSONResponse(response, 201)
+        r = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertEqual(r, {"url": "https://enketo_url.host.test/something"})
         self.assertEqual(len(responses.calls), 1)
         # self.assertEqual(responses.calls[0].request.url, 1)
@@ -943,7 +944,7 @@ class EnketoAPITestCase(APITestCase):
         }
 
         response = self.client.get("/api/enketo/public_create_url/", data=data)
-        r = self.assertJSONResponse(response, 201)
+        r = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertEqual(r, {"url": "https://enketo_url.host.test/something"})
         self.assertEqual(len(responses.calls), 1)
         # self.assertEqual(responses.calls[0].request.url, 1)
@@ -1173,7 +1174,7 @@ class EnketoAPITestCase(APITestCase):
         )
 
         response = self.client.get(f"/api/fill/{form_with_injectables.uuid}/{self.jedi_council_corruscant.id}/202301")
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, status.HTTP_302_FOUND)
         self.assertEqual(response.url, "https://enketo_url.host.test/something")
 
         instance = Instance.objects.filter(form=form_with_injectables).latest("id")
@@ -1224,14 +1225,14 @@ class EnketoAPITestCase(APITestCase):
 
         # Test correct file download
         response = self.client.get(f"/api/enketo/instance_files/{instance_file.id}/test.txt")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(b"".join(response.streaming_content), file_content)
         self.assertEqual(response["Content-Disposition"], 'attachment; filename="test.txt"')
 
         # Test wrong file name
         response = self.client.get(f"/api/enketo/instance_files/{instance_file.id}/wrong_name.txt")
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
         # Test non-existent instance file
         response = self.client.get("/api/enketo/instance_files/9999/test.txt")
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

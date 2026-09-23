@@ -30,6 +30,9 @@ export type Descriptor = {
     bind?: {
         calculate?: string;
     };
+    // present only on the root survey descriptor
+    _translations?: Record<string, unknown>;
+    default_language?: string;
 };
 
 type Data = Record<string, any>;
@@ -94,24 +97,20 @@ type InstanceFileContentRichProps = {
 const useStyles = makeStyles(theme => ({
     tableCellHead: {
         fontWeight: 'bold',
-        // @ts-ignore
-        backgroundColor: theme.palette.gray,
+        backgroundColor: theme.palette.gray.background,
         borderTop: 'none !important',
         borderLeft: 'none !important',
         borderRight: 'none !important',
-        // @ts-ignore
-        borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
+        borderBottom: `1px solid ${theme.palette.lightGray.border}  !important`,
     },
     tableCell: {
         backgroundColor: 'transparent',
         borderTop: 'none !important',
         borderLeft: 'none !important',
         borderRight: 'none !important',
-        // @ts-ignore
-        borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
+        borderBottom: `1px solid ${theme.palette.lightGray.border}  !important`,
     },
     tableCellCalculated: {
-        // @ts-ignore
         color: theme.palette.gray.main,
     },
     tableCellLabelWrapper: {
@@ -128,7 +127,6 @@ const useStyles = makeStyles(theme => ({
         marginLeft: 5,
     },
     tableCellLabelName: {
-        // @ts-ignore
         color: theme.palette.mediumGray.main,
     },
 }));
@@ -146,7 +144,7 @@ const getRawValue = (descriptor: Descriptor, data: Data): string => {
  * (handles the different scenarios, such as select fields)
  */
 
-const getDisplayedValue = (
+export const getDisplayedValue = (
     descriptor: Descriptor,
     data: Data,
     activeLocale: string,

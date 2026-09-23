@@ -1,5 +1,7 @@
 import typing
 
+from rest_framework import status
+
 from iaso import models as m
 from iaso.api.query_params import APP_ID, FORM_ID
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
@@ -53,20 +55,20 @@ class FormPredefinedFilterViewsTestCase(TaskAPITestCase):
         f"""GET {BASE_URL} without auth: 0 result"""
 
         response = self.client.get(BASE_URL)
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_formpredefinedfilters_list_without_auth_for_project_requiring_auth(self):
         f"""GET {BASE_URL} without auth for project which requires it: 401"""
 
         response = self.client.get(BASE_URL, {APP_ID: self.authenticated_project.app_id})
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_formpredefinedfilters_list_without_auth_for_project_not_requiring_auth(self):
         f"""GET {BASE_URL} without auth for project which doesn't requires it: 200"""
 
         with self.assertNumQueries(3):
             response = self.client.get(BASE_URL, {APP_ID: self.unauthenticated_project.app_id})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFiltersListData(response.json(), 0)
 
     def test_formpredefinedfilters_list_with_invalid_form_id(self):
@@ -74,20 +76,20 @@ class FormPredefinedFilterViewsTestCase(TaskAPITestCase):
 
         self.client.force_authenticate(user=self.user_with_rights)
         response = self.client.get(BASE_URL, {FORM_ID: 1000})
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_formpredefinedfilters_list_with_wrong_form_id(self):
         f"""GET {BASE_URL} with wrong form id: 400"""
 
         self.client.force_authenticate(user=self.user_with_rights)
         response = self.client.get(BASE_URL, {FORM_ID: "FooBar"})
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_formpredefinedfilters_from_other_account(self):
         f"""GET {BASE_URL} from other account: 404"""
         self.client.force_authenticate(user=self.user_with_rights)
         response = self.client.get(BASE_URL, {FORM_ID: self.form3.id})
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_formpredefinedfilters_create_get_delete(self):
         self.client.force_authenticate(self.user_with_rights)
@@ -101,7 +103,7 @@ class FormPredefinedFilterViewsTestCase(TaskAPITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         with self.assertNumQueries(2):
             response = self.client.get(
@@ -109,7 +111,7 @@ class FormPredefinedFilterViewsTestCase(TaskAPITestCase):
                 data={"form_id": self.form1.id},
                 format="json",
             )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFiltersListData(response.json(), 1)
         first_predefined_filter = response.json().get("form_predefined_filters")[0]
         self.assertEqual(first_predefined_filter.get("name"), "test")
@@ -123,7 +125,7 @@ class FormPredefinedFilterViewsTestCase(TaskAPITestCase):
             data={"form_id": self.form2.id},
             format="json",
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFiltersListData(response.json(), 0)
 
         response = self.client.patch(
@@ -131,14 +133,14 @@ class FormPredefinedFilterViewsTestCase(TaskAPITestCase):
             data={"name": "test2"},
             format="json",
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response = self.client.get(
             path=BASE_URL,
             data={"form_id": self.form1.id},
             format="json",
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFiltersListData(response.json(), 1)
         first_predefined_filter = response.json().get("form_predefined_filters")[0]
         self.assertEqual(first_predefined_filter.get("name"), "test2")
@@ -147,14 +149,14 @@ class FormPredefinedFilterViewsTestCase(TaskAPITestCase):
         self.assertEqual(first_predefined_filter.get("json_logic"), """{"key":1}""")
 
         response = self.client.delete(path=f"{BASE_URL}{id}/")
-        self.assertJSONResponse(response, 204)
+        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
 
         response = self.client.get(
             path=BASE_URL,
             data={"form_id": self.form1.id},
             format="json",
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFiltersListData(response.json(), 0)
 
     def assertValidFiltersListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):

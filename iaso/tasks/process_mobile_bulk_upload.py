@@ -81,7 +81,7 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                 if INSTANCES_JSON in zip_ref.namelist():
                     log_progress(the_task, 20, "Processing forms and files")
                     instances_data = read_json_file_from_zip(zip_ref, INSTANCES_JSON)
-                    imported_instances = import_instances(instances_data, user, project.app_id)
+                    imported_instances = import_instances(instances_data, user, project.app_id, api_import=api_import)
                     # `import_instances` already built (and, for new instances, saved) each of these in
                     # memory - reuse them instead of re-querying by uuid below. It can leave a uuid out
                     # (an instance that already existed with a validation status outside

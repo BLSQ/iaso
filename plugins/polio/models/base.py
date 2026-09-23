@@ -2,7 +2,6 @@ import datetime
 import enum
 import json
 import math
-import os
 import typing
 
 from collections import defaultdict
@@ -79,6 +78,7 @@ INDIVIDUAL_VACCINES = [
     ("mOPV2", _("mOPV2")),
     ("nOPV2", _("nOPV2")),
     ("bOPV", _("bOPV")),
+    ("IPV", _("IPV")),
 ]
 
 DOSES_PER_VIAL = {
@@ -1372,13 +1372,13 @@ class NotificationManager(models.Manager):
 
 
 class CustomPublicStorage(
-    S3Boto3Storage if os.environ.get("AWS_PUBLIC_STORAGE_BUCKET_NAME") else import_string(settings.DEFAULT_FILE_STORAGE)
+    S3Boto3Storage if settings.AWS_PUBLIC_STORAGE_BUCKET_NAME else import_string(settings.DEFAULT_FILE_STORAGE)
 ):
-    if os.environ.get("AWS_PUBLIC_STORAGE_BUCKET_NAME"):
+    if settings.AWS_PUBLIC_STORAGE_BUCKET_NAME:
         default_acl = "public-read"
         file_overwrite = False
         querystring_auth = False
-        bucket_name = os.environ.get("AWS_PUBLIC_STORAGE_BUCKET_NAME", "")
+        bucket_name = settings.AWS_PUBLIC_STORAGE_BUCKET_NAME
 
 
 ## Terminology
@@ -2034,11 +2034,11 @@ class NotificationImport(ModelWithFile):
 
 
 @task_decorator(task_name="create_polio_notifications_async")
-def create_polio_notifications_async(pk: int, task: Task = None) -> None:
+def create_polio_notifications_async(pk: int, user: User = None, task: Task = None) -> None:
     task.report_progress_and_stop_if_killed(progress_message="Importing polio notifications…")
-    user = task.launcher
+    importer = user or task.launcher
     notification_import = NotificationImport.objects.get(pk=pk)
-    notification_import.create_notifications(created_by=user)
+    notification_import.create_notifications(created_by=importer)
     num_created = Notification.objects.filter(import_source=notification_import).count()
     task.report_success(message=f"{num_created} polio notifications created.")
 
@@ -2187,6 +2187,21 @@ class VaccineStockCalculator:
         self.list_of_unusable_vials_expanded = None
         self.list_of_earmarked = None
         self.list_of_earmarked_expanded = None
+
+    def _expanded_fields(self):
+        return {
+            "vaccine_stock_id": self.vaccine_stock.id,
+            "country_name": self.vaccine_stock.country.name,
+            "country_id": self.vaccine_stock.country.id,
+            "vaccine_type": self.vaccine_stock.vaccine,
+            "vials_type": "usable",
+        }
+
+    def _append_movement(self, results, base_result, expanded, source_id):
+        movement = {**base_result, "id": source_id}
+        if expanded:
+            movement = {**movement, **self._expanded_fields()}
+        results.append(movement)
 
     def get_vials_used(self):
         # if totals return totals
@@ -2344,14 +2359,6 @@ class VaccineStockCalculator:
                 arrival_reports = []
         results = []
 
-        additional_fields = {
-            "id": self.vaccine_stock.id,
-            "country_name": self.vaccine_stock.country.name,
-            "country_id": self.vaccine_stock.country.id,
-            "vaccine_type": self.vaccine_stock.vaccine,
-            "vials_type": "usable",
-        }
-
         for report in arrival_reports:
             base_result = {
                 "date": report.arrival_report_date,
@@ -2363,10 +2370,7 @@ class VaccineStockCalculator:
                 "type": MovementTypeEnum.VACCINE_ARRIVAL_REPORT.value,
                 "doses_per_vial": report.doses_per_vial,
             }
-            if not expanded:
-                results.append(base_result)
-            else:
-                results.append({**base_result, **additional_fields})
+            self._append_movement(results, base_result, expanded, report.id)
 
         if expanded:
             self._list_of_vaccines_received_expanded = results
@@ -2386,13 +2390,6 @@ class VaccineStockCalculator:
 
         # Add stock movements (used and missing vials)
         stock_movements = OutgoingStockMovement.objects.filter(vaccine_stock=self.vaccine_stock).order_by("report_date")
-        additional_fields = {
-            "id": self.vaccine_stock.id,
-            "country_name": self.vaccine_stock.country.name,
-            "country_id": self.vaccine_stock.country.id,
-            "vaccine_type": self.vaccine_stock.vaccine,
-            "vials_type": "usable",
-        }
         if self.end_date:
             stock_movements = stock_movements.filter(report_date__lte=self.end_date)
         for movement in stock_movements:
@@ -2409,10 +2406,7 @@ class VaccineStockCalculator:
                     "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                     "doses_per_vial": movement.doses_per_vial,
                 }
-                if not expanded:
-                    results.append(base_result)
-                else:
-                    results.append({**base_result, **additional_fields})
+                self._append_movement(results, base_result, expanded, movement.id)
             else:
                 if movement.usable_vials_used > 0:
                     base_result = {
@@ -2425,10 +2419,7 @@ class VaccineStockCalculator:
                         "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                         "doses_per_vial": movement.doses_per_vial,
                     }
-                    if not expanded:
-                        results.append(base_result)
-                    else:
-                        results.append({**base_result, **additional_fields})
+                    self._append_movement(results, base_result, expanded, movement.id)
 
         # Add incident reports (IN movements then OUT movements)
         incident_reports = IncidentReport.objects.filter(vaccine_stock=self.vaccine_stock).order_by(
@@ -2451,10 +2442,7 @@ class VaccineStockCalculator:
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
                     "doses_per_vial": report.doses_per_vial,
                 }
-                if not expanded:
-                    results.append(base_result)
-                else:
-                    results.append({**base_result, **additional_fields})
+                self._append_movement(results, base_result, expanded, report.id)
             if (
                 report.usable_vials > 0
                 and report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_REMOVE
@@ -2469,10 +2457,7 @@ class VaccineStockCalculator:
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
                     "doses_per_vial": report.doses_per_vial,
                 }
-                if not expanded:
-                    results.append(base_result)
-                else:
-                    results.append({**base_result, **additional_fields})
+                self._append_movement(results, base_result, expanded, report.id)
 
             if report.usable_vials > 0 and (
                 report.stock_correction == IncidentReport.StockCorrectionChoices.MISSING
@@ -2490,10 +2475,7 @@ class VaccineStockCalculator:
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
                     "doses_per_vial": report.doses_per_vial,
                 }
-                if not expanded:
-                    results.append(base_result)
-                else:
-                    results.append({**base_result, **additional_fields})
+                self._append_movement(results, base_result, expanded, report.id)
 
             if report.unusable_vials > 0 and (
                 report.stock_correction == IncidentReport.StockCorrectionChoices.VACCINE_EXPIRED
@@ -2511,10 +2493,7 @@ class VaccineStockCalculator:
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
                     "doses_per_vial": report.doses_per_vial,
                 }
-                if not expanded:
-                    results.append(base_result)
-                else:
-                    results.append({**base_result, **additional_fields})
+                self._append_movement(results, base_result, expanded, report.id)
 
         earmarked_stocks = self.earmarked_stocks
         if self.end_date:
@@ -2538,10 +2517,7 @@ class VaccineStockCalculator:
                     "type": "earmarked_stock__created",
                     "doses_per_vial": stock.doses_per_vial,
                 }
-                if not expanded:
-                    results.append(base_result)
-                else:
-                    results.append({**base_result, **additional_fields})
+                self._append_movement(results, base_result, expanded, stock.id)
 
             elif stock.earmarked_stock_type == EarmarkedStock.EarmarkedStockChoices.RETURNED:
                 action = "Earmarked returned"
@@ -2560,10 +2536,7 @@ class VaccineStockCalculator:
                     "doses_per_vial": stock.doses_per_vial,
                 }
 
-                if not expanded:
-                    results.append(base_result)
-                else:
-                    results.append({**base_result, **additional_fields})
+                self._append_movement(results, base_result, expanded, stock.id)
 
         if expanded:
             self.list_of_usable_vials_expanded = results
@@ -2579,13 +2552,6 @@ class VaccineStockCalculator:
             return self._list_of_used_vials_expanded
         # Used vials are those related to formA outgoing movements. Vials with e.g expired date become unusable, but have not been used
         outgoing_movements = OutgoingStockMovement.objects.filter(vaccine_stock=self.vaccine_stock)
-        additional_fields = {
-            "id": self.vaccine_stock.id,
-            "country_name": self.vaccine_stock.country.name,
-            "country_id": self.vaccine_stock.country.id,
-            "vaccine_type": self.vaccine_stock.vaccine,
-            "vials_type": "usable",
-        }
         if self.end_date:
             outgoing_movements = outgoing_movements.filter(report_date__lte=self.end_date)
         results = []
@@ -2609,10 +2575,7 @@ class VaccineStockCalculator:
                     "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                     "doses_per_vial": movement.doses_per_vial,
                 }
-                if not expanded:
-                    results.append(base_result)
-                else:
-                    results.append({**base_result, **additional_fields})
+                self._append_movement(results, base_result, expanded, movement.id)
 
         if expanded:
             self._list_of_used_vials_expanded = results
@@ -2627,13 +2590,6 @@ class VaccineStockCalculator:
             return self.list_of_unusable_vials_expanded
         # First get the used vials
         results = self._get_list_of_used_vials(expanded=expanded)
-        additional_fields = {
-            "id": self.vaccine_stock.id,
-            "country_name": self.vaccine_stock.country.name,
-            "country_id": self.vaccine_stock.country.id,
-            "vaccine_type": self.vaccine_stock.vaccine,
-            "vials_type": "usable",
-        }
         # Get all IncidentReports and Destruction reports for the VaccineStock
         incident_reports = IncidentReport.objects.filter(vaccine_stock=self.vaccine_stock)
 
@@ -2655,10 +2611,7 @@ class VaccineStockCalculator:
                 "type": MovementTypeEnum.DESTRUCTION_REPORT.value,
                 "doses_per_vial": report.doses_per_vial,
             }
-            if not expanded:
-                results.append(base_result)
-            else:
-                results.append({**base_result, **additional_fields})
+            self._append_movement(results, base_result, expanded, report.id)
 
         # Add unusable vials from IncidentReports
         for report in incident_reports:
@@ -2680,10 +2633,7 @@ class VaccineStockCalculator:
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
                     "doses_per_vial": report.doses_per_vial,
                 }
-                if not expanded:
-                    results.append(base_result)
-                else:
-                    results.append({**base_result, **additional_fields})
+                self._append_movement(results, base_result, expanded, report.id)
 
             if report.unusable_vials > 0 and (
                 report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_REMOVE
@@ -2698,10 +2648,7 @@ class VaccineStockCalculator:
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
                     "doses_per_vial": report.doses_per_vial,
                 }
-                if not expanded:
-                    results.append(base_result)
-                else:
-                    results.append({**base_result, **additional_fields})
+                self._append_movement(results, base_result, expanded, report.id)
         # Add earmarked stock movements of type USED
         earmarked_stocks = self.earmarked_stocks.filter(
             vaccine_stock=self.vaccine_stock,
@@ -2725,10 +2672,7 @@ class VaccineStockCalculator:
                     "type": "earmarked_stock__used",
                     "doses_per_vial": stock.doses_per_vial,
                 }
-                if not expanded:
-                    results.append(base_result)
-                else:
-                    results.append({**base_result, **additional_fields})
+                self._append_movement(results, base_result, expanded, stock.id)
 
         if expanded:
             self.list_of_unusable_vials_expanded = results
@@ -2744,13 +2688,6 @@ class VaccineStockCalculator:
             return self.list_of_earmarked_expanded
 
         earmarked_movements = self.earmarked_stocks
-        additional_fields = {
-            "id": self.vaccine_stock.id,
-            "country_name": self.vaccine_stock.country.name,
-            "country_id": self.vaccine_stock.country.id,
-            "vaccine_type": self.vaccine_stock.vaccine,
-            "vials_type": "usable",
-        }
         if self.end_date:
             earmarked_movements = earmarked_movements.filter(created_at__lte=self.end_date)
 
@@ -2780,10 +2717,7 @@ class VaccineStockCalculator:
                     "doses_per_vial": movement.doses_per_vial,
                     "type": f"earmarked_stock__{movement_type}",
                 }
-                if not expanded:
-                    results.append(base_result)
-                else:
-                    results.append({**base_result, **additional_fields})
+                self._append_movement(results, base_result, expanded, movement.id)
 
             else:
                 action_text = "Earmarked stock reserved"
@@ -2804,10 +2738,7 @@ class VaccineStockCalculator:
                     "doses_per_vial": movement.doses_per_vial,
                     "type": f"earmarked_stock__{movement_type}",
                 }
-                if not expanded:
-                    results.append(base_result)
-                else:
-                    results.append({**base_result, **additional_fields})
+                self._append_movement(results, base_result, expanded, movement.id)
 
         if expanded:
             self.list_of_earmarked_expanded = results

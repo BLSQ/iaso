@@ -1,9 +1,14 @@
+import logging
+
 from django.db.models import Q
 
 from iaso.models import Group, OrgUnit
 from iaso.utils.memory import memory_mb
 
 from .comparisons import Comparison, Diff, as_field_types
+
+
+logger = logging.getLogger(__name__)
 
 
 def index_pyramid(orgunits):
@@ -25,9 +30,6 @@ class Differ:
     STATUS_NOT_IN_ORIGIN = "not in origin - ignored"
     STATUS_NEVER_SEEN = "never_seen"
 
-    def __init__(self, logger):
-        self.iaso_logger = logger
-
     def load_pyramid(
         self,
         version,
@@ -37,7 +39,7 @@ class Differ:
         org_unit_group=None,
         ignore_groups=False,
     ):
-        self.iaso_logger.info(f"loading pyramid {version.data_source} {version} {top_org_unit} {org_unit_types}")
+        logger.info(f"loading pyramid {version.data_source} {version} {top_org_unit} {org_unit_types}")
         queryset = (
             OrgUnit.objects.prefetch_related("parent")
             .prefetch_related("parent__parent")
@@ -80,6 +82,10 @@ class Differ:
         elif not isinstance(field_names, list):
             field_names = list(field_names)
 
+        # Filter out groups
+        # groups are synchronizable, but are handled via the `ignore_groups` param.
+        field_names = [f for f in field_names if f != "groups"]
+
         orgunits_dhis2 = self.load_pyramid(
             version,
             validation_status=validation_status,
@@ -111,10 +117,10 @@ class Differ:
             for group in groups:
                 field_names.append("group:" + group.source_ref + ":" + group.name)
 
-        self.iaso_logger.info(f"will compare the following fields {field_names}")
+        logger.info(f"will compare the following fields {field_names}")
         field_types = as_field_types(field_names)
 
-        self.iaso_logger.info(f"comparing {version_ref} ({len(orgunits_dhis2)}) and {version} ({len(orgunit_refs)})")
+        logger.info(f"comparing {version_ref} ({len(orgunits_dhis2)}) and {version} ({len(orgunit_refs)})")
         # speed how to index_by(&:source_ref)
         diffs = []
         index = 0
@@ -132,7 +138,7 @@ class Differ:
                 status = "new"
 
             if index % 100 == 0:
-                self.iaso_logger.info(index, "will compare ", orgunit_ref, " vs ", orgunit_dhis2, "", memory_mb())
+                logger.info(f"{index} will compare {orgunit_ref} vs {orgunit_dhis2} {memory_mb()}")
 
             comparisons = self.compare_fields(orgunit_dhis2, orgunit_ref, field_types)
             all_same = all(map(lambda comp: comp.status == self.STATUS_SAME, comparisons))

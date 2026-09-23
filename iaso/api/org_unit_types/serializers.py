@@ -310,8 +310,17 @@ class OrgUnitTypeHierarchySerializer(serializers.ModelSerializer):
 
     def get_sub_unit_types(self, obj):
         """Recursively serialize sub_unit_types to build complete hierarchy"""
+        visited = self.context.setdefault("visited_org_unit_types", set())
+        if obj.id in visited:
+            return []
+
+        child_visited = set(visited)
+        child_visited.add(obj.id)
+        child_context = {**self.context, "visited_org_unit_types": child_visited}
+
         sub_types = obj.sub_unit_types.all()
-        return OrgUnitTypeHierarchySerializer(sub_types, many=True, context=self.context).data
+        sub_types = [t for t in sub_types if t.id not in child_visited]
+        return OrgUnitTypeHierarchySerializer(sub_types, many=True, context=child_context).data
 
 
 class OrgUnitTypesDropdownSerializer(serializers.ModelSerializer):

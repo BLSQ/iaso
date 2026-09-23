@@ -515,8 +515,7 @@ class FormsVersionAPITestCase(APITestCase):
 
         self.client.force_authenticate(user=self.yoda)
         response = self.client.get("/api/formversions/", {APP_ID: self.project.app_id})
-        self.assertJSONResponse(response, status.HTTP_200_OK)
-        response_data = response.json()
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(response_data["form_versions"]), 1)
         # form_1 is not returned because it doesn't have a version
         # form_derived is not returned because it is derived

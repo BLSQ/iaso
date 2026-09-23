@@ -8,6 +8,16 @@ from iaso.api.v3.common.errors import bad_request
 TRUE_VALUES = ("true", "1", "yes")
 
 
+def _positive_int(param: str, raw_value: str) -> int:
+    try:
+        value = int(raw_value)
+    except ValueError:
+        value = None
+    if value is None or value < 1:
+        raise bad_request(f"Invalid {param}: {raw_value!r}", f"{param} must be a positive integer.")
+    return value
+
+
 class V3PagePagination(Paginator):
     """Page-based pagination for v3 endpoints.
 
@@ -31,34 +41,27 @@ class V3PagePagination(Paginator):
         return str(request.query_params.get("with_count", "")).lower() in TRUE_VALUES
 
     def get_page_size(self, request):
-        """Unlike DRF's own `PageNumberPagination.get_page_size()`, a `page_size=` over `max_page_size`
-        is a 400, not a silent clamp - a caller asking for 5,000,000 rows should find out immediately,
-        not get a quietly truncated page they might not notice."""
+        """Unlike DRF's own `PageNumberPagination.get_page_size()`, an invalid `page_size=` is a 400 rather
+        than a silent fallback or clamp - a typo (`page_size=1O0`) or a caller asking for 5,000,000 rows
+        should find out immediately, not get a page they didn't ask for without noticing."""
         raw_page_size = request.query_params.get(self.page_size_query_param)
         if raw_page_size is None:
             return self.page_size
-        try:
-            page_size = int(raw_page_size)
-        except (TypeError, ValueError):
-            return self.page_size
-        if page_size <= 0:
-            return self.page_size
+        page_size = _positive_int(self.page_size_query_param, raw_page_size)
         if page_size > self.max_page_size:
             raise bad_request(f"Invalid page_size: {page_size}", f"page_size must be <= {self.max_page_size}.")
         return page_size
 
+    def get_page_number(self, request):
+        raw_page_number = request.query_params.get(self.page_query_param)
+        if raw_page_number is None:
+            return 1
+        return _positive_int(self.page_query_param, raw_page_number)
+
     def paginate_queryset(self, queryset, request, view=None):
         self.request = request
         page_size = self.get_page_size(request)
-        if not page_size:
-            return None
-
-        try:
-            page_number = int(request.query_params.get(self.page_query_param, 1))
-        except (TypeError, ValueError):
-            page_number = 1
-        if page_number < 1:
-            raise NotFound(f"Invalid page number: must be >= 1, got {request.query_params.get(self.page_query_param)}")
+        page_number = self.get_page_number(request)
 
         offset = (page_number - 1) * page_size
         # Fetch one row past the page to know if there's a next page, without a COUNT(*) query.

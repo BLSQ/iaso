@@ -5,12 +5,17 @@ and containment inside/outside another org unit's geometry (`__within_org_unit`/
 Point-in-arbitrary-polygon (`__contains`) and radius search (`__near`) are still deferred to a follow-up.
 """
 
+import math
+
 import django_filters
 
 from django.contrib.gis.geos import Polygon
-from django.core.exceptions import ValidationError as DjangoValidationError
+from drf_spectacular.types import OpenApiTypes
+
+from iaso.models import OrgUnit
 
 from .errors import bad_request
+from .filterset import document_as
 
 
 def parse_bbox(value: str) -> Polygon:
@@ -19,29 +24,29 @@ def parse_bbox(value: str) -> Polygon:
     if len(parts) != 4:
         raise bad_request(f"Invalid bbox value {value!r}", "Expected 'minx,miny,maxx,maxy'")
     try:
-        minx, miny, maxx, maxy = (float(part) for part in parts)
+        minx, miny, maxx, maxy = coordinates = [float(part) for part in parts]
     except ValueError:
         raise bad_request(f"Invalid bbox value {value!r}", "All 4 values must be numbers")
-    try:
-        polygon = Polygon.from_bbox((minx, miny, maxx, maxy))
-    except DjangoValidationError as e:
-        raise bad_request(f"Invalid bbox value {value!r}", str(e))
+    # `float()` also accepts "nan"/"inf": GEOS raises an uncaught `GEOSException` (a 500) on NaN.
+    if not all(math.isfinite(coordinate) for coordinate in coordinates):
+        raise bad_request(f"Invalid bbox value {value!r}", "All 4 values must be finite numbers")
+    polygon = Polygon.from_bbox((minx, miny, maxx, maxy))
     polygon.srid = 4326
     return polygon
 
 
-def resolve_reference_geometry(org_unit_model, org_unit_id: str, operator_name: str, user=None):
+def resolve_reference_geometry(org_unit_id: str, operator_name: str, user=None):
     """Fetch the geometry (`simplified_geom`, falling back to `geom`) of the org unit referenced by a
     `*__within_org_unit` filter, raising the spec'd 400 error if it has neither.
 
     Scoped to `user` (via `filter_for_user`) so that an org unit id belonging to another account is
     indistinguishable from one that doesn't exist at all - otherwise a user with zero access to that
     account could still tell the two apart (and probe its geometry) purely from the response."""
-    queryset = org_unit_model.objects.filter_for_user(user) if user is not None else org_unit_model.objects.all()
+    queryset = OrgUnit.objects.filter_for_user(user) if user is not None else OrgUnit.objects.all()
     try:
         reference = queryset.only("id", "geom", "simplified_geom").get(pk=org_unit_id)
-    except (org_unit_model.DoesNotExist, ValueError, TypeError):
-        raise bad_request(f"Org unit {org_unit_id!r} does not exist")
+    except (OrgUnit.DoesNotExist, ValueError, TypeError):
+        raise bad_request(f"Org unit {org_unit_id} does not exist")
 
     geometry = reference.simplified_geom or reference.geom
     if geometry is None:
@@ -61,7 +66,7 @@ class _BboxFilterBase(django_filters.CharFilter):
         self.geometry_field = geometry_field
 
 
-class BboxFilter(_BboxFilterBase):
+class IntersectsBboxFilter(_BboxFilterBase):
     """`<field>__bbox=minx,miny,maxx,maxy` -> keep rows whose geometry intersects the bounding box."""
 
     def filter(self, qs, value):
@@ -91,10 +96,11 @@ class _OrgUnitContainmentFilter(django_filters.CharFilter):
     """Shared base for `within_org_unit`/`outside_org_unit`: both resolve the same reference geometry,
     they just apply it as a `filter()` vs. an `exclude()`."""
 
-    def __init__(self, *args, geometry_field: str, org_unit_model, **kwargs):
+    def __init__(self, *args, geometry_field: str, **kwargs):
         super().__init__(*args, **kwargs)
         self.geometry_field = geometry_field
-        self.org_unit_model = org_unit_model
+        # an org unit id - a `CharFilter` only so that any bad id gets the same "does not exist" 400
+        document_as(self, OpenApiTypes.INT)
 
     @property
     def _requesting_user(self):
@@ -109,9 +115,7 @@ class WithinOrgUnitFilter(_OrgUnitContainmentFilter):
     def filter(self, qs, value):
         if value in (None, ""):
             return qs
-        reference_geometry = resolve_reference_geometry(
-            self.org_unit_model, value, self.field_name, user=self._requesting_user
-        )
+        reference_geometry = resolve_reference_geometry(value, self.field_name, user=self._requesting_user)
         return qs.filter(**{f"{self.geometry_field}__within": reference_geometry})
 
 
@@ -124,9 +128,7 @@ class OutsideOrgUnitFilter(_OrgUnitContainmentFilter):
     def filter(self, qs, value):
         if value in (None, ""):
             return qs
-        reference_geometry = resolve_reference_geometry(
-            self.org_unit_model, value, self.field_name, user=self._requesting_user
-        )
+        reference_geometry = resolve_reference_geometry(value, self.field_name, user=self._requesting_user)
         return qs.filter(**{f"{self.geometry_field}__isnull": False}).exclude(
             **{f"{self.geometry_field}__within": reference_geometry}
         )

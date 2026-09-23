@@ -46,3 +46,23 @@ class V3SchemaDocumentationTestCase(TestCase):
             dict(GENERATOR_STATS._error_cache),
             "drf-spectacular hit an error documenting a v3 endpoint, see error(s) above",
         )
+
+    def test_list_documents_exactly_the_accepted_query_params(self):
+        # the params a client sees in Swagger are the ones the endpoint accepts - no undocumented filter, no
+        # stale doc for a param that would now be rejected as unknown
+        generator = _V3OnlySchemaGenerator()
+        schema = generator.get_schema(request=None, public=True)
+        checked_actions = set()
+        for path, _, method, view in generator._get_paths_and_endpoints():
+            if method != "GET" or view.action not in ("list", "retrieve"):
+                continue
+            checked_actions.add(view.action)
+            parameters = schema["paths"][generator.coerce_path(path, method, view)]["get"]["parameters"]
+            query_params = {p["name"] for p in parameters if p["in"] == "query"}
+            with self.subTest(viewset=type(view).__name__, action=view.action):
+                if view.action == "list":
+                    self.assertEqual(query_params, view.filterset_class.known_params())
+                else:
+                    self.assertEqual(query_params, {"fields", "format"})
+                self.assertEqual([p["name"] for p in parameters if not p.get("description")], [])
+        self.assertEqual(checked_actions, {"list", "retrieve"})

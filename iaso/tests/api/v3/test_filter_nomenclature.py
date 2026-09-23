@@ -21,7 +21,7 @@ from django.test import SimpleTestCase
 
 import iaso.api.v3
 
-from iaso.api.v3.common.filterset import CORE_EXTRA_ALLOWED_PARAMS, BaseV3FilterSet
+from iaso.api.v3.common.filterset import BaseV3FilterSet
 
 
 SNAKE_CASE = re.compile(r"^[a-z][a-z0-9_]*$")
@@ -93,7 +93,7 @@ class V3FilterNomenclatureTestCase(SimpleTestCase):
                         f"{filterset_class.__name__}.{name}: v3 filter params must be snake_case",
                     )
 
-    def test_extra_allowed_params_include_the_shared_core(self):
+    def test_extra_allowed_params_is_a_frozenset(self):
         for filterset_class in _discover_filtersets():
             with self.subTest(filterset=filterset_class.__name__):
                 self.assertIsInstance(
@@ -101,36 +101,14 @@ class V3FilterNomenclatureTestCase(SimpleTestCase):
                     frozenset,
                     f"{filterset_class.__name__}.extra_allowed_params should be a frozenset",
                 )
-                missing = CORE_EXTRA_ALLOWED_PARAMS - filterset_class.extra_allowed_params
-                self.assertFalse(
-                    missing,
-                    f"{filterset_class.__name__}.extra_allowed_params is missing the shared v3 params {missing}",
-                )
 
-    def test_every_filter_is_documented_and_vice_versa(self):
-        for viewset_class in _discover_viewsets():
-            with self.subTest(viewset=viewset_class.__name__):
-                documented_parameters = getattr(viewset_class, "documented_parameters", None)
-                self.assertIsNotNone(
-                    documented_parameters,
-                    f"{viewset_class.__name__} needs a `documented_parameters` class attribute (the same "
-                    "OpenApiParameter list passed to @extend_schema) so this test can check it against its "
-                    "filterset_class.",
-                )
-                documented_names = {parameter.name for parameter in documented_parameters}
-                filterset_class = viewset_class.filterset_class
-                filter_names = set(filterset_class.base_filters)
-                known_names = filter_names | filterset_class.extra_allowed_params
-
-                undocumented = filter_names - documented_names
-                self.assertFalse(
-                    undocumented,
-                    f"{viewset_class.__name__}: filter(s) {undocumented} have no matching OpenApiParameter "
-                    f"in {viewset_class.__name__}.documented_parameters",
-                )
-                orphaned = documented_names - known_names
-                self.assertFalse(
-                    orphaned,
-                    f"{viewset_class.__name__}: documented param(s) {orphaned} match neither a filter nor "
-                    f"an extra_allowed_params entry - stale docs, or a filterset field that got renamed/removed",
-                )
+    def test_every_filter_has_a_help_text(self):
+        # it's the filter's OpenAPI description (drf-spectacular's django-filter support) - see
+        # `test_openapi_schema.py` for the check on the generated schema itself
+        for filterset_class in _discover_filtersets():
+            for name, filter_ in filterset_class.base_filters.items():
+                with self.subTest(filterset=filterset_class.__name__, param=name):
+                    self.assertTrue(
+                        filter_.extra.get("help_text"),
+                        f"{filterset_class.__name__}.{name}: give the filter a `help_text=` - it's its API doc",
+                    )

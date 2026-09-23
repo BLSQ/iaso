@@ -22,9 +22,15 @@ comma-space-separated list (`id, name, ...`) works the same as a tightly-packed 
 
 from typing import Dict, Tuple
 
+from rest_framework.exceptions import ValidationError
 
-class FieldsParseError(ValueError):
-    """Raised when a `fields=` query parameter value doesn't match the expected grammar."""
+
+class FieldsParseError(ValidationError):
+    """A `fields=` value that doesn't match the grammar: a 400 in the shared v3 `{error, detail}` shape (see
+    `errors.py`), raised straight through to DRF rather than caught and re-worded by the view."""
+
+    def __init__(self, detail: str):
+        super().__init__({"error": "Invalid fields= parameter", "detail": detail})
 
 
 #: common wrong-bracket typos and the correct replacement, so the error message can point people at the

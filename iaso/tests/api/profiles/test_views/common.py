@@ -1,6 +1,7 @@
 import typing
 
 from django.contrib.auth.models import Group, Permission
+from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 
 from iaso import models as m
@@ -86,8 +87,9 @@ class BaseProfileAPITestCase(SwaggerTestCaseMixin, APITestCase):
             parent=self.org_unit_from_parent_type,
         )
 
+        content_type = ContentType.objects.first()
         self.permission = Permission.objects.create(
-            name="iaso permission", content_type_id=1, codename="iaso_permission"
+            name="iaso permission", content_type=content_type, codename="iaso_permission"
         )
         self.group = Group.objects.create(name="user role")
         self.group.permissions.add(self.permission)

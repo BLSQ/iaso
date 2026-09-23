@@ -53,6 +53,8 @@ class DynamicFieldsModelSerializerMixin(serializers.Serializer):
         return super().to_representation(instance)
 
     def get_fields_value_from_query(self):
+        if self.context.get("ignore_dynamic_fields", False):
+            return []
         if self.context.get("request", None):
             if self.string_field:
                 return [

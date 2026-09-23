@@ -776,3 +776,68 @@ class OrgUnitTypesAPITestCase(APITestCase):
             response = self.client.get(f"{self.BASE_URL}{self.org_unit_type_1.id}/")
 
         self.assertJSONResponse(response, status.HTTP_200_OK)
+
+    def test_prevent_loop_sub_unit_types(self):
+        """Test that `sub_unit_types` is validated to prevent infinite recursion loops."""
+        self.client.force_authenticate(self.jane)
+        self.org_unit_type_1.sub_unit_types.set([self.org_unit_type_2])
+
+        response = self.client.put(
+            f"{self.BASE_URL}{self.org_unit_type_2.id}/",
+            data={
+                "name": self.org_unit_type_2.name,
+                "short_name": self.org_unit_type_2.short_name,
+                "project_ids": [self.ead.id],
+                "sub_unit_type_ids": [self.org_unit_type_1.id],
+                "allow_creating_sub_unit_type_ids": [],
+            },
+            format="json",
+        )
+        data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("sub_unit_type_ids", data)
+
+    def test_prevent_loop_allow_creating_sub_unit_types(self):
+        """Test that `allow_creating_sub_unit_types` is validated to prevent infinite recursion loops."""
+        self.client.force_authenticate(self.jane)
+        self.org_unit_type_1.allow_creating_sub_unit_types.set([self.org_unit_type_2])
+
+        response = self.client.put(
+            f"{self.BASE_URL}{self.org_unit_type_2.id}/",
+            data={
+                "name": self.org_unit_type_2.name,
+                "short_name": self.org_unit_type_2.short_name,
+                "project_ids": [self.ead.id],
+                "sub_unit_type_ids": [],
+                "allow_creating_sub_unit_type_ids": [self.org_unit_type_1.id],
+            },
+            format="json",
+        )
+        data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("allow_creating_sub_unit_type_ids", data)
+
+    def test_serialization_resilience_to_existing_loops(self):
+        """Test that if a cycle exists, querying the api doesn't throw a recursion error."""
+        self.client.force_authenticate(self.jane)
+        self.org_unit_type_1.sub_unit_types.set([self.org_unit_type_2])
+        self.org_unit_type_2.sub_unit_types.set([self.org_unit_type_1])
+
+        response = self.client.get(f"{self.BASE_URL}?fields=id,name,sub_unit_types")
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+    def test_serialization_resilience_to_existing_loops_allow_creating_sub_unit_types(self):
+        """Test that if a cycle exists on allow_creating_sub_unit_types, querying the api doesn't throw a recursion error."""
+        self.client.force_authenticate(self.jane)
+        self.org_unit_type_1.allow_creating_sub_unit_types.set([self.org_unit_type_2])
+        self.org_unit_type_2.allow_creating_sub_unit_types.set([self.org_unit_type_1])
+
+        response = self.client.get(f"{self.BASE_URL}?fields=id,name,allow_creating_sub_unit_types")
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+    def test_hierarchy_resilience_to_existing_loops(self):
+        """Test that if a cycle exists, querying the hierarchy endpoint doesn't throw a recursion error."""
+        self.client.force_authenticate(self.jane)
+        self.org_unit_type_1.sub_unit_types.set([self.org_unit_type_2])
+        self.org_unit_type_2.sub_unit_types.set([self.org_unit_type_1])
+
+        response = self.client.get(f"{self.BASE_URL}{self.org_unit_type_1.id}/hierarchy/")
+        self.assertJSONResponse(response, status.HTTP_200_OK)

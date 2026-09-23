@@ -352,6 +352,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'user_ids',
             'created_at_before',
             'created_at_after',
+            'fields',
             ...paginationPathParams,
         ],
     },

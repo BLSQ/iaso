@@ -97,6 +97,7 @@ export const Parameters: React.FC<ParametersProps> = ({
 
         switch (parameter.type) {
             case 'str':
+            case 'secret':
                 return parameter.default || '';
             case 'bool':
                 return parameter.default || false;
@@ -149,6 +150,20 @@ export const Parameters: React.FC<ParametersProps> = ({
                     return (
                         <InputComponent
                             type="text"
+                            keyValue={parameter.code}
+                            labelString={parameter.name}
+                            value={currentValue || ''}
+                            required={parameter.required}
+                            placeholder={parameter.name}
+                            onChange={(_, value) =>
+                                handleParameterChange(parameter.code, value)
+                            }
+                        />
+                    );
+                case 'secret':
+                    return (
+                        <InputComponent
+                            type="password"
                             keyValue={parameter.code}
                             labelString={parameter.name}
                             value={currentValue || ''}

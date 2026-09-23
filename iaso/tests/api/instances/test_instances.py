@@ -1,6 +1,9 @@
+import asyncio
 import datetime
+import io
 import json
 import typing
+import zipfile
 
 from decimal import Decimal
 from unittest import mock
@@ -12,10 +15,12 @@ import pytz
 from django.contrib.gis.geos import Point
 from django.core.files import File
 from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import UploadedFile
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 from django.utils.timezone import now
+from prompt_toolkit.eventloop import async_generator
 from rest_framework import status
 
 from hat.api.export_utils import timestamp_to_utc_datetime
@@ -3893,6 +3898,38 @@ class InstancesAPITestCase(TaskAPITestCase):
                 self.assertTrue(instances, "expected at least one matching instance for this case")
                 for item in instances:
                     self.assertEqual(set(item.keys()), case["expected_fields"])
+
+    def test_download_attachments_not_authenticated(self):
+        instance = self.create_form_instance(form=self.form_1, project=self.project, org_unit=self.ou_top_1)
+
+        response = self.client.get(f"/api/instances/{instance.pk}/download_attachments/")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_download_attachments(self):
+        self.client.force_authenticate(self.yoda)
+        instance = self.create_form_instance(form=self.form_1, project=self.project, org_unit=self.ou_top_1)
+        with open("iaso/tests/fixtures/odk_form_valid_no_settings.xlsx", "rb") as xls_file:
+            m.InstanceFile.objects.create(instance=instance, file=UploadedFile(xls_file), name="test1.jpg")
+            m.InstanceFile.objects.create(instance=instance, file=UploadedFile(xls_file), name="test2.webp")
+            m.InstanceFile.objects.create(instance=instance, file=UploadedFile(xls_file), name="test3.webp")
+            m.InstanceFile.objects.create(instance=instance, file=UploadedFile(xls_file), name="test4.pdf")
+
+        response = self.client.get(f"/api/instances/{instance.pk}/download_attachments/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        async def streaming_content_to_bytes(content: async_generator) -> io.BytesIO:
+            bytes = io.BytesIO()
+            async for x in content:
+                bytes.write(x)
+            return bytes
+
+        content = asyncio.run(streaming_content_to_bytes(response.streaming_content))
+        with zipfile.ZipFile(content, "a", zipfile.ZIP_DEFLATED, False) as zf:
+            self.assertEqual(4, len(zf.namelist()))
+            self.assertEqual("test1.jpg", zf.namelist()[0])
+            self.assertEqual("test2.webp", zf.namelist()[1])
+            self.assertEqual("test3.webp", zf.namelist()[2])
+            self.assertEqual("test4.pdf", zf.namelist()[3])
 
     def assertInstanceListContainsStrictly(self, api_response, expected_instances):
         try:

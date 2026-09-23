@@ -1006,6 +1006,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.org_unit_status',
         defaultMessage: 'Org Unit Status',
     },
+    downloadAll: {
+        id: 'iaso.instance.downloadAll',
+        defaultMessage: 'Download all',
+    },
 });
 
 export default MESSAGES;

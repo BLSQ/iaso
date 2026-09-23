@@ -418,6 +418,7 @@
     "iaso.instance.dialog.lockSuccess": "Bloqueo agregado al envío",
     "iaso.instance.dialog.unlockedWarning": "¿Está seguro de que desea desbloquear el envío?",
     "iaso.instance.disableColumnSelectionMessage": "Aplique la búsqueda para poder seleccionar columnas visibles",
+    "iaso.instance.downloadAll": "Descargar todo",
     "iaso.instance.duplicate": "Comparar envíos",
     "iaso.instance.editGpsFromInstanceWarning": "Esta operación aún se puede deshacer",
     "iaso.instance.error": "No se puede encontrar un envío con este ID",

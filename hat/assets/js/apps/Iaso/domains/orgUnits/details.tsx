@@ -41,10 +41,10 @@ import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitComments/Org
 import { OrgUnitMap } from './components/orgUnitMap/OrgUnitMap/OrgUnitMap';
 import { OrgUnitChildren } from './details/Children/OrgUnitChildren';
 import { OrgUnitLinks } from './details/Links/OrgUnitLinks';
+import { useOrgUnitDetailData } from './details/useOrgUnitDetailData';
 import { Logs } from './history/LogsComponent';
 import { wktToGeoJSON } from './history/LogValue';
 import {
-    useOrgUnitDetailData,
     useOrgUnitTabParams,
     useRefreshOrgUnit,
     useSaveOrgUnit,

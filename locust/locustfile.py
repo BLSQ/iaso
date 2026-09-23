@@ -53,6 +53,31 @@ class IasoUser(HttpUser):
             if response.json()["has_next"]:
                 self.download_org_unit(page + 1)
 
+    @task(3)
+    def browse_org_units_v3(self):
+        """Exercise `/api/v3/orgunits/`: a plain list, a filtered list, `fields=` with `ancestors(...)`,
+        a CSV export, and a large `page_size` pull - alongside the mobile-sync tasks above so a single
+        locust run load-tests both APIs."""
+        org_unit_type_id = self.environment.parsed_options.org_unit_type_id
+
+        self.client.get("/api/v3/orgunits/", name="/api/v3/orgunits/ [plain list]")
+        self.client.get(
+            f"/api/v3/orgunits/?org_unit_type_id={org_unit_type_id}&created_at__gte=2020-01-01",
+            name="/api/v3/orgunits/ [filtered list]",
+        )
+        self.client.get(
+            "/api/v3/orgunits/?fields=id,name,parent_id,ancestors(id,name,source_ref)",
+            name="/api/v3/orgunits/ [fields + ancestors]",
+        )
+        self.client.get(
+            "/api/v3/orgunits/?format=csv",
+            name="/api/v3/orgunits/ [format=csv]",
+        )
+        self.client.get(
+            "/api/v3/orgunits/?page_size=10000",
+            name="/api/v3/orgunits/ [page_size=10000]",
+        )
+
     def download_entities(self, page, app_id):
         with self.client.get(f"/api/mobile/entities/?app_id={app_id}&page={page}") as response:
             if response.json()["has_next"]:

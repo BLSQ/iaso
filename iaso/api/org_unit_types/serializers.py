@@ -123,7 +123,7 @@ class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializerBackwardCompatible):
             unit_types,
             fields=["id", "name", "short_name", "depth", "created_at", "updated_at"],
             many=True,
-            context=self.context,
+            context={**self.context, "ignore_dynamic_fields": True},
         ).data
 
     def validate(self, data: typing.Mapping):
@@ -245,7 +245,7 @@ class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializerBackwardCompatible):
             unit_types,
             fields=["id", "name", "short_name", "depth", "created_at", "updated_at"],
             many=True,
-            context=self.context,
+            context={**self.context, "ignore_dynamic_fields": True},
         ).data
 
     def get_allow_creating_sub_unit_types(self, obj: OrgUnitType):
@@ -259,7 +259,7 @@ class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializerBackwardCompatible):
             unit_types,
             fields=["id", "name", "short_name", "depth", "created_at", "updated_at"],
             many=True,
-            context=self.context,
+            context={**self.context, "ignore_dynamic_fields": True},
         ).data
 
     def validate(self, data: typing.Mapping):

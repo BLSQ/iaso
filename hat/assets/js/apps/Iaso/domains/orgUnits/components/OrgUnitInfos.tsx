@@ -28,6 +28,10 @@ import { OrgUnitMultiReferenceInstances } from './OrgUnitMultiReferenceInstances
 import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from './TreeView/requests';
 
+// Only the fields needed for the tree/breadcrumb, to skip the expensive instances_count.
+export const PARENT_BREADCRUMB_FIELDS =
+    'id,name,short_name,org_unit_type,org_unit_type_id,org_unit_type_name,validation_status,parent,parent_id,parent_name';
+
 const useStyles = makeStyles(theme => ({
     '@global': {
         body: {
@@ -104,8 +108,10 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
     const parentId = isNewOrgunit
         ? parentOrgUnitId
         : orgUnitState.parent.value?.id;
+    // Only need tree/breadcrumb fields here, skip the expensive instances_count.
     const { data: parentOrgunit } = useGetOrgUnit(
         parentId ? `${parentId}` : undefined,
+        PARENT_BREADCRUMB_FIELDS,
     );
 
     useEffect(() => {

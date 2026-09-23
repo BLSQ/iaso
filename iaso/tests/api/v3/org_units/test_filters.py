@@ -153,18 +153,35 @@ class OrgUnitV3FiltersTestCase(OrgUnitV3TestCase):
 
     # -- spatial --
 
-    def test_bbox(self):
-        self.assert_ids({"geom__bbox": "-1,-1,11,11"}, [self.country])
-        self.assert_ids({"geom__bbox": "100,100,200,200"}, [])
-        self.assert_ids({"simplified_geom__bbox": "-1,-1,11,11"}, [])
-        self.assert_ids({"location__bbox": "0,0,10,10"}, [self.region])
+    def test_within_or_intersects_bbox(self):
+        # `country` is the 0..10 square: matched when fully inside the box, and when only overlapping it
+        self.assert_ids({"geom__within_or_intersects_bbox": "-1,-1,11,11"}, [self.country])
+        self.assert_ids({"geom__within_or_intersects_bbox": "9,9,20,20"}, [self.country])
+        self.assert_ids({"geom__within_or_intersects_bbox": "100,50,110,60"}, [])
+        self.assert_ids({"simplified_geom__within_or_intersects_bbox": "-1,-1,11,11"}, [])
+        # `region`'s point (5, 5): matched inside the box and on its edge
+        self.assert_ids({"location__within_bbox": "0,0,10,10"}, [self.region])
+        self.assert_ids({"location__within_bbox": "5,5,6,6"}, [self.region])
+        self.assert_ids({"location__within_bbox": "6,6,7,7"}, [])
+
+    def test_old_bbox_param_names_point_to_their_new_name(self):
+        for old, new in (
+            ("geom__bbox", "geom__within_or_intersects_bbox"),
+            ("simplified_geom__bbox", "simplified_geom__within_or_intersects_bbox"),
+            ("location__bbox", "location__within_bbox"),
+        ):
+            with self.subTest(param=old):
+                data = self.get_error({old: "0,0,10,10"})
+                self.assertEqual(data["error"], f"Unsupported query parameter(s): {old}")
+                self.assertEqual(data["detail"], f"{old!r} was renamed to {new!r}")
+                self.assertEqual(data["suggestions"], {old: [new]})
 
     def test_outside_bbox_excludes_org_units_without_that_geometry(self):
         misplaced = self.create_misplaced_facility(parent=self.region)
         # `region` is inside the box, `district` has no location at all - neither is "outside"
         self.assert_ids({"location__outside_bbox": "0,0,10,10"}, [misplaced])
         self.assert_ids({"geom__outside_bbox": "-1,-1,11,11"}, [])
-        self.assert_ids({"geom__outside_bbox": "100,100,200,200"}, [self.country])
+        self.assert_ids({"geom__outside_bbox": "100,50,110,60"}, [self.country])
 
     def test_invalid_bbox(self):
         cases = {
@@ -172,7 +189,7 @@ class OrgUnitV3FiltersTestCase(OrgUnitV3TestCase):
             "0,0,1,x": "All 4 values must be numbers",
             "nan,0,1,1": "All 4 values must be finite numbers",  # used to be a 500
         }
-        for param in ("geom__bbox", "location__outside_bbox"):
+        for param in ("geom__within_or_intersects_bbox", "location__outside_bbox"):
             for value, detail in cases.items():
                 with self.subTest(param=param, value=value):
                     data = self.get_error({param: value})

@@ -1,15 +1,21 @@
 """Spatial filters shared by v3 endpoints.
 
-Core subset only (per product decision): bounding-box intersection/exclusion (`__bbox`/`__outside_bbox`)
+Core subset only (per product decision): bounding-box intersection/exclusion (`__within_or_intersects_bbox`/`__outside_bbox`)
 and containment inside/outside another org unit's geometry (`__within_org_unit`/`__outside_org_unit`).
 Point-in-arbitrary-polygon (`__contains`) and radius search (`__near`) are still deferred to a follow-up.
 """
 
 import math
 
+from functools import reduce
+from operator import or_
+from typing import List
+
 import django_filters
 
+from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.geos import Polygon
+from django.db.models import F, Func, Q
 from drf_spectacular.types import OpenApiTypes
 
 from iaso.models import OrgUnit
@@ -18,8 +24,13 @@ from .errors import bad_request
 from .filterset import document_as
 
 
-def parse_bbox(value: str) -> Polygon:
-    """Parse a `minx,miny,maxx,maxy` string into a GEOS Polygon (SRID 4326)."""
+#: appended to every bbox filter's `help_text`
+BBOX_HELP = " Longitudes -180..180, latitudes -90..90; `minx > maxx` means the box crosses the antimeridian."
+
+
+def parse_bbox(value: str) -> List[Polygon]:
+    """Parse a `minx,miny,maxx,maxy` string (degrees, as in GeoJSON / OGC API Features) into the planar
+    longitude/latitude box(es) it covers (SRID 4326) - two when it crosses the antimeridian."""
     parts = value.split(",")
     if len(parts) != 4:
         raise bad_request(f"Invalid bbox value {value!r}", "Expected 'minx,miny,maxx,maxy'")
@@ -30,9 +41,40 @@ def parse_bbox(value: str) -> Polygon:
     # `float()` also accepts "nan"/"inf": GEOS raises an uncaught `GEOSException` (a 500) on NaN.
     if not all(math.isfinite(coordinate) for coordinate in coordinates):
         raise bad_request(f"Invalid bbox value {value!r}", "All 4 values must be finite numbers")
-    polygon = Polygon.from_bbox((minx, miny, maxx, maxy))
-    polygon.srid = 4326
-    return polygon
+    if not (-180 <= minx <= 180 and -180 <= maxx <= 180):
+        raise bad_request(f"Invalid bbox value {value!r}", "Longitudes (minx, maxx) must be between -180 and 180")
+    if not (-90 <= miny <= 90 and -90 <= maxy <= 90):
+        raise bad_request(f"Invalid bbox value {value!r}", "Latitudes (miny, maxy) must be between -90 and 90")
+    if miny > maxy:
+        raise bad_request(
+            f"Invalid bbox value {value!r}",
+            "miny must be <= maxy (minx > maxx is allowed: the box then crosses the antimeridian)",
+        )
+    spans = [(minx, maxx)] if minx <= maxx else [(minx, 180.0), (-180.0, maxx)]
+    boxes = [Polygon.from_bbox((west, miny, east, maxy)) for west, east in spans]
+    for box in boxes:
+        box.srid = 4326
+    return boxes
+
+
+def filter_bbox(queryset, geometry_field: str, value: str, exclude: bool = False):
+    """Rows whose `geometry_field` intersects the `minx,miny,maxx,maxy` box (or, with `exclude`, rows that have
+    a `geometry_field` that doesn't).
+
+    Tested in planar longitude/latitude, on the column cast to `geometry`: the org unit columns are PostGIS
+    `geography`, where polygon edges are great circles - a box's south/north edges then bulge towards the
+    pole, a box of 180 degrees or more is ambiguous (a 500, or silently the wrong rows) and point-in-polygon
+    gets confused by points lined up with a vertex. The cast can't use the `geography` GiST index, but the
+    request is scoped to the user's account first and a lon/lat box test is cheap."""
+    as_geometry = f"{geometry_field}_as_geometry"
+    # PostGIS' `geometry(geography)` rather than a typed `::geometry(GEOMETRY,4326)` cast, which would reject the
+    # 3D `location` column; `.alias()`, not `.annotate()`: the cast is only filtered on, never selected
+    as_geometry_value = Func(F(geometry_field), function="geometry", output_field=GeometryField(srid=4326))
+    queryset = queryset.alias(**{as_geometry: as_geometry_value})
+    in_box = reduce(or_, (Q(**{f"{as_geometry}__intersects": box}) for box in parse_bbox(value)))
+    if exclude:
+        return queryset.filter(**{f"{geometry_field}__isnull": False}).exclude(in_box)
+    return queryset.filter(in_box)
 
 
 def resolve_reference_geometry(org_unit_id: str, operator_name: str, user=None):
@@ -64,16 +106,17 @@ class _BboxFilterBase(django_filters.CharFilter):
     def __init__(self, *args, geometry_field: str, **kwargs):
         super().__init__(*args, **kwargs)
         self.geometry_field = geometry_field
+        self.extra["help_text"] = self.extra.get("help_text", "") + BBOX_HELP
 
 
-class IntersectsBboxFilter(_BboxFilterBase):
-    """`<field>__bbox=minx,miny,maxx,maxy` -> keep rows whose geometry intersects the bounding box."""
+class WithinOrIntersectsBboxFilter(_BboxFilterBase):
+    """`<field>__within_or_intersects_bbox=minx,miny,maxx,maxy` -> keep rows whose geometry is inside the bounding
+    box or overlaps it (for a point: inside it or on its edge)."""
 
     def filter(self, qs, value):
         if value in (None, ""):
             return qs
-        polygon = parse_bbox(value)
-        return qs.filter(**{f"{self.geometry_field}__intersects": polygon})
+        return filter_bbox(qs, self.geometry_field, value)
 
 
 class OutsideBboxFilter(_BboxFilterBase):
@@ -86,10 +129,7 @@ class OutsideBboxFilter(_BboxFilterBase):
     def filter(self, qs, value):
         if value in (None, ""):
             return qs
-        polygon = parse_bbox(value)
-        return qs.filter(**{f"{self.geometry_field}__isnull": False}).exclude(
-            **{f"{self.geometry_field}__intersects": polygon}
-        )
+        return filter_bbox(qs, self.geometry_field, value, exclude=True)
 
 
 class _OrgUnitContainmentFilter(django_filters.CharFilter):

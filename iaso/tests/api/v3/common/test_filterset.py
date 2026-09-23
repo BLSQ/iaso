@@ -12,6 +12,7 @@ class _WithoutExtraParams(BaseV3FilterSet):
 
 class _WithExtraParams(BaseV3FilterSet):
     extra_allowed_params = frozenset({"search"})
+    renamed_params = {"title": "name"}
 
     name = django_filters.CharFilter()
 
@@ -40,3 +41,9 @@ class BaseV3FilterSetTestCase(SimpleTestCase):
     def test_known_params(self):
         self.assertEqual(_WithoutExtraParams.known_params(), {"name"} | CORE_EXTRA_ALLOWED_PARAMS)
         self.assertEqual(_WithExtraParams.known_params(), {"name", "search"} | CORE_EXTRA_ALLOWED_PARAMS)
+
+    def test_renamed_param_is_rejected_with_its_new_name(self):
+        with self.assertRaises(ValidationError) as ctx:
+            _WithExtraParams(queryset=OrgUnit.objects.none(), data={"title": "x"})
+        self.assertEqual(ctx.exception.detail["detail"], "'title' was renamed to 'name'")
+        self.assertEqual(ctx.exception.detail["suggestions"], {"title": ["name"]})

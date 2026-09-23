@@ -7,10 +7,10 @@ from iaso.api.common.filters import NumberInFilter
 from iaso.api.v3.common.errors import bad_request
 from iaso.api.v3.common.filterset import BaseV3FilterSet, IntegerFilter
 from iaso.api.v3.common.spatial_filters import (
-    IntersectsBboxFilter,
     OutsideBboxFilter,
     OutsideOrgUnitFilter,
     WithinOrgUnitFilter,
+    WithinOrIntersectsBboxFilter,
 )
 from iaso.models import OrgUnit, OrgUnitType
 
@@ -40,11 +40,17 @@ class OrgUnitFilterSetV3(BaseV3FilterSet):
     See the field x lookup table in the plan / PR description for the rationale of what is (and isn't)
     exposed here - in short: exact/`__in`/`__startswith` on indexed-but-not-trigram text fields (no
     `__icontains`), `__icontains` on genuinely free-text fields, one level of relation nesting, and a core
-    subset of spatial operators (`__bbox`, `__outside_bbox`, `__within_org_unit`, `__outside_org_unit`).
+    subset of spatial operators (`__within_or_intersects_bbox`, `__outside_bbox`, `__within_org_unit`,
+    `__outside_org_unit`).
     """
 
     #: handled in `OrgUnitViewSetV3` rather than as filters (the shared core params are added by the base class).
     extra_allowed_params = frozenset({"search", "default_version", "roots_for_user", "extra_fields"})
+    renamed_params = {
+        "geom__bbox": "geom__within_or_intersects_bbox",
+        "simplified_geom__bbox": "simplified_geom__within_or_intersects_bbox",
+        "location__bbox": "location__within_bbox",
+    }
 
     # -- id --
     id = IntegerFilter(field_name="id", lookup_expr="exact", help_text="Exact id match")
@@ -198,16 +204,17 @@ class OrgUnitFilterSetV3(BaseV3FilterSet):
     depth = IntegerFilter(field_name="path", lookup_expr="depth", help_text="Exact ltree path depth (1 = root)")
 
     # -- spatial (core subset) --
-    geom__bbox = IntersectsBboxFilter(
-        geometry_field="geom", help_text="`minx,miny,maxx,maxy` - org units whose `geom` intersects this bounding box"
+    geom__within_or_intersects_bbox = WithinOrIntersectsBboxFilter(
+        geometry_field="geom",
+        help_text="`minx,miny,maxx,maxy` - org units whose `geom` is inside this bounding box or overlaps it",
     )
-    simplified_geom__bbox = IntersectsBboxFilter(
+    simplified_geom__within_or_intersects_bbox = WithinOrIntersectsBboxFilter(
         geometry_field="simplified_geom",
-        help_text="Same as `geom__bbox` but against `simplified_geom` (faster, lower precision)",
+        help_text="Same as `geom__within_or_intersects_bbox` but against `simplified_geom` (faster, lower precision)",
     )
-    location__bbox = IntersectsBboxFilter(
+    location__within_bbox = WithinOrIntersectsBboxFilter(
         geometry_field="location",
-        help_text="`minx,miny,maxx,maxy` - org units whose `location` point falls in this bounding box",
+        help_text="`minx,miny,maxx,maxy` - org units whose `location` point is inside this bounding box (or on its edge)",
     )
     geom__outside_bbox = OutsideBboxFilter(
         geometry_field="geom",

@@ -1,4 +1,4 @@
-from typing import FrozenSet
+from typing import Dict, FrozenSet
 
 from django import forms
 from django_filters import rest_framework as django_filters
@@ -28,6 +28,8 @@ class BaseV3FilterSet(django_filters.FilterSet):
 
     #: endpoint-specific query params handled outside the FilterSet itself (view-level), still accepted.
     extra_allowed_params: FrozenSet[str] = frozenset()
+    #: old param name -> new name, so a caller using an old name is told what replaced it (still a 400).
+    renamed_params: Dict[str, str] = {}
 
     def __init__(self, data=None, *args, **kwargs):
         if data is not None:
@@ -43,7 +45,7 @@ class BaseV3FilterSet(django_filters.FilterSet):
         known = cls.known_params()
         unknown = [key for key in data.keys() if key not in known]
         if unknown:
-            raise ValidationError(build_unsupported_params_error(unknown, known))
+            raise ValidationError(build_unsupported_params_error(unknown, known, cls.renamed_params))
 
 
 def document_as(filter_, openapi_type) -> None:

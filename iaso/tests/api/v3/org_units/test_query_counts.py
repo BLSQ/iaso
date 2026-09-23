@@ -67,6 +67,15 @@ class OrgUnitV3QueryCountTestCase(OrgUnitV3TestCase):
             with self.subTest(column=column):
                 self.assertNotIn(f'"iaso_orgunit"."{column}"', page_query)
 
+    def test_bbox_filters_only_convert_the_geometry_in_the_where_clause(self):
+        # `filter_bbox` tests the box on `geometry(...)` - filtered on, never selected (whole shapes otherwise)
+        for param in ("geom__within_or_intersects_bbox", "location__within_bbox", "location__outside_bbox"):
+            with self.subTest(param=param):
+                page_query = self.page_query({"fields": "id", param: "0,0,10,10"})
+                select_list, where = page_query.split(" FROM ", 1)
+                self.assertNotIn("geometry(", select_list)
+                self.assertIn("geometry(", where)
+
     # -- exports --
 
     def test_csv_default_fields(self):

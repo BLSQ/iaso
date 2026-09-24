@@ -267,6 +267,9 @@ export const useGetDosesOptions = (
     });
 };
 
+const createdAtTimestamp = (campaign: Campaign): number =>
+    campaign.created_at ? moment(campaign.created_at).valueOf() : 0;
+
 type UseCampaignOptionsResult = {
     roundOptions: DropdownOptions<string>[];
     campaignOptions: DropdownOptions<string>[];
@@ -329,9 +332,12 @@ export const useCampaignOptions = (
     }, [formatMessage, round, selectedCampaign]);
 
     const campaignOptions = useMemo(() => {
-        const campaignsList = ((data ?? []) as Campaign[]).map(c => {
-            return { label: c.obr_name, value: c.obr_name };
-        });
+        const campaignsList = ((data ?? []) as Campaign[])
+            .slice()
+            .sort((a, b) => createdAtTimestamp(b) - createdAtTimestamp(a))
+            .map(c => {
+                return { label: c.obr_name, value: c.obr_name };
+            });
         const defaultList = [{ label: campaignName, value: campaignName }];
         if ((campaignsList ?? []).length > 0) {
             return campaignsList;

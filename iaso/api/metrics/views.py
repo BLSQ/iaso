@@ -3,6 +3,7 @@ import csv
 from datetime import datetime
 
 from django.db.models import Q
+from django.db.models.fields.json import KeyTextTransform, KeyTransform
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
@@ -14,7 +15,7 @@ from rest_framework.response import Response
 from iaso.api.common import CONTENT_TYPE_CSV, DropdownOptionsWithRepresentationSerializer
 from iaso.api.metrics.filters import MetricValueFilter, ValueAndTypeFilterBackend, ValueFilterBackend
 from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS, get_org_unit_row
-from iaso.models import MetricType, MetricValue
+from iaso.models import ALIVE_STATUSES, MetricType, MetricValue, Task
 from iaso.plugins import is_snt_malaria_plugin_active
 from iaso.utils.org_units import get_valid_org_units_with_geography
 
@@ -71,6 +72,15 @@ class MetricTypeViewSet(viewsets.ModelViewSet):
         response_data = [{"name": key, "items": items} for key, items in grouped_data.items()]
 
         return Response(response_data)
+
+    @action(detail=True, methods=["post"])
+    def complete(self, request, pk=None):
+        """Flip a wizard-created shell to `is_complete=True`, once it has usable
+        values/legend - called explicitly by the wizard's finalise step, instead of
+        implicitly bundled into a metadata PATCH."""
+        metric_type = self.get_object()
+        metric_type.mark_complete()
+        return Response(MetricTypeSerializer(metric_type).data)
 
     @action(
         detail=False,
@@ -176,7 +186,14 @@ class MetricValueViewSet(viewsets.ModelViewSet):
 
         metric_values = serializer.save()
 
-        return Response({"total_imported": len(metric_values)}, status=status.HTTP_201_CREATED)
+        return Response(
+            {
+                "total_imported": len(metric_values),
+                "suggested_legend_type": serializer.suggested_legend_type,
+                "suggested_legend_config": serializer.suggested_legend_config,
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
 
 @extend_schema(tags=["Metrics", "Org units"])

@@ -11,6 +11,7 @@ from iaso.api.common.serializer_fields import JSONSchemaField
 from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS, get_missing_headers, get_org_unit_row
 from iaso.models import MetricType, MetricValue
 from iaso.models.org_unit import OrgUnit
+from iaso.utils.legend import build_auto_legend_config, resolve_auto_legend_type
 from iaso.utils.org_units import get_valid_org_units_with_geography
 
 
@@ -92,13 +93,6 @@ class MetricTypeWriteSerializer(serializers.ModelSerializer):
 
         return data
 
-    def update(self, instance, validated_data):
-        # A PATCH through this serializer always comes from the data-layer wizard finishing a
-        # step (finalising a new layer, or editing an existing one) - either way the layer is
-        # done being set up, so this is where a wizard-created shell stops being flagged as
-        # incomplete.
-        return super().update(instance, {**validated_data, "is_complete": True})
-
 
 class MetricTypeCreateSerializer(MetricTypeWriteSerializer):
     code = serializers.CharField(required=True, allow_blank=False)
@@ -107,9 +101,6 @@ class MetricTypeCreateSerializer(MetricTypeWriteSerializer):
         fields = MetricTypeWriteSerializer.Meta.fields + ["code"]
 
     def create(self, validated_data):
-        # The wizard creates this shell before the user has finished setting up the layer
-        # (legend not chosen yet); it stays flagged as incomplete in data-layer lists until
-        # the following PATCH (see `update` above) marks it complete.
         account = self.context["request"].user.iaso_profile.account
         return super().create({**validated_data, "account": account, "is_complete": False})
 
@@ -244,7 +235,11 @@ class ImportMetricValuesSerializer(serializers.Serializer):
                 Q(metric_type_id__in=metric_type_ids, org_unit_id__in=org_unit_ids), Q(year=year) | Q(year__isnull=True)
             ).delete()
 
-            return MetricValue.objects.bulk_create(metric_values)
+            created = MetricValue.objects.bulk_create(metric_values)
+            for metric_type in MetricType.objects.filter(id__in=metric_type_ids):
+                metric_type.mark_complete_if_has_values()
+
+            return created
 
 
 class MetricValueEntrySerializer(serializers.Serializer):
@@ -309,7 +304,14 @@ class ImportMetricValuesJsonSerializer(serializers.Serializer):
             # Every year in scope is fully replaced, not just the ones a row was
             # submitted for — that's how a cleared cell gets deleted server-side.
             MetricValue.objects.filter(metric_type_id=metric_type_id, year__in=years).delete()
-            return MetricValue.objects.bulk_create(metric_values)
+            created = MetricValue.objects.bulk_create(metric_values)
+            MetricType.objects.get(id=metric_type_id).mark_complete_if_has_values()
+
+        values = [mv.value if mv.value is not None else mv.string_value for mv in created]
+        self.suggested_legend_type = resolve_auto_legend_type(None, values)
+        self.suggested_legend_config = build_auto_legend_config(self.suggested_legend_type, values)
+
+        return created
 
 
 class ExportMetricValuesSerializer(serializers.Serializer):

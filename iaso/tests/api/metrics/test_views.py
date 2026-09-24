@@ -8,6 +8,7 @@ from iaso.models.data_source import DataSource, SourceVersion
 from iaso.models.metric import MetricType, MetricValue
 from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.models.project import Project
+from iaso.models.task import Task
 from iaso.permissions.core_permissions import CORE_METRIC_TYPES_PERMISSION, CORE_ORG_UNITS_PERMISSION
 from iaso.plugins import is_snt_malaria_plugin_active
 from iaso.test import APITestCase
@@ -183,9 +184,9 @@ class MetricTypeAPITestCase(APITestCase):
         self.assertEqual(self.metric_type_1.description, "Updated description for Metric Type 1")
         self.assertEqual(self.metric_type_1.metric_kind, "population")
 
-    def test_metric_type_update_marks_an_incomplete_shell_complete(self):
-        """The wizard's final PATCH (finalising the legend) is what makes a shell created by
-        a prior POST visible in the grouped list."""
+    def test_metric_type_update_does_not_implicitly_complete_a_shell(self):
+        """Finalising a shell's metadata/legend is a separate, explicit step
+        (`POST .../complete/`) - a plain PATCH must not have that side effect."""
         shell = MetricType.objects.create(
             account=self.account,
             code="MT_SHELL",
@@ -208,7 +209,34 @@ class MetricTypeAPITestCase(APITestCase):
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
         shell.refresh_from_db()
+        self.assertFalse(shell.is_complete)
+
+    def test_metric_type_complete_marks_an_incomplete_shell_complete(self):
+        """The wizard's explicit finalise step (POST .../complete/) is what makes a shell
+        created by a prior POST visible in the grouped list."""
+        shell = MetricType.objects.create(
+            account=self.account,
+            code="MT_SHELL",
+            name="Shell",
+            category="Category A",
+            origin=MetricType.MetricTypeOrigin.CUSTOM.value,
+            is_complete=False,
+        )
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(f"{self.BASE_URL}{shell.id}/complete/")
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        shell.refresh_from_db()
         self.assertTrue(shell.is_complete)
+
+    def test_metric_type_complete_is_a_noop_on_an_already_complete_metric_type(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.post(f"{self.BASE_URL}{self.metric_type_1.id}/complete/")
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        self.metric_type_1.refresh_from_db()
+        self.assertTrue(self.metric_type_1.is_complete)
 
     def test_metric_type_list_include_utility_query_param(self):
         MetricType.objects.create(
@@ -301,6 +329,67 @@ class MetricTypeAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         with self.assertRaises(MetricType.DoesNotExist):
             MetricType.objects.get(id=self.metric_type_2.id)
+
+    @skipUnless(is_snt_malaria_plugin_active(), "requires the snt_malaria plugin")
+    def test_delete_openhexa_metric_type_kills_alive_import_task(self):
+        """Deleting a data layer flags its still-running OpenHexa value-import task to stop,
+        instead of leaving it to finish importing values for a metric type that no longer exists."""
+        from plugins.snt_malaria.api.openhexa_data_layers.constants import IMPORT_TASK_NAME
+
+        alive_task = Task.objects.create(
+            account=self.account,
+            name=IMPORT_TASK_NAME,
+            status="RUNNING",
+            params={"kwargs": {"metric_type_id": self.metric_type_2.id}},
+        )
+
+        self.client.force_authenticate(self.user)
+        response = self.client.delete(f"{self.BASE_URL}{self.metric_type_2.id}/")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        alive_task.refresh_from_db()
+        self.assertTrue(alive_task.should_be_killed)
+
+    @skipUnless(is_snt_malaria_plugin_active(), "requires the snt_malaria plugin")
+    def test_delete_openhexa_metric_type_removes_finished_import_task(self):
+        """Deleting a data layer clears out its finished import task history, since a task's
+        `params.kwargs.metric_type_id` has no FK to `MetricType` and wouldn't otherwise be
+        cleaned up, leaving a task referencing a metric type that no longer exists."""
+        from plugins.snt_malaria.api.openhexa_data_layers.constants import IMPORT_TASK_NAME
+
+        finished_task = Task.objects.create(
+            account=self.account,
+            name=IMPORT_TASK_NAME,
+            status="SUCCESS",
+            params={"kwargs": {"metric_type_id": self.metric_type_2.id}},
+        )
+
+        self.client.force_authenticate(self.user)
+        response = self.client.delete(f"{self.BASE_URL}{self.metric_type_2.id}/")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        with self.assertRaises(Task.DoesNotExist):
+            Task.objects.get(id=finished_task.id)
+
+    @skipUnless(is_snt_malaria_plugin_active(), "requires the snt_malaria plugin")
+    def test_delete_metric_type_does_not_touch_other_metric_types_tasks(self):
+        """The import-task cleanup on delete is scoped to the deleted metric type's own tasks,
+        leaving other data layers' task history untouched."""
+        from plugins.snt_malaria.api.openhexa_data_layers.constants import IMPORT_TASK_NAME
+
+        other_task = Task.objects.create(
+            account=self.account,
+            name=IMPORT_TASK_NAME,
+            status="SUCCESS",
+            params={"kwargs": {"metric_type_id": self.metric_type_1.id}},
+        )
+
+        self.client.force_authenticate(self.user)
+        response = self.client.delete(f"{self.BASE_URL}{self.metric_type_2.id}/")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        other_task.refresh_from_db()
+        self.assertEqual(other_task.status, "SUCCESS")
 
     def test_metric_type_grouped_per_category(self):
         self.client.force_authenticate(self.user)
@@ -927,6 +1016,49 @@ class MetricValueAPITestCase(APITestCase):
         self.assertEqual(values.get().year, 2020)
         self.assertEqual(values.get().value, 42.0)
 
+    def test_metric_value_import_values_marks_an_incomplete_metric_type_complete(self):
+        """A metric type isn't stuck incomplete forever just because its wizard tab closed
+        before the finalise step - the wizard's grid import giving it real values is enough
+        on its own."""
+        shell = MetricType.objects.create(
+            account=self.account,
+            code="MT_SHELL",
+            name="Shell",
+            origin=MetricType.MetricTypeOrigin.CUSTOM.value,
+            is_complete=False,
+        )
+        payload = {
+            "metric_type_id": shell.id,
+            "years": [2020],
+            "values": [{"org_unit_id": self.org_unit.id, "year": 2020, "value": "42"}],
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(f"{self.BASE_URL}import_values/", payload)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+
+        shell.refresh_from_db()
+        self.assertTrue(shell.is_complete)
+
+    def test_metric_value_import_values_with_no_values_does_not_complete_a_shell(self):
+        """Submitting an empty table (nothing imported yet) must not mark the shell complete -
+        only actually having values does."""
+        shell = MetricType.objects.create(
+            account=self.account,
+            code="MT_SHELL",
+            name="Shell",
+            origin=MetricType.MetricTypeOrigin.CUSTOM.value,
+            is_complete=False,
+        )
+        payload = {"metric_type_id": shell.id, "years": [2020], "values": []}
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(f"{self.BASE_URL}import_values/", payload)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+
+        shell.refresh_from_db()
+        self.assertFalse(shell.is_complete)
+
     def test_metric_value_import_values_leaves_years_out_of_scope_untouched(self):
         """A year not listed in 'years' keeps its existing value, even though this
         metric type has other years being replaced."""
@@ -962,6 +1094,47 @@ class MetricValueAPITestCase(APITestCase):
         created = MetricValue.objects.get(metric_type=self.metric_type, org_unit=self.org_unit, year=2022)
         self.assertIsNone(created.value)
         self.assertEqual(created.string_value, "n/a")
+
+    def test_metric_value_import_values_returns_a_threshold_legend_suggestion_from_the_numeric_values(self):
+        """The wizard has no legend chosen yet at this point, so the response suggests one computed
+        from the values just imported - an equal-interval threshold legend for numeric values."""
+        payload = {
+            "metric_type_id": self.metric_type.id,
+            "years": [2030, 2031, 2032],
+            "values": [
+                {"org_unit_id": self.org_unit.id, "year": 2030, "value": "10"},
+                {"org_unit_id": self.org_unit.id, "year": 2031, "value": "50"},
+                {"org_unit_id": self.org_unit.id, "year": 2032, "value": "90"},
+            ],
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(f"{self.BASE_URL}import_values/", payload)
+        data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
+
+        self.assertEqual(data["suggested_legend_type"], "threshold")
+        self.assertEqual(data["suggested_legend_config"]["domain"], [21, 33, 44, 56, 67, 79])
+        self.assertEqual(len(data["suggested_legend_config"]["range"]), 7)
+
+    def test_metric_value_import_values_returns_an_ordinal_legend_suggestion_from_string_values(self):
+        """Non-numeric values can't render on a numeric legend, so the suggestion always falls back
+        to an ordinal one for them, with one domain entry per distinct value."""
+        payload = {
+            "metric_type_id": self.metric_type.id,
+            "years": [2030, 2031],
+            "values": [
+                {"org_unit_id": self.org_unit.id, "year": 2030, "value": "low"},
+                {"org_unit_id": self.org_unit.id, "year": 2031, "value": "high"},
+            ],
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(f"{self.BASE_URL}import_values/", payload)
+        data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
+
+        self.assertEqual(data["suggested_legend_type"], "ordinal")
+        self.assertEqual(data["suggested_legend_config"]["domain"], ["high", "low"])
+        self.assertEqual(len(data["suggested_legend_config"]["range"]), 2)
 
     def test_metric_value_import_values_rejects_year_not_in_years(self):
         payload = {

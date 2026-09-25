@@ -57,6 +57,9 @@ class MetricType(models.Model):
     legend_config = models.JSONField(blank=True, default=dict)
     # This is meant to flag metric types that are used for system purposes (like population)
     is_utility = models.BooleanField(default=False)
+    # False while the data-layer wizard is still creating/running it (shell created, no usable
+    # values/legend yet); such rows are shown with a warning in data-layer lists until it flips True.
+    is_complete = models.BooleanField(default=True)
     metric_kind = models.CharField(
         max_length=50,
         choices=MetricKind.choices,
@@ -76,6 +79,23 @@ class MetricType(models.Model):
 
     def __str__(self):
         return "%s %s" % (self.name, self.id)
+
+    def mark_complete(self):
+        """Explicitly flip an incomplete shell to complete, e.g. a user finishing the
+        wizard even though the layer has no values yet.
+
+        A no-op if already complete, so callers can call it unconditionally."""
+        if self.is_complete:
+            return
+        self.is_complete = True
+        self.save(update_fields=["is_complete", "updated_at"])
+
+    def mark_complete_if_has_values(self):
+        """Flip an incomplete shell to complete once it actually has values -
+        a layer with real data is usable regardless of whether the wizard that
+        created it was ever explicitly finished (see `mark_complete`)."""
+        if self.metricvalue_set.exists():
+            self.mark_complete()
 
 
 class MetricValue(models.Model):

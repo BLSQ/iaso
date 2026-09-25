@@ -2,7 +2,9 @@ import csv
 
 from datetime import datetime
 
+from django.db import transaction
 from django.db.models import Q
+from django.db.models.fields.json import KeyTextTransform, KeyTransform
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
@@ -14,13 +16,14 @@ from rest_framework.response import Response
 from iaso.api.common import CONTENT_TYPE_CSV, DropdownOptionsWithRepresentationSerializer
 from iaso.api.metrics.filters import MetricValueFilter, ValueAndTypeFilterBackend, ValueFilterBackend
 from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS, get_org_unit_row
-from iaso.models import MetricType, MetricValue
+from iaso.models import ALIVE_STATUSES, MetricType, MetricValue, Task
 from iaso.plugins import is_snt_malaria_plugin_active
 from iaso.utils.org_units import get_valid_org_units_with_geography
 
 from .permissions import MetricsPermissions
 from .serializers import (
     ExportMetricValuesSerializer,
+    ImportMetricValuesJsonSerializer,
     ImportMetricValuesSerializer,
     MetricTypeCreateSerializer,
     MetricTypeSerializer,
@@ -70,6 +73,36 @@ class MetricTypeViewSet(viewsets.ModelViewSet):
         response_data = [{"name": key, "items": items} for key, items in grouped_data.items()]
 
         return Response(response_data)
+
+    def perform_destroy(self, instance):
+        with transaction.atomic():
+            if is_snt_malaria_plugin_active():
+                self._clean_up_openhexa_import_tasks(instance)
+            super().perform_destroy(instance)
+
+    @staticmethod
+    def _clean_up_openhexa_import_tasks(metric_type):
+        """Import tasks reference their metric type through `params.kwargs.metric_type_id`,
+        not an FK, so they must be handled explicitly: alive ones are asked to stop and
+        finished ones are removed."""
+        from plugins.snt_malaria.api.openhexa_data_layers.constants import IMPORT_TASK_NAME
+
+        import_tasks = (
+            Task.objects.filter(account=metric_type.account, name=IMPORT_TASK_NAME)
+            .annotate(mt_id=KeyTextTransform("metric_type_id", KeyTransform("kwargs", "params")))
+            .filter(mt_id=str(metric_type.id))
+        )
+        import_tasks.filter(status__in=ALIVE_STATUSES).update(should_be_killed=True)
+        import_tasks.exclude(status__in=ALIVE_STATUSES).delete()
+
+    @action(detail=True, methods=["post"])
+    def complete(self, request, pk=None):
+        """Flip a wizard-created shell to `is_complete=True`, once it has usable
+        values/legend - called explicitly by the wizard's finalise step, instead of
+        implicitly bundled into a metadata PATCH."""
+        metric_type = self.get_object()
+        metric_type.mark_complete()
+        return Response(MetricTypeSerializer(metric_type).data)
 
     @action(
         detail=False,
@@ -162,6 +195,24 @@ class MetricValueViewSet(viewsets.ModelViewSet):
             {
                 "total_imported": len(metric_values),
                 "metric_type_import_count": len(metric_values),
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(detail=False, methods=["post"], serializer_class=ImportMetricValuesJsonSerializer)
+    def import_values(self, request):
+        """Replaces one MetricType's values for a set of years from a JSON body
+        (the data-layer wizard's table), instead of a CSV file upload."""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        metric_values = serializer.save()
+
+        return Response(
+            {
+                "total_imported": len(metric_values),
+                "suggested_legend_type": serializer.suggested_legend_type,
+                "suggested_legend_config": serializer.suggested_legend_config,
             },
             status=status.HTTP_201_CREATED,
         )

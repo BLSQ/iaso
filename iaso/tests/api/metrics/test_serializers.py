@@ -37,12 +37,14 @@ class MetricTypeSerializerTestCase(TestCase):
             "legend_type",
             "metric_kind",
             "origin",
+            "is_complete",
             "created_at",
             "updated_at",
         }
         readonly_fields = {
             "id",
             "account",
+            "is_complete",
             "created_at",
             "updated_at",
         }
@@ -93,6 +95,7 @@ class MetricTypeWriteSerializerTestCase(TestCase):
     def test_fields(self):
         serializer = MetricTypeWriteSerializer()
         expected_fields = {
+            "id",
             "name",
             "category",
             "description",
@@ -102,8 +105,10 @@ class MetricTypeWriteSerializerTestCase(TestCase):
             "metric_kind",
             "origin",
             "legend_config",
+            "is_complete",
         }
         self.assertEqual(set(serializer.Meta.fields), expected_fields)
+        self.assertEqual(set(serializer.Meta.read_only_fields), {"is_complete"})
 
     def test_update(self):
         serializer_context = {"request": self.request}
@@ -254,6 +259,7 @@ class MetricTypeCreateSerializerTestCase(TestCase):
     def test_fields(self):
         serializer = MetricTypeCreateSerializer()
         expected_fields = {
+            "id",
             "code",
             "name",
             "category",
@@ -264,6 +270,7 @@ class MetricTypeCreateSerializerTestCase(TestCase):
             "metric_kind",
             "origin",
             "legend_config",
+            "is_complete",
         }
         self.assertEqual(set(serializer.Meta.fields), expected_fields)
 
@@ -693,6 +700,26 @@ class ImportMetricValuesSerializerTestCase(TestCase):
         self.assertEqual(mv_population_2.year, 2024)
         self.assertEqual(mv_population_2.value, 20000)
         self.assertEqual(mv_population_2.string_value, "")
+
+    def test_save_marks_incomplete_metric_types_with_new_values_complete(self):
+        """A metric type isn't stuck incomplete forever just because its wizard was never
+        finished - a bulk CSV import giving it real values is enough on its own."""
+        MetricType.objects.filter(id__in=[self.mt_1.id, self.mt_2.id]).update(is_complete=False)
+
+        csv_content = f"ADM1_NAME,ADM2_NAME,ADM2_ID,MT1\nDISTRICT,District 1,{self.district1.id},1"
+        valid_file = SimpleUploadedFile("test.csv", csv_content.encode(), content_type="text/csv")
+        serializer = ImportMetricValuesSerializer(
+            data={"file": valid_file, "year": 2024}, context={"request": self.request}
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        serializer.save()
+
+        self.mt_1.refresh_from_db()
+        self.mt_2.refresh_from_db()
+        self.assertTrue(self.mt_1.is_complete)
+        # MT2 got no column (and so no values) in this CSV - having other incomplete
+        # metric types in scope must not mark it complete too.
+        self.assertFalse(self.mt_2.is_complete)
 
     def test_save_other_year_doesnt_override(self):
         csv_content = f"ADM1_NAME,ADM2_NAME,ADM2_ID,MT1,MT2,POP\nDISTRICT,District 1,{self.district1.id},1,5,15000\nDISTRICT,District 2,{self.district2.id},20,15,20000"

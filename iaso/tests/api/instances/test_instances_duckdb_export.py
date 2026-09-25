@@ -1,14 +1,18 @@
 import csv
 import datetime
 import io
+import json
 import re
 
+from unittest import mock
+from urllib.parse import quote
 from uuid import uuid4
 
 import openpyxl
 import pytz
 
 from django.contrib.gis.geos import Point
+from django.utils import timezone
 
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_SUBMISSIONS_PERMISSION
@@ -16,17 +20,64 @@ from iaso.tests.utils_parquet import BaseAPITransactionTestCase
 
 
 CONTROL_CHARS_RE = re.compile("[\x01-\x08\x0b\x0c\x0e-\x1f]")
-ESCAPED_CONTROL_CHARS_RE = re.compile("_x00[01][0-9A-F]_")
+ESCAPED_CONTROL_CHARS_RE = re.compile(
+    "_x00[01][0-9A-F]_"
+)  # closes a $$ ... $$ quoted string: the query params must not be able to end the sql given to duckdb
+DOLLAR_QUOTED = "#hash $$) ; SELECT 42; --"
 TRICKY_ANSWERS = [
     {"text": 'a, "quoted" <b>&amp;</b>', "other": "multi\nline\r\nend", "number": 1, "the_last_column": "short"},
-    {"text": "  leading and trailing  ", "other": "Élève ñ 日本", "number": 2, "the_last_column": "short"},
-    {"text": "ctrl\x01\x0bchar", "other": "#hash", "number": 3, "the_last_column": "short"},
+    {
+        "text": "  leading and trailing  ",
+        "other": "Élève ñ 日本",
+        "number": 2,
+        "status": "done",
+        "the_last_column": "short",
+    },
+    {"text": "ctrl\x01\x0bchar", "other": DOLLAR_QUOTED, "number": 3, "the_last_column": "short"},
     {"text": True, "other": False, "number": 12, "the_last_column": "short"},
     {"text": ["a", "b"], "other": None, "number": 12.5, "the_last_column": "short"},
     # the legacy xlsx export drops the cells following a string longer than excel's limit (xlsxwriter's write_row
     # stops on the truncation "error"): keep it in the last column (jsonb orders the keys by length)
     {"text": "007", "other": "x", "number": -3, "the_last_column": "x" * 40000},
 ]
+FORM_DESCRIPTOR = {
+    "name": "data",
+    "type": "survey",
+    "title": "Tricky",
+    "version": "2020020101",
+    "children": [
+        {
+            "name": "group",
+            "type": "group",
+            "children": [
+                {"name": "text", "type": "text", "label": 'Text <with> "xml" & chars'},
+                {"name": "other", "type": "text", "label": "Other"},
+            ],
+        },
+        {"name": "number", "type": "integer", "label": "Number"},
+        # never answered: empty column, multilingual label
+        # same name as the "Status" column (duckdb's column names are case insensitive)
+        {"name": "status", "type": "text", "label": "Question status"},
+        {"name": "not_answered", "type": "text", "label": {"English": "Not answered", "French": "Pas de réponse"}},
+        {"name": "the_last_column", "type": "text"},
+    ],
+}
+
+
+def csv_rows(content):
+    return list(csv.reader(io.StringIO(content.decode("utf-8"))))
+
+
+def load_xlsx(content):
+    sheet = openpyxl.load_workbook(io.BytesIO(content)).worksheets[0]
+    rows = [list(row) for row in sheet.iter_rows(values_only=True)]
+    # the same widths can be grouped differently (<col min="1" max="4" ...>)
+    widths = {
+        column: dimension.width
+        for dimension in sheet.column_dimensions.values()
+        for column in range(dimension.min, dimension.max + 1)
+    }
+    return rows, sheet.freeze_panes, [cell.font.b for cell in sheet[1]], widths
 
 
 # duckdb needs to see the committed fixtures, hence the transaction test case (like the parquet export tests)
@@ -66,6 +117,8 @@ class InstancesDuckdbExportTestCase(BaseAPITransactionTestCase):
         self.form = m.Form.objects.create(name="Tricky", period_type=m.MONTH, correlatable=True)
         self.form.projects.add(self.project)
         org_unit_type.reference_forms.add(self.form)
+        # the answers columns (and their labels) come from the latest version, like for any real form
+        m.FormVersion.objects.create(form=self.form, version_id="2020020101", form_descriptor=FORM_DESCRIPTOR)
         entity_type = m.EntityType.objects.create(name="Beneficiary", account=self.account)
 
         date = datetime.datetime(2020, 2, 1, 10, 11, 12, 123456, tzinfo=pytz.UTC)
@@ -90,10 +143,11 @@ class InstancesDuckdbExportTestCase(BaseAPITransactionTestCase):
             )
             if index == 1:
                 instance.flag_reference_instance(instance.org_unit)
+        m.Entity.objects_include_deleted.filter(name="entity 3").update(deleted_at=timezone.now())
 
-    def get(self, file_format, engine):
+    def get(self, file_format, engine, filters=""):
         self.client.force_authenticate(self.user)
-        url = f"/api/instances/?form_ids={self.form.id}&{file_format}=true&order=id"
+        url = f"/api/instances/?form_ids={self.form.id}&{file_format}=true&order=id{filters}"
         response = self.client.get(url + ("&engine=legacy" if engine == "legacy" else ""))
         self.assertEqual(response.status_code, 200)
         content = b"".join(
@@ -101,31 +155,22 @@ class InstancesDuckdbExportTestCase(BaseAPITransactionTestCase):
             for chunk in (response.streaming_content if response.streaming else response)
         )
         response.close()
+        if engine != "legacy":
+            # used by the UI for the download progress
+            self.assertEqual(int(response["X-File-Size"]), len(content))
         return content
 
     def test_csv_same_content(self):
-        def rows(content):
-            return list(csv.reader(io.StringIO(content.decode("utf-8"))))
-
-        legacy_rows = rows(self.get("csv", "legacy"))
-        duckdb_rows = rows(self.get("csv", "duckdb"))
+        legacy_rows = csv_rows(self.get("csv", "legacy"))
+        duckdb_rows = csv_rows(self.get("csv", "duckdb"))
 
         self.assertEqual(len(duckdb_rows), 1 + 2 * len(TRICKY_ANSWERS))
+        self.assertEqual(duckdb_rows[0][-3:], ["status", "not_answered", "the_last_column"])
+        self.assertIn("Status", duckdb_rows[0])
         # same content, the quoting may differ
         self.assertEqual(duckdb_rows, legacy_rows)
 
     def test_xlsx_same_content(self):
-        def load(content):
-            sheet = openpyxl.load_workbook(io.BytesIO(content)).worksheets[0]
-            rows = [list(row) for row in sheet.iter_rows(values_only=True)]
-            # the same widths can be grouped differently (<col min="1" max="4" ...>)
-            widths = {
-                column: dimension.width
-                for dimension in sheet.column_dimensions.values()
-                for column in range(dimension.min, dimension.max + 1)
-            }
-            return rows, sheet.freeze_panes, [cell.font.b for cell in sheet[1]], widths
-
         def text(value):
             """cell content as text: the duckdb export writes the numeric answers as numbers"""
             if isinstance(value, str):
@@ -144,12 +189,15 @@ class InstancesDuckdbExportTestCase(BaseAPITransactionTestCase):
             except ValueError:
                 return value
 
-        legacy_rows, legacy_panes, legacy_bold, legacy_widths = load(self.get("xlsx", "legacy"))
-        duckdb_rows, duckdb_panes, duckdb_bold, duckdb_widths = load(self.get("xlsx", "duckdb"))
+        legacy_rows, legacy_panes, legacy_bold, legacy_widths = load_xlsx(self.get("xlsx", "legacy"))
+        duckdb_rows, duckdb_panes, duckdb_bold, duckdb_widths = load_xlsx(self.get("xlsx", "duckdb"))
 
         # header rows: the titles, then the question labels
         header = duckdb_rows[0]
         self.assertEqual(header, legacy_rows[0])
+        self.assertEqual(header[-6:], ["text", "other", "number", "status", "not_answered", "the_last_column"])
+        self.assertIn("Status", header)
+        self.assertEqual(duckdb_rows[1][header.index("text")], 'Text <with> "xml" & chars')
         self.assertEqual([text(v) for v in duckdb_rows[1]], [text(v) for v in legacy_rows[1]])
         self.assertEqual(duckdb_panes, legacy_panes)
         self.assertTrue(all(duckdb_bold))
@@ -166,3 +214,49 @@ class InstancesDuckdbExportTestCase(BaseAPITransactionTestCase):
         self.assertIsInstance(duckdb_rows[3][header.index("number")], float)
         self.assertEqual(duckdb_rows[5][header.index("text")], "007")
         self.assertIsInstance(duckdb_rows[0][header.index("ID du formulaire")], int)
+
+    def test_no_submission(self):
+        """only the header rows (from the form version) when no submission matches the filters"""
+        no_match = "&search=ids:0"
+
+        legacy_rows = csv_rows(self.get("csv", "legacy", no_match))
+        self.assertEqual(csv_rows(self.get("csv", "duckdb", no_match)), legacy_rows)
+        self.assertEqual(len(legacy_rows), 1)
+
+        legacy_rows, *legacy_style = load_xlsx(self.get("xlsx", "legacy", no_match))
+        duckdb_rows, *duckdb_style = load_xlsx(self.get("xlsx", "duckdb", no_match))
+        self.assertEqual(duckdb_rows, legacy_rows)
+        self.assertEqual(duckdb_style, legacy_style)
+        self.assertEqual(len(duckdb_rows), 2)
+
+    def test_no_form(self):
+        self.client.force_authenticate(self.user)
+        for file_format in ("csv", "xlsx"):
+            response = self.client.get(f"/api/instances/?{file_format}=true")
+            self.assertEqual(response.status_code, 400)
+            self.assertEqual(response.json(), {"error": "There is no form"})
+
+    def test_xlsx_rows_beyond_excel_limit_are_ignored(self):
+        with mock.patch("iaso.exports.tabular.XLSX_MAX_ROWS", 5):
+            rows, *__ = load_xlsx(self.get("xlsx", "duckdb"))
+
+        # the 2 header rows, then the first submissions
+        self.assertEqual(len(rows), 5)
+        first_ids = list(m.Instance.objects.filter(form=self.form).order_by("id").values_list("id", flat=True)[:3])
+        self.assertEqual([row[0] for row in rows[2:]], first_ids)
+
+    def test_filter_values_with_dollar_quotes(self):
+        json_content = json.dumps({"==": [{"var": "other"}, DOLLAR_QUOTED]})
+        filters = "&jsonContent=" + quote(json_content)
+
+        legacy_rows = csv_rows(self.get("csv", "legacy", filters))
+        self.assertEqual(csv_rows(self.get("csv", "duckdb", filters)), legacy_rows)
+        # the header, then the 2 submissions with this answer
+        self.assertEqual(len(legacy_rows), 3)
+        self.assertEqual({row[legacy_rows[0].index("other")] for row in legacy_rows[1:]}, {DOLLAR_QUOTED})
+
+        rows, *__ = load_xlsx(self.get("xlsx", "duckdb", filters))
+        self.assertEqual(len(rows), 4)
+
+        # the search is also sent in the sql as is
+        self.assertEqual(len(csv_rows(self.get("csv", "duckdb", "&search=" + quote("a$$b")))), 1)

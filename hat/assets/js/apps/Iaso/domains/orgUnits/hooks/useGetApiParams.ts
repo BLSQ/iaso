@@ -55,10 +55,10 @@ export const useGetApiParams = (
     }
     const getUrl = (toExport: boolean, exportType: string) =>
         getTableUrl('orgunits', apiParams, toExport, exportType, asLocation);
-    // the parquet export only accepts the filters (no pagination, fields...)
+    // the parquet export only accepts the filters (no pagination, fields...), and not the table order: it can't be
+    // ordered by instances_count (not computed for parquet)
     const getParquetUrl = (extraFields: string[] = []) => {
         const urlParams = new URLSearchParams({
-            order: apiParams.order,
             searches: apiParams.searches,
             parquet: 'true',
         });

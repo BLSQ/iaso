@@ -220,6 +220,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
         else:
             count_instances = is_export or is_field_referenced("instances_count", requested_fields, order)
 
+        if parquet_format and any(field.lstrip("-") == "instances_count" for field in order):
+            # the instances aren't counted for the parquet export (too expensive on all the org units)
+            return JsonResponse(
+                {"error": "Ordering by instances_count is not supported for parquet exports"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         if with_shapes or as_location or parquet_format:
             count_instances = False
         count_per_form = csv_format or xlsx_format

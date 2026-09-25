@@ -1,8 +1,10 @@
 import datetime
+import os
 import tempfile
 
 from unittest import mock
 from unittest.mock import patch
+from urllib.parse import quote
 from uuid import uuid4
 
 import duckdb
@@ -348,6 +350,8 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
             self.assertEqual(response.status_code, status.HTTP_200_OK, response)
             with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
                 write_response_to_file(response, f)
+                # used by the UI for the download progress
+                self.assertEqual(int(response["X-File-Size"]), os.path.getsize(f.name))
                 with duckdb.connect() as con:
                     return sorted(row[0] for row in con.execute(f"SELECT iaso_subm_id FROM '{f.name}'").fetchall())
 
@@ -358,6 +362,8 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
         self.assertEqual(parquet_ids("search=Coruscant"), all_ids)
         self.assertEqual(parquet_ids(f"search=ids:{self.instance_1.id}"), [self.instance_1.id])
         self.assertEqual(parquet_ids("deviceId=99999"), [])
+        # closes a $$ ... $$ quoted string: the search must not be able to end the sql given to duckdb
+        self.assertEqual(parquet_ids("search=" + quote("a$$) ; SELECT 42; --")), [])
 
     def test_bad_request_parquet_validates_unknown_query_param(self):
         self.client.force_authenticate(self.yoda)

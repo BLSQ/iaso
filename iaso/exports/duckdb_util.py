@@ -26,6 +26,20 @@ def django_query_to_sql(qs: QuerySet) -> str:
     return full_sql
 
 
+def sql_literal(value: str) -> str:
+    """duckdb string literal: only the single quotes need to be escaped (backslashes are not special)"""
+    return "'" + value.replace("'", "''") + "'"
+
+
+def postgres_query_source(qs: QuerySet) -> str:
+    """
+    duckdb source reading the queryset from the attached postgres database.
+    The sql contains the (user given) query params: it must be a quoted literal, not $$ ... $$ which ends at the
+    first "$$" of a value.
+    """
+    return f"postgres_query('pg', {sql_literal(django_query_to_sql(qs))})"
+
+
 @contextmanager
 def duckdb_attached_to_postgres():
     """duckdb connection with the django database attached (read only) as `pg`"""
@@ -58,10 +72,10 @@ def duckdb_attached_to_postgres():
 def export_django_query_to_parquet_via_duckdb(qs: QuerySet, output_file_path: str, mapping=None):
     start = time.perf_counter()
 
-    full_sql = django_query_to_sql(qs)
+    source = postgres_query_source(qs)
 
     with duckdb_attached_to_postgres() as duckdb_connection:
-        logger.info(f"exporting parquet : {output_file_path} \n\n {full_sql}")
+        logger.info(f"exporting parquet : {output_file_path} \n\n {source}")
         # had to specify ROW_GROUP_SIZE when exporting large rows like several geojson on the same row
         alias_stmt = " * "
         if mapping:
@@ -69,7 +83,7 @@ def export_django_query_to_parquet_via_duckdb(qs: QuerySet, output_file_path: st
 
         parquet_export_sql = f"""
             COPY (
-                SELECT {alias_stmt} FROM postgres_query('pg', $$ {full_sql} $$)
+                SELECT {alias_stmt} FROM {source}
             ) TO '{output_file_path}' (FORMAT PARQUET, COMPRESSION 'ZSTD', ROW_GROUP_SIZE 10000)
         """
 

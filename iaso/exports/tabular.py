@@ -12,8 +12,12 @@ Columns are described like the legacy exports ({"title": ..., "width": ...}) wit
     - "field": name of the queryset column (`.values()` key) holding the value
     - "infer_number" (optional): text column written as a number column in xlsx when all its non empty values
       are numbers (integers or decimals, without leading zeros so that codes like "007" stay texts)
+
+The titles are not used as duckdb column names: duckdb's names are case insensitive and it renames the duplicates
+(a "status" question next to the "Status" column would become "status_1"), so the header rows are written here.
 """
 
+import csv
 import os
 import re
 import shutil
@@ -27,7 +31,7 @@ from xml.sax.saxutils import escape as xml_escape
 from django.db.models import QuerySet
 from xlsxwriter.utility import xl_rowcol_to_cell  # type: ignore
 
-from .duckdb_util import django_query_to_sql, duckdb_attached_to_postgres
+from .duckdb_util import duckdb_attached_to_postgres, postgres_query_source, sql_literal
 
 
 logger = getLogger(__name__)
@@ -47,30 +51,28 @@ INTEGER_RE = "-?(0|[1-9][0-9]{0,17})"
 DECIMAL_RE = "-?(0|[1-9][0-9]*)\\.[0-9]+"
 
 
-def sql_literal(value: str) -> str:
-    return "'" + value.replace("'", "''") + "'"
-
-
 def sql_identifier(name: str) -> str:
     return '"' + name.replace('"', '""') + '"'
 
 
-def postgres_source(qs: QuerySet) -> str:
-    return f"postgres_query('pg', $$ {django_query_to_sql(qs)} $$)"
-
-
 def export_django_query_to_csv_via_duckdb(qs: QuerySet, output_file_path: str, columns: List[Dict]):
     start = time.perf_counter()
-    projections = [
-        f"{sql_identifier(c['field'])} AS {sql_identifier(c['title'].replace(chr(10), ' '))}" for c in columns
-    ]
-    with duckdb_attached_to_postgres() as duckdb_connection:
-        # stored first: reading postgres is single threaded, writing the csv from a duckdb table is parallel
-        duckdb_connection.execute(f"CREATE TABLE export_source AS SELECT * FROM {postgres_source(qs)}")
-        duckdb_connection.execute(
-            f"COPY (SELECT {', '.join(projections)} FROM export_source) "
-            f"TO {sql_literal(output_file_path)} (FORMAT csv, HEADER true)"
-        )
+    fields = ", ".join(sql_identifier(c["field"]) for c in columns)
+    rows_file_path = output_file_path + ".rows.csv"
+    try:
+        with duckdb_attached_to_postgres() as duckdb_connection:
+            # stored first: reading postgres is single threaded, writing the csv from a duckdb table is parallel
+            duckdb_connection.execute(f"CREATE TABLE export_source AS SELECT * FROM {postgres_query_source(qs)}")
+            duckdb_connection.execute(
+                f"COPY (SELECT {fields} FROM export_source) TO {sql_literal(rows_file_path)} (FORMAT csv, HEADER false)"
+            )
+        with open(output_file_path, "w", encoding="utf-8", newline="") as output:
+            csv.writer(output, lineterminator="\n").writerow([c["title"].replace("\n", " ") for c in columns])
+        with open(output_file_path, "ab") as output, open(rows_file_path, "rb") as rows:
+            shutil.copyfileobj(rows, output, COPY_BUFFER_SIZE)
+    finally:
+        if os.path.exists(rows_file_path):
+            os.remove(rows_file_path)
     logger.warning(f"exported csv {output_file_path} took {time.perf_counter() - start:.3f} seconds")
 
 
@@ -92,7 +94,7 @@ def export_django_query_to_xlsx_via_duckdb(
         # stored first so that the columns types can be inferred from the whole content
         # like xlsxwriter, the rows beyond excel's limit are ignored
         duckdb_connection.execute(
-            f"CREATE TABLE export_source AS SELECT * FROM {postgres_source(qs)} LIMIT {XLSX_MAX_ROWS - header_rows}"
+            f"CREATE TABLE export_source AS SELECT * FROM {postgres_query_source(qs)} LIMIT {XLSX_MAX_ROWS - header_rows}"
         )
         types = dict(
             duckdb_connection.execute("SELECT column_name, column_type FROM (DESCRIBE export_source)").fetchall()
@@ -108,7 +110,7 @@ def export_django_query_to_xlsx_via_duckdb(
                 value = f"left(regexp_replace({field}, '{XLSX_INVALID_CHARS_RE}', '', 'g'), {XLSX_STRING_MAX_LENGTH})"
             else:
                 value = field
-            projections.append(f"{value} AS {sql_identifier(column['title'])}")
+            projections.append(f"{value} AS {field}")
 
         # the xlsx writer is single threaded: the values are computed beforehand (in parallel)
         duckdb_connection.execute(
@@ -182,7 +184,15 @@ def _patch_sheet_head(head: str, header_style: int, columns: List[Dict], sub_col
     header_end += len("</row>")
     header, rest = head[:header_end], head[header_end:]
 
-    header = re.sub(r'<c (r="[A-Z]+1")', rf'<c \1 s="{header_style}"', header)
+    # the header written by duckdb holds the fields names: replaced by the titles
+    header_start = header.find('<row r="1"')
+    if header_start == -1:
+        raise ValueError("xlsx header row not found")
+    titles = "".join(
+        f'<c r="{xl_rowcol_to_cell(0, index)}" s="{header_style}" t="inlineStr"><is><t xml:space="preserve">{_xml_text(column["title"])}</t></is></c>'
+        for index, column in enumerate(columns)
+    )
+    header = header[:header_start] + f'<row r="1">{titles}</row>'
 
     if sub_columns:
         if not rest.startswith(XLSX_EMPTY_SECOND_ROW):

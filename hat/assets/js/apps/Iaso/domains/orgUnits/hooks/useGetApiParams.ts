@@ -20,6 +20,7 @@ type Result = {
         exportType: string,
         asLocation?: boolean,
     ) => string;
+    getParquetUrl: (extraFields?: string[]) => string;
 };
 export const useGetApiParams = (
     searches: [Search],
@@ -54,8 +55,21 @@ export const useGetApiParams = (
     }
     const getUrl = (toExport: boolean, exportType: string) =>
         getTableUrl('orgunits', apiParams, toExport, exportType, asLocation);
+    // the parquet export only accepts the filters (no pagination, fields...)
+    const getParquetUrl = (extraFields: string[] = []) => {
+        const urlParams = new URLSearchParams({
+            order: apiParams.order,
+            searches: apiParams.searches,
+            parquet: 'true',
+        });
+        if (extraFields.length > 0) {
+            urlParams.append('extra_fields', extraFields.join(','));
+        }
+        return `/api/orgunits/?${urlParams}`;
+    };
     return {
         apiParams,
         getUrl,
+        getParquetUrl,
     };
 };

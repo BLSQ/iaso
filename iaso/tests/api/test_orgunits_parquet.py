@@ -371,6 +371,26 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
         self.assertEqual(endor_row[elite_col], 0)
         self.assertEqual(endor_row[accented_col], 0)
 
+    def test_can_retrieve_org_units_of_several_searches_in_parquet_format(self):
+        """the searches are combined with a union for the other formats, which the parquet export can't use"""
+        self.client.force_authenticate(self.yoda)
+
+        def parquet_names(searches):
+            response = self.client.get(f"/api/orgunits/?order=id&parquet=true&searches={json.dumps(searches)}")
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
+                write_response_to_file(response, f)
+                return sorted(row["org_unit_name"] for row in read_parquet(f))
+
+        corruscant = {"search": "Corruscant", "validation_status": "all"}
+        endor = {"search": "Endor", "validation_status": "all"}
+        corruscant_names = parquet_names([corruscant])
+        endor_names = parquet_names([endor])
+
+        self.assertIn("Corruscant Jedi Council", corruscant_names)
+        self.assertIn("Endor Jedi Council", endor_names)
+        self.assertEqual(parquet_names([corruscant, endor]), sorted(set(corruscant_names + endor_names)))
+
     def test_bad_request_parquet_validates_unknown_extra_fields(self):
         response = self.client.get("/api/orgunits/?order=id&parquet=true&extra_fields=bad_param")
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)

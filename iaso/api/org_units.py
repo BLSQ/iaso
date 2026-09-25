@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import tempfile
 
 from copy import deepcopy
@@ -233,7 +234,14 @@ class OrgUnitViewSet(viewsets.ViewSet):
         searches = request.GET.get("searches", None)
         counts = []
         queryset = queryset.select_related("parent__org_unit_type")
-        if searches:
+        if searches and parquet_format:
+            # the parquet export annotates the queryset, which isn't possible on a union: same org units, selected
+            # with an OR of the searches
+            search_filter = Q()
+            for search in json.loads(searches):
+                search_filter |= Q(id__in=build_org_units_queryset(queryset, search, profile).values("id"))
+            queryset = queryset.filter(search_filter)
+        elif searches:
             search_index = 0
             base_queryset = queryset
             queryset = OrgUnit.objects.none()
@@ -536,7 +544,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
         parquet.export_django_query_to_parquet_via_duckdb(export_queryset, tmp.name)
 
         response = CleaningFileResponse(tmp.name, as_attachment=True, filename=filename + ".parquet")
-
+        # for the download progress in the UI: Content-Length is removed when the response is gzipped
+        response["X-File-Size"] = os.path.getsize(tmp.name)
         return response
 
     @action(methods=["GET"], detail=False)

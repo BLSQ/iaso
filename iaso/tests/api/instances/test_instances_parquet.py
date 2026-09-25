@@ -5,6 +5,7 @@ from unittest import mock
 from unittest.mock import patch
 from uuid import uuid4
 
+import duckdb
 import pytz
 
 from django.contrib.gis.geos import Point
@@ -337,6 +338,27 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
 
         self.assertEqual(queries_for_0_extra, queries_for_6_extra)
 
+    def test_parquet_supports_the_ui_export_filters(self):
+        """the submissions page sends the same filters for the csv/xlsx/parquet exports"""
+        self.yoda.iaso_profile.projects.add(self.instance_1.project)
+        self.client.force_authenticate(self.yoda)
+
+        def parquet_ids(filters):
+            response = self.client.get(f"/api/instances/?form_ids={self.form_1.id}&parquet=true&{filters}")
+            self.assertEqual(response.status_code, status.HTTP_200_OK, response)
+            with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
+                write_response_to_file(response, f)
+                with duckdb.connect() as con:
+                    return sorted(row[0] for row in con.execute(f"SELECT iaso_subm_id FROM '{f.name}'").fetchall())
+
+        all_ids = sorted(i.id for i in (self.instance_1, self.instance_2, self.instance_3, self.instance_4))
+        # all the form_1 submissions are in the "VALID" Coruscant Jedi Council
+        self.assertEqual(parquet_ids("org_unit_status=VALID"), all_ids)
+        self.assertEqual(parquet_ids("org_unit_status=NEW"), [])
+        self.assertEqual(parquet_ids("search=Coruscant"), all_ids)
+        self.assertEqual(parquet_ids(f"search=ids:{self.instance_1.id}"), [self.instance_1.id])
+        self.assertEqual(parquet_ids("deviceId=99999"), [])
+
     def test_bad_request_parquet_validates_unknown_query_param(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get(
@@ -346,6 +368,6 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
         self.assertEqual(
             response.json(),
             {
-                "error": "Unsupported query parameters for parquet exports: unknown_unsupported_filter. Allowed parameters dateFrom, dateTo, endPeriod, form_ids, jsonContent, modificationDateFrom, modificationDateTo, order, orgUnitParentId, orgUnitTypeId, parquet, planningIds, project_ids, referenceInstances, sentDateFrom, sentDateTo, showDeleted, startPeriod, status, userIds, withLocation"
+                "error": "Unsupported query parameters for parquet exports: unknown_unsupported_filter. Allowed parameters dateFrom, dateTo, deviceId, deviceOwnershipId, endPeriod, form_ids, jsonContent, modificationDateFrom, modificationDateTo, order, orgUnitParentId, orgUnitTypeId, org_unit_status, parquet, planningIds, project_ids, referenceInstances, search, sentDateFrom, sentDateTo, showDeleted, startPeriod, status, userIds, withLocation"
             },
         )

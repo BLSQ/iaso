@@ -186,7 +186,9 @@ class MetricTypeAPITestCase(APITestCase):
 
     def test_metric_type_update_does_not_implicitly_complete_a_shell(self):
         """Finalising a shell's metadata/legend is a separate, explicit step
-        (`POST .../complete/`) - a plain PATCH must not have that side effect."""
+        (`POST .../complete/`) - a plain PATCH must not have that side effect. The response
+        also has to actually report `is_complete`, since the wizard reads it from there to
+        decide whether it still needs to call that explicit step."""
         shell = MetricType.objects.create(
             account=self.account,
             code="MT_SHELL",
@@ -206,7 +208,8 @@ class MetricTypeAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(f"{self.BASE_URL}{shell.id}/", payload)
-        self.assertJSONResponse(response, status.HTTP_200_OK)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertFalse(data["is_complete"])
 
         shell.refresh_from_db()
         self.assertFalse(shell.is_complete)

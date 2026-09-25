@@ -70,7 +70,9 @@ class MetricTypeWriteSerializer(serializers.ModelSerializer):
             "metric_kind",
             "origin",
             "legend_config",
+            "is_complete",
         ]
+        read_only_fields = ["is_complete"]
 
     def validate(self, data):
         legend_type = data.get("legend_type")

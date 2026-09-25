@@ -105,8 +105,10 @@ class MetricTypeWriteSerializerTestCase(TestCase):
             "metric_kind",
             "origin",
             "legend_config",
+            "is_complete",
         }
         self.assertEqual(set(serializer.Meta.fields), expected_fields)
+        self.assertEqual(set(serializer.Meta.read_only_fields), {"is_complete"})
 
     def test_update(self):
         serializer_context = {"request": self.request}
@@ -268,6 +270,7 @@ class MetricTypeCreateSerializerTestCase(TestCase):
             "metric_kind",
             "origin",
             "legend_config",
+            "is_complete",
         }
         self.assertEqual(set(serializer.Meta.fields), expected_fields)
 

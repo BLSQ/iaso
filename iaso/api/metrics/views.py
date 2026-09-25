@@ -2,6 +2,7 @@ import csv
 
 from datetime import datetime
 
+from django.db import transaction
 from django.db.models import Q
 from django.db.models.fields.json import KeyTextTransform, KeyTransform
 from django.http import HttpResponse
@@ -72,6 +73,27 @@ class MetricTypeViewSet(viewsets.ModelViewSet):
         response_data = [{"name": key, "items": items} for key, items in grouped_data.items()]
 
         return Response(response_data)
+
+    def perform_destroy(self, instance):
+        with transaction.atomic():
+            if is_snt_malaria_plugin_active():
+                self._clean_up_openhexa_import_tasks(instance)
+            super().perform_destroy(instance)
+
+    @staticmethod
+    def _clean_up_openhexa_import_tasks(metric_type):
+        """Import tasks reference their metric type through `params.kwargs.metric_type_id`,
+        not an FK, so they must be handled explicitly: alive ones are asked to stop and
+        finished ones are removed."""
+        from plugins.snt_malaria.api.openhexa_data_layers.constants import IMPORT_TASK_NAME
+
+        import_tasks = (
+            Task.objects.filter(account=metric_type.account, name=IMPORT_TASK_NAME)
+            .annotate(mt_id=KeyTextTransform("metric_type_id", KeyTransform("kwargs", "params")))
+            .filter(mt_id=str(metric_type.id))
+        )
+        import_tasks.filter(status__in=ALIVE_STATUSES).update(should_be_killed=True)
+        import_tasks.exclude(status__in=ALIVE_STATUSES).delete()
 
     @action(detail=True, methods=["post"])
     def complete(self, request, pk=None):

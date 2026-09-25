@@ -94,8 +94,6 @@ class MetricType(models.Model):
         """Flip an incomplete shell to complete once it actually has values -
         a layer with real data is usable regardless of whether the wizard that
         created it was ever explicitly finished (see `mark_complete`)."""
-        if self.is_complete:
-            return
         if self.metricvalue_set.exists():
             self.mark_complete()
 

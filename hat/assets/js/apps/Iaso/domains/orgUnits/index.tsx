@@ -81,6 +81,7 @@ export const OrgUnits: FunctionComponent = () => {
     const searches: [Search] = useMemo(() => {
         return decodeSearch(decodeURI(params.searches));
     }, [params.searches]);
+    const canExportParquet = searches.filter(s => !s.isAdded).length <= 1;
     // MEMO
 
     // CUSTOM HOOKS
@@ -194,13 +195,21 @@ export const OrgUnits: FunctionComponent = () => {
                                         'gpkg',
                                         getUrl(true, 'gpkg'),
                                     ),
-                                    downloadOption('parquet', getParquetUrl()),
-                                    downloadOption(
-                                        'parquet_simplified_geom',
-                                        getParquetUrl([
-                                            'simplified_geom_geojson',
-                                        ]),
-                                    ),
+                                    // the parquet export doesn't support multiple searches
+                                    ...(canExportParquet
+                                        ? [
+                                              downloadOption(
+                                                  'parquet',
+                                                  getParquetUrl(),
+                                              ),
+                                              downloadOption(
+                                                  'parquet_simplified_geom',
+                                                  getParquetUrl([
+                                                      'simplified_geom_geojson',
+                                                  ]),
+                                              ),
+                                          ]
+                                        : []),
                                 ]}
                             />
                         </Box>

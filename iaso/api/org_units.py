@@ -227,6 +227,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        if parquet_format and len(json.loads(request.GET.get("searches", "[]"))) > 1:
+            # the searches are combined with a union, which the parquet export can't annotate
+            return JsonResponse(
+                {"error": "Multiple searches are not supported for parquet exports"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         if with_shapes or as_location or parquet_format:
             count_instances = False
         count_per_form = csv_format or xlsx_format
@@ -241,14 +248,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         searches = request.GET.get("searches", None)
         counts = []
         queryset = queryset.select_related("parent__org_unit_type")
-        if searches and parquet_format:
-            # the parquet export annotates the queryset, which isn't possible on a union: same org units, selected
-            # with an OR of the searches
-            search_filter = Q()
-            for search in json.loads(searches):
-                search_filter |= Q(id__in=build_org_units_queryset(queryset, search, profile).values("id"))
-            queryset = queryset.filter(search_filter)
-        elif searches:
+        if searches:
             search_index = 0
             base_queryset = queryset
             queryset = OrgUnit.objects.none()

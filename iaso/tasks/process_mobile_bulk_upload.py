@@ -24,6 +24,7 @@ from django.db import transaction
 from django.utils.translation import gettext as _
 
 from beanstalk_worker import task_decorator
+from beanstalk_worker.throttle import Throttle
 from hat.api.export_utils import timestamp_to_utc_datetime
 from hat.api_import.models import APIImport
 from hat.audit.models import BULK_UPLOAD, log_modification
@@ -50,7 +51,11 @@ def log_progress(task: Task, progress: int, message: str) -> None:
     task.report_progress_and_stop_if_killed(progress_value=progress, progress_message=message, end_value=100)
 
 
-@task_decorator(task_name="process_mobile_bulk_upload")
+@task_decorator(
+    task_name="process_mobile_bulk_upload",
+    # Unlimited (global, per account and per user) until set on the Task throttles admin page
+    throttle=Throttle(),
+)
 def process_mobile_bulk_upload(api_import_id, project_id, task=None):
     start_date = datetime.now()
     start_time = time.time()

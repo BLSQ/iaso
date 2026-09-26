@@ -1085,6 +1085,7 @@ class DeleteAccountsModelCoverageTestCase(TestCase):
             "iaso.StorageLogEntry",
             "iaso.StoragePassword",
             "iaso.Task",
+            "iaso.TaskLease",
             "iaso.TaskLog",
             "iaso.Team",
             "iaso.TemporaryForm",

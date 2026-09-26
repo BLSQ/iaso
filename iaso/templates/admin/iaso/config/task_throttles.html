@@ -1,0 +1,130 @@
+{% extends "admin/base_site.html" %}
+{% load admin_urls %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+  .throttles td, .throttles th { vertical-align: top; }
+  .throttles select, .throttles input[type=number] { margin-bottom: 4px; }
+  .throttles .errorlist { margin: 4px 0; }
+  .throttles-task { margin-bottom: 24px; }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a>
+  &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+  &rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+  &rsaquo; Task throttles
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main" class="throttles">
+  <p>
+    Limits on how many runs of a background task can happen at the same time, checked by the worker when a task is
+    about to start. A task over a limit stays queued and is retried later. Changes apply to the next task starts.
+    Only the SQS worker enforces them, see <code>beanstalk_worker/throttle.py</code>.
+    See how they are used on the <a href="{% url 'admin:iaso_task_monitor' %}">task monitor</a>.
+  </p>
+  <p>
+    Every task has the limits <code>global</code> (all its runs), <code>account</code> (per account id) and
+    <code>user</code> (per launching user id); its code can declare others. A limit with a key applies to each key value
+    separately, and can be overridden for some keys.
+  </p>
+
+  {% if config_users %}
+    <p class="errornote">
+      This config is readable through the API by the users attached to it: {{ config_users|join:", " }}.
+      Remove them from <a href="{% url opts|admin_urlname:'change' config.pk %}">the config</a>.
+    </p>
+  {% endif %}
+  {% if form.invalid_values %}
+    <p class="errornote">
+      These saved values are invalid, the worker ignores them and uses the default of the code. They are replaced when
+      you save: {{ form.invalid_values|join:"; " }}
+    </p>
+  {% endif %}
+  {% if form.non_field_errors %}<p class="errornote">{{ form.non_field_errors|join:" " }}</p>{% endif %}
+  {% if form.errors and not form.non_field_errors %}<p class="errornote">Please correct the errors below.</p>{% endif %}
+
+  {% if addable_tasks %}
+    <form method="get" style="margin-bottom: 16px">
+      <label for="add-task">Throttle another task:</label>
+      <select name="add" id="add-task">
+        {% for name in addable_tasks %}<option value="{{ name }}">{{ name }}</option>{% endfor %}
+      </select>
+      <input type="submit" value="Add">
+      <span class="help">
+        Save your other changes first. A task without limits in its code disappears from this page when all its limits
+        are back to the default.
+      </span>
+    </form>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.version }}{{ form.tasks }}
+
+    {% for task in sections %}
+      <div class="module throttles-task">
+        <h2>{{ task.name }}{% if not task.in_code %} <small>(limits from this page only)</small>{% endif %}</h2>
+        <table style="width: 100%">
+          <thead>
+            <tr><th>Limit</th><th>Setting</th><th>Per key</th><th>Running now</th></tr>
+          </thead>
+          <tbody>
+            {% for limit in task.limits %}
+              <tr>
+                <td><strong>{{ limit.name }}</strong></td>
+                <td>
+                  {{ limit.mode }} {{ limit.limit }}
+                  {{ limit.mode.errors }}{{ limit.limit.errors }}
+                </td>
+                <td>
+                  {% if limit.keyed %}
+                    {{ limit.keys }}{{ limit.keys.errors }}
+                    <div class="help">{{ limit.keys.help_text|safe }}</div>
+                  {% else %}-{% endif %}
+                </td>
+                <td>{{ limit.running }}</td>
+              </tr>
+            {% endfor %}
+            <tr>
+              <td><strong>Paused</strong></td>
+              <td colspan="2">
+                {{ task.paused }}
+                <span class="help">no new run starts, the queued ones keep waiting</span>
+              </td>
+              <td>{{ task.queued }} queued</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    {% empty %}
+      <p>No task declares a throttle.</p>
+    {% endfor %}
+
+    {% if unknown_entries != "{}" %}
+      <p>
+        Entries for tasks without a throttle in the code (e.g. removed, or from a disabled plugin), kept as they are:
+        <pre>{{ unknown_entries }}</pre>
+      </p>
+    {% endif %}
+
+    <div class="submit-row">
+      <input type="submit" class="default" value="Save">
+      {% if config %}
+        <a href="{% url opts|admin_urlname:'history' config.pk %}" class="historylink">History</a>
+      {% endif %}
+    </div>
+  </form>
+
+  {% if config %}
+    <details>
+      <summary>Saved JSON</summary>
+      <pre>{{ saved_json }}</pre>
+    </details>
+  {% endif %}
+</div>
+{% endblock %}

@@ -14,6 +14,7 @@ from iaso.models.base import QUEUED, RUNNING
 from iaso.models.task import Task
 
 from . import task_service
+from .services import reap_lost_tasks
 
 
 logger = getLogger(__name__)
@@ -33,6 +34,13 @@ def cron(request):
     module, method = request.headers["x-aws-sqsd-taskname"].rsplit(".", 1)
     task_service.run(module, method, [], {})
     return HttpResponse()
+
+
+@csrf_exempt
+def reap_lost_tasks_view(request):
+    """Called periodically by sqsd, see cron.yaml"""
+    count = reap_lost_tasks()
+    return HttpResponse(f"Marked {count} lost task(s) as ERRORED")
 
 
 @csrf_exempt

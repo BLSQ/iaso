@@ -193,3 +193,18 @@ class TaskLog(models.Model):
         if self.id:
             raise ValueError("Cannot update a TaskLog")
         super().save(*args, **kwargs)
+
+
+class TaskLease(models.Model):
+    """Held by a task while a worker runs it, see `run` in beanstalk_worker/services.py.
+
+    The worker refreshes `heartbeat_at` from a side thread: a lease whose heartbeat stopped belongs to a worker that
+    was killed. `throttle_keys` are the throttle slots the run occupies (see beanstalk_worker/throttle.py).
+    This is a separate table so that `Task.save()` calls from the task code never overwrite the heartbeat."""
+
+    task = models.OneToOneField(Task, on_delete=models.CASCADE, related_name="lease")
+    throttle_keys = models.JSONField(default=list)
+    heartbeat_at = models.DateTimeField(db_index=True)
+
+    def __str__(self):
+        return f"Lease of task {self.task_id}, heartbeat at {self.heartbeat_at}"

@@ -1,5 +1,8 @@
 version: 1
 cron:
+    - name: 'reap_lost_tasks'
+      url: '/tasks/reap_lost_tasks/'
+      schedule: '*/5 * * * *'
     - name: 'send_preparedness_weekly_email'
       url: '/tasks/launch_task/plugins.polio.tasks.weekly_email.send_email/polio_cron_task_user/'
       schedule: '0 1 * * 5'

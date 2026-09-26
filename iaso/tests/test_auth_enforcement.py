@@ -54,6 +54,7 @@ PUBLIC_ENDPOINTS = {
     *any_methods("/tasks/launch_task/export_task/my_user_name/"),
     *any_methods("/tasks/cron/"),
     *any_methods("/tasks/task/"),
+    *any_methods("/tasks/reap_lost_tasks/"),
     # reset password related
     *any_methods("/robots.txt"),
     *any_methods("/_health/"),
@@ -247,7 +248,7 @@ class TestAuthEnforcement(TestCase):
                     continue
 
                 # skip task and sync/upload either need a less generic way to test
-                if path in ["/tasks/task/", "/sync/form_upload/"]:
+                if path in ["/tasks/task/", "/tasks/reap_lost_tasks/", "/sync/form_upload/"]:
                     continue
 
                 try:

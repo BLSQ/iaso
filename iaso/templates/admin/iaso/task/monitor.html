@@ -1,0 +1,404 @@
+{% extends "admin/base_site.html" %}
+{% load admin_urls %}
+
+{% block extrahead %}{{ block.super }}
+{% if refresh %}<meta http-equiv="refresh" content="{{ refresh }}">{% endif %}
+{% endblock %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+  .monitor table { width: 100%; margin-bottom: 24px; }
+  .monitor td.number, .monitor th.number { text-align: right; }
+  .monitor .zero { color: var(--body-quiet-color); }
+  .monitor .warning { color: var(--error-fg); font-weight: bold; }
+  .monitor .toolbar { margin-bottom: 16px; }
+  .monitor .toolbar a.selected { font-weight: bold; text-decoration: underline; }
+  .monitor form.toolbar label { font-weight: bold; margin-right: 4px; }
+
+  /* activity chart: validated palette (status green / blue / status red), stepped for light and dark */
+  .viz-root, .viz-legend, .viz-table {
+    --viz-success: #0ca30c; --viz-running: #2a78d6; --viz-waiting: #eda100; --viz-stopped: #4a3aa7;
+    --viz-errored: #d03b3b; --viz-grid: #e1e0d9; --viz-axis: #c3c2b7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) :is(.viz-root, .viz-legend, .viz-table) {
+      --viz-running: #3987e5; --viz-waiting: #c98500; --viz-stopped: #9085e9; --viz-grid: #2c2c2a; --viz-axis: #383835;
+    }
+  }
+  :root[data-theme="dark"] :is(.viz-root, .viz-legend, .viz-table) {
+    --viz-running: #3987e5; --viz-waiting: #c98500; --viz-stopped: #9085e9; --viz-grid: #2c2c2a; --viz-axis: #383835;
+  }
+  .viz-root { position: relative; margin-bottom: 8px; }
+  .viz-root svg { display: block; width: 100%; height: 190px; overflow: visible; }
+  .viz-root .s-success { fill: var(--viz-success); }
+  .viz-root .s-running { fill: var(--viz-running); }
+  .viz-root .s-waiting { fill: var(--viz-waiting); }
+  .viz-root .s-stopped { fill: var(--viz-stopped); }
+  .viz-root .s-errored { fill: var(--viz-errored); }
+  .viz-root .grid { stroke: var(--viz-grid); stroke-width: 1; }
+  .viz-root .baseline { stroke: var(--viz-axis); stroke-width: 1; }
+  .viz-root .tick { fill: var(--body-quiet-color); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .viz-root .hover-band { fill: var(--body-fg); opacity: 0; pointer-events: none; }
+  .viz-root .hover-band.active { opacity: 0.06; }
+  .viz-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 4px 0 8px; color: var(--body-fg); }
+  .viz-legend .swatch, .viz-tooltip .swatch {
+    display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px;
+  }
+  .viz-tooltip {
+    position: absolute; pointer-events: none; display: none; z-index: 10; min-width: 170px;
+    background: var(--body-bg); color: var(--body-fg); border: 1px solid var(--hairline-color);
+    border-radius: 4px; padding: 6px 10px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); font-size: 12px;
+  }
+  .viz-tooltip .row { display: flex; justify-content: space-between; gap: 12px; font-variant-numeric: tabular-nums; }
+  .viz-tooltip .when { color: var(--body-quiet-color); margin-bottom: 4px; }
+  .viz-tooltip .detail { color: var(--body-quiet-color); padding-left: 16px; }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a>
+  &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+  &rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+  &rsaquo; Monitor
+</div>
+{% endblock %}
+
+{% block content %}
+{% url opts|admin_urlname:'changelist' as tasks_url %}
+<div id="content-main" class="monitor">
+  <div class="toolbar">
+    Finished tasks created in the last:
+    {% for w, url in window_links %}
+      <a href="{{ url }}" {% if w == window %}class="selected"{% endif %}>{{ w }}</a>
+    {% endfor %}
+    &nbsp;|&nbsp;
+    {% if refresh %}
+      Refreshing every {{ refresh }}s, <a href="{{ stop_refresh_url }}">stop</a>
+    {% else %}
+      <a href="{{ refresh_url }}">Refresh every 10s</a>
+    {% endif %}
+    &nbsp;|&nbsp; <a href="{% url 'admin:iaso_config_task_throttles' %}">Edit the task throttles</a>
+  </div>
+  <form method="get" class="toolbar">
+    <input type="hidden" name="window" value="{{ window }}">
+    {% if refresh %}<input type="hidden" name="refresh" value="{{ refresh }}">{% endif %}
+    <label for="filter-account">Account</label>
+    <select name="account" id="filter-account" onchange="this.form.submit()">
+      <option value="">all the accounts</option>
+      {% for id, name in account_choices %}<option value="{{ id }}" {% if account and id == account.id %}selected{% endif %}>{{ name }}</option>{% endfor %}
+    </select>
+    <label for="filter-task" style="margin-left: 16px">Task</label>
+    <select name="task" id="filter-task" onchange="this.form.submit()">
+      <option value="">all the tasks</option>
+      {% for name in chart_tasks %}<option value="{{ name }}" {% if name == chart_task %}selected{% endif %}>{{ name }}</option>{% endfor %}
+    </select>
+    <span class="help">
+      The account filters the whole page, the task filters the chart and the accounts.
+      {% if account %}<a href="{{ clear_account_url }}">Show all the accounts</a>{% endif %}
+    </span>
+  </form>
+
+  <h2>Tasks created per {% if bucket_minutes < 60 %}{{ bucket_minutes }} minutes{% else %}{% widthratio bucket_minutes 60 1 %} hour{% if bucket_minutes > 60 %}s{% endif %}{% endif %}, last {{ window }}{% if chart_task %}: {{ chart_task }}{% endif %}{% if account %}, {{ account.name }}{% endif %}</h2>
+  <div class="viz-legend" id="activity-legend"></div>
+  <div class="viz-root" id="activity-chart" data-window="{{ window }}" data-bucket-minutes="{{ bucket_minutes }}">
+    <div class="viz-tooltip" id="activity-tooltip"></div>
+  </div>
+  <p class="help">Each task counts in the period it was created, with its current status.</p>
+  <details style="margin-bottom: 24px" class="viz-table">
+    <summary>Data table</summary>
+    <table>
+      <thead>
+        <tr>
+          <th>From</th><th class="number">Success</th><th class="number">Running</th><th class="number">Waiting</th>
+          <th class="number">of which throttled</th><th class="number">Killed / skipped</th><th class="number">Errored</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for bucket in activity %}
+          <tr>
+            <td class="bucket-start" data-start="{{ bucket.start }}">{{ bucket.start }}</td>
+            <td class="number">{{ bucket.success }}</td><td class="number">{{ bucket.running }}</td>
+            <td class="number">{{ bucket.waiting }}</td><td class="number">{{ bucket.throttled }}</td>
+            <td class="number">{{ bucket.stopped }}</td><td class="number">{{ bucket.errored }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </details>
+  {{ activity|json_script:"activity-data" }}
+
+  <h2>Tasks{% if account %} of {{ account.name }}{% endif %}</h2>
+  <p class="help">
+    Queued and running: now. Throttled: queued, waiting for a throttle slot. No heartbeat: running but not refreshed
+    by a worker (external task, killed worker, or started before the heartbeats existed).
+    Success, errored, killed and skipped: created in the last {{ window }}.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Task</th>
+        <th class="number">Queued</th><th class="number">Throttled</th><th>Waiting since</th>
+        <th class="number">Running</th><th class="number">No heartbeat</th>
+        <th class="number">Success</th><th class="number">Errored</th><th class="number">Killed</th>
+        <th class="number">Skipped</th><th>Duration avg / max</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+        <tr>
+          <td><a href="{{ tasks_url }}?name__exact={{ row.name|urlencode }}{% if account %}&account__id__exact={{ account.id }}{% endif %}">{{ row.name }}</a></td>
+          <td class="number{% if not row.queued %} zero{% endif %}">{{ row.queued }}</td>
+          <td class="number{% if not row.throttled %} zero{% endif %}">{{ row.throttled }}</td>
+          <td>{{ row.waiting_since }}</td>
+          <td class="number{% if not row.running %} zero{% endif %}">{{ row.running }}</td>
+          <td class="number{% if row.no_heartbeat %} warning{% else %} zero{% endif %}">{{ row.no_heartbeat }}</td>
+          <td class="number{% if not row.SUCCESS %} zero{% endif %}">{{ row.SUCCESS }}</td>
+          <td class="number{% if row.ERRORED %} warning{% else %} zero{% endif %}">
+            {% if row.ERRORED %}<a href="{{ tasks_url }}?name__exact={{ row.name|urlencode }}&status__exact=ERRORED{% if account %}&account__id__exact={{ account.id }}{% endif %}">{{ row.ERRORED }}</a>{% else %}0{% endif %}
+          </td>
+          <td class="number{% if not row.KILLED %} zero{% endif %}">{{ row.KILLED }}</td>
+          <td class="number{% if not row.SKIPPED %} zero{% endif %}">{{ row.SKIPPED }}</td>
+          <td>{% if row.avg_duration %}{{ row.avg_duration }} / {{ row.max_duration }}{% endif %}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="11">No task.</td></tr>
+      {% endfor %}
+    </tbody>
+    {% if rows %}
+      <tfoot>
+        <tr>
+          <th>Total</th>
+          <th class="number">{{ totals.queued }}</th><th class="number">{{ totals.throttled }}</th><th></th>
+          <th class="number">{{ totals.running }}</th><th class="number">{{ totals.no_heartbeat }}</th>
+          <th class="number">{{ totals.SUCCESS }}</th><th class="number">{{ totals.ERRORED }}</th>
+          <th class="number">{{ totals.KILLED }}</th><th class="number">{{ totals.SKIPPED }}</th><th></th>
+        </tr>
+      </tfoot>
+    {% endif %}
+  </table>
+
+  <h2>Throttles</h2>
+  <p class="help">
+    Runs using each limit now. Full: no new run can start for that limit, the next ones wait. Only the limits that
+    are set are shown.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Task</th><th>Limit</th><th>Key</th>
+        <th class="number">Running</th><th class="number">Waiting</th><th class="number">Limit</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for task in throttles %}
+        {% for limit in task.limits %}
+          {% for row in limit.rows %}
+            <tr>
+              <td>{% if forloop.first and forloop.parentloop.first %}<strong>{{ task.name }}</strong>{% if task.paused %} <span class="warning">paused</span>{% endif %}{% endif %}</td>
+              <td>{% if forloop.first %}{{ limit.name }}{% if limit.keyed %} <span class="help">(default: {{ limit.default_limit }})</span>{% endif %}{% endif %}</td>
+              <td>{% if row.key is None %}all{% else %}{{ row.key }}{% if row.key_label %} <span class="help">{{ row.key_label }}</span>{% endif %}{% endif %}</td>
+              <td class="number{% if row.full %} warning{% elif not row.running %} zero{% endif %}">{{ row.running }}</td>
+              <td class="number{% if not row.waiting %} zero{% endif %}">{{ row.waiting }}</td>
+              <td class="number">{{ row.limit }}{% if row.full %} <span class="warning">full</span>{% endif %}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td>{% if forloop.parentloop.first %}<strong>{{ task.name }}</strong>{% endif %}</td>
+              <td>{{ limit.name }} <span class="help">(default: {{ limit.default_limit }})</span></td>
+              <td colspan="4" class="zero">nothing running or waiting</td>
+            </tr>
+          {% endfor %}
+          {% if limit.hidden_keys %}
+            <tr><td></td><td></td><td colspan="4" class="help">and {{ limit.hidden_keys }} other keys</td></tr>
+          {% endif %}
+        {% empty %}
+          <tr>
+            <td><strong>{{ task.name }}</strong>{% if task.paused %} <span class="warning">paused</span>{% endif %}</td>
+            <td colspan="5" class="zero">no limit set</td>
+          </tr>
+        {% endfor %}
+      {% empty %}
+        <tr><td colspan="6">No throttled task.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if not account %}
+    <h2 id="by-account">By account{% if chart_task %}: {{ chart_task }}{% endif %}</h2>
+    <p class="help">
+      The accounts with tasks queued or running now, or created in the last {{ window }}, the busiest first.
+      Click an account to filter the page.
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>Account</th>
+          <th class="number">Queued</th><th class="number">Throttled</th><th>Waiting since</th>
+          <th class="number">Running</th><th class="number">No heartbeat</th>
+          <th class="number">Success</th><th class="number">Errored</th><th class="number">Killed</th>
+          <th class="number">Skipped</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in shown_accounts %}
+          <tr>
+            <td><a href="{{ row.url }}">{{ row.name }}</a></td>
+            <td class="number{% if not row.queued %} zero{% endif %}">{{ row.queued }}</td>
+            <td class="number{% if not row.throttled %} zero{% endif %}">{{ row.throttled }}</td>
+            <td>{{ row.waiting_since }}</td>
+            <td class="number{% if not row.running %} zero{% endif %}">{{ row.running }}</td>
+            <td class="number{% if row.no_heartbeat %} warning{% else %} zero{% endif %}">{{ row.no_heartbeat }}</td>
+            <td class="number{% if not row.SUCCESS %} zero{% endif %}">{{ row.SUCCESS }}</td>
+            <td class="number{% if row.ERRORED %} warning{% else %} zero{% endif %}">{{ row.ERRORED }}</td>
+            <td class="number{% if not row.KILLED %} zero{% endif %}">{{ row.KILLED }}</td>
+            <td class="number{% if not row.SKIPPED %} zero{% endif %}">{{ row.SKIPPED }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="10">No task.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if hidden_accounts %}
+      <p><a href="{{ all_accounts_url }}">Show the {{ hidden_accounts }} other accounts</a></p>
+    {% endif %}
+  {% endif %}
+</div>
+<script>
+(function () {
+  "use strict";
+  const SERIES = [
+    ["success", "Success"],
+    ["running", "Running"],
+    ["waiting", "Waiting (queued or throttled)"],
+    ["stopped", "Killed / skipped"],
+    ["errored", "Errored"],
+  ];
+  const totalOf = (d) => SERIES.reduce((sum, [key]) => sum + d[key], 0);
+  const data = JSON.parse(document.getElementById("activity-data").textContent);
+  const root = document.getElementById("activity-chart");
+  const tooltip = document.getElementById("activity-tooltip");
+  const bucketMinutes = Number(root.dataset.bucketMinutes);
+  const window_ = root.dataset.window;
+  const NS = "http://www.w3.org/2000/svg";
+  const HEIGHT = 190, MARGIN = { top: 10, right: 8, bottom: 22, left: 40 }, GAP = 2, RADIUS = 4;
+
+  const pad = (n) => String(n).padStart(2, "0");
+  function formatTime(date, withDay) {
+    const time = pad(date.getHours()) + ":" + pad(date.getMinutes());
+    if (!withDay) return time;
+    return date.toLocaleDateString(undefined, { weekday: "short", day: "numeric" }) + " " + time;
+  }
+  function niceStep(max) {
+    const raw = max / 4, power = Math.pow(10, Math.floor(Math.log10(raw)));
+    const step = [1, 2, 5, 10].map((f) => f * power).find((s) => s >= raw);
+    return Math.max(1, step);
+  }
+  function el(name, attrs, parent) {
+    const node = document.createElementNS(NS, name);
+    for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+    if (parent) parent.appendChild(node);
+    return node;
+  }
+  // a column segment: square at the bottom, 4px rounded corners at the top when it ends the column
+  function segmentPath(x, y, w, h, rounded) {
+    const r = rounded ? Math.min(RADIUS, h, w / 2) : 0;
+    return `M${x},${y + h} V${y + r} Q${x},${y} ${x + r},${y} H${x + w - r} Q${x + w},${y} ${x + w},${y + r} V${y + h} Z`;
+  }
+
+  // legend with the totals of the window: identity never relies on the color alone
+  const legend = document.getElementById("activity-legend");
+  legend.innerHTML = "";
+  for (const [key, label] of SERIES) {
+    const total = data.reduce((sum, d) => sum + d[key], 0);
+    const item = document.createElement("span");
+    item.innerHTML = `<span class="swatch s-${key}" style="background: var(--viz-${key})"></span>`;
+    item.appendChild(document.createTextNode(`${label}: ${total.toLocaleString()}`));
+    legend.appendChild(item);
+  }
+  // the data table shows local times too
+  document.querySelectorAll(".bucket-start").forEach((cell) => {
+    cell.textContent = formatTime(new Date(cell.dataset.start), true);
+  });
+
+  function draw() {
+    root.querySelectorAll("svg").forEach((svg) => svg.remove());
+    const width = root.clientWidth;
+    if (!width || !data.length) return;
+    const svg = el("svg", { viewBox: `0 0 ${width} ${HEIGHT}`, role: "img", "aria-label": "Tasks created per period, by status" });
+    root.insertBefore(svg, tooltip);
+    const plotW = width - MARGIN.left - MARGIN.right, plotH = HEIGHT - MARGIN.top - MARGIN.bottom;
+    const max = Math.max(1, ...data.map(totalOf));
+    const step = niceStep(max), top = Math.ceil(max / step) * step;
+    const y = (v) => MARGIN.top + plotH - (v / top) * plotH;
+
+    for (let v = 0; v <= top; v += step) {
+      el("line", { class: v === 0 ? "baseline" : "grid", x1: MARGIN.left, x2: width - MARGIN.right, y1: y(v), y2: y(v) }, svg);
+      el("text", { class: "tick", x: MARGIN.left - 6, y: y(v) + 4, "text-anchor": "end" }, svg).textContent = v.toLocaleString();
+    }
+
+    const slot = plotW / data.length, barW = Math.max(2, Math.min(24, slot - GAP));
+    const labelEvery = Math.ceil(data.length / Math.max(1, Math.floor(plotW / 70)));
+    data.forEach((d, i) => {
+      const x = MARGIN.left + i * slot + (slot - barW) / 2;
+      const visible = SERIES.filter(([key]) => d[key] > 0);
+      let base = y(0);
+      visible.forEach(([key], n) => {
+        const h = (d[key] / top) * plotH - (n > 0 ? GAP : 0);  // the 2px surface gap between segments
+        if (h <= 0) return;
+        base -= n > 0 ? GAP : 0;
+        el("path", { class: `s-${key}`, d: segmentPath(x, base - h, barW, h, n === visible.length - 1) }, svg);
+        base -= h;
+      });
+      if (i % labelEvery === 0) {
+        const date = new Date(d.start);
+        const withDay = window_ === "7d" || (i === 0 && window_ === "24h");
+        el("text", { class: "tick", x: x + barW / 2, y: HEIGHT - 6, "text-anchor": "middle" }, svg).textContent =
+          formatTime(date, withDay);
+      }
+      // the hover target is the whole slot, bigger than the column
+      const hit = el("rect", { class: "hit", x: MARGIN.left + i * slot, y: MARGIN.top, width: slot, height: plotH, fill: "transparent" }, svg);
+      const band = el("rect", { class: "hover-band", x: MARGIN.left + i * slot, y: MARGIN.top, width: slot, height: plotH }, svg);
+      hit.addEventListener("mouseenter", () => show(d, band));
+      hit.addEventListener("mouseleave", () => hide(band));
+    });
+  }
+
+  function show(d, band) {
+    band.classList.add("active");
+    const from = new Date(d.start), to = new Date(from.getTime() + bucketMinutes * 60000);
+    // in the order of the stack, top first
+    tooltip.innerHTML = `<div class="when">${formatTime(from, window_ !== "1h")} – ${formatTime(to, false)}</div>` +
+      SERIES.slice().reverse().map(([key, label]) =>
+        `<div class="row"><span><span class="swatch" style="background: var(--viz-${key})"></span>${label.split(" (")[0]}</span><span>${d[key].toLocaleString()}</span></div>` +
+        (key === "waiting" && d.throttled ? `<div class="row detail"><span>of which throttled</span><span>${d.throttled.toLocaleString()}</span></div>` : "")
+      ).join("") +
+      `<div class="row"><strong>Total</strong><strong>${totalOf(d).toLocaleString()}</strong></div>`;
+    // inside the plot, beside the column: on its right, or on its left near the right edge.
+    // Placed from the rendered column (the svg can be scaled), and measured at left 0 since an absolute box
+    // shrinks when placed near the edge of its container.
+    tooltip.style.left = "0px";
+    tooltip.style.display = "block";
+    const width = tooltip.offsetWidth, rootBox = root.getBoundingClientRect(), bandBox = band.getBoundingClientRect();
+    const start = bandBox.left - rootBox.left, end = bandBox.right - rootBox.left;
+    const left = end + 8 + width <= root.clientWidth ? end + 8 : start - width - 8;
+    tooltip.style.left = `${Math.max(0, Math.min(left, root.clientWidth - width))}px`;
+    tooltip.style.top = `${MARGIN.top}px`;
+  }
+  function hide(band) {
+    band.classList.remove("active");
+    tooltip.style.display = "none";
+  }
+
+  // redraw when the width of the chart changes: window resize, or the admin sidebar opened or closed
+  let drawnWidth = 0, resizeTimer;
+  new ResizeObserver(() => {
+    if (root.clientWidth === drawnWidth) return;
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      drawnWidth = root.clientWidth;
+      draw();
+    }, drawnWidth ? 100 : 0);
+  }).observe(root);
+})();
+</script>
+{% endblock %}

@@ -11,7 +11,10 @@ import {
 } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
-import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
+import {
+    DownloadMenuButton,
+    useDownloadOption,
+} from '../../components/DownloadMenuButton';
 import snackMessages from '../../components/snackBars/messages';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
@@ -58,6 +61,7 @@ const Instances = () => {
     const isSearchActive = params?.isSearchActive === 'true';
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
+    const downloadOption = useDownloadOption();
     const queryClient = useQueryClient();
     const redirectToReplace = useRedirectToReplace();
     const [selection, setSelection] = useState(selectionInitialState);
@@ -214,9 +218,21 @@ const Instances = () => {
                             arrow
                         >
                             <Box>
-                                <DownloadButtonsComponent
-                                    csvUrl={getExportUrl(params, 'csv')}
-                                    xlsxUrl={getExportUrl(params, 'xlsx')}
+                                <DownloadMenuButton
+                                    options={[
+                                        downloadOption(
+                                            'csv',
+                                            getExportUrl(params, 'csv'),
+                                        ),
+                                        downloadOption(
+                                            'xlsx',
+                                            getExportUrl(params, 'xlsx'),
+                                        ),
+                                        downloadOption(
+                                            'parquet',
+                                            getExportUrl(params, 'parquet'),
+                                        ),
+                                    ]}
                                     disabled={!isSingleFormSearch}
                                 />
                             </Box>

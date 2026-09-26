@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import tempfile
 
 from copy import deepcopy
@@ -218,6 +219,20 @@ class OrgUnitViewSet(viewsets.ViewSet):
             count_instances = True
         else:
             count_instances = is_export or is_field_referenced("instances_count", requested_fields, order)
+
+        if parquet_format and any(field.lstrip("-") == "instances_count" for field in order):
+            # the instances aren't counted for the parquet export (too expensive on all the org units)
+            return JsonResponse(
+                {"error": "Ordering by instances_count is not supported for parquet exports"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if parquet_format and len(json.loads(request.GET.get("searches", "[]"))) > 1:
+            # the searches are combined with a union, which the parquet export can't annotate
+            return JsonResponse(
+                {"error": "Multiple searches are not supported for parquet exports"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         if with_shapes or as_location or parquet_format:
             count_instances = False
@@ -536,7 +551,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
         parquet.export_django_query_to_parquet_via_duckdb(export_queryset, tmp.name)
 
         response = CleaningFileResponse(tmp.name, as_attachment=True, filename=filename + ".parquet")
-
+        # for the download progress in the UI: Content-Length is removed when the response is gzipped
+        response["X-File-Size"] = os.path.getsize(tmp.name)
         return response
 
     @action(methods=["GET"], detail=False)

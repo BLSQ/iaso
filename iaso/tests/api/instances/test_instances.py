@@ -1462,7 +1462,8 @@ class InstancesAPITestCase(TaskAPITestCase):
         # lazy-load query for org_unit_type that CSV export was still paying for.)
         with self.assertNumQueries(11):
             response = self.client.get(
-                f"/api/instances/?form_ids={self.instance_1.form.id}&csv=true", headers={"Content-Type": "text/csv"}
+                f"/api/instances/?form_ids={self.instance_1.form.id}&csv=true&engine=legacy",
+                headers={"Content-Type": "text/csv"},
             )
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assertEqual(response["Content-Type"], "text/csv")
@@ -1546,7 +1547,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         # memoized after the first request and would otherwise make the measurements below
         # differ for reasons unrelated to row/page count (see the same fix in
         # test_instances_parquet.py).
-        self.client.get(f"/api/instances/?form_ids={self.form_1.pk}&xlsx=true")
+        self.client.get(f"/api/instances/?form_ids={self.form_1.pk}&xlsx=true&engine=legacy")
 
         def num_queries_for(n_instances):
             created = [
@@ -1561,7 +1562,7 @@ class InstancesAPITestCase(TaskAPITestCase):
                 for i in range(n_instances)
             ]
             with CaptureQueriesContext(connection) as ctx:
-                response = self.client.get(f"/api/instances/?form_ids={self.form_1.pk}&xlsx=true")
+                response = self.client.get(f"/api/instances/?form_ids={self.form_1.pk}&xlsx=true&engine=legacy")
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             for instance in created:
                 instance.delete()
@@ -1607,7 +1608,7 @@ class InstancesAPITestCase(TaskAPITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get(
-            f"/api/instances/?form_ids={sourceless_instance.form.id}&order=id&csv=true",
+            f"/api/instances/?form_ids={sourceless_instance.form.id}&order=id&csv=true&engine=legacy",
             headers={"Content-Type": "text/csv"},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)

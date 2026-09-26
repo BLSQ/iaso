@@ -1,6 +1,7 @@
 import json
 import logging
 import ntpath
+import os
 import tempfile
 
 from copy import copy
@@ -52,7 +53,8 @@ from iaso.api.instances.zip import generate_zip
 from iaso.api.org_units import HasCreateOrgUnitPermission
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
-from iaso.exports import CleaningFileResponse, parquet
+from iaso.exports import CleaningFileResponse, parquet, tabular
+from iaso.exports.submissions_tabular import build_submissions_tabular_queryset
 from iaso.models import (
     Account,
     Entity,
@@ -250,8 +252,9 @@ class InstancesViewSet(viewsets.ViewSet):
             }
         )
 
-    def list_file_export(self, filters: Dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum):
-        """WIP: Helper function to divide the huge list method"""
+    @staticmethod
+    def _file_export_columns(form: Form, queryset: "QuerySet[Instance]"):
+        """Columns, sub columns (question labels) and answers keys shared by the csv/xlsx exports"""
         columns = [
             {"title": "ID du formulaire", "width": 20},
             {"title": "Soumission de référence", "width": 20},
@@ -281,16 +284,8 @@ class InstancesViewSet(viewsets.ViewSet):
             {"title": "parent4", "width": 20},
         ]
 
-        filename = "instances"
-
-        form = get_form_from_instance_filters(filters)
-
-        if form:
-            filename = "%s-%s" % (filename, form.id)
-            if form.correlatable:
-                columns.append({"title": "correlation id", "width": 20})
-        else:
-            return Response({"error": "There is no form"}, status=status.HTTP_400_BAD_REQUEST)
+        if form.correlatable:
+            columns.append({"title": "correlation id", "width": 20})
 
         sub_columns = ["" for __ in columns]
         latest_form_version = form.latest_version
@@ -310,6 +305,21 @@ class InstancesViewSet(viewsets.ViewSet):
             for title in file_content_template:
                 columns.append({"title": title, "width": 50})
                 sub_columns.append(questions_by_name.get(title, {}).get("label", ""))
+
+        return columns, sub_columns, file_content_template
+
+    def list_file_export(self, filters: Dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum):
+        """WIP: Helper function to divide the huge list method"""
+        filename = "instances"
+
+        form = get_form_from_instance_filters(filters)
+
+        if form:
+            filename = "%s-%s" % (filename, form.id)
+        else:
+            return Response({"error": "There is no form"}, status=status.HTTP_400_BAD_REQUEST)
+
+        columns, sub_columns, file_content_template = self._file_export_columns(form, queryset)
 
         filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
@@ -413,6 +423,36 @@ class InstancesViewSet(viewsets.ViewSet):
             raise ValueError(f"Unknown file format requested: {file_format}")
 
         response["Content-Disposition"] = "attachment; filename=%s" % filename
+        return response
+
+    def list_file_export_duckdb(
+        self, filters: Dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum
+    ):
+        """Same content as list_file_export, but the rows are computed by postgres and written by duckdb"""
+        form = get_form_from_instance_filters(filters)
+        if not form:
+            return Response({"error": "There is no form"}, status=status.HTTP_400_BAD_REQUEST)
+
+        columns, sub_columns, file_content_template = self._file_export_columns(form, queryset)
+        export_queryset = build_submissions_tabular_queryset(queryset, form, file_content_template, columns)
+
+        filename = "instances-%s-%s" % (form.id, strftime("%Y-%m-%d-%H-%M", gmtime()))
+        if file_format == FileFormatEnum.XLSX:
+            filename = filename + ".xlsx"
+            content_type = CONTENT_TYPE_XLSX
+            tmp = tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False)
+            tabular.export_django_query_to_xlsx_via_duckdb(export_queryset, tmp.name, "Forms", columns, sub_columns)
+        elif file_format == FileFormatEnum.CSV:
+            filename = filename + ".csv"
+            content_type = CONTENT_TYPE_CSV
+            tmp = tempfile.NamedTemporaryFile(suffix=".csv", delete=False)
+            tabular.export_django_query_to_csv_via_duckdb(export_queryset, tmp.name, columns)
+        else:
+            raise ValueError(f"Unknown file format requested: {file_format}")
+
+        response = CleaningFileResponse(tmp.name, as_attachment=True, filename=filename, content_type=content_type)
+        # for the download progress in the UI: Content-Length is removed when the response is gzipped
+        response["X-File-Size"] = os.path.getsize(tmp.name)
         return response
 
     @extend_schema(
@@ -587,8 +627,10 @@ class InstancesViewSet(viewsets.ViewSet):
                 }
             )
 
-        # This is a CSV/XLSX file export
-        return self.list_file_export(filters=filters, queryset=queryset, file_format=file_format_export)
+        # This is a CSV/XLSX file export, done by duckdb unless the legacy (python, much slower) one is requested
+        if request.GET.get("engine") == "legacy":
+            return self.list_file_export(filters=filters, queryset=queryset, file_format=file_format_export)
+        return self.list_file_export_duckdb(filters=filters, queryset=queryset, file_format=file_format_export)
 
     def anwser_with_parquet_file(self, request, filters, queryset):
         # validate no unsupported/extra params is passed
@@ -614,6 +656,10 @@ class InstancesViewSet(viewsets.ViewSet):
             "planningIds",
             "userIds",
             "referenceInstances",
+            "deviceId",
+            "deviceOwnershipId",
+            "search",
+            "org_unit_status",  # NEW, VALID, REJECTED
         }
         received_params = set(request.GET.keys())
 
@@ -636,7 +682,8 @@ class InstancesViewSet(viewsets.ViewSet):
         parquet.export_django_query_to_parquet_via_duckdb(export_queryset, tmp.name, mapping)
 
         response = CleaningFileResponse(tmp.name, as_attachment=True, filename="submissions.parquet")
-
+        # for the download progress in the UI: Content-Length is removed when the response is gzipped
+        response["X-File-Size"] = os.path.getsize(tmp.name)
         return response
 
     @action(detail=False, methods=["GET"])

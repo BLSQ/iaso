@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
@@ -21,19 +20,41 @@ type FormVersionApiResult = {
     }>;
 };
 
-export const useGetFormVersionsDropdownOptions = (): UseQueryResult<
-    FormVersionDropdownOption[],
-    Error
-> => {
-    const queryKey = ['formVersionsAllDropdownOptions'];
+export const useGetFormVersionsDropdownOptions = (
+    formIds?: string,
+): UseQueryResult<FormVersionDropdownOption[], Error> => {
+    const normalizedFormIds = formIds
+        ? formIds
+              .split(',')
+              .map(id => id.trim())
+              .filter(Boolean)
+              .sort((a, b) => {
+                  const numA = Number(a);
+                  const numB = Number(b);
+                  if (!isNaN(numA) && !isNaN(numB)) {
+                      return numA - numB;
+                  }
+                  return a.localeCompare(b);
+              })
+              .join(',') || undefined
+        : undefined;
+
+    const queryKey = ['formVersionsDropdownOptions', normalizedFormIds];
+
+    const queryString = [
+        'order=form__name,-version_id',
+        'fields=id,version_id,form_id,form_name,full_name',
+        normalizedFormIds ? `form_ids=${normalizedFormIds}` : '',
+    ]
+        .filter(Boolean)
+        .join('&');
 
     return useSnackQuery({
         queryKey,
-        queryFn: () =>
-            getRequest(
-                '/api/formversions/?order=form__name,-version_id&fields=id,version_id,form_id,form_name,full_name',
-            ),
+        queryFn: () => getRequest(`/api/formversions/?${queryString}`),
         options: {
+            enabled: Boolean(normalizedFormIds),
+            keepPreviousData: true,
             staleTime: 1000 * 60 * 15,
             select: (data: FormVersionApiResult) => {
                 if (!data?.form_versions) return [];

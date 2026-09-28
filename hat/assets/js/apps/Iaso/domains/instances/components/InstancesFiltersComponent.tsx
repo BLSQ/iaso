@@ -1,14 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import Search from '@mui/icons-material/Search';
-import {
-    Autocomplete,
-    Box,
-    Button,
-    Grid,
-    TextField,
-    Tooltip,
-    Typography,
-} from '@mui/material';
+import { Box, Button, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     QueryBuilderInput,
@@ -21,8 +13,8 @@ import {
 
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction';
+import { FormVersionsDropdown } from 'Iaso/domains/forms/components/FormVersionsDropdown';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
-import { useGetFormVersionsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormVersionsDropdownOptions';
 import { useGetOrgUnitValidationStatus } from 'Iaso/domains/orgUnits/hooks/utils/useGetOrgUnitValidationStatus';
 import { PlanningsDropdown } from 'Iaso/domains/plannings/components/PlanningsDropdown';
 import { getInstancesFilterValues, useFormState } from 'Iaso/hooks/form';
@@ -46,7 +38,6 @@ import { INSTANCE_STATUSES } from '../constants';
 
 import { useReferenceInstancesOptions } from '../hooks/useReferenceInstancesOptions';
 import MESSAGES from '../messages';
-import { getPrunedFormVersionIds } from '../utils/getPrunedFormVersionIds';
 import { parseJson } from '../utils/jsonLogicParse';
 
 import { ColumnSelect } from './ColumnSelect';
@@ -199,53 +190,11 @@ const InstancesFiltersComponent = ({
         setFormState,
     ]);
 
-    const selectedFormIds = useMemo(() => {
-        if (!formState.formIds.value) return [];
-        return formState.formIds.value
-            .split(',')
-            .map(id => parseInt(id, 10))
-            .filter(id => !isNaN(id));
-    }, [formState.formIds.value]);
-
-    const { data: allFormVersions = [], isFetching: fetchingFormVersions } =
-        useGetFormVersionsDropdownOptions();
-
-    const versionToFormMap = useMemo(() => {
-        const map = new Map<string, number>();
-        allFormVersions.forEach(v => {
-            map.set(v.value, v.formId);
-        });
-        return map;
-    }, [allFormVersions]);
-
-    const formVersionsOptions = useMemo(() => {
-        const selectedFormIdsSet = new Set(selectedFormIds);
-        return allFormVersions.filter(version =>
-            selectedFormIdsSet.has(version.formId),
-        );
-    }, [allFormVersions, selectedFormIds]);
-
-    const selectedVersions = useMemo(() => {
-        if (!formState.formVersionIds?.value) return [];
-        const idsSet = new Set(formState.formVersionIds.value.split(','));
-        return formVersionsOptions.filter(option => idsSet.has(option.value));
-    }, [formState.formVersionIds?.value, formVersionsOptions]);
-
     const handleFormChange = useCallback(
         (key: string, value: any) => {
             // checking only as value can be null or false
             if (key === 'formIds') {
                 setFormState('fieldsSearch', null);
-
-                // check if form versions need to be dropped if the form has been unselected
-                const currentVersionsStr = formState.formVersionIds?.value;
-                const prunedVersionIdsStr = getPrunedFormVersionIds(
-                    currentVersionsStr,
-                    value,
-                    versionToFormMap,
-                );
-                setFormState('formVersionIds', prunedVersionIdsStr);
-
                 setFormIds(value ? value.split(',') : undefined);
             }
             if (key) {
@@ -261,13 +210,12 @@ const InstancesFiltersComponent = ({
             }
             setIsInstancesFilterUpdated(true);
         },
-        [
-            setFormState,
-            setFormIds,
-            setIsInstancesFilterUpdated,
-            versionToFormMap,
-            formState.formVersionIds?.value,
-        ],
+        [setFormState, setFormIds, setIsInstancesFilterUpdated],
+    );
+
+    const handleFormVersionIdsChange = useCallback(
+        (val: string | null) => handleFormChange('formVersionIds', val),
+        [handleFormChange],
     );
 
     const startPeriodError = useMemo(() => {
@@ -616,56 +564,11 @@ const InstancesFiltersComponent = ({
                                 </Box>
                             </Grid>
                             <Grid item xs={12} md={6}>
-                                <Tooltip
-                                    title={
-                                        selectedFormIds.length === 0
-                                            ? formatMessage(
-                                                  MESSAGES.selectFormFirst,
-                                              )
-                                            : ''
-                                    }
-                                    arrow
-                                >
-                                    <span>
-                                        <Autocomplete
-                                            multiple
-                                            disabled={
-                                                selectedFormIds.length === 0
-                                            }
-                                            options={formVersionsOptions}
-                                            value={selectedVersions}
-                                            groupBy={option => option.formName}
-                                            getOptionLabel={option =>
-                                                option.label
-                                            }
-                                            isOptionEqualToValue={(
-                                                option,
-                                                val,
-                                            ) => option.value === val.value}
-                                            loading={fetchingFormVersions}
-                                            onChange={(event, newValue) => {
-                                                handleFormChange(
-                                                    'formVersionIds',
-                                                    newValue &&
-                                                        newValue.length > 0
-                                                        ? newValue
-                                                              .map(v => v.value)
-                                                              .join(',')
-                                                        : null,
-                                                );
-                                            }}
-                                            renderInput={params => (
-                                                <TextField
-                                                    {...params}
-                                                    label={formatMessage(
-                                                        MESSAGES.formVersions,
-                                                    )}
-                                                    placeholder=""
-                                                />
-                                            )}
-                                        />
-                                    </span>
-                                </Tooltip>
+                                <FormVersionsDropdown
+                                    formIds={formState.formIds.value}
+                                    value={formState.formVersionIds?.value}
+                                    onChange={handleFormVersionIdsChange}
+                                />
                             </Grid>
                         </Grid>
                         <Box mt={2}>

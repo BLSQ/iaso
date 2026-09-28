@@ -1,18 +1,26 @@
+export type PrunableFormVersion = {
+    value: string;
+    formId: number;
+};
+
 // Prunes selected version IDs that do not belong to the selected form IDs.
 export const getPrunedFormVersionIds = (
     currentVersionIdsStr: string | undefined | null,
     formIdsStr: string | undefined | null,
-    versionToFormMap: Map<string, number>,
+    formVersions: PrunableFormVersion[] = [],
 ): string | null => {
-    if (!currentVersionIdsStr) return null;
-    if (!formIdsStr) return null;
-    if (versionToFormMap.size === 0) return currentVersionIdsStr;
+    if (!currentVersionIdsStr || !formIdsStr) return null;
+    if (formVersions.length === 0) return currentVersionIdsStr;
 
     const formIdsSet = new Set(
         formIdsStr
             .split(',')
             .map(id => parseInt(id, 10))
             .filter(id => !isNaN(id)),
+    );
+
+    const versionToFormMap = new Map<string, number>(
+        formVersions.map(v => [v.value, v.formId]),
     );
 
     const prunedVersionIds = currentVersionIdsStr.split(',').filter(vId => {

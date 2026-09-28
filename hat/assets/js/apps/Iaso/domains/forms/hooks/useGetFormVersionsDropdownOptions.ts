@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
@@ -23,21 +24,25 @@ type FormVersionApiResult = {
 export const useGetFormVersionsDropdownOptions = (
     formIds?: string,
 ): UseQueryResult<FormVersionDropdownOption[], Error> => {
-    const normalizedFormIds = formIds
-        ? formIds
-              .split(',')
-              .map(id => id.trim())
-              .filter(Boolean)
-              .sort((a, b) => {
-                  const numA = Number(a);
-                  const numB = Number(b);
-                  if (!isNaN(numA) && !isNaN(numB)) {
-                      return numA - numB;
-                  }
-                  return a.localeCompare(b);
-              })
-              .join(',') || undefined
-        : undefined;
+    const normalizedFormIds = useMemo(
+        () =>
+            formIds
+                ? formIds
+                      .split(',')
+                      .map(id => id.trim())
+                      .filter(Boolean)
+                      .sort((a, b) => {
+                          const numA = Number(a);
+                          const numB = Number(b);
+                          if (!isNaN(numA) && !isNaN(numB)) {
+                              return numA - numB;
+                          }
+                          return a.localeCompare(b);
+                      })
+                      .join(',') || undefined
+                : undefined,
+        [formIds],
+    );
 
     const queryKey = ['formVersionsDropdownOptions', normalizedFormIds];
 

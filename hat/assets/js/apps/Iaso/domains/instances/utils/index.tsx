@@ -641,7 +641,7 @@ export const getFilters = (
         dateTo: getToDateString(params.dateTo, false),
         showDeleted: params.showDeleted,
         form_ids: params.formIds,
-        form_version_ids: params.form_version_ids,
+        form_version_ids: params.formVersionIds,
         jsonContent: params.fieldsSearch,
         planningIds: params.planningIds,
         project_ids: params.projectIds,

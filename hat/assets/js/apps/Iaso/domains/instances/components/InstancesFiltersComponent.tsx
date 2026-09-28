@@ -72,7 +72,7 @@ const filterDefault = params => ({
     ...params,
     mapResults: params.mapResults ? 3000 : params.mapResults,
     referenceInstances: params.referenceInstances ?? 'all',
-    form_version_ids: params.form_version_ids ?? null,
+    formVersionIds: params.formVersionIds ?? null,
 });
 
 type Props = {
@@ -226,10 +226,10 @@ const InstancesFiltersComponent = ({
     }, [allFormVersions, selectedFormIds]);
 
     const selectedVersions = useMemo(() => {
-        if (!formState.form_version_ids?.value) return [];
-        const idsSet = new Set(formState.form_version_ids.value.split(','));
+        if (!formState.formVersionIds?.value) return [];
+        const idsSet = new Set(formState.formVersionIds.value.split(','));
         return formVersionsOptions.filter(option => idsSet.has(option.value));
-    }, [formState.form_version_ids?.value, formVersionsOptions]);
+    }, [formState.formVersionIds?.value, formVersionsOptions]);
 
     const handleFormChange = useCallback(
         (key: string, value: any) => {
@@ -238,13 +238,13 @@ const InstancesFiltersComponent = ({
                 setFormState('fieldsSearch', null);
 
                 // check if form versions need to be dropped if the form has been unselected
-                const currentVersionsStr = formState.form_version_ids?.value;
+                const currentVersionsStr = formState.formVersionIds?.value;
                 const prunedVersionIdsStr = getPrunedFormVersionIds(
                     currentVersionsStr,
                     value,
                     versionToFormMap,
                 );
-                setFormState('form_version_ids', prunedVersionIdsStr);
+                setFormState('formVersionIds', prunedVersionIdsStr);
 
                 setFormIds(value ? value.split(',') : undefined);
             }
@@ -266,7 +266,7 @@ const InstancesFiltersComponent = ({
             setFormIds,
             setIsInstancesFilterUpdated,
             versionToFormMap,
-            formState.form_version_ids?.value,
+            formState.formVersionIds?.value,
         ],
     );
 
@@ -645,7 +645,7 @@ const InstancesFiltersComponent = ({
                                             loading={fetchingFormVersions}
                                             onChange={(event, newValue) => {
                                                 handleFormChange(
-                                                    'form_version_ids',
+                                                    'formVersionIds',
                                                     newValue &&
                                                         newValue.length > 0
                                                         ? newValue

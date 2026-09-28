@@ -4,6 +4,7 @@ import typing
 from unittest import mock
 
 from django.core.files import File
+from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile, UploadedFile
 from django.test import override_settings
@@ -175,6 +176,28 @@ class FormsVersionAPITestCase(APITestCase):
         for form_version_data in form_versions_data:
             self.assertValidFormVersionData(form_version_data)
             self.assertNotIn("descriptor", form_version_data)
+
+    def test_form_versions_list_filtered_by_form_ids(self):
+        self.client.force_authenticate(self.yoda)
+
+        fv1 = self.form_1.form_versions.create(
+            file=ContentFile(b"<xml></xml>", name="test_1.xml"), version_id="2020022402"
+        )
+        fv2 = self.form_2.form_versions.first()
+
+        response = self.client.get(f"/api/formversions/?form_ids={self.form_1.id}")
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        ids = [fv["id"] for fv in data["form_versions"]]
+        self.assertEqual(ids, [fv1.id])
+
+        response = self.client.get(f"/api/formversions/?form_ids={self.form_1.id},{self.form_2.id}")
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        ids = [fv["id"] for fv in data["form_versions"]]
+        self.assertCountEqual(ids, [fv1.id, fv2.id])
+
+        response = self.client.get("/api/formversions/?form_ids=999999")
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(data["form_versions"], [])
 
     def test_form_versions_retrieve(self):
         """GET /formversions/<form_id>: allowed"""

@@ -1,0 +1,127 @@
+{% extends "admin/base_site.html" %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <style>
+    .apm { --apm-bar: var(--secondary); --apm-bar-hover: var(--primary); }
+    .apm-toolbar { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin: 0 0 16px; }
+    .apm-toolbar .apm-group { display: flex; gap: 4px; }
+    .apm-toolbar a, .apm-toolbar span.apm-current {
+      padding: 4px 10px; border: 1px solid var(--hairline-color); border-radius: 4px; text-decoration: none;
+    }
+    .apm-toolbar span.apm-current { background: var(--secondary); color: var(--header-link-color, #fff); border-color: var(--secondary); }
+    .apm-trail { font-size: 15px; margin: 0 0 16px; }
+    .apm-trail .apm-sep { color: var(--body-quiet-color); margin: 0 6px; }
+    .apm-kpis { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 16px; }
+    .apm-kpi { border: 1px solid var(--hairline-color); border-radius: 4px; padding: 8px 14px; min-width: 90px; }
+    .apm-kpi .apm-label { color: var(--body-quiet-color); font-size: 11px; text-transform: uppercase; }
+    .apm-kpi .apm-value { font-size: 18px; font-variant-numeric: tabular-nums; }
+    .apm-chart { margin: 0 0 20px; }
+    .apm-chart h3 { margin: 0 0 4px; }
+    .apm-chart svg { display: block; width: 100%; height: 90px; background: var(--darkened-bg); }
+    .apm-chart svg rect { fill: var(--apm-bar); }
+    .apm-chart svg rect:hover { fill: var(--apm-bar-hover); }
+    .apm-axis { display: flex; justify-content: space-between; color: var(--body-quiet-color); font-size: 11px; }
+    .apm-charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+    table.apm-table { width: 100%; margin: 0 0 24px; }
+    table.apm-table td.apm-num, table.apm-table th.apm-num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    table.apm-table th a { display: inline; padding: 0; }
+    table.apm-table th.apm-sorted { background: var(--selected-row, var(--darkened-bg)); }
+    table.apm-table td.apm-route { font-family: monospace; word-break: break-all; }
+    .apm-variant { font-family: monospace; font-size: 11px; padding: 1px 6px; border-radius: 3px; background: var(--darkened-bg); border: 1px solid var(--hairline-color); }
+    .apm-error { color: var(--error-fg, #ba2121); font-weight: bold; }
+    .apm-warning { color: var(--message-warning-fg, #b35900); font-weight: bold; cursor: help; }
+    .apm-spark { width: 100px; height: 20px; }
+    .apm-spark polyline { fill: none; stroke: var(--secondary); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+    .apm-note { color: var(--body-quiet-color); }
+  </style>
+{% endblock %}
+
+{% block breadcrumbs %}
+  <div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+    &rsaquo; <a href="{% url 'admin:iaso_perfstat_changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+    &rsaquo; Dashboard
+  </div>
+{% endblock %}
+
+{% block content %}
+<div class="apm">
+  <div class="apm-toolbar">
+    <div class="apm-group">
+      {% for label, url, current in kinds %}
+        {% if current %}<span class="apm-current">{{ label }}</span>{% else %}<a href="{{ url }}">{{ label }}</a>{% endif %}
+      {% endfor %}
+    </div>
+    <div class="apm-group">
+      {% for key, label, url in periods %}
+        {% if key == period_key %}<span class="apm-current">{{ label }}</span>{% else %}<a href="{{ url }}">{{ label }}</a>{% endif %}
+      {% endfor %}
+    </div>
+    {% if view_links %}
+      <div class="apm-group">
+        {% for label, url, current in view_links %}
+          {% if current %}<span class="apm-current">{{ label }}</span>{% else %}<a href="{{ url }}">{{ label }}</a>{% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="apm-trail">
+    {% for label, url in breadcrumbs %}
+      {% if not forloop.first %}<span class="apm-sep">&rsaquo;</span>{% endif %}
+      {% if url %}<a href="{{ url }}">{{ label }}</a>{% else %}<strong>{{ label }}</strong>{% endif %}
+    {% endfor %}
+  </div>
+
+  {% if not has_data %}
+    <p class="apm-note">No {{ labels.operations }} recorded over the last {{ period.label }}. Stats are collected when <code>PERF_STATS_ENABLED=true</code>.</p>
+  {% else %}
+    <div class="apm-kpis">
+      <div class="apm-kpi"><div class="apm-label">{{ labels.operations|capfirst }}</div><div class="apm-value">{{ total.count }}</div></div>
+      <div class="apm-kpi"><div class="apm-label">Total time</div><div class="apm-value">{{ total.total }}</div></div>
+      <div class="apm-kpi"><div class="apm-label">Avg</div><div class="apm-value">{{ total.avg }}</div></div>
+      <div class="apm-kpi"><div class="apm-label">p50</div><div class="apm-value">{{ total.p50 }}</div></div>
+      <div class="apm-kpi"><div class="apm-label">p95</div><div class="apm-value">{{ total.p95 }}</div></div>
+      <div class="apm-kpi"><div class="apm-label">{{ labels.errors }}</div><div class="apm-value{% if total.has_errors %} apm-error{% endif %}">{{ total.errors }}</div></div>
+      {% if labels.has_bad_requests %}<div class="apm-kpi"{% if total.bad_requests_title %} title="{{ total.bad_requests_title }}"{% endif %}><div class="apm-label">Bad requests</div><div class="apm-value{% if total.has_bad_requests %} apm-warning{% endif %}">{{ total.bad_requests }}</div></div>{% endif %}
+      {% if labels.has_wait %}<div class="apm-kpi"><div class="apm-label">Avg wait</div><div class="apm-value">{{ total.wait }}</div></div>{% endif %}
+      <div class="apm-kpi"><div class="apm-label">DB time</div><div class="apm-value">{{ total.db_share }}</div></div>
+    </div>
+
+    {% if level == "name" %}
+      <div class="apm-charts">
+        {% include "admin/iaso/perfstat/bar_chart.html" with title="Total time" chart=timeline start=timeline.start end=timeline.end %}
+        {% include "admin/iaso/perfstat/bar_chart.html" with title=labels.operations|capfirst chart=count_chart start=timeline.start end=timeline.end %}
+        {% include "admin/iaso/perfstat/bar_chart.html" with title="p95 latency" chart=p95_chart start=timeline.start end=timeline.end %}
+        {% if histogram %}
+          {% include "admin/iaso/perfstat/bar_chart.html" with title="Latency distribution" chart=histogram start=histogram.first end=histogram.last %}
+        {% endif %}
+      </div>
+
+      {% for breakdown in breakdowns %}
+        <h2>{{ breakdown.title }}</h2>
+        {% include "admin/iaso/perfstat/summary_table.html" with rows=breakdown.rows first_column="" sortable=False with_trend=False show_variant=False %}
+      {% endfor %}
+    {% else %}
+      {% include "admin/iaso/perfstat/bar_chart.html" with title="Total time" chart=timeline start=timeline.start end=timeline.end %}
+      {% include "admin/iaso/perfstat/summary_table.html" with sortable=True %}
+      {% if truncated %}<p class="apm-note">Only the first {{ rows|length }} rows are shown.</p>{% endif %}
+    {% endif %}
+  {% endif %}
+
+  <p class="apm-note">
+    {% if labels.has_wait %}
+      Durations are measured from the start to the end of each task run; the wait is the time between queuing and start.
+    {% else %}
+      Durations are measured by the Django middleware, from request to response. Streamed responses (some CSV exports)
+      are only timed until the stream starts.
+    {% endif %}
+    {% if labels.has_bad_requests %}
+      Bad requests are 4xx responses except 401/403/404 (e.g. 400 invalid payload, 409 conflict); hover for the split.
+    {% endif %}
+    p50/p95 are estimated from latency histograms (~10% precision); other values are exact.
+  </p>
+</div>
+{% endblock %}

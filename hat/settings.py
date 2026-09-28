@@ -308,6 +308,31 @@ MIDDLEWARE += [
     "axes.middleware.AxesMiddleware",
 ]
 
+# Aggregated performance stats of HTTP requests and background tasks (latency percentiles, outcomes, DB usage per
+# route/task and account), stored in the `PerfStat` table, browsable at /admin/iaso/perfstat/dashboard/.
+# The middleware is outermost so that its timing includes the other middlewares.
+# Never while running tests: the background flush would write to the test database outside of test transactions.
+PERF_STATS_ENABLED = env.bool("PERF_STATS_ENABLED", default=False) and not IN_TESTS
+PERF_STATS_FLUSH_INTERVAL = env.int("PERF_STATS_FLUSH_INTERVAL", default=30)  # seconds
+PERF_STATS_RETENTION_DAYS = env.int("PERF_STATS_RETENTION_DAYS", default=90)
+# `/tasks/task/` is how SQS delivers background tasks to the worker: they are recorded as tasks instead.
+PERF_STATS_EXCLUDED_PATH_PREFIXES = ["/_health", "/health", "/static/", "/media/", "/favicon.ico", "/tasks/task/"]
+# Query params kept as a stats dimension (`variant`), typically export formats that make the same route much heavier.
+# Only list params with few distinct values: each combination is a separate row.
+PERF_STATS_VARIANT_PARAMS = [
+    "csv",
+    "xlsx",
+    "parquet",
+    "gpkg",
+    "geojson",
+    "shapes",
+    "export_xlsx",
+    "format",
+    "file_type",
+]
+if PERF_STATS_ENABLED:
+    MIDDLEWARE.insert(0, "iaso.middlewares.perf_stats.PerfStatsMiddleware")
+
 ROOT_URLCONF = "hat.urls"
 
 # Allow CORS for all origins but don't transmit the session cookies or other credentials (which is the default)
@@ -416,8 +441,17 @@ elif DB_READONLY_USERNAME:
 
 DATABASES["worker"] = DATABASES["default"].copy()
 DATABASE_ROUTERS = [
+    "iaso.perf_stats.router.PerfStatsRouter",
     "hat.common.dbrouter.DbRouter",
 ]
+# Optionally keep perf stats in their own (PostgreSQL) database, e.g. postgres://user:password@host:5432/iaso_perf,
+# to isolate their writes from the main database. Create its table with `./manage.py migrate --database perf_stats`.
+PERF_STATS_DATABASE_URL = env.str("PERF_STATS_DATABASE_URL", default="")
+if PERF_STATS_DATABASE_URL and not IN_TESTS:
+    DATABASES["perf_stats"] = env.db_url_config(PERF_STATS_DATABASE_URL)
+    PERF_STATS_DATABASE = "perf_stats"
+else:
+    PERF_STATS_DATABASE = "default"
 # This database settings which duplicate the main db settings, will be used by the background task worker so that they
 # can have a connexion outside of the transaction to report the progress on a Task. see Comments in services.py
 

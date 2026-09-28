@@ -1,0 +1,7 @@
+<div class="apm-chart">
+  <h3>{{ title }}</h3>
+  <svg viewBox="0 0 {{ chart.width }} {{ chart.height }}" preserveAspectRatio="none" role="img" aria-label="{{ title }}">
+    {% for bar in chart.bars %}<rect x="{{ bar.x|stringformat:'.1f' }}" y="{{ bar.y|stringformat:'.2f' }}" width="0.8" height="{{ bar.height|stringformat:'.2f' }}"><title>{{ bar.title }}</title></rect>{% endfor %}
+  </svg>
+  <div class="apm-axis"><span>{{ start }}</span><span>{{ end }}</span></div>
+</div>

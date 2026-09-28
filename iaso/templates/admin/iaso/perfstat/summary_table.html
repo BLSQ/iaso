@@ -1,0 +1,42 @@
+<table class="apm-table">
+  <thead>
+    <tr>
+      <th>{{ first_column }}</th>
+      {% for header in headers %}
+        <th class="apm-num{% if sortable and header.active %} apm-sorted{% endif %}">
+          {% if sortable and header.url %}<a href="{{ header.url }}">{{ header.label }}{% if header.active %} ▼{% endif %}</a>{% else %}{{ header.label }}{% endif %}
+        </th>
+      {% endfor %}
+      {% if with_trend %}<th>Trend (total time)</th>{% endif %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in rows %}
+      <tr>
+        <td{% if show_variant %} class="apm-route"{% endif %}>
+          {% if row.url %}<a href="{{ row.url }}">{{ row.label }}</a>{% else %}{{ row.label }}{% endif %}
+          {% if show_variant and row.variant %}<span class="apm-variant">?{{ row.variant }}</span>{% endif %}
+        </td>
+        <td class="apm-num">{{ row.cells.count }}</td>
+        <td class="apm-num">{{ row.cells.total }}</td>
+        <td class="apm-num">{{ row.cells.avg }}</td>
+        <td class="apm-num">{{ row.cells.p50 }}</td>
+        <td class="apm-num">{{ row.cells.p95 }}</td>
+        <td class="apm-num">{{ row.cells.max }}</td>
+        <td class="apm-num{% if row.cells.has_errors %} apm-error{% endif %}">{{ row.cells.errors }}</td>
+        {% if labels.has_bad_requests %}
+          <td class="apm-num{% if row.cells.has_bad_requests %} apm-warning{% endif %}"{% if row.cells.bad_requests_title %} title="{{ row.cells.bad_requests_title }}"{% endif %}>{{ row.cells.bad_requests }}</td>
+        {% endif %}
+        {% if labels.has_wait %}
+          <td class="apm-num">{{ row.cells.wait }}</td>
+          <td class="apm-num">{{ row.cells.max_wait }}</td>
+        {% endif %}
+        <td class="apm-num">{{ row.cells.queries }}</td>
+        <td class="apm-num">{{ row.cells.db_share }}</td>
+        {% if with_trend %}
+          <td><svg class="apm-spark" viewBox="0 0 100 20" preserveAspectRatio="none"><polyline points="{{ row.sparkline }}"/></svg></td>
+        {% endif %}
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

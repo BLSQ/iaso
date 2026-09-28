@@ -143,6 +143,16 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
             algorithm=matching_algorithm, version_1=source_version, version_2=source_version
         )
         link = m.Link.objects.create(destination=org_unit_child, source=org_unit_parent, algorithm_run=algorithm_run)
+        perf_stat = m.PerfStat.objects.create(
+            hour=timezone.now().replace(minute=0, second=0, microsecond=0),
+            kind=m.PerfStat.Kind.HTTP,
+            name="GET api/projects/",
+            outcome="200",
+            account_id=account.id,
+            project_id=project.id,
+            count=1,
+            buckets=[1],
+        )
 
         group = m.Group.objects.create(name=f"group_{suffix}", source_version=source_version)
         group.org_units.set([org_unit_child])
@@ -315,6 +325,7 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
             "record": record,
             "algorithm_run": algorithm_run,
             "link": link,
+            "perf_stat": perf_stat,
             "group": group,
             "group_set": group_set,
             "mapping": mapping,
@@ -428,6 +439,7 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self.assertFalse(m.Account.objects.filter(pk=account.pk).exists())
         self.assertFalse(m.AccountFeatureFlag.objects.filter(pk=other_models["account_feature_flag"].pk).exists())
         self.assertFalse(m.AlgorithmRun.objects.filter(pk=other_models["algorithm_run"].pk).exists())
+        self.assertFalse(m.PerfStat.objects.filter(pk=other_models["perf_stat"].pk).exists())
         self.assertFalse(APIImport.objects.filter(pk=other_models["api_import"].pk).exists())
         self.assertFalse(Assignment.objects.filter(pk=other_models["assignment"].pk).exists())
         self.assertFalse(m.BulkCreateUserFile.objects.filter(pk=other_models["bulk_create_user_file"].pk).exists())
@@ -588,6 +600,7 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self.assertTrue(m.Account.objects.filter(pk=account.pk).exists())
         self.assertTrue(m.AccountFeatureFlag.objects.filter(pk=other_models["account_feature_flag"].pk).exists())
         self.assertTrue(m.AlgorithmRun.objects.filter(pk=other_models["algorithm_run"].pk).exists())
+        self.assertTrue(m.PerfStat.objects.filter(pk=other_models["perf_stat"].pk).exists())
         self.assertTrue(APIImport.objects.filter(pk=other_models["api_import"].pk).exists())
         self.assertTrue(Assignment.objects.filter(pk=other_models["assignment"].pk).exists())
         self.assertTrue(m.BulkCreateUserFile.objects.filter(pk=other_models["bulk_create_user_file"].pk).exists())
@@ -1064,6 +1077,7 @@ class DeleteAccountsModelCoverageTestCase(TestCase):
             "iaso.Page",
             "iaso.Payment",
             "iaso.PaymentLot",
+            "iaso.PerfStat",
             "iaso.Planning",
             "iaso.PlanningSamplingResult",
             "iaso.PotentialPayment",

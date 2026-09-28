@@ -21,6 +21,7 @@ from beanstalk_worker.throttle import Concurrency, effective_throttle
 from iaso.models.base import ERRORED, KILLED, QUEUED, RUNNING
 from iaso.models.json_config import Config
 from iaso.models.task import Task, TaskLease
+from iaso.perf_stats.tasks import measure_task
 
 
 logger = getLogger(__name__)
@@ -125,12 +126,13 @@ class _TaskServiceBase:
         heartbeat = Heartbeat(self.get_queryset().db, task.id)
         heartbeat.start()
         try:
-            method(*args, task=task, _immediate=True, **kwargs)
+            with measure_task(task, f"{module_name}.{method_name}"):
+                method(*args, task=task, _immediate=True, **kwargs)
+                task.refresh_from_db()
         finally:
             heartbeat.stop()
             TaskLease.objects.using(self.get_queryset().db).filter(task_id=task.id).delete()
 
-        task.refresh_from_db()
         if task.status == RUNNING:
             logger.warning(f"Task {task} still in status RUNNING after execution")
 

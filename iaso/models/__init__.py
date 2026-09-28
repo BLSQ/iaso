@@ -18,6 +18,7 @@ from .org_unit import OrgUnit, OrgUnitChangeRequest, OrgUnitReferenceInstance, O
 from .org_unit_change_request_configuration import OrgUnitChangeRequestConfiguration
 from .pages import IFRAME, POWERBI, RAW, SUPERSET, TEXT, Page
 from .payments import Payment, PaymentLot, PotentialPayment
+from .perf_stats import PerfStat
 from .project import Project
 from .reports import Report, ReportVersion
 from .stocks import (
@@ -82,6 +83,7 @@ __all__ = [
     "Page",
     "Payment",
     "PaymentLot",
+    "PerfStat",
     "Planning",
     "PotentialPayment",
     "Profile",

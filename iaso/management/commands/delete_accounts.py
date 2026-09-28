@@ -21,6 +21,7 @@ What's out of graph (needs dedicated code):
   - OrgUnitType — linked via projects M2M
   - Orphan audit log cleanup (content-type based, not FK based)
   - Orphan export log cleanup (no incoming M2M reference, not content-type or FK based)
+  - PerfStat — plain account id, no FK (the table may live in a separate database)
 
 Usage:
   docker compose run --rm iaso manage delete_accounts --account-to-keep 1
@@ -75,6 +76,7 @@ from iaso.models import (
     MatchingAlgorithm,
     OpenHEXAInstance,
     OrgUnitType,
+    PerfStat,
     RecordType,
     Report,
     ReportVersion,
@@ -191,6 +193,9 @@ _OUT_OF_GRAPH_CLEANUP_NOTES = [
         reason="no FK to Account — only reachable via ExportStatus.instance",
     ),
     OutOfGraphCleanupNote(label="django_sql_dashboard.Dashboard", reason="no FK to Account"),
+    OutOfGraphCleanupNote(
+        label="iaso.PerfStat", reason="plain account_id without FK, the table may live in a separate database"
+    ),
     OutOfGraphCleanupNote(label="django.contrib.sessions.Session", reason="no FK to Account"),
     OutOfGraphCleanupNote(label="iaso.Config", reason="no relation to Account at all — only M2M to auth.User"),
     OutOfGraphCleanupNote(
@@ -1109,6 +1114,10 @@ class Command(BaseCommand):
                 ),
                 label="ExportLog[orphan]",
             )
+
+        # ---- Step 5e: Out-of-graph — PerfStat (plain account_id, possibly in a separate database) ----
+        with self._doing(f"account={account.id} PerfStat"):
+            self._delete_qs(PerfStat.objects.filter(account_id=account.id), label="PerfStat")
 
         # ---- Step 6: Account itself ----
         self._delete_qs(Account.objects.filter(pk=account.pk), label=f"Account[{account.id}] {account.name!r}")

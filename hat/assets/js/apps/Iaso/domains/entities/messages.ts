@@ -285,6 +285,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.resultsLower',
         defaultMessage: 'result(s)',
     },
+    groupsCustom: {
+        id: 'iaso.entities.groups',
+        defaultMessage: 'Groups',
+    },
+    hcCustom: {
+        id: 'iaso.entities.hc',
+        defaultMessage: 'HC',
+    },
 });
 
 export default MESSAGES;

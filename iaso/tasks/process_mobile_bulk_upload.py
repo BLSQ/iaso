@@ -81,13 +81,19 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                 if INSTANCES_JSON in zip_ref.namelist():
                     log_progress(the_task, 20, "Processing forms and files")
                     instances_data = read_json_file_from_zip(zip_ref, INSTANCES_JSON)
-                    import_instances(instances_data, user, project.app_id, api_import=api_import)
+                    imported_instances = import_instances(instances_data, user, project.app_id, api_import=api_import)
+                    # `import_instances` already built (and, for new instances, saved) each of these in
+                    # memory - reuse them instead of re-querying by uuid below. It can leave a uuid out
+                    # (an instance that already existed with a validation status outside
+                    # REJECTED/PENDING/empty gets skipped entirely, see `import_data`), hence the `.get()`
+                    # fallback to the original per-uuid query for that edge case.
+                    instances_by_uuid = {instance.uuid: instance for instance in imported_instances}
                     new_instance_files = []
                     dirs = get_directory_handlers(zip_ref)
 
                     for instance_data in instances_data:
                         uuid = instance_data["id"]
-                        instance = Instance.objects.get(uuid=uuid)
+                        instance = instances_by_uuid.get(uuid) or Instance.objects.get(uuid=uuid)
                         original = copy(instance)
                         instance = process_instance_xml(instance, instance_data, zip_ref, user)
                         stats["new_instances"] += 1

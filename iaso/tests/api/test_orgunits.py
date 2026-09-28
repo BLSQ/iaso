@@ -999,6 +999,8 @@ class OrgUnitAPITestCase(APITestCase):
             org_unit=org_unit,
             project=self.project,
             json=file_content,
+            # `Instance.save()` no longer resolves `form_version` from `json["_version"]` on its own.
+            form_version=form_version,
         )
         m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, instance=instance, form=self.reference_form)
 

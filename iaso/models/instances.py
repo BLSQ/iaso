@@ -236,6 +236,7 @@ class InstanceQuerySet(django_cte.CTEQuerySet, ValidationWorkflowArtefactQuerySe
         self,
         form_id=None,
         form_ids=None,
+        form_version_ids=None,
         with_location=None,
         org_unit_type_id=None,
         device_id=None,
@@ -338,6 +339,9 @@ class InstanceQuerySet(django_cte.CTEQuerySet, ValidationWorkflowArtefactQuerySe
 
         if form_ids:
             queryset = queryset.filter(form_id__in=form_ids.split(","))
+
+        if form_version_ids:
+            queryset = queryset.filter(form_version_id__in=form_version_ids.split(","))
 
         if show_deleted:
             queryset = queryset.filter(deleted=True)

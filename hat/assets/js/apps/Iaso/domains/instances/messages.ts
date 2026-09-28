@@ -53,6 +53,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Version',
         id: 'iaso.label.version',
     },
+    formVersions: {
+        defaultMessage: 'Form versions',
+        id: 'iaso.instances.formVersions',
+    },
+    selectFormFirst: {
+        defaultMessage: 'You must select at least one form first',
+        id: 'iaso.instances.selectFormFirst',
+    },
     downloadXml: {
         id: 'iaso.label.downloadXml',
         defaultMessage: 'Download XML',

@@ -13,7 +13,10 @@ import {
 
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction';
+import { FormVersionsDropdown } from 'Iaso/domains/forms/components/FormVersionsDropdown';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
+import { useGetFormVersionsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormVersionsDropdownOptions';
+import { getPrunedFormVersionIds } from 'Iaso/domains/forms/utils/getPrunedFormVersionIds';
 import { useGetOrgUnitValidationStatus } from 'Iaso/domains/orgUnits/hooks/utils/useGetOrgUnitValidationStatus';
 import { PlanningsDropdown } from 'Iaso/domains/plannings/components/PlanningsDropdown';
 import { getInstancesFilterValues, useFormState } from 'Iaso/hooks/form';
@@ -62,6 +65,7 @@ const filterDefault = params => ({
     ...params,
     mapResults: params.mapResults ? 3000 : params.mapResults,
     referenceInstances: params.referenceInstances ?? 'all',
+    formVersionIds: params.formVersionIds ?? null,
 });
 
 type Props = {
@@ -134,6 +138,8 @@ const InstancesFiltersComponent = ({
         useGetOrgUnitTypesDropdownOptions();
     const { data: formsList, isFetching: fetchingForms } =
         useGetFormsDropdownOptions();
+    const { data: formVersions = [], isPreviousData: isPreviousFormVersions } =
+        useGetFormVersionsDropdownOptions(formState.formIds.value);
     const formId =
         formState.formIds.value?.split(',').length === 1
             ? formState.formIds.value.split(',')[0]
@@ -194,6 +200,18 @@ const InstancesFiltersComponent = ({
             if (key === 'formIds') {
                 setFormState('fieldsSearch', null);
                 setFormIds(value ? value.split(',') : undefined);
+
+                const currentVersionIds = formState.formVersionIds?.value;
+                if (currentVersionIds && (!value || !isPreviousFormVersions)) {
+                    const prunedVersionIds = getPrunedFormVersionIds(
+                        currentVersionIds,
+                        value,
+                        formVersions,
+                    );
+                    if (prunedVersionIds !== currentVersionIds) {
+                        setFormState('formVersionIds', prunedVersionIds);
+                    }
+                }
             }
             if (key) {
                 setFormState(key, value);
@@ -208,7 +226,14 @@ const InstancesFiltersComponent = ({
             }
             setIsInstancesFilterUpdated(true);
         },
-        [setFormState, setFormIds, setIsInstancesFilterUpdated],
+        [
+            setFormState,
+            setFormIds,
+            setIsInstancesFilterUpdated,
+            formState.formVersionIds?.value,
+            formVersions,
+            isPreviousFormVersions,
+        ],
     );
 
     const startPeriodError = useMemo(() => {
@@ -514,44 +539,59 @@ const InstancesFiltersComponent = ({
                     </Box>
                 )}
                 {showAdvancedSettings && (
-                    <Grid container spacing={2}>
-                        <Grid item xs={12} md={6}>
-                            <Box data-test="modificationDate">
-                                <DatesRange
-                                    xs={12}
-                                    sm={12}
-                                    md={12}
-                                    lg={6}
-                                    keyDateFrom="modificationDateFrom"
-                                    keyDateTo="modificationDateTo"
-                                    onChangeDate={handleFormChange}
-                                    dateFrom={
-                                        formState.modificationDateFrom.value
+                    <>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} md={6}>
+                                <Box data-test="modificationDate">
+                                    <DatesRange
+                                        xs={12}
+                                        sm={12}
+                                        md={12}
+                                        lg={6}
+                                        keyDateFrom="modificationDateFrom"
+                                        keyDateTo="modificationDateTo"
+                                        onChangeDate={handleFormChange}
+                                        dateFrom={
+                                            formState.modificationDateFrom.value
+                                        }
+                                        dateTo={
+                                            formState.modificationDateTo.value
+                                        }
+                                        labelFrom={
+                                            MESSAGES.modificationDateFrom
+                                        }
+                                        labelTo={MESSAGES.modificationDateTo}
+                                    />
+                                </Box>
+                            </Grid>
+                            <Grid item xs={12} md={6}>
+                                <Box data-test="sentDate">
+                                    <DatesRange
+                                        xs={12}
+                                        sm={12}
+                                        md={12}
+                                        lg={6}
+                                        keyDateFrom="sentDateFrom"
+                                        keyDateTo="sentDateTo"
+                                        onChangeDate={handleFormChange}
+                                        dateFrom={formState.sentDateFrom.value}
+                                        dateTo={formState.sentDateTo.value}
+                                        labelFrom={MESSAGES.sentDateFrom}
+                                        labelTo={MESSAGES.sentDateTo}
+                                    />
+                                </Box>
+                            </Grid>
+                            <Grid item xs={12} md={6}>
+                                <FormVersionsDropdown
+                                    formIds={formState.formIds.value}
+                                    value={formState.formVersionIds?.value}
+                                    onChange={val =>
+                                        handleFormChange('formVersionIds', val)
                                     }
-                                    dateTo={formState.modificationDateTo.value}
-                                    labelFrom={MESSAGES.modificationDateFrom}
-                                    labelTo={MESSAGES.modificationDateTo}
                                 />
-                            </Box>
+                            </Grid>
                         </Grid>
-                        <Grid item xs={12} md={6}>
-                            <Box data-test="sentDate">
-                                <DatesRange
-                                    xs={12}
-                                    sm={12}
-                                    md={12}
-                                    lg={6}
-                                    keyDateFrom="sentDateFrom"
-                                    keyDateTo="sentDateTo"
-                                    onChangeDate={handleFormChange}
-                                    dateFrom={formState.sentDateFrom.value}
-                                    dateTo={formState.sentDateTo.value}
-                                    labelFrom={MESSAGES.sentDateFrom}
-                                    labelTo={MESSAGES.sentDateTo}
-                                />
-                            </Box>
-                        </Grid>
-                        <Box ml={1}>
+                        <Box mt={2}>
                             <Typography
                                 data-test="advanced-settings"
                                 className={classes.advancedSettings}
@@ -561,7 +601,7 @@ const InstancesFiltersComponent = ({
                                 {formatMessage(MESSAGES.hideAdvancedSettings)}
                             </Typography>
                         </Box>
-                    </Grid>
+                    </>
                 )}
             </Box>
             <Grid container spacing={2}>

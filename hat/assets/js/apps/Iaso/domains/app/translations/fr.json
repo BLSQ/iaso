@@ -646,7 +646,7 @@
     "iaso.instances.referenceInstancesNotReference": "Seulement les soumissions non de référence",
     "iaso.instances.referenceInstancesOnlyReference": "Seulement les soumissions de référence",
     "iaso.instances.searchParams": "Utilisez le préfixe “ids:” pour rechercher des ID de soumissions internes. Vous pouvez également rechercher plusieurs ID à la fois, séparés par une virgule ou un espace. Par exemple : “ids: 123456, 654321” or “ids: 123456 654321”",
-    "iaso.instances.selectFormFirst": "Veuillez sélectionner au moins un formulaire",
+    "iaso.instances.selectFormFirst": "Vous devez d'abord sélectionner au moins un formulaire",
     "iaso.instances.sentDateFrom": "Date d'envoi à partir de",
     "iaso.instances.sentDateTo": "Date d'envoi jusqu'à",
     "iaso.instances.showDeleted": "Montrer seulement les soumissions effacées",

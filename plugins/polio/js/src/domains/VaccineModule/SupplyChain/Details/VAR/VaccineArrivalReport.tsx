@@ -308,33 +308,33 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                         </Grid>
                         <Grid item xs={6} md={3}>
                             <Field
-                                label={formatMessage(MESSAGES.doses_shipped)}
-                                name={`${VAR}[${index}].doses_shipped`}
-                                component={NumberInput}
+                                label={formatMessage(MESSAGES.doses_per_vial)}
+                                name={`arrival_reports[${index}].doses_per_vial`}
+                                component={SingleSelect}
                                 disabled={
                                     markedForDeletion ||
-                                    !arrival_reports?.[index].can_edit
+                                    !arrival_reports?.[index].can_edit ||
+                                    dosesForVaccineOptions.length === 1
                                 }
-                                onFocus={onDosesShippedFocused}
-                                onBlur={onDosesShippedBlur}
-                                onChange={handleDosesShippedUpdate}
+                                onChange={handleDosesPerVialUpdate}
+                                options={dosesForVaccineOptions}
+                                clearable={false}
                                 required
                             />
                             <Box mt={2}>
                                 <Field
                                     label={formatMessage(
-                                        MESSAGES.doses_per_vial,
+                                        MESSAGES.doses_shipped,
                                     )}
-                                    name={`arrival_reports[${index}].doses_per_vial`}
-                                    component={SingleSelect}
+                                    name={`${VAR}[${index}].doses_shipped`}
+                                    component={NumberInput}
                                     disabled={
                                         markedForDeletion ||
-                                        !arrival_reports?.[index].can_edit ||
-                                        dosesForVaccineOptions.length === 1
+                                        !arrival_reports?.[index].can_edit
                                     }
-                                    onChange={handleDosesPerVialUpdate}
-                                    options={dosesForVaccineOptions}
-                                    clearable={false}
+                                    onFocus={onDosesShippedFocused}
+                                    onBlur={onDosesShippedBlur}
+                                    onChange={handleDosesShippedUpdate}
                                     required
                                 />
                             </Box>

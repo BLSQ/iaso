@@ -25,7 +25,7 @@ export const useGetFormVersionsDropdownOptions = (): UseQueryResult<
     FormVersionDropdownOption[],
     Error
 > => {
-    const queryKey = useMemo(() => ['formVersionsAllDropdownOptions'], []);
+    const queryKey = ['formVersionsAllDropdownOptions'];
 
     return useSnackQuery({
         queryKey,

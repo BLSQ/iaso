@@ -350,6 +350,9 @@ class Heartbeat(threading.Thread):
                     self.beat()
                 except Exception:
                     logger.exception(f"Heartbeat of task {self.task_id} failed")
+                    # a failed query can leave this thread's connection unusable, and Django only replaces broken
+                    # connections between requests: drop it so that the next beat reconnects
+                    connections[self.db].close()
         finally:
             connections.close_all()  # the connections of this thread only
 

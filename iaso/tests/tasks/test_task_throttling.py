@@ -3,6 +3,7 @@ import json
 from datetime import timedelta
 from unittest import mock
 
+from django.db import OperationalError
 from django.test import override_settings
 from django.utils import timezone
 
@@ -310,6 +311,27 @@ class HeartbeatAndReaperTestCase(TestCase):
 
         lease.refresh_from_db()
         self.assertGreater(lease.heartbeat_at, old)
+
+    def test_heartbeat_reconnects_after_a_failed_beat(self):
+        heartbeat = Heartbeat("worker", 1, interval=0)
+        beats = []
+
+        def beat():
+            beats.append(len(beats))
+            if len(beats) == 1:
+                raise OperationalError("server closed the connection unexpectedly")
+            heartbeat.stop()
+
+        # run() in this thread, with the connections mocked so that the test connections are left alone
+        with (
+            mock.patch.object(heartbeat, "beat", side_effect=beat),
+            mock.patch("beanstalk_worker.services.connections") as connections,
+        ):
+            heartbeat.run()
+
+        self.assertEqual(beats, [0, 1])
+        connections.__getitem__.assert_called_with("worker")
+        connections.__getitem__.return_value.close.assert_called_once()
 
     def test_reaper_leaves_alive_and_finished_tasks(self):
         stale = timezone.now() - LOST_AFTER - timedelta(seconds=1)

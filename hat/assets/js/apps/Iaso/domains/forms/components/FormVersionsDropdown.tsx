@@ -1,8 +1,7 @@
-import React, { FunctionComponent, useEffect, useMemo } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import { Autocomplete, TextField, Tooltip } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { useGetFormVersionsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormVersionsDropdownOptions';
-import { getPrunedFormVersionIds } from 'Iaso/domains/forms/utils/getPrunedFormVersionIds';
 import MESSAGES from 'Iaso/domains/instances/messages';
 
 export type FormVersionsDropdownProps = {
@@ -40,26 +39,6 @@ export const FormVersionsDropdown: FunctionComponent<
         const idsSet = new Set(value.split(','));
         return formVersionsOptions.filter(option => idsSet.has(option.value));
     }, [value, formVersionsOptions]);
-
-    useEffect(() => {
-        if (!value) {
-            return;
-        }
-        if (!formIds) {
-            onChange(null);
-            return;
-        }
-        if (formVersions.length > 0) {
-            const prunedVersionIdsStr = getPrunedFormVersionIds(
-                value,
-                formIds,
-                formVersions,
-            );
-            if (prunedVersionIdsStr !== (value ?? null)) {
-                onChange(prunedVersionIdsStr);
-            }
-        }
-    }, [formVersions, formIds, value, onChange]);
 
     return (
         <Tooltip

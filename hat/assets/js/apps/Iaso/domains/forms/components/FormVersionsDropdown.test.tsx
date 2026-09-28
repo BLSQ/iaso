@@ -92,41 +92,4 @@ describe('FormVersionsDropdown', () => {
 
         expect(onChange).toHaveBeenCalledWith('10');
     });
-
-    it('calls onChange(null) when formIds is removed while a value was selected', () => {
-        const onChange = vi.fn();
-
-        const { rerender } = render(
-            <FormVersionsDropdown formIds="1" value="10" onChange={onChange} />,
-        );
-
-        rerender(
-            <FormVersionsDropdown formIds="" value="10" onChange={onChange} />,
-        );
-
-        expect(onChange).toHaveBeenCalledWith(null);
-    });
-
-    it('prunes version when its parent form is unselected', () => {
-        const onChange = vi.fn();
-
-        const { rerender } = render(
-            <FormVersionsDropdown
-                formIds="1,2"
-                value="10,20"
-                onChange={onChange}
-            />,
-        );
-
-        // Form 1 removed, only Form 2 remains -> 10 should be pruned, 20 kept
-        rerender(
-            <FormVersionsDropdown
-                formIds="2"
-                value="10,20"
-                onChange={onChange}
-            />,
-        );
-
-        expect(onChange).toHaveBeenCalledWith('20');
-    });
 });

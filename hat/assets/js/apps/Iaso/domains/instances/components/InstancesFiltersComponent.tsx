@@ -15,6 +15,8 @@ import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction';
 import { FormVersionsDropdown } from 'Iaso/domains/forms/components/FormVersionsDropdown';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
+import { useGetFormVersionsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormVersionsDropdownOptions';
+import { getPrunedFormVersionIds } from 'Iaso/domains/forms/utils/getPrunedFormVersionIds';
 import { useGetOrgUnitValidationStatus } from 'Iaso/domains/orgUnits/hooks/utils/useGetOrgUnitValidationStatus';
 import { PlanningsDropdown } from 'Iaso/domains/plannings/components/PlanningsDropdown';
 import { getInstancesFilterValues, useFormState } from 'Iaso/hooks/form';
@@ -136,6 +138,8 @@ const InstancesFiltersComponent = ({
         useGetOrgUnitTypesDropdownOptions();
     const { data: formsList, isFetching: fetchingForms } =
         useGetFormsDropdownOptions();
+    const { data: formVersions = [], isPreviousData: isPreviousFormVersions } =
+        useGetFormVersionsDropdownOptions(formState.formIds.value);
     const formId =
         formState.formIds.value?.split(',').length === 1
             ? formState.formIds.value.split(',')[0]
@@ -196,6 +200,18 @@ const InstancesFiltersComponent = ({
             if (key === 'formIds') {
                 setFormState('fieldsSearch', null);
                 setFormIds(value ? value.split(',') : undefined);
+
+                const currentVersionIds = formState.formVersionIds?.value;
+                if (currentVersionIds && (!value || !isPreviousFormVersions)) {
+                    const prunedVersionIds = getPrunedFormVersionIds(
+                        currentVersionIds,
+                        value,
+                        formVersions,
+                    );
+                    if (prunedVersionIds !== currentVersionIds) {
+                        setFormState('formVersionIds', prunedVersionIds);
+                    }
+                }
             }
             if (key) {
                 setFormState(key, value);
@@ -210,7 +226,14 @@ const InstancesFiltersComponent = ({
             }
             setIsInstancesFilterUpdated(true);
         },
-        [setFormState, setFormIds, setIsInstancesFilterUpdated],
+        [
+            setFormState,
+            setFormIds,
+            setIsInstancesFilterUpdated,
+            formState.formVersionIds?.value,
+            formVersions,
+            isPreviousFormVersions,
+        ],
     );
 
     const handleFormVersionIdsChange = useCallback(

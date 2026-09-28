@@ -64,7 +64,7 @@ export const useStaticColumns = (): Array<Column> => {
                 },
             },
             {
-                Header: 'Groups',
+                Header: formatMessage(MESSAGES.groupsCustom),
                 id: 'attributes__org_unit__groups',
                 sortable: false,
                 Cell: settings => {
@@ -86,7 +86,7 @@ export const useStaticColumns = (): Array<Column> => {
                 },
             },
             {
-                Header: 'HC',
+                Header: formatMessage(MESSAGES.hcCustom),
                 id: 'attributes__org_unit__name',
                 accessor: 'attributes__org_unit__name',
                 Cell: settings => {

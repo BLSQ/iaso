@@ -194,7 +194,7 @@ const Filters: FunctionComponent<Props> = ({
                             keyValue="groups"
                             onChange={handleChange}
                             value={!isFetchingGroups && filters?.groups}
-                            label={MESSAGES.groups}
+                            label={MESSAGES.groupsCustom}
                             options={groups}
                             loading={isFetchingGroups}
                         />
@@ -245,7 +245,7 @@ const Filters: FunctionComponent<Props> = ({
                             keyValue="groups"
                             onChange={handleChange}
                             value={!isFetchingGroups && filters?.groups}
-                            label={MESSAGES.groups}
+                            label={MESSAGES.groupsCustom}
                             options={groups}
                             loading={isFetchingGroups}
                         />

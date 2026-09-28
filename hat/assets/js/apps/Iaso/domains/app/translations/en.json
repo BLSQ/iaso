@@ -1283,6 +1283,7 @@
     "iaso.orgUnitsTypes.subTypesErrors": "A sub org unit type cannot be a parent too ({typeName})",
     "iaso.orgUnitsTypes.update": "Update org unit type",
     "iaso.oucrc.closedDate": "Closing Date",
+    "iaso.oucrc.code": "Code",
     "iaso.oucrc.editableReferenceFormIds": "Editable Reference Forms",
     "iaso.oucrc.groupSetIds": "Group Sets",
     "iaso.oucrc.orgUnitsEditable": "Should OrgUnits of this type be editable?",

@@ -264,6 +264,7 @@ class MobileOrgUnitChangeRequestListSerializerTestCase(TestCase):
             "new_opening_date": datetime.date(2022, 10, 27),
             "new_closed_date": datetime.date(2024, 10, 27),
             "approved_fields": ["new_org_unit_type"],
+            "new_code": "CODE1",
         }
         change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
         new_group = m.Group.objects.create(name="new group")
@@ -317,6 +318,7 @@ class MobileOrgUnitChangeRequestListSerializerTestCase(TestCase):
                         }
                     )
                 ],
+                "new_code": "CODE1",
             },
         )
 

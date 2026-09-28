@@ -1058,6 +1058,7 @@
     "iaso.orgUnitsTypes.subTypesErrors": "Un tipo de subunidad organizativa no puede ser también un padre ({typeName})",
     "iaso.orgUnitsTypes.update": "Actualizar tipo de unidad organizativa",
     "iaso.oucrc.closedDate": "Fecha de cierre",
+    "iaso.oucrc.code": "Código",
     "iaso.oucrc.editableReferenceFormIds": "Formularios de referencia editables",
     "iaso.oucrc.groupSetIds": "Conjuntos de grupos",
     "iaso.oucrc.orgUnitsEditable": "¿Deberían ser editables las unidades organizativas de este tipo?",

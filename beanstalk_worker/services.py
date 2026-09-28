@@ -35,6 +35,8 @@ THROTTLED_MESSAGE_PREFIX = "Waiting for a free slot"
 # Tasks waiting for a global slot retry more often, so they don't get overtaken by the newly queued ones
 MAX_GLOBAL_BACKOFF_DELAY = 60
 MAX_BACKOFF_DELAY = 300  # SQS accepts up to 900
+# A throttled task still waiting this long after its creation is marked ERRORED, unless its task is paused
+MAX_THROTTLE_WAIT = timedelta(hours=24)
 _MISSING = object()
 
 # Worker connection
@@ -94,12 +96,20 @@ class _TaskServiceBase:
         task = self.get_queryset().get(id=task_id)
         if task.status != QUEUED:  # ensure a task is only run once
             return
+        if task.should_be_killed:  # killed before it started, e.g. while waiting for a throttle slot
+            self._end_queued(task, KILLED, "Killed before it started")
+            return
         module = importlib.import_module(module_name)
         method = getattr(module, method_name)
         assert method._is_task
 
         blocked = self._start(task, method, kwargs)
         if blocked:
+            if not blocked.paused and timezone.now() - task.created_at > MAX_THROTTLE_WAIT:
+                self._end_queued(
+                    task, ERRORED, f"Gave up waiting for a free slot after {MAX_THROTTLE_WAIT}: {blocked.reason}"
+                )
+                return
             self._defer(task, module_name, method_name, args, kwargs, throttle_attempt + 1, blocked)
             return
         if task.status != RUNNING:  # another worker started it first
@@ -145,6 +155,13 @@ class _TaskServiceBase:
                 )
         task.refresh_from_db()
         return None
+
+    def _end_queued(self, task, status, message):
+        """End a task that never started. The conditional update leaves it alone if another worker started it."""
+        logger.warning(f"Task {task.id} not started: {message}")
+        self.get_queryset().filter(id=task.id, status=QUEUED).update(
+            status=status, ended_at=timezone.now(), result={"result": status, "message": message}
+        )
 
     def _defer(self, task, module_name, method_name, args, kwargs, attempt, blocked):
         raise NotImplementedError(f"{self.__class__.__name__} does not support throttling")
@@ -228,6 +245,7 @@ class TaskService(_TaskServiceBase):
 class Blocked:
     reason: str
     max_delay: int  # in seconds
+    paused: bool = False  # waits for the config to change, so it never gives up
 
 
 def backoff_delay(attempt: int, max_delay: int) -> int:
@@ -264,7 +282,7 @@ def check_throttle(task, task_name, slots, config, kwargs, db) -> Optional[Block
     `config` is the entry of the task in the `task_throttles` Config.
     A limit whose configuration or callable fails is logged and ignored: a mistake must not block the tasks."""
     if config.get("paused"):
-        return Blocked(f"paused in the {THROTTLE_CONFIG_SLUG} config", MAX_BACKOFF_DELAY)
+        return Blocked(f"paused in the {THROTTLE_CONFIG_SLUG} config", MAX_BACKOFF_DELAY, paused=True)
 
     alive_leases = TaskLease.objects.using(db).filter(heartbeat_at__gte=timezone.now() - LOST_AFTER)
     for concurrency, key, key_name in slots:

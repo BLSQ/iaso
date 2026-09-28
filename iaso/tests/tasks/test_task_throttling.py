@@ -12,6 +12,7 @@ from beanstalk_worker.services import (
     LOST_AFTER,
     MAX_BACKOFF_DELAY,
     MAX_GLOBAL_BACKOFF_DELAY,
+    MAX_THROTTLE_WAIT,
     THROTTLE_CONFIG_SLUG,
     Heartbeat,
     TaskService,
@@ -199,6 +200,48 @@ class TaskThrottlingTestCase(TestCase):
 
         self.assertEqual(task.status, m.QUEUED)
         self.assertIn("paused", task.progress_message)
+
+    def test_throttled_too_long_gives_up(self, boto_client):
+        self.running_task(self.account_a)
+        self.running_task(self.account_a)
+        task = self.queued_task(self.account_a)
+        m.Task.objects.filter(id=task.id).update(created_at=timezone.now() - MAX_THROTTLE_WAIT - timedelta(minutes=1))
+
+        self.run_now(task, throttle_attempt=300)
+
+        self.assertEqual(task.status, m.ERRORED)
+        self.assertIsNotNone(task.ended_at)
+        self.assertIn("Gave up waiting for a free slot", task.result["message"])
+        self.assertIn(f"account limit of 2 reached for {self.account_a.id}", task.result["message"])
+        self.assertEqual(self.sent_messages(boto_client), [])
+
+    def test_paused_never_gives_up(self, boto_client):
+        Config.objects.create(slug=THROTTLE_CONFIG_SLUG, content={TASK_NAME: {"paused": True}})
+        task = self.queued_task(self.account_a)
+        m.Task.objects.filter(id=task.id).update(created_at=timezone.now() - MAX_THROTTLE_WAIT - timedelta(days=7))
+
+        self.run_now(task, throttle_attempt=3000)
+
+        self.assertEqual(task.status, m.QUEUED)
+        self.assertEqual(len(self.sent_messages(boto_client)), 1)
+
+    def test_killed_while_throttled_is_not_started(self, boto_client):
+        self.running_task(self.account_a)
+        self.running_task(self.account_a)
+        task = self.queued_task(self.account_a)
+        self.run_now(task)
+        self.assertEqual(task.status, m.QUEUED)
+
+        m.Task.objects.filter(id=task.id).update(should_be_killed=True)
+        m.Task.objects.filter(status=m.RUNNING).update(status=m.SUCCESS)
+        m.TaskLease.objects.all().delete()
+        self.run_now(task, throttle_attempt=1)
+
+        self.assertEqual(task.status, m.KILLED)
+        self.assertIsNotNone(task.ended_at)
+        self.assertEqual(task.result, {"result": m.KILLED, "message": "Killed before it started"})
+        self.assertEqual(leases_seen_during_run, [])
+        self.assertEqual(len(self.sent_messages(boto_client)), 1)  # only the first deferral
 
     def test_invalid_config_falls_back_to_the_code_limits(self, boto_client):
         Config.objects.create(slug=THROTTLE_CONFIG_SLUG, content={TASK_NAME: {"account": "lots"}})

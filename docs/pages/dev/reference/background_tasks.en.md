@@ -44,6 +44,9 @@ The limits are checked when the worker is about to start the task. A task over a
 and is sent back to the SQS queue with an exponential backoff. Only the SQS worker enforces them: the
 Postgres worker used in development runs one task at a time.
 
+A task still throttled 24 hours after its creation (`MAX_THROTTLE_WAIT`) is marked `ERRORED`, unless
+its task is paused in the config. A task killed while it waits is marked `KILLED` without being started.
+
 Every task also has the built-in limits `global`, `account` and `user` (per launching user), unlimited
 by default, so any task can be throttled without changing its code.
 

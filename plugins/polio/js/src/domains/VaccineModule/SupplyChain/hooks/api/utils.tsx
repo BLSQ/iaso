@@ -107,6 +107,20 @@ export const saveTab = (
         return fetch(url, {
             method,
             body: formData,
+        }).then(async response => {
+            let body: unknown;
+            try {
+                body = await response.json();
+            } catch {
+                body = undefined;
+            }
+            return {
+                ok: response.ok,
+                status: response.status,
+                statusText: response.statusText,
+                url: response.url,
+                body,
+            };
         });
     };
 
@@ -197,6 +211,46 @@ type HandlePromiseErrorsArgs = {
     key: 'pre_alerts' | 'arrival_reports';
 };
 
+// Field errors from validate(), including nested lists:
+// {"pre_alerts": [{"po_number": ["A pre-alert with this PO number already exists."]}]}
+const collectApiErrorMessages = (body: unknown): string[] => {
+    if (typeof body === 'string' && body.trim()) {
+        return [body.trim()];
+    }
+    if (Array.isArray(body)) {
+        return body.flatMap(item => collectApiErrorMessages(item));
+    }
+    if (body && typeof body === 'object') {
+        return Object.entries(body as Record<string, unknown>).flatMap(
+            ([key, value]) => {
+                if (
+                    Array.isArray(value) &&
+                    value.every(item => typeof item === 'string')
+                ) {
+                    const text = value
+                        .map(item => item.trim())
+                        .filter(Boolean)
+                        .join(', ');
+                    if (!text) {
+                        return [];
+                    }
+                    if (key === 'non_field_errors' || key === 'detail') {
+                        return [text];
+                    }
+                    return [`${key}: ${text}`];
+                }
+                return collectApiErrorMessages(value);
+            },
+        );
+    }
+    return [];
+};
+
+const formatApiErrorBody = (body: unknown, fallback: string): string => {
+    const messages = collectApiErrorMessages(body);
+    return messages.length > 0 ? messages.join('\n') : fallback;
+};
+
 export const handlePromiseErrors = ({
     data,
     key,
@@ -208,14 +262,22 @@ export const handlePromiseErrors = ({
         openSnackBar(succesfullSnackBar(key, MESSAGES[messageKey]));
     } else {
         const failedEndpoints = failedPromises.map(item => item.value.url);
+        const errorLogFor = (
+            match: (item: ParsedSettledPromise<any>) => boolean,
+        ): string => {
+            const failed = failedPromises.find(match);
+            return formatApiErrorBody(
+                failed?.value.body ?? failed?.value,
+                failed?.value.statusText ?? failed?.value.message,
+            );
+        };
         if (failedEndpoints.find(url => url.includes('add'))) {
             const messageKey = `${key}CreateError`;
             openSnackBar(
                 errorSnackBar(
                     key,
                     MESSAGES[messageKey],
-                    failedPromises.find(item => item.value.url.includes('add'))
-                        ?.value.statusText,
+                    errorLogFor(item => item.value.url?.includes('add')),
                 ),
             );
         }
@@ -226,21 +288,21 @@ export const handlePromiseErrors = ({
                 errorSnackBar(
                     key,
                     MESSAGES[messageKey],
-                    failedPromises.find(item =>
-                        item.value.url.includes('update'),
-                    )?.value.statusText,
+                    errorLogFor(item => item.value.url?.includes('update')),
                 ),
             );
         }
-        if (failedEndpoints.find(url => url.includes('delete'))) {
+        if (failedEndpoints.find(url => url?.includes('delete'))) {
             const messageKey = `${key}DeleteError`;
             openSnackBar(
                 errorSnackBar(
                     key,
                     MESSAGES[messageKey],
-                    failedPromises.find(item =>
-                        item.value.message.includes('delete'),
-                    )?.value.statusText,
+                    errorLogFor(
+                        item =>
+                            item.value.url?.includes('delete') ||
+                            item.value.message?.includes('delete'),
+                    ),
                 ),
             );
         }

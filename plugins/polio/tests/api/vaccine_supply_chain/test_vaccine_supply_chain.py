@@ -335,6 +335,51 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
         )
 
         self.assertEqual(response.status_code, 400)
+        self.assertIn("po_number", response.data["pre_alerts"][0])
+
+    def test_duplicate_pre_alert_po_number_returns_field_error(self):
+        self.client.force_authenticate(user=self.user_rw_perm)
+        request_form = pm.VaccineRequestForm.objects.first()
+
+        def pre_alert_payload(po_number):
+            return {
+                "pre_alerts": [
+                    {
+                        "date_pre_alert_reception": "2021-01-01",
+                        "estimated_arrival_time": "2021-01-02",
+                        "doses_shipped": 500000,
+                        "po_number": po_number,
+                        "doses_per_vial": 20,
+                    }
+                ]
+            }
+
+        first = self.client.post(
+            self.BASE_URL + f"{request_form.id}/add_pre_alerts/",
+            data=pre_alert_payload("9001001"),
+            format="json",
+        )
+        self.assertEqual(first.status_code, 201)
+        second = self.client.post(
+            self.BASE_URL + f"{request_form.id}/add_pre_alerts/",
+            data=pre_alert_payload("9001002"),
+            format="json",
+        )
+        self.assertEqual(second.status_code, 201)
+
+        pre_alerts = self.client.get(self.BASE_URL + f"{request_form.id}/get_pre_alerts/").data["pre_alerts"]
+        second_id = next(pa["id"] for pa in pre_alerts if pa["po_number"] == "9001002")
+
+        response = self.client.patch(
+            self.BASE_URL + f"{request_form.id}/update_pre_alerts/",
+            data={"pre_alerts": [{"id": second_id, "po_number": "9001001"}]},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.data["pre_alerts"][0]["po_number"],
+            ["A pre-alert with this PO number already exists."],
+        )
 
     def test_arrival_reports_permissions(self):
         # Use a non-admin user

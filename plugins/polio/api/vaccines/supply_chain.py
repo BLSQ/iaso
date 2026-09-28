@@ -38,6 +38,19 @@ from plugins.polio.permissions import (
 
 logger = getLogger(__name__)
 
+DUPLICATE_PRE_ALERT_PO_NUMBER = "A pre-alert with this PO number already exists."
+DUPLICATE_ARRIVAL_REPORT_PO_NUMBER = "An arrival report with this PO number already exists."
+
+
+def raise_if_po_number_taken(model, po_number, *, exclude_id=None, message):
+    if not po_number:
+        return
+    queryset = model.objects.filter(po_number=po_number)
+    if exclude_id is not None:
+        queryset = queryset.exclude(id=exclude_id)
+    if queryset.exists():
+        raise serializers.ValidationError({"po_number": [message]})
+
 PA_SET = "vaccineprealert_set"
 AR_SET = "vaccinearrivalreport_set"
 
@@ -132,7 +145,7 @@ class NestedVaccinePreAlertSerializerForPost(ModelWithFileSerializer):
     def validate(self, attrs: Any) -> Any:
         validated_data = super().validate(attrs)
         if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get("po_number", ""):
-            raise serializers.ValidationError("PO number should not be prefixed")
+            raise serializers.ValidationError({"po_number": ["PO number should not be prefixed"]})
 
         return validated_data
 
@@ -172,7 +185,14 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
 
         validated_data = super().validate(attrs)
         if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get("po_number", ""):
-            raise serializers.ValidationError("PO number should not be prefixed")
+            raise serializers.ValidationError({"po_number": ["PO number should not be prefixed"]})
+
+        raise_if_po_number_taken(
+            VaccinePreAlert,
+            validated_data.get("po_number"),
+            exclude_id=attrs["id"],
+            message=DUPLICATE_PRE_ALERT_PO_NUMBER,
+        )
 
         # Get current object
         current_obj = VaccinePreAlert.objects.get(id=attrs["id"])
@@ -247,7 +267,7 @@ class NestedVaccineArrivalReportSerializerForPost(serializers.ModelSerializer):
     def validate(self, attrs: Any) -> Any:
         validated_data = super().validate(attrs)
         if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get("po_number", ""):
-            raise serializers.ValidationError("PO number should not be prefixed")
+            raise serializers.ValidationError({"po_number": ["PO number should not be prefixed"]})
         return validated_data
 
     def save(self, **kwargs):
@@ -283,7 +303,14 @@ class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSer
 
         validated_data = super().validate(attrs)
         if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get("po_number", ""):
-            raise serializers.ValidationError("PO number should not be prefixed")
+            raise serializers.ValidationError({"po_number": ["PO number should not be prefixed"]})
+
+        raise_if_po_number_taken(
+            VaccineArrivalReport,
+            validated_data.get("po_number"),
+            exclude_id=attrs["id"],
+            message=DUPLICATE_ARRIVAL_REPORT_PO_NUMBER,
+        )
 
         # Get current object
         current_obj = VaccineArrivalReport.objects.get(id=attrs["id"])
@@ -376,10 +403,12 @@ class PatchPreAlertSerializer(serializers.Serializer):
                     ):
                         try:
                             pa.save()
-                        except IntegrityError as e:
-                            raise serializers.ValidationError(str(e))
+                        except IntegrityError:
+                            raise serializers.ValidationError({"po_number": [DUPLICATE_PRE_ALERT_PO_NUMBER]})
                     else:
-                        raise serializers.ValidationError(f"You are not allowed to edit the pre-alert with id {pa.id}")
+                        raise serializers.ValidationError(
+                            {"detail": f"You are not allowed to edit the pre-alert with id {pa.id}"}
+                        )
 
                 pre_alerts.append(pa)
 
@@ -432,11 +461,11 @@ class PatchArrivalReportSerializer(serializers.Serializer):
                     ):
                         try:
                             ar.save()
-                        except IntegrityError as e:
-                            raise serializers.ValidationError(str(e))
+                        except IntegrityError:
+                            raise serializers.ValidationError({"po_number": [DUPLICATE_ARRIVAL_REPORT_PO_NUMBER]})
                     else:
                         raise serializers.ValidationError(
-                            f"You are not allowed to edit the arrival report with id {ar.id}"
+                            {"detail": f"You are not allowed to edit the arrival report with id {ar.id}"}
                         )
 
                 arrival_reports.append(ar)

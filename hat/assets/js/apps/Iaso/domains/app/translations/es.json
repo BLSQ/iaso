@@ -225,6 +225,7 @@
     "iaso.entities.female": "Femenino",
     "iaso.entities.gender": "Género",
     "iaso.entities.groups": "Grupos",
+    "iaso.entities.hc": "HC",
     "iaso.entities.keyInfo": "Información clave",
     "iaso.entities.label.details": "Detalles",
     "iaso.entities.label.entityInfo": "Información de la entidad",

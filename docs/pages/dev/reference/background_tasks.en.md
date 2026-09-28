@@ -64,8 +64,9 @@ keeps all the runs of the task waiting:
 ```
 
 The Django admin page **Tasks › Monitor** (`/admin/iaso/task/monitor/`) shows, per task, how many are
-queued, throttled, running and finished (success, errored, killed) with their duration, and for each
-limit set, the runs using it and waiting for it, per key.
+queued, throttled, running and finished (success, errored, killed), with the p50 / p90 / p99 / max execution
+time of the successful ones, over the last hour, day, week or month. For each limit set, it shows the runs using
+it and waiting for it, per key.
 
 ## Lost tasks
 

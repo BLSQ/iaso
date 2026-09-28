@@ -6,7 +6,8 @@ from datetime import datetime, timedelta, timezone as dt_timezone
 from typing import Dict, List, Optional, Tuple
 
 from django.contrib.auth.models import User
-from django.db.models import Avg, Count, F, Func, IntegerField, Max, Min, Q
+from django.contrib.postgres.fields import ArrayField
+from django.db.models import Aggregate, Count, DurationField, F, Func, IntegerField, Max, Min, Q
 from django.utils import timezone
 
 from beanstalk_worker.services import (
@@ -21,9 +22,9 @@ from beanstalk_worker.throttle import Throttle, effective_throttle
 from iaso.models import ERRORED, EXPORTED, KILLED, QUEUED, RUNNING, SKIPPED, SUCCESS, Account, Task, TaskLease
 
 
-WINDOWS = {"1h": timedelta(hours=1), "24h": timedelta(days=1), "7d": timedelta(days=7)}
+WINDOWS = {"1h": timedelta(hours=1), "24h": timedelta(days=1), "7d": timedelta(days=7), "30d": timedelta(days=30)}
 # size of the bars of the activity chart, per window
-BUCKETS = {"1h": timedelta(minutes=5), "24h": timedelta(hours=1), "7d": timedelta(hours=6)}
+BUCKETS = {"1h": timedelta(minutes=5), "24h": timedelta(hours=1), "7d": timedelta(hours=6), "30d": timedelta(days=1)}
 # series of the activity chart, bottom to top: errored and success are kept apart for the color blind readers
 ACTIVITY_SERIES = ("success", "running", "waiting", "stopped", "errored")
 ACTIVITY_SERIES_OF_STATUS = {
@@ -40,6 +41,9 @@ FINISHED_STATUSES = [SUCCESS, ERRORED, KILLED, SKIPPED]
 MAX_QUEUED_TASKS = 5000  # queued tasks inspected to find their throttle keys
 MAX_KEYS_PER_LIMIT = 20
 MAX_ACCOUNTS = 20  # shown in the "By account" table, unless asked for all
+# percentiles of the durations of the successful tasks, per task name
+DURATION_PERCENTILES = {"p50": 0.5, "p90": 0.9, "p99": 0.99}
+DURATION_LABELS = [*DURATION_PERCENTILES, "max"]
 
 
 def format_duration(duration: Optional[timedelta]) -> str:
@@ -60,6 +64,16 @@ class EpochBucket(Func):
 
     template = "floor(extract(epoch from %(expressions)s) / %(seconds)s)"
     output_field = IntegerField()
+
+
+class DurationPercentiles(Aggregate):
+    """Percentiles of a duration, interpolated: PERCENTILE_CONT with an array of fractions, an ordered-set aggregate"""
+
+    template = "PERCENTILE_CONT(ARRAY%(fractions)s) WITHIN GROUP (ORDER BY %(expressions)s)"
+    output_field = ArrayField(DurationField())
+
+    def __init__(self, expression, fractions, **extra):
+        super().__init__(expression, fractions=[float(f) for f in fractions], **extra)
 
 
 def activity(window: str, task_name: str = "", account_id=None) -> List[dict]:
@@ -160,20 +174,22 @@ def task_rows(since, account_id=None) -> List[dict]:
         tasks.filter(created_at__gte=since, status=SUCCESS, started_at__isnull=False, ended_at__isnull=False)
         .order_by()
         .values("name")
-        .annotate(avg=Avg(F("ended_at") - F("started_at")), max=Max(F("ended_at") - F("started_at")))
+        .annotate(
+            percentiles=DurationPercentiles(F("ended_at") - F("started_at"), fractions=DURATION_PERCENTILES.values()),
+            max=Max(F("ended_at") - F("started_at")),
+        )
     )
-    durations = {row["name"]: (row["avg"], row["max"]) for row in successes}
+    durations = {row["name"]: [*row["percentiles"], row["max"]] for row in successes}
 
     now = timezone.now()
     result = []
     for name in sorted(counts):
-        avg, longest = durations.get(name, (None, None))
         result.append(
             {
                 "name": name,
                 **_row(counts[name], oldest_queued.get(name), now),
-                "avg_duration": format_duration(avg),
-                "max_duration": format_duration(longest),
+                # durations of the successful tasks: the percentiles, then the max
+                "durations": [format_duration(d) for d in durations.get(name, [None] * len(DURATION_LABELS))],
             }
         )
     return result
@@ -194,6 +210,19 @@ def account_rows(since, task_name="") -> List[dict]:
     ]
     result.sort(key=lambda r: (-(r["running"] + r["queued"] + r["throttled"]), -sum(r[s] for s in FINISHED_STATUSES)))
     return result
+
+
+def list_filters(since) -> Dict[str, dict]:
+    """Per column of the tables, the filters of the task list showing the counted tasks.
+
+    Queued can't exclude the throttled tasks, and no heartbeat can't be expressed as a filter."""
+    since = since.replace(microsecond=0).isoformat()
+    return {
+        "queued": {"status__exact": QUEUED},
+        "throttled": {"status__exact": QUEUED, "progress_message__startswith": THROTTLED_MESSAGE_PREFIX},
+        "running": {"status__exact": RUNNING},
+        **{status: {"status__exact": status, "created_at__gte": since} for status in FINISHED_STATUSES},
+    }
 
 
 def totals(rows) -> Dict[str, int]:

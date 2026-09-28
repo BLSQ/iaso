@@ -65,7 +65,6 @@
 {% endblock %}
 
 {% block content %}
-{% url opts|admin_urlname:'changelist' as tasks_url %}
 <div id="content-main" class="monitor">
   <div class="toolbar">
     Finished tasks created in the last:
@@ -99,7 +98,7 @@
     </span>
   </form>
 
-  <h2>Tasks created per {% if bucket_minutes < 60 %}{{ bucket_minutes }} minutes{% else %}{% widthratio bucket_minutes 60 1 %} hour{% if bucket_minutes > 60 %}s{% endif %}{% endif %}, last {{ window }}{% if chart_task %}: {{ chart_task }}{% endif %}{% if account %}, {{ account.name }}{% endif %}</h2>
+  <h2>Tasks created per {% if bucket_minutes < 60 %}{{ bucket_minutes }} minutes{% elif bucket_minutes == 1440 %}day (UTC){% else %}{% widthratio bucket_minutes 60 1 %} hour{% if bucket_minutes > 60 %}s{% endif %}{% endif %}, last {{ window }}{% if chart_task %}: {{ chart_task }}{% endif %}{% if account %}, {{ account.name }}{% endif %}</h2>
   <div class="viz-legend" id="activity-legend"></div>
   <div class="viz-root" id="activity-chart" data-window="{{ window }}" data-bucket-minutes="{{ bucket_minutes }}">
     <div class="viz-tooltip" id="activity-tooltip"></div>
@@ -131,8 +130,9 @@
   <h2>Tasks{% if account %} of {{ account.name }}{% endif %}</h2>
   <p class="help">
     Queued and running: now. Throttled: queued, waiting for a throttle slot. No heartbeat: running but not refreshed
-    by a worker (external task, killed worker, or started before the heartbeats existed).
-    Success, errored, killed and skipped: created in the last {{ window }}.
+    by a worker (external task, killed worker, or started before the heartbeats existed). p50, p90, p99 and max:
+    execution time (from start to end, queue and throttle wait excluded) of the successful tasks.
+    Success, errored, killed and skipped: created in the last {{ window }}. Click a count to list its tasks.
   </p>
   <table>
     <thead>
@@ -141,28 +141,27 @@
         <th class="number">Queued</th><th class="number">Throttled</th><th>Waiting since</th>
         <th class="number">Running</th><th class="number">No heartbeat</th>
         <th class="number">Success</th><th class="number">Errored</th><th class="number">Killed</th>
-        <th class="number">Skipped</th><th>Duration avg / max</th>
+        <th class="number">Skipped</th>
+        {% for label in duration_labels %}<th class="number" title="Execution time of the successful tasks: {{ label }}">{{ label }}</th>{% endfor %}
       </tr>
     </thead>
     <tbody>
       {% for row in rows %}
         <tr>
-          <td><a href="{{ tasks_url }}?name__exact={{ row.name|urlencode }}{% if account %}&account__id__exact={{ account.id }}{% endif %}">{{ row.name }}</a></td>
-          <td class="number{% if not row.queued %} zero{% endif %}">{{ row.queued }}</td>
-          <td class="number{% if not row.throttled %} zero{% endif %}">{{ row.throttled }}</td>
+          <td><a href="{{ row.links.all }}">{{ row.name }}</a></td>
+          {% include "admin/iaso/task/monitor_count_cell.html" with count=row.queued url=row.links.queued title="Queued tasks, the throttled ones included" only %}
+          {% include "admin/iaso/task/monitor_count_cell.html" with count=row.throttled url=row.links.throttled only %}
           <td>{{ row.waiting_since }}</td>
-          <td class="number{% if not row.running %} zero{% endif %}">{{ row.running }}</td>
+          {% include "admin/iaso/task/monitor_count_cell.html" with count=row.running url=row.links.running only %}
           <td class="number{% if row.no_heartbeat %} warning{% else %} zero{% endif %}">{{ row.no_heartbeat }}</td>
-          <td class="number{% if not row.SUCCESS %} zero{% endif %}">{{ row.SUCCESS }}</td>
-          <td class="number{% if row.ERRORED %} warning{% else %} zero{% endif %}">
-            {% if row.ERRORED %}<a href="{{ tasks_url }}?name__exact={{ row.name|urlencode }}&status__exact=ERRORED{% if account %}&account__id__exact={{ account.id }}{% endif %}">{{ row.ERRORED }}</a>{% else %}0{% endif %}
-          </td>
-          <td class="number{% if not row.KILLED %} zero{% endif %}">{{ row.KILLED }}</td>
-          <td class="number{% if not row.SKIPPED %} zero{% endif %}">{{ row.SKIPPED }}</td>
-          <td>{% if row.avg_duration %}{{ row.avg_duration }} / {{ row.max_duration }}{% endif %}</td>
+          {% include "admin/iaso/task/monitor_count_cell.html" with count=row.SUCCESS url=row.links.SUCCESS only %}
+          {% include "admin/iaso/task/monitor_count_cell.html" with count=row.ERRORED url=row.links.ERRORED warning=True only %}
+          {% include "admin/iaso/task/monitor_count_cell.html" with count=row.KILLED url=row.links.KILLED only %}
+          {% include "admin/iaso/task/monitor_count_cell.html" with count=row.SKIPPED url=row.links.SKIPPED only %}
+          {% for duration in row.durations %}<td class="number">{{ duration }}</td>{% endfor %}
         </tr>
       {% empty %}
-        <tr><td colspan="11">No task.</td></tr>
+        <tr><td colspan="14">No task.</td></tr>
       {% endfor %}
     </tbody>
     {% if rows %}
@@ -172,7 +171,8 @@
           <th class="number">{{ totals.queued }}</th><th class="number">{{ totals.throttled }}</th><th></th>
           <th class="number">{{ totals.running }}</th><th class="number">{{ totals.no_heartbeat }}</th>
           <th class="number">{{ totals.SUCCESS }}</th><th class="number">{{ totals.ERRORED }}</th>
-          <th class="number">{{ totals.KILLED }}</th><th class="number">{{ totals.SKIPPED }}</th><th></th>
+          <th class="number">{{ totals.KILLED }}</th><th class="number">{{ totals.SKIPPED }}</th>
+          {% for label in duration_labels %}<th></th>{% endfor %}
         </tr>
       </tfoot>
     {% endif %}
@@ -243,15 +243,15 @@
         {% for row in shown_accounts %}
           <tr>
             <td><a href="{{ row.url }}">{{ row.name }}</a></td>
-            <td class="number{% if not row.queued %} zero{% endif %}">{{ row.queued }}</td>
-            <td class="number{% if not row.throttled %} zero{% endif %}">{{ row.throttled }}</td>
+            {% include "admin/iaso/task/monitor_count_cell.html" with count=row.queued url=row.links.queued title="Queued tasks, the throttled ones included" only %}
+            {% include "admin/iaso/task/monitor_count_cell.html" with count=row.throttled url=row.links.throttled only %}
             <td>{{ row.waiting_since }}</td>
-            <td class="number{% if not row.running %} zero{% endif %}">{{ row.running }}</td>
+            {% include "admin/iaso/task/monitor_count_cell.html" with count=row.running url=row.links.running only %}
             <td class="number{% if row.no_heartbeat %} warning{% else %} zero{% endif %}">{{ row.no_heartbeat }}</td>
-            <td class="number{% if not row.SUCCESS %} zero{% endif %}">{{ row.SUCCESS }}</td>
-            <td class="number{% if row.ERRORED %} warning{% else %} zero{% endif %}">{{ row.ERRORED }}</td>
-            <td class="number{% if not row.KILLED %} zero{% endif %}">{{ row.KILLED }}</td>
-            <td class="number{% if not row.SKIPPED %} zero{% endif %}">{{ row.SKIPPED }}</td>
+            {% include "admin/iaso/task/monitor_count_cell.html" with count=row.SUCCESS url=row.links.SUCCESS only %}
+            {% include "admin/iaso/task/monitor_count_cell.html" with count=row.ERRORED url=row.links.ERRORED warning=True only %}
+            {% include "admin/iaso/task/monitor_count_cell.html" with count=row.KILLED url=row.links.KILLED only %}
+            {% include "admin/iaso/task/monitor_count_cell.html" with count=row.SKIPPED url=row.links.SKIPPED only %}
           </tr>
         {% empty %}
           <tr><td colspan="10">No task.</td></tr>
@@ -279,6 +279,7 @@
   const tooltip = document.getElementById("activity-tooltip");
   const bucketMinutes = Number(root.dataset.bucketMinutes);
   const window_ = root.dataset.window;
+  const daily = bucketMinutes >= 1440;  // the days are UTC days: shown in UTC, else they'd straddle two local dates
   const NS = "http://www.w3.org/2000/svg";
   const HEIGHT = 190, MARGIN = { top: 10, right: 8, bottom: 22, left: 40 }, GAP = 2, RADIUS = 4;
 
@@ -287,6 +288,10 @@
     const time = pad(date.getHours()) + ":" + pad(date.getMinutes());
     if (!withDay) return time;
     return date.toLocaleDateString(undefined, { weekday: "short", day: "numeric" }) + " " + time;
+  }
+  function formatDay(date, withWeekday) {
+    const options = { day: "numeric", month: "short", timeZone: "UTC" };
+    return date.toLocaleDateString(undefined, withWeekday ? { weekday: "short", ...options } : options);
   }
   function niceStep(max) {
     const raw = max / 4, power = Math.pow(10, Math.floor(Math.log10(raw)));
@@ -317,7 +322,8 @@
   }
   // the data table shows local times too
   document.querySelectorAll(".bucket-start").forEach((cell) => {
-    cell.textContent = formatTime(new Date(cell.dataset.start), true);
+    const start = new Date(cell.dataset.start);
+    cell.textContent = daily ? formatDay(start, true) : formatTime(start, true);
   });
 
   function draw() {
@@ -353,7 +359,7 @@
         const date = new Date(d.start);
         const withDay = window_ === "7d" || (i === 0 && window_ === "24h");
         el("text", { class: "tick", x: x + barW / 2, y: HEIGHT - 6, "text-anchor": "middle" }, svg).textContent =
-          formatTime(date, withDay);
+          daily ? formatDay(date, false) : formatTime(date, withDay);
       }
       // the hover target is the whole slot, bigger than the column
       const hit = el("rect", { class: "hit", x: MARGIN.left + i * slot, y: MARGIN.top, width: slot, height: plotH, fill: "transparent" }, svg);
@@ -367,7 +373,8 @@
     band.classList.add("active");
     const from = new Date(d.start), to = new Date(from.getTime() + bucketMinutes * 60000);
     // in the order of the stack, top first
-    tooltip.innerHTML = `<div class="when">${formatTime(from, window_ !== "1h")} – ${formatTime(to, false)}</div>` +
+    const when = daily ? `${formatDay(from, true)} (UTC)` : `${formatTime(from, window_ !== "1h")} – ${formatTime(to, false)}`;
+    tooltip.innerHTML = `<div class="when">${when}</div>` +
       SERIES.slice().reverse().map(([key, label]) =>
         `<div class="row"><span><span class="swatch" style="background: var(--viz-${key})"></span>${label.split(" (")[0]}</span><span>${d[key].toLocaleString()}</span></div>` +
         (key === "waiting" && d.throttled ? `<div class="row detail"><span>of which throttled</span><span>${d.throttled.toLocaleString()}</span></div>` : "")

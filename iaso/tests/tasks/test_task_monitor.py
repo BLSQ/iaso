@@ -52,7 +52,9 @@ class TaskMonitorTestCase(TestCase):
             {k: dummy[k] for k in ("queued", "throttled", "running", "no_heartbeat", m.SUCCESS, m.ERRORED)},
             {"queued": 1, "throttled": 1, "running": 2, "no_heartbeat": 1, m.SUCCESS: 2, m.ERRORED: 0},
         )
-        self.assertEqual((dummy["avg_duration"], dummy["max_duration"]), ("40s", "1m 00s"))
+        # p50, p90, p99 interpolated between the 20s and 60s runs, then the max
+        self.assertEqual(dummy["durations"], ["40s", "56s", "59s", "1m 00s"])
+        self.assertEqual(rows["other_task"]["durations"], ["", "", "", ""])
         self.assertEqual(rows["other_task"][m.ERRORED], 1)
         self.assertEqual(totals(rows.values())[m.ERRORED], 1)
 
@@ -133,6 +135,7 @@ class TaskMonitorTestCase(TestCase):
         self.assertEqual(sum(b["errored"] for b in activity("1h", task_name="dummy_task")), 1)
         self.assertEqual(len(activity("24h")), 24)
         self.assertEqual(len(activity("7d")), 28)
+        self.assertEqual(len(activity("30d")), 30)
 
     def test_page(self):
         admin = User.objects.create_superuser("admin", "admin@example.com", "password")
@@ -157,6 +160,44 @@ class TaskMonitorTestCase(TestCase):
         self.assertContains(response, "Tasks of Account A")
         self.assertNotContains(response, "By account")
         self.assertEqual(self.client.get(f"{URL}?account=999999").context["account"], None)
+
+        response = self.client.get(f"{URL}?window=30d")
+        self.assertContains(response, "Tasks created per day (UTC), last 30d")
+        self.assertContains(response, '<th class="number" title="Execution time of the successful tasks: p99">p99</th>')
+
+    def test_counts_link_to_the_counted_tasks(self):
+        admin = User.objects.create_superuser("admin", "admin@example.com", "password")
+        self.client.force_login(admin)
+        now = timezone.now()
+        self.task(m.QUEUED)
+        self.task(m.QUEUED, progress_message=f"{THROTTLED_MESSAGE_PREFIX}: account limit of 2 reached for 1")
+        self.task(m.RUNNING)
+        self.task(m.SUCCESS)
+        self.task(m.ERRORED)
+        self.task(m.ERRORED, self.account_b)
+        old = self.task(m.ERRORED)
+        m.Task.objects.filter(id=old.id).update(created_at=now - timedelta(days=2))
+        self.task(m.ERRORED, name="other_task")
+
+        def listed(url):
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200, url)  # an unknown lookup redirects with ?e=1
+            return response.context["cl"].result_count
+
+        response = self.client.get(f"{URL}?account={self.account_a.id}")
+        [row] = [row for row in response.context["rows"] if row["name"] == "dummy_task"]
+        # queued lists the throttled tasks too, the errored task of 2 days ago is out of the window
+        self.assertEqual(
+            {column: listed(row["links"][column]) for column in ("all", "queued", "throttled", "running")},
+            {"all": 6, "queued": 2, "throttled": 1, "running": 1},
+        )
+        for status in (m.SUCCESS, m.ERRORED, m.KILLED, m.SKIPPED):
+            self.assertEqual(listed(row["links"][status]), row[status], status)
+
+        response = self.client.get(f"{URL}?task=dummy_task")
+        accounts = {row["id"]: row for row in response.context["accounts"]}
+        self.assertEqual(listed(accounts[self.account_a.id]["links"][m.ERRORED]), 1)
+        self.assertEqual(listed(accounts[self.account_b.id]["links"][m.ERRORED]), 1)
 
     def test_by_account_shows_the_busiest_accounts(self):
         admin = User.objects.create_superuser("admin", "admin@example.com", "password")

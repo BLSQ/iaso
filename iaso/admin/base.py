@@ -653,8 +653,25 @@ class TaskAdmin(admin.ModelAdmin):
         tasks = discover_tasks()
         rows = task_monitor.task_rows(since, account_id)
         accounts = task_monitor.account_rows(since, chart_task)
+        tasks_url = reverse("admin:iaso_task_changelist")
+        filters_of_column = task_monitor.list_filters(since)
+
+        def list_links(**base):
+            """Links to the task list, per column: the counted tasks of the row"""
+            return {
+                column: f"{tasks_url}?{urlencode({**base, **filters})}"
+                for column, filters in {"all": {}, **filters_of_column}.items()
+            }
+
+        account_filter = {"account__id__exact": account_id} if account_id else {}
+        for row in rows:
+            row["links"] = list_links(name__exact=row["name"], **account_filter)
         for row in accounts:
             row["url"] = link(account=row["id"])
+            row["links"] = list_links(
+                **({"account__id__exact": row["id"]} if row["id"] else {"account__isnull": "True"}),
+                **({"name__exact": chart_task} if chart_task else {}),
+            )
         context = {
             **self.admin_site.each_context(request),
             "opts": self.model._meta,
@@ -666,6 +683,7 @@ class TaskAdmin(admin.ModelAdmin):
             "stop_refresh_url": link(refresh=""),
             "rows": rows,
             "totals": task_monitor.totals(rows),
+            "duration_labels": task_monitor.DURATION_LABELS,
             "accounts": accounts,
             "shown_accounts": accounts if all_accounts else accounts[: task_monitor.MAX_ACCOUNTS],
             "hidden_accounts": 0 if all_accounts else max(0, len(accounts) - task_monitor.MAX_ACCOUNTS),

@@ -28,6 +28,8 @@
     "iaso.accounts.label.anthropicAPIKey": "Clé API Anthropic",
     "iaso.accounts.label.forceStrongPassword": "Imposer un mot de passe fort",
     "iaso.accounts.label.forumPath": "Adresse du forum",
+    "iaso.label.hc": "HC",
+    "iaso.entities.groups": "Groups",
     "iaso.accounts.label.status": "Status",
     "iaso.accounts.label.userManualPath": "Adresse du manuel utilisateur",
     "iaso.accounts.noResultsFound": "Aucun résultat trouvé.",

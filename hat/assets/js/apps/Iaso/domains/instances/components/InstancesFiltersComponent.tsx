@@ -236,11 +236,6 @@ const InstancesFiltersComponent = ({
         ],
     );
 
-    const handleFormVersionIdsChange = useCallback(
-        (val: string | null) => handleFormChange('formVersionIds', val),
-        [handleFormChange],
-    );
-
     const startPeriodError = useMemo(() => {
         if (formState.startPeriod?.value && formState.periodType?.value) {
             return !isValidPeriod(
@@ -590,7 +585,9 @@ const InstancesFiltersComponent = ({
                                 <FormVersionsDropdown
                                     formIds={formState.formIds.value}
                                     value={formState.formVersionIds?.value}
-                                    onChange={handleFormVersionIdsChange}
+                                    onChange={val =>
+                                        handleFormChange('formVersionIds', val)
+                                    }
                                 />
                             </Grid>
                         </Grid>

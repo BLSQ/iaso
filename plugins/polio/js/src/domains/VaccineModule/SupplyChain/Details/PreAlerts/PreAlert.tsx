@@ -140,16 +140,16 @@ export const PreAlert: FunctionComponent<Props> = ({
                                 required
                             />
                             <Field
-                                label={formatMessage(MESSAGES.doses_shipped)}
-                                name={`pre_alerts[${index}].doses_shipped`}
+                                label={formatMessage(MESSAGES.vials_shipped)}
+                                name={`pre_alerts[${index}].vials_shipped`}
                                 component={NumberInput}
                                 disabled={
                                     markedForDeletion ||
                                     !pre_alerts?.[index].can_edit
                                 }
-                                onChange={handleDosesShippedUpdate}
-                                onFocus={onDosesFocus}
-                                onBlur={onDosesBlur}
+                                onChange={handleVialsShippedUpdate}
+                                onFocus={onVialsFocus}
+                                onBlur={onVialsBlur}
                                 required
                             />
                             <Box mt={2}>
@@ -199,17 +199,18 @@ export const PreAlert: FunctionComponent<Props> = ({
                                 />
                             </Box>
                             <Field
-                                label={formatMessage(MESSAGES.vials_shipped)}
-                                name={`pre_alerts[${index}].vials_shipped`}
-                                component={NumberInput}
+                                label={formatMessage(MESSAGES.doses_per_vial)}
+                                name={`pre_alerts[${index}].doses_per_vial`}
+                                component={SingleSelect}
                                 disabled={
                                     markedForDeletion ||
-                                    !pre_alerts?.[index].can_edit
+                                    !pre_alerts?.[index].can_edit ||
+                                    dosesForVaccineOptions.length === 1
                                 }
-                                onChange={handleVialsShippedUpdate}
-                                onFocus={onVialsFocus}
-                                onBlur={onVialsBlur}
+                                onChange={handleDosesPerVialUpdate}
+                                options={dosesForVaccineOptions}
                                 required
+                                clearable={false}
                             />
                         </Grid>
                         <Grid item xs={6} md={4}>
@@ -226,18 +227,17 @@ export const PreAlert: FunctionComponent<Props> = ({
                                 required
                             />
                             <Field
-                                label={formatMessage(MESSAGES.doses_per_vial)}
-                                name={`pre_alerts[${index}].doses_per_vial`}
-                                component={SingleSelect}
+                                label={formatMessage(MESSAGES.doses_shipped)}
+                                name={`pre_alerts[${index}].doses_shipped`}
+                                component={NumberInput}
                                 disabled={
                                     markedForDeletion ||
-                                    !pre_alerts?.[index].can_edit ||
-                                    dosesForVaccineOptions.length === 1
+                                    !pre_alerts?.[index].can_edit
                                 }
-                                onChange={handleDosesPerVialUpdate}
-                                options={dosesForVaccineOptions}
+                                onChange={handleDosesShippedUpdate}
+                                onFocus={onDosesFocus}
+                                onBlur={onDosesBlur}
                                 required
-                                clearable={false}
                             />
                         </Grid>
                     </Grid>
